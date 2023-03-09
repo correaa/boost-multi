@@ -249,13 +249,24 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 			BOOST_REQUIRE(res == res2);
 		}
 		{
+			BOOST_REQUIRE( blas::dot(blas::C(x), x) == pow(blas::nrm2(x), 2.0) );
+			BOOST_REQUIRE( blas::dot(x, blas::C(x)) == pow(blas::nrm2(x), 2.0) );
+
 			using blas::operators::operator,;
 			using blas::operators::operator*;
-			BOOST_REQUIRE( blas::dot(blas::C(x), x) == pow(blas::nrm2(x), 2.0) );
+			using blas::operators::abs;
+			using blas::operators::norm;
+			using blas::operators::operator^;
+
+			BOOST_REQUIRE( (*x, x) == pow(abs(x), 2.0) );
+			BOOST_REQUIRE( (*x, x) == pow(abs(x), 2)   );
+			BOOST_REQUIRE( (*x, x) == norm(x)          );
+
+			BOOST_REQUIRE( (x, *x) == pow(abs(x), 2.0) );
+			BOOST_REQUIRE( (x, *x) == pow(abs(x), 2)   );
+			BOOST_REQUIRE( (x, *x) == norm(x)          );
+
+//          BOOST_REQUIRE( (*x, x) == +(x)^2            );
 		}
 	}
-	// {
-	//  T res;
-	//  blas::dot(blas::C(x), blas::C(y), res);
-	// }
 }

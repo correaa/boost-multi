@@ -89,6 +89,18 @@ namespace operators {
 	[[nodiscard]] auto operator^(A1D const& array, int n)
 	->decltype(std::pow(Real{blas::nrm2(array)}, n)) {
 		return std::pow(Real{blas::nrm2(array)}, n); }
+
+	template<class A1D>
+	[[nodiscard]] auto abs(A1D const& array) {
+		return blas::nrm2(array);
+	}
+
+	template<class A1D>
+	[[nodiscard]] auto norm(A1D const& array) {
+		auto const sqrt = +blas::nrm2(array);
+		return sqrt*sqrt;
+	}
+
 } // end namespace operators
 
 } // end namespace boost::multi::blas
