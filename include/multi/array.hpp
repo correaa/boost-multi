@@ -583,14 +583,19 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	//  }
 	}
 
-	template<class Singleton, 
+	template<class Singleton,
 		std::enable_if_t<not std::is_base_of_v<static_array, Singleton> and not std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
 		class = decltype(adl_copy_n(                       &std::declval<Singleton>(), 1, typename static_array::element_ptr{}))
 	>
+	// NOLINTNEXTLINE(runtime/explicit)
 	static_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: ref(static_array::allocate(1), typename static_array::extensions_type{})
 	{
-		adl_copy_n(                       &single, 1, this->data_elements());
+		if constexpr(std::is_trivial_v<T>) {
+			                    adl_copy_n(                       &single, 1, this->data_elements());
+		} else {
+			adl_alloc_uninitialized_copy_n(static_array::alloc(), &single, 1, this->data_elements());
+		}
 	}
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, value_type>{}>>
