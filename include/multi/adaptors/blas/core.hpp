@@ -333,10 +333,17 @@ namespace core {
 #define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(BC(n), x, BC(incx))    ;}  // NOLINT(readability-identifier-length) conventional BLAS name
 #define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx)) - 1;}  // NOLINT(readability-identifier-length) conventional BLAS name
 
-xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
+//xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
 
 namespace core {
 //  xnrm2(s, s, s) xnrm2(d, d, d)  xnrm2(s, c, sc) xnrm2(d, z, dz)
+
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} and is_s<R>{} and std::is_assignable<R&, decltype(X{})>{}           , int> =0> void asum(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(sasum) (n, (s const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting,readability-identifier-length)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_d<X>{} and is_d<R>{} and std::is_assignable<R&, decltype(X{})>{}           , int> =0> void asum(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(dasum) (n, (d const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));} // NOLINT(google-readability-casting,readability-identifier-length)
+
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_s<R>{} and std::is_assignable<R&, decltype(norm(X{}))>{}, int> =0> void asum(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(scasum)(n, (c const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting,readability-identifier-length)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_d<R>{} and std::is_assignable<R&, decltype(norm(X{}))>{}, int> =0> void asum(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(dzasum)(n, (z const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));} // NOLINT(google-readability-casting,readability-identifier-length)
+
 
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} and is_s<R>{} and std::is_assignable<R&, decltype(X{})>{}           , int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(snrm2) (n, (s const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting,readability-identifier-length)
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_d<X>{} and is_d<R>{} and std::is_assignable<R&, decltype(X{})>{}           , int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(dnrm2) (n, (d const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));} // NOLINT(google-readability-casting,readability-identifier-length)
@@ -555,6 +562,11 @@ struct context { // stateless (and thread safe)
 	static auto gemv(As&&... args)
 //  ->decltype(core::gemv(std::forward<As>(args)...)) {
 	{   return core::gemv(std::forward<As>(args)...); }
+
+	template<class... As>
+	static auto asum(As... args)
+	->decltype(core::asum(args...)) {
+		return core::asum(args...); }
 
 	template<class... As>
 	static auto nrm2(As... args)

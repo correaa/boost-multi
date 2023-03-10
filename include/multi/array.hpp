@@ -456,6 +456,23 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
 
+	template<class Ptr>
+	void assign(Ptr data) & {
+		if(data) {
+			assert(this->num_elements() == 1);
+			adl_copy_n(data, this->num_elements(), this->base());
+		}
+	}
+
+	template<class Singleton,
+		std::enable_if_t<not std::is_base_of_v<static_array, Singleton> and not std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
+		class = decltype(adl_copy_n(                       &std::declval<Singleton>(), 1, typename static_array::element_ptr{}))
+	>
+	auto operator=(Singleton const& single) -> static_array& {
+		assign(&single);
+		return *this;
+	}
+
  protected:
 	using alloc_traits = typename multi::allocator_traits<allocator_type>;
 	using ref = array_ref<T, 0, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
@@ -554,6 +571,33 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	explicit static_array(typename static_array::element const& elem)       // 2
 	: static_array(multi::iextensions<0>{}, elem) {}
 
+	template<class Pointer, class = decltype(typename Pointer::bla{})>  // , class = decltype(adl_copy_n(std::declval<Pointer>(), 1, typename static_array::element_ptr{}))>
+	explicit static_array(Pointer data)
+	: ref(data?static_array::allocate(1):nullptr, typename static_array::extensions_type{}) {
+	//  if(data) {
+			// if constexpr(std::is_trivial_v<T>) {
+									adl_copy_n(                       data, 1, this->data_elements());
+			// } else {
+			//  adl_alloc_uninitialized_copy_n(static_array::alloc(), data, 1, this->data_elements());
+			// }
+	//  }
+	}
+
+	template<class Singleton,
+		std::enable_if_t<not std::is_base_of_v<static_array, Singleton> and not std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
+		class = decltype(adl_copy_n(                       &std::declval<Singleton>(), 1, typename static_array::element_ptr{}))
+	>
+	// NOLINTNEXTLINE(runtime/explicit)
+	static_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: ref(static_array::allocate(1), typename static_array::extensions_type{})
+	{
+		if constexpr(std::is_trivial_v<T>) {
+			                    adl_copy_n(                       &single, 1, this->data_elements());
+		} else {
+			adl_alloc_uninitialized_copy_n(static_array::alloc(), &single, 1, this->data_elements());
+		}
+	}
+
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, value_type>{}>>
 	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)  // 3
 	: static_array(extension*extensions(value), alloc) {
@@ -623,13 +667,17 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	friend constexpr auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
 	friend constexpr auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
 
-	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const& {
+	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return *(this->base_);
 	}
-	constexpr explicit operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&& {
+	constexpr operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		return std::move(*(this->base_));
+	}
+	constexpr operator typename std::iterator_traits<typename static_array::element_ptr>::reference()& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return *(this->base_);
 	}
-	constexpr explicit operator typename std::iterator_traits<typename static_array::element_ptr>::reference()& {
+
+	constexpr explicit operator typename static_array::element_type() const {
 		return *(this->base_);
 	}
 
@@ -722,6 +770,9 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 		if(other.base()) {adl_copy_n(other.base(), other.num_elements(), this->base());}
 		return *this;
 	}
+
+	template<class Other, std::enable_if_t<not std::is_base_of<array, std::decay_t<Other>>{}, int> = 0>
+	auto operator=(Other const& other) -> array& {this->assign(&other); return *this;}
 
 	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array& {
 		return *this;

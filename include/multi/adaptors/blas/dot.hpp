@@ -74,6 +74,8 @@ class dot_ptr {
 	dot_ptr(ContextPtr ctxt, ItX x_first, Size count, ItY y_first) : ctxt_{ctxt}, x_first_{x_first}, count_{count}, y_first_{y_first} {}
 
  public:
+	constexpr explicit operator bool() const {return true;}
+
 //  dot_ptr(dot_ptr const&) = default;
 	template<class ItOut, class Size2>
 	friend constexpr auto copy_n(dot_ptr first, Size2 count, ItOut d_first)

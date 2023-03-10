@@ -19,8 +19,8 @@ using std::norm;  // nvcc11 needs using std::FUNCTION and the FUNCTION (and it w
 
 template<class It, class Size, class A0D>
 auto nrm2_n(It const& x, Size n, A0D res)  // NOLINT(readability-identifier-length) conventional BLAS naming
-->decltype(blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res)) {  // NOLINT(fuchsia-default-arguments-calls)
-	return blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res); }  // NOLINT(fuchsia-default-arguments-calls)
+//->decltype(blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res)) {  // NOLINT(fuchsia-default-arguments-calls)
+{   return blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res); }  // NOLINT(fuchsia-default-arguments-calls)
 
 template<class A1D, class A0D>
 auto nrm2(A1D const& x, A0D&& res)  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -36,6 +36,8 @@ class nrm2_ptr {
 	nrm2_ptr(ItX x_first, Size count) : x_first_{x_first}, count_{count} {}
 
  public:
+	explicit operator bool() const {return true;}
+
 	template<class ItOut, class Size2>
 	friend constexpr auto copy_n(nrm2_ptr first, Size2 count, ItOut d_first) {
 //  ->decltype(blas::nrm2_n(std::declval<ItX>(), Size2{}     , d_first), d_first + count) {
@@ -87,6 +89,18 @@ namespace operators {
 	[[nodiscard]] auto operator^(A1D const& array, int n)
 	->decltype(std::pow(Real{blas::nrm2(array)}, n)) {
 		return std::pow(Real{blas::nrm2(array)}, n); }
+
+	template<class A1D>
+	[[nodiscard]] auto abs(A1D const& array) {
+		return blas::nrm2(array);
+	}
+
+	template<class A1D>
+	[[nodiscard]] auto norm(A1D const& array) {
+		auto const sqrt = +blas::nrm2(array);
+		return sqrt*sqrt;
+	}
+
 } // end namespace operators
 
 } // end namespace boost::multi::blas

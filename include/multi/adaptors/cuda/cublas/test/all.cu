@@ -6,6 +6,7 @@
 
 #include <multi/adaptors/cuda/cublas.hpp>
 
+#include <multi/adaptors/blas/asum.hpp>
 #include <multi/adaptors/blas/axpy.hpp>
 #include <multi/adaptors/blas/gemm.hpp>
 #include <multi/adaptors/blas/nrm2.hpp>
@@ -17,6 +18,7 @@
 
 #include<numeric>
 #include <thrust/inner_product.h>
+#include <thrust/transform_reduce.h>
 
 namespace multi = boost::multi;
 
@@ -81,6 +83,61 @@ BOOST_AUTO_TEST_CASE(cublas_scal_complex_column) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(cublas_asum_complex_column) {
+	namespace blas = multi::blas;
+	complex const I{0.0, 1.0};
+
+	using T = complex;
+	using Alloc = thrust::cuda::allocator<complex>;
+
+	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+
+	double res;
+	blas::asum_n(x.begin(), x.size(), &res);
+	{
+		double res2;
+		res2 = blas::asum(x);
+		BOOST_REQUIRE( res == res2 );
+	}
+	{
+		double res2 = blas::asum(x);
+		BOOST_REQUIRE( res == res2 );
+	}
+	{
+		auto res2 = std::transform_reduce(
+			x.begin(), x.end(), double{}, std::plus<>{}, [](T const& e) {return std::abs(e.real()) + std::abs(e.imag());}
+		);
+		BOOST_REQUIRE( res == res2 );
+	}
+	{
+		auto res2 = thrust::transform_reduce(
+			x.begin(), x.end(), [] __device__ (T const& e) {return std::abs(e.real()) + std::abs(e.imag());},
+			double{}, thrust::plus<>{}
+		);
+		BOOST_REQUIRE( res == res2 );
+	}
+	{
+		multi::static_array<double, 0, thrust::cuda::allocator<double>> res2({}, 0.0);
+		res2.assign( &blas::asum(x) );
+		res2 = blas::asum(x);
+		BOOST_REQUIRE(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
+	//  BOOST_REQUIRE( res == res2 );
+	}
+	{
+		multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::asum(x);
+		BOOST_REQUIRE(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
+	//  BOOST_REQUIRE( res == res2 );
+	}
+	{
+		using blas::operators::operator==;
+		using blas::operators::operator!=;
+		BOOST_REQUIRE( x != 0 );
+		BOOST_REQUIRE( not (x == 0) );
+	}
+}
+
 BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
 	namespace blas = multi::blas;
 	complex const I{0.0, 1.0};
@@ -88,13 +145,29 @@ BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
 	using T = complex;
 	using Alloc =  thrust::cuda::allocator<complex>;
 
-	multi::array<T, 1> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
 
 	double res;
 	blas::nrm2(x, res);
 	{
-		auto res2 = std::sqrt(std::transform_reduce(x.begin(), x.end(), double{}, std::plus<>{}, [](T const& e) {return norm(e);}));
+		double res2;
+		res2 = blas::nrm2(x);
 		BOOST_REQUIRE( res == res2 );
+	}
+	{
+		auto res2 = +blas::nrm2(x);
+		BOOST_REQUIRE( res == res2 );
+	}
+	{
+		auto res2 = sqrt(thrust::transform_reduce(
+			x.begin(), x.end(), [] __device__ (T const& e) {return thrust::norm(e);},
+			double{}, thrust::plus<>{}
+		));
+		BOOST_REQUIRE( res == res2 );
+	}
+	{
+		multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::nrm2(x);
+		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
 	}
 }
 
@@ -111,6 +184,16 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 	{
 		T res;
 		blas::dot(x, y, res);
+		{
+			complex res2;
+			res2 = blas::dot(x, y);
+			BOOST_REQUIRE(res == res2);
+		}
+		{
+			multi::array<complex, 0> res2(complex{1.0, 0.0});
+			res2 = blas::dot(x, y);
+			BOOST_REQUIRE( static_cast<complex>(res2) == res );
+		}
 		{
 			using blas::operators::operator,;
 			auto res2 = +(x, y);
@@ -165,9 +248,25 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 			auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{}, thrust::plus<>{}, [] __device__ (T const& t1, T const& t2) {return t1*conj(t2);});
 			BOOST_REQUIRE(res == res2);
 		}
+		{
+			BOOST_REQUIRE( blas::dot(blas::C(x), x) == pow(blas::nrm2(x), 2.0) );
+			BOOST_REQUIRE( blas::dot(x, blas::C(x)) == pow(blas::nrm2(x), 2.0) );
+
+			using blas::operators::operator,;
+			using blas::operators::operator*;
+			using blas::operators::abs;
+			using blas::operators::norm;
+			using blas::operators::operator^;
+
+			BOOST_REQUIRE( (*x, x) == pow(abs(x), 2.0) );
+			BOOST_REQUIRE( (*x, x) == pow(abs(x), 2)   );
+			BOOST_REQUIRE( (*x, x) == norm(x)          );
+
+			BOOST_REQUIRE( (x, *x) == pow(abs(x), 2.0) );
+			BOOST_REQUIRE( (x, *x) == pow(abs(x), 2)   );
+			BOOST_REQUIRE( (x, *x) == norm(x)          );
+
+//          BOOST_REQUIRE( (*x, x) == +(x)^2            );
+		}
 	}
-	// {
-	//  T res;
-	//  blas::dot(blas::C(x), blas::C(y), res);
-	// }
 }
