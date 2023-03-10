@@ -152,12 +152,40 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		if(e != cudaSuccess) {throw std::runtime_error{"cannot synchronize stream in cublas context"};}
 	}
 
+	template<
+		class XP, class X = typename std::pointer_traits<XP>::element_type,
+		class YP, class Y = typename std::pointer_traits<YP>::element_type,
+		class = decltype(std::swap(std::declval<X&>(), std::declval<Y&>())),
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust::cuda::pointer<X>>, int> = 0
+	>
+	void swap(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
+		if(is_s<X>{}) {sync_call<cublasSswap>(n, (float          *)raw_pointer_cast(x), incx, (float          *)raw_pointer_cast(y), incy);}
+		if(is_d<X>{}) {sync_call<cublasDswap>(n, (double         *)raw_pointer_cast(x), incx, (double         *)raw_pointer_cast(y), incy);}
+		if(is_c<X>{}) {sync_call<cublasCswap>(n, (cuComplex      *)raw_pointer_cast(x), incx, (cuComplex      *)raw_pointer_cast(y), incy);}
+		if(is_z<X>{}) {sync_call<cublasZswap>(n, (cuDoubleComplex*)raw_pointer_cast(x), incx, (cuDoubleComplex*)raw_pointer_cast(y), incy);}
+	}
+
+	template<
+		class XP, class X = typename std::pointer_traits<XP>::element_type,
+		class YP, class Y = typename std::pointer_traits<YP>::element_type,
+		class = decltype(std::declval<Y&>() = std::declval<X&>()),
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust::cuda::pointer<X>>, int> = 0
+	>
+	void copy(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
+		if(is_s<X>{}) {sync_call<cublasScopy>(n, (float           const*)raw_pointer_cast(x), incx, (float          *)raw_pointer_cast(y), incy);}
+		if(is_d<X>{}) {sync_call<cublasDcopy>(n, (double          const*)raw_pointer_cast(x), incx, (double         *)raw_pointer_cast(y), incy);}
+		if(is_c<X>{}) {sync_call<cublasCcopy>(n, (cuComplex       const*)raw_pointer_cast(x), incx, (cuComplex      *)raw_pointer_cast(y), incy);}
+		if(is_z<X>{}) {sync_call<cublasZcopy>(n, (cuDoubleComplex const*)raw_pointer_cast(x), incx, (cuDoubleComplex*)raw_pointer_cast(y), incy);}
+	}
+
 	template<class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class = decltype(std::declval<X&>() *= ALPHA{}),
 		std::enable_if_t<std::is_convertible_v<XP, ::thrust::cuda::pointer<X>>, int> = 0
 	>
 	void scal(ssize_t n, ALPHA const& alpha, XP x, ssize_t incx) const {
+		if(is_s<X>{}) {sync_call<cublasSscal>(n, (float           const*)alpha, (float          *)raw_pointer_cast(x), incx);}
 		if(is_d<X>{}) {sync_call<cublasDscal>(n, (double          const*)alpha, (double         *)raw_pointer_cast(x), incx);}
+		if(is_c<X>{}) {sync_call<cublasCscal>(n, (cuComplex       const*)alpha, (cuComplex      *)raw_pointer_cast(x), incx);}
 		if(is_z<X>{}) {sync_call<cublasZscal>(n, (cuDoubleComplex const*)alpha, (cuDoubleComplex*)raw_pointer_cast(x), incx);}
 	}
 
