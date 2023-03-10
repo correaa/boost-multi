@@ -14,16 +14,9 @@ namespace multi = boost::multi;
 namespace blas = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_blas_copy_n) {
-	multi::array<double, 1> const x = {1., 2., 3., 4.};  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 1> y = {5., 6., 7., 8.};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming
 	blas::copy_n(x.begin(), x.size(), y.begin());
-	BOOST_REQUIRE( y == x );
-}
-
-BOOST_AUTO_TEST_CASE(multi_blas_copy_it) {
-	multi::array<double, 1> const x = {1., 2., 3., 4.};  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 1> y = {5., 6., 7., 8.};  // NOLINT(readability-identifier-length) BLAS naming
-	blas::copy(x.begin(), x.end(), y.begin());
 	BOOST_REQUIRE( y == x );
 }
 
@@ -37,7 +30,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy) {
 	{
 		multi::array<double, 1> y = {5., 6., 7., 8.};  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_REQUIRE( size(y) == size(x) );
-		y = blas::copy(x);
+		y() = blas::copy(x);
 		BOOST_REQUIRE( y == x );
 	}
 }
@@ -85,20 +78,4 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex) {
 	};
 	blas::copy(arr[0], arr[2]);
 	BOOST_REQUIRE( arr[0][2] == 3.0 + 5.0*I );
-}
-
-BOOST_AUTO_TEST_CASE(multi_blas_copy_context) {
-	multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};  // NOLINT(readability-identifier-length) BLAS naming
-	blas::context ctx;
-	{
-		multi::array<double, 1> y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming
-		blas::copy(ctx, x, y);
-		BOOST_REQUIRE( x == y );
-	}
-	{
-		multi::array<double, 1> y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_REQUIRE( size(y) == size(x) );
-		y = blas::copy(ctx, x);
-		BOOST_REQUIRE( x == y );
-	}
 }

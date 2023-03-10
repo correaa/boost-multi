@@ -8,9 +8,11 @@
 
 #include <multi/adaptors/blas/asum.hpp>
 #include <multi/adaptors/blas/axpy.hpp>
+#include <multi/adaptors/blas/copy.hpp>
 #include <multi/adaptors/blas/gemm.hpp>
 #include <multi/adaptors/blas/nrm2.hpp>
 #include <multi/adaptors/blas/scal.hpp>
+#include <multi/adaptors/blas/swap.hpp>
 
 #include <multi/adaptors/thrust.hpp>
 
@@ -80,6 +82,77 @@ BOOST_AUTO_TEST_CASE(cublas_scal_complex_column) {
 
 			BOOST_REQUIRE(x == x2);
 		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cublas_copy_complex) {
+	namespace blas = multi::blas;
+	complex const I{0.0, 1.0};
+
+	using T = complex;
+	using Alloc = thrust::cuda::allocator<complex>;
+
+	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+	multi::array<T, 1, Alloc> y = { 1.0 + I*9.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+
+	blas::copy(x, y);
+	BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	{
+		thrust::copy(begin(x), end(x), begin(y));
+		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	}
+	{
+		blas::copy_n(x.begin(), x.size(), y.begin());
+		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	}
+	{
+		y() = blas::copy(x);
+		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	}
+	{
+		multi::array<T, 1, Alloc> yy = blas::copy(x);
+		BOOST_REQUIRE( static_cast<complex>(yy[0]) == 1.0 + I*8.0 );
+	}
+	// {
+	//  y = blas::copy(x);
+	// }
+	// {
+	//  y = blas::copy(x);
+	//  BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	// }
+	// {
+	//  {
+	//      using blas::operators::operator<<;
+	//      y << x;
+	//  //  BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
+	//  }
+	//  BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
+	// }
+}
+
+#if 0
+BOOST_AUTO_TEST_CASE(cublas_swap_complex) {
+	namespace blas = multi::blas;
+	complex const I{0.0, 1.0};
+
+	using T = complex;
+	using Alloc = thrust::cuda::allocator<complex>;
+
+	multi::array<T, 1, Alloc> x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+	multi::array<T, 1, Alloc> y = { 1.0 + I*9.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+
+	blas::swap(x, y);
+	BOOST_REQUIRE( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
+	{
+		thrust::swap_ranges(begin(x), end(x), begin(y));
+		thrust::swap_ranges(begin(x), end(x), begin(y));
+		BOOST_REQUIRE( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
+	}
+	{
+		using blas::operator^;
+		(x^y);
+		(x^y);
+		BOOST_REQUIRE( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
 	}
 }
 
@@ -266,7 +339,8 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 			BOOST_REQUIRE( (x, *x) == pow(abs(x), 2)   );
 			BOOST_REQUIRE( (x, *x) == norm(x)          );
 
-//          BOOST_REQUIRE( (*x, x) == +(x)^2            );
+			BOOST_REQUIRE( (*x, x) == (x^2)            );
 		}
 	}
 }
+#endif

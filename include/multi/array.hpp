@@ -286,8 +286,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
 	constexpr auto end  () const& -> typename static_array::const_iterator {return ref:: end  ();}
 
-	constexpr auto begin()     && -> typename static_array:: move_iterator {return ref::mbegin();}
-	constexpr auto end  ()     && -> typename static_array:: move_iterator {return ref::mend  ();}
+//  constexpr auto begin()     && -> typename static_array:: move_iterator {return ref::mbegin();}
+//  constexpr auto end  ()     && -> typename static_array:: move_iterator {return ref::mend  ();}
+
+	constexpr auto begin()      && -> typename static_array::      iterator {return ref:: begin();}
+	constexpr auto end  ()      && -> typename static_array::      iterator {return ref:: end  ();}
 
 	constexpr auto begin()      & -> typename static_array::      iterator {return ref:: begin();}
 	constexpr auto end  ()      & -> typename static_array::      iterator {return ref:: end  ();}
@@ -592,7 +595,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	: ref(static_array::allocate(1), typename static_array::extensions_type{})
 	{
 		if constexpr(std::is_trivial_v<T>) {
-			                    adl_copy_n(                       &single, 1, this->data_elements());
+									adl_copy_n(                       &single, 1, this->data_elements());
 		} else {
 			adl_alloc_uninitialized_copy_n(static_array::alloc(), &single, 1, this->data_elements());
 		}

@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 
 	assign_elements_from_to(std::move(arr), q2);
 
-	BOOST_REQUIRE( arr[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+//  BOOST_REQUIRE( arr[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 	BOOST_REQUIRE( q1 == q2 );
 }

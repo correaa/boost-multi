@@ -2183,10 +2183,24 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>  // ,
 	//  class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
 	>
+	constexpr auto momo(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
+	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		assert(this->size() == adl_size(rng));
+		adl_copy_n(adl_begin(rng), adl_size(rng), begin());
+	//  adl_copy(adl_begin(rng), adl_end(rng), begin());
+		return *this;
+	}
+
+	template<
+		class Range,
+		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>  // ,
+	//  class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
+	>
 	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == rng.size());
-		adl_copy(adl_begin(rng), adl_end(rng), begin());
+		assert(this->size() == adl_size(rng));
+		adl_copy_n(adl_begin(rng), adl_size(rng), begin());
+	//  adl_copy(adl_begin(rng), adl_end(rng), begin());
 		return *this;
 	}
 	template<class Range, class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>>

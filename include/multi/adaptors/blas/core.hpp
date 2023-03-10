@@ -239,10 +239,10 @@ namespace core {
 using std::enable_if_t;
 using std::is_assignable;
 
-template<class SXP, class SYP, class SX = typename std::pointer_traits<SXP>::element_type, class SY = typename std::pointer_traits<SYP>::element_type, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void swap(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) {BLAS(sswap)(n, (             float  *)(x), incx, (             float  *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class DXP, class DYP, class DX = typename std::pointer_traits<DXP>::element_type, class DY = typename std::pointer_traits<DYP>::element_type, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void swap(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) {BLAS(dswap)(n, (             double *)(x), incx, (             double *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class CXP, class CYP, class CX = typename std::pointer_traits<CXP>::element_type, class CY = typename std::pointer_traits<CYP>::element_type, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void swap(ssize_t n, CX* x, ptrdiff_t incx, CY* y, ptrdiff_t incy) {BLAS(cswap)(n, (std::complex<float >*)(x), incx, (std::complex<float >*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class ZXP, class ZYP, class ZX = typename std::pointer_traits<ZXP>::element_type, class ZY = typename std::pointer_traits<ZYP>::element_type, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void swap(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) {BLAS(zswap)(n, (std::complex<double>*)(x), incx, (std::complex<double>*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
+template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void swap(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) {BLAS(sswap)(n, (             float  *)(x), incx, (             float  *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
+template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void swap(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) {BLAS(dswap)(n, (             double *)(x), incx, (             double *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
+template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void swap(ssize_t n, CX* x, ptrdiff_t incx, CY* y, ptrdiff_t incy) {BLAS(cswap)(n, (std::complex<float >*)(x), incx, (std::complex<float >*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
+template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void swap(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) {BLAS(zswap)(n, (std::complex<double>*)(x), incx, (std::complex<double>*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 
 template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void copy(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) {BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void copy(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) {BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
@@ -534,14 +534,24 @@ struct context { // stateless (and thread safe)
 		return core::scal(args...); }
 
 	template<class... As>
+	static auto copy(As... args)
+	->decltype(core::copy(args...)) {
+		return core::copy(args...); }
+
+	template<class... As>
+	static auto swap(As... args)
+	->decltype(core::swap(args...)) {
+		return core::swap(args...); }
+
+	template<class... As>
 	static auto axpy(As... args)
 	->decltype(core::axpy(args...)) {
 		return core::axpy(args...); }
 
 	template<class... As>
 	static auto dot(As... args)
-//  ->decltype(core::dot(args...)) {
-	{   return core::dot(args...); }
+	->decltype(core::dot(args...)) {
+		return core::dot(args...); }
 
 	template<class... As>
 	static auto dotc(As... args)
@@ -594,10 +604,12 @@ template<> struct is_context<context const&> : std::true_type  {};
 template<> struct is_context<void*&> : std::true_type {};
 
 namespace core {
-template<class Context, class... As>
-auto copy(Context&& /*unused*/, As... args)
-->decltype(core::copy(args...)) {
-	return core::copy(args...); }
+
+// template<class Context, class... As>
+// auto copy(Context&& /*unused*/, As... args)
+// ->decltype(core::copy(args...)) {
+//  return core::copy(args...); }
+
 }  // end namespace core
 
 template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0>
