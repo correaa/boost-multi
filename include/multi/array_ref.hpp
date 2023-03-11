@@ -2452,8 +2452,16 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  public:
 	HD constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
 
+	template<class TT, class... As, std::enable_if_t<not std::is_base_of_v<array_ref, array_ref<TT, D, As...>> ,int> =0>
+	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
+		assert(this->extensions() == other.extensions());
+		array_ref::copy_elements(other.data_elements());
+		return *this;
+	}
+
 	constexpr auto operator=(array_ref const& other) & -> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		// TODO(correaa) assert on extensions, not on num elements
 		assert(this->num_elements() == other.num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		array_ref::copy_elements(other.data_elements());
 		return *this;
