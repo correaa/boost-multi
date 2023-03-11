@@ -907,29 +907,66 @@ struct array : static_array<T, D, Alloc> {
 	auto operator=(array o) noexcept -> array& {return swap(o), *this;}
 #endif
 
-	template<
-		class Range,
-		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
-		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> = 0
-	>
-	auto operator=(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
-		if(array::extensions() == other.extensions()) {
-			static_::operator=(other);
-		} else if(this->num_elements() == other.extensions().num_elements()) {
-			reshape(other.extensions());
-			static_::operator=(other);
-		} else {
-			operator=(static_cast<array>(std::forward<Range>(other)));
-		}
-		return *this;
-	}
-
 	template<class TT, class... Args>
 	auto operator=(multi::basic_array<TT, D, Args...> const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
 			static_::operator=(other);  // TODO(correaa) : protect for self assigment
 		} else {
 			operator=(array{other});
+		}
+		return *this;
+	}
+
+	template<class TT, class AAlloc>//, std::enable_if_t<not std::is_base_of_v<array, multi::array<TT, D, AAlloc>> , int> =0>
+	auto operator=(multi::array<TT, D, AAlloc> const& other) -> array& {  // TODO(correaa) : check that LHS is not read-only?
+		if(array::extensions() == other.extensions()) {
+		//  this->operator()() = other;
+			static_::operator=(other);
+		} else if(this->num_elements() == other.extensions().num_elements()) {
+			reshape(other.extensions());
+			static_::operator=(other);
+		//  this->operator()() = other;
+		} else {
+			operator=(static_cast<array>(other));
+		}
+		return *this;
+	}
+
+	template<
+		class Range,
+		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
+		std::enable_if_t<not has_data_elements<std::decay_t<Range>>::value, int> =0,
+		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> =0
+	>
+	auto operator=(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
+		if(array::extensions() == other.extensions()) {
+			this->operator()() = other;
+		//  static_::operator=(other);
+		} else if(this->num_elements() == other.extensions().num_elements()) {
+			reshape(other.extensions());
+		//  static_::operator=(other);
+			this->operator()() = other;
+		} else {
+			operator=(static_cast<array>(std::forward<Range>(other)));
+		}
+		return *this;
+	}
+
+	template<
+		class Range,
+		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
+		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> = 0
+	>
+	auto from(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
+		if(array::extensions() == other.extensions()) {
+			this->operator()() = other;
+		//  static_::operator=(other);
+		} else if(this->num_elements() == other.extensions().num_elements()) {
+			reshape(other.extensions());
+			this->operator()() = other;
+		//  static_::operator=(other);
+		} else {
+			operator=(static_cast<array>(std::forward<Range>(other)));
 		}
 		return *this;
 	}

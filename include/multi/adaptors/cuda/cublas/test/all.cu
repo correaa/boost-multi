@@ -113,24 +113,21 @@ BOOST_AUTO_TEST_CASE(cublas_copy_complex) {
 		multi::array<T, 1, Alloc> yy = blas::copy(x);
 		BOOST_REQUIRE( static_cast<complex>(yy[0]) == 1.0 + I*8.0 );
 	}
-	// {
-	//  y = blas::copy(x);
-	// }
-	// {
-	//  y = blas::copy(x);
-	//  BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
-	// }
-	// {
-	//  {
-	//      using blas::operators::operator<<;
-	//      y << x;
-	//  //  BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
-	//  }
-	//  BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
-	// }
+	{
+		y = blas::copy(x);
+		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	}
+	{
+		{
+			using blas::operators::operator<<;
+			y << x;
+		//  BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
+		}
+		BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
+	}
 }
 
-#if 0
+#if 1
 BOOST_AUTO_TEST_CASE(cublas_swap_complex) {
 	namespace blas = multi::blas;
 	complex const I{0.0, 1.0};
