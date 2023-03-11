@@ -917,7 +917,7 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	template<class TT, class AAlloc>//, std::enable_if_t<not std::is_base_of_v<array, multi::array<TT, D, AAlloc>> , int> =0>
+	template<class TT, class AAlloc>  // , std::enable_if_t<not std::is_base_of_v<array, multi::array<TT, D, AAlloc>> , int> =0>
 	auto operator=(multi::array<TT, D, AAlloc> const& other) -> array& {  // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
 		//  this->operator()() = other;
