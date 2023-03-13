@@ -31,7 +31,8 @@ struct asum_ptr {
 	->decltype(blas::asum_n(typename A1D::iterator{}, typename A1D::size_type{}, d_first)) {assert(count == 1);
 		return blas::asum_n(first.xp_->begin()      , first.xp_->size()        , d_first); }
 
-	template<class... As> friend auto uninitialized_copy_n(As... as) {return copy_n(as...);}
+	template<class... As>
+	friend auto uninitialized_copy_n(asum_ptr first, As... as) {return copy_n(first, as...);}
 };
 
 template<class A1D>
