@@ -372,17 +372,17 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_mone) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc =  std::allocator<T>;// thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::cuda::allocator<complex>;
 
 	multi::array<complex, 1, Alloc> const x = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0}, {4.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<complex, 1, Alloc> y = { {2.1, 0.0}, {4.1, 0.0}, {6.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 
 	blas::axpy(-1.0, x, y);
 	std::cout << y[0] << std::endl;
-	BOOST_REQUIRE( y[0] == 1.0 + I*0.0 );
+	BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*0.0 );
 	{
 		multi::array<complex, 1, Alloc> yy = { {2.1, 0.0}, {4.1, 0.0}, {6.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
-		thrust::transform(x.begin(), x.end(), yy.begin(), yy.begin(), [](auto const& ex, auto const& ey) {return -ex + ey;});
+		thrust::transform(x.begin(), x.end(), yy.begin(), yy.begin(), [] __host__ __device__ (T ex, T ey) {return -1.0*ex + ey;});
 		BOOST_TEST( yy == y , boost::test_tools::per_element() );
 	}
 	{
@@ -404,6 +404,32 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_mone) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(cublas_axpy_complex_alpha) {
+	namespace blas = multi::blas;
+	complex const I{0.0, 1.0};
+
+	using T = complex;
+	using Alloc =  thrust::cuda::allocator<complex>;
+
+	multi::array<complex, 1, Alloc> const x = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0}, {4.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 1, Alloc> y = { {2.1, 0.0}, {4.1, 0.0}, {6.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
+
+	blas::axpy(3.0, x, y);
+	std::cout << y[0] << std::endl;
+	BOOST_REQUIRE( static_cast<complex>(y[0]) == 5.4 + I*0.0 );
+	{
+		multi::array<complex, 1, Alloc> yy = { {2.1, 0.0}, {4.1, 0.0}, {6.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
+		thrust::transform(x.begin(), x.end(), yy.begin(), yy.begin(), [aa=3.0] __device__ (T ex, T ey) {return aa*ex + ey;});
+		BOOST_TEST( yy == y , boost::test_tools::per_element() );
+	}
+	{
+		multi::array<complex, 1, Alloc> yy = { {2.1, 0.0}, {4.1, 0.0}, {6.1, 0.0} };
+		using blas::operators::operator+=;
+		using blas::operators::operator*;
+		yy += 3.0*x;
+		BOOST_REQUIRE( yy == y );
+	}
+}
 
 BOOST_AUTO_TEST_CASE(cublas_gemv_complex_column) {
 	namespace blas = multi::blas;
