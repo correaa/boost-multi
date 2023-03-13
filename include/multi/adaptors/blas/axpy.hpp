@@ -133,6 +133,19 @@ auto axpy(Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conv
 	return axpy_range<decltype(ctxtp), Scalar, typename X1D::const_iterator>{ctxtp, a, begin(x), end(x)};  // TODO(correaa) fix temporary
 }
 
+template<class AA, class X>
+class scaled {
+	AA a_;
+	X const& x_;
+
+ public:
+	scaled(AA a, X const& x) : a_{a}, x_{x} {}  // NOLINT(readability-identifier-length) conventional BLAS naming
+	template<class Y1D>
+	friend auto operator+=(Y1D&& y, scaled const& ax) {return axpy(+ax.a_, ax.x_, std::forward<Y1D>(y));}  // NOLINT(readability-identifier-length) conventional BLAS naming
+	template<class Y1D>
+	friend auto operator-=(Y1D&& y, scaled const& ax) {return axpy(-ax.a_, ax.x_, std::forward<Y1D>(y));}  // NOLINT(readability-identifier-length) conventional BLAS naming
+};
+
 namespace operators {
 
 template<class T> struct algebraic_traits {static auto one() {return T{1.0};}};
@@ -142,6 +155,8 @@ template<class T> struct algebraic_traits<multi::complex<T>> {static auto one() 
 
 template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
+
+template<class X> auto operator*(typename X::element_type a, X const& x) {return scaled{a, x};}  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X += y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
 template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X -= y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS

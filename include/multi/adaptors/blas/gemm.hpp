@@ -302,7 +302,7 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 #endif
 
 namespace operators {
-	template<class A2D, class B2D>
+	template<class A2D, class B2D, std::enable_if_t<(A2D::dimensionality == 2) and (B2D::dimensionality == 2),int> =0>
 	auto operator*(A2D const& A, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
 	->decltype(+blas::gemm(1.0, A, B)) {
 		return +blas::gemm(1.0, A, B); }
