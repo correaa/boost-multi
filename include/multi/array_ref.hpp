@@ -760,6 +760,12 @@ struct basic_array
 	template<class, class> friend struct basic_array_ptr;
 
  public:
+	// template<class PPP, std::enable_if_t<not std::is_same_v<PPP, ElementPtr> , int> =0>
+	// HD constexpr basic_array(basic_array<T, D, PPP, Layout> const& other) : basic_array(other.layout(), other.base()) {}
+
+	// template<class Other>
+	// operator Other() const {return Other{this->layout(), this->base()};}
+
 	using element           = typename types::element;
 	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;

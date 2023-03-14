@@ -182,11 +182,28 @@ auto gemv(Scalar s, M const& m, V const& v)  // NOLINT(readability-identifier-le
 	}
 }
 
-namespace operators{
+template<class T, class Matrix>
+struct scaled_matrix {
+	T aa_;
+	Matrix const& A_;  // NOLINT(readability-identifier-length) BLAS naming
+	
+	template<class Vector>
+	friend auto operator%(scaled_matrix const& aaA, Vector const& x) {
+		return blas::gemv(aaA.aa_, aaA.A_, x);
+	}
+};
+
+namespace operators {
 	template<class M, class V>
 	auto operator%(M const& m, V const& v)  // NOLINT(readability-identifier-length) BLAS naming
 	->decltype(+blas::gemv(1.0, m, v)) {
 		return +blas::gemv(1.0, m, v); }
+
+	template<class Matrix, std::enable_if_t<Matrix::dimensionality == 2, int> =0>
+	auto operator*(typename Matrix::element_type aa, Matrix const& A) {
+		return scaled_matrix<typename Matrix::element_type, Matrix const&>{aa, A};
+	}
+
 } // end namespace operators
 
 } // end namespace boost::multi::blas
