@@ -12,7 +12,7 @@
 template<class T>
 class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	std::size_t n_ = 0;
-    mutable std::mt19937 gen_{std::random_device{}()};  // NOLINT(whitespace/braces) cpplint 1.6 bug
+	mutable std::mt19937 gen_{std::random_device{}()};  // NOLINT(whitespace/braces) cpplint 1.6 bug
 	mutable std::uniform_real_distribution<> dist_{-1., 1.};
 
  public:

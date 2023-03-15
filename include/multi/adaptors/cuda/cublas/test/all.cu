@@ -528,6 +528,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_conj_zero) {
 	}
 }
 
+template<class T> void what(T&&) = delete;
+
 BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 	namespace blas = multi::blas;
 	using T = complex;
@@ -609,7 +611,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_conjtrans_zero) {
 		BOOST_REQUIRE_CLOSE( static_cast<complex>(yy[1]).real() ,  97.0, 1.e-7  );
 		BOOST_REQUIRE_CLOSE( static_cast<complex>(yy[2]).real() , 169.8, 1.e-7  );
 		BOOST_REQUIRE_CLOSE( static_cast<complex>(yy[3]).real() ,  27.7, 1.e-7  );
-	}   
+
+		using blas::operators::operator*;
+		BOOST_REQUIRE_CLOSE( static_cast<complex>(yy[0]).real() , (+blas::dot(*(~A)[0], x)).real() , 1.e-7  );
+		BOOST_REQUIRE_CLOSE( static_cast<complex>(yy[1]).real() , (+blas::dot(*(~A)[1], x)).real() , 1.e-7  );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_trans_one) {

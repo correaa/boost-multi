@@ -14,9 +14,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 #project(
-#	boost-multi-adaptors-fftw-test
-#	VERSION 0.1
-#	LANGUAGES CXX
+#   boost-multi-adaptors-fftw-test
+#   VERSION 0.1
+#   LANGUAGES CXX
 #)
 
 if((NOT
@@ -30,17 +30,17 @@ if((NOT
 		"nvcc"
 	   )
 )
-#	find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
+#   find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 else()
 	link_libraries("-lboost_unit_test_framework") # -lboost_timer")
 endif()
 
 # find_package(PkgConfig REQUIRED)
 # pkg_search_module(
-# 	FFTW
-# 	REQUIRED
-# 	fftw3
-# 	IMPORTED_TARGET
+#   FFTW
+#   REQUIRED
+#   fftw3
+#   IMPORTED_TARGET
 # )
 
 # include_directories(PkgConfig::FFTW)
@@ -56,32 +56,32 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 
-#	include(FindCUDA/select_compute_arch)
-#	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
-#	string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-#	string(
-#		REPLACE " "
-#				";"
-#				INSTALLED_GPU_CCS_3
-#				"${INSTALLED_GPU_CCS_2}"
-#	)
-#	string(
-#		REPLACE "."
-#				""
-#				CUDA_ARCH_LIST
-#				"${INSTALLED_GPU_CCS_3}"
-#	)
-#	set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+#   include(FindCUDA/select_compute_arch)
+#   cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
+#   string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+#   string(
+#       REPLACE " "
+#               ";"
+#               INSTALLED_GPU_CCS_3
+#               "${INSTALLED_GPU_CCS_2}"
+#   )
+#   string(
+#       REPLACE "."
+#               ""
+#               CUDA_ARCH_LIST
+#               "${INSTALLED_GPU_CCS_3}"
+#   )
+#   set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
 
 endif()
 
 #find_package(CUDA QUIET)
 
 #if(CUDA_FOUND)
-#	message("CUDA found")
-#	include_directories(${CUDA_INCLUDE_DIRS})
+#   message("CUDA found")
+#   include_directories(${CUDA_INCLUDE_DIRS})
 #else()
-#	message("CUDA not found")
+#   message("CUDA not found")
 #endif()
 
 enable_testing()
@@ -99,6 +99,7 @@ set(TEST_SRCS
   core.cpp
   moved.cpp
   shift.cpp
+  so_shift.cpp
 # thrust.cpp
   transpose.cpp
   transpose_square.cpp
@@ -109,7 +110,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	add_executable(${TEST_EXE} ${TEST_FILE})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-	#	set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
+	#   set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
 	endif()
 	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
@@ -128,7 +129,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 			"nvcc"
 		   )
 	)
-    	if(NOT DEFINED ENABLE_CIRCLE)
+        if(NOT DEFINED ENABLE_CIRCLE)
 		  target_compile_options(
 			  ${TEST_EXE}
 			  PRIVATE -Werror
