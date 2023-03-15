@@ -4,7 +4,7 @@
 #ifndef MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
 #define MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
 
-#include "../blas/numeric.hpp"
+#include <multi/adaptors/blas/numeric.hpp>
 
 namespace boost::multi::blas {
 
@@ -16,6 +16,11 @@ auto conjugated_transposed(A&& array) -> decltype(auto) {
 }
 
 template<class A> auto identity(A&& array) -> decltype(auto) {return std::forward<A>(array);}
+
+// template<class A, typename D=std::decay_t<A>, typename E=typename D::element_type>
+// auto conjugated(A&& array) -> decltype(auto) {
+//  return blas::conj(std::forward<A>(array));
+// }
 
 template<class A>
 auto hermitized(A&& array, std::true_type /*true */) -> decltype(auto) {
@@ -59,7 +64,11 @@ template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 1, int> =0>
 auto C(A&& array) -> decltype(auto) {return blas::conj(std::forward<A>(array));}  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
 
 template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0>
+[[deprecated("use blas::H instead of blas::C for conjugated transposed matrices to avoid confusions")]]
 auto C(A&& array) -> decltype(auto) {return hermitized(std::forward<A>(array));}  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
+
+template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0>
+auto J(A&& array) -> decltype(auto) {return blas::conj(std::forward<A>(array));}  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
 
 namespace operators{
 
