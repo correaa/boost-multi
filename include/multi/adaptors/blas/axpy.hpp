@@ -65,7 +65,7 @@ struct axpy_iterator {
 	using iterator_category = std::random_access_iterator_tag;
 
 	friend auto operator-(axpy_iterator const& self, axpy_iterator const& other) -> difference_type {
-		assert(self.v_first_ == other.v_first_);
+		assert(self.alpha_ == other.alpha_);
 		return self.x_begin_ - other.x_begin_;
 	}
 

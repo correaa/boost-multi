@@ -16,9 +16,9 @@ using core::gemv;
 template<class Context, class MIt, class Size, class XIt, class YIt>
 auto gemv_n(Context ctxt, typename MIt::element a, MIt m_first, Size count, XIt x_first, typename MIt::element b, YIt y_first) {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(m_first->stride()==1 or m_first.stride()==1); // blas doesn't implement this case
-	assert( x_first.base() != y_first.base() ); 
+	assert( x_first.base() != y_first.base() );
 
-	if constexpr(not is_conjugated<MIt>{}) {
+	if constexpr(not is_conjugated<MIt>::value) {
 		if     (m_first .stride()==1) {ctxt->gemv('N', count, m_first->size(), &a, m_first.base()            , m_first->stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
 		else if(m_first->stride()==1) {ctxt->gemv('T', m_first->size(), count, &a, m_first.base()            , m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
 		else                          {assert(0);}
@@ -68,7 +68,7 @@ auto gemv(Ctxt ctxt, A const& a, M const& m, V const& v, B const& b, W&& w) -> W
 
 template<class A, class M, class V, class B, class W>
 auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
-	// assert(size( m) == size(w) );
+	assert(size( m) == size(w) );
 	// assert(size(~m) == size(v) );
 	// gemv_n(a, begin(m), size(m), begin(v), b, begin(w));
 	// return std::forward<W>(w);
@@ -188,7 +188,7 @@ struct scaled_matrix {
 	Matrix const& A_;  // NOLINT(readability-identifier-length) BLAS naming
 	
 	template<class Vector>
-	friend auto operator%(scaled_matrix const& aaA, Vector const& x) {
+	friend auto operator%(scaled_matrix const& aaA, Vector const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 		return blas::gemv(aaA.aa_, aaA.A_, x);
 	}
 };
@@ -200,7 +200,7 @@ namespace operators {
 		return +blas::gemv(1.0, m, v); }
 
 	template<class Matrix, std::enable_if_t<Matrix::dimensionality == 2, int> =0>
-	auto operator*(typename Matrix::element_type aa, Matrix const& A) {
+	auto operator*(typename Matrix::element_type aa, Matrix const& A) {  // NOLINT(readability-identifier-length) BLAS naming
 		return scaled_matrix<typename Matrix::element_type, Matrix const&>{aa, A};
 	}
 

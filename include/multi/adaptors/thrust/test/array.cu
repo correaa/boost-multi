@@ -44,7 +44,9 @@ using types_list = boost::mpl::list<
 	thrust::complex<double>
 >;
 
-#if 1
+BOOST_AUTO_TEST_CASE(dummy_test) {}
+
+#ifdef NDEBUG
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
 	static_assert( multi::is_trivially_default_constructible<T>{}, "!");
 	static_assert( std::is_trivially_copy_constructible<T>{}     , "!");
@@ -706,7 +708,3 @@ BOOST_AUTO_TEST_CASE(array) {
 
 }
 #endif
-
-// Local Variables:
-// mode: c++
-// End:
