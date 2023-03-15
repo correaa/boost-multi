@@ -544,10 +544,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 	multi::array<complex, 1, Alloc> y = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 	blas::gemv(1.0, blas::J(A), x, 0.0, y);
 	{
-		using blas::operators::operator*;
-
 		multi::array<complex, 1, Alloc> yy = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
-		std::transform(begin(A), end(A), begin(yy), [&x] (auto const& Ac) {return blas::dot(*Ac, x);});
+		std::transform(begin(A), end(A), begin(yy), [&x] (auto const& Ac) {
+			using blas::operators::operator*;
+			return blas::dot(*Ac, x);}
+		);
 
 		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
 		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
