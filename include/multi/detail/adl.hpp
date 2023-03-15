@@ -196,7 +196,8 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 		try {
 		//  return std::for_each_n(first, count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
 		//  workadoung for gcc 8.3.1 in Lass
-			return std::for_each(first, first + count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
+			std::for_each(first, first + count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
+			return first + count;
 		//  std::any_of(first, first + count, [](auto& element) {
 		//      _::construct(alloc, 
 		//  });
