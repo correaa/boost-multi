@@ -645,7 +645,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_trans_one) {
 	{
 		multi::array<complex, 1, Alloc> yy = { 1.1 + I* 0.0, 2.1 +I* 0.0, 3.1 + I* 0.0, 6.7 + I*0.0 };  // NOLINT(readability-identifier-length) BLAS naming
 		using blas::operators::operator*;
-		yy += (3.0 + I*4.0)*(~A) % x;
+		yy += (3.0 + I*4.0)* ~A % x;
 
 		BOOST_REQUIRE_CLOSE( static_cast<complex>(y[0]).real(), static_cast<complex>(yy[0]).real(), 1e-7 );
 		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
