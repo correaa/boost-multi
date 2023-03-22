@@ -50,16 +50,38 @@ auto asum(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 }
 
 namespace operators {
+	static constexpr double threshold = 1.0e-12;
+
 	template<class A1D>
 	auto operator==(A1D const& self, [[maybe_unused]] void***** zero) -> bool {
 		assert( zero == nullptr );
-		return blas::asum(self) < 1.0e-7;
+		return blas::asum(self) < threshold;
 	}
 
 	template<class A1D>
 	auto operator!=(A1D const& self, [[maybe_unused]] void***** zero) -> bool {
 		assert( zero == nullptr );
-		return not(self == 0);
+		return blas::asum(self) > threshold;
+	}
+
+	template<class A1D>
+	auto contains_nan(A1D const& self) -> bool {
+		return std::isnan(blas::asum(self));
+	}
+
+	template<class A1D>
+	auto isnan(A1D const& self) -> bool {
+		return contains_nan(self);
+	}
+
+	template<class A1D>
+	auto isfinite(A1D const& self) -> bool {
+		return std::isfinite(blas::asum(self));
+	}
+
+	template<class A1D>
+	auto isinf(A1D const& self) -> bool {
+		return std::isinf(blas::asum(self));
 	}
 }  // end namespace operators
 
