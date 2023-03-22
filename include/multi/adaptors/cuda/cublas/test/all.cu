@@ -206,6 +206,72 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_column) {
 		BOOST_REQUIRE( x != 0 );
 		BOOST_REQUIRE( not (x == 0) );
 	}
+	{
+		using blas::operators::contains_nan;
+		BOOST_REQUIRE( not contains_nan(x) );
+	}
+	{
+		using blas::operators::isfinite;
+		using blas::operators::isinf;
+		BOOST_REQUIRE( isfinite(x) );
+		BOOST_REQUIRE( not isinf(x) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cublas_asum_complex_nans) {
+	namespace blas = multi::blas;
+	complex const I{0.0, 1.0};
+
+	using T = complex;
+	using Alloc = thrust::cuda::allocator<complex>;
+
+	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  std::numeric_limits<double>::quiet_NaN() + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+
+	double res;
+	{
+		using blas::operators::contains_nan;
+		BOOST_REQUIRE( contains_nan(x) );
+	}
+	{
+		using blas::operators::operator==;
+		using blas::operators::operator!=;
+		BOOST_REQUIRE( not (x != 0) );
+		BOOST_REQUIRE( not (x == 0) );
+	}
+	{
+		using blas::operators::isfinite;
+		using blas::operators::isinf;
+		BOOST_REQUIRE( not isfinite(x) );
+		BOOST_REQUIRE( not isinf(x) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cublas_asum_complex_inf) {
+	namespace blas = multi::blas;
+	complex const I{0.0, 1.0};
+
+	using T = complex;
+	using Alloc = thrust::cuda::allocator<complex>;
+
+	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  std::numeric_limits<double>::infinity() + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+
+	double res;
+	{
+		using blas::operators::contains_nan;
+		BOOST_REQUIRE( not contains_nan(x) );
+	}
+	{
+		using blas::operators::operator==;
+		using blas::operators::operator!=;
+		BOOST_REQUIRE(     (x != 0) );
+		BOOST_REQUIRE( not (x == 0) );
+	}
+	{
+		using blas::operators::isfinite;
+		using blas::operators::isinf;
+		BOOST_REQUIRE( not isfinite(x) );
+		BOOST_REQUIRE( isinf(x) );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
@@ -659,7 +725,481 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_trans_one) {
 		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
 		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
+}
 
+BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_none) {
+	namespace blas = multi::blas;
+	using T = complex;
+	using Alloc =  thrust::cuda::allocator<complex>;
+	complex const I{0.0, 1.0};
+
+	// NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> const A = {
+		{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+		{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+	};
+	multi::array<complex, 2, Alloc> const B = {
+		{3.0 - 4.0 * I, 19.0 - 1.0 * I},
+		{1.0 + 5.0 * I,  8.0 - 8.0 * I},
+	};
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		blas::gemm({1.0, 0.0}, A, B, {0.0, 0.0}, C);
+
+		// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+		//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+		// );
+		std::transform(begin(A), end(A), begin(C_copy), end(C_copy),
+			[&B, aa=1.0, bb=0] (auto const& Ar, auto&& Cr) {return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		C = blas::gemm(1.0 + I*0.0, A, B);
+
+		// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+		//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+		// );
+		std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=0.0] (auto const& Ar, auto&& Cr) {
+			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
+		}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		C += blas::gemm(1.0 + I*0.0, A, B);
+
+		std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+			[&A, aa=1.0, bb=1.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		using blas::operators::operator*;
+		using blas::operators::operator+=;
+		C += A*B;
+
+		std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
+		}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_second) {
+	namespace blas = multi::blas;
+	using T = complex;
+	using Alloc =  thrust::cuda::allocator<complex>;
+	complex const I{0.0, 1.0};
+
+	// NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> const A = {
+		{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+		{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+	};
+	multi::array<complex, 2, Alloc> const B = {
+		{3.0 - 4.0 * I, 19.0 - 1.0 * I},
+		{1.0 + 5.0 * I,  8.0 - 8.0 * I},
+	};
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		blas::gemm({1.0, 0.0}, A, blas::T(B), {0.0, 0.0}, C);
+
+		std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)),
+			[&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		C = blas::gemm(1.0 + I*0.0, A, blas::T(B));
+
+		// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+		//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+		// );
+		std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=0.0] (auto const& Ac, auto&& Cr) {
+			return blas::gemv(aa, B, Ac, bb, std::move(Cr));
+		});
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		C += blas::gemm(1.0 + I*0.0, A, blas::T(B));
+
+		std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)),
+			[&A, aa=1.0, bb=1.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		using blas::operators::operator*;
+		using blas::operators::operator+=;
+		C += A * ~B;
+
+		std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
+		}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		using blas::operators::operator*;
+		using blas::operators::operator+=;
+		C += 2.0*(A * ~B);
+
+		std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa=2.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
+		}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
+	namespace blas = multi::blas;
+	using T = complex;
+	using Alloc =  thrust::cuda::allocator<complex>;
+	complex const I{0.0, 1.0};
+
+	// NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> const A = {
+		{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+		{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+	};
+	multi::array<complex, 2, Alloc> const B = {
+		{3.0 - 4.0 * I, 19.0 - 1.0 * I},
+		{1.0 + 5.0 * I,  8.0 - 8.0 * I},
+	};
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		blas::gemm({1.0, 0.0}, blas::T(A), B, {0.0, 0.0}, C);
+
+		std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+			[&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, blas::T(A), Bc, bb, std::move(Cc));}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		C = blas::gemm(1.0 + I*0.0, blas::T(A), B);
+
+		// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+		//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+		// );
+		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=0.0] (auto const& Ac, auto&& Cr) {
+			return blas::gemv(aa, blas::T(B), Ac, bb, std::move(Cr));
+		});
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		C += blas::gemm(1.0 + I*0.0, blas::T(A), B);
+
+		std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+			[&A, aa=1.0, bb=1.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, blas::T(A), Bc, bb, std::move(Cc));}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		using blas::operators::operator*;
+		using blas::operators::operator+=;
+		C += ~A * B;
+
+		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
+		}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		using blas::operators::operator*;
+		using blas::operators::operator+=;
+		C += 2.0*(~A * B);
+
+		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa=2.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
+		}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
+	namespace blas = multi::blas;
+	using T = complex;
+	using Alloc =  thrust::cuda::allocator<complex>;
+	complex const I{0.0, 1.0};
+
+	// NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> const A = {
+		{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+		{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+	};
+	multi::array<complex, 2, Alloc> const B = {
+		{3.0 - 4.0 * I, 19.0 - 1.0 * I},
+		{1.0 + 5.0 * I,  8.0 - 8.0 * I},
+	};
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		blas::gemm({1.0, 0.0}, blas::T(A), blas::T(B), {0.0, 0.0}, C);
+
+		std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)),
+			[&A, aa=1.0, bb=0.0] (auto const& Br, auto&& Cc) {return blas::gemv(aa, blas::T(A), Br, bb, std::move(Cc));}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		C = blas::gemm(1.0 + I*0.0, blas::T(A), blas::T(B));
+
+		// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+		//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+		// );
+		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=0.0] (auto const& Ac, auto&& Cr) {
+			return blas::gemv(aa, B, Ac, bb, std::move(Cr));
+		});
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		C += blas::gemm(1.0 + I*0.0, blas::T(A), blas::T(B));
+
+		std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)),
+			[&A, aa=1.0, bb=1.0] (auto const& Br, auto&& Cc) {return blas::gemv(aa, blas::T(A), Br, bb, std::move(Cc));}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		using blas::operators::operator*;
+		using blas::operators::operator+=;
+		C += ~A * ~B;
+
+		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
+		}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto C_copy = C;
+		using blas::operators::operator*;
+		using blas::operators::operator+=;
+		C += 2.0*(~A * ~B);
+
+		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa=2.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
+		}
+		);
+
+		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
+	namespace blas = multi::blas;
+	using T = complex;
+	using Alloc =  std::allocator<complex>;  // thrust::cuda::allocator<complex>;
+	complex const I{0.0, 1.0};
+
+	// NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> const A = {
+		{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+		{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+	};
+	multi::array<complex, 2, Alloc> const B = {
+		{3.0 - 4.0 * I, 19.0 - 1.0 * I},
+		{1.0 + 5.0 * I,  8.0 - 8.0 * I},
+	};
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto CC = C;
+		auto C_copy = CC;
+		// blas::gemm({1.0, 0.0}, A, blas::J(B), {0.0, 0.0}, C);
+		blas::gemm({1.0, 0.0}, blas::T(B), blas::H(A), {0.0, 0.0}, C_copy);
+		{
+			auto const [is, js] = C.extensions();
+			for(auto i : is) {
+				for(auto j : js) {
+					C[i][j] *= 0.0;
+					for(auto k : B.extension()) {
+						C[i][j] += A[i][k]*conj(B[k][j]);
+					}
+				}
+			}
+		}
+		{
+			std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
+				return std::transform(
+					begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& BCr, auto&& Ce) {
+						return 1.0*blas::dot(Ar, blas::C(BCr)) + 0.0*Ce;
+					}
+				), std::move(Cr);
+			});
+		}
+		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+
+		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+
+		BOOST_TEST_REQUIRE( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST_REQUIRE( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
+	}
+	//  auto const stl_gemvH = [](auto aa, auto const& A, auto const& x, auto bb, auto&& yy) {
+	//      std::transform(begin(transposed(A)), end(transposed(A)), begin(yy), begin(yy), [aa, &x, bb] (auto const& Ac, auto&& ye) {
+	//          using blas::operators::operator*;  // nvcc 11.8 needs this to be inside lambda
+	//          return aa*static_cast<complex>(blas::dot(*Ac, x)) + bb*ye;}
+	//      );
+	//      return std::move(yy);
+	//  };
+	//  auto const stl_gemv = [](auto aa, auto const& A, auto const& x, auto bb, auto&& yy) {
+	//      std::transform(begin(A), end(A), begin(yy), begin(yy), [aa, &x, bb] (auto const& Ar, auto&& ye) {
+	//          using blas::operators::operator*;  // nvcc 11.8 needs this to be inside lambda
+	//          return aa*static_cast<complex>(blas::dot(Ar, x)) + bb*ye;}
+	//      );
+	//      return std::move(yy);
+	//  };
+
+	//  std::transform(begin(A), end(A), begin(C), end(C),
+	//      [&B, aa=1.0, bb=0, stl_gemv] (auto const& Ar, auto&& Cr) {return stl_gemv(aa, blas::H(B), Ar, bb, std::move(Cr));}
+	//  );
+
+	//  std::transform(
+	//      begin(A), end(A), begin(C), end(C),
+	//      [&B, aa=1.0, bb=0, stl_gemv] (auto const& Ar, auto&& Cr) {
+	//          std::transform(begin(blas::H(B)), end(blas::H(B)), begin(Cr), begin(Cr), [aa, &Ar, bb] (auto const& Bc, auto&& ye) {
+	//              using blas::operators::operator*;  // nvcc 11.8 needs this to be inside lambda
+	//              return aa*static_cast<complex>(blas::dot(Bc, Ar)) + bb*ye;
+	//          });
+	//          return std::move(Cr);
+	//      }
+	//  );
+
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	// }
+	// {
+	//  multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+	//  auto C_copy = C;
+	//  C = blas::gemm(1.0 + I*0.0, A, blas::T(B));
+
+	//  // std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
+	//  //  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+	//  // );
+	//  std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=0.0] (auto const& Ac, auto&& Cr) {
+	//      return blas::gemv(aa, B, Ac, bb, std::move(Cr));
+	//  });
+
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	// }
+	// {
+	//  multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+	//  auto C_copy = C;
+	//  C += blas::gemm(1.0 + I*0.0, A, blas::T(B));
+
+	//  std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)),
+	//      [&A, aa=1.0, bb=1.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
+	//  );
+
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	// }
+	// {
+	//  multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+	//  auto C_copy = C;
+	//  using blas::operators::operator*;
+	//  using blas::operators::operator+=;
+	//  C += A * ~B;
+
+	//  std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa=1.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+	//      return blas::gemv(aa, B, Ar, bb, std::move(Cr));
+	//  }
+	//  );
+
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	// }
+	// {
+	//  multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+	//  auto C_copy = C;
+	//  using blas::operators::operator*;
+	//  using blas::operators::operator+=;
+	//  C += 2.0*(A * ~B);
+
+	//  std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa=2.0, bb=1.0] (auto const& Ar, auto&& Cr) {
+	//      return blas::gemv(aa, B, Ar, bb, std::move(Cr));
+	//  }
+	//  );
+
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+	//  BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+	// }
 }
 
 #endif

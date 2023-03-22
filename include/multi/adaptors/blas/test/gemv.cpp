@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 	using blas::operators::operator*;
 	using blas::operators::operator-;
 	using blas::operators::operator^;
-	BOOST_REQUIRE( (((A*B)[0] - B[0])^2) == 0.0 );
-	BOOST_REQUIRE( (((A*B)[1] - B[1])^2) == 0.0 );
-	BOOST_REQUIRE( (((A*B)[2] - B[2])^2) == 0.0 );
+	BOOST_REQUIRE( (((+(A*B))[0] - B[0])^2) == 0.0 );
+	BOOST_REQUIRE( (((+(A*B))[1] - B[1])^2) == 0.0 );
+	BOOST_REQUIRE( (((+(A*B))[2] - B[2])^2) == 0.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_context) {

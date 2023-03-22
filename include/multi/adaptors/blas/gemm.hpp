@@ -88,11 +88,11 @@ try {
 			if      (a_first. stride()==1 and b_first->stride()==1 and c_first->stride()==1){
 				if  (a_count==1)        {CTXT->gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), underlying(base(a_first)), a_first->stride(), &beta, base(c_first), a_first->size()  );}
 				else                    {CTXT->gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), underlying(base(a_first)), a_first->stride(), &beta, base(c_first), c_first.stride());}
-			}else                       {assert(0);}
+			}else                       {throw std::logic_error{"not BLAS-implemented"};}
 		}else if constexpr( is_conjugated<It2DA>{} and  is_conjugated<It2DB>{}){
 			if      (a_first. stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 				                        {CTXT->gemm('C', 'C', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), underlying(base(a_first)), a_first->stride(), &beta, base(c_first), c_first. stride());}
-			}else                       {assert(0);}
+			}else                       {throw std::logic_error{"not BLAS-implemented"};}
 		}
 		#undef CTXT
 	}
@@ -131,8 +131,6 @@ auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element
 		auto ctxt = blas::default_context_of(a.base());
 		return gemm(ctxt, alpha, a, b, beta, std::forward<C>(c));
 	}
-
-
 }
 
 template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
@@ -260,6 +258,9 @@ class gemm_range {
 		blas::gemm_n(self.ctxtp_, self.s_, self.a_begin_, self.a_end_ - self.a_begin_, self.b_begin_, 1., a.begin());
 		return std::forward<Arr>(a);
 	}
+	friend auto operator*(Scalar factor, gemm_range const& self) {
+		return gemm_range{self.ctxtp_, factor*self.s_, self.a_begin_, self.a_end_, self.b_begin_};
+	}
 };
 
 template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
@@ -304,8 +305,8 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 namespace operators {
 	template<class A2D, class B2D, std::enable_if_t<(A2D::dimensionality == 2) and (B2D::dimensionality == 2),int> =0>
 	auto operator*(A2D const& A, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
-	->decltype(+blas::gemm(1.0, A, B)) {
-		return +blas::gemm(1.0, A, B); }
+	->decltype(blas::gemm(1.0, A, B)) {
+		return blas::gemm(1.0, A, B); }
 }  // end namespace operators
 
 }  // end namespace boost::multi::blas
