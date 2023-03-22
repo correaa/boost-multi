@@ -21,11 +21,11 @@ auto gemv_n(Context ctxt, typename MIt::element a, MIt m_first, Size count, XIt 
 	if constexpr(not is_conjugated<MIt>::value) {
 		if     (m_first .stride()==1) {ctxt->gemv('N', count, m_first->size(), &a, m_first.base()            , m_first->stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
 		else if(m_first->stride()==1) {ctxt->gemv('T', m_first->size(), count, &a, m_first.base()            , m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
-		else                          {assert(0);}
+		else                          {throw std::logic_error{"not BLAS-implemented"};}
 	} else {
 		if     (m_first->stride()==1) {ctxt->gemv('C', m_first->size(), count, &a, underlying(m_first.base()), m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
 	//  else if(m_first. stride()==1) {assert(0);} // not implemented in blas (use cblas?)
-		else                          {assert(0);} // not implemented in blas
+		else                          {throw std::logic_error{"not BLAS-implemented"};}
 	}
 
 	struct {
@@ -75,10 +75,10 @@ auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NO
 
 	if constexpr(is_conjugated<M>{}) {
 		auto ctxtp = blas::default_context_of(underlying(m.base()));
-		return blas::gemv(ctxtp, a, m, v, b, w);
+		return blas::gemv(ctxtp, a, m, v, b, std::forward<W>(w));
 	} else {
 		auto ctxtp = blas::default_context_of(m.base());
-		return blas::gemv(ctxtp, a, m, v, b, w);
+		return blas::gemv(ctxtp, a, m, v, b, std::forward<W>(w));
 	}
 }
 
