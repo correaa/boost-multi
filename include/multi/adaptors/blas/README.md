@@ -77,7 +77,7 @@ vector operations: `C` (`*`) conjugation (element-wise) \
 matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `T` transpose, `H` transpose conjugate, `U`/`L` upper or lower triangular part (logical zeroing other side)
 
 
-| BLAS   | mutable form           | effect                        | operator form        | functional form | thrust/STL [¹] |
+| BLAS   | mutable form           | effect                        | operator form [³]        | functional form | thrust/STL [¹] |
 |---     |---                     | ---                           | ---                  | ---             | --- |
 | SWAP   |`blas::swap(x, y)`      | $`x_i \leftrightarrow y_i`$ | `(x^y)` |    | `swap_ranges(begin(x), end(x), begin(y))` |
 | COPY   |`blas::copy(x, y)`      | $`y_i \leftrightarrow x_i`$ | `y << x` |  `y = blas::copy(x)` | `copy(begin(x), end(x), begin(y))` |
@@ -114,3 +114,4 @@ matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `
 
 [¹]: for reference, not optimal. \
 [²]: `asum` is interpreted as a mechanism to detect null vectors or vectors containing NaN or infinities.
+[³]: needs explicit invocation `using namespace multi::operators` namespace or of specific symbols `using multi::operator*`/`operator/=`/etc.
