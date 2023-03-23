@@ -74,8 +74,13 @@ namespace operators{
 
 	template<class A>
 	auto operator*(A&& array)
-	->decltype(blas::conj(std::forward<A>(array))){
-		return blas::conj(std::forward<A>(array));}
+	->decltype(blas::conj(std::forward<A>(array))) {
+		return blas::conj(std::forward<A>(array)); }
+
+	template<class A>
+	auto operator~(A&& array)
+	->decltype(blas::transposed(std::forward<A>(array))) {
+		return blas::transposed(std::forward<A>(array)); }
 
 } // end namespace operators
 

@@ -155,6 +155,23 @@ auto trsm(blas::side a_side, typename UTArr::underlying_type::element_type alpha
 ->decltype(trsm(a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b))) {
 	return trsm(a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b)); }
 
+namespace operators {
+
+	template<class B2D, class UL>
+	auto operator/=(B2D&& b, UL const& a)  // NOLINT(readability-identifier-length) BLAS naming
+	->decltype(blas::trsm(blas::side::right, 1.0, a, std::forward<B2D>(b))) {
+		return blas::trsm(blas::side::right, 1.0, a, std::forward<B2D>(b)); }
+
+	template<class B2D, class UL>
+	auto operator|=(B2D&& b, UL const& a)  // NOLINT(readability-identifier-length) BLAS naming
+	->decltype(blas::trsm(blas::side::left, 1.0, a, std::forward<B2D>(b))) {
+		return blas::trsm(blas::side::left, 1.0, a, std::forward<B2D>(b)); }
+
+	using blas::U;
+	using blas::L;
+
+}  // end namespace operators
+
 }  // end namespace boost::multi::blas
 
 #endif

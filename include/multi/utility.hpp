@@ -39,20 +39,20 @@ struct move_ptr : private std::move_iterator<Ptr> {
 
 	using std::move_iterator<Ptr>::move_iterator;
 
-	constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) decay to lvalue should be easy
-	constexpr auto operator+=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) += n; return *this;}
-	constexpr auto operator-=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) -= n; return *this;}
+	HD constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) decay to lvalue should be easy
+	HD constexpr auto operator+=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) += n; return *this;}
+	HD constexpr auto operator-=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) -= n; return *this;}
 
-	constexpr auto operator+(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret += n; return ret;}
-	constexpr auto operator-(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret -= n; return ret;}
+	HD constexpr auto operator+(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret += n; return ret;}
+	HD constexpr auto operator-(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret -= n; return ret;}
 
-	constexpr auto operator-(move_ptr const& other) const -> difference_type {return static_cast<std::move_iterator<Ptr> const&>(*this) - static_cast<std::move_iterator<Ptr> const&>(other);}
+	HD constexpr auto operator-(move_ptr const& other) const -> difference_type {return static_cast<std::move_iterator<Ptr> const&>(*this) - static_cast<std::move_iterator<Ptr> const&>(other);}
 
-	constexpr auto operator*() const -> decltype(auto) {return *static_cast<std::move_iterator<Ptr> const&>(*this);}
-	constexpr auto operator[](difference_type n) const -> decltype(auto) {return *((*this) + n);}
+	   constexpr auto operator*() const -> decltype(auto) {return *static_cast<std::move_iterator<Ptr> const&>(*this);}
+	HD constexpr auto operator[](difference_type n) const -> decltype(auto) {return *((*this) + n);}
 
-	constexpr auto operator==(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) == static_cast<std::move_iterator<Ptr> const&>(other);}
-	constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
+	HD constexpr auto operator==(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) == static_cast<std::move_iterator<Ptr> const&>(other);}
+	HD constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
 };
 
 template<class T> struct ref_add_const {using type = T const;};  // this is not the same as std::add_const
