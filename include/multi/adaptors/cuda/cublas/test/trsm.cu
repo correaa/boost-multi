@@ -46,8 +46,6 @@ BOOST_AUTO_TEST_CASE(unit_trsm_multi_blas_trsm_complex_nonsquare_default_diagona
 	BOOST_REQUIRE_CLOSE( B_cpy[1][0].imag() , -13.000000000000002 , 0.001);
 }
 
-
-
 BOOST_AUTO_TEST_CASE(trsm_multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit

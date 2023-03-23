@@ -4,8 +4,8 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS trsm"
 #include<boost/test/unit_test.hpp>
 
-#include "../../../adaptors/blas/gemm.hpp"
-#include "../../../adaptors/blas/trsm.hpp"
+#include <multi/adaptors/blas/gemm.hpp>
+#include <multi/adaptors/blas/trsm.hpp>
 
 #include <multi/array.hpp>
 
