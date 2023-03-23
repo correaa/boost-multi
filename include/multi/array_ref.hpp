@@ -2156,13 +2156,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto  end  ()      & ->       iterator {return end_aux();}
 	constexpr auto  end  ()     && ->       iterator {return end_aux();}
 
-	friend /*constexpr*/ auto begin(basic_array const& self) -> const_iterator {return           self .begin();}
-	friend /*constexpr*/ auto begin(basic_array      & self) ->       iterator {return           self .begin();}
-	friend /*constexpr*/ auto begin(basic_array     && self) ->       iterator {return std::move(self).begin();}
+	friend MULTI_NONV_CONSTEXPR auto begin(basic_array const& self) -> const_iterator {return           self .begin();}
+	friend MULTI_NONV_CONSTEXPR auto begin(basic_array      & self) ->       iterator {return           self .begin();}
+	friend MULTI_NONV_CONSTEXPR auto begin(basic_array     && self) ->       iterator {return std::move(self).begin();}
 
-	friend constexpr auto end  (basic_array const& self) -> const_iterator {return           self .end()  ;}
-	friend constexpr auto end  (basic_array      & self) ->       iterator {return           self .end()  ;}
-	friend constexpr auto end  (basic_array     && self) ->       iterator {return std::move(self).end()  ;}
+	friend MULTI_NONV_CONSTEXPR auto end  (basic_array const& self) -> const_iterator {return           self .end()  ;}
+	friend MULTI_NONV_CONSTEXPR auto end  (basic_array      & self) ->       iterator {return           self .end()  ;}
+	friend MULTI_NONV_CONSTEXPR auto end  (basic_array     && self) ->       iterator {return std::move(self).end()  ;}
 
 	HD constexpr auto cbegin()           const& -> const_iterator {return begin();}
 	   constexpr auto cend  ()           const& -> const_iterator {return end()  ;}
