@@ -74,7 +74,7 @@ vectors: `x`, `y` \
 matrices: `A`, `B`, `C`
 
 vector operations: `C` (`*`) conjugation (element-wise) \
-matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `T` transpose, `H` transpose conjugate
+matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `T` transpose, `H` transpose conjugate, `U`/`L` upper or lower triangular part (logical zeroing other side)
 
 
 | BLAS   | mutable form           | effect                        | operator form        | functional form | thrust/STL [¹] |
