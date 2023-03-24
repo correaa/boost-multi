@@ -89,7 +89,7 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagona
 			else                                     {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 		} else if constexpr(not is_conjugated<A2D>{} and    is_conjugated<B2D>{}) {
 			if     (stride(~a)==1 and stride( b)==1) {CTXT->trsm(char{    (a_side)}, static_cast<char>(+a_fill), 'C', static_cast<char>(a_diag), size( b), size(~b), conj(alpha),            base(a) , stride( a), underlying(base(b)), stride(~b));}
-			else if(stride( a)==1 and stride(~b)==1) {CTXT->trsm(char{swap(a_side)}, static_cast<char>(-a_fill), 'C', static_cast<char>(a_diag), size(~b), size( b), conj(alpha),            base(a) , stride(~a), underlying(base(b)), stride( b));}
+			else if(stride( a)==1 and stride(~b)==1) {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 			else                                     {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 		} else if constexpr(   is_conjugated<A2D>{} and     is_conjugated<B2D>{}) {
 			if     (stride( a)==1 and stride(~b)==1) {CTXT->trsm(char{swap(a_side)}, static_cast<char>(-a_fill), 'T', static_cast<char>(a_diag), size(~b), size( b), conj(alpha), underlying(base(a)), stride(~a), underlying(base(b)), stride( b));}

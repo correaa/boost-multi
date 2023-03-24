@@ -1813,17 +1813,46 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized
 	BOOST_REQUIRE_CLOSE( static_cast<complex>(B[1][2]).imag() , -0.147059 , 0.001);
 }
 
+BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const_UTH) {
+	namespace blas = multi::blas;
+	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using Alloc = thrust::cuda::allocator<complex>;
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> const A = {
+		{ 1.0 +  4.0*I, 0.0 + 0.0*I,  0.0 - 0.0*I},
+		{ 3.0 +  0.0*I, 7.0 - 3.0*I,  0.0 + 0.0*I},
+		{ 4.0 - 10.0*I, 1.0 + 0.0*I,  8.0 - 2.0*I},
+	};
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> B = {
+		{1.0 + 1.0*I, 2.0 + 1.0*I},
+		{5.0 + 3.0*I, 9.0 + 3.0*I},
+		{3.0 + 1.0*I, 1.0 - 1.0*I},
+	};
+
+	using multi::blas::trsm;
+
+	blas::trsm(blas::side::left, {1.0, 0.0}, blas::U(blas::H(A)), B);
+	BOOST_REQUIRE_CLOSE( static_cast<complex>(B[1][1]).imag(), -0.0811359, 0.001);
+	BOOST_REQUIRE_CLOSE( static_cast<complex>(B[2][1]).imag(), -0.147059, 0.001);
+}
+
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 	using Alloc = thrust::cuda::allocator<complex>;
 
-	multi::array<complex, 2, Alloc> const A = {  // NOLINT(readability-identifier-length) BLAS naming
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> const A = {
 		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
 		{ 0.0 + 0.0*I, 7.0 - 3.0*I,  1.0 +  0.0*I},
 		{ 0.0 + 0.0*I, 0.0 + 0.0*I,  8.0 -  2.0*I},
 	};
-	multi::array<complex, 2, Alloc> B = {  // NOLINT(readability-identifier-length) BLAS naming
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> B = {
 		{1.0 + 1.0*I, 2.0 + 1.0*I},
 		{5.0 + 3.0*I, 9.0 + 3.0*I},
 		{3.0 + 1.0*I, 1.0 - 1.0*I},
@@ -1834,6 +1863,31 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 	blas::trsm(blas::side::left, {1.0, 0.0}, blas::U(A), B);  // B←A⁻¹.B, B†←A⁻¹.B†
 	BOOST_REQUIRE_CLOSE( static_cast<complex>(B[2][1]).imag() , -0.0882353, 0.001);
 }
+
+// BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_conj_second) {
+//  namespace blas = multi::blas;
+//  using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+//  using Alloc = thrust::cuda::allocator<complex>;
+
+//  // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+//  multi::array<complex, 2, Alloc> const A = {
+//      { 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
+//      { 0.0 + 0.0*I, 7.0 - 3.0*I,  1.0 +  0.0*I},
+//      { 0.0 + 0.0*I, 0.0 + 0.0*I,  8.0 -  2.0*I},
+//  };
+
+//  // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+//  multi::array<complex, 2, Alloc> B = {
+//      {1.0 + 1.0*I, 2.0 + 1.0*I},
+//      {5.0 + 3.0*I, 9.0 + 3.0*I},
+//      {3.0 + 1.0*I, 1.0 - 1.0*I},
+//  };
+
+//  using multi::blas::trsm;
+
+//  blas::trsm(blas::side::left, {1.0, 0.0}, blas::U(A), blas::J(B));  // B*←A⁻¹.B*, B^T←A⁻¹.B^T
+//  BOOST_REQUIRE_CLOSE( static_cast<complex>(B[2][1]).imag() , -0.0882353, 0.001);
+// }
 
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_operator) {
 	namespace blas = multi::blas;
@@ -1878,6 +1932,54 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 	blas::trsm(blas::side::right, {1.0, 0.0}, blas::U(A), B);  // B←B.A⁻¹, B←B/A, B†←A⁻¹†.B†
 	BOOST_REQUIRE_CLOSE( static_cast<complex>(B[1][2]).imag(), 1.60142, 0.001);
 }
+
+BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right_LT) {
+	namespace blas = multi::blas;
+	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using Alloc = thrust::cuda::allocator<complex>;
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> const A = {
+		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
+		{ 0.0 + 0.0*I, 7.0 - 3.0*I,  1.0 +  0.0*I},
+		{ 0.0 + 0.0*I, 0.0 + 0.0*I,  8.0 -  2.0*I},
+	};
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	multi::array<complex, 2, Alloc> B = {
+		{ 1.0 + 1.0*I, 2.0 + 1.0*I, 3.0 + 1.0*I},
+		{ 5.0 + 3.0*I, 9.0 + 3.0*I, 1.0 - 1.0*I},
+	};
+
+	using multi::blas::trsm;
+
+	blas::trsm(blas::side::right, {1.0, 0.0}, blas::L(blas::T(A)), B);  // B←B.Aᵀ⁻¹, B←B/Aᵀ, B†←Aᵀ⁻¹†.B†, Bᵀ←A⁻¹.Bᵀ, Bᵀ←Bᵀ\A
+	BOOST_REQUIRE_CLOSE( static_cast<complex>(B[1][2]).imag(), -0.0882353, 0.001);
+}
+
+// BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right_LH) {
+//  namespace blas = multi::blas;
+//  using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+//  using Alloc = thrust::cuda::allocator<complex>;
+
+//  // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+//  multi::array<complex, 2, Alloc> const A = {
+//      { 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
+//      { 0.0 + 0.0*I, 7.0 - 3.0*I,  1.0 +  0.0*I},
+//      { 0.0 + 0.0*I, 0.0 + 0.0*I,  8.0 -  2.0*I},
+//  };
+
+//  // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+//  multi::array<complex, 2, Alloc> B = {
+//      { 1.0 + 1.0*I, 2.0 + 1.0*I, 3.0 + 1.0*I},
+//      { 5.0 + 3.0*I, 9.0 + 3.0*I, 1.0 - 1.0*I},
+//  };
+
+//  using multi::blas::trsm;
+
+//  blas::trsm(blas::side::right, {1.0, 0.0}, blas::U(blas::J(A)), B);  // B←B.A*⁻¹, B←B/A*, B*←B*.A⁻¹
+//  BOOST_REQUIRE_CLOSE( static_cast<complex>(B[1][2]).imag(), -0.0882353, 0.001);
+// }
 
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right_operator) {
 	namespace blas = multi::blas;

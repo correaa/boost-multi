@@ -64,7 +64,7 @@ template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 1, int> =0>
 auto C(A&& array) -> decltype(auto) {return blas::conj(std::forward<A>(array));}  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
 
 template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0>
-[[deprecated("use blas::H instead of blas::C for conjugated transposed matrices to avoid confusions")]]
+[[deprecated("use blas::H instead of blas::C for conjugated transposed matrices to avoid confusion, use blas::J for only-conjugation of matrices")]]
 auto C(A&& array) -> decltype(auto) {return hermitized(std::forward<A>(array));}  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
 
 template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0>
