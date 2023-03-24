@@ -82,25 +82,19 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagona
 			else if(stride(~a)==1 and stride(~b)==1) {CTXT->trsm(char{swap(a_side)}, static_cast<char>(+a_fill), 'N', static_cast<char>(a_diag), size(~b), size( b),      alpha ,            base(a) , stride( a),            base(b) , stride( b));}
 			else if(stride( a)==1 and stride(~b)==1) {CTXT->trsm(char{swap(a_side)}, static_cast<char>(-a_fill), 'T', static_cast<char>(a_diag), size(~b), size( b),      alpha ,            base(a) , stride(~a),            base(b) , stride( b));}
 			else if(stride(~a)==1 and stride( b)==1) {CTXT->trsm(char{    (a_side)}, static_cast<char>(+a_fill), 'T', static_cast<char>(a_diag), size( b), size(~b),      alpha ,            base(a) , stride( a),            base(b) , stride(~b));}
-			else                                     {assert(0 && "not implemented in blas");} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		}else if constexpr(   is_conjugated<A2D>{} and not is_conjugated<B2D>{}) {
+			else                                     {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
+		} else if constexpr(   is_conjugated<A2D>{} and not is_conjugated<B2D>{}) {
 			if     (stride( a)==1 and stride(~b)==1) {CTXT->trsm(char{swap(a_side)}, static_cast<char>(-a_fill), 'C', static_cast<char>(a_diag), size(~b), size( b),      alpha , underlying(base(a)), stride(~a),            base(b) , stride( b));}
 			else if(stride(~a)==1 and stride( b)==1) {CTXT->trsm(char{    (a_side)}, static_cast<char>(+a_fill), 'C', static_cast<char>(a_diag), size( b), size(~b),      alpha , underlying(base(a)), stride( a),            base(b) , stride(~b));}
-		//  else if(stride( a)==1 and stride( b)==1) {assert(0 && "not implemented in blas");}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		//  else if(stride(~a)==1 and stride(~b)==1) {assert(0 && "not implemented in blas");}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-			else                                     {assert(0 && "not implemented in blas");}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		}else if constexpr(not is_conjugated<A2D>{} and    is_conjugated<B2D>{}) {
+			else                                     {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
+		} else if constexpr(not is_conjugated<A2D>{} and    is_conjugated<B2D>{}) {
 			if     (stride(~a)==1 and stride( b)==1) {CTXT->trsm(char{    (a_side)}, static_cast<char>(+a_fill), 'C', static_cast<char>(a_diag), size( b), size(~b), conj(alpha),            base(a) , stride( a), underlying(base(b)), stride(~b));}
 			else if(stride( a)==1 and stride(~b)==1) {CTXT->trsm(char{swap(a_side)}, static_cast<char>(-a_fill), 'C', static_cast<char>(a_diag), size(~b), size( b), conj(alpha),            base(a) , stride(~a), underlying(base(b)), stride( b));}
-		//  else if(stride(~a)==1 and stride(~b)==1) {assert(0 && "not implemented in blas");}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		//  else if(stride( a)==1 and stride( b)==1) {assert(0 && "not implemented in blas");}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-			else                                     {assert(0 && "not implemented in blas");}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		}else if constexpr(   is_conjugated<A2D>{} and     is_conjugated<B2D>{}) {
+			else                                     {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
+		} else if constexpr(   is_conjugated<A2D>{} and     is_conjugated<B2D>{}) {
 			if     (stride( a)==1 and stride(~b)==1) {CTXT->trsm(char{swap(a_side)}, static_cast<char>(-a_fill), 'T', static_cast<char>(a_diag), size(~b), size( b), conj(alpha), underlying(base(a)), stride(~a), underlying(base(b)), stride( b));}
 			else if(stride(~a)==1 and stride( b)==1) {CTXT->trsm(char{    (a_side)}, static_cast<char>(+a_fill), 'T', static_cast<char>(a_diag), size( b), size(~b), conj(alpha), underlying(base(a)), stride( a), underlying(base(b)), stride(~b));}
-		//  else if(stride(~a)==1 and stride(~b)==1) {assert(0 && "not implemented in blas");}
-		//  else if(stride( a)==1 and stride( b)==1) {assert(0 && "not implemented in blas");}
-			else                                     {assert(0 && "not implemented in blas");}
+			else                                     {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 		}
 		#undef CTXT
 	}
@@ -144,11 +138,6 @@ auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type al
 #elif defined __NVCOMPILER
 	#pragma    diagnostic pop
 #endif
-
-// template<class Context, class UTArr, class B2D>
-// auto trsm(Context&& ctxt, blas::side a_side, typename UTArr::element_type alpha, UTArr const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
-// ->decltype(trsm(std::forward<Context>(ctxt), a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b))) {
-// 	return trsm(std::forward<Context>(ctxt), a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b)); }
 
 template<class UTArr, class B2D>
 auto trsm(blas::side a_side, typename UTArr::underlying_type::element_type alpha, UTArr const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
