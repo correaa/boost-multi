@@ -74,7 +74,7 @@ vectors: `x`, `y` \
 matrices: `A`, `B`, `C`
 
 vector operations: `C` (`*`) conjugation (element-wise) \
-matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `T` transpose, `H` transpose conjugate, `U`/`L` upper or lower triangular part (logical zeroing other side)
+matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `T` transpose, `H` transpose conjugate (also `C`, discouraged), `U`/`L` upper or lower triangular part (logical zeroing other side)
 
 
 | BLAS   | mutable form           | effect                        | operator form [³]        | functional form | thrust/STL [¹] |
@@ -111,6 +111,10 @@ matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `
 |      | `blas::trsm(blas::side::right, aa, blas::L(A), B)` | $`B\leftarrow B.L^{-1}`$  | `B /= L(A)` | | TODO |
 |      | `blas::trsm(blas::side::left, aa, blas::U(A), B)` | $`B\leftarrow U^{-1}.B`$  | `B \|= U(A)` | | TODO |  
 |      | `blas::trsm(blas::side::left, aa, blas::L(A), B)` | $`B\leftarrow L^{-1}.B`$  | `B \|= L(A)` | | TODO |
+|      | ~~`blas::trsm(blas::side::right, aa, blas::U(A), blas::J(B))`~~ | $`B*\leftarrow B*.U^{-1}`$ $`B\leftarrow B.U*^{-1}`$ | | | TODO |
+|      | ~~`blas::trsm(blas::side::right, aa, blas::L(A), blas::J(B))`~~ | $`B*\leftarrow B*.L^{-1}`$ $`B\leftarrow B.L*^{-1}`$ | | | TODO |
+|      | `blas::trsm(blas::side::right, aa, blas::U(A), blas::H(B))` | $`B^\dagger\leftarrow B^\dagger.U^{-1}`$ $`B\leftarrow U^\dagger^{-1}.B`$ | | | TODO |
+|      | `blas::trsm(blas::side::right, aa, blas::L(A), blas::H(B))` | $`B^\dagger\leftarrow B^\dagger.L^{-1}`$ $`B\leftarrow L^\dagger^{-1}.B`$ | | | TODO |
 
 [¹]: for reference, not optimal. \
 [²]: `asum` is interpreted as a mechanism to detect null vectors or vectors containing NaN or infinities. \
