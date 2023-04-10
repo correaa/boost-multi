@@ -214,14 +214,80 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 	};
 	multi::array_ref<double, 2> aref({multi::iextension(1, 3), multi::iextension(1, 4)}, vec.data());
 
-	auto exts = aref.extensions();
-	BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
-	BOOST_REQUIRE( std::get<1>(exts).start()  == 1 );
-	BOOST_REQUIRE( std::get<1>(exts).finish() == 4 );
-	BOOST_REQUIRE( std::get<1>(exts) == multi::iextension(1, 4) );
-	BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	{
+		auto exts = aref.extensions();
+		BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
+		BOOST_REQUIRE( std::get<1>(exts).start()  == 1 );
+		BOOST_REQUIRE( std::get<1>(exts).finish() == 4 );
+		BOOST_REQUIRE( std::get<1>(exts) == multi::iextension(1, 4) );
+		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	}
+	{
+		auto const exts = aref.extensions();
+		BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
+		BOOST_REQUIRE( std::get<1>(exts).start()  == 1 );
+		BOOST_REQUIRE( std::get<1>(exts).finish() == 4 );
+		BOOST_REQUIRE( std::get<1>(exts) == multi::iextension(1, 4) );
+		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	}
+	{
+		BOOST_REQUIRE( std::get<0>(aref.extensions()) == multi::iextension(1, 3) );
+		BOOST_REQUIRE( std::get<1>(aref.extensions()).start()  == 1 );
+		BOOST_REQUIRE( std::get<1>(aref.extensions()).finish() == 4 );
+		BOOST_REQUIRE( std::get<1>(aref.extensions()) == multi::iextension(1, 4) );
+		BOOST_REQUIRE( aref.extensions() == decltype(aref.extensions())(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	}
+	{
+		auto ss = aref.sizes();
+		BOOST_REQUIRE( std::get<0>(ss) == 2 );
+		BOOST_REQUIRE( std::get<1>(ss) == 3 );
+		BOOST_REQUIRE( ss == decltype(ss)(2, 3) );
+	}
+	{
+		auto [nn, mm] = aref.sizes();
+		BOOST_REQUIRE( nn == 2 );
+		BOOST_REQUIRE( mm == 3 );
+	}
+	{
+		auto const ss = aref.sizes();
+		BOOST_REQUIRE( std::get<0>(ss) == 2 );
+		BOOST_REQUIRE( std::get<1>(ss) == 3 );
+		BOOST_REQUIRE( ss == decltype(ss)(2, 3) );
+	}
+	{
+		BOOST_REQUIRE( std::get<0>(aref.sizes()) == 2 );
+		BOOST_REQUIRE( std::get<1>(aref.sizes()) == 3 );
+		BOOST_REQUIRE( aref.sizes() == decltype(aref.sizes())(2, 3) );
+	}
+	{
+		auto const ss = aref.sizes();
+		using std::get;
+		BOOST_REQUIRE( get<0>(ss) == 2 );
+		BOOST_REQUIRE( get<1>(ss) == 3 );
+		BOOST_REQUIRE( ss == decltype(ss)(2, 3) );
+	}
+	{
+		using std::get;
+		BOOST_REQUIRE( get<0>(aref.sizes()) == 2 );
+		BOOST_REQUIRE( get<1>(aref.sizes()) == 3 );
+		BOOST_REQUIRE( aref.sizes() == decltype(aref.sizes())(2, 3) );
+	}
+	#if __cplusplus >= 202002L  // GCC: use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension
+	{
+		auto const ss = aref.sizes();
+		BOOST_REQUIRE( get<0>(ss) == 2 );
+		BOOST_REQUIRE( get<1>(ss) == 3 );
+		BOOST_REQUIRE( ss == decltype(ss)(2, 3) );
+	}
+	{
+		BOOST_REQUIRE( get<0>(aref.sizes()) == 2 );
+		BOOST_REQUIRE( get<1>(aref.sizes()) == 3 );
+		BOOST_REQUIRE( aref.sizes() == decltype(aref.sizes())(2, 3) );
+	}
+	#endif
 
 	BOOST_REQUIRE( &aref[1][1] == vec.data() );
+
 }
 
 BOOST_AUTO_TEST_CASE(array_2D_with_offset) {
@@ -361,20 +427,20 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	// {
-	// 	int sizes1, sizes2, sizes3;
-	// 	multi::tie(sizes1, sizes2, sizes3) = cref.sizes(); // may give warning
+	//  int sizes1, sizes2, sizes3;
+	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes(); // may give warning
 
-	// 	BOOST_REQUIRE( sizes1 == 4 );
-	// 	BOOST_REQUIRE( sizes2 == 2 );
-	// 	BOOST_REQUIRE( sizes3 == 3 );
+	//  BOOST_REQUIRE( sizes1 == 4 );
+	//  BOOST_REQUIRE( sizes2 == 2 );
+	//  BOOST_REQUIRE( sizes3 == 3 );
 	// }
 	// {
-	// 	unsigned int sizes1, sizes2, sizes3;
-	// 	multi::tie(sizes1, sizes2, sizes3) = cref.sizes(); // may give warning
+	//  unsigned int sizes1, sizes2, sizes3;
+	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes(); // may give warning
 
-	// 	BOOST_REQUIRE( sizes1 == 4 );
-	// 	BOOST_REQUIRE( sizes2 == 2 );
-	// 	BOOST_REQUIRE( sizes3 == 3 );
+	//  BOOST_REQUIRE( sizes1 == 4 );
+	//  BOOST_REQUIRE( sizes2 == 2 );
+	//  BOOST_REQUIRE( sizes3 == 3 );
 	// }
 	{
 		long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
@@ -385,12 +451,12 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	// {
-	// 	unsigned long sizes1, sizes2, sizes3;
-	// 	multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
+	//  unsigned long sizes1, sizes2, sizes3;
+	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
 
-	// 	BOOST_REQUIRE( sizes1 == 4 );
-	// 	BOOST_REQUIRE( sizes2 == 2 );
-	// 	BOOST_REQUIRE( sizes3 == 3 );
+	//  BOOST_REQUIRE( sizes1 == 4 );
+	//  BOOST_REQUIRE( sizes2 == 2 );
+	//  BOOST_REQUIRE( sizes3 == 3 );
 	// }
 	{
 		long long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
@@ -409,12 +475,12 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	// {
-	// 	unsigned long long sizes1, sizes2, sizes3;
-	// 	multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
+	//  unsigned long long sizes1, sizes2, sizes3;
+	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
 
-	// 	BOOST_REQUIRE( sizes1 == 4 );
-	// 	BOOST_REQUIRE( sizes2 == 2 );
-	// 	BOOST_REQUIRE( sizes3 == 3 );
+	//  BOOST_REQUIRE( sizes1 == 4 );
+	//  BOOST_REQUIRE( sizes2 == 2 );
+	//  BOOST_REQUIRE( sizes3 == 3 );
 	// }
 }
 
@@ -516,7 +582,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
 	{
 		double(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3] == &arr[3] );
- 	//  vvv this will warn with -Wold-style-cast
+    //  vvv this will warn with -Wold-style-cast
 	//  f1d5((double(&)[5])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 	{ //  vvv this syntax needs cast operator to be non-explicit
@@ -541,7 +607,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 		double(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
- 	//  vvv this will warn with -Wold-style-cast
+    //  vvv this will warn with -Wold-style-cast
 	//  f2d54((double(&)[5][4])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 	{ //  vvv this syntax needs cast operator to be non-explicit
