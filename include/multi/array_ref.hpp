@@ -251,8 +251,8 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 
 	template<class, class> friend struct basic_array_ptr;
 
-	HD constexpr basic_array_ptr(typename Ref::element_ptr base, layout_t<Ref::rank_v - 1>      lyt) : Ref{lyt, base} {}
-	HD constexpr basic_array_ptr(typename Ref::element_ptr base, index_extensions<Ref::rank_v> exts) : Ref{base, exts} {}
+	HD constexpr basic_array_ptr(typename Ref::element_ptr base, layout_t<typename Ref::rank{} - 1>      lyt) : Ref{lyt, base} {}
+	HD constexpr basic_array_ptr(typename Ref::element_ptr base, index_extensions<typename Ref::rank{}> exts) : Ref{base, exts} {}
 	template<class Array>
 	// cppcheck-suppress noExplicitConstructor ; no information loss, allows comparisons
 	HD constexpr basic_array_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
@@ -732,8 +732,8 @@ struct basic_array
 
 	using array_types<T, D, ElementPtr, Layout>::rank_v;
 
-	friend struct basic_array<typename types::element, rank_v + 1, typename types::element_ptr >;
-	friend struct basic_array<typename types::element, rank_v + 1, typename types::element_ptr&>;
+	friend struct basic_array<typename types::element, D + 1, typename types::element_ptr >;
+	friend struct basic_array<typename types::element, D + 1, typename types::element_ptr&>;
 
 	using types::layout;
 	using typename types::element_type;
