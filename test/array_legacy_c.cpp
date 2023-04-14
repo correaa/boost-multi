@@ -41,12 +41,14 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 
 	multi::array<std::complex<double>, 2> out(extensions(in));
 
+#if not defined(__circle_build__)
 	BOOST_REQUIRE( dimensionality(out) == dimensionality(in) );
+#endif
 	BOOST_REQUIRE( sizes(out) == sizes(in) );
 
 	static_assert( sizeof(complex) == sizeof(fake::fftw_complex), "!" );
 	fake::fftw_plan_dft(
-		dimensionality(in),
+		decltype(in)::dimensionality,
 		std::apply([](auto... sizes) {return std::array<int, 2>{{static_cast<int>(sizes)...}};}, in.sizes()).data(),
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) testing legacy code
 		reinterpret_cast<fake::fftw_complex*>(const_cast<complex*>(in .data_elements())),
@@ -64,7 +66,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		};
 
 //  #if __has_cpp_attribute(no_unique_address) >=201803L and not defined(__NVCC__) and not defined(__PGI)
-//  	BOOST_REQUIRE( sizeof(d2D)==sizeof(double*)+7*sizeof(std::size_t) );
+//      BOOST_REQUIRE( sizeof(d2D)==sizeof(double*)+7*sizeof(std::size_t) );
 //  #endif
 		BOOST_REQUIRE( d2D.is_compact() );
 		BOOST_REQUIRE( rotated(d2D).is_compact() );

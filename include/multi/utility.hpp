@@ -291,7 +291,7 @@ template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(st
 
 template<class Container, std::enable_if_t<has_dimensionality<Container>{}, int> =0>
 constexpr auto dimensionality(Container const& /*container*/)
-->std::decay_t<decltype(Container::rank_v)> {
+->std::decay_t<decltype(typename Container::rank{}+0)> {
 	return Container::rank_v;}
 
 template<class T>
