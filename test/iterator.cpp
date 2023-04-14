@@ -22,7 +22,11 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 
 		multi::array<double, 1>::const_iterator const cbarr = cbegin(arr);
 		multi::array<double, 1>::iterator barr = begin(arr);
-		BOOST_REQUIRE( cbarr == barr );
+
+		[[maybe_unused]] multi::array<double, 1>::const_iterator const cbarr3{barr};
+
+		BOOST_REQUIRE(  barr == cbarr );
+		BOOST_REQUIRE( cbarr ==  barr );
 
 		barr += 1;
 		barr -= 1;
@@ -155,9 +159,14 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	multi::array<double, 3>::const_iterator cit;
 	static_assert( std::is_same<multi::array<double, 3>::iterator::element_ptr, double*>{}, "!");
 
+	[[maybe_unused]] multi::array<double, 3>::const_iterator cit3{it3};
+
 	cit = it3;
 	BOOST_REQUIRE( cit == it3 );
+	BOOST_REQUIRE( it3 == cit );
 	BOOST_REQUIRE( &arr[0][2][1] == &begin(arr)[0][2][1] );
+
+	[[maybe_unused]] multi::array<double, 3>::const_iterator cit2 = it3;
 
 	static_assert( decltype(begin(arr))::rank_v  == 3 , "!" );
 	static_assert( decltype(begin(arr))::rank {} == 3 , "!" );
