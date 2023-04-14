@@ -13,7 +13,7 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
@@ -99,7 +99,7 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_proxy) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	multi::array<complex, 1> const arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
