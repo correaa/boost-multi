@@ -22,8 +22,9 @@ template<class Involution, class It> class involuter;
 template<class Involution, class Ref>
 class involuted {
 	Ref r_;
-	template<class Involuted, std::enable_if_t<std::is_base_of<involuted, std::decay_t<Involuted>>{}, int> =0>
-	friend auto underlying(Involuted&& self) ->decltype(self.r_) {return self.r_;}
+	friend auto underlying(involuted      & self) -> decltype(auto) {return self.r_;}
+	friend auto underlying(involuted     && self) -> decltype(auto) {return self.r_;}
+	friend auto underlying(involuted const& self) -> decltype(auto) {return self.r_;}
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
@@ -170,7 +171,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		BOOST_REQUIRE( doub = -10.0 );
 	}
 	{
-		multi::array<double, 1> arr = { 0,  1,  2,  3,  4};
+		multi::array<double, 1> arr = { 0.0,  1.0,  2.0,  3.0,  4.0};
 		auto&& ref = arr.static_array_cast<double, double const*>();
 		BOOST_REQUIRE( ref[2] == arr[2] );
 	}
@@ -200,10 +201,10 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	{
 	#if defined(__cpp_deduction_guides)
 		double zee[4][5] {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
-			{ 0,  1,  2,  3,  4},
-			{ 5,  6,  7,  8,  9},
-			{10, 11, 12, 13, 14},
-			{15, 16, 17, 18, 19}
+			{ 0.0,  1.0,  2.0,  3.0,  4.0},
+			{ 5.0,  6.0,  7.0,  8.0,  9.0},
+			{10.0, 11.0, 12.0, 13.0, 14.0},
+			{15.0, 16.0, 17.0, 18.0, 19.0}
 		};
 		auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]}, {4, 5});
 
@@ -220,23 +221,23 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			};
 
 			auto&& d2Dreal = d2D.reinterpret_array_cast<double>();
-			BOOST_REQUIRE( d2Dreal[2][1] == 9. );
+			BOOST_REQUIRE( d2Dreal[2][1] == 9.0 );
 
-			d2Dreal[2][1] = 12.;
-			BOOST_REQUIRE( d2D[2][1] == complex(12., 1.) );
+			d2Dreal[2][1] = 12.0;
+			BOOST_REQUIRE( d2D[2][1] == complex(12.0, 1.0) );
 
 			auto&& d2DrealT = rotated(d2D).reinterpret_array_cast<double>();
-			BOOST_REQUIRE( d2DrealT[2][1] == 7. );
+			BOOST_REQUIRE( d2DrealT[2][1] == 7.0 );
 
 			multi::array<double, 2> const d2Dreal_copy = d2D.template reinterpret_array_cast<double>();
 			BOOST_REQUIRE( d2Dreal_copy == d2Dreal );
 		}
 		{
 			using complex = std::complex<double>;
-			constexpr auto const I = complex{0., 1.};  // NOLINT(readability-identifier-length) imaginary unit
+			auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 			multi::array<complex, 2> arr = {
-				{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
-				{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+				{ 1.0 + 3.0*I, 3.0 - 2.0*I, 4.0 + 1.0*I},
+				{ 9.0 + 1.0*I, 7.0 - 8.0*I, 1.0 - 3.0*I}
 			};
 			auto conjd_arr = arr.static_array_cast<complex, test::conjr<complex*>>();
 			BOOST_REQUIRE( conjd_arr[1][2] == conj(arr[1][2]) );
