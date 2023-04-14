@@ -96,10 +96,10 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 		BOOST_REQUIRE( dimensionality(arr.reinterpret_array_cast<double>(3)) == 3 );
 	#endif
 
-		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).num_elements() == arr.num_elements()*3 );
-		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).size() == 4 );
-		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3)[0].size() == 5 );
-		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3)[0][0].size() == 3 );
+		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3).num_elements() == arr.num_elements()*3 );
+		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3).size() == 4 );
+		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3)[0].size() == 5 );
+		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3)[0][0].size() == 3 );
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[2][3][0] == &std::get<0>(arr[2][3]) );
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[2][3][1] == &std::get<1>(arr[2][3]) );
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[2][3][2] == &std::get<2>(arr[2][3]) );
