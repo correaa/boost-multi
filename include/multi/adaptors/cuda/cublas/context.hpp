@@ -334,9 +334,9 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		assert( mode == CUBLAS_POINTER_MODE_HOST );
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
 		if constexpr(is_convertible_v<RRP, ::thrust::cuda::pointer<RR>>) {
-			sync_call<cublasZdotu>(n, (cuDoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (cuDoubleComplex const*)::thrust::raw_pointer_cast(yy), incy, (cuDoubleComplex*)::thrust::raw_pointer_cast(rr) );
+			sync_call<cublasZdotu>(n, reinterpret_cast<cuDoubleComplex const*>(::thrust::raw_pointer_cast(xx)), incx, reinterpret_cast<cuDoubleComplex const*>(::thrust::raw_pointer_cast(yy)), incy, reinterpret_cast<cuDoubleComplex*>(::thrust::raw_pointer_cast(rr)) );
 		} else {
-			sync_call<cublasZdotu>(n, (cuDoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (cuDoubleComplex const*)::thrust::raw_pointer_cast(yy), incy, (cuDoubleComplex*)rr);
+			sync_call<cublasZdotu>(n, reinterpret_cast<cuDoubleComplex const*>(::thrust::raw_pointer_cast(xx)), incx, reinterpret_cast<cuDoubleComplex const*>(::thrust::raw_pointer_cast(yy)), incy, reinterpret_cast<cuDoubleComplex*>(rr));
 		}
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_HOST);
 	}

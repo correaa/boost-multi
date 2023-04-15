@@ -224,10 +224,10 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveconstruct_implicit) {
 	auto in2 = +multi::fftw::ref(std::move(in)).transposed();
 
 	BOOST_REQUIRE( in2 == in_copy.transposed() );
-// #if not defined(__NVCOMPILER)
+#if not defined(__NVCOMPILER)  // these tests fail with nvc++ 22.9, 23.1
 	BOOST_REQUIRE( in2.base() == in_base );
 	BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-// #endif
+#endif
 #endif
 }
 
@@ -250,10 +250,10 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveassign_from_temp) {
 	in2 = static_cast<multi::array<complex, 2>>(multi::fftw::ref(std::move(in)).transposed());
 
 	BOOST_REQUIRE( in2 == in_copy.transposed() );
-// #if not defined(__NVCOMPILER)  // these tests fail with nvc++ 22.9 in wsl2
+#if not defined(__NVCOMPILER)  // these tests fail with nvc++ 22.9, 23.1
 	BOOST_REQUIRE( in2.base() == in_base );
 	BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-// #endif
+#endif
 #endif
 }
 
@@ -276,10 +276,10 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveassign) {
 	in2 = multi::fftw::ref(std::move(in)).transposed();
 
 	BOOST_REQUIRE( in2 == in_copy.transposed() );
-// #if not defined(__NVCOMPILER)  // these tests fail with nvc++ 22.9 in wsl2
+#if not defined(__NVCOMPILER)  // these tests fail with nvc++ 22.9, 23.1
 	BOOST_REQUIRE( in2.base() == in_base );
 	BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-// #endif
+#endif
 #endif
 }
 
@@ -302,9 +302,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_fftwmove) {
 	in2 = multi::fftw::move(in).transposed();
 
 	BOOST_REQUIRE( in2 == in_copy.transposed() );
-// #if not defined(__NVCOMPILER)  // these tests fail with nvc++ 22.9 in wsl2
+#if not defined(__NVCOMPILER)  // these tests fail with nvc++ 22.9, 23.1
 	BOOST_REQUIRE( in2.base() == in_base );
 	BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-// #endif
+#endif
 #endif
 }

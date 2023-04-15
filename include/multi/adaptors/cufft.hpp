@@ -28,7 +28,7 @@ namespace multi{
 namespace cufft{
 
 class sign {
-	int impl_;
+	int impl_ = 0;
 
  public:
 	sign() = default;
