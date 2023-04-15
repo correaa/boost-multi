@@ -4,9 +4,10 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS numeric"
 #include<boost/test/unit_test.hpp>
 
-#include <multi/array.hpp>
 #include <multi/adaptors/blas/numeric.hpp>
 #include <multi/adaptors/blas/operations.hpp>
+
+#include <multi/array.hpp>
 
 #include<complex>
 
