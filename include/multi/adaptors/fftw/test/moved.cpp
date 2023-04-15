@@ -10,7 +10,7 @@
 namespace multi = boost::multi;
 
 using complex = std::complex<double>;
-[[maybe_unused]] constexpr complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 template<class M> auto power(M const& array) {
 	return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
