@@ -37,7 +37,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
  public:
 	constexpr auto head() const& -> T0 const&      { return           head_ ; }
-	constexpr auto head()     && -> decltype(auto) { return std::move(head_); }
+	constexpr auto head()     && -> decltype(auto) { return std::move(head_); }  // TODO(correaa) MSVC gives error https://godbolt.org/z/f57ereb3W
 	constexpr auto head()      & -> T0      &      { return           head_ ; }
 
 	constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
