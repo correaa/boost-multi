@@ -392,7 +392,7 @@ template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} and 
 template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} and is_d<X>{} and is_d<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, *a, reinterpret_cast<d const*>(ma), lda, reinterpret_cast<d const*>(x), incx, *b, reinterpret_cast<d*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
 template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} and is_c<X>{} and is_c<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(cgemv)(trans, m, n, *a, reinterpret_cast<c const*>(ma), lda, reinterpret_cast<c const*>(x), incx, *b, reinterpret_cast<c*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
 template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} and is_z<X>{} and is_z<Y>{} and is_assignable<Y&, decltype(std::declval<A const&>()*std::declval<M const&>()*std::declval<X const&>()+std::declval<B const&>()*std::declval<Y const&>())>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
-	BLAS(zgemv)(trans, m, n, *a, reinterpret_cast<z const*>(ma), lda, reinterpret_cast<z const*>(x), incx, *b, reinterpret_cast<z*>(y), incy);  // NOLINT(fuchsia-default-arguments-calls,google-readability-casting,readability-identifier-length)
+	BLAS(zgemv)(trans, m, n, *a, reinterpret_cast<z const*>(ma), lda, reinterpret_cast<z const*>(x), incx, *b, reinterpret_cast<z*>(y), incy);  // NOLINT(fuchsia-default-arguments-calls,google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
 }
 
 }  // end namespace core
@@ -449,7 +449,7 @@ v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	if(transA != 'N' and transA != 'n') {MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                     \
 	MULTI_ASSERT1( ldc >= max(1L, n) );                                                                                                                                                           \
 	MULTI_MARK_SCOPE("cpu_herk");                                                                                                                                                                 \
-	BLAS(T##syrk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<T const*>(alpha), aa, BC(lda),        *reinterpret_cast<T const*>(beta), cc, BC(ldc));                                                                 \
+	BLAS(T##syrk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<T const*>(alpha), aa, BC(lda),        *reinterpret_cast<T const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
 }                                                                                                                                                                                                 \
 
 #define xherk(T) \
@@ -465,7 +465,7 @@ v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	if(transA != 'N' and transA != 'n') {MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                                                          \
 	MULTI_ASSERT1( ldc >= max(1L, n) );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                                                         \
 	MULTI_MARK_SCOPE("cpu_herk");                                                                                                                                                                                                      \
-	BLAS(T##herk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<Real const*>(alpha), aa, BC(lda),        *reinterpret_cast<Real const*>(beta), cc, BC(ldc));                                                                                              \
+	BLAS(T##herk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<Real const*>(alpha), aa, BC(lda),        *reinterpret_cast<Real const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                                                            \
 }                                                                                                                                                                                                                                      \
 
 #define xgemm(T) \
@@ -485,7 +485,7 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 	MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
 	if(not( ldc >= max(1L, m) )) {throw std::logic_error("failed 'ldc >= max(1L, m)' with ldc = "+ std::to_string(ldc) +" and m = "+ std::to_string(m));}                                                                               \
 	if(*beta != 0.) {MULTI_ASSERT1((is_assignable<CC&, decltype(std::declval<ALPHA>()*std::declval<AA>()*std::declval<BB>() + std::declval<BETA>()*std::declval<CC>())> {}));}                                                          \
-	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *reinterpret_cast<T const*>(alpha), reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T const*>(static_cast<BB*>(bb)), BC(ldb), *reinterpret_cast<T const*>(beta), (T*)(static_cast<CC*>(cc)) /*TODO(correaa) check constness*/, BC(ldc)); \
+	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *reinterpret_cast<T const*>(alpha), reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T const*>(static_cast<BB*>(bb)), BC(ldb), *reinterpret_cast<T const*>(beta), (T*)(static_cast<CC*>(cc)) /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/ /*TODO(correaa) check constness*/, BC(ldc)); \
 }                                                                                                                                                                                                                        \
 
 // NOLINTNEXTLINE(readability-identifier-length) conventional BLAS name
@@ -509,7 +509,7 @@ v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA
 	if(side == 'L') {MULTI_ASSERT1( lda >= max(ssize_t{1}, m) );}   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                         \
 	if(side == 'R') {MULTI_ASSERT1( lda >= max(ssize_t{1}, n) );}                                                                                                                                                 \
 	MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) );                                                                                                                                                                   \
-	BLAS(T##trsm)(side, uplo, transA, diag, BC(m), BC(n), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T*>(static_cast<BB*>(bb)), BC(ldb));   /*OLINT()*/                                                                  \
+	BLAS(T##trsm)(side, uplo, transA, diag, BC(m), BC(n), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T*>(static_cast<BB*>(bb)), BC(ldb));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
 }                                                                                                                                                                                                                 \
 
 xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)  // NOLINT(readability-function-cognitive-complexity) : 29 of 25
