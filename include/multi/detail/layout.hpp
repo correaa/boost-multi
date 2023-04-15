@@ -110,10 +110,10 @@ struct extensions_t {
 	friend HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.impl_ == other.impl_;}
 	friend HD auto operator!=(extensions_t const& self, extensions_t const& other) {return self.impl_ != other.impl_;}
 
-//	using indices_type = decltype(tuple_cat(make_tuple(multi::index{}), typename extensions_t<D-1>::indices_type{}));
+//  using indices_type = decltype(tuple_cat(make_tuple(multi::index{}), typename extensions_t<D-1>::indices_type{}));
 	using indices_type = multi::detail::tuple_prepend_t<multi::index, typename extensions_t<D-1>::indices_type>;
 
-	[[nodiscard]] /*[[gnu::pure]]*/ constexpr auto from_linear(nelems_type const& n) const -> indices_type {
+	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {
 		auto const sub_num_elements = extensions_t<D-1>{tail(this->base())}.num_elements();
 		assert( sub_num_elements != 0 );
 		return multi::detail::tuple{n/sub_num_elements, extensions_t<D-1>{tail(this->base())}.from_linear(n%sub_num_elements)};
@@ -293,8 +293,8 @@ template<> struct extensions_t<1> {
 	using indices_type = multi::detail::tuple<multi::index>;
 
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {  // NOLINT(readability-convert-member-functions-to-static) TODO(correaa)
-	//	assert(n <= num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-	//	return std::make_tuple(n);
+	//  assert(n <= num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+	//  return std::make_tuple(n);
 	//  return std::tuple<multi::index>{n};
 		return indices_type{n};
 	}
@@ -344,9 +344,9 @@ template<> struct extensions_t<1> {
 		using boost::multi::detail::get;
 		auto& extension_ = get<0>(impl_);
 		arxiv & multi::archive_traits<Archive>::make_nvp("extension", extension_);
-	//	arxiv & boost::serialization::          make_nvp("extension", extension );
-	//	arxiv & cereal::                        make_nvp("extension", extension );
-	//	arxiv &                                                       extension  ;
+	//  arxiv & boost::serialization::          make_nvp("extension", extension );
+	//  arxiv & cereal::                        make_nvp("extension", extension );
+	//  arxiv &                                                       extension  ;
 	}
 
 	template<std::size_t Index>
@@ -475,7 +475,7 @@ struct layout_t<0, SSize>
 	constexpr auto reverse()          -> layout_t& {return *this;}
 	constexpr auto scale(size_type /*size*/) const {return *this;}
 
-//	friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
+//  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
 	friend HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
 		return
 			   std::tie(self .sub_, self .stride_, self .offset_, self .nelems_)
@@ -648,8 +648,8 @@ struct layout_t
 	constexpr auto extension(dimensionality_type dim) const {return std::apply([](auto... extensions) {return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim));}
 //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto stride   (dimensionality_type dim) const {return std::apply([](auto... strides   ) {return std::array<stride_type    , static_cast<std::size_t>(D)>{strides   ...};}, strides   ()       ).at(static_cast<std::size_t>(dim));}
-//	[[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-//	constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
+//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
+//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
 
 	template<typename Size>
 	constexpr auto partition(Size const& count) -> layout_t& {
