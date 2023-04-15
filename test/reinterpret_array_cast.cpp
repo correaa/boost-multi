@@ -22,7 +22,12 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 	BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3)[8][1] == arr[8].y );
 
 	multi::array<double, 2> A2D = arr.reinterpret_array_cast<double>(3);
+
+	BOOST_REQUIRE( decltype(A2D)::dimensionality == decltype(arr)::dimensionality + 1 );
+#if not defined(__circle_build__)
 	BOOST_REQUIRE( dimensionality(A2D) == dimensionality(arr) + 1 );
+#endif
+
 	BOOST_REQUIRE( size(A2D) == size(arr) );
 	BOOST_REQUIRE(  A2D[8][1] ==  arr[8].y );
 	BOOST_REQUIRE( &A2D[8][1] != &arr[8].y );
@@ -85,11 +90,16 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 	{
 		multi::array<vector3, 2> const arr({4, 5}, vector3{{1.0, 2.0, 3.0}} );
 
+		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
+		BOOST_REQUIRE( decltype(arr.reinterpret_array_cast<double>(3))::dimensionality == 3 );
+	#if not defined(__circle_build__)
 		BOOST_REQUIRE( dimensionality(arr.reinterpret_array_cast<double>(3)) == 3 );
-		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).num_elements() == arr.num_elements()*3 );
-		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).size() == 4 );
-		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3)[0].size() == 5 );
-		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3)[0][0].size() == 3 );
+	#endif
+
+		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3).num_elements() == arr.num_elements()*3 );
+		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3).size() == 4 );
+		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3)[0].size() == 5 );
+		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3)[0][0].size() == 3 );
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[2][3][0] == &std::get<0>(arr[2][3]) );
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[2][3][1] == &std::get<1>(arr[2][3]) );
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[2][3][2] == &std::get<2>(arr[2][3]) );

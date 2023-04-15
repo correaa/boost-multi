@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_T_sub) {
 
 	multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
-	blas::gemm(1., A({0, 100}, {1, 2}), blas::T(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
+	blas::gemm(1.0, A({0, 100}, {1, 2}), blas::T(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
 	BOOST_REQUIRE(C[99][0] == 1.0);
 }
 
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_H_sub) {
 	multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 	blas::gemm(1., A({0, 100}, {1, 2}), blas::H(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
-	BOOST_REQUIRE(C[99][0] == 1.);
+	BOOST_REQUIRE(C[99][0] == 1.0);
 }
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_H_sub_6) {
@@ -74,6 +74,7 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1_T) {
 	BOOST_REQUIRE( C[99][0] == 1.0 );
 }
 
+#if not defined (__circle_build__)  // crashes circle compiler v186
 BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1_H) {
 	using complex = std::complex<double>;  // complex const I{0, 1};
 	multi::array<complex, 2> const A({100, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1884,6 +1885,7 @@ BOOST_AUTO_TEST_CASE(blas_issue_109_complex) {
 	BOOST_TEST_REQUIRE( C[0][1] == 105.0 );
 	BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_complex_mx2) {
 	multi::array<std::complex<double>, 2> const A({3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming

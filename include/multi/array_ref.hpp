@@ -369,13 +369,13 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
 	template<
 		class EElement, typename PPtr,
-		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
+		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
 	>
 	HD constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& other)
-	: ptr_{element_ptr{other.ptr_.base_}, other.ptr_.layout()}, stride_{other.stride_} {}
+	: ptr_{element_ptr{other.base()}, other.ptr_.layout()}, stride_{other.stride_} {}
 
 	template<class EElement, typename PPtr,
-		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
+		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	HD constexpr/*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
@@ -392,8 +392,14 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	HD constexpr auto operator+ (difference_type n) const -> array_iterator {array_iterator ret{*this}; ret += n; return ret;}
 	HD constexpr auto operator[](difference_type n) const -> basic_array<element, D-1, element_ptr> {return *((*this) + n);}
 
-	constexpr auto operator==(array_iterator const& other) const -> bool {return ptr_ == other.ptr_ and stride_== other.stride_ and ptr_.layout() == other.ptr_.layout();}
-	/*[[gnu::pure]]*/ constexpr auto operator< (array_iterator const& other) const -> bool {return distance_to(other) > 0;}
+	friend HD constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {
+		return self.ptr_ == other.ptr_ and self.stride_== other.stride_ and self.ptr_.layout() == other.ptr_.layout();
+	}
+
+	HD constexpr auto operator< (array_iterator const& other) const -> bool {
+		assert(stride_ != 0);
+		return (0 < stride_)?(ptr_.base_ < other.ptr_.base_):(other.ptr_.base_ < ptr_.base_);
+	}
 
 	HD constexpr explicit array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> lyt, index stride)
 	: ptr_{base, lyt}, stride_{stride} {}
@@ -419,19 +425,19 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	ptr_type ptr_;
 	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?
 
-	constexpr auto equal(array_iterator const& other) const -> bool {return ptr_ == other.ptr_ and stride_ == other.stride_;}
-	constexpr void decrement() {ptr_.base_ -= stride_;}
-	constexpr void advance(difference_type n) {ptr_.base_ += stride_*n;}
-	constexpr auto distance_to(array_iterator const& other) const -> difference_type {
-		assert( stride_ == other.stride_); assert( stride_ != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
-		return (other.ptr_.base_ - ptr_.base_)/stride_;
-	}
+	// constexpr auto equal(array_iterator const& other) const -> bool {return ptr_ == other.ptr_ and stride_ == other.stride_;}
+	HD constexpr void decrement() {ptr_.base_ -= stride_;}
+	HD constexpr void advance(difference_type n) {ptr_.base_ += stride_*n;}
+	// constexpr auto distance_to(array_iterator const& other) const -> difference_type {
+	// 	assert( stride_ == other.stride_); assert( stride_ != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
+	// 	return (other.ptr_.base_ - ptr_.base_)/stride_;
+	// }
 
  public:
 	HD constexpr auto base()              const&       -> element_ptr {return ptr_.base_;}
 	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr {return self.base();}
 
-	       HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
+	HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
 	friend constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
 
 	constexpr auto operator++() -> array_iterator& {ptr_.base_ += stride_; return *this;}
@@ -760,12 +766,6 @@ struct basic_array
 	template<class, class> friend struct basic_array_ptr;
 
  public:
-	// template<class PPP, std::enable_if_t<not std::is_same_v<PPP, ElementPtr> , int> =0>
-	// HD constexpr basic_array(basic_array<T, D, PPP, Layout> const& other) : basic_array(other.layout(), other.base()) {}
-
-	// template<class Other>
-	// operator Other() const {return Other{this->layout(), this->base()};}
-
 	using element           = typename types::element;
 	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;
@@ -925,7 +925,7 @@ struct basic_array
 	constexpr auto drop(difference_type n)      & -> basic_array       {return drop_aux(n);}
 
  private:
-	HD /*[[gnu::pure]]*/ constexpr auto sliced_aux(index first, index last) const {
+	HD constexpr auto sliced_aux(index first, index last) const {
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
@@ -935,22 +935,22 @@ struct basic_array
 
  public:
 	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
-	HD /*[[gnu::pure]]*/ constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
-	HD /*[[gnu::pure]]*/ constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
 	constexpr auto blocked(index first, index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
-	/*[[gnu::pure]]*/ constexpr auto blocked(index first, index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
+	constexpr auto blocked(index first, index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
 
 	using iextension = typename basic_array::index_extension;
 
-	/*[[gnu::pure]]*/ constexpr auto stenciled(iextension iex)                                                         & -> basic_array{return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex)                                                         & -> basic_array{return blocked(iex.start(), iex.finish());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                        & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                       & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)      & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs)     & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();}
 
-	/*[[gnu::pure]]*/ constexpr auto stenciled(iextension iex)                                                        && -> basic_array{return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex)                                                        && -> basic_array{return blocked(iex.start(), iex.finish());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                       && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                      && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)     && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
@@ -1003,8 +1003,8 @@ struct basic_array
 	using index_range = typename basic_array::index_range;
 
 	constexpr auto range(index_range irng) const& -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
-	/*[[gnu::pure]]*/ constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
-	/*[[gnu::pure]]*/ constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
+	constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
+	constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
 	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
 
@@ -1166,7 +1166,9 @@ struct basic_array
 	HD constexpr auto paren_aux()     && -> basic_array       {return this->operator()();}
 	HD constexpr auto paren_aux() const& -> basic_const_array {return {this->layout(), this->base()};}
 
-	template<class... As> constexpr auto paren_aux(index_range irng, As... args)      & {
+	template<class... As>
+	constexpr auto paren_aux(index_range irng, As... args)  & {
+	// TODO(correaa) investigate how to make it HD
 	//  return range(a).rotated().paren_aux(as...).unrotated();  // TODO(correaa) compact
 	//  auto&& tmp = range(irng);
 	//  auto&& tmp2 =
@@ -1177,7 +1179,9 @@ struct basic_array
 	//  return std::move(tmp3).unrotated(); // std::move(ret);
 		return range(irng).rotated().paren_aux(args...).unrotated();  // std::move(ret);
 	}
-	template<class... As> constexpr auto paren_aux(index_range irng, As... args)     && {
+	template<class... As>
+	constexpr auto paren_aux(index_range irng, As... args) && {
+	// TODO(correaa) investigate how to make it HD
 	//  auto&& tmp = std::move(*this).range(irng);
 	//  auto&& tmp2 = std::move(tmp).rotated().paren_aux(args...);
 	//  return std::move(tmp2).unrotated();
@@ -1578,11 +1582,11 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	template<
 		class Other,
 		decltype(multi::implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
-		decltype(std::declval<Other const&>().data_)* = nullptr
+		decltype(std::declval<Other const&>().base())* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	HD constexpr/*mplct*/ array_iterator(Other const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of the argument
-	: data_{other.data_}, stride_{other.stride_} {}
+	: data_{other.base()}, stride_{other.stride()} {}
 
 	template<
 		class Other,

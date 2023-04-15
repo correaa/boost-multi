@@ -1,12 +1,11 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS dot"
 #include<boost/test/unit_test.hpp>
 
-#include "../../blas/dot.hpp"
-
-#include "../../../array.hpp"
+#include <multi/adaptors/blas/dot.hpp>
+#include <multi/array.hpp>
 
 #include<complex>
 #include<numeric>
@@ -59,8 +58,10 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C) {
 	multi::array<complex, 1> const x = {1.0 + 0.0*I, 2.0 + 0.0*I, 3.0 + 0.0*I};  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<complex, 1> const y = {1.0 + 0.0*I, 2.0 + 2.0*I, 3.0 + 0.0*I};  // NOLINT(readability-identifier-length) BLAS naming
 	complex res{0.0, 0.0};
+#if not defined(__circle_build__)  // crashes circle compiler v186
 	blas::dot(blas::C(x), y, res);
 	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
+#endif
 }
 
 #if defined(CUDA_FOUND) and CUDA_FOUND
@@ -185,6 +186,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 		complex c = blas::dot(A[1], A[2]);  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
 	}
+	#if not defined(__circle_build__)  // crashes circle compiler v186
 	{
 		complex c = blas::dot(A[1], blas::C(A[2]));  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) {return alpha*conj(omega);}) );
@@ -201,4 +203,5 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 		complex c = blas::dot(blas::C(A[1]), A[2]);  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) {return conj(alpha)*omega;}) );
 	}
+	#endif
 }

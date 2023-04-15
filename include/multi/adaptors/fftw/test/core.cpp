@@ -4,8 +4,8 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW core"
 #include<boost/test/unit_test.hpp>
 
-#include "../../../adaptors/fftw.hpp"
-#include "../../../array.hpp"
+#include <multi/adaptors/fftw.hpp>
+#include <multi/array.hpp>
 
 #include<chrono>
 #include<iostream>
@@ -18,13 +18,11 @@ namespace {
 namespace multi = boost::multi;
 namespace fftw = multi::fftw;
 
-using complex = std::complex<double>; [[maybe_unused]] constexpr complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-
 template<class M> auto power(M const& elem) -> decltype(std::norm(elem)) {return std::norm(elem);}
 
-template<class M, DELETE((M::rank_v < 1))>
+template<class M, DELETE((M::rank::value < 1))>
 auto power(M const& array) {
-	return accumulate(begin(array), end(array), 0., [](auto const& alpha, auto const& omega) {return alpha + power(omega);});
+	return accumulate(begin(array), end(array), 0.0, [](auto const& alpha, auto const& omega) {return alpha + power(omega);});
 }
 
 struct sum_power{
@@ -80,6 +78,9 @@ BOOST_AUTO_TEST_CASE(fftw_3D) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const) {
+
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0 *I, 4.0 + 5.0*I, 5.0 + 6.0*I};
 
 	auto fwd = multi::fftw::dft(in, fftw::forward);  // Fourier[in, FourierParameters -> {1, -1}]
@@ -92,6 +93,8 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> const in = {
 		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -105,6 +108,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> const in = {
 		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -117,7 +122,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)) {
-	[[maybe_unused]] const complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> const in = {
 		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
@@ -138,6 +143,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_rotated, *boost::unit_test::tolerance(0.0001)) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	using multi::array;
 	array<complex, 2> const in = {
 		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
@@ -156,6 +163,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_rotated, *boost::unit_test::tolerance(0.0001)) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> const in = {
 		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -181,6 +190,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const_forward) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0 *I, 4.0 + 5.0*I, 5.0 + 6.0*I};
 
 	auto fwd = multi::fftw::dft_forward(in);  // Fourier[in, FourierParameters -> {1, -1}]
@@ -193,6 +204,8 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_forward) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const_sign) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0*I, 4.0 + 5.0*I, 5.0 + 6.0*I};
 
 	auto const fwd = multi::fftw::dft(in, static_cast<multi::fftw::sign>(+1));  // Fourier[in, FourierParameters -> {1, -1}]
@@ -201,6 +214,8 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_sign) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const_copy_by_false) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0 *I, 4.0 + 5.0*I, 5.0 + 6.0*I};
 
 	auto const out = multi::fftw::dft({false}, in, static_cast<multi::fftw::sign>(+1));
@@ -208,6 +223,8 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_copy_by_false) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const_copy_by_false_forward) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
 
 	auto const out = multi::fftw::dft_forward({false}, in);
@@ -215,6 +232,8 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_copy_by_false_forward) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_many1_from_2) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in({3, 10}); randomizer<complex>{}(in);
 	multi::array<complex, 2> out({3, 10});
 	fftw::dft({false, true}, in, out, fftw::forward);
@@ -229,7 +248,9 @@ BOOST_AUTO_TEST_CASE(fftw_many1_from_2) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_many2_from_3) {
-	multi::array<complex, 3> in({3, 5, 6}); randomizer<complex>{}(in);
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+	multi::array<complex, 3> in ({3, 5, 6}); randomizer<complex>{}(in);
 	multi::array<complex, 3> out({3, 5, 6});
 	fftw::dft_forward({false, true, true}, in, out);
 
@@ -243,7 +264,9 @@ BOOST_AUTO_TEST_CASE(fftw_many2_from_3) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_many2_from_2) {
-	multi::array<complex, 2> in({5, 6}); randomizer<complex>{}(in);
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+	multi::array<complex, 2> in ({5, 6}); randomizer<complex>{}(in);
 	multi::array<complex, 2> out({5, 6});
 	fftw::dft({true, true}, in, out, static_cast<fftw::sign>(FFTW_FORWARD));
 
@@ -253,6 +276,8 @@ BOOST_AUTO_TEST_CASE(fftw_many2_from_2) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 4> const in = [] {
 		multi::array<complex, 4> in({6, 6, 6, 6}); in[2][3][4][5] = 99.0; return in;
 	}();
@@ -261,6 +286,8 @@ BOOST_AUTO_TEST_CASE(fftw_4D) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_many) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	auto const in = [] {
 		multi::array<complex, 4> in({7, 8, 9, 10}, {0.0, 0.0});
 		in[2][3][4][5] = 99.0; return in;
@@ -274,6 +301,8 @@ BOOST_AUTO_TEST_CASE(fftw_4D_many) {
 }
 
 BOOST_AUTO_TEST_CASE(cufft_many_2D) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	auto const in = [] {
 		multi::array<complex, 3> ret({10, 10, 10});
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
@@ -292,6 +321,8 @@ BOOST_AUTO_TEST_CASE(cufft_many_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_5D) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 5> in({4, 5, 6, 7, 8}, {0.0, 0.0});
 	BOOST_REQUIRE( size(in) == 4 );
 
@@ -303,6 +334,8 @@ BOOST_AUTO_TEST_CASE(fftw_5D) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
@@ -312,6 +345,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
@@ -321,6 +356,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
@@ -330,6 +367,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_dft) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
@@ -338,6 +377,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_dft) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	auto out = multi::fftw::dft(in, fftw::forward);
@@ -345,6 +386,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out_default) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	auto out = multi::fftw::dft(in, fftw::forward);
@@ -352,12 +395,16 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out_default) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 3> in({4, 4, 4}); std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
 	multi::array<complex, 3> const out = fftw::dft(in, fftw::forward);
 	BOOST_REQUIRE( std::abs(power(in) - power(out)/num_elements(out)) < 1e-10 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 3> io({4, 4, 4}); std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);
 	auto powerin = power(io);
 	fftw::dft_inplace(io, fftw::forward);
@@ -365,6 +412,8 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 3> io({4, 4, 4});
 	std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	auto const powerin = power(io);
@@ -374,6 +423,8 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_ref) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 3> in({4, 4, 4});
 	std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);  //  NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 3> out({4, 4, 4});
@@ -382,6 +433,8 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_ref) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	double powerin = std::numeric_limits<double>::quiet_NaN();
 	auto fun = [&]() {
 		multi::array<complex, 3> in({4, 4, 4});
@@ -394,6 +447,8 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in = {
 		{ {11.0, 0.0}, {12.0, 0.0} },
 		{ {21.0, 0.0}, {22.0, 0.0} }
@@ -406,6 +461,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 4> const in = [] {
 		multi::array<complex, 4> in({5, 10, 17, 1});
 		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
@@ -425,6 +482,8 @@ BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
 
 
 BOOST_AUTO_TEST_CASE(fftw_1D_power_c_interface) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 1> in(16, {0.0, 0.0});
 	BOOST_REQUIRE( size(in) == 16 );
 
@@ -442,11 +501,11 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power_c_interface) {
 #if 0
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part1) {
 	multi::array<complex, 2> const in = {
-		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{  4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{  3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	{
@@ -542,6 +601,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part2) {
 #endif
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> const in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -588,6 +649,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> const in = {
 		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -662,6 +725,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	auto const in = [] {
 		multi::array<complex, 4> in({17, 15, 10, 8}, {0.0, 0.0});
 		in[2][3][4][5] = 99.0;
@@ -688,6 +753,8 @@ BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in = {
 		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -701,6 +768,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -712,7 +781,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed) {
-	#if not defined(__circle_build__)
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+//	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -726,11 +797,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed) {
 
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
-	#endif
+//	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nested) {
-	#if not defined(__circle_build__)
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+//	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -743,11 +816,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nested) {
 	in = multi::fftw::ref(in.transposed());
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
-	#endif
+//	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
-	#if not defined(__circle_build__)
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+//	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -758,11 +833,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
 	in = multi::fftw::ref(in).transposed();
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
-	#endif
+//	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
-	#if not defined(__circle_build__)
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+//	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -773,7 +850,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
 	in = multi::fftw::ref(in.transposed());
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
-	#endif
+//	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
@@ -791,7 +868,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
-	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
+//	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
 	multi::array<std::string, 2> in = {
 		{  "100.0 + 2.0*I",  "9.0 - 1.0*I", "2.0 +  4.0*I"},  // std::string NOLINT(fuchsia-default-arguments-calls)
 		{    "3.0 + 3.0*I",  "7.0 - 4.0*I", "1.0 +  9.0*I"},  // std::string NOLINT(fuchsia-default-arguments-calls)
@@ -800,5 +877,5 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in = in.transposed();
 	BOOST_REQUIRE( in != in_transpose );
-	#endif
+//	#endif
 }

@@ -1,5 +1,4 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include <thrust/host_vector.h>
@@ -29,7 +28,7 @@ BOOST_AUTO_TEST_CASE(vector){
 	// Copy host_vector H to device_vector D
 	thrust::device_vector<int> D = H;
 
-//	f(D.data());
+//  f(D.data());
 
 	// elements of D can be modified
 	D[0] = 99;

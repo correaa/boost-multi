@@ -701,8 +701,9 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get) {
 BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get_using) {
 	multi::extensions_t<2> const exts{3, 5};
 	using std::get;
-	auto const eye = get<0>(exts.from_linear(7));
-	auto const jay = get<1>(exts.from_linear(7));
+	auto fl = exts.from_linear(7L);
+	auto const eye = get<0>(fl);
+	auto const jay = get<1>(fl);
 	BOOST_TEST_REQUIRE( eye == 1 );
 	BOOST_TEST_REQUIRE( jay == 2 );
 }
@@ -881,16 +882,16 @@ BOOST_AUTO_TEST_CASE(extensionS_1D_iteration) {
 }
 
 // BOOST_AUTO_TEST_CASE(extensionS_2D_iteration) {
-// 	{
-// 		multi::extensions_t<2> exts({3, 5});
-// 		BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
-// 		BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
-// 	}
-// 	{
-// 		multi::extensions_t<2> exts({multi::iextension{0, 3}, multi::iextension{0, 5}});
-// 		BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
-// 		BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
-// 	}
+//  {
+//      multi::extensions_t<2> exts({3, 5});
+//      BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
+//      BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
+//  }
+//  {
+//      multi::extensions_t<2> exts({multi::iextension{0, 3}, multi::iextension{0, 5}});
+//      BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
+//      BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
+//  }
 // }
 
 BOOST_AUTO_TEST_CASE(layout_1D_iteration) {
@@ -899,8 +900,8 @@ BOOST_AUTO_TEST_CASE(layout_1D_iteration) {
 	BOOST_REQUIRE( lyt[1] == 1 );
 	BOOST_REQUIRE( lyt[2] == 2 );
 
-	// 	BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
-	// 	BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
+	//  BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
+	//  BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 }
 
 BOOST_AUTO_TEST_CASE(layout_2D_iteration) {
@@ -913,6 +914,6 @@ BOOST_AUTO_TEST_CASE(layout_2D_iteration) {
 	BOOST_REQUIRE( lyt[1][1] == 4 );
 	BOOST_REQUIRE( lyt[1][2] == 5 );
 
-	// 	BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
-	// 	BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
+	//  BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
+	//  BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 }

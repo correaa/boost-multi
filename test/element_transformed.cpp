@@ -13,7 +13,7 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
@@ -99,7 +99,7 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_proxy) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	multi::array<complex, 1> const arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_proxy) {
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_mutable_proxy) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
@@ -129,12 +129,12 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_mutable_proxy) {
 
 BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	complex cee = 1.0 + 2.0*I;
 
 	// NOLINTNEXTLINE(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
-	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};	 // g++ -std=20 needs the transformation (lambda) to be noexcept
+	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};  // g++ -std=20 needs the transformation (lambda) to be noexcept
 
 	multi::transform_ptr<complex, decltype(conj_ro), complex*> const conjd_ceeP{&cee, conj_ro};
 	BOOST_REQUIRE( *conjd_ceeP == std::conj(1.0 + 2.0*I) );
@@ -142,12 +142,12 @@ BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 
 BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
 	using complex = std::complex<double>;
-	constexpr auto I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
 
 	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
 	// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
-	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};	 // g++ -std=20 needs the transformation (lambda) to be noexcept
+	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};  // g++ -std=20 needs the transformation (lambda) to be noexcept
 
 	auto const& conjd_arr = arr.element_transformed(conj_ro);
 	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
@@ -158,8 +158,8 @@ BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
 
 BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
 	struct S {  // NOLINT(readability-identifier-naming)
-    	int a;
-    	int b;
+        int a;
+        int b;
 	};
 
 	multi::array<S, 1> arr({2}, S{});
@@ -175,8 +175,8 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
 
 BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int_array) {
 	struct S {  // NOLINT(readability-identifier-naming)
-    	int a[10];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing
-    	int b;
+        int a[10];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing
+        int b;
 	};
 
 	multi::array<S, 1> vec({2}, S{});

@@ -65,8 +65,8 @@ constexpr auto operator"" _if(long double value) { return imaginary<float>{stati
 constexpr auto operator""_F_I(long double value) { return imaginary<float>{static_cast<float>(value)}; }
 constexpr auto operator"" _IF(long double value) { return imaginary<float>{static_cast<float>(value)}; }
 
-template<char... Chars>
-constexpr auto operator""_FI() noexcept {}
+// template<char... Chars>
+// constexpr auto operator""_FI() noexcept {}
 
 }  // namespace literals
 

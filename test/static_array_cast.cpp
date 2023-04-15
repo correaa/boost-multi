@@ -51,8 +51,6 @@ class involuter {
 	It it_;
 	MULTI_NO_UNIQUE_ADDRESS F f_;
 	template<class, class> friend class involuter;
-//  template<class From, std::enable_if_t<std::is_convertible<From, It>{}, int> =0>
-//  static constexpr auto implicit_cast(From&& f) {return static_cast<It>(f);}
 
  public:
 	using pointer           = involuter<typename std::iterator_traits<It>::pointer, F>;
@@ -65,19 +63,22 @@ class involuter {
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
 	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{} {}  // NOLINT(readability-identifier-length) clang-tidy 14 bug
 	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
-//  involuter(involuter const& other) = default;
+
 	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
 	template<class Other> constexpr involuter(involuter<Other, F> const& other) : it_{multi::implicit_cast<It>(other.it_)}, f_{other.f_} {}
-//  auto operator=(involuter const& other) -> involuter& = default;
-	constexpr auto operator*() const {return reference{*it_, f_};}
+
+	constexpr auto operator* () const {return reference{ *it_, f_};}
+	constexpr auto operator->() const {return pointer  {&*it_, f_};}
+
 	constexpr auto operator==(involuter const& other) const {return it_ == other.it_;}
 	constexpr auto operator!=(involuter const& other) const {return it_ != other.it_;}
+	constexpr auto operator< (involuter const& other) const {return it_ <  other.it_;} 
+
 	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto) {it_+=n; return *this;}
 	constexpr auto operator+ (typename involuter::difference_type n) const {return involuter{it_+n, f_};}
 	constexpr auto operator- (typename involuter::difference_type n) const {return involuter{it_-n, f_};}
 	constexpr auto operator-(involuter const& other) const {return it_ - other.it_;}
-	constexpr auto operator->() const {return pointer{&*it_, f_};}
-//  ~involuter() = default;
+
 	constexpr auto operator[](typename involuter::difference_type n) const {return reference{*(it_ + n), f_};}
 };
 
