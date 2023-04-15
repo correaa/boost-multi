@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 2.0, A, B);
 		BOOST_REQUIRE_CLOSE( B[0][0] , 2.0*3.0/10.0 , 0.00001 );
-		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A, B))[0][0] , 2.*B_cpy[0][0] , 0.00001 );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1.0, A, B))[0][0] , 2.*B_cpy[0][0] , 0.00001 );
 	}
-	 {
+	{
 		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{3.0, 4.0, 5.0},
 		};
@@ -120,9 +120,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 	}
 }
 
+#if not defined(__circle_build__)
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+	using complex = std::complex<double>; auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{1.0 + 2.0*I,  3.0 - 1.0*I,  4.0 + 9.0*I},
 		{NAN        ,  7.0 + 4.0*I,  1.0 + 8.0*I},
@@ -364,3 +365,4 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized
 	blas::trsm(blas::side::left, {1.0, 0.0}, blas::U(A), blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 }
+#endif
