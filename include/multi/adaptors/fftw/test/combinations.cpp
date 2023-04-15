@@ -4,7 +4,7 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
 #include<boost/test/unit_test.hpp>
 
-#include "../../fftw.hpp"
+#include <multi/adaptors/fftw.hpp>
 
 #include<chrono>
 #include<complex>

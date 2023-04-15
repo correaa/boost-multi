@@ -4,8 +4,8 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW core"
 #include<boost/test/unit_test.hpp>
 
-#include "../../../adaptors/fftw.hpp"
-#include "../../../array.hpp"
+#include <multi/adaptors/fftw.hpp>
+#include <multi/array.hpp>
 
 #include<chrono>
 #include<iostream>
@@ -18,11 +18,11 @@ namespace {
 namespace multi = boost::multi;
 namespace fftw = multi::fftw;
 
-using complex = std::complex<double>; [[maybe_unused]] constexpr complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 template<class M> auto power(M const& elem) -> decltype(std::norm(elem)) {return std::norm(elem);}
 
-template<class M, DELETE((M::rank_v < 1))>
+template<class M, DELETE((M::rank::value < 1))>
 auto power(M const& array) {
 	return accumulate(begin(array), end(array), 0., [](auto const& alpha, auto const& omega) {return alpha + power(omega);});
 }
