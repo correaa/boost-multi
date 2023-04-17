@@ -102,19 +102,24 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	->decltype(std::declval<tuple<T0, Ts...> const&>().at_aux(priority<1>{}, idx)){
 		return this->                                  at_aux(priority<1>{}, idx);}
 
-	// template<typename Difference>
-	// decltype(auto) operator+=(Difference d) {return tail() += d;}
-	// template<typename Difference>
-	// decltype(auto) operator-=(Difference d) {return tail() -= d;}
-
 	template<std::size_t N>
-	constexpr auto get() -> auto const& {  // NOLINT(readability-identifier-length) std naming
+	constexpr auto get() const& -> auto const& {  // NOLINT(readability-identifier-length) std naming
 		if constexpr(N == 0) {
 			return head();
 		} else {
 			return tail().template get<N-1>();
 		}
 	}
+
+	template<std::size_t N>
+	constexpr auto get() -> auto& {  // NOLINT(readability-identifier-length) std naming
+		if constexpr(N == 0) {
+			return head();
+		} else {
+			return tail().template get<N-1>();
+		}
+	}
+
 };
 
 #if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
