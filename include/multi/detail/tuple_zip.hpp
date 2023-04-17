@@ -33,11 +33,11 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	T0 head_;
 	using head_type = T0;
 	using tail_type = tuple<Ts...>;
-//	tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
+//  tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
 
  public:
 	constexpr auto head() const& -> T0 const&      { return           head_ ; }
-	constexpr auto head()     && -> decltype(auto) { return std::move(head_); }  // TODO(correaa) MSVC gives error https://godbolt.org/z/f57ereb3W
+	constexpr auto head()     && -> decltype(auto) { return std::move(head_); }
 	constexpr auto head()      & -> T0      &      { return           head_ ; }
 
 	constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
@@ -48,8 +48,8 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr tuple(tuple const&) = default;
 
 	// template<class... TTs, class = std::enable_if<
-	// 	std::is_constructible_v<head_type, decltype(std::declval<tuple const&>().head())> and
-	// 	std::is_constructible_v<tail_type, decltype(std::declval<tuple const&>().tail())>
+	//  std::is_constructible_v<head_type, decltype(std::declval<tuple const&>().head())> and
+	//  std::is_constructible_v<tail_type, decltype(std::declval<tuple const&>().tail())>
 	// >>
 	// constexpr tuple(tuple<TTs...> const& other) : head_{other.head()}, tuple<Ts...>{other.tail()} {}
 
@@ -106,6 +106,15 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	// decltype(auto) operator+=(Difference d) {return tail() += d;}
 	// template<typename Difference>
 	// decltype(auto) operator-=(Difference d) {return tail() -= d;}
+
+	template<std::size_t N>
+	constexpr auto get() -> auto const& {  // NOLINT(readability-identifier-length) std naming
+		if constexpr(N == 0) {
+			return head();
+		} else {
+			return tail().template get<N-1>();
+		}
+	}
 };
 
 #if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
@@ -237,20 +246,22 @@ struct tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {
 	using type = typename tuple_element<N - 1, boost::multi::detail::tuple<Ts...>>::type;
 };
 
+//using boost::multi::detail::get;
+
 template<std::size_t N, class... Ts>
 constexpr auto get(boost::multi::detail::tuple<Ts...> const& t)  // NOLINT(readability-identifier-length) std naming
 ->decltype(boost::multi::detail::get<N>(t)) {
-	return boost::multi::detail::get<N>(t); }
+ return boost::multi::detail::get<N>(t); }
 
 template<std::size_t N, class... Ts>
 constexpr auto get(boost::multi::detail::tuple<Ts...> & t)  // NOLINT(readability-identifier-length) std naming
 ->decltype(boost::multi::detail::get<N>(t)) {
-	return boost::multi::detail::get<N>(t); }
+ return boost::multi::detail::get<N>(t); }
 
 template<std::size_t N, class... Ts>
 constexpr auto get(boost::multi::detail::tuple<Ts...> && t)  // NOLINT(readability-identifier-length) std naming
 ->decltype(boost::multi::detail::get<N>(std::move(t))) {
-	return boost::multi::detail::get<N>(std::move(t)); }
+ return boost::multi::detail::get<N>(std::move(t)); }
 
 template <class F, class Tuple, std::size_t... I>
 constexpr auto apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...>/*012*/) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
