@@ -980,12 +980,17 @@ int main() {
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
 However, note that the user must ensure that data is serialized and deserialized into the same type;
-the underlying serialization libraroes only do minimal consistency checks for efficiency reasons and don't try to second-guess file formats or contained types.
+the underlying serialization libraries only do minimal consistency checks for efficiency reasons and don't try to second-guess file formats or contained types.
 Serialization is a relatively low-level feature for which efficiency and economy of bytes is a priority.
 Cryptic errors and crashes can occur if serialization libraries, file formats, or C++ types are mixed between writes and reads.
 
-References to subarrays can also be serialized; however, in such case, size information is not saved.
+References to subarrays (views) can also be serialized; however, size information is not saved in such cases.
 The reasoning is that references to subarrays cannot be resized in their number of elements if there is a size mismatch during deserialization.
+Therefore, array views should be deserialized as other array views, with matching sizes.
+
+The output JSON file of the previous example looks like this.
+(The XML would have a similar structure.)
+
 
 The output JSON file of the previous example looks like this.
 (The XML would have a similar structure.)
