@@ -941,8 +941,7 @@ Here it is a small implementation of save and load functions for array to JSON f
 The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
 
 ```cpp
-#include <multi/array.hpp>  // our library
-
+#include <multi/array.hpp>  // this library
 
 #include <cereal/archives/json.hpp>                // #include <boost/archive/xml_iarchive.hpp>
                                                    // #include <boost/archive/xml_oarchive.hpp>
@@ -988,10 +987,6 @@ Cryptic errors and crashes can occur if serialization libraries, file formats, o
 References to subarrays (views) can also be serialized; however, size information is not saved in such cases.
 The reasoning is that references to subarrays cannot be resized in their number of elements if there is a size mismatch during deserialization.
 Therefore, array views should be deserialized as other array views, with matching sizes.
-
-The output JSON file of the previous example looks like this.
-(The XML would have a similar structure.)
-
 
 The output JSON file of the previous example looks like this.
 (The XML would have a similar structure.)
