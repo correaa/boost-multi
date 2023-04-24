@@ -250,9 +250,11 @@ INQ-NVCC-OMPI-GPU:
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
   needs: ["NVCC"]
 
-QMCPACK-G++:
+qmcpack:
   image: debian:testing
   stage: test
+  variables:
+    GIT_STRATEGY: none
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
     - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git
@@ -272,23 +274,6 @@ QMCPACK-G++:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-# QMCPACK-CUDA:
-#   stage: test
-#   tags:
-#     - intel_compiler
-#   script:
-#     - git clone https://github.com/QMCPACK/qmcpack.git
-#     - cd qmcpack
-#     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
-#     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
-#     - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH # e.g. https://gitlab.com/correaa/boost-multi.git
-#     - cd build
-#     - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" ..
-#     - make -j16 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
-#     - ctest -R ppconvert --output-on-failure
-#     - ctest -R afqmc     --output-on-failure
-#   needs: ["QMCPACK-G++","NVCC-GPU"]
-
 QMCPACK-CUDA:
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -307,5 +292,5 @@ QMCPACK-CUDA:
     - make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
-  needs: ["QMCPACK-G++","NVCC"]
+  needs: ["qmcpack","NVCC"]
 
