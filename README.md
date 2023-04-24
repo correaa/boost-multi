@@ -875,8 +875,8 @@ For this reason, `resize(new_size)` is replaced with `reextent({new_size})` in `
 
 With the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`.
 
-Finally, an array can be copied by `std::vector<T> v(A1D.begin(), A1D.end());` or `v.assign(A1D.begin(), A1D.end());` or biseversa.
-Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data(), A1D.size());`. 
+Finally, an array can be copied by `std::vector<T> v(A1D.begin(), A1D.end());` or `v.assign(A1D.begin(), A1D.end());` or viseversa.
+Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data_elements(), A1D.num_elements());`. 
 (See examples [here](https://godbolt.org/z/n4TY998o4).)
 
 The C++23 standard is projected to provide `mdspan`, a non-owning _multidimensional_ array.
@@ -890,7 +890,7 @@ Due to the priority of arbitrary layouts, the `mdspan` research team didn't find
 Its compatibility with the rest of the STL is therefore a bit lacking.
 The ultimate reason is that arbitrary layouts do not compose well across subdimensions, and, in turn, this imposes certain limitations in `mdspan`, such as ad-hoc slicing and subarray.
 
-Here is a table with a comparison (also comparing with R. Garcia's Boost.MultiArray). 
+Here is a table with a comparison with `mdspan` and with R. Garcia's [Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html). 
 Also, the libraries can be tried [here](https://godbolt.org/z/5Pbrs5fEd).
 
 |                             | Multi                                                           | mdspan                                                 | Boost.MultiArray (R. Garcia) |
