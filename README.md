@@ -909,7 +909,7 @@ Also, the libraries can be tried [here](https://godbolt.org/z/5Pbrs5fEd).
 | Subarray views              | **yes**, via `A({0, 2}, {1, 2})` or `A(1, {1, 2})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{0, 2})` | **yes**, via `A[indices[range(0, 2)][range(1, 2)]]` |
 | Subarray with lower dim     | **yes**, via `A(1, {1, 2})`                                     | **yes**, via `submdspan(A, 1, std::tuple{0, 2})`       | **yes**, via `A[1][indices[range(0, 2)]]` |
 | Subarray w/well def layout  | **yes** (strided layout)                                        | no                                                     | **yes** (strided layout)   |
-| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | no (no allocation or ownership)                        | **yes** |
+| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | no (no allocation or ownership)                        | **yes** (stateless?) |
 | PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)                        |   no    |
 | Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                                     |   no    |
 | Strided Layout              | **yes**                                                         | **yes**                                                |  **yes** |
