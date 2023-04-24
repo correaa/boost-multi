@@ -214,7 +214,6 @@ CIRCLE:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-    # -DCMAKE_CXX_FLAGS="-nostdinc -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/lib/gcc/x86_64-linux-gnu/11/include" -DBoost_USE_STATIC_LIBS=OFF -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
   needs: ["OLDCLANGTIDYSANI"]
   retry:
     max: 2
@@ -222,12 +221,14 @@ CIRCLE:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-INQ-NVCC-OMPI-GPU:
+inq-nvcc-ompi:
   allow_failure: false
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
     - nvidia-docker
+  variables:
+    GIT_STRATEGY: none
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config
@@ -274,11 +275,13 @@ qmcpack:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-QMCPACK-CUDA:
+qmcpack-cuda:
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
     - nvidia-docker
+  variables:
+    GIT_STRATEGY: none
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
