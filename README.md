@@ -3,7 +3,7 @@
 -->
 # [Boost.]Multi
 
-> (not an official Boost library)
+> **Disclosure: Not an official or accepted Boost library.**
 
 _© Alfredo A. Correa, 2018-2023_
 
