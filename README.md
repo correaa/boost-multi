@@ -976,17 +976,16 @@ int main() {
 	assert(A == B);
 }
 ```
-[(live)](https://godbolt.org/z/35vT1fx89)
+[(online)](https://godbolt.org/z/9j9avjh8M)
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
-However note that it is responsibility of the user to make sure that data is serialized and deserialized into the same type and also assuming the same format.
-This is because the underlying serialization library only do minimal consistency checks for efficiency reasons and doesn't try to second guess file formats or contained types.
-Serialization is a relatively low level feature for which efficiency and economy of bytes is priority.
-Cryptic errors and crashes can occur if serialization libraries, file formats or C++ types are mixed between writes and reads.
-On top of serialization checks can be added by the user before and after loading a file.
+However, note that the user must ensure that data is serialized and deserialized into the same type;
+the underlying serialization libraroes only do minimal consistency checks for efficiency reasons and don't try to second-guess file formats or contained types.
+Serialization is a relatively low-level feature for which efficiency and economy of bytes is a priority.
+Cryptic errors and crashes can occur if serialization libraries, file formats, or C++ types are mixed between writes and reads.
 
-References to subarrays can also be serialized, however, in such case size information is not saved.
-The reason is that references to subarrays cannot be resized in their number of elements if there is size mismatch during deserialization.
+References to subarrays can also be serialized; however, in such case, size information is not saved.
+The reasoning is that references to subarrays cannot be resized in their number of elements if there is a size mismatch during deserialization.
 
 The output JSON file of the previous example looks like this.
 (The XML would have a similar structure.)
