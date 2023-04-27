@@ -914,16 +914,16 @@ Also, the libraries can be tried [here](https://godbolt.org/z/5Pbrs5fEd).
 | PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)                        |   no    |
 | Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                                     |   no    |
 | Strided Layout              | **yes**                                                         | **yes**                                                |  **yes** |
-| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes** (only views are supported)                     |  **yes**  |
+| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes** (only views are supported)                        |  **yes**  |
 | Zig-zag / Hilbert ordering  | no                                                              | **yes**, via arbitrary layouts (no inverse or flattening) | no |
-| Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing    | no |
-| Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)       | no, only for allocated arrays |
-| Iterators                   | **yes**, standard compliant, random-access-iterator             | no, or very limited                                    | **yes**, limited |
-| Multidimensional iterators (cursors) | **yes** (experimental)                                 | no                                                     | no |
-| STL algorithms or Ranges    | **yes**                                                         | no, limited via `std::cartesian_product`               | **yes**, some do not work |
-| Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                                                     | no |
-| Compatibility with Thrust   | **yes**, via flatten views (loop fusion), thrust-pointers/-refs | no                                                     | no |
-| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq) | (?) , experience from Kokkos incarnation          | **yes** (?) |
+| Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing       | no |
+| Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)          | no, only for allocated arrays |
+| Iterators                   | **yes**, standard compliant, random-access-iterator             | no, or very limited                                       | **yes**, limited |
+| Multidimensional iterators (cursors) | **yes** (experimental)                                 | no                                                        | no |
+| STL algorithms or Ranges    | **yes**                                                         | no, limited via `std::cartesian_product`                  | **yes**, some do not work |
+| Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                                                        | no |
+| Compatibility with Thrust   | **yes**, via flatten views (loop fusion), thrust-pointers/-refs | no                                                        | no |
+| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq) | (?) , experience from Kokkos incarnation             | **yes** (?) |
 
 ## Serialization
 
