@@ -3,27 +3,29 @@
 -->
 # [Boost.]Multi
 
-> **Disclosure: Not an official or accepted Boost library.**
+> **Disclosure: Not an official or accepted Boost library and it is unrelated to the std::mspan proposal.**
 
 _© Alfredo A. Correa, 2018-2023_
 
-`Multi` is a header-only modern C++ library that provides access and manipulation of data in multidimensional arrays.
+`Multi` is a hmodern C++ library that provides access and manipulation of data in multidimensional arrays.
 
-This library offers array containers and views in arbritrary dimension with well behaved value semantics, offering total compatibility with the Standard Algorithms (STL), special memory (e.g. GPU), and following modern C++ design principles.
+Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
+
+This library offers array containers and views in arbritrary dimension with well behaved value semantics, offering total compatibility with the Standard Algorithms (STL), special memory (including GPUs), and following modern C++ design principles.
 It requires at least C++17 (works with C++20 too.)
 
-Some features:
+Some features of this libraries:
 
 * Value semantics of multi-dimensional array containers
 * Well defined referential semantics of subarray (view) types
-* Interoperability with other libraries, STL, ranges, thrust, Boost, and C-libraries
+* Interoperability with other libraries, STL, ranges, thrust (CUDA GPUs), Boost, and C-libraries
 * Fast access of elements and subarrays (views) types
 * Arbitrary pointer types (fancy pointers, memory spaces)
 * Simplified implementation (~4000 lines)
 
-(Do not confuse this library with Boost.MultiIndex or Boost.MultiArray.
+(Do not confuse this library with Boost.MultiIndex or Boost.MultiArray, or with the standard MDSpan proposal `std::mdspan`.)
 `Multi` shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
-although the code is completely independent and with important semantic and implementation differences.)
+although the code is completely independent and with significant semantic and implementation differences.)
 
 ## Contents
 [[_TOC_]]
@@ -45,7 +47,7 @@ The header (and cmake) files will typically end up in `/usr/local/include/multi`
 ```bash
 cd multi
 mkdir -p build && cd build
-cmake ..  # --install-prefix=$HOME
+cmake ..  # --install-prefix=$HOME/.local
 sudo cmake --install .
 ```
 
@@ -304,7 +306,7 @@ multi::array<double, 3> const A3 = {
     {{15.2, 99.0}, {32.4, 2.0}}
 };
 
-assert( num_elements(A3) == 3 * 2 * 2 );
+assert( A3.num_elements() == 3 * 2 * 2 );
 ```
 
 In all cases constness (`const` declaration) is honored in the expected way.
@@ -315,48 +317,51 @@ The library offer value semantics for the `multi::array<T, D>` family of classes
 Constructing or assignment from an existing array generates a copy of the original object, that is, and object that is independent but equal in value.
 
 ```cpp
-auto B2 = A2;  // same as multi::array<double, 3> B3 = A3;
+auto B2 = A2;  // same as multi::array<double, 2> B2 = A2;
 assert( B2        == A2        );  // copies have the same value (and also the same shape)
-assert( B2.base() != A2.base() );  // but they are independent
+assert( &B2[0][0] != &A2[0][0] );  // but they are independent
 ```
 
-Any (mutable) array can be assigned at any moment, independent of the previous state or shape of the variable.
+A (mutable) array can be assigned at any moment, independently of the previous state or shape (extensions).
 The dimensionalities must match.
 ```cpp
-B2 = A2;  // same as multi::array<double, 3> B3 = A3;
+B2 = A2;
 ```
 
-(The operation can fail there is no enough memory to hold a copy.)
+(The operation can fail if there is no enough memory to hold a copy.)
 
 Sometimes it is necessary to generate copies from views, the dimensionality must match.
 ```cpp
 multi::array<double, 3> C2 = A2( {0, 2}, {0, 2} );
 ```
-or equivalently:
+or equivalently,:
 ```cpp
 auto C2 = + A2( {0, 2}, {0, 2} );
 ```
-Note the use of `+` as indicator that a copy must be created (it has no arithmetic implications), otherwise `C3` will still be a non-indepdent view of the original array.
+Note the use of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
+Due to limitations of the language, omiting the `+` will create effectively another reference  non-indepdent view of the left-hand-side, which is generally undesired.
 
 Subviews can also assigned but only if the shape of the left-hand side (LHS) and right-hand side (RHS) match.
 Otherwise the behavior is undefined (in debug mode the program will fail an `assert`).
 
 ```cpp
-C2( {0, 2}, {0, 2} ) = A2( {0, 2}, {0, 2} );  // both are 2x2 views of arrays, *elements* are copies
+C2( {0, 2}, {0, 2} ) = A2( {0, 2}, {0, 2} );  // both are 2x2 views of arrays, *elements* are copied
 ```
 
 Introducing the same or overlapping elements in the RHS and LHS produces undefined behavior in general (and the library doesn't check);
-for example this instruction does not transpose the array, but produces an undefined result.
+Notably, this instruction does not transpose the array, but produces an undefined result.
 
 ```cpp
 A2 = A2.transposed();
 ```
 
-... while this does produce a transposition (at the cost of making a copy of the tranposed array first and assigning it back to the original array).
+While this instead does produce a transposition, at the cost of making a copy (`+`) of the tranposed array first and assigning (or moving) it back to the original array.
 
 ```cpp
 A2 = + A2.transposed();
 ```
+
+In-place transposition is an active subject of research, _optimal_ in speed and memory transpositions might require specially designed libraries.
 
 Finally, arrays can be efficiently moved by transferring ownership of the internal data.
 
@@ -366,7 +371,7 @@ auto B2 = std::move(A2);  // A2 is empty after this
 
 Subarrays do not own the data therefore they cannot be moved in the same sense.
 However, indivial elements of a view can be moved, this is particularly useful if the elements are expensive to copy.
-A moved subview is simply another kind view of the elements.
+A "moved" subview is simply another kind view of the elements.
 
 ```cpp
 multi::array<std::vector<double>, 2> A({10, 10});
@@ -377,7 +382,7 @@ B[1] = A[2].moved();  // 10 *elements* of the third row of A is moved into the s
 
 ## Change sizes (extents)
 
-Arrays can change their size while preserving elements with `reextents`.
+Arrays can change their size while _preserving elements_ with `reextents`.
 
 ```cpp
 multi::array<double, 2> A {
@@ -387,13 +392,14 @@ multi::array<double, 2> A {
 
 A.reextents({4, 4});
 
-assert( A[0][0] = 1.0 );
+assert( A[0][0] == 1.0 );
 ```
 
 Arrays can be emptied (zero-size) and memory is freed with `.clear()` (equivalent to `.reextents({0, ...})`).
 
 The main purpose of `reextents` is element preservation.
-Allocations are not amortized; except for trivial cases, all calls to reextend allocates and deallocates memory.
+Allocations are not amortized; 
+except for trivial cases, all calls to reextend allocates and deallocates memory.
 If element preservation is not desired, a simple assignment (move) from a new array expresses the intention better as it is more efficient since it doesn't copy preexisiting elements.
 
 ```cpp
@@ -410,12 +416,10 @@ For the same reason, subarrays cannot be assigned from an array or another subar
 Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator based algorithms (see the sort example above).
 `begin(A)/end(A)` (or equivalently `A.begin()/A.end()`) gives iterators that are linear and random access in the leading dimension.
 
-`cbegin/cend` give constant (read-only access).
-
 Other non-leading dimensions can be obtained by "rotating" indices first.
-
 `A.rotated().begin()/.end()` gives access to a range of subarrays in second dimension number (first dimension is put at the end).
 
+`cbegin/cend` give constant (read-only access).
 For example in a three dimensional array,
 
 ```cpp
@@ -427,23 +431,23 @@ For example in a three dimensional array,
 As an example, this function allows printing arrays of arbitrary dimension into a linear comma-separated form.
 
 ```cpp
-void print(double const& d){cout<<d;};
+void flat_print(double const& d) { cout<<d; };  // terminating overload
+
 template<class MultiArray>
-void print(MultiArray const& ma) {  // note the recursion in the template function `print`
-	cout<<"{";
+void flat_print(MultiArray const& ma) {
+	cout << "{";
 	if(not ma.empty()) {
-		print(*cbegin(ma));
-		std::for_each(cbegin(ma)+1, cend(ma), [](auto&& e) {cout<<","; print(e);});
+		flat_print(*cbegin(ma));  // first element
+		std::for_each(cbegin(ma)+1, cend(ma), [](auto&& e) { cout<<", "; flat_print(e);});  // rest
 	}
-	cout<<"}";
+	cout << "}";
 }
 ...
 print(A);
 ```
 > ```
-> {{{1.2,1.1},{2.4,1}},{{11.2,3},{34.4,4}},{{15.2,99},{32.4,2}}}
+> {{{1.2, 1.1}, {2.4, 1}}, {{11.2, 3}, {34.4, 4}}, {{15.2, 99}, {32.4, 2}}}
 > ```
-
 
 Except for those corresponding to the one-dimensional case, derreferencing iterators generally produce "proxy"-references (i.e. objects that behave in a large degree like language references).
 These references can be given a name; using `auto` can be misleading since the resulting variable does not have value semantics.
@@ -471,7 +475,8 @@ decltype(A)::value_type row =   *begin(A);  // there is a real copy of the row
 
 ### "Pointer" to subarray
 
-Subarrays (e.g., rows in a 2D array) are reference-like objects with a concrete address-like value that identifies them uniquely (in contrast to language pointers). These addresses, which behave like pointers, can be helpful to "mark" subviews; these markers can be copied and stored in arrays.
+Subarrays (e.g., rows in a 2D array) are reference-like objects with a concrete address-like value that identifies them uniquely (in contrast to language pointers).
+These addresses, which behave like pointers, can be helpful to "mark" subviews; these markers can be copied and stored in arrays.
 
 ```cpp
 auto A = multi::array<double, 2>({4, 4});
@@ -493,9 +498,9 @@ Many algorithms on arrays are oriented to linear algebra,
 which are ubiquitously implemented in terms of multidimensional index access.
 
 Iterator access and index access are two alternatives for accessing elements.
-For example `*(begin(A) + n)` and `A[n]` are semantically equivalent
-and the range defined by the pair `begin(A), end(A)` is `A(extension(A))` (even for multidimensional `A`).
-The syntax can be combined in arbitrary ways, for example `*begin(A[n])` is equivalent to `A[n][0]` (if the dimensionality of `A` is equal or greater than two).
+For example `*(begin(A) + n)` and `A[n]` are equivalent
+and the range defined by the pair `begin(A), end(A)` is equivalent to `A(extension(A))` and, in turn, to `A()` (even for a multidimensional array, `D > 1`).
+The syntax can be combined in arbitrary ways, for example `*begin(A[n])` is equivalent to `A[n][0]`.
 
 ### Element access and partial access
 
@@ -510,8 +515,8 @@ A[0]     // is a 1D "reference"/"view" array
 A[0][0]  // is a an element reference, zero-D
 ```
 
-Transpositions are also multi-dimensional arrays views in which the index are *logically* rearranged, for example `rotated(m)[2][3][1] == m[1][2][3]`.
-(`rotate` refers to the fact that the logical indices are _rotated_ to the left.)
+Transpositions are also multidimensional arrays _views_ in which the index are *logically* rearranged, for example `rotated(m)[2][3][1] == m[1][2][3]`.
+(`rotated`/`unrotated` refers to the fact that the logical _indices_ are rotated to the left/right.)
 
 As an illustration of an algorithm based on index access (as opposed to iterators),
 this example code implements Gauss Jordan Elimination without pivoting:
@@ -543,8 +548,8 @@ auto gj_solve(Matrix&& A, Vector&& y) -> decltype(y[0]/=A[0][0], y) {
 This function can be applied to a `multi::array` container:
 
 ```cpp
-multi::array<double, 2> A = {{-3., 2., -4.},{0., 1., 2.},{2., 4., 5.}};
-multi::array<double, 1> y = {12.,5.,2.}; //(M); assert(y.size() == M); iota(y.begin(), y.end(), 3.1);
+multi::array<double, 2> A = {{-3.0, 2.0, -4.0},{0.0, 1.0, 2.0},{2.0, 4.0, 5.0}};
+multi::array<double, 1> y = {12.0, 5.0, 2.0};  // (M); assert(y.size() == M); iota(y.begin(), y.end(), 3.1);
 gj_solve(A, y);
 ```
 
@@ -585,7 +590,7 @@ Operations can be combined in a single line:
 
 ```cpp
 auto&& d2D_slicedstrided = d2D.sliced(1, 3).strided(2); // {{ d2D[1] }};
-assert( d2D_slicedstrided.size(0) == 1 and d2D_slicedstrided.size(1) == 5 );
+assert( std::get<0>(d2D_slicedstrided.sizes()) == 1 and std::get<1>(d2D_slicedstrided.sizes()) == 5 );
 ```
 
 For convenience, `A.sliced(a, b, c)` is the same as `A.sliced(a, b).strided(c)`.
@@ -597,10 +602,10 @@ For example in a two dimensional array one can take a subset of columns by defin
 auto&& subA = A.rotated().sliced(1, 3).strided(2).unrotated();
 ```
 
-Other notations are available, for example this is equivalent to `A(multi::all, {1, 3, /*every*/2})` or ~(~A)({1, 3, 2}).
+Other notations are available, for example this is equivalent to `A(multi::all, {1, 3, /*every*/2})` or `~(~A)({1, 3, 2})`.
 The `rotated/strided/sliced/rotated` and combinations of them provides the most control over the subview operations.
 
-Blocks (slices) in multidimensions can be obtained but pure index notation using parentheses `()` (`.operator()`):
+Blocks (slices) in multidimensions can be obtained by pure index notation using parentheses `()` (`.operator()`):
 
 ```cpp
 auto        A = multi::array<double, 2>({6, 7});  // 2D value array
@@ -608,12 +613,11 @@ auto        A = multi::array<double, 2>({6, 7});  // 2D value array
 auto&&      A_block1 = A({1, 4}, {2, 4});  // 2D subarray reference (modifiable)
 auto const& A_block2 = A({1, 4}, {2, 4});  // 2D subarray reference (non-modifiable)
 
-auto        A_block3 = A({1, 4}, {2, 4});  // disabled
+auto        A_block3 = A({1, 4}, {2, 4});  // works but it can be confusing, use `auto&&` instead
 ```
 
-Note that the last case gives a compilation error, the library prevents the use of this references as if they are were values.
 Some times copies are necessary, specifically from a subarray block, this can be done by constructing a new array. 
-The value array can be deduces by using `auto` and the `decay` member, which in turn is equivalent to the unary `+` operator.
+The value array can be deduces by using `auto` and the `decay` member, which in turn is equivalent to the prefix `+` operator.
 
 ```cpp
 multi::array<double, 2> block_value_1 =   A({1, 4}, {2, 4})        ;
@@ -629,6 +633,7 @@ Range argument can be substituted by `multi::all` to obtain the whole range.
 The library goes to great lenghts to ensure const-correctness.
 Const-correctness refers to the property of an object, or parts of it, of not accepting mutation.
 It is not only important to avoid bugs and typos but also to ensure compatibility with thread safety.
+Honoring constness declarations is fundamental to thread-safety and generic programming.
 
 An array can be declared to be constant using the keyword `const`.
 A reference array (`array_ref`) is never resizable (or reassignable) but their elements are mutable unless the reference is declared with `const`.
@@ -639,7 +644,7 @@ Any subarray (views) will propagate the constness of the original array.
 ```cpp
 template<class Array1D>
 void print(Array1D const& coll) {
-//  *coll.begin() = 99;  // doesn't compile "assignment of read-only location"
+//  *coll.begin() = 99;  // doesn't compile, "assignment of read-only location"
 
 	for(auto const& e : coll) {std::cout<< e <<", ";}
 	std::cout << std::endl;
