@@ -24,8 +24,8 @@ Some features of this libraries:
 * Simplified implementation (~4000 lines)
 
 (Do not confuse this library with Boost.MultiIndex or Boost.MultiArray, or with the standard MDSpan proposal `std::mdspan`.)
-`Multi` shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
-although the code is completely independent and with significant semantic and implementation differences.)
+`Multi` shares some of the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) and `std::mdspan`, but it tries to solve a different set of problems for a different audience.
+The code is completely independent and with significant semantic and implementation differences.)
 
 ## Contents
 [[_TOC_]]
