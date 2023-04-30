@@ -7,7 +7,7 @@
 
 _© Alfredo A. Correa, 2018-2023_
 
-`Multi` is a modern C++ library that provides access and manipulation of data in multidimensional arrays.
+`Multi` is a modern C++ library that provides access and manipulation of data in multidimensional arrays, for both CPU and GPU memory.
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
 
