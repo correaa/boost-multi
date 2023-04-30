@@ -7,19 +7,19 @@
 
 _© Alfredo A. Correa, 2018-2023_
 
-`Multi` is a hmodern C++ library that provides access and manipulation of data in multidimensional arrays.
+`Multi` is a modern C++ library that provides access and manipulation of data in multidimensional arrays.
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
 
-This library offers array containers and views in arbritrary dimension with well behaved value semantics, offering total compatibility with the Standard Algorithms (STL), special memory (including GPUs), and following modern C++ design principles.
+This library offers array containers and views in arbitrary dimensions with well-behaved value semantics, offering total compatibility with the Standard Algorithms (STL), special memory (including GPUs), and following modern C++ design principles.
 It requires at least C++17 (works with C++20 too.)
 
-Some features of this libraries:
+Some features of this library:
 
 * Value semantics of multi-dimensional array containers
-* Well defined referential semantics of subarray (view) types
+* Well-defined referential semantics of subarray (view) types
 * Interoperability with other libraries, STL, ranges, thrust (CUDA GPUs), Boost, and C-libraries
-* Fast access of elements and subarrays (views) types
+* Fast access to elements and subarrays (views) types
 * Arbitrary pointer types (fancy pointers, memory spaces)
 * Simplified implementation (~4000 lines)
 
@@ -32,8 +32,8 @@ The code is completely independent and with significant semantic and implementat
 
 ## Using the library, installation and tests
 
-`Multi` doesn't require instalation, a single header `#include<multi/array.hpp>` is enough to use the full core library.
-`Multi` has no dependecies (except for the standard C++ library) and can be used immediately after downloading it.
+`Multi` doesn't require installation, a single header `#include<multi/array.hpp>` is enough to use the full core library.
+`Multi` has no dependencies (except for the standard C++ library) and can be used immediately after downloading it.
 
 ```bash
 git clone https://gitlab.com/correaa/boost-multi.git
@@ -82,9 +82,8 @@ Nvidia's [`nvcc`](https://godbolt.org/z/Kdh5PeP5f) (11.0+) and `nvc++` (20.7-21.
 Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
 Baxter's [`circle`](https://www.circle-lang.org/) (build 168+), and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
 
-"Adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
+Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
 (which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or `sudo dnf install blas-devel fftw-devel`.)
-Which are optional to use.
 
 ## Types
 
