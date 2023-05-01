@@ -629,15 +629,14 @@ Range argument can be substituted by `multi::all` to obtain the whole range.
 
 ## Const-correctness
 
-The library goes to great lenghts to ensure const-correctness.
-Const-correctness refers to the property of an object, or parts of it, of not accepting mutation.
-It is not only important to avoid bugs and typos but also to ensure compatibility with thread safety.
-Honoring constness declarations is fundamental to thread-safety and generic programming.
+Const-correctness refers to the property of an object not allowing mutation.
+Honoring the constness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.
+The library goes to great lengths to ensure const-correctness for the whole or parts of any object.
 
-An array can be declared to be constant using the keyword `const`.
-A reference array (`array_ref`) is never resizable (or reassignable) but their elements are mutable unless the reference is declared with `const`.
+An array can be declared constant using the keyword `const`.
+A reference array (`array_ref`) is never resizable (or reassignable), but its elements are mutable unless the reference is declared with `const`.
 
-The design ensures that constness of references and values is propagated to subsets (views) and to elements.
+The design ensures that the constness of references and values is propagated to subsets (views) and, ultimately, their elements.
 Any subarray (views) will propagate the constness of the original array.
 
 ```cpp
@@ -657,16 +656,15 @@ int main() {
 }
 ```
 
-As a general rule, in functions take generic array arguments that are _not_ going to be mutated as `Array const&` (in the context of `template<class Array>`).
-If mutation is expected take them as `Array&&` (note the double ampersand, i.e. universal/forwarding reference).
-Views can be *named* into "constant language references" by using `auto const&`.
-If mutation is desired use `auto&&`.
-Normal references `Array&` or `auto&` in general doesn't have the expected behavior for views,
+As a general rule for passing generic arrays as arguments, pass them as `Array const&` (in the context of `template<class Array>`);
+unless mutation is expected, in which case take arguments as `Array&&` (note the double ampersand, i.e., universal/forwarding reference).
+Analogously, views can be *named* into "constant language references" using `auto const&` and, if mutation is desired, use `auto&&`.
+Regular references `Array&` or `auto&` in general do not have the expected behavior for views.
 
 ```cpp
 template<class Array1D>
 void fill_99(Array1D&& coll) {
-	for(auto& e : coll) {e = 99;}
+	for(auto& e : coll) { e = 99; }
 }
 
 int main() {
