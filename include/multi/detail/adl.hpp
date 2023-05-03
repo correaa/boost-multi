@@ -101,8 +101,11 @@ constexpr class adl_equal_t {
 
 template<class... Args> struct adl_custom_copy;
 
+#if defined(__NVCC__) and (__CUDACC_VER_MAJOR__ <= 11) or (__CUDACC_VER_MINOR__ <= 4)
+using std::copy;
+#endif
+
 constexpr class adl_copy_t {
-	class Copy;
 	template<class InputIt, class OutputIt,
 		class=std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>
 	>
