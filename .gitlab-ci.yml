@@ -180,7 +180,7 @@ NVCC:
     - nvidia-docker
   script:
     - nvidia-smi
-    - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
@@ -206,7 +206,7 @@ NVCC114:
     - nvidia-docker
   script:
     - nvidia-smi
-    - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
