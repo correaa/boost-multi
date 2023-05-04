@@ -101,6 +101,8 @@ constexpr class adl_equal_t {
 
 template<class... Args> struct adl_custom_copy;
 
+template<class... As, class = std::enable_if_t<sizeof...(As) == 0> > void copy(As...) = delete;
+
 constexpr class adl_copy_t {
 	template<class InputIt, class OutputIt,
 		class=std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>
