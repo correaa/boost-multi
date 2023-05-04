@@ -173,14 +173,41 @@ NVHPC-2022:
     # - apt-get -y install cuda
 
 NVCC:
-  allow_failure: true
+  allow_failure: false
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
     - nvidia-docker
   script:
     - nvidia-smi
-    - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - ls /usr/local
+    - ls /usr/local/cuda-11/bin
+    - /usr/local/cuda-11/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure  # doesn't run
+    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
+    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
+    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+  needs: ["OLDGNUSANICHECKCOV"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+NVCC114:
+  allow_failure: true
+  stage: build
+  image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
+  tags:
+    - nvidia-docker
+  script:
+    - nvidia-smi
+    - apt-get -qq update
+    - DEBIAN_FRONTEND=noninteractive  apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - ls /usr/local
     - ls /usr/local/cuda-11/bin

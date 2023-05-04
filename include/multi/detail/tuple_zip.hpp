@@ -202,6 +202,20 @@ constexpr auto tail(tuple<T0, Ts...>     && t) -> decltype(std::move(t).tail()) 
 template<class T0, class... Ts>
 constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(t.tail()) {return t.tail();}  // NOLINT(readability-identifier-length) std naming
 
+#if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic push
+		#pragma nv_diag_suppress = implicit_return_from_non_void_function
+	#else
+		#pragma    diagnostic push
+		#pragma    diag_suppress = implicit_return_from_non_void_function
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic push
+	#pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
 template<std::size_t N, class T0, class... Ts>
 constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
 	if constexpr(N == 0) {
@@ -210,6 +224,15 @@ constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readab
 		return get<N-1>(t.tail());
 	}
 }
+#if defined __NVCC__
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic pop
+	#else
+		#pragma    diagnostic pop
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic pop
+#endif
 
 template<std::size_t N, class T0, class... Ts>
 constexpr auto get(tuple<T0, Ts...>& t) -> auto& {  // NOLINT(readability-identifier-length) std naming
@@ -228,6 +251,7 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-iden
 		return get<N-1>(std::move(t.tail()));
 	}
 }
+#pragma GCC diagnostic pop
 
 }  // end namespace detail
 }  // end namespace boost::multi
