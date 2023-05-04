@@ -190,53 +190,34 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size c
 template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
 auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size count)
 -> std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)> {
-	if constexpr(std::is_trivially_default_constructible_v<T>) {
+	if (std::is_trivially_default_constructible_v<T>) {
 		std::advance(first, count);
 		return first;
-	} else {
-		using _ = std::allocator_traits<Alloc>;
-		ForwardIt current = first;
-		try {
-		//  return std::for_each_n(first, count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
-		//  workadoung for gcc 8.3.1 in Lass
-			std::for_each(first, first + count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
-			return first + count;
-		//  std::any_of(first, first + count, [](auto& element) {
-		//      _::construct(alloc, 
-		//  });
-		//  for(; count > 0; ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		//      _::construct(alloc, std::addressof(*current));
-		//  }
-		// LCOV_EXCL_START  // TODO(correaa) add test
-		} catch(...) {
-			std::for_each(first, current, [&](T& elem) {_::destroy(alloc, std::addressof(elem));});
-		//  for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		//      _::destroy(alloc, std::addressof(*first));
-		//  }
-			throw;
-		}
-		// LCOV_EXCL_STOP
 	}
-//  return current;
+	using _ = std::allocator_traits<Alloc>;
+	ForwardIt current = first;
+	try {
+	//  return std::for_each_n(first, count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
+	//  workadoung for gcc 8.3.1 in Lass
+		std::for_each(first, first + count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
+		return first + count;
+	//  std::any_of(first, first + count, [](auto& element) {
+	//      _::construct(alloc, 
+	//  });
+	//  for(; count > 0; ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	//      _::construct(alloc, std::addressof(*current));
+	//  }
+	} catch(...) {
+	// LCOV_EXCL_START  // TODO(correaa) add test
+		std::for_each(first, current, [&](T& elem) {_::destroy(alloc, std::addressof(elem));});
+	//  for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	//      _::destroy(alloc, std::addressof(*first));
+	//  }
+		throw;
+	// LCOV_EXCL_STOP
+	}
+	return current;
 }
-
-//template<class ForwardIt, class Size>
-//auto uninitialized_default_construct_n(ForwardIt first, Size count) -> ForwardIt {
-//    using T = typename std::iterator_traits<ForwardIt>::value_type;
-//    ForwardIt current = first;
-//    try {
-//      return std::for_each_n(first, count, [&](auto& elem) { ::new (static_cast<void*>(std::addressof(elem))) T; ++current; });
-////        for (; count > 0 ; (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-////            ::new (static_cast<void*>(std::addressof(*current))) T;
-////        }
-////        return current;
-//    }  catch (...) {
-//  //  std::for_each(first, current, [&](auto& elem) {_::destroy(alloc, std::addressof(elem));});
-//      assert(0);  // TODO(correaa) check this function
-////       std::destroy(first, current);
-//        throw;
-//    }
-//}
 
 }  // end namespace xtd
 
