@@ -202,6 +202,8 @@ constexpr auto tail(tuple<T0, Ts...>     && t) -> decltype(std::move(t).tail()) 
 template<class T0, class... Ts>
 constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(t.tail()) {return t.tail();}  // NOLINT(readability-identifier-length) std naming
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
 template<std::size_t N, class T0, class... Ts>
 constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
 	if constexpr(N == 0) {
@@ -228,6 +230,7 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-iden
 		return get<N-1>(std::move(t.tail()));
 	}
 }
+#pragma GCC diagnostic pop
 
 }  // end namespace detail
 }  // end namespace boost::multi
