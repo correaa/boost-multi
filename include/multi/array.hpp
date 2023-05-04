@@ -36,7 +36,7 @@ struct array_allocator {
 	auto alloc()      & -> allocator_type      & {return alloc_;}
 	auto alloc() const& -> allocator_type const& {return alloc_;}
 
-	explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}
+	explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
 
 	auto allocate(size_type_ n) -> pointer_ {
 		return n?allocator_traits::allocate(alloc_, n):pointer_{nullptr};
