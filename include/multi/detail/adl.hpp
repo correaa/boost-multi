@@ -187,6 +187,18 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size c
 	}
 }
 
+#if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic push
+		#pragma nv_diag_suppress = code_is_unreachable
+	#else
+		#pragma    diagnostic push
+		#pragma    diag_suppress = code_is_unreachable
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic push
+	#pragma    diag_suppress = code_is_unreachable
+#endif
 template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
 auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size count)
 -> std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)> {
@@ -218,6 +230,15 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	}
 	return current;
 }
+#if defined __NVCC__
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic pop
+	#else
+		#pragma    diagnostic pop
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic pop
+#endif
 
 }  // end namespace xtd
 
