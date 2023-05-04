@@ -147,8 +147,10 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 	using ssize_t = int;
 	static int version() {int ret; cuda::cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
 	void synchronize() const {
-		cudaError_t e = cudaDeviceSynchronize();
-		//cudaError_t e = cudaStreamSynchronize(stream());
+		// cudaError_t e = cudaDeviceSynchronize();
+		auto s = stream();
+		if(s != 0) {throw std::logic_error("CUBLAS stream expected to be zero");}
+		cudaError_t e = cudaStreamSynchronize(s);
 		if(e != cudaSuccess) {throw std::runtime_error{"cannot synchronize stream in cublas context"};}
 	}
 
