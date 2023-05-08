@@ -15,6 +15,8 @@ template <class T = void>
 class allocator1 {
 	int* heap_ = nullptr;
 
+	template<class> friend class allocator1;
+
  public:
     using value_type = T;
 
@@ -41,6 +43,7 @@ class allocator2 {
 	std::int64_t* heap_ = nullptr;
 
 	template<class> friend class allocator2;
+
  public:
     using value_type = T;
 
