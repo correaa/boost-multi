@@ -29,7 +29,10 @@ class allocator1 {
 		if(heap_ == nullptr) {throw std::bad_alloc{};}  // this cuts branches with UB (null deref) for the sanitizer
 		++*heap_; return static_cast<value_type*>(::operator new (n*sizeof(value_type)));
 	}
-    void deallocate(value_type* ptr, std::size_t /*n*/) noexcept {--*heap_; ::operator delete(ptr);}
+    void deallocate(value_type* ptr, std::size_t n) noexcept {
+		if(n == 0) {return;}
+		--*heap_; ::operator delete(ptr);
+	}
 	template <class U>
 	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ == other.heap_; }
 
@@ -57,7 +60,10 @@ class allocator2 {
 		++*heap_; return static_cast<value_type*>(::operator new(n * sizeof(value_type)));
 	}
 
-    void deallocate(value_type* ptr, std::size_t /*n*/) noexcept { --*heap_; ::operator delete(ptr);}
+    void deallocate(value_type* ptr, std::size_t n) noexcept {
+		if(n == 0) {return;}
+		--*heap_; ::operator delete(ptr);
+	}
 	template<class U>
 	friend auto operator==(allocator2 const& self, allocator2<U> const& other) noexcept { return self.heap_ == other.heap_; }
 };
