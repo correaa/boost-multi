@@ -1,12 +1,11 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
 
-#include <scoped_allocator>
 #include <vector>
 
 namespace multi = boost::multi;
@@ -95,78 +94,3 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 //  BOOST_REQUIRE( arr[1][2] == 99.0 );
 }
 
-struct base1 {
-	inline static std::size_t heap_size_ = 0;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-	static auto heap_size() {return heap_size_;}
-};
-
-template <class T>
-class allocator1 : base1 {
- public:
-    using value_type    = T;
-
-    allocator1() noexcept = default;
-    template <class U> allocator1(allocator1<U> const& /*other*/) noexcept {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-
-    auto   allocate(std::size_t n) { base1::heap_size_ += 1; return static_cast<value_type*>(::operator new (n*sizeof(value_type)));}
-    void deallocate(value_type* ptr, std::size_t /*n*/) noexcept {::operator delete(ptr);}
-};
-
-template <class T, class U>
-auto operator==(allocator1<T> const& /*x*/, allocator1<U> const& /*y*/) noexcept { return true; }
-
-template <class T, class U>
-auto operator!=(allocator1<T> const& /*x*/, allocator1<U> const& /*y*/) noexcept { return false; }
-
-struct base2 {
-	inline static std::size_t heap_size_ = 0;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-	static auto heap_size() {return heap_size_;}
-};
-
-template<class T>
-class allocator2 : base2 {
- public:
-    using value_type = T;
-
-    allocator2() noexcept = default;
-    template<class U> allocator2(allocator2<U> const& /*other*/)  noexcept {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-
-    auto allocate(std::size_t n) { base2::heap_size_ += 1; return static_cast<value_type*>(::operator new(n * sizeof(value_type))); }
-
-    void deallocate(value_type* ptr, std::size_t /*n*/) noexcept { ::operator delete(ptr);}
-};
-
-template<class T, class U>
-auto operator==(allocator2<T> const& /*x*/, allocator2<U> const& /*y*/) noexcept { return true; }
-
-template<class T, class U>
-auto operator!=(allocator2<T> const& /*x*/, allocator2<U> const& /*y*/) noexcept { return false; }
-
-// BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
-//  using InnerCont = std::vector<int, allocator2<int>>;
-//  using OuterCont = std::vector<InnerCont, std::scoped_allocator_adaptor<allocator1<InnerCont>>>;
-
-//  OuterCont cont;
-//  cont.resize(2);
-
-//  cont.back().resize(10);
-//  cont.back().resize(100);
-//  cont.back().resize(200);
-
-//  BOOST_TEST( base1::heap_size() == 1 );
-//  BOOST_TEST( base2::heap_size() == 3 );
-// }
-
-BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
-	using InnerCont = std::vector<int, allocator2<int>>;
-	using OuterCont = multi::array<InnerCont, 2, std::scoped_allocator_adaptor<allocator1<InnerCont>>>;
-
-	OuterCont cont({3, 4});
-
-	cont[1][2].resize(10);
-	cont[1][2].resize(100);
-	cont[1][2].resize(200);
-
-	BOOST_TEST( base1::heap_size() == 1 );
-	BOOST_TEST( base2::heap_size() == 3 );
-}

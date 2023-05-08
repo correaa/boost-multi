@@ -63,18 +63,26 @@ struct array_allocator {
 	constexpr auto get_allocator() const -> allocator_type {return alloc_;}
 };
 
-template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
+template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
 struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
-: protected array_allocator<Alloc>
-, public array_ref<T, D, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>
-, boost::multi::random_iterable<static_array<T, D, Alloc>> {
+: protected array_allocator<
+	// Alloc
+	typename allocator_traits<DummyAlloc>::template rebind_alloc<T>
+>
+, public array_ref<T, D, typename allocator_traits<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
+, boost::multi::random_iterable<static_array<T, D, typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>> {
+	static_assert(
+		   std::is_same<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, typename static_array::element>::value
+		or std::is_same<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, void                          >::value,  // allocator template can redundant or void (which can be a default for the allocator)
+		"allocator value type must match array value type"
+	);
+ private:
+	using Alloc = typename allocator_traits<DummyAlloc>::template rebind_alloc<T>;
+
  protected:
 	using array_alloc = array_allocator<Alloc>;
 
  public:
-	static_assert( std::is_same<std::remove_const_t<typename allocator_traits<Alloc>::value_type>, typename static_array::element>::value,
-		"allocator value type must match array value type");
-
 	using array_alloc::get_allocator;
 	using allocator_type = typename array_allocator<Alloc>::allocator_type;
 	using decay_type = array<T, D, Alloc>;
