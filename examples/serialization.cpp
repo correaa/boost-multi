@@ -7,9 +7,9 @@ $CXX $0 -o $0x -lboost_unit_test_framework -lstdc++fs -lboost_serialization -lbo
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../adaptors/serialization/xml_archive.hpp"
-//#include<boost/archive/xml_oarchive.hpp>
-//#include<boost/archive/xml_iarchive.hpp>
+//#include "../adaptors/serialization/xml_archive.hpp"
+#include<boost/archive/xml_oarchive.hpp>
+#include<boost/archive/xml_iarchive.hpp>
 
 #include<boost/archive/text_oarchive.hpp>
 #include<boost/archive/text_iarchive.hpp>
@@ -19,7 +19,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework -lstdc++fs -lboost_serialization -lbo
 #include<boost/serialization/binary_object.hpp>
 #include<boost/serialization/complex.hpp>
 
-#include "../array.hpp"
+#include <multi/array.hpp>
 
 //#include "../adaptors/cuda.hpp"
 
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml){
 BOOST_AUTO_TEST_CASE(multi_serialization_small_xml){
 	multi::array<double, 2> d2D({10, 10});
 	std::mt19937 e{std::random_device{}()};
-//	auto g = std::bind(std::uniform_real_distribution<>{}, e);//
+//  auto g = std::bind(std::uniform_real_distribution<>{}, e);//
 	auto g = [&](){return std::uniform_real_distribution<>{}(e);};
 	std::for_each(begin(d2D), end(d2D), [&](auto&& r){std::generate(begin(r), end(r), g);});
 	auto const name = "serialization-small.xml";
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml){
 
 BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 	{
-		multi::static_array<double, 0> d0D = 12.;
+		multi::static_array<double, 0> d0D{12.0};
 		std::ofstream ofs{"serialization-static_0D.xml"}; assert(ofs);
 		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d0D);
 		fs::remove("serialization-static_0D.xml");
@@ -319,8 +319,8 @@ BOOST_AUTO_TEST_CASE(test_utility_serialization_2d){
 		fs::remove("utility_serialization_carr.xml");
 	}
 	{
-//		std::ofstream ofs{"utility_serialization_Marr.xml"}; assert(ofs);
-//		arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(Marr);
+//      std::ofstream ofs{"utility_serialization_Marr.xml"}; assert(ofs);
+//      arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(Marr);
 	}
 }
 
