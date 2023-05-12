@@ -4,8 +4,9 @@
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
+#include <memory_resource>  // for polymorphic memory resource, monotonic buffer
 #include <vector>
 
 namespace multi = boost::multi;
@@ -67,7 +68,7 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d)  {
 	});
 
 	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
-	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
+	BOOST_REQUIRE( AA[9][19][1][1][1] == 99.0 );
 }
 
 BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init)  {
@@ -94,3 +95,43 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 //  BOOST_REQUIRE( arr[1][2] == 99.0 );
 }
 
+BOOST_AUTO_TEST_CASE(pmr) {
+	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
+	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
+
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
+
+	BOOST_REQUIRE( buffer == std::string{"aaaabbbbbbXX"} );
+}
+
+BOOST_AUTO_TEST_CASE(pmr2) {
+	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
+	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
+
+	multi::pmr::array<char, 2> A({2, 2}, 'a', &pool);
+	multi::pmr::array<char, 2> B({3, 2}, 'b', &pool);
+
+	BOOST_REQUIRE( buffer == std::string{"aaaabbbbbbXX"} );
+}
+
+
+BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
+	double buffer[] = {4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  999.9, 999.9, 999.9, 999.9};  // a small buffer on the stack
+	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
+
+	multi::pmr::array<double, 2> A({2, 2}, &pool);
+
+	BOOST_TEST( buffer[0] == 4.0 );
+	BOOST_TEST( buffer[1] == 5.0 );
+}
+
+BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
+	double buffer[] = {4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  999.9, 999.9, 999.9, 999.9};  // a small buffer on the stack
+	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
+
+	multi::pmr::array<std::complex<double>, 2> A({2, 2}, &pool);
+
+	BOOST_TEST( buffer[0] == 0.0 );
+	BOOST_TEST( buffer[1] == 0.0 );
+}
