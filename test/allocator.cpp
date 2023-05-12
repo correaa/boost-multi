@@ -104,6 +104,9 @@ BOOST_AUTO_TEST_CASE(pmr) {
 	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Barr({3, 2}, 'b', &pool);
 
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
+
+	BOOST_REQUIRE(Aarr[0][0] == 'a');
+	BOOST_REQUIRE(Barr[0][0] == 'b');
 }
 
 BOOST_AUTO_TEST_CASE(pmr2) {
@@ -114,6 +117,9 @@ BOOST_AUTO_TEST_CASE(pmr2) {
 	multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
 
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
+
+	BOOST_REQUIRE(Aarr[0][0] == 'a');
+	BOOST_REQUIRE(Barr[0][0] == 'b');
 }
 
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
@@ -124,6 +130,8 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 
 	BOOST_TEST( buffer[0] == 4.0 );
 	BOOST_TEST( buffer[1] == 5.0 );
+
+	BOOST_REQUIRE(Aarr[0][0] == 4.0);
 }
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
@@ -134,4 +142,6 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
 
 	BOOST_TEST( buffer[0] == 0.0 );
 	BOOST_TEST( buffer[1] == 0.0 );
+
+	BOOST_REQUIRE(Aarr[0][0] == 0.0);
 }
