@@ -225,15 +225,15 @@ NVCC114:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-CIRCLE:
+CIRCLE194:
   allow_failure: true
   image: debian:testing
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
-    - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
-    - tar -zxvf build_latest.tgz
+    - wget https://www.circle-lang.org/linux/build_194.tgz --no-verbose
+    - tar -zxvf build_194.tgz
     - cd ..
     - ls
     - ./build_latest/circle --version
