@@ -1,14 +1,15 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2022 Alfredo A. Correa
+// Copyright 2022-2023 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_FIX_COMPLEX_TRAITS_HPP
 #define MULTI_DETAIL_FIX_COMPLEX_TRAITS_HPP
 
-#include "../detail/type_traits.hpp"
 
-#include "../detail/fix_complex_traits.hpp"
+#include <multi/array.hpp>
+#include <multi/detail/type_traits.hpp>
 
-#include<complex>
+#include <complex>
+#include <type_traits>
 
 namespace boost::multi {
 
@@ -16,6 +17,9 @@ namespace boost::multi {
 // NOLINTNEXTLINE(clang-diagnostic-#pragma-messages)
 #pragma message "By including this header, the behavior of initialization of std::complex<T> in multi::array's changes. std::complex<T> elements will not be initialized."
 #endif
+
+template<class T>
+inline constexpr bool force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
 
 template<class T> struct is_trivially_default_constructible<std::complex<T>> : std::is_trivially_default_constructible<T> {};
 template<class T> struct is_trivial<std::complex<T>> : std::is_trivial<T> {};
@@ -41,4 +45,3 @@ static_assert(std::is_trivially_copyable<::std::complex<double>>::value);
 static_assert(std::is_trivially_copyable<::std::complex<float >>::value);
 
 #endif
-
