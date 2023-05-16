@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 		{1.0, 2.0, 3.0},
 		{4.0, 5.0, 6.0},
 		{7.0, 8.0, 9.0},
-		{1.0, 2.0, 3.0}
+		{1.0, 2.0, 3.0},
 	};
 	auto rowP = &arr[2];
 	auto rowP2 = rowP;

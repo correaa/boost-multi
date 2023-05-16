@@ -429,8 +429,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	HD constexpr void decrement() {ptr_.base_ -= stride_;}
 	HD constexpr void advance(difference_type n) {ptr_.base_ += stride_*n;}
 	// constexpr auto distance_to(array_iterator const& other) const -> difference_type {
-	// 	assert( stride_ == other.stride_); assert( stride_ != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
-	// 	return (other.ptr_.base_ - ptr_.base_)/stride_;
+	//  assert( stride_ == other.stride_); assert( stride_ != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
+	//  return (other.ptr_.base_ - ptr_.base_)/stride_;
 	// }
 
  public:
@@ -2427,7 +2427,10 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr data) noexcept
 	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, data} {}
 
-	template<class TT, std::size_t N>
+	template<
+		class TT, std::size_t N,
+		std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), ElementPtr>, int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
+	>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
 	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
 		TT(&array)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
@@ -2435,6 +2438,20 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	: array_ref(
 		multi::data_elements(array),
 		extensions(array)
+	) {}
+
+	template<
+		class Array,
+		std::enable_if_t<not std::is_base_of_v<array_ref, std::decay_t<Array>>, int> =0,
+		std::enable_if_t<std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
+	>
+	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
+	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
+		Array& array  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	)
+	: array_ref(
+	 multi::data_elements(array),
+	 extensions(array)
 	) {}
 
 	template<class TT = void, std::enable_if_t<sizeof(TT*) and D == 0, int> =0>
@@ -2651,6 +2668,13 @@ struct array_ptr
 
 	template<typename CArray>
 	constexpr explicit array_ptr(CArray* data) : array_ptr{data_elements(*data), extensions(*data)} {}
+
+	template<
+		class TT, std::size_t N,
+		std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), Ptr>,int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
+	>
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions) array_ptr is more general than pointer c-array
+	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
 
 	constexpr auto operator*() const {
 		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};
