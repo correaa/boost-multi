@@ -252,7 +252,7 @@ constexpr auto data_elements(A const& arr)
 	return arr.data_elements(); }
 
 template<class T, std::enable_if_t<!std::is_array_v<std::decay_t<T>> and not has_data_elements<std::decay_t<T>>::value && !has_data<std::decay_t<T>>::value, int> =0>
-constexpr auto data_elements(T& value) {return &value;}
+constexpr auto data_elements(T& value) -> decltype(&value) {return &value;}
 
 template<class A> struct num_elements_t: std::integral_constant<std::ptrdiff_t, 1> {};
 
