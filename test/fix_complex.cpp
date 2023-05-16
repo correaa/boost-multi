@@ -42,13 +42,13 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_2) {
 
 #ifdef __NVCC__
 template<>
-inline constexpr bool boost::multi::force_element_trivial_default_construction<std::complex<double>> = true;
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 template<>
-inline constexpr bool boost::multi::force_element_trivial_default_construction<std::complex<float>> = true;
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<float>> = true;
 #else
 // vvv nvcc (12.1?) doesn't tolerate this kind of customization: "error: expected initializer before ‘<’"
 template<class T>
-inline constexpr bool boost::multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible<T>::value;
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible<T>::value;
 #endif
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
