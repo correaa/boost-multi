@@ -687,29 +687,37 @@ int main() {
 
 ## Partially formed elements
 
-The library can take advantage of types with [partially formed](https://marcmutz.wordpress.com/tag/partially-formed-state/) state:
-If they are trivial to construct (e.g. built-in types), `multi::array`s does not initialize individual elements;
-otherwise the default constructor for each element is used.
+The library can take advantage of types with [partially formed](https://marcmutz.wordpress.com/tag/partially-formed-state/) state when
+elements are trivial to construct (e.g., built-in types).
+In such cases, `multi::array`s does not initialize individual elements.
+(If trivial construction is unavailable, the library uses the default constructor instead.)
 
-For example, after construction the integer values of the 6 elements of this array are unspecified (partially formed).
+For example, after construction, the values of the six elements of this integers array are unspecified (partially formed).
 ```cpp
 multi::array<int, 2> A2({2, 3});
 ```
 
-No behavior of the program should depend on these values. (Address sanitizer and memory checker can detect this.)
-This is a slight departure from the design of STL, which eagerly initializes elements in containers.
+No behavior of the program should depend on these values. 
+(Address sanitizer and memory checker can detect this.)
+This design is a slight departure from the STL's. 
+STL design [eagerly initialize elements in containers](https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/).
 
-For types that afford partially formed state, elements can be later specified via assigment or assigning algorithms (e.g. copy or transform destination).
-Initialization can be enforced by passing a second argument, after the extensions.
+For types that afford partially formed states, elements can be later specified via assignment or assigning algorithms (e.g., copy or transform destination).
+Initialization can be enforced by passing a value argument after the extensions.
 ```cpp
 multi::array<int, 2> A2({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
 ```
 
-This is particularly advantageous for *numeric* types for which assigment can be handled by external low-level libraries
+This design is particularly advantageous for *numeric* types for which external low-level libraries can handle assignments effectively.
 (or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization).
 
-Unfortunatelly, regarding the numeric types, STL's `std::complex<double>` was designed as not trivially constructible.
-(Workarounds are possible.) 
+Unfortunately, regarding the numeric types, STL's `std::complex<double>` was designed as not trivially constructible.
+A workaround is possible by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
+```cpp
+#include<multi/array.hpp>
+
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+```
 
 ## Type Requirements
 
