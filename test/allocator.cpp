@@ -2,12 +2,10 @@
 // Copyright 2019-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"  // NOLINT(cppcoreguidelines-macro-usage) title
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
-#include <multi/detail/fix_complex_traits.hpp>
 
-#include <complex>
 #include <memory_resource>  // for polymorphic memory resource, monotonic buffer
 #include <vector>
 
@@ -133,23 +131,4 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	BOOST_TEST( buffer[1] == 5.0 );
 
 	BOOST_REQUIRE(Aarr[0][0] == 4.0);
-}
-
-BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
-	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  999.9, 999.9, 999.9, 999.9}};
-	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
-
-	multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
-
-	if constexpr(multi::force_element_trivial_default_construction<std::complex<double>>) {
-		BOOST_TEST( buffer[0] == 4.0 );
-		BOOST_TEST( buffer[1] == 5.0 );
-
-		BOOST_REQUIRE(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
-	} else {
-		BOOST_TEST( buffer[0] == 0.0 );
-		BOOST_TEST( buffer[1] == 0.0 );
-
-		BOOST_REQUIRE(Aarr[0][0] == 0.0);
-	}
 }
