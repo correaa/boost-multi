@@ -5,6 +5,7 @@
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
+#include <multi/detail/fix_complex_traits.hpp>
 
 #include <complex>
 #include <memory_resource>  // for polymorphic memory resource, monotonic buffer
@@ -140,8 +141,15 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
 
 	multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
 
-	BOOST_TEST( buffer[0] == 0.0 );
-	BOOST_TEST( buffer[1] == 0.0 );
+	if constexpr(multi::force_element_trivial_default_construction<std::complex<double>>) {
+		BOOST_TEST( buffer[0] == 4.0 );
+		BOOST_TEST( buffer[1] == 5.0 );
 
-	BOOST_REQUIRE(Aarr[0][0] == 0.0);
+		BOOST_REQUIRE(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
+	} else {
+		BOOST_TEST( buffer[0] == 0.0 );
+		BOOST_TEST( buffer[1] == 0.0 );
+
+		BOOST_REQUIRE(Aarr[0][0] == 0.0);
+	}
 }
