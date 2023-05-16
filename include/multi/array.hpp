@@ -20,6 +20,9 @@
 
 namespace boost::multi {
 
+template <class T>
+inline constexpr bool force_element_trivial_default_construction = false;
+
 template<class Allocator>
 struct array_allocator {
 	using allocator_type = Allocator;
@@ -103,7 +106,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	auto uninitialized_default_construct() {
-		return uninitialized_default_construct_if(multi::is_trivially_default_constructible<typename static_array::element_type>{});
+		return uninitialized_default_construct_if(std::integral_constant<
+			bool,
+			std::is_trivially_default_constructible_v<typename static_array::element> or multi::force_element_trivial_default_construction<typename static_array::element>
+		>{});
 	}
 
 	template<typename It> auto uninitialized_copy_elements(It first) {
@@ -111,7 +117,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	void destroy() {
-		if constexpr(not std::is_trivially_destructible_v<typename static_array::element>) {
+		if constexpr(not (std::is_trivially_destructible_v<typename static_array::element> or multi::force_element_trivial_default_construction<typename static_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
 	}
@@ -493,7 +499,12 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
 	auto uninitialized_value_construct() {
-		uninitialized_value_construct_if_not(std::is_trivially_default_constructible<typename static_array::element>{});
+		uninitialized_value_construct_if_not(
+			std::integral_constant<bool,
+				std::is_trivially_default_constructible_v<typename static_array::element>
+				or multi::force_element_trivial_default_construction<typename static_array::element>
+			>{}
+		);
 	}
 
 	template<typename It> auto uninitialized_copy(It first) {return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());}
@@ -1031,7 +1042,7 @@ struct array : static_array<T, D, Alloc> {
 			),
 			this->data_elements()  // used as hint
 		);
-		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {
+		if constexpr(not (std::is_trivially_default_constructible_v<typename array::element> or multi::force_element_trivial_default_construction<typename array::element>)) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
 		}
 		return std::move(*this);
@@ -1048,7 +1059,7 @@ struct array : static_array<T, D, Alloc> {
 			),
 			extensions
 		};
-		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {
+		if constexpr(not (std::is_trivially_default_constructible_v<typename array::element> or multi::force_element_trivial_default_construction<typename array::element>)) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
 		auto const is = intersection(this->extensions(), extensions);
