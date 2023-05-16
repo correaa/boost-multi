@@ -689,10 +689,10 @@ int main() {
 
 The library can take advantage of types with [partially formed](https://marcmutz.wordpress.com/tag/partially-formed-state/) state when
 elements are trivial to construct (e.g., built-in types).
-In such cases, `multi::array`s does not initialize individual elements.
-(If trivial construction is unavailable, the library uses the default constructor instead.)
+In such cases, `multi::array` does not initialize individual elements unless specified.
+If trivial construction is unavailable, the library uses the default constructor.
 
-For example, after construction, the values of the six elements of this integers array are unspecified (partially formed).
+For example, after construction, the values of the six elements of this array are unspecified (partially formed).
 ```cpp
 multi::array<int, 2> A2({2, 3});
 ```
@@ -708,16 +708,19 @@ Initialization can be enforced by passing a value argument after the extensions.
 multi::array<int, 2> A2({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
 ```
 
-This design is particularly advantageous for *numeric* types for which external low-level libraries can handle assignments effectively.
+This design is particularly advantageous for *numeric* types for which external low-level libraries can fill values.
 (or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization).
 
-Unfortunately, regarding the numeric types, STL's `std::complex<double>` was designed as not trivially constructible.
+Unfortunately, regarding the numeric types, STL's `std::complex<double>` was standardized as not-trivially constructible.
 A workaround is possible by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
 ```cpp
 #include<multi/array.hpp>
-
+...
 inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 ```
+
+With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
+The rule will only apply to the library container, not other containers, such as `std::vector` or indivial `std::complex` elements.
 
 ## Type Requirements
 
