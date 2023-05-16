@@ -863,7 +863,7 @@ int main() {
 
 The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see [CUDA Thrust](#cuda-thrust) Thurst section).
 
-### Substitutability with standard vector and comparison to other dynamic array libraries
+### Substitutability with standard vector and span
 
 The one-dimensional case `multi::array<T, 1>` is special and overlaps functionality with other dynamic array implementations, such as `std::vector`.
 Indeed, both types of containers are similar and usually substitutable, with no or minor modifications.
@@ -881,18 +881,26 @@ Finally, an array can be copied by `std::vector<T> v(A1D.begin(), A1D.end());` o
 Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data_elements(), A1D.num_elements());`. 
 (See examples [here](https://godbolt.org/z/n4TY998o4).)
 
+The `std::span` semantics (C++20) is not well defined as a reference- or pointer-like type; it doesn't respect `const` correctness in generic code.
+This behavior is contrary to the goals of this library;
+and for this reason, there is no single substitute for `std::span` for all cases.
+Depending on how it is used, either `multi::array_ref<T, 1> [const& | &&]` or `multi::array_ptr<T [const], 1>` may replace the features of `std::span`.
+The former typically works when using it as function argument.
+
+## Comparison to other dynamic array libraries
+
 The C++23 standard is projected to provide `mdspan`, a non-owning _multidimensional_ array.
-Here is an appropriate point to compare the two libraries.
+So here is an appropriate point to compare the two libraries.
 Although the goals are similar, the two libraries differ in their generality and approach; in a few words: 
 
 The Multi library concentrates on _well-defined value- and reference-semantics of arbitrary memory types with regularly arranged elements_ (distributions described by strides and offsets) and _extreme compatibility with STL algorithms_ (via iterators) and other fundamental libraries.
 
 `mdspan` concentrates on _arbitrary layouts_ for non-owning memory of a single type (CPU raw pointers).
 Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library. 
-Therefore, its compatibility with the rest of the STL is a bit lacking.
+Therefore, its compatibility with the rest of the STL is lacking.
 The ultimate reason is that arbitrary layouts do not compose well across subdimensions, and, in turn, this imposes certain limitations in `mdspan`, such as ad-hoc slicing and subarray.
 
-[Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) is a very popular matrix linear algebra library; and as such it only handles the special 2D (and 1D) array case.
+[Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) is a very popular matrix linear algebra library, and as such, it only handles the special 2D (and 1D) array case.
 Instead, the Multi library is dimension-generic and doesn't make any algebraic assumptions for arrays or contained elements (but still can be used to _implement_ dense linear algebra algorithms.)
 
 Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) and Eigen. 
