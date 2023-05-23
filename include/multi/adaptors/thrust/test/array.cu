@@ -1,29 +1,39 @@
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2021-2023 Alfredo A. Correa
+
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust"
-#include<boost/test/unit_test.hpp>
-
-#include "../../../adaptors/thrust/fix_complex_traits.hpp"
-#include          "../../../detail/fix_complex_traits.hpp"
-
+#include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 #include <boost/timer/timer.hpp>
 
-#include "../../../adaptors/thrust.hpp"
+#include <multi/array.hpp>
+#include <multi/adaptors/thrust.hpp>
+#include <multi/adaptors/thrust/managed_allocator.hpp>
 
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
 #include <thrust/system/cuda/memory.h>
 #include <thrust/uninitialized_copy.h>
 
-//#include "../../../memory/adaptors/cuda/allocator.hpp"
-//#include "../../../memory/adaptors/cuda/cached/allocator.hpp"
-//#include "../../../memory/adaptors/cuda/managed/allocator.hpp"
-
-#include<multi/adaptors/thrust/managed_allocator.hpp>
-
-#include <boost/mpl/list.hpp>
-
 #include <numeric>
 
 namespace multi = boost::multi;
+
+#ifdef __NVCC__
+template<>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<double>> = true;
+template<>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<float>> = true;
+template<>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<double>> = true;
+template<>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<float>> = true;
+#else  // vvv nvcc (12.1?) doesn't support this kind of customization: "error: expected initializer before ‘<’"
+template<class T>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
+template<class T>
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<T>> = std::is_trivially_default_constructible<T>::value;
+#endif
 
 namespace {
 
@@ -38,9 +48,9 @@ template<class T> using test_allocator =
 }
 
 using types_list = boost::mpl::list<
-  //char,
+	// char,
 	double,
-  //std::complex<double>,
+	// std::complex<double>,
 	thrust::complex<double>
 >;
 

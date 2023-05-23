@@ -1,12 +1,12 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo Correa
+// Copyright 2020-2023 Alfredo A. Correa
 
 #ifndef MULTI_COMPLEX_HPP
 #define MULTI_COMPLEX_HPP
 
 #include "array_ref.hpp"
 
-#include "detail/fix_complex_traits.hpp"
+// #include "detail/fix_complex_traits.hpp"
 
 #include<complex>
 #include<utility>  // for forward
@@ -166,11 +166,11 @@ struct imag_t {
 }  // end namespace multi
 }  // end namespace boost
 
-static_assert( boost::multi::is_trivially_default_constructible<std::complex<double>>::value );
-static_assert( boost::multi::is_trivially_default_constructible<std::complex<float >>::value );
+// static_assert( boost::multi::is_trivially_default_constructible<std::complex<double>>::value );
+// static_assert( boost::multi::is_trivially_default_constructible<std::complex<float >>::value );
 
-static_assert( boost::multi::is_trivial<std::complex<double>>::value );
-static_assert( boost::multi::is_trivial<std::complex<float >>::value );
+// static_assert( boost::multi::is_trivial<std::complex<double>>::value );
+// static_assert( boost::multi::is_trivial<std::complex<float >>::value );
 
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
