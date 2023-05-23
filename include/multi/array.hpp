@@ -48,7 +48,7 @@ struct array_allocator {
 		return n?allocator_traits::allocate(alloc_, n, hint):pointer_{nullptr};
 	}
 
-	auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type value) {
+	auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
 	}
 	template<typename It>
@@ -170,7 +170,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
 	}
 
-	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
+	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
