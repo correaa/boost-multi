@@ -48,7 +48,7 @@ struct array_allocator {
 		return n?allocator_traits::allocate(alloc_, n, hint):pointer_{nullptr};
 	}
 
-	auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type value) {
+	auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
 	}
 	template<typename It>
