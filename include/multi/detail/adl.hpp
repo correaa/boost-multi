@@ -9,7 +9,7 @@
 #include<type_traits>  // std::conditional_t
 #include<utility>
 
-#include "multi/detail/memory.hpp"
+#include <multi/detail/memory.hpp>
 
 #if defined(__NVCC__)
 #include<thrust/copy.h>
@@ -185,18 +185,18 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size c
 	}
 }
 
-#if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = code_is_unreachable
-	#else
-		#pragma    diagnostic push
-		#pragma    diag_suppress = code_is_unreachable
-	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic push
-	#pragma    diag_suppress = code_is_unreachable
-#endif
+// #if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+//  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+//      #pragma nv_diagnostic push
+//      #pragma nv_diag_suppress = code_is_unreachable
+//  #else
+//      #pragma    diagnostic push
+//      #pragma    diag_suppress = code_is_unreachable
+//  #endif
+// #elif defined __NVCOMPILER
+//  #pragma    diagnostic push
+//  #pragma    diag_suppress = code_is_unreachable
+// #endif
 template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
 auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size count)
 -> std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)> {
@@ -204,39 +204,31 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 		std::advance(first, count);
 		return first;
 	}
-	using _ = std::allocator_traits<Alloc>;
+	using alloc_traits = std::allocator_traits<Alloc>;
 	ForwardIt current = first;
 	try {
-	//  return std::for_each_n(first, count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
+	//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 	//  workadoung for gcc 8.3.1 in Lass
-		std::for_each(first, first + count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
+		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 		return first + count;
-	//  std::any_of(first, first + count, [](auto& element) {
-	//      _::construct(alloc, 
-	//  });
-	//  for(; count > 0; ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-	//      _::construct(alloc, std::addressof(*current));
-	//  }
-	} catch(...) {
-	// LCOV_EXCL_START  // TODO(correaa) add test
-		std::for_each(first, current, [&](T& elem) {_::destroy(alloc, std::addressof(elem));});
-	//  for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-	//      _::destroy(alloc, std::addressof(*first));
-	//  }
-		throw;
-	// LCOV_EXCL_STOP
 	}
+	// LCOV_EXCL_START  // TODO(correaa) add test
+	catch(...) {
+		std::for_each(first, current, [&](T& elem) {alloc_traits::destroy(alloc, std::addressof(elem));});
+		throw;
+	}
+	// LCOV_EXCL_STOP
 	return current;
 }
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic pop
-	#else
-		#pragma    diagnostic pop
-	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic pop
-#endif
+// #if defined __NVCC__
+//  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+//      #pragma nv_diagnostic pop
+//  #else
+//      #pragma    diagnostic pop
+//  #endif
+// #elif defined __NVCOMPILER
+//  #pragma    diagnostic pop
+// #endif
 
 }  // end namespace xtd
 
@@ -271,54 +263,15 @@ constexpr class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
 	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const DECLRETURN(       std::uninitialized_copy(first, last, d_first))
 // #if defined(__NVCC__)
-//  template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
+//  template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
 // #endif
-	template<class... As>          constexpr auto _(priority<3>/**/,        As&&... args)       const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args)       const DECLRETURN(  std::decay_t<T>::  uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args)       const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
 } adl_uninitialized_copy;
-
-namespace xtd {
-
-//template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
-//auto uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first)
-//->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(*first), d_first)> {
-//  ForwardIt current = d_first;
-//  try {
-//      for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
-//      }
-//  } catch(...) {
-//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          d_first->~Value();
-//      }
-//      throw;
-//  }
-//  return current;
-//}
-
-//template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
-//auto uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
-//->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(std::move(*first)), d_first)> {
-//  ForwardIt current = d_first;
-//  try {
-//      return std::for_each_n(first, count, [&](auto& elem) { ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));; ++current; });
-//      for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));
-//      }
-//  } catch(...) {
-//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          d_first->~Value();
-//      }
-//      throw;
-//  }
-//  return current;
-//}
-
-}  // end namespace xtd
 
 constexpr class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
