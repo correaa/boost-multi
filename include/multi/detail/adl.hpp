@@ -144,17 +144,19 @@ struct alloc_construct_elem_t {
 namespace xtd {
 
 template<class T>  // this one goes last!!!
-constexpr auto to_address(const T& ptr) noexcept;
+constexpr auto to_address(T const& ptr) noexcept;
 
 template<class T>
-constexpr auto me_to_address(priority<0>/**/, const T& ptr) noexcept
-->decltype(to_address(ptr.operator->())) {
-	return to_address(ptr.operator->()); }
+constexpr auto me_to_address(priority<0> /**/, T const& ptr) noexcept
+	-> decltype(to_address(ptr.operator->())) {
+	return to_address(ptr.operator->());
+}
 
 template<class T>
-constexpr auto me_to_address(priority<1>/**/, const T& ptr) noexcept
-->decltype(std::pointer_traits<T>::to_address(ptr)) {
-	return std::pointer_traits<T>::to_address(ptr); }
+constexpr auto me_to_address(priority<1> /**/, T const& ptr) noexcept
+	-> decltype(std::pointer_traits<T>::to_address(ptr)) {
+	return std::pointer_traits<T>::to_address(ptr);
+}
 
 template<class T, std::enable_if_t<std::is_pointer<T>{}, int> = 0>
 constexpr auto me_to_address(priority<2>/**/, T const& ptr) noexcept -> T {
@@ -185,58 +187,50 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size c
 	}
 }
 
-#if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = code_is_unreachable
-	#else
-		#pragma    diagnostic push
-		#pragma    diag_suppress = code_is_unreachable
-	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic push
-	#pragma    diag_suppress = code_is_unreachable
-#endif
+// #if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+//  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+//      #pragma nv_diagnostic push
+//      #pragma nv_diag_suppress = code_is_unreachable
+//  #else
+//      #pragma    diagnostic push
+//      #pragma    diag_suppress = code_is_unreachable
+//  #endif
+// #elif defined __NVCOMPILER
+//  #pragma    diagnostic push
+//  #pragma    diag_suppress = code_is_unreachable
+// #endif
 template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
 auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size count)
 -> std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)> {
-	if (std::is_trivially_default_constructible_v<T>) {
+	if(std::is_trivially_default_constructible_v<T>) {
 		std::advance(first, count);
 		return first;
 	}
-	using _ = std::allocator_traits<Alloc>;
-	ForwardIt current = first;
+	using alloc_traits = std::allocator_traits<Alloc>;
+	ForwardIt current  = first;
 	try {
-	//  return std::for_each_n(first, count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
-	//  workadoung for gcc 8.3.1 in Lass
-		std::for_each(first, first + count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
+		//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
+		//  workadoung for gcc 8.3.1 in Lass
+		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 		return first + count;
-	//  std::any_of(first, first + count, [](auto& element) {
-	//      _::construct(alloc, 
-	//  });
-	//  for(; count > 0; ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-	//      _::construct(alloc, std::addressof(*current));
-	//  }
-	} catch(...) {
-	// LCOV_EXCL_START  // TODO(correaa) add test
-		std::for_each(first, current, [&](T& elem) {_::destroy(alloc, std::addressof(elem));});
-	//  for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-	//      _::destroy(alloc, std::addressof(*first));
-	//  }
-		throw;
-	// LCOV_EXCL_STOP
 	}
-	return current;
+	// LCOV_EXCL_START  // TODO(correaa) add test
+	catch(...) {
+		std::for_each(first, current, [&](T& elem) { alloc_traits::destroy(alloc, std::addressof(elem)); });
+		throw;
+	}
+	// LCOV_EXCL_STOP
+	// return current;
 }
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic pop
-	#else
-		#pragma    diagnostic pop
-	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic pop
-#endif
+// #if defined __NVCC__
+//  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+//      #pragma nv_diagnostic pop
+//  #else
+//      #pragma    diagnostic pop
+//  #endif
+// #elif defined __NVCOMPILER
+//  #pragma    diagnostic pop
+// #endif
 
 }  // end namespace xtd
 
