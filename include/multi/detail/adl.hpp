@@ -9,7 +9,7 @@
 #include<type_traits>  // std::conditional_t
 #include<utility>
 
-#include <multi/detail/memory.hpp>
+#include "multi/detail/memory.hpp"
 
 #if defined(__NVCC__)
 #include<thrust/copy.h>
@@ -144,17 +144,19 @@ struct alloc_construct_elem_t {
 namespace xtd {
 
 template<class T>  // this one goes last!!!
-constexpr auto to_address(const T& ptr) noexcept;
+constexpr auto to_address(T const& ptr) noexcept;
 
 template<class T>
-constexpr auto me_to_address(priority<0>/**/, const T& ptr) noexcept
-->decltype(to_address(ptr.operator->())) {
-	return to_address(ptr.operator->()); }
+constexpr auto me_to_address(priority<0> /**/, T const& ptr) noexcept
+	-> decltype(to_address(ptr.operator->())) {
+	return to_address(ptr.operator->());
+}
 
 template<class T>
-constexpr auto me_to_address(priority<1>/**/, const T& ptr) noexcept
-->decltype(std::pointer_traits<T>::to_address(ptr)) {
-	return std::pointer_traits<T>::to_address(ptr); }
+constexpr auto me_to_address(priority<1> /**/, T const& ptr) noexcept
+	-> decltype(std::pointer_traits<T>::to_address(ptr)) {
+	return std::pointer_traits<T>::to_address(ptr);
+}
 
 template<class T, std::enable_if_t<std::is_pointer<T>{}, int> = 0>
 constexpr auto me_to_address(priority<2>/**/, T const& ptr) noexcept -> T {
@@ -200,25 +202,25 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size c
 template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
 auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size count)
 -> std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)> {
-	if (std::is_trivially_default_constructible_v<T>) {
+	if(std::is_trivially_default_constructible_v<T>) {
 		std::advance(first, count);
 		return first;
 	}
 	using alloc_traits = std::allocator_traits<Alloc>;
-	ForwardIt current = first;
+	ForwardIt current  = first;
 	try {
-	//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
-	//  workadoung for gcc 8.3.1 in Lass
+		//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
+		//  workadoung for gcc 8.3.1 in Lass
 		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 		return first + count;
 	}
 	// LCOV_EXCL_START  // TODO(correaa) add test
 	catch(...) {
-		std::for_each(first, current, [&](T& elem) {alloc_traits::destroy(alloc, std::addressof(elem));});
+		std::for_each(first, current, [&](T& elem) { alloc_traits::destroy(alloc, std::addressof(elem)); });
 		throw;
 	}
 	// LCOV_EXCL_STOP
-	return current;
+	// return current;
 }
 // #if defined __NVCC__
 //  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
@@ -263,15 +265,54 @@ constexpr class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
 	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const DECLRETURN(       std::uninitialized_copy(first, last, d_first))
 // #if defined(__NVCC__)
-//  template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
+//  template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
 // #endif
-	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<3>/**/,        As&&... args)       const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args)       const DECLRETURN(  std::decay_t<T>::  uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args)       const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
 } adl_uninitialized_copy;
+
+namespace xtd {
+
+//template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
+//auto uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first)
+//->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(*first), d_first)> {
+//  ForwardIt current = d_first;
+//  try {
+//      for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
+//      }
+//  } catch(...) {
+//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          d_first->~Value();
+//      }
+//      throw;
+//  }
+//  return current;
+//}
+
+//template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
+//auto uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
+//->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(std::move(*first)), d_first)> {
+//  ForwardIt current = d_first;
+//  try {
+//      return std::for_each_n(first, count, [&](auto& elem) { ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));; ++current; });
+//      for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));
+//      }
+//  } catch(...) {
+//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          d_first->~Value();
+//      }
+//      throw;
+//  }
+//  return current;
+//}
+
+}  // end namespace xtd
 
 constexpr class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
