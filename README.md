@@ -217,9 +217,10 @@ This will output:
 > 50 6 7 8 9
 > ```
 
-The arrays provide an iterator based interface, that allows it to interface with and implement algorithms.
+The arrays provide an iterator-based access, which allows it to interface with and implement algorithms.
+
 It is sometimes said (by Sean Parent) that the whole of STL algorithms can be seen as intermediate pieces to implement `std::stable_sort`. 
-Pressumably if one can sort over a range, one can perform any other standard algorithm.
+Pressumably, if one can sort over a range, one can perform any other standard algorithm.
 
 ```cpp
 		...
@@ -251,7 +252,7 @@ This is done in the bidimensional case, by accessing the matrix as a range of co
 	}
 ```
 
-Which will transform the (original) matrix into:
+Which will transform the matrix into:
 
 > ```
 > 1 2 3 4 30  
@@ -308,12 +309,12 @@ multi::array<double, 3> const A3 = {
 assert( A3.num_elements() == 3 * 2 * 2 );
 ```
 
-In all cases constness (`const` declaration) is honored in the expected way.
+In all cases, constness (`const` declaration) is honored in the expected way.
 
 ## Copy and assigment
 
 The library offer value semantics for the `multi::array<T, D>` family of classes.
-Constructing or assignment from an existing array generates a copy of the original object, that is, and object that is independent but equal in value.
+Constructing or assigning from an existing array generates a copy of the original object, that is, and object that is independent but equal in value.
 
 ```cpp
 auto B2 = A2;  // same as multi::array<double, 2> B2 = A2;
@@ -329,7 +330,7 @@ B2 = A2;
 
 (The operation can fail if there is no enough memory to hold a copy.)
 
-Sometimes it is necessary to generate copies from views, the dimensionality must match.
+Sometimes it is necessary to generate copies from views.
 ```cpp
 multi::array<double, 3> C2 = A2( {0, 2}, {0, 2} );
 ```
@@ -360,7 +361,7 @@ While this instead does produce a transposition, at the cost of making a copy (`
 A2 = + A2.transposed();
 ```
 
-In-place transposition is an active subject of research, _optimal_ in speed and memory transpositions might require specially designed libraries.
+In-place transposition is an active subject of research; _optimal_ in speed and memory transpositions might require specially designed libraries.
 
 Finally, arrays can be efficiently moved by transferring ownership of the internal data.
 
@@ -376,12 +377,12 @@ A "moved" subview is simply another kind view of the elements.
 multi::array<std::vector<double>, 2> A({10, 10});
 multi::array<std::vector<double>, 2> B({10, 10});
 ...
-B[1] = A[2].moved();  // 10 *elements* of the third row of A is moved into the second row of B.
+B[1] = A[2].element_moved();  // 10 *elements* of the third row of A is moved into the second row of B.
 ```
 
 ## Change sizes (extents)
 
-Arrays can change their size while _preserving elements_ with `reextents`.
+Arrays can change their size while _preserving elements_ with the `reextents` method.
 
 ```cpp
 multi::array<double, 2> A {
@@ -455,7 +456,7 @@ These references can be given a name; using `auto` can be misleading since the r
 auto row = *begin(A);  // accepted by the language but misleading, row is not an independent value
 ```
 
-In my experience, however, the following usage patter a more consistent idiom for generating references (still without copying elements):
+In my experience, however, the following usage pattern produces a more consistent idiom for generating references (still without copying elements):
 
 ```cpp
 auto&&       row0 = * begin(A);  // same as decltype(A)::      reference  row0 = * begin(A);
@@ -474,7 +475,7 @@ decltype(A)::value_type row =   *begin(A);  // there is a real copy of the row
 
 ### "Pointer" to subarray
 
-Subarrays (e.g., rows in a 2D array) are reference-like objects with a concrete address-like value that identifies them uniquely (in contrast to language pointers).
+Subarrays (e.g., rows in a 2D array) are reference-like objects with a concrete address-like value that identifies them uniquely.
 These addresses, which behave like pointers, can be helpful to "mark" subviews; these markers can be copied and stored in arrays.
 
 ```cpp
@@ -506,7 +507,7 @@ The syntax can be combined in arbitrary ways, for example `*begin(A[n])` is equi
 Index access mimics that of C-fixed sizes arrays. 
 For example, a 2-dimensional array will access to an element by specifying two indices `A[1][2]`,
 which can be used for direct write and read operations; 
-while _partial_ index arguments `A[1][2]` generate a view 1-dimensional object (reference).
+while _partial_ index arguments `A[1]` generate a view 1-dimensional object (reference).
 
 ```cpp
 A        // is a 2D value array
