@@ -46,10 +46,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
 	BOOST_REQUIRE( &arr[point[0]][point[1]] == &arr(point[0], point[1]) );
 	BOOST_REQUIRE( &arr(point[0], point[1]) == &arr.apply(point) );
 
-#if not defined(__circle_build__)
 	BOOST_REQUIRE( &arr[point[0]][point[1]] == &std::apply(arr, point) );
 	BOOST_REQUIRE( &arr[point[0]][point[1]] == &     apply(arr, point) );
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
