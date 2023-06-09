@@ -2217,8 +2217,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto operator=(Range const& rng) && -> basic_array& {operator=(rng); return *this;}
 
 	template<class It> constexpr auto assign(It first) &&
-	->decltype(adl_copy_n(first, this->size(), std::declval<iterator>()), void()) {
-		return adl_copy_n(first, this->size(), std::move(*this).begin()), void(); }
+	->decltype(adl_copy_n(first, std::declval<size_type>(), std::declval<iterator>()), void()) {
+		return adl_copy_n(first, this->       size()      , std::move(*this).begin()), void(); }
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(basic_array const& self, basic_array<TT, 1, As...> const& other) -> bool {
