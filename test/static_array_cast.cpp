@@ -15,7 +15,7 @@ template<class It, class F> class involuter;
 
 template<class Ref, class Involution>
 class involuted {
-	Ref r_;
+	Ref r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 	MULTI_NO_UNIQUE_ADDRESS Involution f_;
 
  public:

@@ -110,11 +110,10 @@ struct transform_ptr {
 
  private:
 	Ptr p_;
-	UF  f_;
+	UF  f_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) technically this type can be const
 
 	template<class, class, class, class> friend struct transform_ptr;
 };
-
 
 template<class Array, typename Reference = void, typename Element = void>
 struct array_traits;

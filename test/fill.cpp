@@ -11,17 +11,19 @@
 #include<random>
 #include<type_traits>  // enable_if_t
 
+namespace {
 // from Howard Hinnart hash
-static auto fnv1a(void const* key, std::ptrdiff_t len, std::size_t hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
+auto fnv1a(void const* key, std::ptrdiff_t len, std::size_t hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
 	auto const* first = static_cast<unsigned char const*>(key);
 	return std::accumulate(
 		first, std::next(first, len), hash,
 		[prime = 1099511628211U](auto acc, auto elem) {return (acc ^ elem) * prime;}
 	);
 }
+}  // namespace
 
 // static constexpr auto fnv1a(void const* key, std::size_t len) noexcept {
-// 	return fnv1a(key, len, 14695981039346656037U);
+//  return fnv1a(key, len, 14695981039346656037U);
 // }
 
 class fnv1a_t {

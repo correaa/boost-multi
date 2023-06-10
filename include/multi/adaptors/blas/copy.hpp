@@ -164,7 +164,7 @@ struct copy_it {
 template<class A1D> [[nodiscard]]
 auto copy(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 	struct ref {
-		A1D const& x_;  // NOLINT(misc-non-private-member-variables-in-classes)
+		A1D const& x_;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members)
 		using iterator = copy_it<typename A1D::const_iterator>;
 		auto begin() const {return iterator{x_.begin()};}
 		auto end()   const {return iterator{x_.end()  };}
