@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 		BOOST_REQUIRE( size(arr)==10 );
 		BOOST_REQUIRE( arr[5]== double{} );
 	}
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)  // circle 170 crashes
+	#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 	{
 		multi::array arr(multi::extensions_t<1>{{0, 10}}, double{});
 		BOOST_REQUIRE( size(arr)==10 );
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors_2d_ctad) {
-#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)  // circle 170 crashes
+#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 	multi::array arr({10, 20}, double{});
 	BOOST_REQUIRE( size(arr)==10 );
 	BOOST_REQUIRE( arr[5][6] == double{} );
