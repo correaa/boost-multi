@@ -120,7 +120,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 	}
 }
 
-#if not defined(__circle_build__)
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -365,4 +364,3 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized
 	blas::trsm(blas::side::left, {1.0, 0.0}, blas::U(A), blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 }
-#endif
