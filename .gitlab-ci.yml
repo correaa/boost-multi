@@ -225,7 +225,7 @@ NVCC114:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-CIRCLE198:
+circle 198:
   allow_failure: true
   image: debian:testing
   stage: build
@@ -248,7 +248,7 @@ CIRCLE198:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-circle_latest:
+circle latest:
   allow_failure: true
   image: debian:testing
   stage: build
