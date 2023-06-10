@@ -50,16 +50,12 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 BOOST_AUTO_TEST_CASE(iterator_2d) {
 	{
 		multi::array<double, 2> const arr({120, 140}, 99.0);
+
 		BOOST_REQUIRE(      arr.size() == 120 );
-	#if not defined(__circle_build__)  // circle 170 crashes
 		BOOST_REQUIRE( size(arr)       == 120 );
-	#endif
-	#if not defined(__circle_build__)  // circle 170 crashes
 		BOOST_REQUIRE( arr.cbegin() < arr.cend() );
-	#endif
-	#if not defined(__circle_build__)  // circle 170 crashes
 		BOOST_REQUIRE( arr.cend() - arr.cbegin() == arr.size() );
-	#endif
+
 		using iter = multi::array<double, 2>::iterator;
 		static_assert( std::is_same_v< iter::element   , double >, "!");
 		static_assert( std::is_same_v< iter::value_type, multi::array<double, 1> >, "!");
@@ -171,9 +167,9 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	static_assert( decltype(begin(arr))::rank_v  == 3 , "!" );
 	static_assert( decltype(begin(arr))::rank {} == 3 , "!" );
 
-#if not defined(__circle_build__)  // circle 170 crashes
 	auto&& ref = multi::ref(begin(arr), end(arr));
-//  BOOST_TEST( arr.base() == ref.base() );  // fails in circle (?)
+
+	BOOST_TEST( arr.base() == ref.base() );  // fails in circle (?)
 	BOOST_TEST(  arr[0][2][1] ==  ref[0][2][1] );
 	BOOST_TEST( &arr[0][2][1] == &ref[0][2][1] );
 	BOOST_TEST( arr.layout().stride() == ref.layout().stride());
@@ -185,12 +181,11 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	BOOST_REQUIRE( arr.layout() == ref.layout() );
 
 	BOOST_REQUIRE( &multi::ref(begin(arr), end(arr)) == &arr );
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
 	multi::array<std::string, 2> arr = {
-		{"00", "01"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"00", "01"},  // std::string NOLINT(fuchsia-default-arguments-calls) std::string has a default constructor
 		{"10", "11"},  // std::string NOLINT(fuchsia-default-arguments-calls)
 		{"20", "21"}   // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
