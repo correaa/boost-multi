@@ -24,9 +24,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 	multi::array<double, 2> A2D = arr.reinterpret_array_cast<double>(3);
 
 	BOOST_REQUIRE( decltype(A2D)::dimensionality == decltype(arr)::dimensionality + 1 );
-#if not defined(__circle_build__)
 	BOOST_REQUIRE( dimensionality(A2D) == dimensionality(arr) + 1 );
-#endif
 
 	BOOST_REQUIRE( size(A2D) == size(arr) );
 	BOOST_REQUIRE(  A2D[8][1] ==  arr[8].y );
@@ -42,7 +40,6 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, complex{1., 2.});
 	BOOST_REQUIRE(  size(arr) == 100 );
 
-	#if not defined(__circle_build__)  // TODO(correaa)
 	{
 		complex const arr0 = arr[0];
 		BOOST_TEST_REQUIRE( arr0.real() == 1.0 );
@@ -69,7 +66,6 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	BOOST_REQUIRE(( sizes(arr3)==decltype(sizes(arr3)){100, 2} ));
 	BOOST_REQUIRE( arr3[5][0] == real(arr[5]) );
 	BOOST_REQUIRE( arr3[5][1] == imag(arr[5]) );
-	#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
@@ -92,9 +88,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 
 		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
 		BOOST_REQUIRE( decltype(arr.reinterpret_array_cast<double>(3))::dimensionality == 3 );
-	#if not defined(__circle_build__)
 		BOOST_REQUIRE( dimensionality(arr.reinterpret_array_cast<double>(3)) == 3 );
-	#endif
 
 		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3).num_elements() == arr.num_elements()*3 );
 		BOOST_REQUIRE(  arr.reinterpret_array_cast<double>(3).size() == 4 );
