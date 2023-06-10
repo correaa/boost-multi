@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section) {
 		static_assert( decltype( arr(      5,       6, {0, 30}, {0, 40}) )::rank::value == 2);
 		static_assert( decltype( arr({0, 10},       6,      15, {0, 40}) )::rank::value == 2);
 		static_assert( decltype( arr({0, 10}, {0, 20},      15,      20) )::rank::value == 2);
-	#if not defined(__circle_build__)
+
 		static_assert( decltype( arr({0, 10}, {0, 20}, {0, 30}, {0, 40}) )::rank_v == 4);
 		static_assert( decltype( arr(      5, {0, 20}, {0, 30}, {0, 40}) )::rank_v == 3);
 		static_assert( decltype( arr({0, 10},      10, {0, 30}, {0, 40}) )::rank_v == 3);
@@ -35,7 +35,6 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section) {
 		static_assert( decltype( arr(      5,       6, {0, 30}, {0, 40}) )::rank_v == 2);
 		static_assert( decltype( arr({0, 10},       6,      15, {0, 40}) )::rank_v == 2);
 		static_assert( decltype( arr({0, 10}, {0, 20},      15,      20) )::rank_v == 2);
-	#endif
 	}
 	{
 		auto&& all = arr({0, 10}, {0, 20}, {0, 30}, {0, 40});
