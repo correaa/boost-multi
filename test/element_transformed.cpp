@@ -26,12 +26,10 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 //  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
 
-	#if not defined(__circle_build__)  // TODO(correaa)
 	BOOST_TEST_REQUIRE( real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0})) == std::norm(arr[0]) + std::norm(arr[1]) );
 	BOOST_REQUIRE( imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0})) == 0.                                    );
 
 	BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0}) == std::norm(arr[0]) + std::norm(arr[1]) );
-	#endif
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
@@ -92,8 +90,8 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 	constexpr auto operator=(decay_type const& other) && -> Conjd& {c_ = std::conj(other); return *this;}
 
  private:
-	constexpr explicit Conjd(ComplexRef cee) : c_{cee} {}
-	ComplexRef c_;
+	constexpr explicit Conjd(ComplexRef& cee) : c_{cee} {}
+	ComplexRef& c_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference
 	friend decltype(Conj);
 };
 

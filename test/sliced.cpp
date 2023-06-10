@@ -22,9 +22,7 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced) {
 
 	static_assert( decltype( arr.sliced(0, 5) )::rank::value == decltype(arr)::rank::value);  // NOLINT(misc-redundant-expression)
 	static_assert( decltype( arr.sliced(0, 5) )::rank{} == decltype(arr)::rank{});  // NOLINT(misc-redundant-expression)
-#if not defined(__circle_build__)
 	static_assert( decltype( arr.sliced(0, 5) )::rank_v == decltype(arr)::rank_v);  // NOLINT(misc-redundant-expression)
-#endif
 
 	BOOST_REQUIRE(  arr.sliced( 0, 5)[1][2][3][4] ==  arr[1][2][3][4] );
 	BOOST_REQUIRE( &arr.sliced( 0, 5)[1][2][3][4] == &arr[1][2][3][4] );

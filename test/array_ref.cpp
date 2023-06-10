@@ -383,7 +383,6 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
-	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
 	std::string const dc3D[4][2][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 		{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
 		{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
@@ -402,7 +401,6 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 
 	BOOST_REQUIRE( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 	BOOST_REQUIRE( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );
-	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
@@ -493,7 +491,6 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
 	auto&& d2B = d2R();
 	auto&& d2B_ref = multi::ref(d2B.begin(), d2B.end());
 
-	#if not defined(__circle_build__)
 	BOOST_REQUIRE(  d2B[0][0]    ==  d2B_ref[0][0] );
 	BOOST_REQUIRE( &d2B[0][0]    == &d2B_ref[0][0] );
 
@@ -501,7 +498,6 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
 	BOOST_REQUIRE(  d2B.layout() ==  d2B_ref.layout() );
 
 	BOOST_REQUIRE( &d2R() == &multi::ref(d2B.begin(), d2B.end()) );
-	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
@@ -510,11 +506,9 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
 	auto&& d1B     = d1R();
 	auto&& d1B_ref = multi::ref(d1B.begin(), d1B.end());
 
-	#if not defined(__circle_build__)
 	BOOST_REQUIRE( d1B.base()   == d1B_ref.base() );
 	BOOST_REQUIRE( d1B.layout() == d1B_ref.layout() );
 	BOOST_REQUIRE( &d1R() == &multi::ref(d1B.begin(), d1B.end()) );
-	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
@@ -620,7 +614,6 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 	//  f2d54(arr);
 	}
 }
-
 
 BOOST_AUTO_TEST_CASE(as_span) {
 	// using SpanInt = multi::array_ptr<int, 1> const&;

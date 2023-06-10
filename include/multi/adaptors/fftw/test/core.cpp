@@ -611,7 +611,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
 		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
-	#if not defined(__circle_build__)
 	{
 		multi::array<complex, 2> fwd(in.extensions());
 
@@ -645,7 +644,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
 		BOOST_TEST_REQUIRE( fwd[1][0] == in[0][1] );
 		BOOST_TEST_REQUIRE( fwd[2][0] == in[0][2] );
 	}
-	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
@@ -658,7 +656,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
 		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
-	#if not defined(__circle_build__)
 	{
 		auto in2 = + multi::fftw::ref(in);
 		BOOST_REQUIRE( in2 == in );
@@ -721,7 +718,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		BOOST_TEST_REQUIRE( fwd[1][0] == in[0][1] );
 		BOOST_TEST_REQUIRE( fwd[2][0] == in[0][2] );
 	}
-	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
@@ -732,7 +728,6 @@ BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
 		in[2][3][4][5] = 99.0;
 		return in;
 	}();
-	#if not defined(__circle_build__)
 	{
 		auto fwd = + multi::fftw::ref(in)(fftw::forward, fftw::forward, fftw::forward, fftw::none);
 		BOOST_REQUIRE( in[2][3][4][5] == 99.0 );
@@ -749,7 +744,6 @@ BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
 		multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
 		BOOST_REQUIRE( out == fwd );
 	}
-	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive) {
@@ -783,7 +777,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-//	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -797,13 +790,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed) {
 
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
-//	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nested) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-//	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -816,13 +807,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nested) {
 	in = multi::fftw::ref(in.transposed());
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
-//	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-//	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -833,13 +822,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
 	in = multi::fftw::ref(in).transposed();
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
-//	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-//	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
 		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
@@ -850,7 +837,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
 	in = multi::fftw::ref(in.transposed());
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
-//	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
@@ -868,7 +854,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
-//	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
 	multi::array<std::string, 2> in = {
 		{  "100.0 + 2.0*I",  "9.0 - 1.0*I", "2.0 +  4.0*I"},  // std::string NOLINT(fuchsia-default-arguments-calls)
 		{    "3.0 + 3.0*I",  "7.0 - 4.0*I", "1.0 +  9.0*I"},  // std::string NOLINT(fuchsia-default-arguments-calls)
@@ -877,5 +862,4 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in = in.transposed();
 	BOOST_REQUIRE( in != in_transpose );
-//	#endif
 }

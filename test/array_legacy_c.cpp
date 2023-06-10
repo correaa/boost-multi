@@ -41,9 +41,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 
 	multi::array<std::complex<double>, 2> out(extensions(in));
 
-#if not defined(__circle_build__)
 	BOOST_REQUIRE( dimensionality(out) == dimensionality(in) );
-#endif
 	BOOST_REQUIRE( sizes(out) == sizes(in) );
 
 	static_assert( sizeof(complex) == sizeof(fake::fftw_complex), "!" );

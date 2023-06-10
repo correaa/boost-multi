@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2022 Alfredo A. Correa
+// Copyright 2022-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW shift"
 #include<boost/test/unit_test.hpp>
@@ -47,7 +47,6 @@ using fftw_fixture = fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 BOOST_AUTO_TEST_CASE(fftw_shift) {
-#if not defined(__circle_build__)
 	class watch : std::chrono::steady_clock {
 		time_point start_ = now();
 
@@ -69,5 +68,4 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 		});
 	    BOOST_TEST_MESSAGE( "FFTW shift "<< unnamed.elapsed_sec()/repeat <<" sec" );  // prints  0.000882224 sec
 	}();
-#endif
 }

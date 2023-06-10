@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1_T) {
 	BOOST_REQUIRE( C[99][0] == 1.0 );
 }
 
-#if not defined (__circle_build__)  // crashes circle compiler v186
+#if 1
 BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1_H) {
 	using complex = std::complex<double>;  // complex const I{0, 1};
 	multi::array<complex, 2> const A({100, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming

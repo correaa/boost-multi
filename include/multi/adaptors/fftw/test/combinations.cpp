@@ -174,7 +174,6 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 
 	namespace fftw = multi::fftw;
 	using clock = std::chrono::high_resolution_clock;
-	#if not defined(__circle_build__)
 	{
 		auto const tick = clock::now();
 		multi::array<complex, 4> out({6, 12, 12, 12});
@@ -204,5 +203,4 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 		auto time = std::chrono::duration<double>(clock::now() - tick);
 		std::cout<<"move construct (in-place fft) : "<< time.count() <<std::endl;
 	}
-	#endif
 }

@@ -13,9 +13,11 @@
 
 namespace multi = boost::multi;
 
-static auto second_finish(multi::extensions_t<3> exts) {
+namespace {
+auto second_finish(multi::extensions_t<3> exts) {
 	return std::get<1>(exts).finish();
 }
+}  // namespace
 
 BOOST_AUTO_TEST_CASE(extensions_3D) {
 	BOOST_REQUIRE( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
@@ -215,11 +217,7 @@ BOOST_AUTO_TEST_CASE(layout) {
 	}
 	{
 		std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
-#if defined(__circle_build__)  // circle doesn't see dimensionality as a constexpr "cannot access value of A at compile time;"
-		assert(multi::dimensionality(arr) == 3);
-#else  // other compilers ok
 		static_assert(multi::dimensionality(arr) == 3);
-#endif
 
 		using multi::extensions;
 		auto xA = extensions(arr);
@@ -234,11 +232,7 @@ BOOST_AUTO_TEST_CASE(layout) {
 
 		BOOST_REQUIRE( AA.stride() == 20 );
 
-#if defined(__circle_build__)  // circle doesn't recognize this as a constexpr "cannot access value of `arr` at compile time;"
-		assert(multi::stride(arr) == 20);
-#else  // other compilers ok
 		static_assert(multi::stride(arr) == 20);
-#endif
 
 		BOOST_REQUIRE( multi::stride(arr[0])    == 5 );
 		BOOST_REQUIRE( multi::stride(arr[1])    == 5 );

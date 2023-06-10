@@ -42,7 +42,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
 	namespace blas = multi::blas;
 	auto conjr = blas::make_conjugater(array.data_elements());
 
-#if not defined(__circle_build__)  // crashes circle compiler v186
 	decltype(blas::make_conjugater(carray.data_elements())) ppp;  // = BdataC;
 	ppp = conjr;
 
@@ -67,7 +66,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
 	BOOST_REQUIRE( blas::conj(conjd_array) == array );
 
 	BOOST_REQUIRE( blas::conj(array)[1][0] == std::conj(array[1][0]) );
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
@@ -81,7 +79,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
 	};
 
 	namespace blas = multi::blas;
-#if not defined(__circle_build__)  // crashes circle compiler v186
 	multi::array<complex, 2> conj_arr = blas::conj(arr);
 
 	BOOST_REQUIRE( conj_arr[2][1] == std::conj(arr[2][1]) );
@@ -104,7 +101,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
 	};
 	BOOST_REQUIRE( sizes(blas::real_doubled(arr)) == sizes(B_real_doubled) );
 	BOOST_REQUIRE(       blas::real_doubled(arr)  ==       B_real_doubled  );
-#endif
 }
 
 #if defined(CUDA_FOUND) and CUDA_FOUND
@@ -163,10 +159,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part) {
 	BOOST_REQUIRE( arr2[1][0].imag() == 2.0 );
 
 	namespace blas = multi::blas;
-#if not defined(__circle_build__)  // crashes circle compiler v186
 	BOOST_REQUIRE( blas::hermitized(arr2)[1][2] == std::conj( arr2[2][1] ) );
 
 	blas::hermitized(arr2)[1][2] = 20.0 + 30.0*I;
 	BOOST_REQUIRE( arr2[2][1] == 20.0 - 30.0*I );
-#endif
 }

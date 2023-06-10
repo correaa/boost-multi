@@ -31,9 +31,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk) {
 		multi::array<complex, 2> const c_copy = blas::herk(1., a);
 		BOOST_REQUIRE( c == c_copy );
 
-		#if not defined (__circle_build__)
 		BOOST_REQUIRE( +blas::gemm(1.0, a, blas::H(a)) == blas::herk(a) );
-		#endif
 	}
 }
 
@@ -140,7 +138,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case) {
 	BOOST_TEST( std::sqrt(real(blas::herk(a)[0][0])) == blas::nrm2(a[0]) );
 }
 
-#if not defined (__circle_build__)  // crashes circle compiler v186
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_out_param) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
@@ -195,7 +192,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto) {
 
 	BOOST_TEST( std::sqrt(real(blas::herk(blas::H(arr))[0][0])) == blas::nrm2(rotated(arr)[0]) );
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 	namespace blas = multi::blas;
@@ -213,7 +209,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		BOOST_REQUIRE(( arr2[1][0] == complex{50.0, -49.0} ));
 		BOOST_REQUIRE( arr2[0][1] == 9999.0 );
 	}
-	#if not defined (__circle_build__)
+	#if 1
 	{
 		multi::array<complex, 2> const c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
 		static_assert(blas::is_conjugated<decltype(blas::H(c))>{});
