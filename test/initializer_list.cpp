@@ -271,8 +271,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 	{
 		#if not defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
@@ -319,6 +319,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 		BOOST_REQUIRE( num_elements(arr) == 1 and arr[0] == 9.0 );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 	{
 		#if not defined(__circle_build__)
 		multi::static_array const arr({
@@ -363,8 +366,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
         // });
 		#endif
 	}
-#endif
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(partially_formed) {
 	multi::array<double, 2> arr1({10, 10}, double{});
