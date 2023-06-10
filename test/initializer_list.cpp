@@ -110,9 +110,9 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 	}
 	{
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
-//  	multi::array arr = {{1.1, 2.2, 3.3}};
-//  	static_assert( decltype(arr)::dimensionality == 1 , "!");
-//  	BOOST_REQUIRE( size(arr)==3 and arr[1] == 2.2 );
+//      multi::array arr = {{1.1, 2.2, 3.3}};
+//      static_assert( decltype(arr)::dimensionality == 1 , "!");
+//      BOOST_REQUIRE( size(arr)==3 and arr[1] == 2.2 );
 #endif
 	}
 	{
@@ -272,7 +272,19 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
-#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)  // circle 170 crashes
+#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+	{
+		#if not defined(__circle_build__)
+		multi::static_array arr({1.0, 2.0, 3.0});
+		static_assert(std::is_same<decltype(arr)::element_type, double>{}, "!");
+		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
+		static_assert(typename decltype(arr)::rank{} == 1);
+		#else
+		// multi::static_array arr(                             {1.0, 2.0, 3.0});  // crashes circle
+		// multi::static_array arr(std::initializer_list<double>{1.0, 2.0, 3.0});  // crashes circle
+		#endif
+	}
 	{
 		multi::array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same<decltype(arr)::element_type, double>{}, "!");
@@ -308,11 +320,48 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 		BOOST_REQUIRE( num_elements(arr) == 1 and arr[0] == 9.0 );
 	}
 	{
+		#if not defined(__circle_build__)
+		multi::static_array const arr({
+			{1.0, 2.0, 3.0},
+			{4.0, 5.0, 6.0},
+        });
+		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
+		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
+		#else
+		// // vvv--- gives segfault in circle
+		multi::static_array const arr({
+			{1.0, 2.0, 3.0},
+			{4.0, 5.0, 6.0},
+        });
+		#endif
+	}
+	{
+		#if not defined(__circle_build__)
 		multi::array const arr({
 			{1.0, 2.0, 3.0},
-			{4.0, 5.0, 6.0}
-                                                                                                                                                                                                      });
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 2 and num_elements(arr) == 6 );
+			{4.0, 5.0, 6.0},
+        });
+		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
+		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
+		#else
+		// // vvv--- gives error in circle, not viable constructor
+		multi::array const arr({
+			{1.0, 2.0, 3.0},
+			{4.0, 5.0, 6.0},
+        });
+
+		// vvv--- gives ODR violation in circle
+		// multi::array const arr(std::initializer_list<std::initializer_list<double>>{ 
+		//     {1.0, 2.0, 3.0},
+		//     {4.0, 5.0, 6.0},
+        // });
+
+		// vvv--- gives ODR violation in circle
+		// multi::array const arr(std::initializer_list<std::initializer_list<double>>{
+		//  std::initializer_list<double>{1.0, 2.0, 3.0},
+		//  std::initializer_list<double>{4.0, 5.0, 6.0},
+        // });
+		#endif
 	}
 #endif
 }
