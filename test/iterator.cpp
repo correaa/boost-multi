@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 
 	auto&& ref = multi::ref(begin(arr), end(arr));
 
-	BOOST_TEST( arr.base() == ref.base() );  // fails in circle (?)
+	BOOST_TEST( arr.base() == ref.base() );
 	BOOST_TEST(  arr[0][2][1] ==  ref[0][2][1] );
 	BOOST_TEST( &arr[0][2][1] == &ref[0][2][1] );
 	BOOST_TEST( arr.layout().stride() == ref.layout().stride());
