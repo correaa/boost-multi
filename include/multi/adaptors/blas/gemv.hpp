@@ -185,7 +185,7 @@ auto gemv(Scalar s, M const& m, V const& v)  // NOLINT(readability-identifier-le
 template<class T, class Matrix>
 struct scaled_matrix {
 	T aa_;
-	Matrix const& A_;  // NOLINT(readability-identifier-length) BLAS naming
+	Matrix const& A_;  // NOLINT(readability-identifier-length,cppcoreguidelines-avoid-const-or-ref-data-members) BLAS naming
 	
 	template<class Vector>
 	friend auto operator%(scaled_matrix const& aaA, Vector const& x) {  // NOLINT(readability-identifier-length) BLAS naming

@@ -10,9 +10,11 @@
 
 namespace multi = boost::multi;
 
-inline static constexpr auto make_ref(double* ptr) -> multi::array_ref<double, 2> {
+namespace {
+inline constexpr auto make_ref(double* ptr) -> multi::array_ref<double, 2> {
 	return multi::array_ref<double, 2>(ptr, {5, 7});
 }
+}  // namespace
 
 BOOST_AUTO_TEST_CASE(equality_1D) {
 	multi::array<double, 1> arr  = {1.0, 2.0, 3.0};

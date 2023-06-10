@@ -136,7 +136,7 @@ auto axpy(Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conv
 template<class AA, class X>
 class scaled {
 	AA a_;
-	X const& x_;
+	X const& x_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
  public:
 	scaled(AA a, X const& x) : a_{a}, x_{x} {}  // NOLINT(readability-identifier-length) conventional BLAS naming

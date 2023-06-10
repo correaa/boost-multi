@@ -30,7 +30,7 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 };
 
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	T0 head_;
+	T0 head_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference
 	using head_type = T0;
 	using tail_type = tuple<Ts...>;
 //  tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20

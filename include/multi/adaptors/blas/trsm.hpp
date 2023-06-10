@@ -19,7 +19,7 @@ enum class diagonal : char {
 template<blas::filling Fill, class Array>
 auto triangular_parted(Array const& arr) {
 	class triangular_part {
-		Array const& ref_;
+		Array const& ref_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 	 public:
 		explicit triangular_part(Array const& ref) : ref_{ref} {}

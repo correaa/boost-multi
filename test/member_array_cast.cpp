@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		: masses_{AoS.member_cast<double>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
 
 		struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-			double& mass;  // NOLINT(misc-non-private-member-variables-in-classes) exposed by design
-			v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes) exposed by design
+			double& mass;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
+			v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
 			operator particle() const { return {mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
 			auto operator+() const { return operator particle(); }
