@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 }
 
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
-BOOST_AUTO_TEST_CASE(initializer_list_1d) {
+BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 	{
 		#if not defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
@@ -285,6 +285,9 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 		// multi::static_array arr(std::initializer_list<double>{1.0, 2.0, 3.0});  // crashes circle
 		#endif
 	}
+}
+
+BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 	{
 		multi::array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same<decltype(arr)::element_type, double>{}, "!");
