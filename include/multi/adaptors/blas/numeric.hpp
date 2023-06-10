@@ -51,7 +51,7 @@ template<class It, class F, class Reference = involuted<typename std::iterator_t
 
 template<class Ref, class Involution>
 class involuted {
-	Ref r_;  // [[no_unique_address]] 
+	Ref r_;  // [[no_unique_address]]  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 	Involution f_;
 
 public:
@@ -95,11 +95,11 @@ public:
 
 	template<class DecayType>
 	constexpr auto operator==(DecayType&& other) const
-	->decltype(this->operator decay_type()==other){
+	->decltype(               std::declval<decay_type>()==other){
 		return this->operator decay_type()==other;}
 	template<class DecayType>
 	constexpr auto operator!=(DecayType&& other) const
-	->decltype(this->operator decay_type()!=other){
+	->decltype(std::declval<decay_type>()!=other){
 		return this->operator decay_type()!=other;}
 
 	friend constexpr auto operator==(decay_type const& other, involuted const& self){
@@ -113,7 +113,7 @@ public:
 	friend constexpr auto operator!=(DecayType&& other, involuted const& self) {
 		return other != self.operator decay_type();\
 	}
-//	auto imag() const{return static_cast<decay_type>(*this).imag();}
+//  auto imag() const{return static_cast<decay_type>(*this).imag();}
 	template<class Sink> friend constexpr auto operator<<(Sink&& sink, involuted const& self) -> Sink& {
 		return sink<< self.operator decay_type();
 	}
@@ -122,10 +122,10 @@ public:
 	template<class T = void*>
 	friend constexpr auto imag(involuted const& self) {
 	//->decltype(imag(std::declval<decay_type>())) {
-	 	return self.operator decay_type().imag(); }
+	    return self.operator decay_type().imag(); }
 
 	// ->decltype(adl_imag(std::declval<decay_type>())) {
-	// 	return adl_imag(self.operator decay_type()); }
+	//  return adl_imag(self.operator decay_type()); }
 };
 
 #if defined(__cpp_deduction_guides)
@@ -150,20 +150,20 @@ class involuter {
 
  public:
 	using difference_type = typename std::iterator_traits<It>::difference_type;
-	using value_type 	  = typename std::iterator_traits<It>::value_type;
+	using value_type      = typename std::iterator_traits<It>::value_type;
 	using pointer         = involuter<It, F>;//svoid; // typename std::iterator_traits<It>::pointer
-	using reference 	  = Reference;
+	using reference       = Reference;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
-	using element_type 	  = typename std::pointer_traits<It>::element_type;
+	using element_type    = typename std::pointer_traits<It>::element_type;
 	template<class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>;
 
 	involuter() = default;
-//	~involuter() = default;
+//  ~involuter() = default;
 
 	HD constexpr explicit involuter(It it)      : it_{std::move(it)}, f_{} {}
 	HD constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
-//	involuter(involuter const& other) = default;
+//  involuter(involuter const& other) = default;
 
 	template<class Other, decltype(multi::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
@@ -189,7 +189,7 @@ class involuter {
 	using underlying_type = It;
 	friend /*constexpr*/ auto underlying(involuter const& self) -> underlying_type{return self.it_;}
 	constexpr explicit operator It() const {return underlying(*this);}
-//	friend auto get_allocator(involuter const& self){return get_allocator(self.it_);}
+//  friend auto get_allocator(involuter const& self){return get_allocator(self.it_);}
 	friend auto default_allocator_of(involuter const& inv){
 		using multi::default_allocator_of;
 		return default_allocator_of(inv.it_);
@@ -209,7 +209,7 @@ struct conjugate {
 	constexpr auto operator()(Complex const& zee) const {
 	//  using std::conj;  /*for doubles?*/
 		return conj(zee);
-	//	return multi::adl_conj(std::forward<Complex>(zee));  // this is needed by icc
+	//  return multi::adl_conj(std::forward<Complex>(zee));  // this is needed by icc
 	}
 	#ifdef __NVCC__
 	template<class Complex>
@@ -242,12 +242,12 @@ template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T
 
 template<class A = void>
 struct is_complex_array : has_imag<std::decay_t<typename std::pointer_traits<std::decay_t<decltype(std::declval<A>().base())>>::element_type>> {};
-//	template<class T> static auto _(T const& t) -> has_imag<T>;
-//	constexpr explicit operator bool()      &{return decltype(_(*base(std::declval<A>()))){};}
-//	constexpr explicit operator bool()     &&{return decltype(_(*base(std::declval<A>()))){};}
-//	constexpr operator bool() const&{return decltype(_(*base(std::declval<A>()))){};}
-//	static constexpr bool value = decltype(_(*base(std::declval<A>()))){};
-//	template<class AA> constexpr auto operator()(AA&& /*unused*/){return _(*base(std::declval<A>()));}
+//  template<class T> static auto _(T const& t) -> has_imag<T>;
+//  constexpr explicit operator bool()      &{return decltype(_(*base(std::declval<A>()))){};}
+//  constexpr explicit operator bool()     &&{return decltype(_(*base(std::declval<A>()))){};}
+//  constexpr operator bool() const&{return decltype(_(*base(std::declval<A>()))){};}
+//  static constexpr bool value = decltype(_(*base(std::declval<A>()))){};
+//  template<class AA> constexpr auto operator()(AA&& /*unused*/){return _(*base(std::declval<A>()));}
 //};
 
 template<class V> struct is_complex : has_imag<V> {};
