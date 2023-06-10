@@ -601,12 +601,12 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return base_[std::apply(l_, xs_.from_linear(nn + n))];
 	}  // explicit here is necessary for nvcc/thrust
 
-	HD /*[[gnu::pure]]*/ constexpr auto operator==(elements_iterator_t const& other) const -> bool {
-		assert(base_ == other.base_ and l_ == other.l_);
+	HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
+		// assert(base_ == other.base_ and l_ == other.l_);  // TODO(correaa) calling host function from host device
 		return n_ == other.n_;  // and base_ == other.base_ and l_ == other.l_;
 	}
-	HD /*[[gnu::pure]]*/ constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
-		assert(base_ == other.base_ and l_ == other.l_);
+	HD constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
+		// assert(base_ == other.base_ and l_ == other.l_);  // TODO(correaa) calling host function from host device
 		return n_ != other.n_;
 	}
 };
