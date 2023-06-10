@@ -19,7 +19,6 @@ BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-//#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9. - 1.0 * I,  2.0 + 4.0 * I},
 		{  3.0 + 3.0 * I,  7. - 4.0 * I,  1.0 + 9.0 * I},
@@ -38,13 +37,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
 	BOOST_REQUIRE( power(in2)/num_elements(in2) - power(in_copy) < 1e-8 );
 	// BOOST_REQUIRE( in2.base() == in_base );
 	// BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-// #endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-// #if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
 		{  3.0 + 3.0 * I,  7.0 - 4.0 * I,  1.0 + 9.0 * I},
@@ -62,13 +59,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 
 	BOOST_REQUIRE( in == in_copy );
 	BOOST_REQUIRE( in_base == in.base() );  // prove no allocation
-// #endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-// #if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
 		{  3.0 + 3.0 * I,  7.0 - 4.0 * I,  1.0 + 9.0 * I},
@@ -88,7 +83,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
 	BOOST_REQUIRE( in.size() == 3 );
 	BOOST_REQUIRE( in == in_copy.transposed() );  // prove correctness
 	BOOST_REQUIRE( in_base == in.base() );        // prove no allocation
-// #endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
@@ -142,7 +136,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_copy) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-// #if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
 		{  3.0 + 3.0 * I,  7.0 - 4.0 * I,  1.0 + 9.0 * I},
@@ -159,13 +152,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_copy) {
 	BOOST_REQUIRE( power(in2)/num_elements(in2) - power(in_copy) < 1e-8 );
 	BOOST_REQUIRE( in2.base() != in_base );
 	BOOST_REQUIRE( not in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-// #endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_copyconstruct) {
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-// #if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
 		{  3.0 + 3.0 * I,  7.0 - 4.0 * I,  1.0 + 9.0 * I},
@@ -182,7 +173,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_copyconstruct) {
 	BOOST_REQUIRE( in2 == in_copy.transposed() );
 	BOOST_REQUIRE( in2.base() != in_base );
 	BOOST_REQUIRE( in .base() == in_base );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-// #endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveconstruct) {
