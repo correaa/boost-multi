@@ -80,7 +80,8 @@ LLVM's `clang` (5.0+) (`libc++` and `libstdc++`),
 GNU's `g++` (7.1+), 
 Nvidia's [`nvcc`](https://godbolt.org/z/Kdh5PeP5f) (11.0+) and `nvc++` (20.7-21.3+), 
 Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
-Baxter's [`circle`](https://www.circle-lang.org/) (build 168+), and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
+Baxter's [`circle`](https://www.circle-lang.org/) (build 198+),
+and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
 
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
 (which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or `sudo dnf install blas-devel fftw-devel`.)
@@ -1143,7 +1144,7 @@ int main(){
 	manager m{bip::open_only, "bip_mapped_file.bin"};
 	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
 	assert( arr2d[4][5] == 45.001 );
-	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");}
+	m.destroy<marray<double, 2>>("arr2d");//    eliminate<marray<double, 2>>(m, "arr2d");}
 }
 }
 ```
@@ -1166,7 +1167,7 @@ int main() {
 	multi::array<double, 2, thrust::device_allocator<double>> B({10,10});
 	A[5][0] = 50.0;
 
-	thrust::copy(A.rotated()[0].begin(), A.rotated()[0].end(), B.rotated()[0].begin());	 // copy row 0
+	thrust::copy(A.rotated()[0].begin(), A.rotated()[0].end(), B.rotated()[0].begin());  // copy row 0
 	assert( B[5][0] == 50.0 );
 }
 ```
