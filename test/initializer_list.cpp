@@ -332,10 +332,10 @@ BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
 		#else
 		// // vvv--- gives segfault in circle
-		multi::static_array const arr({
-			{1.0, 2.0, 3.0},
-			{4.0, 5.0, 6.0},
-        });
+		// multi::static_array const arr({
+		//  {1.0, 2.0, 3.0},
+		//  {4.0, 5.0, 6.0},
+        // });
 		#endif
 	}
 	{
@@ -348,10 +348,10 @@ BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
 		#else
 		// // vvv--- gives error in circle, not viable constructor
-		multi::array const arr({
-			{1.0, 2.0, 3.0},
-			{4.0, 5.0, 6.0},
-        });
+		// multi::array const arr({
+		//  {1.0, 2.0, 3.0},
+		//  {4.0, 5.0, 6.0},
+        // });
 
 		// vvv--- gives ODR violation in circle
 		// multi::array const arr(std::initializer_list<std::initializer_list<double>>{ 
