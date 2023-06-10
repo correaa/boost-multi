@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		BOOST_REQUIRE(( arr2[1][0] == complex{50.0, -49.0} ));
 		BOOST_REQUIRE( arr2[0][1] == 9999.0 );
 	}
-	#if not defined (__circle_build__)
+	#if 1
 	{
 		multi::array<complex, 2> const c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
 		static_assert(blas::is_conjugated<decltype(blas::H(c))>{});
