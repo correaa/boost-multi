@@ -175,13 +175,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
 	template<
-		class Range, class = std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>,
-		class = decltype(/*static_array*/(std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
-		class = std::enable_if_t<not is_basic_array<Range const&>{}>
+		class Range, class = std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>::value>,
+		class = decltype(/*static_array*/(std::declval<Range>().begin() - std::declval<Range>().end())),
+		class = std::enable_if_t<not is_basic_array<std::decay_t<Range>>::value>
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
-	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	: static_array{rng.begin(), rng.end()} {}
+	static_array(Range&& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	: static_array{std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()} {}
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
@@ -953,18 +953,18 @@ struct array : static_array<T, D, Alloc> {
 
 	template<
 		class Range,
-		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
+		// class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<not has_data_elements<std::decay_t<Range>>::value, int> =0,
 		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> =0
 	>
-	auto operator=(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
+	auto operator=(Range&& other) -> array& {  // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
-			this->operator()() = other;
+			this->operator()() = std::forward<Range>(other);
 		//  static_::operator=(other);
 		} else if(this->num_elements() == other.extensions().num_elements()) {
 			reshape(other.extensions());
 		//  static_::operator=(other);
-			this->operator()() = other;
+			this->operator()() = std::forward<Range>(other);
 		} else {
 			operator=(static_cast<array>(std::forward<Range>(other)));
 		}
