@@ -811,16 +811,27 @@ struct array : static_array<T, D, Alloc> {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
 		   std::is_same<typename array::alloc_traits::value_type, std::remove_const_t<T>>::value
-		or std::is_same<typename array::alloc_traits::value_type, void                  >::value, "!"
+		or std::is_same<typename array::alloc_traits::value_type, void                  >::value
+		or std::is_same<typename array::alloc_traits::value_type, std::byte             >::value
 	);
 
  public:
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()     && -> array      * = delete;       // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	auto operator&()     && -> array      * = delete;       // NOLINT(google-runtime-operator) delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()      & -> array      * {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	auto operator&()      & -> array      * {return this;}  // NOLINT(google-runtime-operator) delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() const& -> array const* {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	auto operator&() const& -> array const* {return this;}  // NOLINT(google-runtime-operator) delete operator&& defined in base class to avoid taking address of temporary
+
+	template<class T2, dimensionality_type D2 = D, class Alloc2 = typename std::allocator_traits<typename static_::allocator_type>::template rebind_alloc<T2>>
+	using rebind = array<T2, D2, Alloc2>;
+
+	template<
+		class Container,
+		class = decltype(Container(std::declval<typename array::const_iterator>(), std::declval<typename array::const_iterator>(), std::declval<typename array::allocator_type>()))
+		//, class = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<Container> > >
+	>
+	constexpr explicit operator Container() const& {return Container(this->begin(), this->end(), this->get_allocator());}  // NOLINT(fuchsia-default-arguments-calls)
 
 	friend auto sizes(array const& self) -> typename array::sizes_type {return self.sizes();}
 

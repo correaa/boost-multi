@@ -2193,28 +2193,21 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>  // ,
 	//  class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
 	>
-	constexpr auto momo(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
+	constexpr auto operator=(Range const&& rng) &  // TODO(correaa) check that you LHS is not read-only?
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		assert(this->size() == adl_size(rng));
-		adl_copy_n(adl_begin(rng), adl_size(rng), begin());
-	//  adl_copy(adl_begin(rng), adl_end(rng), begin());
-		return *this;
-	}
-
-	template<
-		class Range,
-		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>  // ,
-	//  class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
-	>
-	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
-	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == adl_size(rng));
-		adl_copy_n(adl_begin(rng), adl_size(rng), begin());
-	//  adl_copy(adl_begin(rng), adl_end(rng), begin());
+		adl_copy_n(adl_begin(std::forward<Range const>(rng)), adl_size(rng), begin());
 		return *this;
 	}
 	template<class Range, class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>>
-	constexpr auto operator=(Range const& rng) && -> basic_array& {operator=(rng); return *this;}
+	constexpr auto operator=(Range&& rng) && -> basic_array& {operator=(std::forward<Range>(rng)); return *this;}
+
+	template<
+		class Container,
+		class = decltype(Container(std::declval<const_iterator>(), std::declval<const_iterator>()))
+		//, class = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<Container> > >
+	>
+	constexpr explicit operator Container() const& {return Container(this->begin(), this->end(), {});}  // NOLINT(fuchsia-default-arguments-calls)
 
 	template<class It> constexpr auto assign(It first) &&
 	->decltype(adl_copy_n(first, std::declval<size_type>(), std::declval<iterator>()), void()) {
@@ -2595,15 +2588,15 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		return reinterpret_cast<TTN&>(*array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
- public:
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
-	constexpr explicit operator TTN const&() const& { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
-	constexpr explicit operator TTN&() && { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
-	constexpr explicit operator TTN&() & { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+//  public:
+//  template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+//  constexpr explicit operator TTN const&() const& { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+//  template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+//  constexpr explicit operator TTN&() && { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+//  template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+//  constexpr explicit operator TTN&() & { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
- private:
+// private:
 	template<class Ar>
 	auto serialize_structured(Ar& arxiv, unsigned int const version) {
 		basic_array<T, D, ElementPtr>::serialize(arxiv, version);

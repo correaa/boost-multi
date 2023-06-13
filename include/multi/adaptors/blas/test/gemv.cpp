@@ -45,14 +45,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv) {
 	{
 		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<double, 2> const aT = ~a;
-		blas::gemv_n(1., begin(~aT), size(~aT), begin(x), 0.0, begin(y));
+		blas::gemv_n(1.0, begin(~aT), size(~aT), begin(x), 0.0, begin(y));
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3               , 0.0001 );
 		BOOST_REQUIRE_CLOSE( y[2] , +blas::dot(a[2], x), 0.0001 );
 	}
 	{
 		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
-		auto mv = blas::gemv(1., a, x);
-		copy_n(mv.begin(), mv.size(), y.begin());
+		auto&& mv = blas::gemv(1.0, a, x);
+		copy_n(std::move(mv).begin(), mv.size(), y.begin());  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
 
 		multi::array<double, 1> w2(multi::extensions_t<1>{multi::iextension{size(a)}});
@@ -61,11 +61,20 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv) {
 	}
 	{
 		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
-		y = blas::gemv(1., a, x);
+		copy_n(blas::gemv(1.0, a, x).begin(), blas::gemv(1.0, a, x).size(), y.begin());
+		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
+
+		multi::array<double, 1> w2(multi::extensions_t<1>{multi::iextension{size(a)}});
+		MV(a, x, w2);
+		BOOST_REQUIRE_CLOSE( w2[0] , y[0], 0.00001 );
+	}
+	{
+		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+		y = blas::gemv(1.0, a, x);
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
 	}
 	{
-		multi::array<double, 1> y = blas::gemv(1., a, x);  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 1> y = blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
 	}
 	{
@@ -211,9 +220,30 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_context) {
 	{
 		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 		auto&& mv = blas::gemv(&ctxt, 1.0, a, x);
-		copy_n(mv.begin(), mv.size(), y.begin());
+		copy_n(std::move(mv).begin(), y.size(), y.begin());
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
 	}
+	{
+		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
+		copy_n(blas::gemv(&ctxt, 1.0, a, x).begin(), y.size(), y.begin());
+		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
+	}
+	{
+		multi::array<double, 1>       y = blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) conventional name in BLAS
+		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
+	}
+	{
+		multi::array<double, 1> const y = blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) conventional name in BLAS
+		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
+	}
+	{
+		auto const y = +blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) conventional name in BLAS
+		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
+	}
+	// {
+	//  auto const y = blas::gemv(1.0, a, x);
+	//  BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
+	// }
 	{
 		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 		y = blas::gemv(&ctxt, 1.0, a, x);

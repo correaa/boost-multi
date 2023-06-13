@@ -891,8 +891,19 @@ For this reason, `resize(new_size)` is replaced with `reextent({new_size})` in `
 With the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`.
 
 Finally, an array can be copied by `std::vector<T> v(A1D.begin(), A1D.end());` or `v.assign(A1D.begin(), A1D.end());` or viseversa.
+Arrays can also be converted explicitly by `std::vector<T> v(A1D);`.
 Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data_elements(), A1D.num_elements());`. 
 (See examples [here](https://godbolt.org/z/n4TY998o4).)
+
+Multidimensional arrays can be converted (copied) to nested `std::vector`s (or other containers):
+```cpp
+	multi::array<double, 2> const V2D = {
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0},
+	};
+	std::vector<std::vector<double>> const vec(V2D);  // explicit conversion
+	BOOST_REQUIRE( vec[1][2] == 6.0 );
+```
 
 The `std::span` semantics (C++20) is not well defined as a reference- or pointer-like type; it doesn't respect `const` correctness in generic code.
 This behavior is contrary to the goals of this library;

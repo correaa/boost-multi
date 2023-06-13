@@ -160,3 +160,55 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_6) {
 	BOOST_REQUIRE( dest_v.size() == 4 );
 	BOOST_REQUIRE( dest_v[3] == 3.0 );
 }
+
+template<class T> void what(T&&) = delete;
+
+BOOST_AUTO_TEST_CASE(array2D_as_nested_vector) {
+	multi::array<double, 2> VV = {
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0},
+	};
+
+	{
+		std::vector<std::vector<double>> vv(2, {}, {});
+		vv[0].insert(vv[0].end(), VV[0].begin(), VV[0].end());
+		vv[1].insert(vv[1].end(), VV[1].begin(), VV[1].end());
+	}
+	{
+		std::vector<std::vector<double>> vv(2, {}, {});
+		vv[0] = std::vector<double>(VV[0].begin(), VV[0].end(), {});
+		vv[1] = std::vector<double>(VV[1].begin(), VV[1].end(), {});
+	}
+	{
+		std::vector<std::vector<double>> vv( static_cast<std::size_t>(VV.size()), std::vector<double>(static_cast<std::size_t>((~VV).size()), {}, {}), {});
+		std::copy(VV[0].begin(), VV[0].end(), vv[0].begin());
+		std::copy(VV[1].begin(), VV[1].end(), vv[1].begin());
+	}
+	{
+		std::vector<double> const VV0(VV[0].begin(), VV[0].end(), {});
+	}
+	{
+		std::vector<double> const VV0(VV[0]);
+	}
+	{
+		#ifndef __circle_build__
+		multi::array<double, 1> const V1D = {1.0, 2.0, 3.0};
+		std::vector<double> const vec(V1D);
+		BOOST_REQUIRE( vec[1] == 2.0 );
+		#endif
+	}
+	{
+		#ifndef __circle_build__
+		multi::array<double, 2> const V2D = {
+			{1.0, 2.0, 3.0},
+			{4.0, 5.0, 6.0},
+		};
+		std::vector<std::vector<double>> const vec(V2D); // = V2D doesn't work because conversion is explicit
+		BOOST_REQUIRE( vec[1][2] == 6.0 );
+		#endif
+	}
+	{
+		using array_int = typename multi::array<double, 2>::rebind<int>;
+		static_assert( std::is_same_v<array_int, multi::array<int, 2>> );
+	}
+}

@@ -127,7 +127,7 @@ class gemv_range {
 	Context ctxt_;
 
  public:
-	gemv_range(gemv_range&&) noexcept = default;
+	gemv_range(gemv_range&&) noexcept = delete;
 	gemv_range(gemv_range const&) = delete;
 	~gemv_range() = default;
 	auto operator=(gemv_range const&) = delete;
@@ -147,19 +147,17 @@ class gemv_range {
 	using iterator = gemv_iterator<Scalar, It2D, It1D, Context>;
 	using decay_type = DecayType;
 
-	auto begin() const -> iterator{return {alpha_, m_begin_, v_first_, ctxt_};}
-	auto end()   const -> iterator{return {alpha_, m_end_  , v_first_, ctxt_};}
+	auto begin() const&& {return iterator{alpha_, m_begin_, v_first_, ctxt_};}
+	auto end()   const&& {return iterator{alpha_, m_end_  , v_first_, ctxt_};}
 
-	auto size() const -> size_type{return end() - begin();}
-	auto extensions() const -> typename decay_type::extensions_type{return typename decay_type::extensions_type{{0, size()}};}
-	auto decay() const{return decay_type{*this};}
+	auto size()       const& {return m_end_ - m_begin_;}
+	auto extensions() const& {return typename decay_type::extensions_type{{0, m_end_ - m_begin_}};}
+	auto decay() const&& {return decay_type{static_cast<gemv_range const&&>(*this)};}
 
-	friend auto operator+(gemv_range const& self) {return self.decay();}
+	friend auto operator+(gemv_range const&& self) {return static_cast<gemv_range const&&>(self).decay();}
 	template<class V>
-	friend auto operator+=(V&& v, gemv_range const& s) -> V&& {  // NOLINT(readability-identifier-length) BLAS naming
-		// if constexpr(std::is_same<Context, void*>{}) {blas::gemv_n(         s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1.0, v.begin());}
-		// else                                         
-		{blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());}
+	friend auto operator+=(V&& v, gemv_range const&& s) -> V&& {  // NOLINT(readability-identifier-length) BLAS naming
+		blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());
 		return std::forward<V>(v);
 	}
 };
