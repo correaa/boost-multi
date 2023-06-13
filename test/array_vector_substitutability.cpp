@@ -186,9 +186,11 @@ BOOST_AUTO_TEST_CASE(array2D_as_nested_vector) {
 	}
 	{
 		std::vector<double> const VV0(VV[0].begin(), VV[0].end(), {});
+		BOOST_REQUIRE( VV0[1] == VV[0][1] );
 	}
 	{
 		std::vector<double> const VV0(VV[0]);
+		BOOST_REQUIRE( VV0[1] == VV[0][1] );
 	}
 	{
 		#ifndef __circle_build__
