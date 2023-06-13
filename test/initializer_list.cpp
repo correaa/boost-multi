@@ -268,12 +268,12 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 	using std::string;
 	multi::array<string, 3> B3 = {
 		{
-			{"000", "001", "002"},
-            {"010", "011", "012"},
+			{"000", "001", "002"},  // NOLINT(fuchsia-default-arguments-calls) std::string
+            {"010", "011", "012"},  // NOLINT(fuchsia-default-arguments-calls)
 		},
 		{
-			{"100", "101", "102"},
-			{"110", "111", "112"},
+			{"100", "101", "102"},  // NOLINT(fuchsia-default-arguments-calls)
+			{"110", "111", "112"},  // NOLINT(fuchsia-default-arguments-calls)
 		},
 	};
 	BOOST_REQUIRE( num_elements(B3) == 12 and B3[1][0][1] == "101" );
