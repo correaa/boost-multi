@@ -36,9 +36,10 @@ NEWGNUSTD20MEMCHK:
   stage: build
   image: debian:testing  # for g++-12
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++-12 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
+    - g++ --version
     - mkdir build && cd build
-    - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free"
+    - CXX=g++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ulimit -n
     - ulimit -n 1024  # neededed by valgrind in docker running in Fedora https://stackoverflow.com/questions/75292406/memchk-valgrind-reporting-inconsistent-results-in-different-docker-hosts?noredirect=1#comment132859702_75292406
