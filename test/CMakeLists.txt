@@ -18,9 +18,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 #project(
-#	boost-multi-test
-#	VERSION 0.1
-#	LANGUAGES CXX
+#   boost-multi-test
+#   VERSION 0.1
+#   LANGUAGES CXX
 #)
 
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)  # tests require Boost.Test `sudo apt install libboost-test-dev`
@@ -28,22 +28,22 @@ find_package(Boost COMPONENTS unit_test_framework REQUIRED)  # tests require Boo
 if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
 
-#	include(FindCUDA/select_compute_arch)
-#	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
-#	string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-#	string(
-#		REPLACE " "
-#				";"
-#				INSTALLED_GPU_CCS_3
-#				"${INSTALLED_GPU_CCS_2}"
-#	)
-#	string(
-#		REPLACE "."
-#				""
-#				CUDA_ARCH_LIST
-#				"${INSTALLED_GPU_CCS_3}"
-#	)
-#	set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+#   include(FindCUDA/select_compute_arch)
+#   cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
+#   string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+#   string(
+#       REPLACE " "
+#               ";"
+#               INSTALLED_GPU_CCS_3
+#               "${INSTALLED_GPU_CCS_2}"
+#   )
+#   string(
+#       REPLACE "."
+#               ""
+#               CUDA_ARCH_LIST
+#               "${INSTALLED_GPU_CCS_3}"
+#   )
+#   set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
 endif()
 
 enable_testing()
@@ -333,7 +333,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wcomplex-component-init
 # -Wcompound-token-split -Wcompound-token-split-by-macro -Wcompound-token-split-by-space (clang 13, not in clang 11)
 -Wconversion
--Wconcepts-ts-compat
+# -Wconcepts-ts-compat (not supportted in clang 16)
 -Wconditional-type-mismatch -Wconditional-uninitialized
 -Wconfig-macros
 -Wconstant-conversion
@@ -446,7 +446,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Wgcc-compat
 # -Wglobal-constructors (Boost.Test)
 # -Wglobal-isel (clang 11, not in clang 9)
--Wgnu -Wgnu-alignof-expression -Wgnu-anonymous-struct -Wgnu-array-member-paren-init -Wgnu-auto-type -Wgnu-binary-literal -Wgnu-case-range -Wgnu-complex-integer -Wgnu-compound-literal-initializer -Wgnu-conditional-omitted-operand -Wgnu-designator -Wgnu-empty-initializer	-Wgnu-empty-struct -Wgnu-flexible-array-initializer	-Wgnu-flexible-array-union-member -Wgnu-folding-constant -Wgnu-imaginary-constant -Wgnu-include-next
+-Wgnu -Wgnu-alignof-expression -Wgnu-anonymous-struct -Wgnu-array-member-paren-init -Wgnu-auto-type -Wgnu-binary-literal -Wgnu-case-range -Wgnu-complex-integer -Wgnu-compound-literal-initializer -Wgnu-conditional-omitted-operand -Wgnu-designator -Wgnu-empty-initializer   -Wgnu-empty-struct -Wgnu-flexible-array-initializer -Wgnu-flexible-array-union-member -Wgnu-folding-constant -Wgnu-imaginary-constant -Wgnu-include-next
 # -Wgnu-inline-cpp-without-extern (clang 11, not in clang 9)
 -Wgnu-label-as-value
 # -Wgnu-null-pointer-arithmetic
@@ -513,7 +513,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wmethod-signatures
 -Wmicrosoft
 # -Wmicrosoft-abstract (clang 13, not in clang 11)
--Wmicrosoft-anon-tag -Wmicrosoft-cast -Wmicrosoft-charize -Wmicrosoft-comment-paste -Wmicrosoft-const-init -Wmicrosoft-cpp-macro -Wmicrosoft-default-arg-redefinition -Wmicrosoft-drectve-section -Wmicrosoft-end-of-file -Wmicrosoft-enum-forward-reference -Wmicrosoft-enum-value -Wmicrosoft-exception-spec -Wmicrosoft-exists -Wmicrosoft-explicit-constructor-call -Wmicrosoft-extra-qualification -Wmicrosoft-fixed-enum -Wmicrosoft-flexible-array -Wmicrosoft-goto -Wmicrosoft-inaccessible-base -Wmicrosoft-include	-Wmicrosoft-mutable-reference -Wmicrosoft-pure-definition	-Wmicrosoft-redeclare-static -Wmicrosoft-sealed
+-Wmicrosoft-anon-tag -Wmicrosoft-cast -Wmicrosoft-charize -Wmicrosoft-comment-paste -Wmicrosoft-const-init -Wmicrosoft-cpp-macro -Wmicrosoft-default-arg-redefinition -Wmicrosoft-drectve-section -Wmicrosoft-end-of-file -Wmicrosoft-enum-forward-reference -Wmicrosoft-enum-value -Wmicrosoft-exception-spec -Wmicrosoft-exists -Wmicrosoft-explicit-constructor-call -Wmicrosoft-extra-qualification -Wmicrosoft-fixed-enum -Wmicrosoft-flexible-array -Wmicrosoft-goto -Wmicrosoft-inaccessible-base -Wmicrosoft-include    -Wmicrosoft-mutable-reference -Wmicrosoft-pure-definition   -Wmicrosoft-redeclare-static -Wmicrosoft-sealed
 # -Wmicrosoft-static-assert (clang 13, not in clang 11) 
 -Wmicrosoft-template
 # -Wmicrosoft-template-shadow (clang 11, not in clang 9)
