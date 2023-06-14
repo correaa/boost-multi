@@ -1,7 +1,6 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
@@ -165,19 +164,24 @@ template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(array2D_as_nested_vector) {
 	multi::array<double, 2> VV = {
-		{1.0, 2.0, 3.0},
-		{4.0, 5.0, 6.0},
+	 {1.0, 2.0, 3.0},
+	 {4.0, 5.0, 6.0},
 	};
 
 	{
 		std::vector<std::vector<double>> vv(2, {}, {});
-		vv[0].insert(vv[0].end(), VV[0].begin(), VV[0].end());
-		vv[1].insert(vv[1].end(), VV[1].begin(), VV[1].end());
-	}
-	{
-		std::vector<std::vector<double>> vv(2, {}, {});
 		vv[0] = std::vector<double>(VV[0].begin(), VV[0].end(), {});
 		vv[1] = std::vector<double>(VV[1].begin(), VV[1].end(), {});
+	}
+	// {  // vvv gives an error in GCC 12 error (GCC 13 ok): ‘void* __builtin_memcpy(void*, const void*, long unsigned int)’ writing 1 or more bytes into a region of size 0 overflows the destination [-Werror=stringop-overflow=]
+	//  std::vector<std::vector<double>> vv(2, {}, {});
+	//  vv[0].insert(vv[0].begin(), VV[0].begin(), VV[0].end());
+	//  vv[1].insert(vv[1].begin(), VV[1].begin(), VV[1].end());
+	// }
+	{
+		std::vector<std::vector<double>> vv(2, {}, {});
+		vv[0].assign(VV[0].begin(), VV[0].end());
+		vv[1].assign(VV[1].begin(), VV[1].end());
 	}
 	{
 		std::vector<std::vector<double>> vv( static_cast<std::size_t>(VV.size()), std::vector<double>(static_cast<std::size_t>((~VV).size()), {}, {}), {});
@@ -193,21 +197,35 @@ BOOST_AUTO_TEST_CASE(array2D_as_nested_vector) {
 		BOOST_REQUIRE( VV0[1] == VV[0][1] );
 	}
 	{
-		#ifndef __circle_build__
+		// #ifndef __circle_build__
 		multi::array<double, 1> const V1D = {1.0, 2.0, 3.0};
 		std::vector<double> const vec(V1D);
 		BOOST_REQUIRE( vec[1] == 2.0 );
-		#endif
+		// #endif
 	}
 	{
-		#ifndef __circle_build__
+		// #ifndef __circle_build__
 		multi::array<double, 2> const V2D = {
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		};
-		std::vector<std::vector<double>> const vec(V2D); // = V2D doesn't work because conversion is explicit
+		std::vector<std::vector<double>> const vec(V2D);  // = V2D doesn't work because conversion is explicit
 		BOOST_REQUIRE( vec[1][2] == 6.0 );
-		#endif
+
+		{
+			multi::array<double, 2> A2D({2, 3});
+			BOOST_REQUIRE( A2D.size() == static_cast<multi::size_t>(vec.size()) );
+			A2D[0].assign(vec[0].begin());
+			A2D[1].assign(vec[1].begin());
+			BOOST_REQUIRE( V2D == A2D );
+		}
+		{
+			multi::array<double, 2> A2D({2, 3});
+			BOOST_REQUIRE( A2D.size() == static_cast<multi::size_t>(vec.size()) );
+			A2D[0] = vec[0];
+			A2D[1] = vec[1];
+			BOOST_REQUIRE( V2D == A2D );
+		}
 	}
 	{
 		using array_int = typename multi::array<double, 2>::rebind<int>;
