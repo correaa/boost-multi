@@ -1307,19 +1307,17 @@ struct basic_array
 
 	template<
 		class Range,
-		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>,
-		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
+		class = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<Range>>>,
+		class = decltype(adl_copy_n(adl_begin(std::declval<Range>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
 	>
-	constexpr auto operator=(Range const& rng) &  // check that you LHS is not read-only
+	constexpr auto operator=(Range&& rng) &  // check that you LHS is not read-only
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == rng.size());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		// MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
-		// adl_copy_n(adl_begin(r), this->size(), begin());
-		adl_copy(adl_begin(rng), adl_end(rng), begin());
+		assert(this->size() == static_cast<size_type>(rng.size()));
+		adl_copy(adl_begin(std::forward<Range>(rng)), adl_end(std::forward<Range>(rng)), begin());
 		return *this;
 	}
-	template<class Range, class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>>
-	constexpr auto operator=(Range const& rng) && -> basic_array& {operator=(rng); return *this;}
+	template<class Range, class = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<Range>>>>
+	constexpr auto operator=(Range&& rng) && -> basic_array& {operator=(std::forward<Range>(rng)); return *this;}
 
 	template<class TT, class... As>
 	constexpr auto operator=(basic_array<TT, D, As...> const& other) && -> basic_array& {operator=(other); return *this;}
