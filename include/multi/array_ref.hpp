@@ -2190,13 +2190,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	template<
 		class Range,
-		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>  // ,
+		class = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<Range>>>  // ,
 	//  class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
 	>
-	constexpr auto operator=(Range const&& rng) &  // TODO(correaa) check that you LHS is not read-only?
+	constexpr auto operator=(Range&& rng) &  // TODO(correaa) check that you LHS is not read-only?
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == adl_size(rng));
-		adl_copy_n(adl_begin(std::forward<Range const>(rng)), adl_size(rng), begin());
+		assert(this->size() == static_cast<size_type>(adl_size(rng)));
+		adl_copy_n(adl_begin(std::forward<Range>(rng)), adl_size(rng), begin());
 		return *this;
 	}
 	template<class Range, class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>>
@@ -2209,9 +2209,9 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	>
 	constexpr explicit operator Container() const& {return Container(this->begin(), this->end(), {});}  // NOLINT(fuchsia-default-arguments-calls)
 
-	template<class It> constexpr auto assign(It first) &&
-	->decltype(adl_copy_n(first, std::declval<size_type>(), std::declval<iterator>()), void()) {
-		return adl_copy_n(first, this->       size()      , std::move(*this).begin()), void(); }
+	// template<class It> constexpr auto assign(It first) &&
+	// ->decltype(adl_copy_n(first, std::declval<size_type>(), std::declval<iterator>()), void()) {
+	//  return adl_copy_n(first, this->       size()      , std::move(*this).begin()), void(); }
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(basic_array const& self, basic_array<TT, 1, As...> const& other) -> bool {
