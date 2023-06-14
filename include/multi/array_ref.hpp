@@ -1312,7 +1312,7 @@ struct basic_array
 	>
 	constexpr auto operator=(Range&& rng) &  // check that you LHS is not read-only
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == static_cast<size_type>(rng.size()));
+		assert(this->size() == static_cast<size_type>(adl_size(rng)));
 		adl_copy(adl_begin(std::forward<Range>(rng)), adl_end(std::forward<Range>(rng)), begin());
 		return *this;
 	}
