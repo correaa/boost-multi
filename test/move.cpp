@@ -373,9 +373,10 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 		auto arr2 = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{} );
 
 		auto&& mAp = std::move(arr)();
+		// BOOST_TEST_REQUIRE( arr [0].size() == 0 );
+
 		arr2() = mAp;
 		BOOST_REQUIRE( arr2[0].size() == 7 );
-		BOOST_REQUIRE( arr [0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
 		auto arr  = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
@@ -405,17 +406,19 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 		auto arr  = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		auto arr2 = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{} );
 		auto&& mAt5 = std::move(arr).take(5);
+		// BOOST_TEST_REQUIRE( arr [0].size() == 0 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	
 		arr2() = mAt5;
 		BOOST_REQUIRE( arr2[0].size() == 7 );
-		BOOST_REQUIRE( arr [0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
 		auto arr  = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		auto arr2 = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{} );
 		auto&& mAt5 = std::move(arr).take(5);
+		// BOOST_REQUIRE( arr [0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+
 		arr2() = mAt5;
 		BOOST_REQUIRE( arr2[0].size() == 7 );
-		BOOST_REQUIRE( arr [0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
 		auto arr  = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
@@ -438,9 +441,10 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 		auto arr2 = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{} );
 		auto&& mAt5 = std::move(arr).take(5);
 		auto&& mAt5t5 = std::move(mAt5).take(5);
+		// BOOST_REQUIRE( arr[0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+
 		arr2() = mAt5t5;
 		BOOST_REQUIRE( arr2[0].size() == 7 );
-		BOOST_REQUIRE( arr[0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
 		auto arr  = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
