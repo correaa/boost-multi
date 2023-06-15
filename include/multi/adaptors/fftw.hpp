@@ -313,21 +313,22 @@ auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, fft
 	auto const ostride_tuple = out.strides();
 
 	using boost::multi::detail::get;
-	auto which_iodims = std::apply([](auto... elems){
-		return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems)>{  // TODO(correaa) use CTAD?
+	auto which_iodims = std::apply([](auto... elems) {
+		return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems) + 1>{  // TODO(correaa) added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
 			std::pair<bool, fftw_iodim64>{
 				get<0>(elems),
 				fftw_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}
-			}...
+			}...,
+			std::pair<bool, fftw_iodim64>{}
 		};
 	}, boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple));
-	auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end(), [](auto elem) {return std::get<0>(elem);});
+	auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) {return std::get<0>(elem);});
 
 	std::array<fftw_iodim64, D> dims{};
 	auto const dims_end         = std::transform(which_iodims.begin(), part,         dims.begin(), [](auto elem) {return elem.second;});
 
 	std::array<fftw_iodim64, D> howmany_dims{};
-	auto const howmany_dims_end = std::transform(part, which_iodims.end()  , howmany_dims.begin(), [](auto elem) {return elem.second;});
+	auto const howmany_dims_end = std::transform(part, which_iodims.end() -1, howmany_dims.begin(), [](auto elem) {return elem.second;});
 
 	assert( in .base() );
 	assert( out.base() );
@@ -728,8 +729,8 @@ class fft_iterator {
 
 template<class Origin, class Array>
 class fft_range {
-	Origin origin_;
-	Array ref_;
+	Origin origin_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+	Array ref_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 	using which_type = std::array<fftw::sign, std::decay_t<Array>::rank::value>;
 	which_type which_;
 
