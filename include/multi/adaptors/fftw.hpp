@@ -655,7 +655,7 @@ struct allocator {
 		return ret;
 	}
 	void deallocate(T* ptr, size_type n) {
-		if(p == nullptr) {return;}
+		if(ptr == nullptr) {return;}
 		if(n == 0) {return;}
 		fftw_free(ptr);
 	}
