@@ -650,19 +650,19 @@ struct allocator {
 
 	auto allocate(size_type n) -> T* {
 		if(n == 0) {return nullptr;}
-		auto ret = reinterpret_cast<T*>(fftw_malloc(sizeof(T) * n));
+		auto ret = static_cast<T*>(fftw_malloc(sizeof(T) * n));
 		if(ret == nullptr) {throw std::bad_alloc{};}
 		return ret;
 	}
-	void deallocate(T* p, size_type n) {
+	void deallocate(T* ptr, size_type n) {
 		if(p == nullptr) {return;}
 		if(n == 0) {return;}
-		fftw_free(p);
+		fftw_free(ptr);
 	}
 
-	template<class... Args>
-	void construct(T* p, Args&&... args) {std::allocator<T> a; std::allocator_traits<std::allocator<T>>::construct(a, p, std::forward<Args>(args)...);}
-	void destruct(T* p) {std::allocator<T> a; std::allocator_traits<std::allocator<T>>::deconstruct(a, std::allocator<T>{}, p);}
+	// template<class... Args>
+	// void construct(T* p, Args&&... args) {std::allocator<T> a; std::allocator_traits<std::allocator<T>>::construct(a, p, std::forward<Args>(args)...);}
+	// void destruct(T* p) {std::allocator<T> a; std::allocator_traits<std::allocator<T>>::deconstruct(a, std::allocator<T>{}, p);}
 };
 
 // template<class T>
