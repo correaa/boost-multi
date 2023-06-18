@@ -643,7 +643,37 @@ auto move(In&& in) {
 }
 #endif
 
-template<typename T, dimensionality_type D, class P, class R=typename multi::array<T, D>>
+template<class T>
+struct allocator {
+	using value_type = T;
+	using size_type  = std::size_t;
+
+	auto allocate(size_type n) -> T* {
+		if(n == 0) {return nullptr;}
+		if (n > max_size()) {throw std::length_error("multi::fftw::allocator<T>::allocate() overflow.");}
+		void* ptr = fftw_malloc(sizeof(T) * n);
+		if(ptr == nullptr) {throw std::bad_alloc{};}
+		return static_cast<T*>(ptr);
+	}
+	void deallocate(T* ptr, size_type n) {if(n != 0) {fftw_free(ptr);}}
+
+	constexpr auto operator==(allocator const& /*other*/) const -> bool {return true ;}
+	constexpr auto operator!=(allocator const& /*other*/) const -> bool {return false;}
+
+ private:
+    static constexpr auto max_size() {return (static_cast<size_type>(0) - static_cast<size_type>(1)) / sizeof(T);}
+};
+
+// template<class T>
+// using allocator = std::allocator<T>;
+
+template<class T, boost::multi::dimensionality_type D>
+using static_array = ::boost::multi::static_array<T, D, fftw::allocator<T>>;
+
+template<class T, multi::dimensionality_type D>
+using array = ::boost::multi::array<T, D, fftw::allocator<T>>;
+
+template<typename T, dimensionality_type D, class P, class R=typename multi::fftw::array<T, D>>
 auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& array) -> R {
 	if(array.is_compact()) {
 		return

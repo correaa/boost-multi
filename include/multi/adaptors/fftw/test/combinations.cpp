@@ -13,6 +13,9 @@
 
 namespace multi = boost::multi;
 
+template<>
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+
 namespace utf = boost::unit_test::framework;
 
 using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
@@ -38,14 +41,17 @@ class watch : private std::chrono::high_resolution_clock {
 	~watch() { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
 };
 
+template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
+constexpr auto exts = multi::extensions_t<4>({6, 12, 24, 12});
+
 BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 	using complex = std::complex<double>;
 
 	auto const in = [] {
-		multi::array<complex, 4> ret({10 , 11 , 12 , 13 });
+		marray<complex, 4> ret(exts);
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
 			[eng = std::default_random_engine {std::random_device {}()},
-				uniform_01 = std::uniform_real_distribution<>{}]() mutable{
+				uniform_01 = std::uniform_real_distribution<>{}]() mutable {
 				return complex{uniform_01(eng), uniform_01(eng)};
 			});
 		return ret;
@@ -66,7 +72,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 		copy(begin(which), end(which), std::ostream_iterator<bool>{cout, ", "});
 		cout<<"\n";
 
-		multi::array<complex, 4> out = in;
+		marray<complex, 4> out = in;
 		{
 			watch const unnamed{"cpu_oplac %ws wall, CPU (%p%)\n"s};
 			multi::fftw::dft_forward(which, in, out);
@@ -111,8 +117,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
 	using complex = std::complex<double>;
 	namespace fftw = multi::fftw;
 
-	auto exts = multi::array<complex, 4>::extensions_type({6, 12, 12, 12});
-	multi::array<complex, 4> in(exts);
+	marray<complex, 4> in(exts);
 	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
 
 	BOOST_REQUIRE(in[0][0][0][0] == 1.2);
@@ -126,7 +131,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
 	auto in0000 = in[0][0][0][0];
 	BOOST_REQUIRE(in0000 != 1.2);
 
-	multi::array<complex, 4> out(exts);
+	marray<complex, 4> out(exts);
 	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
@@ -137,16 +142,15 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
 	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"s}] {
-		multi::array<complex, 4> out2(exts);
+		marray<complex, 4> out2(exts);
 		fftw::dft(which, in, out2, fftw::forward);
 	}();
 	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"s}] {
-		multi::array<complex, 4> out2(exts);
+		marray<complex, 4> out2(exts);
 		fftw::dft(which, in, out2, fftw::forward);
 	}();
 	BOOST_REQUIRE(in0000 == in[0][0][0][0]);
 }
-
 
 BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 	std::vector<std::array<bool, 4>> const which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
@@ -160,7 +164,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 	using complex = std::complex<double>;
 
 	auto const in = [] {
-		multi::array<complex, 4> ret({6, 12, 12, 12});
+		marray<complex, 4> ret(exts);
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
 			[eng = std::default_random_engine {std::random_device {}()},
 				uniform_01 = std::uniform_real_distribution<>{}]() mutable{
@@ -176,7 +180,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 	using clock = std::chrono::high_resolution_clock;
 	{
 		auto const tick = clock::now();
-		multi::array<complex, 4> out({6, 12, 12, 12});
+		marray<complex, 4> out(exts);
 		out = multi::fftw::ref(in)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
 		BOOST_REQUIRE( out.extensions() == in.extensions() );
 		auto time = std::chrono::duration<double>(clock::now() - tick);
@@ -198,7 +202,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 	}
 	{
 		auto const tick = clock::now();
-		multi::array<complex, 4> const out = multi::fftw::move(io)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
+		marray<complex, 4> const out = multi::fftw::move(io)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
 		BOOST_REQUIRE( io.is_empty() );
 		auto time = std::chrono::duration<double>(clock::now() - tick);
 		std::cout<<"move construct (in-place fft) : "<< time.count() <<std::endl;
