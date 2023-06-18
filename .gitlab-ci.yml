@@ -9,21 +9,18 @@ variables:
 
 OLDGNUSANICHECKCOV:
   stage: build
-  image: debian:stable-backports  # for g++-9
+  image: debian:stable-backports  # for g++-11
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck curl g++-9 gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck curl g++-11 gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
-    - CXX=g++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
+    - CXX=g++-11 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
-    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-    - lcov --directory . --capture --output-file coverage.info
-    - lcov --remove coverage.info '/usr/*' --output-file coverage.info
-    - lcov --list coverage.info && genhtml coverage.info 
+    # - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+    # - lcov --directory . --capture --output-file coverage.info
+    # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
+    # - lcov --list coverage.info && genhtml coverage.info
     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
-    #- wget --no-verbose https://uploader.codecov.io/latest/linux/codecov
-    #- chmod +x codecov
-    #- ./codecov -R
   coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
     name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
@@ -242,11 +239,7 @@ circle 198:
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
   needs: ["OLDCLANGTIDYSANI"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+  retry: 2
 
 circle latest:
   allow_failure: true
@@ -264,12 +257,8 @@ circle latest:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["OLDCLANGTIDYSANI"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+  needs: ["circle 198"]
+  retry: 2
 
 inq-nvcc-ompi:
   allow_failure: false
