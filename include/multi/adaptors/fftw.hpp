@@ -650,19 +650,18 @@ struct allocator {
 
 	auto allocate(size_type n) -> T* {
 		if(n == 0) {return nullptr;}
-		auto ret = static_cast<T*>(fftw_malloc(sizeof(T) * n));
-		if(ret == nullptr) {throw std::bad_alloc{};}
-		return ret;
+		if (n > max_size()) {throw std::length_error("multi::fftw::allocator<T>::allocate() overflow.");}
+		void* ptr = fftw_malloc(sizeof(T) * n);
+		if(ptr == nullptr) {throw std::bad_alloc{};}
+		return static_cast<T*>(ptr);
 	}
-	void deallocate(T* ptr, size_type n) {
-		if(ptr == nullptr) {return;}
-		if(n == 0) {return;}
-		fftw_free(ptr);
-	}
+	void deallocate(T* ptr, size_type n) {if(n != 0) {fftw_free(ptr);}}
 
-	// template<class... Args>
-	// void construct(T* p, Args&&... args) {std::allocator<T> a; std::allocator_traits<std::allocator<T>>::construct(a, p, std::forward<Args>(args)...);}
-	// void destruct(T* p) {std::allocator<T> a; std::allocator_traits<std::allocator<T>>::deconstruct(a, std::allocator<T>{}, p);}
+	constexpr auto operator==(allocator const& /*other*/) const -> bool {return true ;}
+	constexpr auto operator!=(allocator const& /*other*/) const -> bool {return false;}
+
+ private:
+    static constexpr auto max_size() {return (static_cast<size_type>(0) - static_cast<size_type>(1)) / sizeof(T);}
 };
 
 // template<class T>

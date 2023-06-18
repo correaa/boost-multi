@@ -13,6 +13,9 @@
 
 namespace multi = boost::multi;
 
+template<>
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+
 namespace utf = boost::unit_test::framework;
 
 using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
@@ -39,7 +42,7 @@ class watch : private std::chrono::high_resolution_clock {
 };
 
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
-auto const exts = multi::extensions_t<4>({6, 12, 24, 12});
+constexpr auto exts = multi::extensions_t<4>({6, 12, 24, 12});
 
 BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 	using complex = std::complex<double>;
