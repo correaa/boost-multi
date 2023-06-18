@@ -648,15 +648,15 @@ struct allocator {
 	using value_type = T;
 	using size_type  = std::size_t;
 
-	auto allocate(size_type N) -> T* {
-		if(N == 0) {return nullptr;}
-		auto ret = reinterpret_cast<T*>(fftw_malloc(sizeof(T) * N));
+	auto allocate(size_type n) -> T* {
+		if(n == 0) {return nullptr;}
+		auto ret = reinterpret_cast<T*>(fftw_malloc(sizeof(T) * n));
 		if(ret == nullptr) {throw std::bad_alloc{};}
 		return ret;
 	}
-	void deallocate(T* p, size_type N) {
+	void deallocate(T* p, size_type n) {
 		if(p == nullptr) {return;}
-		if(N == 0) {return;}
+		if(n == 0) {return;}
 		fftw_free(p);
 	}
 
