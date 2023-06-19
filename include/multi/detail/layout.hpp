@@ -70,7 +70,7 @@ struct extensions_t {
 	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3) : impl_{ext1, ext2, ext3} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 4, int> = 0>
-	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4) : impl_{ext1, ext2, ext3, ext4} {}
+	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4) noexcept : impl_{ext1, ext2, ext3, ext4} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 5, int> = 0>
 	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4, index_extension ext5) : impl_{ext1, ext2, ext3, ext4, ext5} {}
@@ -156,7 +156,7 @@ struct extensions_t {
 
  private:
 	template<class Archive, std::size_t... I>
-	void serialize_impl(Archive& arxiv, std::index_sequence<I...> /*012*/) {
+	void serialize_impl(Archive& arxiv, std::index_sequence<I...> /*unused012*/) {
 		using boost::multi::detail::get;
 		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extension",      get<I>(impl_)) , 0U)...};
 	//  (void)std::initializer_list<unsigned>{(arxiv & boost::serialization::          make_nvp("extension", std::get<I>(impl_)) , 0U)...};
@@ -172,14 +172,14 @@ struct extensions_t {
 
  private:
 	template<class Array, std::size_t... I, typename = decltype(base_{boost::multi::detail::get<I>(std::declval<Array const&>())...})>
-	constexpr extensions_t(Array const& tup, std::index_sequence<I...> /*012*/) : impl_{boost::multi::detail::get<I>(tup)...} {}
+	constexpr extensions_t(Array const& tup, std::index_sequence<I...> /*unused012*/) : impl_{boost::multi::detail::get<I>(tup)...} {}
 
 	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1);}
 	static constexpr auto multiply_fold(size_type const& size) -> size_type {return static_cast<size_type>(size);}
 	template<class...As>
 	static constexpr auto multiply_fold(size_type const& size, As const&... rest) -> size_type {return static_cast<size_type>(size)*static_cast<size_type>(multiply_fold(rest...));}  // TODO(correaa) revise casts
 
-	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {
+	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*unused012*/) const -> size_type {
 		using boost::multi::detail::get;
 		return static_cast<size_type>(multiply_fold(static_cast<size_type>(get<I>(impl_).size())...));
 	}
