@@ -169,7 +169,7 @@ NVHPC-2022:
     # - apt-get update
     # - apt-get -y install cuda
 
-NVCC:
+cuda 11.8:
   allow_failure: false
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -189,11 +189,6 @@ NVCC:
     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["OLDGNUSANICHECKCOV"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
 
 NVCC114:
   allow_failure: true
@@ -258,7 +253,6 @@ circle latest:
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
   needs: ["circle 198"]
-  retry: 2
 
 inq-nvcc-ompi:
   allow_failure: false
@@ -279,16 +273,16 @@ inq-nvcc-ompi:
     - cd ../..
     - rm -f cmake/FindNCCL.cmake  # diable NCCL workaround
     - mkdir build && cd build
-    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=61 `#--with-cuda-prefix=/usr/local/cuda`
-    - make -j 4 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
-    - make -j 4  install
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
-  needs: ["NVCC"]
+  needs: ["cuda 11.8"]
 
 qmcpack:
   image: debian:testing
@@ -334,5 +328,5 @@ qmcpack-cuda:
     - make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
-  needs: ["qmcpack","NVCC"]
+  needs: ["qmcpack","cuda 11.8"]
 
