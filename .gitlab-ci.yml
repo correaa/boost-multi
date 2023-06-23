@@ -180,10 +180,10 @@ cuda 11.8:
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["OLDGNUSANICHECKCOV"]
 
-cuda 12.1:
+cuda 12.1.1:
   allow_failure: false
   stage: build
-  image: nvcr.io/nvidia/cuda:12.1.0-devel-ubuntu22.04
+  image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
   tags:
     - nvidia-docker
   script:
