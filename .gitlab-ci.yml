@@ -159,7 +159,7 @@ NVHPC-2022:
     # - apt-get update
     # - apt-get -y install cuda
 
-cuda 11.8:
+cuda 11.8.0:
   allow_failure: false
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -180,8 +180,8 @@ cuda 11.8:
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["OLDGNUSANICHECKCOV"]
 
+# last version: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
 cuda 12.1.1:
-  allow_failure: false
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
   tags:
@@ -199,9 +199,9 @@ cuda 12.1.1:
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["cuda 11.8"]
+  needs: ["cuda 11.8.0"]
 
-NVCC114:
+cuda 11.2.2:
   allow_failure: true
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
@@ -221,12 +221,7 @@ NVCC114:
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["OLDGNUSANICHECKCOV"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+  needs: ["cuda 11.8.0"]
 
 circle 198:
   allow_failure: true
@@ -293,7 +288,7 @@ inq-nvcc-ompi:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
-  needs: ["cuda 11.8"]
+  needs: ["cuda 11.8.0"]
 
 qmcpack:
   image: debian:testing
@@ -339,5 +334,5 @@ qmcpack-cuda:
     - make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
-  needs: ["qmcpack","cuda 11.8"]
+  needs: ["qmcpack","cuda 11.8.0"]
 
