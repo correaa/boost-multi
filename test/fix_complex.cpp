@@ -24,7 +24,7 @@ inline constexpr bool multi::force_element_trivial_default_construction<std::com
 #endif
 
 BOOST_AUTO_TEST_CASE(pmr_double) {
-	multi::pmr::array<double, 2> Aarr({2, 2}, &4.0);
+	multi::pmr::array<double, 2> Aarr({2, 2}, 4.0);
 	BOOST_REQUIRE(Aarr[0][0] == 4.0);
 }
 
