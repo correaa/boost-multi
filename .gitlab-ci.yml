@@ -104,9 +104,9 @@ oneapi latest:
     - ctest --parallel 2 --output-on-failure
   needs: ["OLDGNUSANICHECKCOV"]
 
-oneapi 2021.4:
+oneapi 2022.2:
   stage: build
-  image: intel/oneapi-hpckit:2021.4-devel-ubuntu18.04
+  image: intel/oneapi-hpckit:2022.2-devel-ubuntu20.04
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
