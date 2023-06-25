@@ -1,7 +1,6 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi complex"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
@@ -12,6 +11,18 @@
 
 namespace multi = boost::multi;
 
+#ifdef __NVCC__
+template<>
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+template<>
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<float>> = true;
+#else
+// vvv nvcc (12.1?) doesn't tolerate this kind of customization: "error: expected initializer before ‘<’"
+template<class T>
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible<T>::value;
+#endif
+
+#if(MULTI_PROVIDES_PMR_ARRAY)
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  999.9, 999.9, 999.9, 999.9}};
 	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
@@ -39,17 +50,6 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_2) {
 	BOOST_TEST( buffer[0] == 40.0 );
 	BOOST_TEST( buffer[1] == 50.0 );
 }
-
-#ifdef __NVCC__
-template<>
-inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
-template<>
-inline constexpr bool multi::force_element_trivial_default_construction<std::complex<float>> = true;
-#else
-// vvv nvcc (12.1?) doesn't tolerate this kind of customization: "error: expected initializer before ‘<’"
-template<class T>
-inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible<T>::value;
-#endif
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
 	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 999.9, 999.9, 999.9, 999.9}};
@@ -95,3 +95,4 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
 		BOOST_REQUIRE(Aarr[0][0] == 0.0);
 	}
 }
+#endif
