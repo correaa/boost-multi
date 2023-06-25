@@ -11,8 +11,8 @@
 
 namespace multi = boost::multi;
 
-#if(MULTI_PROVIDES_PMR_ARRAY)
 BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
+#if(MULTI_PROVIDES_PMR_ARRAY)
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
@@ -66,9 +66,11 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		BOOST_TEST( A[0][0] == 666. );
 		BOOST_TEST( A[1][2] == 666. );
 	}
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
+#if(MULTI_PROVIDES_PMR_ARRAY)
 //  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 
@@ -88,5 +90,5 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout<< time.count() / count <<"          "<< acc <<std::endl;
-}
 #endif
+}
