@@ -22,13 +22,13 @@ OLDGNUSANICHECKCOV:
     # - lcov --list coverage.info && genhtml coverage.info
     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
   coverage: /^\s*lines:\s*\d+.\d+\%/
-  artifacts:
-    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
-    expire_in: 2 days
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: build/coverage.xml
+  # artifacts:
+  #   name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+  #   expire_in: 2 days
+  #   reports:
+  #     coverage_report:
+  #       coverage_format: cobertura
+  #       path: build/coverage.xml
 
 NEWGNUSTD20MEMCHK:
   stage: build
@@ -92,7 +92,7 @@ NEWCLANGSTD20LINT:
 #    - rm -rf webimage_extracted
 #    - . /opt/intel/oneapi/setvars.sh
 
-ICPX:
+oneapi latest:
   stage: build
   image: intel/oneapi-hpckit:latest
   script:
@@ -103,11 +103,18 @@ ICPX:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
   needs: ["OLDGNUSANICHECKCOV"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+
+oneapi 2021.4:
+  stage: build
+  image: intel/oneapi-hpckit:2021.4-devel-ubuntu18.04
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - mkdir build && cd build
+    - icpx --version
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest --parallel 2 --output-on-failure
+  needs: ["oneapi latest"]
 
 #ICPC:
 #  stage: build
@@ -260,6 +267,33 @@ circle latest:
     - ctest -j 2 --output-on-failure
   needs: ["circle 198"]
 
+inq:
+  allow_failure: false
+  stage: test
+  image: debian:stable
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config
+    - export PREFIX=`mktemp -d`
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git checkout $CI_COMMIT_SHA
+    - cd ../..
+    - rm -f cmake/FindNCCL.cmake  # diable NCCL workaround
+    - mkdir build && cd build
+    - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - cmake --install .
+    - export OMPI_ALLOW_RUN_AS_ROOT=1
+    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - export OMPI_MCA_btl_vader_single_copy_mechanism=none
+    - export OMPI_MCA_rmaps_base_oversubscribe=1
+    - ctest -j 2 --output-on-failure --timeout 600
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
+  needs: ["OLDCLANGTIDYSANI"]
+
 inq-nvcc-ompi:
   allow_failure: false
   stage: test
@@ -288,7 +322,7 @@ inq-nvcc-ompi:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
-  needs: ["cuda 11.8.0"]
+  needs: ["cuda 11.8.0", "inq"]
 
 qmcpack:
   image: debian:testing
