@@ -92,6 +92,18 @@ NEWCLANGSTD20LINT:
 #    - rm -rf webimage_extracted
 #    - . /opt/intel/oneapi/setvars.sh
 
+oneapi 2023.0:
+  stage: build
+  image: intel/oneapi-hpckit:2023.0.0-devel-ubuntu22.04
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - mkdir build && cd build
+    - icpx --version
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest --parallel 2 --output-on-failure
+  needs: ["OLDCLANGTIDYSANI"]
+
 oneapi latest:
   stage: build
   image: intel/oneapi-hpckit:latest
@@ -102,7 +114,7 @@ oneapi latest:
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
-  needs: ["OLDGNUSANICHECKCOV"]
+  needs: ["oneapi 2023.0"]
 
 oneapi 2022.2:
   stage: build
@@ -114,7 +126,7 @@ oneapi 2022.2:
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
-  needs: ["oneapi latest"]
+  needs: ["oneapi 2023.0"]
 
 #ICPC:
 #  stage: build
