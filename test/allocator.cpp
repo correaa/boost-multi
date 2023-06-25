@@ -108,6 +108,7 @@ BOOST_AUTO_TEST_CASE(pmr) {
 	BOOST_REQUIRE(Barr[0][0] == 'b');
 }
 
+#if(MULTI_PROVIDES_PMR_ARRAY)
 BOOST_AUTO_TEST_CASE(pmr2) {
 	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
@@ -132,3 +133,4 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 
 	BOOST_REQUIRE(Aarr[0][0] == 4.0);
 }
+#endif
