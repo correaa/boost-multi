@@ -274,14 +274,13 @@ inq:
   variables:
     GIT_STRATEGY: none
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
     - git checkout $CI_COMMIT_SHA
     - cd ../..
-    - rm -f cmake/FindNCCL.cmake  # diable NCCL workaround
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
@@ -294,7 +293,7 @@ inq:
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
   needs: ["OLDCLANGTIDYSANI"]
 
-inq-nvcc-ompi:
+inq cuda:
   allow_failure: false
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
