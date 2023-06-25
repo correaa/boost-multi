@@ -1,6 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi complex"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
@@ -21,6 +22,11 @@ inline constexpr bool multi::force_element_trivial_default_construction<std::com
 template<class T>
 inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible<T>::value;
 #endif
+
+BOOST_AUTO_TEST_CASE(pmr_double) {
+	multi::pmr::array<double, 2> Aarr({2, 2}, &4.0);
+	BOOST_REQUIRE(Aarr[0][0] == 4.0);
+}
 
 #if(MULTI_PROVIDES_PMR_ARRAY)
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
