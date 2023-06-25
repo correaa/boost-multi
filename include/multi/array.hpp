@@ -1186,8 +1186,7 @@ template <class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
 #else
 template <class T, boost::multi::dimensionality_type D>
-[[deprecated("no PMR allocator")]]
-struct array;  // your version of C++ doesn't provide polymorphic_allocators
+struct [[deprecated("no PMR allocator")]] array;  // your version of C++ doesn't provide polymorphic_allocators
 #endif
 
 }  // end namespace boost::multi::pmr
