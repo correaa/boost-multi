@@ -1178,14 +1178,14 @@ struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arr
 
 }  // end namespace boost::multi
 
-// #if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) or defined(__INTEL_LLVM_COMPILER) or defined(__INTEL_COMPILER)  // workaround for icpx 2022.2.0 with gcc 9.3 and icpc icpc 2021.7.0
 namespace boost::multi::pmr {
 
+#if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603))  # or defined(__INTEL_LLVM_COMPILER) or defined(__INTEL_COMPILER)  // workaround for icpx 2022.2.0 with gcc 9.3 and icpc icpc 2021.7.0
 template <class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
+#endif
 
 }  // end namespace boost::multi::pmr
-// #endif
 
 namespace boost::serialization {
 
