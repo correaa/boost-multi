@@ -1184,6 +1184,9 @@ namespace boost::multi::pmr {
 //  # or defined(__INTEL_LLVM_COMPILER) or defined(__INTEL_COMPILER)  // workaround for icpx 2022.2.0 with gcc 9.3 and icpc icpc 2021.7.0
 template <class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
+#else
+template <class T, boost::multi::dimensionality_type D>
+struct array;
 #endif
 
 }  // end namespace boost::multi::pmr
