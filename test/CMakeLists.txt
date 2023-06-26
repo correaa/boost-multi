@@ -266,13 +266,15 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wat-protocol
 -Watimport-in-framework-header
 # -Watomic-access (clang 15, not in clang 13)
--Watomic-alignment -Watomic-implicit-seq-cst -Watomic-memory-ordering -Watomic-properties -Watomic-property-with-user-defined-accessor
+-Watomic-alignment
+# -Watomic-implicit-seq-cst (not in clang 7)
+-Watomic-memory-ordering -Watomic-properties -Watomic-property-with-user-defined-accessor
 -Wattribute-packed-for-bitfield
 # -Wattribute-warning  (clang 15, not in clang 13)
 -Wattributes
 -Wauto-disable-vptr-sanitizer -Wauto-import -Wauto-storage-class -Wauto-var-id
 -Wavailability
--Wavr-rtlib-linking-quirks
+# -Wavr-rtlib-linking-quirks (not in clang 7)
 -Wbackend-plugin
 -Wbackslash-newline-escape
 -Wbad-function-cast
@@ -319,7 +321,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Wc99-compat
 # -Wc99-designator -Wc99-extensions
 -Wcast-align -Wcast-qual
--Wcall-to-pure-virtual-from-ctor-dtor
+# -Wcall-to-pure-virtual-from-ctor-dtor (not in clang 7)
 # -Wcalled-once-parameter (clang 13, not in clang 11)
 -Wcast-align -Wcast-calling-convention
 # -Wcast-function-type (clang 13, not in clang 11)
@@ -350,21 +352,23 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wcpp
 -Wcstring-format-directive
 -Wctor-dtor-privacy
--Wctu
+# -Wctu # (not in clang 7)
 -Wcuda-compat
 -Wcustom-atomic-properties
 # -Wcxx-attribute-extension (clang 13, not in clang 11)
 -Wdangling -Wdangling-else -Wdangling-field
 # -Wdangling-gsl (clang 13, not in clang 9)
 -Wdangling-initializer-list
--Wdarwin-sdk-settings
+# -Wdarwin-sdk-settings (not in clang 7)
 -Wdate-time
 -Wdealloc-in-category
 -Wdebug-compression-unavailable
 -Wdeclaration-after-statement
 -Wdefaulted-function-deleted
 -Wdelegating-ctor-cycles
--Wdelete-abstract-non-virtual-dtor -Wdelete-incomplete -Wdelete-non-abstract-non-virtual-dtor -Wdelete-non-virtual-dtor
+# -Wdelete-abstract-non-virtual-dtor (not in clang 7)
+-Wdelete-incomplete -Wdelete-non-abstract-non-virtual-dtor
+# -Wdelete-non-virtual-dtor (not in clang 7)
 # -Wdelimited-escape-sequence-extension (clang 15, not in clang 13)
 -Wdeprecated
 # -Wdeprecated-altivec-src-compat (clang 13, not in clang 11)
@@ -405,7 +409,9 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Weffc++
 # -Welaborated-enum-base -Welaborated-enum-class (clang 11, not in clang 9)
 -Wembedded-directive
--Wempty-body -Wempty-decomposition -Wempty-init-stmt -Wempty-translation-unit
+-Wempty-body -Wempty-decomposition
+# -Wempty-init-stmt (not in clang 7)
+-Wempty-translation-unit
 -Wencode-type
 -Wendif-labels
 -Wenum-compare
@@ -418,7 +424,8 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wexit-time-destructors
 -Wexpansion-to-defined
 -Wexplicit-initialize-call -Wexplicit-ownership-type
--Wexport-unnamed -Wexport-using-directive
+# -Wexport-unnamed (not in clang 7)
+# -Wexport-using-directive (not in clang 7)
 -Wextern-c-compat -Wextern-initializer
 #-Wextra
 -Wextra-qualification
@@ -438,7 +445,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wformat-invalid-specifier -Wformat-non-iso -Wformat-nonliteral -Wformat-pedantic -Wformat-security
 # -Wformat-type-confusion (clang 11, not in clang 9)
 -Wformat-y2k -Wformat-zero-length -Wformat=2
--Wfortify-source
+# -Wfortify-source (not in clang 7)
 -Wfour-char-constants
 # -Wframe-address (clang 11, not in clang 9)
 # -Wframe-larger-than # -Wframe-larger-than=
@@ -471,13 +478,18 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Wignored-reference-qualifiers (clang 15, not in clang 13)
 -Wimplicit -Wimplicit-atomic-properties
 # -Wimplicit-const-int-float-conversion (clang 11, not in clang 9)
--Wimplicit-conversion-floating-point-to-bool -Wimplicit-exception-spec-mismatch -Wimplicit-fallthrough -Wimplicit-fallthrough-per-function -Wimplicit-fixed-point-conversion -Wimplicit-float-conversion -Wimplicit-function-declaration -Wimplicit-int -Wimplicit-int-conversion
+-Wimplicit-conversion-floating-point-to-bool -Wimplicit-exception-spec-mismatch -Wimplicit-fallthrough -Wimplicit-fallthrough-per-function
+# -Wimplicit-fixed-point-conversion -Wimplicit-float-conversion (not in clang 7)
+-Wimplicit-function-declaration -Wimplicit-int
+# -Wimplicit-int-conversion (not in clang 7)
 # -Wimplicit-int-float-conversion (clang 11, not in clang 9)
 -Wimplicit-retain-self -Wimplicitly-unsigned-literal
 -Wimport -Wimport-preprocessor-directive-pedantic
 -Winaccessible-base
 -Winclude-next-absolute-path -Winclude-next-outside-header
--Wincompatible-exception-spec -Wincompatible-function-pointer-types -Wincompatible-library-redeclaration -Wincompatible-ms-struct -Wincompatible-pointer-types -Wincompatible-pointer-types-discards-qualifiers -Wincompatible-property-type -Wincompatible-sysroot -Wincomplete-framework-module-declaration -Wincomplete-implementation -Wincomplete-module -Wincomplete-setjmp-declaration -Wincomplete-umbrella
+-Wincompatible-exception-spec -Wincompatible-function-pointer-types -Wincompatible-library-redeclaration -Wincompatible-ms-struct -Wincompatible-pointer-types -Wincompatible-pointer-types-discards-qualifiers -Wincompatible-property-type -Wincompatible-sysroot -Wincomplete-framework-module-declaration -Wincomplete-implementation -Wincomplete-module
+# -Wincomplete-setjmp-declaration (not in clang 7)
+-Wincomplete-umbrella
 -Winconsistent-dllimport -Winconsistent-missing-destructor-override -Winconsistent-missing-override
 -Wincrement-bool
 -Winfinite-recursion
@@ -518,7 +530,9 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wmethod-signatures
 -Wmicrosoft
 # -Wmicrosoft-abstract (clang 13, not in clang 11)
--Wmicrosoft-anon-tag -Wmicrosoft-cast -Wmicrosoft-charize -Wmicrosoft-comment-paste -Wmicrosoft-const-init -Wmicrosoft-cpp-macro -Wmicrosoft-default-arg-redefinition -Wmicrosoft-drectve-section -Wmicrosoft-end-of-file -Wmicrosoft-enum-forward-reference -Wmicrosoft-enum-value -Wmicrosoft-exception-spec -Wmicrosoft-exists -Wmicrosoft-explicit-constructor-call -Wmicrosoft-extra-qualification -Wmicrosoft-fixed-enum -Wmicrosoft-flexible-array -Wmicrosoft-goto -Wmicrosoft-inaccessible-base -Wmicrosoft-include  -Wmicrosoft-mutable-reference -Wmicrosoft-pure-definition -Wmicrosoft-redeclare-static -Wmicrosoft-sealed
+-Wmicrosoft-anon-tag -Wmicrosoft-cast -Wmicrosoft-charize -Wmicrosoft-comment-paste -Wmicrosoft-const-init -Wmicrosoft-cpp-macro -Wmicrosoft-default-arg-redefinition
+# -Wmicrosoft-drectve-section (not in clang 7)
+-Wmicrosoft-end-of-file -Wmicrosoft-enum-forward-reference -Wmicrosoft-enum-value -Wmicrosoft-exception-spec -Wmicrosoft-exists -Wmicrosoft-explicit-constructor-call -Wmicrosoft-extra-qualification -Wmicrosoft-fixed-enum -Wmicrosoft-flexible-array -Wmicrosoft-goto -Wmicrosoft-inaccessible-base -Wmicrosoft-include  -Wmicrosoft-mutable-reference -Wmicrosoft-pure-definition -Wmicrosoft-redeclare-static -Wmicrosoft-sealed
 # -Wmicrosoft-static-assert (clang 13, not in clang 11) 
 -Wmicrosoft-template
 # -Wmicrosoft-template-shadow (clang 11, not in clang 9)
