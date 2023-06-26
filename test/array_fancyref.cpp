@@ -20,35 +20,35 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	using reference = ref<T>;
 	using iterator_category = std::random_access_iterator_tag;
 
-	ptr() = default;
-	explicit ptr(std::nullptr_t) {}
+	ptr() noexcept = default;
+	explicit ptr(std::nullptr_t) noexcept {}
 	template<class Other> constexpr explicit ptr(ptr<Other> const& /*other*/) noexcept {}
-	constexpr ptr(ptr const& /*other*/) {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default)
+	constexpr ptr(ptr const& /*other*/) noexcept {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default)
 
 	// vvv it is important that these two functions are device or device host functions
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	constexpr auto operator*() const -> reference {return reference{};}
+	constexpr auto operator*() const noexcept -> reference {return reference{};}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	constexpr auto operator+(difference_type /*unused*/) const -> ptr {return *this;}
+	constexpr auto operator+(difference_type /*unused*/) const noexcept -> ptr {return *this;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 
-	auto operator+=(difference_type /*difference*/) -> ptr& {return *this;}
+	auto operator+=(difference_type /*difference*/) noexcept -> ptr& {return *this;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	auto operator++() -> ptr& {return operator+=(1);}
+	auto operator++() noexcept -> ptr& {return operator+=(1);}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	friend auto operator-(ptr const& /*a*/, ptr const& /*b*/) -> difference_type {return 0;}
+	friend auto operator-(ptr const& /*a*/, ptr const& /*b*/) noexcept -> difference_type {return 0;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	auto operator==(ptr const& /*other*/) const -> bool {return true;}
+	auto operator==(ptr const& /*other*/) const noexcept -> bool {return true;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	auto operator!=(ptr const& /*other*/) const -> bool {return false;}
+	auto operator!=(ptr const& /*other*/) const noexcept -> bool {return false;}
 //  explicit operator T*() const{return &value;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	auto operator->() const -> ptr const& {return *this;}
+	auto operator->() const noexcept -> ptr const& {return *this;}
 	// NOLINTNEXTLINE(fuchsia-trailing-return): this class simulates pointer
 //  friend auto to_address(ptr const& pointer) -> ptr {return pointer;}
-	explicit operator bool() const {return false;}
+	explicit operator bool() const noexcept {return false;}
 //  operator double*() const{return &value;}
-	friend auto get_allocator(ptr const& /*self*/){return std::allocator<value_type>{};}
+	friend auto get_allocator(ptr const& /*self*/) noexcept {return std::allocator<value_type>{};}
 };
 
 template<> double const ptr<double>::value = 42.;
