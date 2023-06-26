@@ -2421,11 +2421,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
 
-	constexpr explicit array_ref(typename array_ref::element_ptr data, typename array_ref::extensions_type extensions) noexcept  // TODO(correa) eliminate this ctor
-	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, data} {}
+	constexpr explicit array_ref(typename array_ref::element_ptr dat, typename array_ref::extensions_type extensions) noexcept  // TODO(correa) eliminate this ctor
+	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
 
-	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr data) noexcept
-	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, data} {}
+	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
+	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
 
 	template<
 		class TT, std::size_t N,
