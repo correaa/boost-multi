@@ -42,6 +42,29 @@ g++ stable:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
 
+g++ cppcheck:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure -T Test
+  needs: ["g++ stable"]
+
+g++ sanitizer:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+  needs: ["g++ stable"]
+
 g++ 7:
   stage: build
   image: debian:oldoldstable
@@ -156,7 +179,7 @@ nvhpc 21.2:
     - ctest --output-on-failure
   needs: ["nvhpc 22.11"]
 
-nvhpc 23.5:
+nvhpc 23.5 c++20:
   stage: build
   image: nvcr.io/nvidia/nvhpc:23.5-devel-cuda_multi-ubuntu22.04
   script:
@@ -190,8 +213,7 @@ cuda 11.8.0:
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["g++ stable"]
 
-# last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
-cuda 12.1.1:
+cuda 12.1.1: # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
   tags:
@@ -203,9 +225,9 @@ cuda 12.1.1:
     - ls /usr/local
     - ls /usr/local/cuda-12/bin
     - /usr/local/cuda-12/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-12/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - CUDACXX=/usr/local/cuda-12/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure  # doesn't run
+    - ctest -j 2 --output-on-failure
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
