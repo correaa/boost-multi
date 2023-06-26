@@ -6,6 +6,8 @@
 
 #include "multi/array.hpp"
 
+#include<iostream>
+
 namespace multi = boost::multi;
 
 template<class Array1D>
@@ -81,8 +83,8 @@ void fill_2d_99(Array1D&& coll) {
 		std::fill(row.begin(), row.end(), 99);
 	});
 	// std::transform(coll.begin(), coll.end(), coll.begin(), [](auto&& row) {
-	// 	std::fill(row.begin(), row.end(), 99);
-	// 	return std::forward<decltype(row)>(row);
+	//  std::fill(row.begin(), row.end(), 99);
+	//  return std::forward<decltype(row)>(row);
 	// });
 }
 
