@@ -6,6 +6,7 @@ image: corraadock/gnudev:v2
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
+  RT_VERSION: "0.1"
 
 OLDGNUSANICHECKCOV:
   stage: build
@@ -30,23 +31,42 @@ OLDGNUSANICHECKCOV:
   #       coverage_format: cobertura
   #       path: build/coverage.xml
 
-NEWGNUSTD20MEMCHK:
+g++ 9:
   stage: build
-  image: debian:testing  # for g++-12
+  image: debian:oldstable-backports
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++-12 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-9 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - g++-9 --version
     - mkdir build && cd build
-    - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free"
+    - CXX=g++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure -T Test
+  needs: ["OLDGNUSANICHECKCOV"]
+
+g++ 13 + c++20 + memcheck:
+  stage: build
+  image: debian:testing
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++-13 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
+    - mkdir build && cd build
+    - CXX=g++-13 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ulimit -n
     - ulimit -n 1024  # neededed by valgrind in docker running in Fedora https://stackoverflow.com/questions/75292406/memchk-valgrind-reporting-inconsistent-results-in-different-docker-hosts?noredirect=1#comment132859702_75292406
     - ctest -j 1 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
   needs: ["OLDGNUSANICHECKCOV"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+
+# build-win64:
+#   allow_failure: true
+#   tags:
+#     - "win64"
+#   stage: build
+#   script:
+#     - echo $RT_VERSION
+#     - mkdir build 
+#     - cd build
+#     - cmake ../ -G "Visual Studio 16 2019" -DRELEASE_VERSION="$RT_VERSION" -DCMAKE_BUILD_TYPE=Release
+#     - cmake --build . --config Release --target package
 
 OLDCLANGTIDYSANI:
   stage: build
@@ -77,20 +97,6 @@ NEWCLANGSTD20LINT:
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
-
-# install intel compiler online
-#  image: debian:stable  # icpc 2022.1.2 is incompatible with gcc 12 lib
-#  script:
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
-#    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
-#    - chmod +x webimage.sh
-#    - ./webimage.sh -x -f webimage_extracted --log extract.log
-#    - rm -rf webimage.sh
-#    - ls -1 webimage_extracted/
-#    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
-#    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=`#intel.oneapi.lin.mkl.devel:`intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl --eula=accept --log-dir=.
-#    - rm -rf webimage_extracted
-#    - . /opt/intel/oneapi/setvars.sh
 
 oneapi 2023.0:
   stage: build
@@ -128,33 +134,9 @@ oneapi 2022.2:
     - ctest --parallel 2 --output-on-failure
   needs: ["oneapi 2023.0"]
 
-#ICPC:
-#  stage: build
-#  image: intel/oneapi-hpckit:latest
-#  script:
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet cmake g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
-#    - mkdir build && cd build
-#    - icpc --version
-#    - CXX=icpc cmake .. -DCMAKE_BUILD_TYPE=Release
-#    - make --jobs=2 || make VERBOSE=1
-#    - ctest --parallel 2 --output-on-failure
-#  needs: ["OLDGNUSANICHECKCOV"]
-#  retry:
-#    max: 2
-#    when:
-#      - runner_system_failure
-#      - stuck_or_timeout_failure
-
-    # - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-    # - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-    # - apt-get update -y && apt-get install --no-install-recommends -y nvhpc-22-7 cmake make libboost-test-dev libboost-serialization-dev
-
-NVHPC-2022:
-  allow_failure: false
+nvhpc 22.11:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
-  tags:
-    - nvidia-docker
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
@@ -164,19 +146,32 @@ NVHPC-2022:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["OLDGNUSANICHECKCOV"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
 
-    # - export DEBIAN_FRONTEND=noninteractive
-    # - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
-    # - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
-    # - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
-    # - add-apt-repository contrib
-    # - apt-get update
-    # - apt-get -y install cuda
+nvhpc 21.2:
+  stage: build
+  image: nvcr.io/nvidia/nvhpc:21.2-devel-cuda_multi-ubuntu20.04
+  script:
+    - nvidia-smi
+    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2021/compilers/bin/nvc++ --version
+    - mkdir build && cd build
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2021/compilers/bin/nvc++ cmake ..
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest --output-on-failure
+  needs: ["nvhpc 22.11"]
+
+nvhpc 23.5:
+  stage: build
+  image: nvcr.io/nvidia/nvhpc:23.5-devel-cuda_multi-ubuntu22.04
+  script:
+    - nvidia-smi
+    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ --version
+    - mkdir build && cd build
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ cmake ..
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest --output-on-failure
+  needs: ["nvhpc 22.11"]
 
 cuda 11.8.0:
   allow_failure: false
@@ -302,8 +297,6 @@ inq:
   allow_failure: false
   stage: test
   image: debian:stable
-  variables:
-    GIT_STRATEGY: none
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config
     - export PREFIX=`mktemp -d`
@@ -322,7 +315,7 @@ inq:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
-  needs: ["OLDCLANGTIDYSANI"]
+  needs: ["OLDGNUSANICHECKCOV"]
 
 inq cuda:
   allow_failure: false
