@@ -116,7 +116,7 @@ clang++:
   stage: build
   image: debian:stable
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang++ cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1"
@@ -127,7 +127,7 @@ clang++ tidy:
   stage: build
   image: debian:stable
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang++ clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang-tidy --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
@@ -139,7 +139,7 @@ clang++ cpplint:
   stage: build
   image: debian:stable
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang++ cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
@@ -151,7 +151,7 @@ clang++ sanitizer:
   stage: build
   image: debian:stable
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang++ clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
