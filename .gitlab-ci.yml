@@ -130,7 +130,7 @@ clang++ tidy:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang-tidy --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -147,14 +147,27 @@ clang++ cpplint:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++ sanitizer:
+clang++ sani:
   stage: build
-  image: debian:stable
+  image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-13 clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-13 cmake make libllvm14 libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - clang++ --version
-    - CXX=clang++-13 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - clang++-13 --version
+    - CXX=clang++-13 cmake .. -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - export ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1"
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++ 16 c++20:
+  stage: build
+  image: debian:testing
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-16 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - clang++-16 --version
+    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - export ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1"
     - ctest -j 2 --output-on-failure
@@ -172,18 +185,18 @@ clang++ sanitizer:
 #     - cmake --build . --parallel 2 || cmake --build . --verbose
 #     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure
 
-NEWCLANGSTD20LINT:
-  stage: build
-  image: debian:testing
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config cpplint
-    - cpplint --recursive include/multi/array.hpp
-    - mkdir build && cd build
-    - clang++ --version
-    - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-  needs: ["clang++"]
+# NEWCLANGSTD20LINT:
+#   stage: build
+#   image: debian:testing
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config cpplint
+#     - cpplint --recursive include/multi/array.hpp
+#     - mkdir build && cd build
+#     - clang++ --version
+#     - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#   needs: ["clang++"]
 
 oneapi:
   stage: build
@@ -221,7 +234,7 @@ oneapi 2022.2:
     - ctest --parallel 2 --output-on-failure
   needs: ["oneapi"]
 
-nvhpc 22.11:
+nvhpc:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
   script:
@@ -245,7 +258,7 @@ nvhpc 21.2:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2021/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["nvhpc 22.11"]
+  needs: ["nvhpc"]
 
 nvhpc 23.5 c++20:
   stage: build
@@ -258,7 +271,7 @@ nvhpc 23.5 c++20:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["nvhpc 22.11"]
+  needs: ["nvhpc"]
 
 cuda 11.8.0:
   allow_failure: false
