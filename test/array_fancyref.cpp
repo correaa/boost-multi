@@ -22,7 +22,7 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 
 	ptr() = default;
 	explicit ptr(std::nullptr_t) {}
-	template<class Other> constexpr explicit ptr(ptr<Other> const& /*other*/) {}
+	template<class Other> constexpr explicit ptr(ptr<Other> const& /*other*/) noexcept {}
 	constexpr ptr(ptr const& /*other*/) {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default)
 
 	// vvv it is important that these two functions are device or device host functions
@@ -135,7 +135,7 @@ auto copy(It/*first*/, It/*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> de
 
 //  template<class Alloc, class It, class T> // custom copy 2D (aka double strided copy)
 //  auto uninitialized_copy(Alloc&, It first, It last, multi::array_iterator<T, 2, fancy::ptr<T>> const& dest){
-//	   std::cerr << "2D uninitialized_copy(...) calls raw copy 2D" << std::endl;
+//     std::cerr << "2D uninitialized_copy(...) calls raw copy 2D" << std::endl;
 //    return copy(first, last, dest);
 //  }
 
