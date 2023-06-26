@@ -151,10 +151,10 @@ clang++ sanitizer:
   stage: build
   image: debian:stable
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-13 clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - CXX=clang++-13 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - export ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1"
     - ctest -j 2 --output-on-failure
