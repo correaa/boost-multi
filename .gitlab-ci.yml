@@ -160,7 +160,7 @@ clang++ sani:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++ 16 c++20:
+clang++ 16 + c++20:
   stage: build
   image: debian:testing
   script:
@@ -169,9 +169,21 @@ clang++ 16 c++20:
     - clang++-16 --version
     - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - export ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1"
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
+
+clang++ 7 c++20:
+  stage: build
+  image: debian:oldoldstable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-7 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - clang++-7 --version
+    - CXX=clang++-7 cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
 
 # OLDCLANGTIDYSANI:
 #   stage: build
