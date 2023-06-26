@@ -141,7 +141,7 @@ nvhpc 22.11:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["OLDGNUSANICHECKCOV"]
+  needs: ["g++ stable"]
 
 nvhpc 21.2:
   stage: build
@@ -188,9 +188,9 @@ cuda 11.8.0:
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["OLDGNUSANICHECKCOV"]
+  needs: ["g++ stable"]
 
-# last version: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+# last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
 cuda 12.1.1:
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
@@ -311,7 +311,7 @@ inq:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
-  needs: ["OLDGNUSANICHECKCOV"]
+  needs: ["g++ stable"]
 
 inq cuda:
   allow_failure: false
@@ -360,12 +360,7 @@ qmcpack:
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
-  needs: ["OLDGNUSANICHECKCOV"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+  needs: ["g++ stable"]
 
 qmcpack-cuda:
   stage: test
