@@ -613,7 +613,8 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wpessimizing-move
 -Wpointer-arith -Wpointer-bool-conversion
 # -Wpointer-compare (clang 11, not in clang 9)
--Wpointer-integer-compare -Wpointer-sign
+# -Wpointer-integer-compare (not in clang 7)
+-Wpointer-sign
 # -Wpointer-to-enum-cast (clang 11, not in clang 9)
 -Wpointer-to-int-cast -Wpointer-type-mismatch
 # -Wpoison-system-directories (clang 11, not in clang 9)
