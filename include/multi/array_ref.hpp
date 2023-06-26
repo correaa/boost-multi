@@ -2565,14 +2565,14 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	// data() is here for compatibility with std::vector
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data() const& {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()     && {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()      & {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data() const& {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data()     && {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data()      & {return data_elements();}
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
-	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr {return           self .data_elements();}
-	friend constexpr auto data(array_ref      & self) -> typename array_ref::element_ptr {return           self .data_elements();}
-	friend constexpr auto data(array_ref     && self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
+	friend [[deprecated]] constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr {return           self .data_elements();}
+	friend [[deprecated]] constexpr auto data(array_ref      & self) -> typename array_ref::element_ptr {return           self .data_elements();}
+	friend [[deprecated]] constexpr auto data(array_ref     && self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	using decay_type = typename array_ref::decay_type;
 
@@ -2684,8 +2684,8 @@ struct array_ptr
 template<class T, typename Ptr>
 class array_ptr<T, 0, Ptr> : multi::array_ref<T, 0, Ptr>{
  public:
-	constexpr explicit array_ptr(Ptr data, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : multi::array_ref<T, 0, Ptr>(data, extensions) {}
-	constexpr explicit array_ptr(Ptr data) : array_ptr(data, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
+	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : multi::array_ref<T, 0, Ptr>(dat, extensions) {}
+	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
 
 	constexpr explicit operator bool() const {return this->base();}
 	constexpr explicit operator Ptr () const {return this->base();}
