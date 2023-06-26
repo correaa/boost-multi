@@ -342,7 +342,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
 	-> array_iterator& = default;
 
-	array_iterator(array_iterator&&) noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	array_iterator(array_iterator&&) /*noexcept*/  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
 	= default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	using difference_type = typename layout_t<D>::difference_type;
