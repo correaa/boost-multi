@@ -625,17 +625,17 @@ BOOST_AUTO_TEST_CASE(as_span) {
 	};
 	#endif
 
-	auto printMe1 = [](multi::array_ref<int, 1> rng) {
-        std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
-		std::for_each(rng.begin(), rng.end(), [](auto const& elem) {std::cout << elem << ' ';});
-        std::cout << "\n\n";
-	};
+	// auto printMe1 = [](multi::array_ref<int, 1> rng) {
+    //     std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
+	//  std::for_each(rng.begin(), rng.end(), [](auto const& elem) {std::cout << elem << ' ';});
+    //     std::cout << "\n\n";
+	// };
 
-	auto printMe2 = [](multi::array_ptr<int, 1> ptr) {
-        std::cout << "ptr->size(): " << ptr->size() << '\n';  // (4)
-		std::for_each(ptr->begin(), ptr->end(), [](auto const& elem) {std::cout << elem << ' ';});
-        std::cout << "\n\n";
-	};
+	// auto printMe2 = [](multi::array_ptr<int, 1> ptr) {
+    //     std::cout << "ptr->size(): " << ptr->size() << '\n';  // (4)
+	//  std::for_each(ptr->begin(), ptr->end(), [](auto const& elem) {std::cout << elem << ' ';});
+    //     std::cout << "\n\n";
+	// };
 
 	#if defined(__cpp_lib_span) and (__cpp_lib_span >=  202002L)
     {
