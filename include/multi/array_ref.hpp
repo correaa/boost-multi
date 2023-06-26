@@ -2570,9 +2570,9 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data()      & {return data_elements();}
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
-	friend [[deprecated]] constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr {return           self .data_elements();}
-	friend [[deprecated]] constexpr auto data(array_ref      & self) -> typename array_ref::element_ptr {return           self .data_elements();}
-	friend [[deprecated]] constexpr auto data(array_ref     && self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
+	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr {return           self .data_elements();}
+	friend constexpr auto data(array_ref      & self) -> typename array_ref::element_ptr {return           self .data_elements();}
+	friend constexpr auto data(array_ref     && self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	using decay_type = typename array_ref::decay_type;
 
