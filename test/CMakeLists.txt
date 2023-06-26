@@ -421,7 +421,9 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wexport-unnamed -Wexport-using-directive
 -Wextern-c-compat -Wextern-initializer
 #-Wextra
--Wextra-qualification -Wextra-semi -Wextra-semi-stmt -Wextra-tokens
+-Wextra-qualification
+# -Wextra-semi (gcc 8, not in 7)
+-Wextra-semi-stmt -Wextra-tokens
 # -Wfinal-dtor-non-final-class (clang 11, not in clang 9)
 # -Wfinal-macro (clang 15, not in clang 13)
 -Wfixed-enum-extension
