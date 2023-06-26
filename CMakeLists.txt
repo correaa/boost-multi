@@ -1,7 +1,7 @@
 # -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 # Copyright 2018-2023 Alfredo A. Correa
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 
 # Library doesn't require installation, to still install this project:
 # ~~~
@@ -56,7 +56,7 @@ endif()
 # Installation help
 configure_package_config_file("${PROJECT_SOURCE_DIR}/cmake/multi-config.cmake.in" "${PROJECT_BINARY_DIR}/multi-config.cmake" INSTALL_DESTINATION "share/cmake/multi")
 
-#write_basic_package_version_file("${PROJECT_BINARY_DIR}/multi-config-version.cmake" COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
+write_basic_package_version_file("${PROJECT_BINARY_DIR}/multi-config-version.cmake" COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
 
 message("current install prefix directory: ${CMAKE_INSTALL_PREFIX}")
 
