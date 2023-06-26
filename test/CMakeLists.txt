@@ -69,7 +69,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Warray-bounds # -Warray-bounds=<0,2>
 # -Warray-compare # (gcc 12, not in gcc 9)
 # -Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
--Wattribute-alias #=<0,2> # (gcc 12, not in 11)
+#-Wattribute-alias #=<0,2> # (gcc 12, not in 11, not in 7)
 #-Wattribute-warning # (gcc 9, not in 8)
 -Wattributes
 -Wbool-compare -Wbool-operation
@@ -81,12 +81,12 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wc++1z-compat
 # -Wc++20-compat -Wc++20-extensions -Wc++23-extensions -Wc++2a-compat # (gcc 11, not in gcc 9)
 #-Wcannot-profile # (gcc 9, not in gcc 8)
--Wcast-align=strict -Wcast-function-type
+#-Wcast-align=strict -Wcast-function-type # (gcc 8, not in gcc 7)
 -Wcast-qual
--Wcatch-value  #=<0, 3>
+#-Wcatch-value  #=<0, 3> # (gcc 8, not in gcc 7)
 -Wchar-subscripts
 #-Wclass-conversion # (gcc 11, not in 8)
--Wclass-memaccess # (gcc 12, not in 11)
+#-Wclass-memaccess # (gcc 12, not in 11, not in 7)
 -Wclobbered
 # -Wcomma-subscript # (gcc 12, not in 11)
 -Wcomment  # (same as -Wcomments)
@@ -122,7 +122,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length
 -Wframe-address  # -Wframe-larger-than=<byte-size>
 -Wfree-nonheap-object -Whsa
--Wif-not-aligned
+# -Wif-not-aligned # (gcc 8, not in 7)
 -Wignored-attributes # -Wignored-qualifiers
 -Wno-ignored-qualifiers
 -Wimplicit-fallthrough #=3  # -Wimplicit-fallthrough=<0,5>
@@ -144,14 +144,14 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wmemset-elt-size -Wmemset-transposed-args
 -Wmisleading-indentation
 # -Wmismatched-dealloc -Wmismatched-new-delete # (gcc 11, not in gcc 10)
-# -Wmismatched-tags # (gcc 11, not in gcc 9)
--Wmissing-attributes
+# -Wmismatched-tags # (gcc 11, not in 9)
+# -Wmissing-attributes # (gcc 8, not in 8)
 -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
 #-Wmissing-profile # (gcc 11, not in gcc 8)
 # -Wmissing-requires -Wmissing-template-keyword # (gcc 12, not in 11)
 -Wmultichar
 -Wno-multiple-inheritance # (disallows composition by inheritance)
--Wmultistatement-macros
+# -Wmultistatement-macros # (gcc 8, not in 7)
 -Wno-namespaces # (disallows use of namespaces, seems a C-tool)
 -Wnarrowing
 # -Wno-alloc-size-larger-than=<bytes> -Wframe-larger-than=<bytes> -Wno-larger-than<bytes> -Wstack-usage=<bytes> # (gcc 112, not in 11)
@@ -164,7 +164,8 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Wopenacc-parallelism # (gcc 12, not in 11)
 -Wopenmp-simd -Woverflow
 -Woverlength-strings -Woverloaded-virtual
--Wpacked -Wpacked-bitfield-compat -Wpacked-not-aligned
+-Wpacked -Wpacked-bitfield-compat
+# -Wpacked-not-aligned # (gcc 8, not 7)
 # -Wpadded # (disallows structs that need padding for alignment)
 -Wparentheses
 #-Wpessimizing-move # (gcc 11, not in gcc 8)
@@ -188,21 +189,21 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wsign-compare -Wsign-conversion -Wsign-promo
 -Wsized-deallocation
 -Wsizeof-array-argument
-# -Wsizeof-array-div # (gcc 11, not in gcc 10)
--Wsizeof-pointer-div
+# -Wsizeof-array-div # (gcc 11, not in 10)
 -Wsizeof-pointer-memaccess
 -Wstack-protector  # -Wstack-usage=<byte-size>
 -Wstrict-aliasing  #=3  -Wstrict-aliasing=<0,3>
 -Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
 -Wstrict-overflow  #=1  -Wstrict-overflow=<0,5>
-# -Wstring-compare # (gcc 11, not in gcc 9)
+# -Wstring-compare # (gcc 11, not in 9)
 -Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
-# -Wstringop-overread # (gcc 11, not in gcc 10)
--Wstringop-truncation
+# -Wstringop-overread # (gcc 11, not in 10)
+# -Wstringop-truncation # (gcc 8, not in 7)
 -Wsubobject-linkage
--Wsuggest-attribute=cold # (gcc 12, not in 11)
--Wsuggest-attribute=const -Wsuggest-attribute=format -Wsuggest-attribute=malloc -Wsuggest-attribute=noreturn
--Wsuggest-attribute=pure
+# -Wsuggest-attribute=cold # (gcc 12, not in 11, not in 7)
+-Wsuggest-attribute=const -Wsuggest-attribute=format
+# -Wsuggest-attribute=malloc # (gcc 8, not in 7)
+-Wsuggest-attribute=noreturn -Wsuggest-attribute=pure
 -Wsuggest-final-methods -Wsuggest-final-types
 -Wsuggest-override # (gcc 12, not in gcc 11)
 -Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
