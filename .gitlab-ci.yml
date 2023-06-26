@@ -183,7 +183,7 @@ NEWCLANGSTD20LINT:
     - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-  needs: ["OLDCLANGTIDYSANI"]
+  needs: ["clang++"]
 
 oneapi:
   stage: build
