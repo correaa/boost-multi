@@ -4,11 +4,12 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
 #include<boost/test/unit_test.hpp>
 
-#include "../../fftw.hpp"
+#include <multi/adaptors//fftw.hpp>
 
-#include<chrono>
-#include<complex>
-#include<random>
+#include <chrono>
+#include <complex>
+#include <iostream>
+#include <random>
 
 namespace multi = boost::multi;
 
