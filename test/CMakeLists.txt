@@ -58,7 +58,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -WNSObject-attribute  # (gcc 12, not in 11)
 # -Wabi=13 -Wabi-tag # (maybe important when linking with very old libraries)
 -Waddress
--Waddress-of-packed-member # (gcc 11, not in gcc 8)
+#-Waddress-of-packed-member # (gcc 11, not in gcc 8)
 -Wno-aggregate-return # (disallow return classes or structs, seems a C-compatibility warning)
 -Waggressive-loop-optimizations
 -Waligned-new=all # (gcc 12, not in 11)
@@ -70,7 +70,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Warray-compare # (gcc 12, not in gcc 9)
 # -Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
 -Wattribute-alias #=<0,2> # (gcc 12, not in 11)
--Wattribute-warning # (gcc 9, not in 8)
+#-Wattribute-warning # (gcc 9, not in 8)
 -Wattributes
 -Wbool-compare -Wbool-operation
 # -Wbidi-chars -Wbidi-chars=any # (gcc 12, not in 11)
@@ -80,12 +80,13 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Wc++17-extensions # (gcc 12, not in 9)
 -Wc++1z-compat
 # -Wc++20-compat -Wc++20-extensions -Wc++23-extensions -Wc++2a-compat # (gcc 11, not in gcc 9)
--Wcannot-profile # (gcc 9, not in gcc 8)
+#-Wcannot-profile # (gcc 9, not in gcc 8)
 -Wcast-align=strict -Wcast-function-type
 -Wcast-qual
 -Wcatch-value  #=<0, 3>
 -Wchar-subscripts
--Wclass-conversion -Wclass-memaccess # (gcc 12, not in 11)
+#-Wclass-conversion # (gcc 11, not in 8)
+-Wclass-memaccess # (gcc 12, not in 11)
 -Wclobbered
 # -Wcomma-subscript # (gcc 12, not in 11)
 -Wcomment  # (same as -Wcomments)
@@ -99,7 +100,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wdate-time
 -Wdelete-incomplete -Wdelete-non-virtual-dtor
 -Wdeprecated
--Wdeprecated-copy -Wdeprecated-copy-dtor # (gcc 11, not in gcc 8)
+#-Wdeprecated-copy -Wdeprecated-copy-dtor # (gcc 11, not in gcc 8)
 -Wdeprecated-declarations
 # -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion # (gcc 11, not in gcc 10)
 -Wdisabled-optimization
@@ -127,7 +128,8 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wimplicit-fallthrough #=3  # -Wimplicit-fallthrough=<0,5>
 # -Winaccessible-base # (gcc 12, not in 11)
 # -Winfinite-recursion # (gcc 12, not in 9)
--Winherited-variadic-ctor -Winit-list-lifetime # (gcc 12, not in 11)
+-Winherited-variadic-ctor
+#-Winit-list-lifetime # (gcc 12, not in 11)
 -Winit-self
 -Wno-inline  # not all inline attempts can be successful
 -Wint-in-bool-context -Wint-to-pointer-cast
@@ -145,7 +147,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Wmismatched-tags # (gcc 11, not in gcc 9)
 -Wmissing-attributes
 -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
--Wmissing-profile # (gcc 11, not in gcc 8)
+#-Wmissing-profile # (gcc 11, not in gcc 8)
 # -Wmissing-requires -Wmissing-template-keyword # (gcc 12, not in 11)
 -Wmultichar
 -Wno-multiple-inheritance # (disallows composition by inheritance)
@@ -165,16 +167,16 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wpacked -Wpacked-bitfield-compat -Wpacked-not-aligned
 # -Wpadded # (disallows structs that need padding for alignment)
 -Wparentheses
--Wpessimizing-move # (gcc 11, not in gcc 8)
+#-Wpessimizing-move # (gcc 11, not in gcc 8)
 -Wplacement-new  #=1  -Wplacement-new=<0,2>
 -Wpmf-conversions
 -Wpointer-arith -Wpointer-compare
 -Wpragmas
--Wprio-ctor-dtor # (gcc 11, not in gcc 8)
+#-Wprio-ctor-dtor # (gcc 11, not in gcc 8)
 -Wpsabi
 # -Wrange-loop-construct # (gcc 11, not in gcc 10)
 -Wredundant-decls
--Wredundant-move # (gcc 11, not in gcc 8)
+#-Wredundant-move # (gcc 11, not in gcc 8)
 # -Wredundant-tags # (gcc 11, not in gcc 9)
 -Wregister
 -Wreorder # (gcc 12, not in 11)
