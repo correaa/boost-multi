@@ -8,28 +8,28 @@ variables:
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
   RT_VERSION: "0.1"
 
-OLDGNUSANICHECKCOV:
-  stage: build
-  image: debian:stable
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
-    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-    # - lcov --directory . --capture --output-file coverage.info
-    # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
-    # - lcov --list coverage.info && genhtml coverage.info
-    - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
-  coverage: /^\s*lines:\s*\d+.\d+\%/
-  artifacts:
-    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
-    expire_in: 2 days
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: build/coverage.xml
+# OLDGNUSANICHECKCOV:
+#   stage: build
+#   image: debian:stable
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+#     - mkdir build && cd build
+#     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+#     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+#     # - lcov --directory . --capture --output-file coverage.info
+#     # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
+#     # - lcov --list coverage.info && genhtml coverage.info
+#     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
+#   coverage: /^\s*lines:\s*\d+.\d+\%/
+#   artifacts:
+#     name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+#     expire_in: 2 days
+#     reports:
+#       coverage_report:
+#         coverage_format: cobertura
+#         path: build/coverage.xml
 
 g++ stable:
   stage: build
@@ -41,6 +41,27 @@ g++ stable:
     - cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
+
+coverage:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+    - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
+  coverage: /^\s*lines:\s*\d+.\d+\%/
+  artifacts:
+    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+    expire_in: 2 days
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/coverage.xml
+  needs: ["g++ stable"]
 
 g++ cppcheck:
   stage: build
@@ -213,7 +234,7 @@ cuda 11.8.0:
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["g++ stable"]
 
-cuda 12.1.1: # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+cuda 12.1.1 c++20: # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
   tags:
@@ -225,12 +246,9 @@ cuda 12.1.1: # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/
     - ls /usr/local
     - ls /usr/local/cuda-12/bin
     - /usr/local/cuda-12/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-12/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20
+    - CUDACXX=/usr/local/cuda-12/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["cuda 11.8.0"]
 
 cuda 11.2.2:
@@ -249,10 +267,7 @@ cuda 11.2.2:
     - /usr/local/cuda-11/bin/nvcc --version
     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure  # doesn't run
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+    - ctest -j 2 --output-on-failure
   needs: ["cuda 11.8.0"]
 
 circle 198:
