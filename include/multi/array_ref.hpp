@@ -1819,7 +1819,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	constexpr auto operator+() const -> decay_type {return decay();}
 
-	basic_array(basic_array&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
+	basic_array(basic_array&&) = default;  // in C++ 14 this is necessary to return array references from functions
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
  protected:
