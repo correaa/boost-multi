@@ -38,10 +38,10 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 
 BOOST_AUTO_TEST_CASE(crazy_range) {
 	// auto trng = multi::range(
-	//   	multi::detail::tuple<int, int>{5, 3},
-	//   	multi::detail::tuple<int, int>{5, 9},
-	// 	[](auto t , int d) {return std::get<1>(t) + d;}
-	// 	[](auto t1, auto t2) {return std::get<1>(t1) - std::get<1>(t2);}
+	//    multi::detail::tuple<int, int>{5, 3},
+	//    multi::detail::tuple<int, int>{5, 9},
+	//  [](auto t , int d) {return std::get<1>(t) + d;}
+	//  [](auto t1, auto t2) {return std::get<1>(t1) - std::get<1>(t2);}
 	// );
 
 	// BOOST_REQUIRE( trng[0] == (std::tuple{5, 3}) );
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 
 	std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-	assert(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
 	auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 	BOOST_REQUIRE( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
