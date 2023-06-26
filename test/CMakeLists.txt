@@ -364,10 +364,11 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wdealloc-in-category
 -Wdebug-compression-unavailable
 -Wdeclaration-after-statement
--Wdefaulted-function-deleted
+# -Wdefaulted-function-deleted (not in clang 7)
 -Wdelegating-ctor-cycles
 # -Wdelete-abstract-non-virtual-dtor (not in clang 7)
--Wdelete-incomplete -Wdelete-non-abstract-non-virtual-dtor
+-Wdelete-incomplete
+# -Wdelete-non-abstract-non-virtual-dtor (not in clang 7)
 # -Wdelete-non-virtual-dtor (not in clang 7)
 # -Wdelimited-escape-sequence-extension (clang 15, not in clang 13)
 -Wdeprecated
@@ -429,11 +430,12 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wextern-c-compat -Wextern-initializer
 #-Wextra
 -Wextra-qualification
-# -Wextra-semi (gcc 8, not in 7)
--Wextra-semi-stmt -Wextra-tokens
+# -Wextra-semi (clang 8, not in 7)
+# -Wextra-semi-stmt (not in clang 7)
+-Wextra-tokens
 # -Wfinal-dtor-non-final-class (clang 11, not in clang 9)
 # -Wfinal-macro (clang 15, not in clang 13)
--Wfixed-enum-extension
+# -Wfixed-enum-extension (not in clang 7)
 # -Wfixed-point-overflow (clang 11, not in clang 9)
 -Wflag-enum
 -Wflexible-array-extensions
@@ -545,7 +547,9 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wmissing-declarations -Wmissing-exception-spec -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-method-return-type -Wmissing-noescape -Wmissing-noreturn -Wmissing-prototype-for-cc -Wmissing-prototypes -Wmissing-selector-name -Wmissing-sysroot -Wmissing-variable-declarations
 # -Wmisspelled-assumption (clang 13, not in clang 11)
 # -Rmodule-build
--Wmodule-conflict -Wmodule-file-config-mismatch -Wmodule-file-extension -Rmodule-import -Wmodule-import-in-extern-c
+-Wmodule-conflict -Wmodule-file-config-mismatch -Wmodule-file-extension
+# -Rmodule-import (not in clang 7)
+-Wmodule-import-in-extern-c
 # -Rmodule-lock
 -Wmodules-ambiguous-internal-linkage -Wmodules-import-nested-redundant
 -Wmost
@@ -558,7 +562,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wnested-anon-types -Wnested-externs
 -Wnew-returns-null
 -Wnewline-eof
--Wnoderef
+# -Wnoderef (not in clang 7)
 -Wnoexcept-type
 # -Wnon-c-typedef-for-linkage (clang 11, not in clang 9)
 -Wnon-gcc
@@ -594,7 +598,8 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Woverflow
 -Woverlength-strings
 -Woverloaded-shift-op-parentheses -Woverloaded-virtual
--Woverride-init -Woverride-module -Woverriding-method-mismatch -Woverriding-t-option
+# -Woverride-init (not in clang 7)
+-Woverride-module -Woverriding-method-mismatch -Woverriding-t-option
 -Wpacked
 # -Wpadded (ask for aligment)
 -Wparentheses -Wparentheses-equality
@@ -672,7 +677,8 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Wsigned-unsigned-wchar (clang 11, not in clang 9)
 -Wsizeof-array-argument -Wsizeof-array-decay
 # -Wsizeof-array-div (clang 11, not in clang 9)
--Wsizeof-pointer-div -Wsizeof-pointer-memaccess
+# -Wsizeof-pointer-div (not in clang 7)
+-Wsizeof-pointer-memaccess
 -Wslash-u-filename
 # -Wslh-asm-goto (clang 11, not in clang 9)
 -Wsometimes-uninitialized
@@ -703,7 +709,9 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wsynth
 # -Wtarget-clones-mixed-specifiers (clang 15, not in clang 13)
 # -Wtautological-bitwise-compare (clang 11, not in clang 9)
--Wtautological-compare -Wtautological-constant-compare -Wtautological-constant-in-range-compare -Wtautological-constant-out-of-range-compare -Wtautological-objc-bool-compare -Wtautological-overlap-compare -Wtautological-pointer-compare -Wtautological-type-limit-compare -Wtautological-undefined-compare
+-Wtautological-compare -Wtautological-constant-compare -Wtautological-constant-in-range-compare -Wtautological-constant-out-of-range-compare
+# -Wtautological-objc-bool-compare (not in clang 7)
+-Wtautological-overlap-compare -Wtautological-pointer-compare -Wtautological-type-limit-compare -Wtautological-undefined-compare
 # -Wtautological-unsigned-char-zero-compare -Wtautological-unsigned-enum-zero-compare
 # -Wtautological-unsigned-zero-compare -Wtautological-value-range-compare (clang 13, not in clang 11)
 # -Wtcb-enforcement (clang 13, not in clang 11)
@@ -722,10 +730,12 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Wundef-prefix (clang 11, not in clang 9)
 -Wundefined-bool-conversion -Wundefined-func-template -Wundefined-inline -Wundefined-internal -Wundefined-internal-type
 -Wno-undefined-reinterpret-cast 
--Wundefined-var-template -Wunderaligned-exception-object
+-Wundefined-var-template
+# -Wunderaligned-exception-object (not in clang 7)
 -Wunevaluated-expression
 -Wunguarded-availability -Wunguarded-availability-new
--Wunicode -Wunicode-homoglyph -Wunicode-whitespace -Wunicode-zero-width
+-Wunicode -Wunicode-homoglyph -Wunicode-whitespace
+# -Wunicode-zero-width (not in clang 7)
 -Wuninitialized
 # -Wuninitialized-const-reference (clang 11, not in clang 9)
 -Wunknown-argument
