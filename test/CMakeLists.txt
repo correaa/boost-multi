@@ -109,14 +109,14 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Weffc++ # (doesn't allow some advanced techniques, such as CRTP)
 -Wempty-body -Wendif-labels
 -Wenum-compare
-# -Wenum-conversion # (gcc 11, not in gcc 10)
+# -Wenum-conversion # (gcc 11, not in 10)
 -Wexpansion-to-defined
-# -Wexceptions  # (gcc 11, not in gcc 10)
--Wextra-semi
+# -Wexceptions  # (gcc 11, not in 10)
+# -Wextra-semi # (gcc 8, not in 7)
 -Wfloat-conversion # -Wfloat-equal # (disallows float equality)
 -Wformat=2
 -Wformat-contains-nul # (gcc 12, not in 11)
-# -Wformat-diag # (gcc 10, not in gcc 9)
+# -Wformat-diag # (gcc 10, not in 9)
 -Wformat-extra-args -Wformat-nonliteral
 -Wformat-overflow=1
 -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length
