@@ -1,11 +1,12 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2023 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW move"
 #include <boost/test/unit_test.hpp>
 
-#include "../../../adaptors/fftw.hpp"
-#include "../../../array.hpp"
+#include <multi/adaptors/fftw.hpp>
+#include <multi/array.hpp>
+
+#include <numeric>  // for std::transform_reduce
 
 namespace multi = boost::multi;
 
