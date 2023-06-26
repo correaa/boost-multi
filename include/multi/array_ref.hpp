@@ -258,8 +258,8 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	HD constexpr basic_array_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: basic_array_ptr{other->data_elements(), other->layout()} {}
 
-	basic_array_ptr(basic_array_ptr      &&) noexcept = default;
-	basic_array_ptr(basic_array_ptr const& )          = default;
+	basic_array_ptr(basic_array_ptr      &&) = default;
+	basic_array_ptr(basic_array_ptr const& ) = default;
 
 	HD constexpr auto operator=(basic_array_ptr const& other) noexcept -> basic_array_ptr& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
