@@ -258,8 +258,8 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	HD constexpr basic_array_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: basic_array_ptr{other->data_elements(), other->layout()} {}
 
-	basic_array_ptr(basic_array_ptr      &&) = default;
-	basic_array_ptr(basic_array_ptr const& ) = default;
+	basic_array_ptr(basic_array_ptr      &&) noexcept = default;
+	basic_array_ptr(basic_array_ptr const& )          = default;
 
 	HD constexpr auto operator=(basic_array_ptr const& other) noexcept -> basic_array_ptr& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
@@ -1819,7 +1819,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	constexpr auto operator+() const -> decay_type {return decay();}
 
-	basic_array(basic_array&&) = default;  // in C++ 14 this is necessary to return array references from functions
+	basic_array(basic_array&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
  protected:
