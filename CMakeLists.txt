@@ -56,7 +56,7 @@ endif()
 # Installation help
 configure_package_config_file("${PROJECT_SOURCE_DIR}/cmake/multi-config.cmake.in" "${PROJECT_BINARY_DIR}/multi-config.cmake" INSTALL_DESTINATION "share/cmake/multi")
 
-write_basic_package_version_file("${PROJECT_BINARY_DIR}/multi-config-version.cmake" COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
+#write_basic_package_version_file("${PROJECT_BINARY_DIR}/multi-config-version.cmake" COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
 
 message("current install prefix directory: ${CMAKE_INSTALL_PREFIX}")
 
