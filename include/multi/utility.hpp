@@ -228,8 +228,8 @@ template<class T> struct has_base : decltype(has_base_aux(std::declval<T>())) {}
 
 namespace detail {
 template<class T>
-       auto has_data_aux(T&& cont) -> decltype(cont.data() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
-inline auto has_data_aux(...     ) -> decltype(                 std::false_type{});
+       auto has_data_aux(T&& cont) -> decltype(cont.data_elements() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
+inline auto has_data_aux(...     ) -> decltype(                          std::false_type{});
 }  // end namespace detail
 template<class T> struct has_data : decltype(detail::has_data_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 

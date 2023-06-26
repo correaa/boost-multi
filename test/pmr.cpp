@@ -6,7 +6,10 @@
 
 #include <multi/array.hpp>
 
+#if(MULTI_PROVIDES_PMR_ARRAY)
 #include <memory_resource>  // for polymorphic memory resource, monotonic buffer
+#endif
+
 #include <numeric>
 
 namespace multi = boost::multi;

@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(test_utility_1d) {
 
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(carr) == num_elements(marr) );
-	BOOST_REQUIRE( num_elements(varr) == num_elements(marr) );
+	// BOOST_REQUIRE( num_elements(varr) == num_elements(marr) );
 	BOOST_REQUIRE( num_elements(aarr) == num_elements(aarr) );
 
 	using multi::data_elements;

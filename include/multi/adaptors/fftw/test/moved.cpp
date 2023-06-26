@@ -1,16 +1,19 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW move"
 #include <boost/test/unit_test.hpp>
 
-#include "../../../adaptors/fftw.hpp"
-#include "../../../array.hpp"
+#include <multi/adaptors/fftw.hpp>
+#include <multi/array.hpp>
+
+#include <numeric>  // for std::transform_reduce
 
 namespace multi = boost::multi;
 
 template<class M> auto power(M const& array) {
-	return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
+	return std::accumulate(array.elements().begin(), array.elements().end(), 0.0, [](auto e1, auto e2) {return std::move(e1) + std::norm(e2);});
+//  return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
 }
 
 using fftw_fixture = multi::fftw::environment;

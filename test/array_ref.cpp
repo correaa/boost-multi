@@ -6,10 +6,12 @@
 
 #include <multi/array.hpp>
 
+#include <iostream>  // for std::cout
 #include <numeric>  // for std::iota
 #if defined(__cpp_lib_span) and (__cpp_lib_span >=  202002L)
 #include <span>
 #endif
+
 
 namespace multi = boost::multi;
 

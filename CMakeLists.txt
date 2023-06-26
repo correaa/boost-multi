@@ -1,7 +1,7 @@
 # -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 # Copyright 2018-2023 Alfredo A. Correa
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 
 # Library doesn't require installation, to still install this project:
 # ~~~
