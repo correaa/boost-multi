@@ -1,48 +1,91 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;-*-
 # Copyright 2020-2023 Alfredo A. Correa
 
-image: corraadock/gnudev:v2
+# image: corraadock/gnudev:v2
+image: debian:stable
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
   RT_VERSION: "0.1"
 
-OLDGNUSANICHECKCOV:
-  stage: build
-  image: debian:stable
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
-    # - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-    # - lcov --directory . --capture --output-file coverage.info
-    # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
-    # - lcov --list coverage.info && genhtml coverage.info
-    - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
-  coverage: /^\s*lines:\s*\d+.\d+\%/
-  # artifacts:
-  #   name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
-  #   expire_in: 2 days
-  #   reports:
-  #     coverage_report:
-  #       coverage_format: cobertura
-  #       path: build/coverage.xml
+# OLDGNUSANICHECKCOV:
+#   stage: build
+#   image: debian:stable
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+#     - mkdir build && cd build
+#     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+#     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+#     # - lcov --directory . --capture --output-file coverage.info
+#     # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
+#     # - lcov --list coverage.info && genhtml coverage.info
+#     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
+#   coverage: /^\s*lines:\s*\d+.\d+\%/
+#   artifacts:
+#     name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+#     expire_in: 2 days
+#     reports:
+#       coverage_report:
+#         coverage_format: cobertura
+#         path: build/coverage.xml
 
-g++ stable:
+g++:
   stage: build
-  image: debian:stable
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
 
-g++ 7:
+coverage:
+  stage: build
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+    - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
+  coverage: /^\s*lines:\s*\d+.\d+\%/
+  artifacts:
+    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+    expire_in: 2 days
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/coverage.xml
+  needs: ["g++"]
+
+g++ cppcheck:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure -T Test
+  needs: ["g++"]
+
+g++ sanitizer:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+  needs: ["g++"]
+
+g++-7:
   stage: build
   image: debian:oldoldstable
   script:
@@ -54,9 +97,9 @@ g++ 7:
     - CXX=g++-7 CXXFLAGS="-DBOOST_TEST_MAIN -DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
-  needs: ["g++ stable"]
+  needs: ["g++"]
 
-g++ 13 + c++20 + memcheck:
+g++-13 c++20:
   stage: build
   image: debian:testing
   script:
@@ -67,34 +110,109 @@ g++ 13 + c++20 + memcheck:
     - ulimit -n
     - ulimit -n 1024  # neededed by valgrind in docker running in Fedora https://stackoverflow.com/questions/75292406/memchk-valgrind-reporting-inconsistent-results-in-different-docker-hosts?noredirect=1#comment132859702_75292406
     - ctest -j 1 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
-  needs: ["g++ stable"]
+  needs: ["g++"]
 
-OLDCLANGTIDYSANI:
+clang++:
   stage: build
-  image: debian:testing
+  image: debian:stable
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang-13 clang-tidy-14 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
-    - mkdir build && cd build
-    - clang++-13 --version
-    - clang-tidy-14 --version
-    - CXX=clang++-13 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY="clang-tidy-14" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure
-
-NEWCLANGSTD20LINT:
-  stage: build
-  image: debian:testing
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config cpplint
-    - cpplint --recursive include/multi/array.hpp
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-  needs: ["OLDCLANGTIDYSANI"]
 
-oneapi 2023.0:
+clang++ tidy:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - clang-tidy --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++ cpplint:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
+    - mkdir build && cd build
+    - clang++ --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++ sani:
+  stage: build
+  image: debian:testing
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-13 cmake make libllvm14 libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - clang++-13 --version
+    - CXX=clang++-13 cmake .. -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - export ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1"
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++-15 c++20:
+  stage: build
+  image: debian:testing
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-15 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - clang++-15 --version
+    - CXX=clang++-15 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++-7:
+  stage: build
+  image: debian:oldoldstable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-7 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - mkdir build && cd build
+    - clang++-7 --version
+    - CXX=clang++-7 CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+
+# OLDCLANGTIDYSANI:
+#   stage: build
+#   image: debian:testing
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang-13 clang-tidy-14 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+#     - mkdir build && cd build
+#     - clang++-13 --version
+#     - clang-tidy-14 --version
+#     - CXX=clang++-13 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY="clang-tidy-14" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure
+
+# NEWCLANGSTD20LINT:
+#   stage: build
+#   image: debian:testing
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config cpplint
+#     - cpplint --recursive include/multi/array.hpp
+#     - mkdir build && cd build
+#     - clang++ --version
+#     - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#   needs: ["clang++"]
+
+oneapi:
   stage: build
   image: intel/oneapi-hpckit:2023.0.0-devel-ubuntu22.04
   script:
@@ -104,9 +222,8 @@ oneapi 2023.0:
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
-  needs: ["OLDCLANGTIDYSANI"]
 
-oneapi latest:
+oneapi-latest c++20:
   stage: build
   image: intel/oneapi-hpckit:latest
   script:
@@ -116,9 +233,9 @@ oneapi latest:
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
-  needs: ["oneapi 2023.0"]
+  needs: ["oneapi"]
 
-oneapi 2022.2:
+oneapi-2022.2:
   stage: build
   image: intel/oneapi-hpckit:2022.2-devel-ubuntu20.04
   script:
@@ -128,9 +245,9 @@ oneapi 2022.2:
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
-  needs: ["oneapi 2023.0"]
+  needs: ["oneapi"]
 
-nvhpc 22.11:
+nvhpc:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
   script:
@@ -141,9 +258,8 @@ nvhpc 22.11:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["g++ stable"]
 
-nvhpc 21.2:
+nvhpc-21.2:
   stage: build
   image: nvcr.io/nvidia/nvhpc:21.2-devel-cuda_multi-ubuntu20.04
   script:
@@ -154,9 +270,9 @@ nvhpc 21.2:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2021/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["nvhpc 22.11"]
+  needs: ["nvhpc"]
 
-nvhpc 23.5:
+nvhpc-23.5 c++20:
   stage: build
   image: nvcr.io/nvidia/nvhpc:23.5-devel-cuda_multi-ubuntu22.04
   script:
@@ -167,10 +283,9 @@ nvhpc 23.5:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["nvhpc 22.11"]
+  needs: ["nvhpc"]
 
-cuda 11.8.0:
-  allow_failure: false
+cuda:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
@@ -188,10 +303,9 @@ cuda 11.8.0:
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["g++ stable"]
+  needs: ["g++"]
 
-# last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
-cuda 12.1.1:
+cuda-12.1.1:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
   tags:
@@ -205,14 +319,10 @@ cuda 12.1.1:
     - /usr/local/cuda-12/bin/nvcc --version
     - CUDACXX=/usr/local/cuda-12/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure  # doesn't run
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["cuda 11.8.0"]
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda"]
 
-cuda 11.2.2:
-  allow_failure: true
+cuda-11.2.2:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   tags:
@@ -227,15 +337,10 @@ cuda 11.2.2:
     - /usr/local/cuda-11/bin/nvcc --version
     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure  # doesn't run
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["cuda 11.8.0"]
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda"]
 
-circle 198:
-  allow_failure: true
-  image: debian:stable
+circle:
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
@@ -249,12 +354,8 @@ circle 198:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["OLDCLANGTIDYSANI"]
-  retry: 2
 
-circle 187:
-  allow_failure: true
-  image: debian:stable
+circle-187:
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
@@ -268,12 +369,9 @@ circle 187:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle 198"]
-  retry: 2
+  needs: ["circle"]
 
-circle latest:
-  allow_failure: true
-  image: debian:stable
+circle-latest:
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
@@ -287,7 +385,7 @@ circle latest:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle 198"]
+  needs: ["circle"]
 
 inq:
   allow_failure: false
@@ -311,7 +409,7 @@ inq:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
-  needs: ["g++ stable"]
+  needs: ["g++"]
 
 inq cuda:
   allow_failure: false
@@ -341,7 +439,7 @@ inq cuda:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
-  needs: ["cuda 11.8.0", "inq"]
+  needs: ["cuda", "inq"]
 
 qmcpack:
   image: debian:testing
@@ -360,7 +458,7 @@ qmcpack:
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
-  needs: ["g++ stable"]
+  needs: ["g++"]
 
 qmcpack-cuda:
   stage: test
@@ -382,5 +480,5 @@ qmcpack-cuda:
     - make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
-  needs: ["qmcpack","cuda 11.8.0"]
+  needs: ["qmcpack","cuda"]
 
