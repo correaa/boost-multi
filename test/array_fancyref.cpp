@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 //#define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
@@ -51,8 +51,8 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	friend auto get_allocator(ptr const& /*self*/) noexcept {return std::allocator<value_type>{};}
 };
 
-template<> double const ptr<double>::value = 42.;
-template<> double const ptr<double const>::value = 42.;
+template<> double const ptr<double>::value = 42.0;
+template<> double const ptr<double const>::value = 42.0;
 
 template<class T> class ref {
 	friend class ptr<T>;

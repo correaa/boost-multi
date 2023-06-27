@@ -322,7 +322,7 @@ cuda-12.1.1:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda=11.2.2:
+cuda-11.2.2:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   tags:
