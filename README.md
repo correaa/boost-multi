@@ -76,15 +76,16 @@ target_link_library(my_target PUBLIC multi)
 ```
 
 The code requires compilers with standard C++17 support, for reference any of:
-LLVM's `clang` (5.0+) (`libc++` and `libstdc++`), 
-GNU's `g++` (7.1+), 
+LLVM's `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`), 
+GNU's `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a), 
 Nvidia's [`nvcc`](https://godbolt.org/z/Kdh5PeP5f) (11.0+) and `nvc++` (20.7-21.3+), 
 Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
-Baxter's [`circle`](https://www.circle-lang.org/) (build 198+),
+Baxter's [`circle`](https://www.circle-lang.org/) (build 187+),
 and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
 
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
-(which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or `sudo dnf install blas-devel fftw-devel`.)
+(which can be installed with `sudo apt install libboost-serializa
+tion-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or `sudo dnf install blas-devel fftw-devel`.)
 
 ## Types
 
