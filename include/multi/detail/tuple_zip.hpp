@@ -26,7 +26,7 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 	constexpr auto operator!=(tuple const& /*other*/) const -> bool {return false;}
 
 	constexpr auto operator< (tuple const& /*other*/) const {return false;}
-	constexpr auto operator> (tuple const& /*other*/) const {return false;}
+	// constexpr auto operator> (tuple const& /*other*/) const {return false;}  // TODO(correaa) use total_order CRTP
 };
 
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
@@ -77,11 +77,12 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		if(other.head_ < head_) {return false;}
 		return tail() < other.tail();
 	}
-	constexpr auto operator> (tuple const& other) const {
-		if(head_ > other.head_) {return true ;}
-		if(other.head_ > head_) {return false;}
-		return tail() > other.tail();
-	}
+	// TODO(correaa) use total order CRTP
+	// constexpr auto operator> (tuple const& other) const {
+	//  if(head_ > other.head_) {return true ;}
+	//  if(other.head_ > head_) {return false;}
+	//  return tail() > other.tail();
+	// }
 
  private:
 	template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N-1>> {};
