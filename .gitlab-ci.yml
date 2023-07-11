@@ -19,9 +19,9 @@ variables:
 #     - cmake --build . --parallel 2 || cmake --build . --verbose
 #     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
 #     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-#     # - lcov --directory . --capture --output-file coverage.info
-#     # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
-#     # - lcov --list coverage.info && genhtml coverage.info
+#     - lcov --directory . --capture --output-file coverage.info
+#     - lcov --remove coverage.info '/usr/*' --output-file coverage.info
+#     - lcov --list coverage.info && genhtml coverage.info
 #     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
 #   coverage: /^\s*lines:\s*\d+.\d+\%/
 #   artifacts:
@@ -42,7 +42,7 @@ g++:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
 
-coverage:
+cover:
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
@@ -442,6 +442,7 @@ inq cuda:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
+  timeout: 1 hours 30 minutes
   needs: ["cuda", "inq"]
 
 qmcpack:
