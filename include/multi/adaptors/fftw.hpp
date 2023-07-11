@@ -227,45 +227,45 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 			boost::multi::detail::mk_tuple(static_cast<int>(get<0>(ssn)), static_cast<int>(get<1>(ssn)), static_cast<int>(get<2>(ssn)))...
 		};
 	}, ssn_tuple);
-	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
+	std::sort(ssn.begin(), ssn.end());
 
-	auto const istrides = [&]() {
+	auto const istrides = std::invoke([&ssn]() {
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> istrides{};
 		using boost::multi::detail::get;
 		std::transform(ssn.begin(), ssn.end(), istrides.begin(), [](auto elem) {return get<0>(elem);});
 		return istrides;
-	}();
+	});
 
-	auto const ostrides = [&]() {
+	auto const ostrides = std::invoke([&ssn]() {
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ostrides{};
 		using boost::multi::detail::get;
 		std::transform(ssn.begin(), ssn.end(), ostrides.begin(), [](auto elem) {return get<1>(elem);});
 		return ostrides;
-	}();
-	assert( std::is_sorted(ostrides.begin(), ostrides.end(), std::greater<>{}) );  // otherwise ordering is incompatible
+	});
+	assert( std::is_sorted(ostrides.begin(), ostrides.end()) );  // otherwise ordering is incompatible
 
-	auto const ion      = [&]() {
+	auto const ion = std::invoke([&ssn]() {
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ion     {};
 		using boost::multi::detail::get;
-		std::transform(ssn.begin(), ssn.end(), ion     .begin(), [](auto elem) {return get<2>(elem);});
+		std::transform(ssn.begin(), ssn.end(), ion     .rbegin(), [](auto elem) {return get<2>(elem);});
 		return ion;
-	}();
+	});
 
-	auto const inembed = [&]() {
+	auto const inembed = std::invoke([&istrides]() {
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
 		std::adjacent_difference(
-			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto alpha, auto omega) {assert(omega != 0 and alpha%omega == 0); return alpha/omega;}
+			istrides.begin(), istrides.end(), inembed.rbegin(), [](auto alpha, auto omega) {assert(omega != 0 and alpha%omega == 0); return alpha/omega;}
 		);
 		return inembed;
-	}();
+	});
 
-	auto const onembed = [&]() {
+	auto const onembed = std::invoke([&ostrides]() {
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> onembed{};
 		std::adjacent_difference(
-			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto alpha, auto omega) {assert(omega != 0 and alpha%omega == 0); return alpha/omega;}
+			ostrides.begin(), ostrides.end(), onembed.rbegin(), [](auto alpha, auto omega) {assert(omega != 0 and alpha%omega == 0); return alpha/omega;}
 		);
 		return onembed;
-	}();
+	});
 
 	auto ret = ::fftw_plan_many_dft(
 		/*int           rank    */ ion.size(),
@@ -273,11 +273,11 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 		/*int           howmany */ last - first,
 		/*fftw_complex* in      */ reinterpret_cast<fftw_complex*>(const_cast<std::complex<double>*>(static_cast<std::complex<double> const*>(base(first)))),   // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) input data
 		/*const int*    inembed */ inembed.data(),
-		/*int           istride */ istrides.back(),
+		/*int           istride */ istrides.front(),
 		/*int           idist   */ stride(first),
 		/*fftw_complex* out     */ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) adapt types
 		/*const int*    onembed */ onembed.data(),
-		/*int           ostride */ ostrides.back(),
+		/*int           ostride */ ostrides.front(),
 		/*int           odist   */ stride(d_first),
 		/*int                   */ sign,
 		/*unsigned              */ static_cast<unsigned>(flags)
