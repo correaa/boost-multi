@@ -376,7 +376,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	friend constexpr auto data_elements(static_array      & self) {return           self .data_elements();}
 	friend constexpr auto data_elements(static_array     && self) {return std::move(self).data_elements();}
 
-	       constexpr auto base()                 &       -> typename static_array::element_ptr       { return ref::base(); }
+	       constexpr auto base()                 &       -> typename static_array::element_ptr       { return this->base_; }
 	       constexpr auto base()            const&       -> typename static_array::element_const_ptr { return typename static_array::element_const_ptr{ref::base()}; }
 
 	friend MULTI_NONV_CONSTEXPR auto base(static_array      & self) -> typename static_array::element_ptr       { return self.base(); }

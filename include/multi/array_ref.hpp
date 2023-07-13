@@ -732,46 +732,95 @@ HD constexpr auto ref(It begin, It end)
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
 struct subarray
 // : multi::partially_ordered2<subarray<T, D, ElementPtr, Layout>, void>
-: array_types<T, D, ElementPtr, Layout> {
-	using types = array_types<T, D, ElementPtr, Layout>;
+: public Layout /*, public array_types<T, D, ElementPtr, Layout> */ {
+	using typename Layout::rank;
+	// using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = subarray;
 
-	using array_types<T, D, ElementPtr, Layout>::rank_v;
+	using Layout::rank_v;  // using array_types<T, D, ElementPtr, Layout>::rank_v;
 
-	friend struct subarray<typename types::element, D + 1, typename types::element_ptr >;
-	friend struct subarray<typename types::element, D + 1, typename types::element_ptr&>;
+	// using types::layout;
+	// using typename types::element_type;
 
-	using types::layout;
-	using typename types::element_type;
+	using element = T;
+	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 
+	using element_ptr       = ElementPtr;
+	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
+	using element_ref       = typename std::iterator_traits<element_ptr>::reference;
+	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
+
+	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
+
+	HD constexpr auto  base() const  -> element_ptr       {return base_;}
+	HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
+	HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
+
+	friend /*constexpr*/ auto  base(subarray const& self) -> element_ptr  {return self.base();}  // TODO(correaa) correct const!
+	// friend /*constexpr*/ auto  base(subarray const& self) -> element_ptr  {return self.base();}
+	// friend /*constexpr*/ auto  base(subarray const& self) -> element_ptr  {return self.base();}
+	
 	using layout_type = Layout;
 
-	HD constexpr auto layout() const -> layout_type {return array_types<T, D, ElementPtr, Layout>::layout();}
+	friend struct subarray<element_type, D + 1, element_ptr >;
+	friend struct subarray<element_type, D + 1, element_ptr&>;
 
-	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
+	    HD constexpr auto layout()        const        -> layout_type const& {return *this;}
+	friend constexpr auto layout(subarray const& self) -> layout_type const& {return self.layout();}
+	// HD constexpr auto layout() const -> layout_type {return array_types<T, D, ElementPtr, Layout>::layout();}
+
+	    HD constexpr auto layout_mutable()                -> layout_type& {return *this;}
+
+	using const_subarray = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
 	subarray() = default;
 
-	HD constexpr subarray(layout_type const& layout, ElementPtr const& base)
-	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
+	HD constexpr subarray(layout_type const& layout, ElementPtr const& base) : Layout{layout}, base_{base} {}
+	// : array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
 	auto operator=(subarray&& other) noexcept(false) -> subarray& {operator=(other); return *this;}
 
  protected:
-	using types::types;
+	// using types::types;
+
+	HD constexpr explicit subarray(std::nullptr_t nil) : Layout{}, base_{nil} {}
 
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
 	subarray(subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
 
+	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<subarray, std::decay_t<ArrayTypes>>{}>
+		, decltype(multi::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+	>
+	HD constexpr explicit subarray(ArrayTypes const& other) : Layout{other.layout()}, base_{other.base_} {}
+
+	template<
+		class ArrayTypes,
+		typename = std::enable_if_t<not std::is_base_of<subarray, std::decay_t<ArrayTypes>>{}>,
+		decltype(multi::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+	>
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
+	HD constexpr /*implt*/ subarray(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
+	: Layout{other.layout()}, base_{other.base_} {}
+	// ^^^ TODO(correaa) : call explicit from implicit, careful with infinite recursion
+
+	template<
+		typename ElementPtr2,
+		typename = decltype(Layout{std::declval<subarray<T, D, ElementPtr2, Layout> const&>().layout()}),
+		typename = decltype(element_ptr{std::declval<subarray<T, D, ElementPtr2, Layout> const&>().base_})
+	>
+	HD constexpr explicit subarray(subarray<T, D, ElementPtr2, Layout> const& other)
+	: Layout{other.layout()}, base_{other.base_} {}
+
 	template<class, class> friend struct subarray_ptr;
 
  public:
-	using element           = typename types::element;
-	using element_ptr       = typename types::element_ptr;
-	using element_const_ptr = typename types::element_const_ptr;
-	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
-	using element_ref       = typename types::element_ref;
-	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
+	// using element           = typename types::element;
+	// using element_ptr       = typename types::element_ptr;
+	// using element_const_ptr = typename types::element_const_ptr;
+	// using element_move_ptr  = multi::move_ptr<element, element_ptr>;
+	// using element_ref       = typename types::element_ref;
+	// using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
 
 	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
@@ -779,15 +828,33 @@ struct subarray
 	using       elements_range = elements_range_t<element_ptr      , layout_type>;
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 
+	using value_type = typename std::conditional<
+		(D > 1),
+		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
+		element
+	>::type;
+
+	using reference = typename std::conditional<
+		(D > 1),
+		subarray<element, D-1, element_ptr>,
+		typename std::iterator_traits<element_ptr>::reference
+	>::type;
+
+	using const_reference = typename std::conditional<
+		(D > 1),
+		subarray<element, D-1, element_const_ptr>,
+		typename std::iterator_traits<element_const_ptr>::reference
+	>::type;
+
  private:
-	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
+	constexpr auto elements_aux() const {return elements_range{this->base_, this->layout()};}
 
  public:
 	subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
+	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base_, this->layout()};}  // TODO(correaa) simplify
 	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
@@ -805,7 +872,7 @@ struct subarray
 
 	friend constexpr auto dimensionality(subarray const& /*self*/) {return D;}
 
-	using typename types::reference;
+	// using typename types::reference;
 
 	using default_allocator_type = typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type;
 
@@ -816,7 +883,7 @@ struct subarray
 
 	friend MULTI_NONV_CONSTEXPR auto get_allocator(subarray const& self) -> default_allocator_type {return self.get_allocator();}
 
-	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type>;
+	using decay_type = array<element_type, D, typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type>;
 
 	friend constexpr auto decay(subarray const& self) -> decay_type {return self.decay();}
 	       constexpr auto decay()           const&    -> decay_type {
@@ -825,13 +892,13 @@ struct subarray
 	}
 
 	constexpr auto operator+() const -> decay_type {return decay();}
-	using typename types::const_reference;
+	// using typename types::const_reference;
 
  private:
 	HD constexpr auto at_aux(index idx) const {  // MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return reference{
 			this->layout().sub(),
-			this->base() + (idx*this->layout().stride() - this->layout().offset())
+			this->base_ + (idx*this->layout().stride() - this->layout().offset())
 		};  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 	}
 
@@ -859,27 +926,30 @@ struct subarray
 	constexpr auto front()      & ->       reference {return *begin();}
 	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
 
-	using typename types::index;
+	// using typename types::index;
+	using typename layout_type::index;
+	using typename layout_type::index_range;
+	using typename layout_type::index_extension;
 
-	constexpr auto reindexed(index first) const& -> basic_const_array {
-		typename types::layout_t new_layout = this->layout();
+	constexpr auto reindexed(index first) const& -> const_subarray {
+		layout_type new_layout = this->layout();
 		new_layout.reindex(first);
-		return {new_layout, types::base_};
+		return {new_layout, this->base_};
 	}
 	constexpr auto reindexed(index first)& -> subarray {
-		typename types::layout_t new_layout = this->layout();
+		layout_type new_layout = this->layout();
 		new_layout.reindex(first);
-		return {new_layout, types::base_};
+		return {new_layout, this->base_};
 	}
 	constexpr auto reindexed(index first)&& -> subarray {
-		typename types::layout_t new_layout = this->layout();
+		layout_type new_layout = this->layout();
 		new_layout.reindex(first);
-		return {new_layout, types::base_};
+		return {new_layout, this->base_};
 	}
 
 	// TODO(correaa) : implement reindexed_aux
 	template<class... Indexes>
-	constexpr auto reindexed(index first, Indexes... idxs) const& -> basic_const_array {
+	constexpr auto reindexed(index first, Indexes... idxs) const& -> const_subarray {
 		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 	template<class... Indexes>
@@ -893,7 +963,7 @@ struct subarray
  private:
 	constexpr auto take_aux(difference_type n) const {
 		assert( n <= this->size() );
-		typename types::layout_t const new_layout{
+		layout_type const new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
@@ -903,14 +973,14 @@ struct subarray
 	}
 
  public:
-	constexpr auto take(difference_type n) const& -> basic_const_array {return take_aux(n);}
-	constexpr auto take(difference_type n)     && -> subarray       {return take_aux(n);}
-	constexpr auto take(difference_type n)      & -> subarray       {return take_aux(n);}
+	constexpr auto take(difference_type n) const& -> const_subarray {return take_aux(n);}
+	constexpr auto take(difference_type n)     && ->       subarray {return take_aux(n);}
+	constexpr auto take(difference_type n)      & ->       subarray {return take_aux(n);}
 
  private:
 	constexpr auto drop_aux(difference_type n) const {
 		assert( n <= this->size() );
-		typename types::layout_t const new_layout{
+		layout_type const new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
@@ -920,7 +990,7 @@ struct subarray
 	}
 
  public:
-	constexpr auto drop(difference_type n) const& -> basic_const_array {return drop_aux(n);}
+	constexpr auto drop(difference_type n) const& -> const_subarray {return drop_aux(n);}
 	constexpr auto drop(difference_type n)     && -> subarray       {return drop_aux(n);}
 	constexpr auto drop(difference_type n)      & -> subarray       {return drop_aux(n);}
 
@@ -928,17 +998,17 @@ struct subarray
 	HD constexpr auto sliced_aux(index first, index last) const {
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		typename types::layout_t new_layout = this->layout();
+		layout_type new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
-		return subarray{new_layout, this->base() + (first*this->layout().stride() - this->layout().offset())};
+		return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
-	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
-	HD constexpr auto sliced(index first, index last)      & -> subarray       {return sliced_aux(first, last);}
-	HD constexpr auto sliced(index first, index last)     && -> subarray       {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last) const& -> const_subarray { return sliced_aux(first, last); }
+	HD constexpr auto sliced(index first, index last)      & ->       subarray { return sliced_aux(first, last); }
+	HD constexpr auto sliced(index first, index last)     && ->       subarray { return sliced_aux(first, last); }
 
-	constexpr auto blocked(index first, index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
+	constexpr auto blocked(index first, index last) const& -> const_subarray {return sliced(first, last).reindexed(first);}
 	constexpr auto blocked(index first, index last)      & -> subarray       {return sliced(first, last).reindexed(first);}
 
 	using iextension = typename subarray::index_extension;
@@ -957,13 +1027,13 @@ struct subarray
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs)    && -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();}
 
-	constexpr auto stenciled(iextension iex)                                                    const& -> basic_const_array {return blocked(iex.start(), iex.finish());}
-	constexpr auto stenciled(iextension iex, iextension iex1)                                   const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                  const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
+	constexpr auto stenciled(iextension iex)                                                    const& -> const_subarray {return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex, iextension iex1)                                   const& -> const_subarray {return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                  const& -> const_subarray {return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& -> const_subarray {return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& -> basic_const_array {
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& -> const_subarray {
 		return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();
 	}
 
@@ -985,22 +1055,20 @@ struct subarray
 
  private:
 	constexpr auto strided_aux(difference_type diff) const -> subarray {
-		typename types::layout_t const new_layout{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
-		return {new_layout, types::base_};
+		layout_type const new_layout{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
+		return {new_layout, this->base_};
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> basic_const_array {return strided_aux(diff);}
+	constexpr auto strided(difference_type diff) const& -> const_subarray {return strided_aux(diff);}
 	constexpr auto strided(difference_type diff)     && -> subarray       {return strided_aux(diff);}
 	constexpr auto strided(difference_type diff)      & -> subarray       {return strided_aux(diff);}
 
-	constexpr auto sliced(
-		typename types::index first, typename types::index last, typename types::index stride_
-	) const -> subarray {
+	constexpr auto sliced(index first, index last, index stride_) const -> subarray {
 		return sliced(first, last).strided(stride_);
 	}
 
-	using index_range = typename subarray::index_range;
+	// using index_range = typename subarray::index_range;
 
 	constexpr auto range(index_range irng) const& -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 	constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
@@ -1013,7 +1081,7 @@ struct subarray
 		assert(is_flattable() && "flatted doesn't work for all layouts!");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<D-1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
-		return subarray<T, D-1, ElementPtr>{new_layout, types::base_};
+		return subarray<T, D-1, ElementPtr>{new_layout, this->base_};
 	}
 
 	// TODO(correaa) : define a diagonal_aux
@@ -1025,7 +1093,7 @@ struct subarray
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();  // TODO(correaa) : don't use mutation
 		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // TODO(correaa) : don't use mutation
-		return {new_layout, types::base_};
+		return {new_layout, this->base_};
 	}
 
 	template<class Dummy = void, std::enable_if_t<(D > 1) and sizeof(Dummy*), int> =0>
@@ -1034,7 +1102,7 @@ struct subarray
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub_};
 		new_layout.nelems_ += (*this)({0, square_size}, {0, square_size}).layout().nelems_;
 		new_layout.stride_ += (*this)({0, square_size}, {0, square_size}).layout().stride_;  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
-		return {new_layout, types::base_};
+		return {new_layout, this->base_};
 	}
 
 	friend constexpr auto diagonal(subarray const& self) {return           self .diagonal();}
@@ -1052,7 +1120,7 @@ struct subarray
 		assert( (this->layout().nelems() % n) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/n, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= n;
-		return {new_layout, types::base_};
+		return {new_layout, this->base_};
 	}
 
  public:
@@ -1079,14 +1147,14 @@ struct subarray
 	constexpr auto reversed_aux() const -> subarray {
 		auto new_layout = this->layout();
 		new_layout.reverse();
-		return {new_layout, types::base_};
+		return {new_layout, this->base_};
 	}
 
  public:
-	       constexpr auto reversed()           const&       -> basic_const_array {return reversed_aux();}
+	       constexpr auto reversed()           const&       -> const_subarray {return reversed_aux();}
 	       constexpr auto reversed()                &       -> subarray       {return reversed_aux();}
 	       constexpr auto reversed()               &&       -> subarray       {return reversed_aux();}
-	friend constexpr auto reversed(subarray const& self) -> basic_const_array {return           self .reversed();}
+	friend constexpr auto reversed(subarray const& self) -> const_subarray {return           self .reversed();}
 	friend constexpr auto reversed(subarray      & self) -> subarray       {return           self .reversed();}
 	friend constexpr auto reversed(subarray     && self) -> subarray       {return std::move(self).reversed();}
 
@@ -1094,60 +1162,60 @@ struct subarray
 	HD constexpr auto transposed_aux() const -> subarray {
 		auto new_layout = this->layout();
 		new_layout.transpose();
-		return {new_layout, types::base_};
+		return {new_layout, this->base_};
 	}
 
  public:
-	HD constexpr auto transposed() const& -> basic_const_array {return transposed_aux();}
+	HD constexpr auto transposed() const& -> const_subarray {return transposed_aux();}
 	HD constexpr auto transposed()      & -> subarray       {return transposed_aux();}
 	HD constexpr auto transposed()     && -> subarray       {return transposed_aux();}
 
-	friend HD /*constexpr*/ auto transposed(subarray const& self) -> basic_const_array {return self.transposed();}
+	friend HD /*constexpr*/ auto transposed(subarray const& self) -> const_subarray {return self.transposed();}
 	friend HD /*constexpr*/ auto transposed(subarray      & self) -> subarray       {return self.transposed();}
 	friend HD /*constexpr*/ auto transposed(subarray     && self) -> subarray       {return self.transposed();}
 
 	friend HD MULTI_NONV_CONSTEXPR
-	auto operator~ (subarray const& self) -> basic_const_array {return self.transposed();}
+	auto operator~ (subarray const& self) -> const_subarray {return self.transposed();}
 	friend HD MULTI_NONV_CONSTEXPR
 	auto operator~ (subarray& self) -> subarray {return self.transposed();}
 	friend HD MULTI_NONV_CONSTEXPR
 	auto operator~ (subarray&& self) -> subarray {return self.transposed();}
 
 	HD constexpr auto rotated()      &  -> subarray {
-		typename types::layout_t new_layout = this->layout();
+		layout_type new_layout = this->layout();
 		new_layout.rotate();
-		return subarray{new_layout, types::base_};
+		return subarray{new_layout, this->base_};
 	}
 	HD constexpr auto rotated()      && -> subarray {
-		typename types::layout_t new_layout = this->layout();
+		layout_type new_layout = this->layout();
 		new_layout.rotate();
-		return subarray{new_layout, types::base_};
+		return subarray{new_layout, this->base_};
 	}
-	HD constexpr auto rotated() const& -> basic_const_array {
-		typename types::layout_t new_layout = this->layout();
+	HD constexpr auto rotated() const& -> const_subarray {
+		layout_type new_layout = this->layout();
 		new_layout.rotate();
-		typename basic_const_array::element_ptr const new_base_{types::base_};
-		return basic_const_array{new_layout, new_base_};
+		element_ptr const new_base_{this->base_};
+		return const_subarray{new_layout, new_base_};
 	}
 
-	friend constexpr auto rotated(subarray const&  self) -> basic_const_array {return           self .rotated();}
+	friend constexpr auto rotated(subarray const&  self) -> const_subarray {return           self .rotated();}
 	friend constexpr auto rotated(subarray      &  self) -> subarray       {return           self .rotated();}
 	friend /*constexpr*/ auto rotated(subarray      && self) -> subarray       {return std::move(self).rotated();}
 
 	HD constexpr auto unrotated()      & {
-		typename types::layout_t new_layout = this->layout();
+		layout_type new_layout = this->layout();
 		new_layout.unrotate();
-		return subarray<T, D, ElementPtr>{new_layout, types::base_};
+		return subarray<T, D, ElementPtr>{new_layout, this->base_};
 	}
 	HD constexpr auto unrotated()     && {
-		typename types::layout_t new_layout = this->layout();
+		layout_type new_layout = this->layout();
 		new_layout.unrotate();
-		return subarray<T, D, ElementPtr>{new_layout, types::base_};
+		return subarray<T, D, ElementPtr>{new_layout, this->base_};
 	}
 	HD constexpr auto unrotated() const& {
-		typename types::layout_t new_layout = this->layout();
+		layout_type new_layout = this->layout();
 		new_layout.unrotate();
-		return basic_const_array{new_layout, types::base_};
+		return const_subarray{new_layout, this->base_};
 	}
 	friend constexpr auto unrotated(subarray const& self) {return self.unrotated();}
 
@@ -1157,14 +1225,14 @@ struct subarray
 
 	HD constexpr auto operator()()      & -> subarray       {return *this;}
 	HD constexpr auto operator()()     && -> subarray       {return this->operator()();}
-	HD constexpr auto operator()() const& -> basic_const_array {return {this->layout(), this->base()};}
+	HD constexpr auto operator()() const& -> const_subarray {return {this->layout(), this->base()};}
 
  private:
 	template<typename, dimensionality_type, typename, class> friend struct subarray;
 
 	HD constexpr auto paren_aux()      & -> subarray       {return *this;}
 	HD constexpr auto paren_aux()     && -> subarray       {return this->operator()();}
-	HD constexpr auto paren_aux() const& -> basic_const_array {return {this->layout(), this->base()};}
+	HD constexpr auto paren_aux() const& -> const_subarray {return {this->layout(), this->base()};}
 
 	template<class... As>
 	constexpr auto paren_aux(index_range irng, As... args)  & {
@@ -1241,7 +1309,7 @@ struct subarray
 
  public:
 	using ptr = subarray_ptr<subarray, Layout>;
-	using const_ptr = subarray_ptr<basic_const_array, Layout>;
+	using const_ptr = subarray_ptr<const_subarray, Layout>;
 
 	constexpr auto addressof() && {return ptr{this->base_, this->layout()};}
 
@@ -1253,8 +1321,8 @@ struct subarray
 	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 
  private:
-	HD constexpr auto begin_aux() const {return iterator{types::base_                 , this->sub(), this->stride()};}
-	   constexpr auto end_aux  () const {return iterator{types::base_ + this->nelems(), this->sub(), this->stride()};}
+	HD constexpr auto begin_aux() const {return iterator{this->base_                 , this->sub(), this->stride()};}
+	   constexpr auto end_aux  () const {return iterator{this->base_ + this->nelems(), this->sub(), this->stride()};}
 
  public:
 	       HD constexpr auto  begin()                & {return begin_aux();}
@@ -1679,6 +1747,8 @@ struct subarray<T, 0, ElementPtr, Layout>
 	using types = array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
 
+	using layout_type = Layout;
+
 	using element      = typename types::element;
 	using element_ref  = typename std::iterator_traits<typename subarray::element_ptr>::reference;
 	using element_cref = typename std::iterator_traits<typename subarray::element_const_ptr>::reference;
@@ -1774,7 +1844,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	       constexpr auto decay()           const        -> decay_type {return decay_type{*this};}
 	friend constexpr auto decay(subarray const& self) -> decay_type {return self.decay();}
 
-	using basic_const_array = subarray<
+	using const_subarray = subarray<
 		T, 1,
 		typename std::pointer_traits<ElementPtr>::template rebind<typename subarray::element_type const>,
 		Layout
@@ -1845,7 +1915,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		return {this->base_, this->layout()};
 	}
 	// NOLINTNEXTLINE(runtime/operator)
-	HD constexpr auto operator&() const& -> subarray_ptr<basic_const_array, Layout> {return {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics
+	HD constexpr auto operator&() const& -> subarray_ptr<const_subarray, Layout> {return {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics
 
 	HD constexpr void assign(std::initializer_list<typename subarray::value_type> values) const {assert( values.size() == static_cast<std::size_t>(this->size()) );
 		assign(values.begin(), values.end());
@@ -1939,7 +2009,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	constexpr auto take(difference_type count) const& -> basic_const_array {return take_aux(count);}
+	constexpr auto take(difference_type count) const& -> const_subarray {return take_aux(count);}
 	constexpr auto take(difference_type count)     && -> subarray       {return take_aux(count);}
 	constexpr auto take(difference_type count)      & -> subarray       {return take_aux(count);}
 
@@ -1956,7 +2026,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	constexpr auto drop(difference_type count) const& -> basic_const_array {return drop_aux(count);}
+	constexpr auto drop(difference_type count) const& -> const_subarray {return drop_aux(count);}
 	constexpr auto drop(difference_type count)     && -> subarray       {return drop_aux(count);}
 	constexpr auto drop(difference_type count)      & -> subarray       {return drop_aux(count);}
 
@@ -1993,7 +2063,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		return {std::min(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};
 	}
 
-	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last) const& -> const_subarray {return sliced_aux(first, last);}
 	HD /*[[gnu::pure]]*/ constexpr auto sliced(index first, index last)      & -> subarray       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> subarray       {return sliced_aux(first, last);}
 
@@ -2011,11 +2081,11 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> basic_const_array {return strided_aux(diff);}
+	constexpr auto strided(difference_type diff) const& -> const_subarray {return strided_aux(diff);}
 	constexpr auto strided(difference_type diff)     && -> subarray       {return strided_aux(diff);}
 	constexpr auto strided(difference_type diff)      & -> subarray       {return strided_aux(diff);}
 
-	HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array {return sliced(first, last).strided(stride);}
+	HD constexpr auto sliced(index first, index last, difference_type stride) const& -> const_subarray {return sliced(first, last).strided(stride);}
 	HD constexpr auto sliced(index first, index last, difference_type stride)     && -> subarray       {return sliced(first, last).strided(stride);}
 	HD constexpr auto sliced(index first, index last, difference_type stride)      & -> subarray       {return sliced(first, last).strided(stride);}
 
@@ -2023,7 +2093,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	HD constexpr auto range(index_range const& rng)     && {return std::move(*this).sliced(rng.front(), rng.last());}
 	HD constexpr auto range(index_range const& rng) const& {return                  sliced(rng.front(), rng.last());}
 
-	HD constexpr auto operator()() const& -> basic_const_array {return {this->layout(), this->base()};}
+	HD constexpr auto operator()() const& -> const_subarray {return {this->layout(), this->base()};}
 	HD constexpr auto operator()()     && -> subarray       {return *this;}
 	HD constexpr auto operator()()      & -> subarray       {return *this;}
 
@@ -2108,11 +2178,11 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	constexpr auto reversed() const& -> basic_const_array {return reversed_aux();}
+	constexpr auto reversed() const& -> const_subarray {return reversed_aux();}
 	constexpr auto reversed()      & -> subarray       {return reversed_aux();}
 	constexpr auto reversed()     && -> subarray       {return reversed_aux();}
 
-	friend constexpr auto reversed(subarray const& self) -> basic_const_array {return           self .reversed();}
+	friend constexpr auto reversed(subarray const& self) -> const_subarray {return           self .reversed();}
 	friend constexpr auto reversed(subarray      & self) -> subarray       {return           self .reversed();}
 	friend constexpr auto reversed(subarray     && self) -> subarray       {return std::move(self).reversed();}
 
@@ -2388,7 +2458,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 {
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
-	using layout_type = typename array_ref::types::layout_t;
+	// using layout_type = typename array_ref::types::layout_t;
 
  protected:
 	constexpr array_ref() noexcept : subarray<T, D, ElementPtr>{{}, nullptr} {}
@@ -2422,10 +2492,10 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
 
 	constexpr explicit array_ref(typename array_ref::element_ptr dat, typename array_ref::extensions_type extensions) noexcept  // TODO(correa) eliminate this ctor
-	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
+	: subarray<T, D, ElementPtr>{typename subarray<T, D, ElementPtr>::layout_type{extensions}, dat} {}
 
 	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
-	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
+	: subarray<T, D, ElementPtr>{typename subarray<T, D, ElementPtr>::layout_type{extensions}, dat} {}
 
 	template<
 		class TT, std::size_t N,
@@ -2477,7 +2547,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
  public:
-	HD constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
+	HD constexpr auto data_elements() const& -> typename array_ref::element_ptr {return subarray<T, D, ElementPtr>::base_;}
 
 	template<class TT, class... As, std::enable_if_t<not std::is_base_of_v<array_ref, array_ref<TT, D, As...>> ,int> =0>
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
