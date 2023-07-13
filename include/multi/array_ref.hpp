@@ -772,6 +772,9 @@ struct subarray
 
 	    HD constexpr auto layout_mutable()                -> layout_type& {return *this;}
 
+	       constexpr auto origin()        const&       -> decltype(auto) {return base_ + Layout::origin();}
+	friend constexpr auto origin(subarray const& self) -> decltype(auto) {return self.origin();}
+
 	using const_subarray = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
 	subarray() = default;
