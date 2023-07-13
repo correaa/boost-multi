@@ -398,7 +398,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
 	HD constexpr auto operator< (array_iterator const& other) const -> bool {
 		assert(stride_ != 0);
-		return (0 < stride_)?(ptr_.base() < other.ptr_.base()):(other.ptr_.base_ < ptr_.base_);
+		return (0 < stride_)?(ptr_.base() < other.ptr_.base()):(other.ptr_.base() < ptr_.base());
 	}
 
 	HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> lyt, index stride)
