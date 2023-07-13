@@ -379,7 +379,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	HD constexpr/*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
-	: ptr_{element_ptr{other.ptr_.base_}, other.ptr_.layout()}, stride_{other.stride_} {}
+	: ptr_{element_ptr{other.ptr_.base()}, other.ptr_.layout()}, stride_{other.stride_} {}
 
 	array_iterator(array_iterator const&) = default;
 	auto operator=(array_iterator const&) -> array_iterator& = default;
