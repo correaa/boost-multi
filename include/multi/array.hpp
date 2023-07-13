@@ -177,7 +177,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<
 		class Range, class = std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(/*static_array*/(std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
-		class = std::enable_if_t<not is_basic_array<Range const&>{}>
+		class = std::enable_if_t<not is_subarray<Range const&>{}>
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
@@ -249,20 +249,20 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(extensions, allocator_type{}) {}
 
 	template<class TT, class... Args,
-		class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
-		class = decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+		class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
-	static_array(multi::basic_array<TT, D, Args...> const& other, allocator_type const& alloc)
+	static_array(multi::subarray<TT, D, Args...> const& other, allocator_type const& alloc)
 	: static_array(other.extensions(), alloc) {
 		adl_uninitialized_copy(other.begin(), other.end(), this->begin());  // TODO(correaa): call this conditionally on T properties
 	}
 
 	template<class TT, class... Args,
-	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
-		class = decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
-	static_array(multi::basic_array<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	static_array(multi::subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args>
@@ -347,7 +347,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	using reference = typename std::conditional<
 		(D > 1),
-		basic_array<typename static_array::element, D - 1, typename static_array::element_ptr>,
+		subarray<typename static_array::element, D - 1, typename static_array::element_ptr>,
 		typename std::conditional<
 			D == 1,
 			typename std::iterator_traits<typename static_array::element_ptr>::reference,
@@ -356,7 +356,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	>::type;
 	using const_reference = typename std::conditional<
 		(D > 1),
-		basic_array<typename static_array::element, D - 1, typename static_array::element_const_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
+		subarray<typename static_array::element, D - 1, typename static_array::element_const_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
 		typename std::conditional<
 			D == 1,
 			decltype(*std::declval<typename static_array::element_const_ptr>()),
@@ -391,7 +391,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto rotated_aux() const {
 		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
-		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+		return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
  public:
@@ -405,12 +405,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto unrotated() const& {
 		typename static_array::layout_t new_layout = this->layout();
 		new_layout.unrotate();
-		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
+		return subarray<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 	constexpr auto unrotated()      & {
 		typename static_array::layout_t new_layout = this->layout();
 		new_layout.unrotate();
-		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+		return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
 //  constexpr auto unrotated() const& {return unrotated(1);}
@@ -420,7 +420,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
 	template<class TT, class... Args>
-	auto operator=(multi::basic_array<TT, D, Args...> const& other) -> static_array& {
+	auto operator=(multi::subarray<TT, D, Args...> const& other) -> static_array& {
 		ref::operator=(other);  // TODO(correaa) : protect for self assigment
 		return *this;
 	}
@@ -442,7 +442,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
-	constexpr explicit operator basic_array<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
+	constexpr explicit operator subarray<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
 
@@ -541,7 +541,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
 	template<class TT, class... Args>
-	explicit static_array(multi::basic_array<TT, 0, Args...> const& other, allocator_type const& alloc)
+	explicit static_array(multi::subarray<TT, 0, Args...> const& other, allocator_type const& alloc)
 	: array_alloc{alloc}
 	, ref(static_array::allocate(other.num_elements()), extensions(other)) {
 		if(other.base()) {adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + 1, this->base());}  // ref::begin());
@@ -574,7 +574,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 
 	template<class TT, class... Args>
-	auto operator=(multi::basic_array<TT, 0, Args...> const& other) -> static_array& {
+	auto operator=(multi::subarray<TT, 0, Args...> const& other) -> static_array& {
 		adl_copy_n(other.base(), 1, this->base());
 		return *this;
 	}
@@ -706,19 +706,19 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	constexpr auto rotated() const& {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
-		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
+		return subarray<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
 	constexpr auto rotated()  & {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+		return subarray<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
 	constexpr auto rotated() && {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+		return subarray<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
 	friend constexpr auto rotated(static_array&       self) -> decltype(auto) {return self.rotated();}
@@ -728,7 +728,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	constexpr auto unrotated_aux() {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate();
-		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
+		return subarray<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
  public:
@@ -769,7 +769,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		return *this;
 	}
 
-	constexpr explicit operator basic_array<value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
+	constexpr explicit operator subarray<value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
 		return this->template static_array_cast<value_type, typename static_array::element_const_ptr>();
 		  // return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
@@ -865,13 +865,13 @@ struct array : static_array<T, D, Alloc> {
 	friend auto data_elements(array      & self) {return self.data_elements();}
 	friend auto data_elements(array     && self) {return std::move(self).data_elements();}
 
-	auto move() & -> basic_array<typename array::element, D, multi::move_ptr<typename array::element>> {
-		basic_array<typename array::element, D, multi::move_ptr<typename array::element>>
+	auto move() & -> subarray<typename array::element, D, multi::move_ptr<typename array::element>> {
+		subarray<typename array::element, D, multi::move_ptr<typename array::element>>
 		ret = multi::static_array_cast<typename array::element, multi::move_ptr<typename array::element>>(*this);
 		layout_t<D>::operator=({});
 		return ret;
 	}
-	friend auto move(array& self) -> basic_array<typename array::element, D, multi::move_ptr<typename array::element> >{
+	friend auto move(array& self) -> subarray<typename array::element, D, multi::move_ptr<typename array::element> >{
 		return self.move();
 	}
 
@@ -927,7 +927,7 @@ struct array : static_array<T, D, Alloc> {
 #endif
 
 	template<class TT, class... Args>
-	auto operator=(multi::basic_array<TT, D, Args...> const& other) -> array& {
+	auto operator=(multi::subarray<TT, D, Args...> const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
 			static_::operator=(other);  // TODO(correaa) : protect for self assigment
 		} else {
@@ -1158,7 +1158,7 @@ array(iextensions<D>, T) -> array<T, D>;
 template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::rank_v, class Alloc = typename DT::allocator_type>
 array(MatrixRef)->array<T, D, Alloc>;
 
-template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, P>)->array<T, D>;
+template<typename T, dimensionality_type D, typename P> array(subarray<T, D, P>)->array<T, D>;
 
 #endif  // ends defined(__cpp_deduction_guides)
 

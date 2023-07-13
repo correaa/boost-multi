@@ -124,13 +124,13 @@ struct iterator_system<boost::multi::elements_iterator_t<Pointer, LayoutType>> {
 // template<class T1, class T2, class LO>
 // struct pointer_traits<
 //  boost::multi::basic_array_ptr<
-//      boost::multi::basic_array<T1, 1L, thrust::pointer<T2, thrust::cuda_cub::tag, thrust::tagged_reference<T2, thrust::cuda_cub::tag>, thrust::use_default>, LO>, 
+//      boost::multi::subarray<T1, 1L, thrust::pointer<T2, thrust::cuda_cub::tag, thrust::tagged_reference<T2, thrust::cuda_cub::tag>, thrust::use_default>, LO>, 
 //      LO
 //  >
 // >
 // {
 //  using Ptr = boost::multi::basic_array_ptr<
-//      boost::multi::basic_array<T1, 1L, thrust::pointer<T2, thrust::cuda_cub::tag, thrust::tagged_reference<T2, thrust::cuda_cub::tag>, thrust::use_default>, LO>, 
+//      boost::multi::subarray<T1, 1L, thrust::pointer<T2, thrust::cuda_cub::tag, thrust::tagged_reference<T2, thrust::cuda_cub::tag>, thrust::use_default>, LO>, 
 //      LO
 //  >;
 //  using pointer = Ptr;
@@ -156,7 +156,7 @@ struct iterator_system<boost::multi::elements_iterator_t<Pointer, LayoutType>> {
 //   // thrust additions follow
 //   //typedef typename pointer_raw_pointer<Ptr>::type raw_pointer;
 //  using raw_pointer = boost::multi::basic_array_ptr<
-//      boost::multi::basic_array<T1, 1L, T2*, LO>, 
+//      boost::multi::subarray<T1, 1L, T2*, LO>, 
 //      LO
 //  >;
 
