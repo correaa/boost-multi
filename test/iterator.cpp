@@ -59,13 +59,13 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 		using iter = multi::array<double, 2>::iterator;
 		static_assert( std::is_same_v< iter::element   , double >, "!");
 		static_assert( std::is_same_v< iter::value_type, multi::array<double, 1> >, "!");
-		static_assert( std::is_same_v< iter::reference, multi::basic_array<double, 1>>, "!");
+		static_assert( std::is_same_v< iter::reference, multi::subarray<double, 1>>, "!");
 		static_assert( std::is_same_v< iter::element_ptr, double*>, "!");
 
 		using citer = multi::array<double, 2>::const_iterator;
 		static_assert( std::is_same_v< citer::element   , double >, "!");
 		static_assert( std::is_same_v< citer::value_type, multi::array<double, 1> >, "!");
-		static_assert( std::is_same_v< citer::reference, multi::basic_array<double, 1, double const*>>, "!");
+		static_assert( std::is_same_v< citer::reference, multi::subarray<double, 1, double const*>>, "!");
 		static_assert( std::is_same_v< citer::element_ptr, double const* >, "!");
 	}
 	{

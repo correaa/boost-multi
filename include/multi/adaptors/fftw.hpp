@@ -674,7 +674,7 @@ template<class T, multi::dimensionality_type D>
 using array = ::boost::multi::array<T, D, fftw::allocator<T>>;
 
 template<typename T, dimensionality_type D, class P, class R=typename multi::fftw::array<T, D>>
-auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& array) -> R {
+auto copy(multi::subarray<T, D, multi::move_ptr<T, P>>&& array) -> R {
 	if(array.is_compact()) {
 		return
 			fftw::copy(
