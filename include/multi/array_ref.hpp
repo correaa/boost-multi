@@ -245,6 +245,8 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	using reference = Ref;
 	using iterator_category = std::random_access_iterator_tag;
 
+	HD constexpr auto base_mutable() -> auto& {return this->base_;}  // TODO(correaa) remove this function
+
 	// cppcheck-suppress noExplicitConstructor
 	HD constexpr subarray_ptr(std::nullptr_t nil) : Ref{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
 	HD constexpr subarray_ptr() : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
@@ -427,20 +429,20 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
 	// constexpr auto equal(array_iterator const& other) const -> bool {return ptr_ == other.ptr_ and stride_ == other.stride_;}
 	HD constexpr void decrement() {ptr_.base_ -= stride_;}
-	HD constexpr void advance(difference_type n) {ptr_.base_ += stride_*n;}
+	HD constexpr void advance(difference_type n) {std::advance(ptr_.base_mutable(), stride_*n); /* += stride_*n */;}
 	// constexpr auto distance_to(array_iterator const& other) const -> difference_type {
 	//  assert( stride_ == other.stride_); assert( stride_ != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
 	//  return (other.ptr_.base_ - ptr_.base_)/stride_;
 	// }
 
  public:
-	HD constexpr auto base()              const&       -> element_ptr {return ptr_.base_;}
+	        HD constexpr auto base()              const&       -> element_ptr {return ptr_.base();}
 	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr {return self.base();}
 
-	HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
+	    HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
 	friend constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
 
-	constexpr auto operator++() -> array_iterator& {ptr_.base_ += stride_; return *this;}
+	constexpr auto operator++() -> array_iterator& {std::advance(ptr_.base_mutable(), stride_) /* += stride_*/; return *this;}
 	constexpr auto operator--() -> array_iterator& {decrement(); return *this;}
 
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type {
@@ -469,7 +471,7 @@ struct cursor_t {
 
  private:
 	strides_type strides_;
-	element_ptr  base_;
+	element_ptr base_;
 
 	template<class, dimensionality_type, class, class> friend struct subarray;
 	template<class, dimensionality_type, class> friend struct cursor_t;
@@ -760,7 +762,7 @@ struct subarray
 	friend /*constexpr*/ auto  base(subarray const& self) -> element_ptr  {return self.base();}  // TODO(correaa) correct const!
 	// friend /*constexpr*/ auto  base(subarray const& self) -> element_ptr  {return self.base();}
 	// friend /*constexpr*/ auto  base(subarray const& self) -> element_ptr  {return self.base();}
-	
+
 	using layout_type = Layout;
 
 	friend struct subarray<element_type, D + 1, element_ptr >;
@@ -889,7 +891,7 @@ struct subarray
 	using decay_type = array<element_type, D, typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type>;
 
 	friend constexpr auto decay(subarray const& self) -> decay_type {return self.decay();}
-	       constexpr auto decay()           const&    -> decay_type {
+	       constexpr auto decay()        const&       -> decay_type {
 		decay_type ret{*this};
 		return ret;
 	}

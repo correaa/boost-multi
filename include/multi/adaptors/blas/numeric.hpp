@@ -177,6 +177,9 @@ class involuter {
 	auto operator==(involuter const& other) const -> bool {return it_ == other.it_;}
 	auto operator!=(involuter const& other) const -> bool {return it_ != other.it_;}
 
+	constexpr auto operator++() -> involuter& {++it_; return *this;}
+	constexpr auto operator--() -> involuter& {--it_; return *this;}
+
 	constexpr auto operator+=(difference_type n) -> involuter& {it_ += n; return *this;}
 	constexpr auto operator-=(difference_type n) -> involuter& {it_ -= n; return *this;}
 

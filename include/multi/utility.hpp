@@ -29,7 +29,7 @@ struct move_ptr : private std::move_iterator<Ptr> {
 	using value_type = typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
 	using pointer = Ptr;
 	using reference = typename std::move_iterator<Ptr>::reference;
-	using iterator_category = typename std::iterator_traits<std::move_iterator<Ptr>>::iterator_category;
+	using iterator_category = typename std::iterator_traits<Ptr>::iterator_category;
 
 	template<class U> using rebind = std::conditional_t<
 		std::is_const_v<U>,
@@ -42,6 +42,9 @@ struct move_ptr : private std::move_iterator<Ptr> {
 	HD constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) decay to lvalue should be easy
 	HD constexpr auto operator+=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) += n; return *this;}
 	HD constexpr auto operator-=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) -= n; return *this;}
+
+	HD constexpr auto operator++() -> move_ptr& {++static_cast<std::move_iterator<Ptr>&>(*this); return *this;}
+	HD constexpr auto operator--() -> move_ptr& {--static_cast<std::move_iterator<Ptr>&>(*this); return *this;}
 
 	HD constexpr auto operator+(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret += n; return ret;}
 	HD constexpr auto operator-(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret -= n; return ret;}
