@@ -136,6 +136,10 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 
 	BOOST_REQUIRE( rowP == rowP2 );
 
+	auto const rowPconst = &std::as_const(arr)[2];
+
+	BOOST_REQUIRE( rowP == rowPconst );
+
 	rowP2 = decltype(rowP2){nullptr};
 	BOOST_REQUIRE( not rowP2 );
 
