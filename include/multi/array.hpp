@@ -1184,11 +1184,11 @@ namespace boost::multi::pmr {
 //  # or defined(__INTEL_LLVM_COMPILER) or defined(__INTEL_COMPILER)  // workaround for icpx 2022.2.0 with gcc 9.3 and icpc icpc 2021.7.0
 template <class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
-#define MULTI_PROVIDES_PMR_ARRAY 1
+#define MULTI_PROVIDES_PMR_ARRAY 1  // NOLINT(cppcoreguidelines-macro-usage)
 #else
 // template <class T, boost::multi::dimensionality_type D>
 // struct [[deprecated("no PMR allocator")]] array;  // your version of C++ doesn't provide polymorphic_allocators
-#define MULTI_PROVIDES_PMR_ARRAY 0
+#define MULTI_PROVIDES_PMR_ARRAY 0  // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
 }  // end namespace boost::multi::pmr
