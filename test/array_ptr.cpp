@@ -128,19 +128,39 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 		{7.0, 8.0, 9.0},
 		{1.0, 2.0, 3.0},
 	};
-	auto rowP = &arr[2];
+	{
+		auto rowP = &arr[2];
 
-	rowP = *std::addressof(rowP);
+		rowP = *std::addressof(rowP);
 
-	auto rowP2 = rowP;
+		auto rowP2 = rowP;
 
-	BOOST_REQUIRE( rowP == rowP2 );
+		BOOST_REQUIRE( rowP == rowP2 );
 
-	rowP2 = decltype(rowP2){nullptr};
-	BOOST_REQUIRE( not rowP2 );
+		rowP2 = decltype(rowP2){nullptr};
+		BOOST_REQUIRE( not rowP2 );
 
-	auto rowP3 = std::exchange(rowP, nullptr);
-	BOOST_REQUIRE( rowP3 == &arr[2] );
-	BOOST_REQUIRE( rowP == nullptr );
-	BOOST_REQUIRE( not rowP );
+		auto rowP3 = std::exchange(rowP, nullptr);
+		BOOST_REQUIRE( rowP3 == &arr[2] );
+		BOOST_REQUIRE( rowP == nullptr );
+		BOOST_REQUIRE( not rowP );
+	}
+	{
+		auto rowP = &arr();
+
+		rowP = *std::addressof(rowP);
+
+		decltype(rowP) rowP2;
+		rowP2 = rowP;
+
+		BOOST_REQUIRE( rowP == rowP2 );
+
+		rowP2 = decltype(rowP2){nullptr};
+		BOOST_REQUIRE( not rowP2 );
+
+		auto rowP3 = std::exchange(rowP, nullptr);
+		BOOST_REQUIRE( rowP3 == &arr() );
+		BOOST_REQUIRE( rowP == nullptr );
+		BOOST_REQUIRE( not rowP );
+	}
 }
