@@ -203,6 +203,13 @@ namespace pmr {
 }  // end namespace pmr
 
 namespace cuda {
+
+template<class T, multi::dimensionality_type D> using universal_array = multi::array<T, D, ::thrust::cuda::universal_allocator<T> >;
+
+namespace universal {
+	template<class T, multi::dimensionality_type D> using array = multi::thrust::cuda::universal_array<T, D>;
+}
+
 namespace pmr {
 	template<class T, multi::dimensionality_type D> using universal_array = ::boost::multi::thrust::pmr::array<T, D, ::thrust::cuda::universal_pointer<void>>;
 }  // end namespace pmr
