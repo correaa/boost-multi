@@ -1031,9 +1031,9 @@ struct subarray
 	template<class Dummy = void, std::enable_if_t<(D > 1) and sizeof(Dummy*), int> =0>
 	constexpr auto diagonal() const& -> subarray<T, D-1, typename subarray::element_const_ptr> {
 		auto square_size = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
-		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub_};
-		new_layout.nelems_ += (*this)({0, square_size}, {0, square_size}).layout().nelems_;
-		new_layout.stride_ += (*this)({0, square_size}, {0, square_size}).layout().stride_;  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
+		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
+		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();
+		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
 		return {new_layout, types::base_};
 	}
 
