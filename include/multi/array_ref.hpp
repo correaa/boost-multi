@@ -297,10 +297,10 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		return (this->base_ == other.base_) and (this->layout() == other.layout());
 	}
 
-	template<class Array>
-	friend HD constexpr auto operator==(Array* other, subarray_ptr const& self) -> bool {
-		return other->base() == self.base_ and other->layout() == self.layout();
-	}
+	// template<class Array>
+	// friend HD constexpr auto operator==(Array* other, subarray_ptr const& self) -> bool {
+	//  return other->base() == self.base_ and other->layout() == self.layout();
+	// }
 
 	template<class RR, class LL, std::enable_if_t<not std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>  // TODO(correaa) improve this
 	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self.layout() == other->layout();}
