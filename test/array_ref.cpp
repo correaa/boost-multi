@@ -688,3 +688,23 @@ BOOST_AUTO_TEST_CASE(as_span) {
     //  printMe2(&marr);  // TODO(correaa) make this work
     }
 }
+
+BOOST_AUTO_TEST_CASE(diagonal) {
+	double (&&arr)[4][3] = {  // NOLINT(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
+		{ 0.0,  1.0,  2.0},
+		{ 5.0,  1.0,  7.0},
+		{10.0, 11.0,  2.0},
+		{99.0, 99.0, 99.9}
+	};
+
+	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): special type
+	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
+
+	BOOST_REQUIRE( &mar({0, 3}, {0, 3}).diagonal()[0] == &arr[0][0] );
+	BOOST_REQUIRE( &mar({0, 3}, {0, 3}).diagonal()[1] == &arr[1][1] );
+	BOOST_REQUIRE( &mar({0, 3}, {0, 3}).diagonal()[2] == &arr[2][2] );
+
+	auto sum = 0.0;
+	for(auto const& aii : mar.diagonal() ) {sum += aii;};  // NOLINT(altera-unroll-loops) test for-range loop
+	BOOST_REQUIRE( sum == mar[0][0] + mar[1][1] + mar[2][2]);
+}
