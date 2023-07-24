@@ -1,6 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2021-2022 Alfredo A. Correa
 
+#ifndef MULTI_ADAPTORS_THRUST_HPP_
+#define MULTI_ADAPTORS_THRUST_HPP_
 #pragma once
 
 #include "../array.hpp"
@@ -203,6 +205,13 @@ namespace pmr {
 }  // end namespace pmr
 
 namespace cuda {
+
+template<class T, multi::dimensionality_type D> using universal_array = multi::array<T, D, ::thrust::cuda::universal_allocator<T> >;
+
+namespace universal {
+	template<class T, multi::dimensionality_type D> using array = multi::thrust::cuda::universal_array<T, D>;
+}
+
 namespace pmr {
 	template<class T, multi::dimensionality_type D> using universal_array = ::boost::multi::thrust::pmr::array<T, D, ::thrust::cuda::universal_pointer<void>>;
 }  // end namespace pmr
@@ -368,3 +377,4 @@ auto uninitialized_copy(
 #endif
 
 }  // end namespace boost::multi
+#endif

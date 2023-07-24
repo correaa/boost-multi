@@ -1,5 +1,9 @@
-#pragma once
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2020-2023 Alfredo A. Correa
 
+#ifndef MULTI_ADAPTORS_THRUST_CUDA_MANAGED_HPP_
+#define MULTI_ADAPTORS_THRUST_CUDA_MANAGED_HPP_
+#pragma once
 
 #include "../../cuda/runtime/error.hpp"
 
@@ -72,8 +76,9 @@ class pointer {
 struct bad_alloc : std::bad_alloc{};
 
 template<class T = void>
-class allocator{// : cuda::allocator<T>{
+class allocator {  // : cuda::allocator<T>{
 	static_assert( std::is_same<T, std::decay_t<T>>{}, "!" );
+
 public:
 	using value_type = T;
 	using pointer = managed::pointer<T>;
@@ -132,7 +137,7 @@ public:
 
 }}
 
-#if not __INCLUDE_LEVEL__
+#if 0
 
 #include<memory>
 #include<iostream>
@@ -148,4 +153,5 @@ int main(){
 	assert( A[17] == 3. );
 
 }
+#endif
 #endif

@@ -56,6 +56,26 @@ using types_list = boost::mpl::list<
 
 BOOST_AUTO_TEST_CASE(dummy_test) {}
 
+BOOST_AUTO_TEST_CASE(test_univ_alloc) {
+	multi::array<double, 2, thrust::cuda::universal_allocator<double> > Dev({128, 128});
+	*raw_pointer_cast(Dev.base()) = 99.0;
+}
+
+BOOST_AUTO_TEST_CASE(mtc_universal_array) {
+	multi::thrust::cuda::universal_array<double, 2> Dev({128, 128});
+	*raw_pointer_cast(Dev.base()) = 99.0;
+}
+
+BOOST_AUTO_TEST_CASE(mtc_universal_coloncolon_array) {
+	multi::thrust::cuda::universal::array<double, 2> Dev({128, 128});
+	*raw_pointer_cast(Dev.base()) = 99.0;
+}
+
+BOOST_AUTO_TEST_CASE(test_alloc) {
+	multi::array<double, 2, thrust::cuda::allocator<double> > Dev({128, 128});
+	// *raw_pointer_cast(Dev.base()) = 99.0;  // segmentation fault (correct behavior)
+}
+
 #ifdef NDEBUG
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
 	static_assert( multi::is_trivially_default_constructible<T>{}, "!");
