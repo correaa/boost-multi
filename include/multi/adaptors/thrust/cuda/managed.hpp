@@ -1,5 +1,9 @@
-#pragma once
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2020-2023 Alfredo A. Correa
 
+#ifndef MULTI_ADAPTORS_THRUST_CUDA_MANAGED_HPP_
+#define MULTI_ADAPTORS_THRUST_CUDA_MANAGED_HPP_
+#pragma once
 
 #include "../../cuda/runtime/error.hpp"
 
@@ -149,4 +153,5 @@ int main(){
 	assert( A[17] == 3. );
 
 }
+#endif
 #endif

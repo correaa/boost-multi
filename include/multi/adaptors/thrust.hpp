@@ -1,6 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2021-2022 Alfredo A. Correa
 
+#ifndef MULTI_ADAPTORS_THRUST_HPP_
+#define MULTI_ADAPTORS_THRUST_HPP_
 #pragma once
 
 #include "../array.hpp"
@@ -375,3 +377,4 @@ auto uninitialized_copy(
 #endif
 
 }  // end namespace boost::multi
+#endif
