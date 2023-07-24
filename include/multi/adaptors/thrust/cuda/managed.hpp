@@ -72,7 +72,7 @@ class pointer {
 struct bad_alloc : std::bad_alloc{};
 
 template<class T = void>
-class [[deprecated("try using thrust::cuda::universal_allocator<T> instead")]] allocator {  // : cuda::allocator<T>{
+class allocator {  // : cuda::allocator<T>{
 	static_assert( std::is_same<T, std::decay_t<T>>{}, "!" );
 
 public:
