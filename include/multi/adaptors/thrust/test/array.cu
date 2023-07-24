@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(mtc_universal_array) {
 	*raw_pointer_cast(Dev.base()) = 99.0;
 }
 
-BOOST_AUTO_TEST_CASE(mtc_universal_array) {
+BOOST_AUTO_TEST_CASE(mtc_universal_coloncolon_array) {
 	multi::thrust::cuda::universal::array<double, 2> Dev({128, 128});
 	*raw_pointer_cast(Dev.base()) = 99.0;
 }
