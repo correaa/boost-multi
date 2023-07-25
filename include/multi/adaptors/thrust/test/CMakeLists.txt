@@ -70,6 +70,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+
     if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" STREQUAL "${CUDA_ARCH_LIST}" OR NOT ENABLE_CUDA)
 	    message(STATUS "gpu not detected ${CUDA_ARCH_LIST}")
     else()
@@ -81,3 +82,5 @@ foreach(TEST_FILE ${TEST_SRCS})
 	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
     endif()
 endforeach()
+
+set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
