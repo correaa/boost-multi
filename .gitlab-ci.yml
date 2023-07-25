@@ -264,9 +264,9 @@ nvhpc:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
 
-nvhpc-21.7:
+nvhpc-21.11:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:21.7-devel-cuda_multi-ubuntu20.04
+  image: nvcr.io/nvidia/nvhpc:21.11-devel-cuda_multi-ubuntu20.04
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
