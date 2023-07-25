@@ -112,13 +112,23 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<std::size_t N>
-	constexpr auto get() -> auto& {  // NOLINT(readability-identifier-length) std naming
+	constexpr auto get() & -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 		if constexpr(N == 0) {
 			return head();
 		} else {
 			return tail().template get<N-1>();
 		}
 	}
+
+	template<std::size_t N>
+	constexpr auto get() && -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+		if constexpr(N == 0) {
+			return std::move(*this).head();
+		} else {
+			return std::move(*this).tail().template get<N-1>();
+		}
+	}
+
 
 };
 
@@ -214,8 +224,10 @@ constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(t.tail()) {return t.t
 	#pragma    diagnostic push
 	#pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
+#if not defined(_MSC_VER)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
+#endif
 template<std::size_t N, class T0, class... Ts>
 constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
 	if constexpr(N == 0) {
@@ -251,7 +263,9 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-iden
 		return get<N-1>(std::move(t.tail()));
 	}
 }
+#if not defined(_MSC_VER)
 #pragma GCC diagnostic pop
+#endif
 
 }  // end namespace detail
 }  // end namespace boost::multi

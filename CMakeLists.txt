@@ -76,13 +76,14 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake" "${PR
 
 install(DIRECTORY "include/" TYPE INCLUDE)
 
+add_subdirectory(test)
+
 if(MULTI_BUILD_TESTS)
   find_package(Boost COMPONENTS unit_test_framework)
   if(NOT Boost_FOUND)
-    message(WARNING "Cannot find Boost, Multi library will not be tested. If you want this feature install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
+    message(WARNING "Cannot find Boost, Multi library will not be fully tested.")
   else()
     enable_testing()
-    add_subdirectory(test)
 
     add_subdirectory(include/multi/adaptors/blas)
     add_subdirectory(include/multi/adaptors/cuda)

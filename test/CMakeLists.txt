@@ -7,9 +7,7 @@
 #]=]
 cmake_minimum_required(VERSION 3.11)
 
-if(EXISTS "CMakeLists.txt")
-	message(FATAL_ERROR "You probably don't want to run CMake in a directory with CMakeLists.txt")
-endif()
+enable_testing()
 
 if (NOT DEFINED CMAKE_CXX_STANDARD)
 	set(CMAKE_CXX_STANDARD 17)
@@ -17,33 +15,10 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#project(
-# boost-multi-test
-# VERSION 0.1
-# LANGUAGES CXX
-#)
-
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)  # tests require Boost.Test `sudo apt install libboost-test-dev`
+find_package(Boost COMPONENTS unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
 
 if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
-
-# include(FindCUDA/select_compute_arch)
-# cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
-# string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-# string(
-#   REPLACE " "
-#       ";"
-#       INSTALLED_GPU_CCS_3
-#       "${INSTALLED_GPU_CCS_2}"
-# )
-# string(
-#   REPLACE "."
-#       ""
-#       CUDA_ARCH_LIST
-#       "${INSTALLED_GPU_CCS_3}"
-# )
-# set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
 endif()
 
 enable_testing()
@@ -829,17 +804,24 @@ $<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra # also IntelLLVM, XL (ibm), XL
 -Wunused -Wunused-but-set-variable -Wunused-function -Wunused-parameter -Wunused-variable
 -Wwrite-strings
 >
-$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
+# $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
+# -Werror -Wall
+# -Wcast-qual
+# -Wformat=2
+# -Wshadow
+# -Wsign-compare
+# -Wuninitialized
+# -Wunused -Wunused-parameter
+# >
+$<$<CXX_COMPILER_ID:NVHPC>:
 -Werror -Wall
 -Wcast-qual
 -Wformat=2
 -Wshadow
--Wsign-compare
 -Wuninitialized
--Wunused -Wunused-parameter
 >
 $<$<CXX_COMPILER_ID:MSVC>:
-/WX /W4
+/WX /W4 /permissive- /volatile:iso # /EHsc /Zc:wchar_t /Zc:forScope /Zc:inline
 >
 )
 
@@ -867,29 +849,52 @@ file(
 
 # add_test(NAME multi_test COMMAND ./multi_test)
 
-foreach(TEST_FILE ${TEST_SRCS})
-	set(TEST_EXE "${TEST_FILE}.x")
-	add_executable(${TEST_EXE} ${TEST_FILE})
+if(NOT Boost_FOUND)
+	message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
 
-	if(ENABLE_CUDA OR DEFINED CXXCUDA)
-		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-	endif()
+	add_executable(main main.cpp)
+	# target_link_libraries(main PRIVATE multi)
+	# add_test(NAME main COMMAND ./main)
 
-	target_link_libraries(${TEST_EXE} PRIVATE multi)
+	target_include_directories(main       PRIVATE ${PROJECT_SOURCE_DIR}/include)
+	target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi main")
 
-	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
-	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
-	target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework   )
-	target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
-
-	target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
+	target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
 	if(NOT DEFINED ENABLE_CIRCLE)
-		target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
+		target_compile_options(main PRIVATE ${WARNS})
 	else()
-		target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
-		target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
+		target_compile_definitions(main PRIVATE "BOOST_TEST_DYN_LINK=1")
+		target_compile_options    (main PRIVATE -Werror -Wall)
 	endif()
-	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
-endforeach()
+	add_test(NAME main COMMAND ./${TEST_EXE})
 
+else()
+
+	foreach(TEST_FILE ${TEST_SRCS})
+		set(TEST_EXE "${TEST_FILE}.x")
+		add_executable(${TEST_EXE} ${TEST_FILE})
+
+		if(ENABLE_CUDA OR DEFINED CXXCUDA)
+			set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
+		endif()
+
+		target_link_libraries(${TEST_EXE} PRIVATE multi)
+
+		target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
+		target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
+		target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework   )
+		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
+
+		target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
+
+		if(NOT DEFINED ENABLE_CIRCLE)
+			target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
+		else()
+			target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
+			target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
+		endif()
+		add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+	endforeach()
+
+endif()
