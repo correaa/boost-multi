@@ -814,7 +814,7 @@ $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 -Wunused -Wunused-parameter
 >
 $<$<CXX_COMPILER_ID:MSVC>:
-/WX /W4
+/WX /W4 /permissive-  # /EHsc /Zc:wchar_t /Zc:forScope /Zc:inline
 >
 )
 
