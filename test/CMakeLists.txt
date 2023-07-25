@@ -804,14 +804,21 @@ $<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra # also IntelLLVM, XL (ibm), XL
 -Wunused -Wunused-but-set-variable -Wunused-function -Wunused-parameter -Wunused-variable
 -Wwrite-strings
 >
-$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
+# $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
+# -Werror -Wall
+# -Wcast-qual
+# -Wformat=2
+# -Wshadow
+# -Wsign-compare
+# -Wuninitialized
+# -Wunused -Wunused-parameter
+# >
+$<$<CXX_COMPILER_ID:NVHPC>:
 -Werror -Wall
 -Wcast-qual
 -Wformat=2
 -Wshadow
--Wsign-compare
 -Wuninitialized
--Wunused -Wunused-parameter
 >
 $<$<CXX_COMPILER_ID:MSVC>:
 /WX /W4 /permissive- /volatile:iso # /EHsc /Zc:wchar_t /Zc:forScope /Zc:inline
