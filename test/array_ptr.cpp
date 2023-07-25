@@ -134,6 +134,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 		rowP = *std::addressof(rowP);
 
 		auto rowP2 = rowP;
+		rowP2 = rowP;  // self assigment
 
 		BOOST_REQUIRE( rowP == rowP2 );
 

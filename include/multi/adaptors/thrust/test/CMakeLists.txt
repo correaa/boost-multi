@@ -81,3 +81,5 @@ foreach(TEST_FILE ${TEST_SRCS})
 	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
     endif()
 endforeach()
+
+set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
