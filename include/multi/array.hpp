@@ -787,20 +787,20 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 
 	using static_array<T, 0, Alloc>::operator=;
 
-	// TODO(correaa)
-	// may need `&` at the end to avoid this compilation error in nvhpc 21.2-0
-	//  "/builds/correaa/boost-multi/include/multi/./array_ref.hpp", line 2483: error: "operator=" has already been declared in the current scope
-	//      constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
-	//                     ^
-	// "/builds/correaa/boost-multi/include/multi/array.hpp", line 791: error: "operator=" has already been declared in the current scope
 	template<class TT, class... Args>
-	auto operator=(multi::array<TT, 0, Args...> const& other) -> array& {
+	auto operator=(multi::array<TT, 0, Args...> const& other)  & -> array& {
 		if(other.base()) {adl_copy_n(other.base(), other.num_elements(), this->base());}
 		return *this;
 	}
 
-	template<class Other, std::enable_if_t<not std::is_base_of<array, std::decay_t<Other>>{}, int> = 0>
-	auto operator=(Other const& other) -> array& {this->assign(&other); return *this;}
+	template<class TT, class... Args>
+	auto operator=(multi::array<TT, 0, Args...> const& other) && -> array&& {  // NOLINT(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator) should assigment return auto& ?
+		if(other.base()) {adl_copy_n(other.base(), other.num_elements(), this->base());}
+		return std::move(*this);
+	}
+
+	template<class Other, std::enable_if_t<not std::is_base_of<array, std::decay_t<Other>>{}, int> /*dummy*/=0>
+	auto operator=(Other const& other) -> array& {this->assign(&other); return *this;}  // NOLINT(google-runtime-operator) allow assigment from other ranges
 
 	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array& {
 		return *this;
@@ -816,8 +816,9 @@ template<class T, dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc> {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
-		   std::is_same<typename array::alloc_traits::value_type, std::remove_const_t<T>>::value
-		or std::is_same<typename array::alloc_traits::value_type, void                  >::value, "!"
+		   std::is_same_v<typename array::alloc_traits::value_type, std::remove_const_t<T>>
+		or std::is_same_v<typename array::alloc_traits::value_type, void                  >,
+		"only exact type of array element or void (default?) is allowed as allocator value type"
 	);
 
  public:
