@@ -266,7 +266,7 @@ nvhpc:
 
 nvhpc-22.9:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:22.9-devel-cuda_multi-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:22.9-devel-cuda_multi-ubuntu20.04
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
