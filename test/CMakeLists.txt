@@ -212,6 +212,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Wzero-length-bounds # (gcc 12, not in 11)
 >
 $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra
+-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 -WCFString-literal
 -WCL4
 -WIndependentClass-attribute
