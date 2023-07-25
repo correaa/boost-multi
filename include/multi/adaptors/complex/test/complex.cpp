@@ -8,6 +8,8 @@
 
 #include "../../complex.hpp"
 
+#include<type_traits>
+
 namespace multi = boost::multi;
 
 using float_types = boost::mpl::list<float, double>;
