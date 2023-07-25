@@ -263,7 +263,7 @@ class gemm_range {
 	}
 };
 
-template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
+template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*std::declval<ContextPtr>())>{}> >
 auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(readability-identifier-length) BLAS naming
 ->gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/>
 {
