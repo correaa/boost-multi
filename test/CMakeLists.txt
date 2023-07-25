@@ -7,9 +7,7 @@
 #]=]
 cmake_minimum_required(VERSION 3.11)
 
-if(EXISTS "CMakeLists.txt")
-	message(FATAL_ERROR "You probably don't want to run CMake in a directory with CMakeLists.txt")
-endif()
+enable_testing()
 
 if (NOT DEFINED CMAKE_CXX_STANDARD)
 	set(CMAKE_CXX_STANDARD 17)
@@ -17,33 +15,10 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#project(
-# boost-multi-test
-# VERSION 0.1
-# LANGUAGES CXX
-#)
-
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)  # tests require Boost.Test `sudo apt install libboost-test-dev`
+find_package(Boost COMPONENTS unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
 
 if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
-
-# include(FindCUDA/select_compute_arch)
-# cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
-# string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-# string(
-#   REPLACE " "
-#       ";"
-#       INSTALLED_GPU_CCS_3
-#       "${INSTALLED_GPU_CCS_2}"
-# )
-# string(
-#   REPLACE "."
-#       ""
-#       CUDA_ARCH_LIST
-#       "${INSTALLED_GPU_CCS_3}"
-# )
-# set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
 endif()
 
 enable_testing()
@@ -867,6 +842,15 @@ file(
 
 # add_test(NAME multi_test COMMAND ./multi_test)
 
+if(NOT Boost_FOUND)
+message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
+
+add_executable(main main.cpp)
+target_link_libraries(main PRIVATE multi)
+add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+
+else()
+
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
@@ -893,3 +877,4 @@ foreach(TEST_FILE ${TEST_SRCS})
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
 
+endif()
