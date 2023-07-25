@@ -787,6 +787,12 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 
 	using static_array<T, 0, Alloc>::operator=;
 
+	// TODO(correaa)
+	// may need `&` at the end to avoid this compilation error in nvhpc 21.2-0
+	//  "/builds/correaa/boost-multi/include/multi/./array_ref.hpp", line 2483: error: "operator=" has already been declared in the current scope
+	//      constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
+	//                     ^
+	// "/builds/correaa/boost-multi/include/multi/array.hpp", line 791: error: "operator=" has already been declared in the current scope
 	template<class TT, class... Args>
 	auto operator=(multi::array<TT, 0, Args...> const& other) -> array& {
 		if(other.base()) {adl_copy_n(other.base(), other.num_elements(), this->base());}
