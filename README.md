@@ -78,7 +78,7 @@ target_link_library(my_target PUBLIC multi)
 The code requires compilers with standard C++17 support, for reference any of:
 LLVM's `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`), 
 GNU's `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a), 
-Nvidia's [`nvcc`](https://godbolt.org/z/Kdh5PeP5f) (11.0+) and `nvc++` (20.7-21.3+), 
+Nvidia's [`nvcc`](https://godbolt.org/z/Kdh5PeP5f) (11.0+) and `nvc++` (22.7+), 
 Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
 Baxter's [`circle`](https://www.circle-lang.org/) (build 187+),
 and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
