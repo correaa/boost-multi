@@ -850,9 +850,7 @@ if(NOT Boost_FOUND)
 	# add_test(NAME main COMMAND ./main)
 
 	target_include_directories(main       PRIVATE ${PROJECT_SOURCE_DIR}/include)
-	target_include_directories(main SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
-	target_link_libraries     (main        PRIVATE Boost::unit_test_framework   )
-	target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
+	target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi main")
 
 	target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
