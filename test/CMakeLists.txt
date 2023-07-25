@@ -846,8 +846,23 @@ if(NOT Boost_FOUND)
 	message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
 
 	add_executable(main main.cpp)
-	target_link_libraries(main PRIVATE multi)
-	add_test(NAME main COMMAND ./main)
+	# target_link_libraries(main PRIVATE multi)
+	# add_test(NAME main COMMAND ./main)
+
+	target_include_directories(main       PRIVATE ${PROJECT_SOURCE_DIR}/include)
+	target_include_directories(main SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
+	target_link_libraries     (main        PRIVATE Boost::unit_test_framework   )
+	target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
+
+	target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
+
+	if(NOT DEFINED ENABLE_CIRCLE)
+		target_compile_options(main PRIVATE ${WARNS})
+	else()
+		target_compile_definitions(main PRIVATE "BOOST_TEST_DYN_LINK=1")
+		target_compile_options    (main PRIVATE -Werror -Wall)
+	endif()
+	add_test(NAME main COMMAND ./${TEST_EXE})
 
 else()
 
