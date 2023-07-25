@@ -159,7 +159,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Wextra
 					-Wpedantic
-					-Wmove>
+					-Wmove
+					-Wno-error=\#warnings>
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
 					-wd161
