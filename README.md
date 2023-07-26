@@ -719,7 +719,8 @@ A workaround is possible by forcing a particular flag on the client code in glob
 ```cpp
 #include<multi/array.hpp>
 ...
-inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+template<> inline constexpr
+bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 ```
 
 With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
