@@ -345,6 +345,52 @@ cuda-11.2.2:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
+hip:
+  stage: build
+  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+  allow_failure: true
+  tags:
+    - nvidia-docker
+  script:
+    - nvidia-smi
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
+    # https://docs.amd.com/en/latest/deploy/linux/quick_start.html
+    # Make the directory if it doesn't exist yet.
+    # This location is recommended by the distribution maintainers.
+    - mkdir --parents --mode=0755 /etc/apt/keyrings
+    # Download the key, convert the signing-key to a full
+    # keyring required by apt and store in the keyring directory
+    - wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | tee /etc/apt/keyrings/rocm.gpg > /dev/null
+    # Kernel driver repository for jammy
+    - | 
+      tee /etc/apt/sources.list.d/amdgpu.list <<'EOF'
+      deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/latest/ubuntu jammy main
+      EOF
+    # ROCm repository for jammy
+    - |
+      tee /etc/apt/sources.list.d/rocm.list <<'EOF'
+      deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/debian jammy main
+      EOF
+    # Prefer packages from the rocm repository over system packages
+    - "echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600"
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y amdgpu-dkms
+    - apt-get install --no-install-recommends -y rocm-hip-libraries
+    - /opt/rocm/bin/hipconfig --full
+    -  /opt/rocm/bin/hipcc --version
+    - mkdir build && cd build
+    - ls /opt/rocm
+    - ls /usr/local
+    - ls /usr/local/cuda-11/bin
+    - /usr/local/cuda-11/bin/nvcc --version
+    # - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    # - cmake --build . --parallel 2 || cmake --build . --verbose
+    # - ctest -j 2 --output-on-failure  # doesn't run
+    # - ../build/include/multi/adaptors/thrust/test/speed.cu.x
+    # - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
+    # - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+  needs: ["clang++", "g++"]
+
 circle:
   stage: build
   script:
