@@ -345,6 +345,30 @@ cuda-11.2.2:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
+hip:
+  stage: build
+  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+  allow_failure: true
+  tags:
+    - nvidia-docker
+  script:
+    - nvidia-smi
+    - apt-get -qq update && apt-get install --no-install-recommends -y hip-runtime-nvidia hip-dev cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - /opt/rocm/bin/hipconfig --full
+    - hipcc --version
+    - mkdir build && cd build
+    - ls /opt/rocm
+    - ls /usr/local
+    - ls /usr/local/cuda-11/bin
+    - /usr/local/cuda-11/bin/nvcc --version
+    # - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    # - cmake --build . --parallel 2 || cmake --build . --verbose
+    # - ctest -j 2 --output-on-failure  # doesn't run
+    # - ../build/include/multi/adaptors/thrust/test/speed.cu.x
+    # - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
+    # - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+  needs: ["clang++", "g++"]
+
 circle:
   stage: build
   script:
