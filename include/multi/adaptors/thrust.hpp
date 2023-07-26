@@ -18,7 +18,7 @@
 
 #include <thrust/system/cuda/memory.h>  // ::thrust::cuda::allocator
 
-#include <thrust/detail/type_traits/pointer_traits.h>
+// #include <thrust/detail/type_traits/pointer_traits.h>
 
 #include <utility>  // std::copy
 
