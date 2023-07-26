@@ -373,9 +373,9 @@ hip:
       EOF
     # Prefer packages from the rocm repository over system packages
     - "echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600"
-    - apt update
-    - apt install amdgpu-dkms
-    - apt install rocm-hip-libraries
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y amdgpu-dkms
+    - apt-get install --no-install-recommends -y rocm-hip-libraries
     - /opt/rocm/bin/hipconfig --full
     - hipcc --version
     - mkdir build && cd build
