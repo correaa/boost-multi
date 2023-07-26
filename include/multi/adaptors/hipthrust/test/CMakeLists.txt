@@ -10,38 +10,45 @@ project(
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
+find_package(rocthrust REQUIRED)  # CONFIG PATHS "/opt/rocm-5.6.0/rocthrust")
+
 enable_testing()
 
 include(CTest)
 
-set(TEST_SRCS
-#    array.cu
-#   memory_resource.cu
-#   set_identity_kernel.cu
-#    speed.cu
-#    speed_algo.cu
-#    universal.cu
-	vector.hip
-)
+# set(TEST_SRCS
+# #    array.cu
+# #   memory_resource.cu
+# #   set_identity_kernel.cu
+# #    speed.cu
+# #    speed_algo.cu
+# #    universal.cu
+# 	vector.cpp
+# )
 
-foreach(TEST_FILE ${TEST_SRCS})
-	set(TEST_EXE "${TEST_FILE}.x")
-	add_executable(${TEST_EXE} ${TEST_FILE})
-	if(ENABLE_CUDA OR DEFINED CXXCUDA)
-		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
-	endif()
+add_executable(vector.hip.x vector.hip)
 
-	target_include_directories(${TEST_EXE}        PUBLIC ../../../../../include)
+target_link_libraries(vector.hip.x PRIVATE roc::rocthrust Boost::unit_test_framework)
+add_test(NAME vector.hip.x COMMAND ./vector.hip.x)
 
-	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
-	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
-	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
-	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+# foreach(TEST_FILE ${TEST_SRCS})
+# #	set(TEST_EXE "${TEST_FILE}")
+# 	add_executable(vector ${TEST_FILE})
+# #	if(ENABLE_CUDA OR DEFINED CXXCUDA)
+# #		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
+# #	endif()
 
-    if(ENABLE_CUDA)
-	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
-    endif()
-endforeach()
+# #	target_include_directories(${TEST_EXE}        PRIVATE ../../../../../include)
+
+# 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
+# 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
+# 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+# 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
+# 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+
+# #    if(ENABLE_CUDA)
+# #	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+# #    endif()
+# endforeach()
 
 # set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
