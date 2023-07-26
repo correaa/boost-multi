@@ -137,6 +137,12 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 		rowP2 = rowP;  // self assigment
 
 		BOOST_REQUIRE( rowP == rowP2 );
+		BOOST_REQUIRE( not(rowP != rowP2) );
+
+		auto rowP0 = &arr[0];
+
+		BOOST_REQUIRE( rowP0 != rowP2 );
+		BOOST_REQUIRE( not(rowP0 == rowP2) );
 
 		rowP2 = decltype(rowP2){nullptr};
 		BOOST_REQUIRE( not rowP2 );
