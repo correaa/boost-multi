@@ -377,7 +377,7 @@ hip:
     - apt-get install --no-install-recommends -y amdgpu-dkms
     - apt-get install --no-install-recommends -y rocm-hip-libraries
     - /opt/rocm/bin/hipconfig --full
-    - hipcc --version
+    -  /opt/rocm/bin/hipcc --version
     - mkdir build && cd build
     - ls /opt/rocm
     - ls /usr/local
