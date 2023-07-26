@@ -18,31 +18,31 @@ include(CTest)
 
 # TODO(correaa) this will be simpler in Cmake 3.24 https://stackoverflow.com/a/72332793/225186
 # if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-# 	# temporary workaround to detect CUDA arch, for between the deprecation of FindCUDA in CMake 3.10 and the availability of FindCudaToolkit in CMake 3.17 # https://stackoverflow.com/a/68223399/225186
-# 	include(FindCUDA/select_compute_arch)
-# 	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
-# 	string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-# 	string(
-# 		REPLACE " "
-# 				";"
-# 				INSTALLED_GPU_CCS_3
-# 				"${INSTALLED_GPU_CCS_2}"
-# 	)
-# 	string(
-# 		REPLACE "."
-# 				""
-# 				CUDA_ARCH_LIST
-# 				"${INSTALLED_GPU_CCS_3}"
-# 	)
-# 	set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-# 	set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
+#   # temporary workaround to detect CUDA arch, for between the deprecation of FindCUDA in CMake 3.10 and the availability of FindCudaToolkit in CMake 3.17 # https://stackoverflow.com/a/68223399/225186
+#   include(FindCUDA/select_compute_arch)
+#   cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
+#   string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+#   string(
+#       REPLACE " "
+#               ";"
+#               INSTALLED_GPU_CCS_3
+#               "${INSTALLED_GPU_CCS_2}"
+#   )
+#   string(
+#       REPLACE "."
+#               ""
+#               CUDA_ARCH_LIST
+#               "${INSTALLED_GPU_CCS_3}"
+#   )
+#   set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+#   set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
 # endif()
 
 # if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" STREQUAL "${CUDA_ARCH_LIST}")
-# 	message(STATUS "gpu not detected ${CUDA_ARCH_LIST}")
-# 	set(TEST_SRCS)
+#   message(STATUS "gpu not detected ${CUDA_ARCH_LIST}")
+#   set(TEST_SRCS)
 # else()
-# 	message(STATUS "gpu detected: ${CUDA_ARCH_LIST}")
+#   message(STATUS "gpu detected: ${CUDA_ARCH_LIST}")
 # endif()
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
@@ -54,6 +54,7 @@ set(TEST_SRCS
     speed.cu
     speed_algo.cu
     universal.cu
+	vector.cu
 )
 
 foreach(TEST_FILE ${TEST_SRCS})
