@@ -360,7 +360,7 @@ hip:
     - mkdir --parents --mode=0755 /etc/apt/keyrings
     # Download the key, convert the signing-key to a full
     # keyring required by apt and store in the keyring directory
-    - wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /etc/apt/keyrings/rocm.gpg > /dev/null
+    - wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | tee /etc/apt/keyrings/rocm.gpg > /dev/null
     # Kernel driver repository for jammy
     - | 
       tee /etc/apt/sources.list.d/amdgpu.list <<'EOF'
