@@ -34,7 +34,8 @@ BOOST_AUTO_TEST_CASE(vector){
 	D[0] = 99;
 	D[1] = 88;
 
-	thrust::cuda::pointer<int> p = D.data();
+	thurst::device_ptr<int> p = D.data();
+	// thrust::cuda::pointer<int> p = D.data();
 	BOOST_REQUIRE( p[0] == 99 );
 
 	BOOST_TEST_REQUIRE( D[1] == 88 );
