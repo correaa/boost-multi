@@ -18,7 +18,7 @@ Some features of this library:
 
 * Value semantics of multi-dimensional array containers
 * Well-defined referential semantics of subarray (view) types
-* Interoperability with other libraries, STL, ranges, thrust (CUDA GPUs), Boost, and C-libraries
+* Interoperability with other libraries, STL, ranges, thrust (CUDA and AMD GPUs), Boost, and C-libraries
 * Fast access to elements and subarrays (views) types
 * Arbitrary pointer types (fancy pointers, memory spaces)
 * Simplified implementation (~4000 lines)
@@ -86,6 +86,7 @@ and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
 (which can be installed with `sudo apt install libboost-serializa
 tion-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or `sudo dnf install blas-devel fftw-devel`.)
+HIP support is experimental.
 
 ## Types
 
@@ -1153,14 +1154,14 @@ int main(){
 
 (Similarly works with [LLNL's Meta Allocator](https://github.com/llnl/metall))
 
-## CUDA Thrust
+## CUDA Thrust (and HIP)
 
 The library works out-of-the-box in combination with the CUDA Thrust library.
 
 ```cpp
-#include <multi/array.hpp>
+#include <multi/array.hpp>  // this library
 
-#include <thrust/device_allocator.h>
+#include <thrust/device_allocator.h>  // from CUDA or ROCm distributions
 
 namespace multi = boost::multi;
 
@@ -1175,8 +1176,8 @@ int main() {
 ```
 [(live)](https://godbolt.org/z/e7bjKqh69)
 
-which uses the default Thrust backend (e.g. CUDA when compiled with `nvcc` or OpenMP or TBB in other cases).
-Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` instead.
+which uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a ROCm compiler, or OpenMP or TBB in other cases).
+Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` (from `<thrust/universal_allocator.h>`) instead.
 
 More specific allocators can be used ensure CUDA backends, for example CUDA managed memory:
 
@@ -1186,6 +1187,9 @@ More specific allocators can be used ensure CUDA backends, for example CUDA mana
 	multi::array<double, 2, thrust::cuda::universal_allocator<double>> A({10,10});
 ```
 
+In the same way, to *ensure* HIP backends please replace the `cuda` namespace by the `hip` namespace, and in the directory name `<thrust/system/hip/memory.h>`.
+`<thrust/system/hip/memory.h>` is provided by the ROCm distribution (in `/opt/rocm/include/thrust/system/hip/`, and not by the NVIDIA distribution.)
+
 Multi doesn't have a dependency on Thrust (or viseversa);
 they just work well together, both in terms of semantics and efficiency.
 Certain "patches" (to improve Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
@@ -1193,8 +1197,8 @@ Certain "patches" (to improve Thrust behavior) can be applied to Thrust to gain 
 Multi can be used on existing memory in a non-invasive way via (non-owning) reference arrays:
 
 ```cpp
-	// assumes raw_pointer was allocated with cudaMalloc
-	using cuda_ptr = thrust::cuda::pointer<double>;
+	// assumes raw_pointer was allocated with cudaMalloc or hipMalloc
+	using gpu_ptr = thrust::cuda::pointer<double>;  // or thrust::hip::pointer<double> 
 	multi::array_ref<double, 2, gpu_ptr> Aref({n, n}, gpu_ptr{raw_pointer});
 ```
 
