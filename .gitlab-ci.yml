@@ -352,7 +352,6 @@ hip:
   tags:
     - nvidia-docker
   script:
-    - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     # https://docs.amd.com/en/latest/deploy/linux/quick_start.html
     # Make the directory if it doesn't exist yet.
@@ -380,9 +379,14 @@ hip:
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - mkdir build && cd build
     - ls /opt/rocm
+    - ls /opt/rocm/bin
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
+    - cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm
+    # -DCMAKE_HIP_COMPILER=/opt/rocm/bin/amdclang++
+    - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
+    - ctest --output-on-failure
     # - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     # - cmake --build . --parallel 2 || cmake --build . --verbose
     # - ctest -j 2 --output-on-failure  # doesn't run
