@@ -377,9 +377,13 @@ hip:
     - apt-get install --no-install-recommends -y rocm-hip-libraries
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - cmake --version
     - mkdir build && cd build
     - ls /opt
     - ls /opt/rocm
+    - ls /opt/rocm/llvm/bin
     - ls /opt/rocm/bin
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
