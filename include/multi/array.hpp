@@ -11,8 +11,6 @@
 #include "./detail/memory.hpp"
 #include "./detail/type_traits.hpp"
 
-// #include "./memory/allocator.hpp"
-
 #include<algorithm>  // for copy
 #include<memory>     // for allocator_traits
 #include<tuple>      // needed by a deprecated function
@@ -181,7 +179,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	: static_array{rng.begin(), rng.end()} {}
+	: static_array{std::begin(rng), std::end(rng)} {}   // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
+	// : static_array{rng.begin(), rng.end()} {}   // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
