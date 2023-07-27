@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE(vector){
 	D[0] = 99;
 	D[1] = 88;
 
-	thrust::device_ptr<int> p = D.data();
-//	thrust::pointer<int, thrust::detail::seq_t> p = D.data();
+	thrust::device_ptr<int> p = D.data();  // this works with rocm hip 5.6
+//	thrust::pointer<int, thrust::detail::seq_t> p = D.data();  // this works with rocm hip 5.6
 
 	BOOST_REQUIRE( p[0] == 99 );
 
