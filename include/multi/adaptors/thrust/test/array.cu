@@ -41,8 +41,8 @@ template<class T> using test_allocator =
 //  multi ::memory::cuda::allocator<T>
 //  multi ::memory::cuda::managed::allocator<T>//, std::integral_constant<int, 0> >
 //  multi ::memory::cuda::cached::allocator<T, std::integral_constant<int, 0> >
-	multi::thrust::cuda::managed_allocator<T>
-//  thrust::cuda::allocator<T>
+//  multi::thrust::cuda::managed_allocator<T>
+	thrust::cuda::allocator<T>
 ;
 
 }
