@@ -378,6 +378,7 @@ hip:
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - mkdir build && cd build
+    - ls /opt
     - ls /opt/rocm
     - ls /opt/rocm/bin
     - ls /usr/local
