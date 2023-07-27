@@ -4,6 +4,7 @@ project(
 	boost-multi-adaptor-cuda-thrust-test
 	VERSION 0.1
 	LANGUAGES CXX HIP
+	#CUDA
 )
 
 # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--display_error_number\"")
@@ -26,10 +27,18 @@ include(CTest)
 # 	vector.cpp
 # )
 
-add_executable(vector.hip.x vector.hip)
+# add_executable(vector.cu.nvidia.x vector.cu)
+# set_source_files_properties(vector.cu PROPERTIES LANGUAGE CUDA)
 
-target_link_libraries(vector.hip.x PRIVATE roc::rocthrust Boost::unit_test_framework)
-add_test(NAME vector.hip.x COMMAND ./vector.hip.x)
+# target_link_libraries(vector.cu.nvidia.x PRIVATE Boost::unit_test_framework)
+# add_test(NAME vector.cu.nvidia.x COMMAND vector.cu.nvidia.x)
+
+add_executable(vector.hip.amd.x vector.hip)
+set_source_files_properties(vector.hip PROPERTIES LANGUAGE HIP)
+
+target_link_libraries(vector.hip.amd.x PRIVATE roc::rocthrust Boost::unit_test_framework)
+add_test(NAME vector.hip.amd.x COMMAND ./vector.hip.amd.x)
+
 
 # foreach(TEST_FILE ${TEST_SRCS})
 # #	set(TEST_EXE "${TEST_FILE}")
