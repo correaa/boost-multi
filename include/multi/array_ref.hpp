@@ -39,8 +39,7 @@
 	#define MULTI_NONV_CONSTEXPR /*constexpr*/
 #endif
 
-// NOLINTBEGIN(cert-dcl58-cpp) consider defining multi::pointer_traits
-namespace std {
+namespace std {  // NOLINTBEGIN(cert-dcl58-cpp) consider defining multi::pointer_traits TODO(correaa) check if necessary
 
 template<class T>
 struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
@@ -52,8 +51,7 @@ struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
 		>;
 };
 
-}  // end namespace std
-// NOLINTEND(cert-dcl58-cpp)
+}  // end namespace
 
 namespace boost::multi {
 
@@ -69,7 +67,7 @@ constexpr auto home(Array&& arr)
 ->decltype(std::forward<A>(arr).home()) {
 	return std::forward<A>(arr).home(); }
 
-template<class T> auto modify(T const& value) -> T& {return const_cast<T&>(value);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
+// template<class T> auto modify(T const& value) -> T& {return const_cast<T&>(value);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
