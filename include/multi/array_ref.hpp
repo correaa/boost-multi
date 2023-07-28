@@ -39,7 +39,7 @@
 	#define MULTI_NONV_CONSTEXPR /*constexpr*/
 #endif
 
-namespace std {  // NOLINTBEGIN(cert-dcl58-cpp) consider defining multi::pointer_traits TODO(correaa) check if necessary
+namespace std {  // NOLINT(cert-dcl58-cpp) consider defining multi::pointer_traits TODO(correaa) check if necessary
 
 template<class T>
 struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
@@ -423,13 +423,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	ptr_type ptr_;
 	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?
 
-	// constexpr auto equal(array_iterator const& other) const -> bool {return ptr_ == other.ptr_ and stride_ == other.stride_;}
 	HD constexpr void decrement() {ptr_.base_ -= stride_;}
 	HD constexpr void advance(difference_type n) {ptr_.base_ += stride_*n;}
-	// constexpr auto distance_to(array_iterator const& other) const -> difference_type {
-	//  assert( stride_ == other.stride_); assert( stride_ != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
-	//  return (other.ptr_.base_ - ptr_.base_)/stride_;
-	// }
 
  public:
 	HD constexpr auto base()              const&       -> element_ptr {return ptr_.base_;}
