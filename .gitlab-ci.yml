@@ -416,7 +416,7 @@ hip:
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
     - load module rocm
-    - cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++
+    - ROCM_PATH=/opt/rocm HIP_PATH=/opt/rocm  cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_PREFIX_PATH=/opt/rocm
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest --output-on-failure
     # - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61

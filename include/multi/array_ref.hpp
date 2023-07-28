@@ -51,7 +51,7 @@ struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
 		>;
 };
 
-}  // end namespace
+}  // end namespace std
 
 namespace boost::multi {
 
