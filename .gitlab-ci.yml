@@ -366,8 +366,7 @@ rocm:
     - ls /opt/rocm/llvm/bin
     - ls /opt/rocm/bin
     - ls /opt/rocm/lib/cmake/AMDDeviceLibs
-    - load module rocm
-    - cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++
+    - cmake -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ ..
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest --output-on-failure
   needs: ["clang++", "g++"]
