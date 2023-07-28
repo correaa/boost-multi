@@ -384,7 +384,7 @@ hip:
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
-    - cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm
+    - cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm -DCMAKE_MODULE_PATH=/opt/rocm/lib/cmake/AMDDeviceLibs
     # -DCMAKE_HIP_COMPILER=/opt/rocm/bin/amdclang++
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest --output-on-failure
