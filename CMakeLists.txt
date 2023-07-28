@@ -81,7 +81,7 @@ add_subdirectory(test)
 if(MULTI_BUILD_TESTS)
   find_package(Boost 1.67 COMPONENTS unit_test_framework)  # Boost 1.66 has compilation problems with g++ 8-12+ and clang++ ~15, in that case install your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
   if(NOT Boost_FOUND)
-    message(WARNING "Cannot find Boost, Multi library will not be fully tested.")
+    message(WARNING "Cannot find Boost 1.67+, Multi library will not be fully tested.")
   else()
     enable_testing()
 
