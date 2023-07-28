@@ -98,8 +98,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
 
-	auto uninitialized_default_construct_if(std::true_type /*true*/ ) {}
-	auto uninitialized_default_construct_if(std::false_type/*false*/) {
+	auto uninitialized_default_construct_if(std::true_type /*true */) { /*noop*/ }
+	auto uninitialized_default_construct_if(std::false_type /*false*/) {
 		return adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
 
@@ -134,9 +134,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	explicit static_array(allocator_type const& alloc) : array_alloc{alloc} {}
 
 	using ref::operator();
-//  HD constexpr auto operator()()      & -> decltype(auto) {return ref::operator()();}
 	HD constexpr auto operator()()     && -> decltype(auto) {return ref::element_moved();}
-//  HD constexpr auto operator()() const& -> decltype(auto) {return ref::operator()();}
 
 	using ref::take;
 	constexpr auto take(difference_type n) && -> decltype(auto) {return ref::take(n).element_moved();}
@@ -187,7 +185,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), value);
 	}
 
-	// vvv TODO(correaa) : check if really necessary
 	template<class TT, class... As>
 	static_array(array_ref<TT, D, As...> const& other, allocator_type const& alloc)
 	: array_alloc{alloc}
@@ -446,7 +443,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class Archive>
-	void serialize(Archive& arxiv, const unsigned int version) {
+	void serialize(Archive& arxiv, unsigned int const version) {
 		ref::serialize(arxiv, version);
 	}
 };
@@ -774,7 +771,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 
 	template<class Archive>
-	void serialize(Archive& arxiv, const unsigned int version) {
+	void serialize(Archive& arxiv, unsigned int const version) {
 		ref::serialize(arxiv, version);
 	}
 };
@@ -831,7 +828,7 @@ struct array : static_array<T, D, Alloc> {
 	friend auto sizes(array const& self) -> typename array::sizes_type {return self.sizes();}
 
 	template<class Archive>
-	void serialize(Archive& arxiv, const unsigned int version) {
+	void serialize(Archive& arxiv, unsigned int const version) {
 		using AT = multi::archive_traits<Archive>;
 		auto extensions_ = this->extensions();
 		arxiv &                   AT::make_nvp("extensions", extensions_);
