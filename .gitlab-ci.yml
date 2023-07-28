@@ -345,6 +345,35 @@ cuda-11.2.2:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
+
+rocm:
+  stage: build
+  image: rocm/dev-ubuntu-22.04
+  allow_failure: true
+  tags:
+    - nvidia-docker
+  script:
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
+    - /opt/rocm/bin/hipconfig --full
+    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - cmake --version
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - cmake --version
+    - mkdir build && cd build
+    - ls /opt
+    - ls /opt/rocm
+    - ls /opt/rocm/llvm/bin
+    - ls /opt/rocm/bin
+    - ls /usr/local
+    - ls /usr/local/cuda-11/bin
+    - /usr/local/cuda-11/bin/nvcc --version
+    - load module rocm
+    - cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++
+    - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
+    - ctest --output-on-failure
+  needs: ["clang++", "g++"]
+
 hip:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -389,6 +418,7 @@ hip:
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
+    - load module rocm
     - cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DCMAKE_HIP_COMPILER_ROCM_ROOT:PATH=/opt/rocm -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest --output-on-failure
