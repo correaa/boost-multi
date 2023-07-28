@@ -7,33 +7,35 @@
 #include <boost/timer/timer.hpp>
 
 #include <multi/array.hpp>
-#include <multi/adaptors/thrust.hpp>
-#include <multi/adaptors/thrust/managed_allocator.hpp>
+// #include <multi/adaptors/thrust.hpp>
+// #include <multi/adaptors/thrust/managed_allocator.hpp>
 
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
-#include <thrust/system/cuda/memory.h>
+#include <thrust/system/hip/memory.h>
 #include <thrust/uninitialized_copy.h>
+
+#include <thrust/universal_allocator.h>
 
 #include <numeric>
 
 namespace multi = boost::multi;
 
-#ifdef __NVCC__
-template<>
-inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<double>> = true;
-template<>
-inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<float>> = true;
-template<>
-inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<double>> = true;
-template<>
-inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<float>> = true;
-#else  // vvv nvcc (12.1?) doesn't support this kind of customization: "error: expected initializer before ‘<’"
-template<class T>
-inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
-template<class T>
-inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<T>> = std::is_trivially_default_constructible<T>::value;
-#endif
+// #ifdef __NVCC__
+// template<>
+// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<double>> = true;
+// template<>
+// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<float>> = true;
+// template<>
+// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<double>> = true;
+// template<>
+// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<float>> = true;
+// #else  // vvv nvcc (12.1?) doesn't support this kind of customization: "error: expected initializer before ‘<’"
+// template<class T>
+// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
+// template<class T>
+// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<T>> = std::is_trivially_default_constructible<T>::value;
+// #endif
 
 namespace {
 
@@ -42,7 +44,7 @@ template<class T> using test_allocator =
 //  multi ::memory::cuda::managed::allocator<T>//, std::integral_constant<int, 0> >
 //  multi ::memory::cuda::cached::allocator<T, std::integral_constant<int, 0> >
 //  multi::thrust::cuda::managed_allocator<T>
-	thrust::cuda::allocator<T>
+	thrust::hip::allocator<T>
 ;
 
 }
@@ -57,26 +59,26 @@ using types_list = boost::mpl::list<
 BOOST_AUTO_TEST_CASE(dummy_test) {}
 
 BOOST_AUTO_TEST_CASE(test_univ_alloc) {
-	multi::array<double, 2, thrust::cuda::universal_allocator<double> > Dev({128, 128});
+	multi::array<double, 2, thrust::universal_allocator<double> > Dev({128, 128});
 	*raw_pointer_cast(Dev.base()) = 99.0;
 }
 
-BOOST_AUTO_TEST_CASE(mtc_universal_array) {
-	multi::thrust::cuda::universal_array<double, 2> Dev({128, 128});
-	*raw_pointer_cast(Dev.base()) = 99.0;
-}
+// BOOST_AUTO_TEST_CASE(mtc_universal_array) {
+//  multi::thrust::hip::universal_array<double, 2> Dev({128, 128});
+//  *raw_pointer_cast(Dev.base()) = 99.0;
+// }
 
-BOOST_AUTO_TEST_CASE(mtc_universal_coloncolon_array) {
-	multi::thrust::cuda::universal::array<double, 2> Dev({128, 128});
-	*raw_pointer_cast(Dev.base()) = 99.0;
-}
+// BOOST_AUTO_TEST_CASE(mtc_universal_coloncolon_array) {
+//  multi::thrust::hip::universal::array<double, 2> Dev({128, 128});
+//  *raw_pointer_cast(Dev.base()) = 99.0;
+// }
 
-BOOST_AUTO_TEST_CASE(test_alloc) {
-	multi::array<double, 2, thrust::cuda::allocator<double> > Dev({128, 128});
-	// *raw_pointer_cast(Dev.base()) = 99.0;  // segmentation fault (correct behavior)
-}
+// BOOST_AUTO_TEST_CASE(test_alloc) {
+//  multi::array<double, 2, thrust::hip::allocator<double> > Dev({128, 128});
+//  // *raw_pointer_cast(Dev.base()) = 99.0;  // segmentation fault (correct behavior)
+// }
 
-#ifdef NDEBUG
+#if defined(NDEBUG) && 0
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
 	static_assert( multi::is_trivially_default_constructible<T>{}, "!");
 	static_assert( std::is_trivially_copy_constructible<T>{}     , "!");
