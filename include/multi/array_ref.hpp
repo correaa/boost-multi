@@ -42,7 +42,7 @@
 namespace std {  // NOLINT(cert-dcl58-cpp) consider defining multi::pointer_traits TODO(correaa) check if necessary
 
 template<class T>
-struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
+struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {  // NOLINT(cert-dcl58-cpp) TODO(correaa) eliminate?
 	template<class U> using rebind =
 		std::conditional_t<
 			std::is_const<U>::value,
