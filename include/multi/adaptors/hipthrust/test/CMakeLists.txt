@@ -16,7 +16,7 @@ include(CTest)
 # #    speed.cu
 # #    speed_algo.cu
 # #    universal.cu
-# 	vector.cpp
+#   vector.cpp
 # )
 
 # add_executable(vector.cu.nvidia.x vector.cu)
@@ -32,23 +32,31 @@ target_link_libraries(vector.hip.amd.x PRIVATE roc::rocthrust Boost::unit_test_f
 add_test(NAME vector.hip.amd.x COMMAND ./vector.hip.amd.x)
 
 
+
+add_executable(array.hip.amd.x array.hip)
+set_source_files_properties(array.hip PROPERTIES LANGUAGE HIP)
+
+target_link_libraries(array.hip.amd.x PRIVATE roc::rocthrust Boost::unit_test_framework multi)
+add_test(NAME array.hip.amd.x COMMAND ./array.hip.amd.x)
+
+
 # foreach(TEST_FILE ${TEST_SRCS})
-# #	set(TEST_EXE "${TEST_FILE}")
-# 	add_executable(vector ${TEST_FILE})
-# #	if(ENABLE_CUDA OR DEFINED CXXCUDA)
-# #		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
-# #	endif()
+# # set(TEST_EXE "${TEST_FILE}")
+#   add_executable(vector ${TEST_FILE})
+# # if(ENABLE_CUDA OR DEFINED CXXCUDA)
+# #   set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
+# # endif()
 
-# #	target_include_directories(${TEST_EXE}        PRIVATE ../../../../../include)
+# # target_include_directories(${TEST_EXE}        PRIVATE ../../../../../include)
 
-# 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-# 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
-# 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
-# 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
-# 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+#   target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
+#   target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
+#   target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+#   target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
+#   target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 
 # #    if(ENABLE_CUDA)
-# #	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+# #     add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 # #    endif()
 # endforeach()
 
