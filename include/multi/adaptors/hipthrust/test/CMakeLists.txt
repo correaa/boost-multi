@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.24)
 project(boost-multi-adaptor-thrust-hip LANGUAGES CXX HIP)
 
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework rocthrust)
+find_package(Boost     REQUIRED COMPONENTS unit_test_framework)
+find_package(rocthrust REQUIRED)
 
 enable_testing()
 
