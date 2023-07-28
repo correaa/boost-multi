@@ -1,17 +1,9 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-cmake_minimum_required(VERSION 3.11)
-project(
-	boost-multi-adaptor-cuda-thrust-test
-	VERSION 0.1
-	LANGUAGES CXX HIP
-	#CUDA
-)
+cmake_minimum_required(VERSION 3.24)
+project(boost-multi-adaptor-thrust-hip LANGUAGES CXX HIP)
 
-# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--display_error_number\"")
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-
-find_package(rocthrust REQUIRED)  # CONFIG PATHS "/opt/rocm-5.6.0/rocthrust")
+find_package(Boost REQUIRED COMPONENTS unit_test_framework rocthrust)
 
 enable_testing()
 
