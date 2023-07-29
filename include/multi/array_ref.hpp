@@ -646,10 +646,10 @@ struct elements_range_t {
 		return size() != other.size() or  not adl_equal(other.begin(), other.end(), begin());
 	}
 
-	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  other)  & {assert(size() == other.size()); adl_swap_ranges(begin(), end(), other.begin());}
-	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  other) && {assert(size() == other.size()); adl_swap_ranges(begin(), end(), other.begin());}
-	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&& other)  & {assert(size() == other.size()); adl_swap_ranges(begin(), end(), other.begin());}
-	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&& other) && {assert(size() == other.size()); adl_swap_ranges(begin(), end(), other.begin());}
+	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  other)  & noexcept {assert(size() == other.size()); adl_swap_ranges(begin(), end(), other.begin());}
+	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  other) && noexcept {assert(size() == other.size()); adl_swap_ranges(begin(), end(), other.begin());}
+	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&& other)  & noexcept {assert(size() == other.size()); adl_swap_ranges(begin(), end(), std::move(other).begin());}
+	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&& other) && noexcept {assert(size() == other.size()); adl_swap_ranges(begin(), end(), std::move(other).begin());}
 
 	~elements_range_t() = default;
 
@@ -1080,14 +1080,14 @@ struct subarray
 
 	friend HD /*constexpr*/ auto transposed(subarray const& self) -> basic_const_array {return self.transposed();}
 	friend HD /*constexpr*/ auto transposed(subarray      & self) -> subarray       {return self.transposed();}
-	friend HD /*constexpr*/ auto transposed(subarray     && self) -> subarray       {return self.transposed();}
+	friend HD /*constexpr*/ auto transposed(subarray     && self) -> subarray       {return std::move(self).transposed();}
 
 	friend HD MULTI_NONV_CONSTEXPR
 	auto operator~ (subarray const& self) -> basic_const_array {return self.transposed();}
 	friend HD MULTI_NONV_CONSTEXPR
 	auto operator~ (subarray& self) -> subarray {return self.transposed();}
 	friend HD MULTI_NONV_CONSTEXPR
-	auto operator~ (subarray&& self) -> subarray {return self.transposed();}
+	auto operator~ (subarray&& self) -> subarray {return std::move(self).transposed();}
 
 	HD constexpr auto rotated()      &  -> subarray {
 		typename types::layout_t new_layout = this->layout();
@@ -1222,11 +1222,11 @@ struct subarray
 	constexpr auto addressof() && {return ptr{this->base_, this->layout()};}
 
 	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&()     && {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&()     && {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR
 	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR
 	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR
 
  private:
 	HD constexpr auto begin_aux() const {return iterator{types::base_                 , this->sub(), this->stride()};}
@@ -1342,17 +1342,17 @@ struct subarray
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	template<class Array> constexpr void swap(Array&& other) && {
+	template<class Array> constexpr void swap(Array&& other) && noexcept {
 		assert( std::move(*this).extension() == std::forward<Array>(other).extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		elements().swap(other.elements());
 	//  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
 	template<class A> constexpr void swap(A&& other) & {return swap(std::forward<A>(other));}
 
-	friend constexpr void swap(subarray&& self, subarray&& other) {std::move(self).swap(std::move(other));}
+	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
-	template<class Array> constexpr void swap(subarray const& self, Array&& other) {self.swap(other);}  // TODO(correaa) remove
-	template<class Array> constexpr void swap(Array&& other, subarray const& self) {self.swap(other);}
+	template<class Array> constexpr void swap(subarray const& self, Array&& other) {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
+	template<class Array> constexpr void swap(Array&& other, subarray const& self) {self.swap(std::forward<Array>(other));}
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, D, As...> const& other) -> bool {
@@ -1529,7 +1529,7 @@ struct subarray
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & AT    ::make_nvp("item", item);});
+		std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", item);});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
