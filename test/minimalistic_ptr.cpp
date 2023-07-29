@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 	BOOST_REQUIRE( buffer.size() == 400 );
 
 	using pointer_type = minimalistic::ptr<double>;
-	multi::array_ptr<double, 2, pointer_type> CCP(pointer_type{buffer.data()}, {20, 20});
+	multi::array_ptr<double, 2, pointer_type> const CCP(pointer_type{buffer.data()}, {20, 20});
 	(*CCP)[2];   // requires operator+
 	(*CCP)[1][1];  // requires operator*
 	(*CCP)[1][1] = 9;

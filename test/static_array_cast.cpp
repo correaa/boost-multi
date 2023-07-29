@@ -67,6 +67,7 @@ class involuter {
 	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
 	template<class Other> constexpr involuter(involuter<Other, F> const& other) : it_{multi::implicit_cast<It>(other.it_)}, f_{other.f_} {}
 
+	constexpr explicit operator bool() const {return it_;}
 	constexpr auto operator* () const {return reference{ *it_, f_};}
 	constexpr auto operator->() const {return pointer  {&*it_, f_};}
 
