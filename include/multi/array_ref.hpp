@@ -1713,14 +1713,6 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 , array_types<T, 1, ElementPtr, Layout> {
 	~subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	auto operator=(subarray&& other) &
-	noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)
-// ^^^ lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-	-> subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-		operator=(other);
-		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	}
-
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
@@ -1836,6 +1828,12 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
+	auto operator=(subarray&& other) &
+	noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  // NOSONAR
+	-> subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		operator=(other);
+		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	}
 	constexpr auto operator=(subarray const& other)    & -> subarray& {
 		static_assert(std::is_copy_assignable_v<element_type>, "assignment requires element-wise assignment");  // TODO(correaa) : make sfinae friendly
 		if(this == std::addressof(other)) {return *this;}
@@ -2213,11 +2211,11 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 //  template<class A> constexpr void swap(A&& other) &  {return swap(std::forward<A>(other));}
 //  template<class A> constexpr void swap(A&& other) && {return swap(std::forward<A>(other));}
 
-	constexpr void swap(subarray&& other) && {
+	constexpr void swap(subarray&& other) && noexcept {
 		assert(this->extension() == other.extension());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
 	}
-	friend constexpr void swap(subarray&& self, subarray&& other) {std::move(self).swap(std::move(other));}
+	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
 	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) {std::move(self).swap(std::forward<A>(other));}
 	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) {std::move(self).swap(std::forward<A>(other));}
