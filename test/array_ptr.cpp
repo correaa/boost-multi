@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 			 {{15.0, 16.0, 17.0, 18.0, 19.0}}},
 		};
 
-		multi::array_ptr<double, 2> arrP{&arr};
+		multi::array_ptr<double, 2> const arrP{&arr};
 
 		BOOST_REQUIRE( arrP->extensions() == multi::extensions(arr) );
 		BOOST_REQUIRE( extensions(*arrP) == multi::extensions(arr) );
@@ -91,7 +91,8 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	{
 		std::vector<double>                v1(100, 3.0);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 		std::vector<double> const          v2(100, 4.0);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
-		multi::array_ptr<double, 2>        v1P2D(v1.data(), {10, 10});
+
+		multi::array_ptr <double, 2> const v1P2D(v1.data(), {10, 10});
 		multi::array_cptr<double, 2> const v2P2D(v2.data(), {10, 10});
 
 		*v1P2D = *v2P2D;

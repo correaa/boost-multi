@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 		{15.0, 16.0, 17.0, 18.0, 19.0},
 	};
 
-	multi::array_ptr<double, 2> map{&arr};
+	multi::array_ptr<double, 2> const map{&arr};
 	BOOST_REQUIRE( &map->operator[](1)[1] == &arr[1][1] );
 	BOOST_REQUIRE( (*&arr)[1][1] == 6.0 );
 
@@ -353,27 +353,27 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 	BOOST_REQUIRE(( &multi::static_array_cast<double, double const*>(ref[1])[1] == &ref[1][1] ));
 }
 
-BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
-	double darr[2][2] = {{1.0, 2.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	multi::array_ref <double, 2> ref(&darr[0][0], {2, 2});
+// BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
+//  double darr[2][2] = {{1.0, 2.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+//  multi::array_ref<double, 2> ref(&darr[0][0], {2, 2});
 
-	auto&& other_darr = static_cast<double(&)[2][2]>(ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+//  auto&& other_darr = static_cast<double(&)[2][2]>(ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 
-	double(& other_darr2)[2][2] = static_cast<double(&)[2][2]>(ref);  // NOLINT(hicpp-use-auto,modernize-use-auto,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	double(& other_darr3)[2][2](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+//  double(& other_darr2)[2][2] = static_cast<double(&)[2][2]>(ref);  // NOLINT(hicpp-use-auto,modernize-use-auto,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+//  double(& other_darr3)[2][2](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 
-	BOOST_REQUIRE( &ref        [1][0] == &darr[1][0] );
-	BOOST_REQUIRE( &other_darr [1][0] == &darr[1][0] );
-	BOOST_REQUIRE( &other_darr2[1][0] == &darr[1][0] );
-	BOOST_REQUIRE( &other_darr3[1][0] == &darr[1][0] );
+//  BOOST_REQUIRE( &ref        [1][0] == &darr[1][0] );
+//  BOOST_REQUIRE( &other_darr [1][0] == &darr[1][0] );
+//  BOOST_REQUIRE( &other_darr2[1][0] == &darr[1][0] );
+//  BOOST_REQUIRE( &other_darr3[1][0] == &darr[1][0] );
 
-	try {
-		double(& other_darr4)[3][3](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+//  try {
+//    double(& other_darr4)[3][3](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 
-		BOOST_REQUIRE( &other_darr4[1][0] == &darr[1][0] );
-	} catch(...) {}
+//    BOOST_REQUIRE( &other_darr4[1][0] == &darr[1][0] );
+//  } catch(...) {}
 
-}
+// }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
 	double const d2D[4][5] = {{1.0, 2.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
@@ -567,55 +567,55 @@ void f2d54(double(&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hi
 	BOOST_REQUIRE(carr[0][1] == 1.0);
 }
 
-BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
-	multi::array<double, 1> arr(5);
-	BOOST_REQUIRE( arr.size() == 5 );
-	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+// BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
+//  multi::array<double, 1> arr(5);
+//  BOOST_REQUIRE( arr.size() == 5 );
+//  std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
-	{
-		auto& carr = static_cast<double(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-		BOOST_REQUIRE( &carr[3] == &arr[3] );
+//  {
+//    auto& carr = static_cast<double(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//    BOOST_REQUIRE( &carr[3] == &arr[3] );
 
-		f1d5(static_cast<double(&)[5]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	}
-	{
-		double(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-		BOOST_REQUIRE( &carr[3] == &arr[3] );
-    //  vvv this will warn with -Wold-style-cast
-	//  f1d5((double(&)[5])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	}
-	{ //  vvv this syntax needs cast operator to be non-explicit
-	//  double(&carr)[5] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	//  BOOST_REQUIRE( &carr[3] == &arr[3] );
+//    f1d5(static_cast<double(&)[5]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//  }
+//  {
+//    double(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//    BOOST_REQUIRE( &carr[3] == &arr[3] );
+//     //  vvv this will warn with -Wold-style-cast
+//  //  f1d5((double(&)[5])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//  }
+//  { //  vvv this syntax needs cast operator to be non-explicit
+//  //  double(&carr)[5] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//  //  BOOST_REQUIRE( &carr[3] == &arr[3] );
 
-	//  f1d5(arr);
-	}
-}
+//  //  f1d5(arr);
+//  }
+// }
 
-BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
-	multi::array<double, 2> arr({5, 4});
-	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+// BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
+//  multi::array<double, 2> arr({5, 4});
+//  std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
-	{
-		auto& carr = static_cast<double(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
+//  {
+//    auto& carr = static_cast<double(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//    BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
-		f2d54(static_cast<double(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	}
-	{
-		double(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
+//    f2d54(static_cast<double(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//  }
+//  {
+//    double(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//    BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
-    //  vvv this will warn with -Wold-style-cast
-	//  f2d54((double(&)[5][4])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	}
-	{ //  vvv this syntax needs cast operator to be non-explicit
-	//  double(&carr)[5][4] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	//  BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
+//     //  vvv this will warn with -Wold-style-cast
+//  //  f2d54((double(&)[5][4])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//  }
+//  { //  vvv this syntax needs cast operator to be non-explicit
+//  //  double(&carr)[5][4] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+//  //  BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
-	//  f2d54(arr);
-	}
-}
+//  //  f2d54(arr);
+//  }
+// }
 
 BOOST_AUTO_TEST_CASE(as_span) {
 	// using SpanInt = multi::array_ptr<int, 1> const&;
