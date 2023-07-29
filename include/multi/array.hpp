@@ -460,11 +460,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
  public:
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()     && -> static_array      * = delete;       // NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
+	auto operator&()     && -> static_array      * = delete;       // NOLINT(google-runtime-operator) delete (from based) to avoid taking address of temporary // NOSONAR
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()      & -> static_array      * {return this;}  // NOLINT(google-runtime-operator) : override from base
+	auto operator&()      & -> static_array      * {return this;}  // NOLINT(google-runtime-operator) override from base // NOSONAR
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() const& -> static_array const* {return this;}  // NOLINT(google-runtime-operator) : override from base
+	auto operator&() const& -> static_array const* {return this;}  // NOLINT(google-runtime-operator) override from base // NOSONAR
 
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
@@ -490,17 +490,20 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	using alloc_traits = typename multi::allocator_traits<allocator_type>;
 	using ref = array_ref<T, 0, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
-	auto uninitialized_value_construct_if_not(std::true_type /*true */) {}
-	auto uninitialized_value_construct_if_not(std::false_type/*false*/) {
-		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
-	}
+	// auto uninitialized_value_construct_if_not(std::true_type /*true */) { /*no op*/ }  // TODO(correaa) replace by if constexpr
+	// auto uninitialized_value_construct_if_not(std::false_type/*false*/) {
+	//  return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
+	// }
 	auto uninitialized_value_construct() {
-		uninitialized_value_construct_if_not(
-			std::integral_constant<bool,
-				std::is_trivially_default_constructible_v<typename static_array::element>
-				or multi::force_element_trivial_default_construction<typename static_array::element>
-			>{}
-		);
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element> && ! multi::force_element_trivial_default_construction<typename static_array::element>) {
+			return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
+		}
+		// uninitialized_value_construct_if_not(
+		//  std::integral_constant<bool,
+		//    std::is_trivially_default_constructible_v<typename static_array::element>
+		//    or multi::force_element_trivial_default_construction<typename static_array::element>
+		//  >{}
+		// );
 	}
 
 	template<typename It> auto uninitialized_copy(It first) {return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());}
@@ -517,9 +520,10 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	constexpr explicit static_array(allocator_type const& alloc) : array_alloc{alloc} {}
 
  protected:
-	constexpr static_array(static_array&& other, allocator_type const& alloc)  // 6b
-	: array_alloc{alloc}
-	, ref{other.base_, other.extensions()} {
+	constexpr static_array(static_array<T, 0, Alloc>&& other, allocator_type const& alloc)  // 6b
+	: array_alloc{alloc}  // TODO(correaa) see if POCMA influences this line
+	, ref{other} {
+		other.base_ = nullptr;
 		other.ref::layout_t::operator=({});
 	}
 
