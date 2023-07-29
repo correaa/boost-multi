@@ -701,9 +701,7 @@ HD constexpr auto ref(It begin, It end)
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
-struct subarray
-// : multi::partially_ordered2<subarray<T, D, ElementPtr, Layout>, void>
-: array_types<T, D, ElementPtr, Layout> {
+struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = subarray;
 
@@ -1217,11 +1215,11 @@ struct subarray
 	constexpr auto addressof() && {return ptr{this->base_, this->layout()};}
 
 	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&()     && {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&()     && {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR //gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 
  private:
 	HD constexpr auto begin_aux() const {return iterator{types::base_                 , this->sub(), this->stride()};}
@@ -1253,13 +1251,13 @@ struct subarray
 	friend constexpr auto mbegin(subarray      & self) { return self.mbegin(); }
 	friend constexpr auto mend  (subarray      & self) { return self.mend()  ; }
 
-	constexpr auto mbegin()               && {return mbegin();}
-	constexpr auto mend()                 && {return mend()  ;}
-	friend constexpr auto mbegin(subarray     && self) {return self.mbegin();}
-	friend constexpr auto mend  (subarray     && self) {return self.mend()  ;}
+	       constexpr auto mbegin()       && {return mbegin();}
+	       constexpr auto mend()         && {return mend()  ;}
+	friend constexpr auto mbegin(subarray&& self) {return std::move(self).mbegin();}
+	friend constexpr auto mend  (subarray&& self) {return std::move(self).mend()  ;}
 
-	constexpr auto mbegin()           const& -> const_iterator {return begin();}
-	constexpr auto mend()             const& -> const_iterator {return end()  ;}
+	       constexpr auto mbegin()        const& -> const_iterator {return begin();}
+	       constexpr auto mend()          const& -> const_iterator {return end()  ;}
 	friend constexpr auto mbegin(subarray const& self) {return self.mbegin();}
 	friend constexpr auto mend  (subarray const& self) {return self.mend()  ;}
 
@@ -1337,17 +1335,17 @@ struct subarray
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	template<class Array> constexpr void swap(Array&& other) && {
+	template<class Array> constexpr void swap(Array&& other) && noexcept {
 		assert( std::move(*this).extension() == std::forward<Array>(other).extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		elements().swap(other.elements());
 	//  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
-	template<class A> constexpr void swap(A&& other) & {return swap(std::forward<A>(other));}
+	template<class A> constexpr void swap(A&& other) & noexcept {return swap(std::forward<A>(other));}
 
-	friend constexpr void swap(subarray&& self, subarray&& other) {std::move(self).swap(std::move(other));}
+	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
-	template<class Array> constexpr void swap(subarray const& self, Array&& other) {self.swap(other);}  // TODO(correaa) remove
-	template<class Array> constexpr void swap(Array&& other, subarray const& self) {self.swap(other);}
+	template<class Array> constexpr void swap(subarray const& self, Array&& other) {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
+	template<class Array> constexpr void swap(Array&& other, subarray const& self) {self.swap(std::forward<Array>(other));}
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, D, As...> const& other) -> bool {
@@ -1809,12 +1807,12 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	// NOLINTNEXTLINE(runtime/operator)
 	HD constexpr auto operator&()     && -> subarray_ptr<subarray, Layout> {  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed
-		return {this->base_, this->layout()};
+	 return {this->base_, this->layout()};
 	}
-	// NOLINTNEXTLINE(runtime/operator)
-	HD constexpr auto operator&()      & -> subarray_ptr<subarray, Layout> {  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed
-		return {this->base_, this->layout()};
-	}
+	// // NOLINTNEXTLINE(runtime/operator)
+	// HD constexpr auto operator&()      & -> subarray_ptr<subarray, Layout> {  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed
+	//  return {this->base_, this->layout()};
+	// }
 	// NOLINTNEXTLINE(runtime/operator)
 	HD constexpr auto operator&() const& -> subarray_ptr<basic_const_array, Layout> {return {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics
 
@@ -2210,18 +2208,18 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 //  template<class A> constexpr void swap(A&& other) &  {return swap(std::forward<A>(other));}
 //  template<class A> constexpr void swap(A&& other) && {return swap(std::forward<A>(other));}
 
-	constexpr void swap(subarray&& other) && {
+	constexpr void swap(subarray&& other) && noexcept {
 		assert(this->extension() == other.extension());
-		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
+		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
 	}
-	friend constexpr void swap(subarray&& self, subarray&& other) {std::move(self).swap(std::move(other));}
+	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
-	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) {std::move(self).swap(std::forward<A>(other));}
-	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) {std::move(self).swap(std::forward<A>(other));}
+	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) noexcept {std::move(self).swap(std::forward<A>(other));}
+	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept {std::move(self).swap(std::forward<A>(other));}
 
  private:
 	template<class A1, class A2>
-	 /*[[gnu::pure]]*/ static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {
+	static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {
 		if(extension(self).first() > extension(other).first()) {return true ;}
 		if(extension(self).first() < extension(other).first()) {return false;}
 		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
@@ -2275,15 +2273,15 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 			"Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements"
 		);
 
-#if defined(__GNUC__) and (not defined(__INTEL_COMPILER))
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
-		auto&& r1 = (*(reinterpret_cast<typename subarray::element_type* const&>(subarray::base_))).*member;  // ->*pm;
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
-		auto* p1 = &r1; P2 p2 = reinterpret_cast<P2&>(p1);
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
-#else
+// #if defined(__GNUC__) and (not defined(__INTEL_COMPILER))
+//    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
+//    auto&& r1 = (*(reinterpret_cast<typename subarray::element_type* const&>(subarray::base_))).*member;  // ->*pm;
+//    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
+//    auto* p1 = &r1; P2 p2 = reinterpret_cast<P2&>(p1);
+//    return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
+// #else
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*member))};  // this crashes nvcc 11.2-11.4 and some? gcc compiler
-#endif
+// #endif
 	}
 
 	constexpr auto moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
@@ -2342,9 +2340,9 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & AT    ::make_nvp("item", item);});
-	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
-	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
+		std::for_each(this->begin(), this->end(), [&](auto& item) {arxiv & AT    ::make_nvp("item", item);});
+	//  std::for_each(this->begin(), this->end(), [&](auto& item) {arxiv & cereal::make_nvp("item", item);});
+	//  std::for_each(this->begin(), this->end(), [&](auto& item) {arxiv &                          item ;});
 	}
 };
 
@@ -2536,9 +2534,9 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	// data() is here for compatibility with std::vector
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data() const& {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data()     && {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data()      & {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> =0> constexpr auto data() const& {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> =0> constexpr auto data()     && {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> =0> constexpr auto data()      & {return data_elements();}
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
 	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr {return           self .data_elements();}
@@ -2666,8 +2664,8 @@ class array_ptr<T, 0, Ptr> {
 	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() == other.ref_.base();}
 	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() != other.ref_.base();}
 
-	constexpr auto& operator* () const {return  ref_;}
-	constexpr auto  operator->() const {return &ref_;}
+	constexpr auto operator* () const -> auto& {return  ref_;}
+	constexpr auto operator->() const -> auto  {return &ref_;}
 };
 
 template<class TT, std::size_t N>
