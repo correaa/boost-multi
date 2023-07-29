@@ -170,11 +170,15 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
 	: Layout{lyt}, base_{data} {}
 
- protected:  // TODO(correaa) : find why this needs to be public and not protected or friend
-	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
+ protected:
+	template<
+		class ArrayTypes,
+		typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, decltype(multi::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
-	HD constexpr explicit array_types(ArrayTypes const& other) : Layout{other.layout()}, base_{other.base_} {}
+	// underlying pointers are explicitly convertible
+	HD constexpr explicit array_types(ArrayTypes const& other)
+	: Layout{other.layout()}, base_{other.base_} {}
 
 	template<
 		class ArrayTypes,
@@ -184,7 +188,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	HD constexpr /*implt*/ array_types(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
 	: Layout{other.layout()}, base_{other.base_} {}
-	// ^^^ TODO(correaa) : call explicit from implicit, careful with infinite recursion
 
 	template<
 		typename ElementPtr2,
