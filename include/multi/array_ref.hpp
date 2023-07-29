@@ -39,35 +39,15 @@
 	#define MULTI_NONV_CONSTEXPR /*constexpr*/
 #endif
 
-namespace std {  // NOLINT(cert-dcl58-cpp) consider defining multi::pointer_traits TODO(correaa) check if necessary
-
-template<class T>
-struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {  // NOLINT(cert-dcl58-cpp) TODO(correaa) eliminate?
-	template<class U> using rebind =
-		std::conditional_t<
-			std::is_const<U>::value,
-			U*,
-			std::pointer_traits<std::move_iterator<U*>>
-		>;
-};
-
-}  // end namespace std
-
 namespace boost::multi {
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct subarray;
 
-}  // end namespace boost::multi
-
-namespace boost::multi {
-
 template<class Array>
 constexpr auto home(Array&& arr)
 ->decltype(std::forward<A>(arr).home()) {
 	return std::forward<A>(arr).home(); }
-
-// template<class T> auto modify(T const& value) -> T& {return const_cast<T&>(value);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
@@ -149,23 +129,23 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	constexpr auto layout_mutable() -> layout_t& {return static_cast<layout_t&>(*this);}
 
  public:
-	using value_type = typename std::conditional<
+	using value_type = typename std::conditional_t<
 		(D > 1),
 		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
 		element
-	>::type;
+	>;
 
-	using reference = typename std::conditional<
+	using reference = typename std::conditional_t<
 		(D > 1),
 		subarray<element, D-1, element_ptr>,
 		typename std::iterator_traits<element_ptr>::reference
-	>::type;
+	>;
 
-	using const_reference = typename std::conditional<
+	using const_reference = typename std::conditional_t<
 		(D > 1),
 		subarray<element, D-1, element_const_ptr>,
 		typename std::iterator_traits<element_const_ptr>::reference
-	>::type;
+	>;
 
 	HD constexpr auto  base() const  -> element_ptr       {return base_;}
 	HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
@@ -190,11 +170,15 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
 	: Layout{lyt}, base_{data} {}
 
- protected:  // TODO(correaa) : find why this needs to be public and not protected or friend
-	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
+ protected:
+	template<
+		class ArrayTypes,
+		typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, decltype(multi::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
-	HD constexpr explicit array_types(ArrayTypes const& other) : Layout{other.layout()}, base_{other.base_} {}
+	// underlying pointers are explicitly convertible
+	HD constexpr explicit array_types(ArrayTypes const& other)
+	: Layout{other.layout()}, base_{other.base_} {}
 
 	template<
 		class ArrayTypes,
@@ -204,7 +188,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	HD constexpr /*implt*/ array_types(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
 	: Layout{other.layout()}, base_{other.base_} {}
-	// ^^^ TODO(correaa) : call explicit from implicit, careful with infinite recursion
 
 	template<
 		typename ElementPtr2,
