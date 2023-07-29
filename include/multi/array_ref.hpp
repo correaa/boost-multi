@@ -1071,9 +1071,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	HD constexpr auto transposed()      & -> subarray       {return transposed_aux();}
 	HD constexpr auto transposed()     && -> subarray       {return transposed_aux();}
 
-	friend HD /*constexpr*/ auto transposed(subarray const& self) -> basic_const_array {return self.transposed();}
-	friend HD /*constexpr*/ auto transposed(subarray      & self) -> subarray       {return self.transposed();}
-	friend HD /*constexpr*/ auto transposed(subarray     && self) -> subarray       {return self.transposed();}
+	friend HD constexpr auto transposed(subarray const& self) -> basic_const_array {return self.transposed();}  // TODO(correaa) rename basic_const_array to const_subarray
+	friend HD constexpr auto transposed(subarray      & self) -> subarray       {return           self .transposed();}
+	friend HD constexpr auto transposed(subarray     && self) -> subarray       {return std::move(self).transposed();}
 
 	friend HD MULTI_NONV_CONSTEXPR
 	auto operator~ (subarray const& self) -> basic_const_array {return self.transposed();}
@@ -1216,8 +1216,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&()     && {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR //gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
-	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	// // NOLINTNEXTLINE(runtime/operator)
+	// constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // NOSONAR // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 
@@ -2273,15 +2273,16 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 			"Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements"
 		);
 
-// #if defined(__GNUC__) and (not defined(__INTEL_COMPILER))
-//    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
-//    auto&& r1 = (*(reinterpret_cast<typename subarray::element_type* const&>(subarray::base_))).*member;  // ->*pm;
-//    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
-//    auto* p1 = &r1; P2 p2 = reinterpret_cast<P2&>(p1);
-//    return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
-// #else
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*member))};  // this crashes nvcc 11.2-11.4 and some? gcc compiler
-// #endif
+#if defined(__GNUC__) and (not defined(__INTEL_COMPILER))
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is ultimately what the function does. alternative for GCC/NVCC
+		auto&& r1 = (*(reinterpret_cast<element_type* const&>(this->base_))).*member;
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
+		auto* const p1 = &r1;
+		P2 const p2 = reinterpret_cast<P2 const&>(p1);
+#else
+		P2 const p2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
+#endif
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 	}
 
 	constexpr auto moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
