@@ -256,7 +256,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	HD constexpr auto  operator* () const -> Ref{return Ref{*this};}
 
 	HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
-	HD constexpr auto operator->()       -> Ref* {return  this;}
+	// HD constexpr auto operator->()       -> Ref* {return  this;}
 
 	HD constexpr auto  operator[](difference_type n) const -> Ref {return *(*this + n);}
 
