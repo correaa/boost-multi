@@ -519,15 +519,13 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	using typename ref::difference_type;
 	constexpr explicit static_array(allocator_type const& alloc) : array_alloc{alloc} {}
 
- protected:
-	constexpr static_array(static_array<T, 0, Alloc>&& other, allocator_type const& alloc)  // 6b
+	constexpr static_array(array<T, 0, Alloc>&& other, allocator_type const& alloc)  // 6b
 	: array_alloc{alloc}  // TODO(correaa) see if POCMA influences this line
 	, ref{other} {
 		other.base_ = nullptr;
 		other.ref::layout_t::operator=({});
 	}
 
- public:
 	using ref::operator==;
 	using ref::operator!=;
 
