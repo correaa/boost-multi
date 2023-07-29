@@ -654,12 +654,12 @@ struct elements_range_t {
 	~elements_range_t() = default;
 
  private:
-	/*[[gnu::pure]]*/ constexpr auto begin_aux() const {return iterator{base_, l_, 0                };}
-	/*[[gnu::pure]]*/ constexpr auto end_aux  () const {return iterator{base_, l_, l_.num_elements()};}
+	constexpr auto begin_aux() const {return iterator{base_, l_, 0                };}
+	constexpr auto end_aux  () const {return iterator{base_, l_, l_.num_elements()};}
 
  public:
-	/*[[gnu::pure]]*/ constexpr auto begin() const& -> const_iterator {return begin_aux();}
-	/*[[gnu::pure]]*/ constexpr auto end  () const& -> const_iterator {return end_aux  ();}
+	constexpr auto begin() const& -> const_iterator {return begin_aux();}
+	constexpr auto end  () const& -> const_iterator {return end_aux  ();}
 
 	constexpr auto begin()     && ->       iterator {return begin_aux();}
 	constexpr auto end  ()     && ->       iterator {return end_aux()  ;}
@@ -706,9 +706,7 @@ HD constexpr auto ref(It begin, It end)
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
-struct subarray
-// : multi::partially_ordered2<subarray<T, D, ElementPtr, Layout>, void>
-: array_types<T, D, ElementPtr, Layout> {
+struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = subarray;
 
@@ -1260,8 +1258,8 @@ struct subarray
 
 	constexpr auto mbegin()               && {return mbegin();}
 	constexpr auto mend()                 && {return mend()  ;}
-	friend constexpr auto mbegin(subarray     && self) {return self.mbegin();}
-	friend constexpr auto mend  (subarray     && self) {return self.mend()  ;}
+	friend constexpr auto mbegin(subarray     && self) {return std::move(self).mbegin();}
+	friend constexpr auto mend  (subarray     && self) {return std::move(self).mend()  ;}
 
 	constexpr auto mbegin()           const& -> const_iterator {return begin();}
 	constexpr auto mend()             const& -> const_iterator {return end()  ;}
@@ -1347,7 +1345,7 @@ struct subarray
 		elements().swap(other.elements());
 	//  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
-	template<class A> constexpr void swap(A&& other) & {return swap(std::forward<A>(other));}
+	template<class A> constexpr void swap(A&& other) & noexcept {return swap(std::forward<A>(other));}
 
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
@@ -1529,7 +1527,7 @@ struct subarray
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", item);});
+		std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
