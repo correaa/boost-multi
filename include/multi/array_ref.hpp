@@ -44,16 +44,10 @@ namespace boost::multi {
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct subarray;
 
-}  // end namespace boost::multi
-
-namespace boost::multi {
-
 template<class Array>
 constexpr auto home(Array&& arr)
 ->decltype(std::forward<A>(arr).home()) {
 	return std::forward<A>(arr).home(); }
-
-// template<class T> auto modify(T const& value) -> T& {return const_cast<T&>(value);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
@@ -135,23 +129,23 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	constexpr auto layout_mutable() -> layout_t& {return static_cast<layout_t&>(*this);}
 
  public:
-	using value_type = typename std::conditional<
+	using value_type = typename std::conditional_t<
 		(D > 1),
 		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
 		element
-	>::type;
+	>;
 
-	using reference = typename std::conditional<
+	using reference = typename std::conditional_t<
 		(D > 1),
 		subarray<element, D-1, element_ptr>,
 		typename std::iterator_traits<element_ptr>::reference
-	>::type;
+	>;
 
-	using const_reference = typename std::conditional<
+	using const_reference = typename std::conditional_t<
 		(D > 1),
 		subarray<element, D-1, element_const_ptr>,
 		typename std::iterator_traits<element_const_ptr>::reference
-	>::type;
+	>;
 
 	HD constexpr auto  base() const  -> element_ptr       {return base_;}
 	HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
