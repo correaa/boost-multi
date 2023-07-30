@@ -208,7 +208,10 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	subarray_ptr<Ref, Layout>, void, std::random_access_iterator_tag,
 	Ref const&, typename Layout::difference_type
 > {  //, boost::multi::totally_ordered2<subarray_ptr<Ref, Layout>, void>
+private:
 	mutable Ref ref_;
+
+public:
 	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	HD constexpr auto operator=(subarray_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
@@ -287,9 +290,9 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	// }
 
 	template<class RR, class LL, std::enable_if_t<not std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>  // TODO(correaa) improve this
-	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self.ref_.layout() == other.ref_.layout();}
+	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self->layout() == other->layout();}
 	template<class RR, class LL, std::enable_if_t<not std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>
-	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self.ref_.layout() == other.ref_.layout();}
+	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self->layout() == other->layout();}
 
  protected:
 	HD constexpr void increment() {ref_.base_ += Ref::nelems();}
@@ -356,14 +359,14 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
 	>
 	HD constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& other)
-	: ptr_{element_ptr{other.base()}, other.ptr_.ref_.layout()}, stride_{other.stride_} {}
+	: ptr_{element_ptr{other.base()}, other.ptr_->layout()}, stride_{other.stride_} {}
 
 	template<class EElement, typename PPtr,
 		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	HD constexpr/*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
-	: ptr_{element_ptr{other.ptr_.base()}, other.ptr_.ref_.layout()}, stride_{other.stride_} {}
+	: ptr_{element_ptr{other.ptr_->base()}, other.ptr_->layout()}, stride_{other.stride_} {}
 
 	array_iterator(array_iterator const&) = default;
 	auto operator=(array_iterator const&) -> array_iterator& = default;
@@ -377,7 +380,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	HD constexpr auto operator[](difference_type n) const -> subarray<element, D-1, element_ptr> {return *((*this) + n);}
 
 	friend HD constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {
-		return self.ptr_ == other.ptr_ and self.stride_== other.stride_ and self.ptr_.ref_.layout() == other.ptr_.ref_.layout();
+		return self.ptr_ == other.ptr_ and self.stride_== other.stride_ and self.ptr_->layout() == other.ptr_->layout();
 	}
 
 	HD constexpr auto operator< (array_iterator const& other) const -> bool {
@@ -409,8 +412,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	ptr_type ptr_;
 	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?
 
-	HD constexpr void decrement() {ptr_.ref_.base_ -= stride_;}
-	HD constexpr void advance(difference_type n) {ptr_.ref_.base_ += stride_*n;}
+	HD constexpr void decrement() {ptr_->base_ -= stride_;}
+	HD constexpr void advance(difference_type n) {ptr_->base_ += stride_*n;}
 
  public:
 	HD constexpr auto base()              const&       -> element_ptr {return ptr_.base();}
@@ -419,7 +422,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
 	friend constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
 
-	constexpr auto operator++() -> array_iterator& {ptr_.ref_.base_ += stride_; return *this;}
+	constexpr auto operator++() -> array_iterator& {ptr_->base_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {decrement(); return *this;}
 
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type {
@@ -1831,8 +1834,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	auto operator=(subarray&& other) &
-	noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  // NOSONAR
+	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  // NOSONAR
 	-> subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		operator=(other);
 		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
