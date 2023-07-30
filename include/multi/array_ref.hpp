@@ -2201,24 +2201,17 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		return self.extension() != other.extension() or self.elements() != other.elements();
 	}
 
-	/*[[gnu::pure]]*/ friend constexpr auto operator< (subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other);}
-	/*[[gnu::pure]]*/ friend constexpr auto operator<=(subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other) or self == other;}
-
-//  template<class Array> constexpr void swap(Array&& other) && {  // TODO(correaa) use .elements() to implement swap
-//      assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-//      adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(other)));
-//  }
-//  template<class A> constexpr void swap(A&& other) &  {return swap(std::forward<A>(other));}
-//  template<class A> constexpr void swap(A&& other) && {return swap(std::forward<A>(other));}
+	friend constexpr auto operator< (subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other);}
+	friend constexpr auto operator<=(subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other) or self == other;}
 
 	constexpr void swap(subarray&& other) && noexcept {
 		assert(this->extension() == other.extension());
-		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
+		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
 	}
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
-	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) {std::move(self).swap(std::forward<A>(other));}
-	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) {std::move(self).swap(std::forward<A>(other));}
+	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) noexcept {std::move(self).swap(std::forward<A>(other));}
+	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept {std::move(self).swap(std::forward<A>(other));}
 
  private:
 	template<class A1, class A2>
@@ -2343,7 +2336,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & AT    ::make_nvp("item", item);});
+		std::for_each(this->begin(), this->end(), [&](reference& item) {arxiv & AT    ::make_nvp("item", item);});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
