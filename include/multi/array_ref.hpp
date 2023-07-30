@@ -2344,7 +2344,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 template<class T2, class P2, class Array, class... Args>
 constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto) {
-	return self.template static_array_cast<T2, P2>(std::forward<Args>(args)...);
+	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
@@ -2392,18 +2392,18 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
 	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
 
-	template<
-		class TT, std::size_t N,
-		std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), ElementPtr>, int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
-	>
-	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
-	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
-		TT(&array)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	)
-	: array_ref(
-		multi::data_elements(array),
-		extensions(array)
-	) {}
+	// template<
+	//  class TT, std::size_t N,
+	//  std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), ElementPtr>, int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
+	// >
+	// // cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
+	// constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
+	//  TT(&array)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	// )
+	// : array_ref(
+	//  multi::data_elements(array),
+	//  extensions(array)
+	// ) {}
 
 	template<
 		class Array,
@@ -2458,13 +2458,14 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		array_ref::copy_elements(other.data_elements());
 		return *this;
 	}
+
 	constexpr auto operator=(array_ref const& other) && -> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(other);
 		return *this;
 	}
 
-	constexpr auto operator=(array_ref&& other) &  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	constexpr auto operator=(array_ref&& other) &  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  // NOSONAR
 	-> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(std::as_const(other));
@@ -2530,9 +2531,9 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	// data() is here for compatibility with std::vector
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data() const& {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data()     && {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> [[deprecated]] constexpr auto data()      & {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data() const& {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()     && {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()      & {return data_elements();}
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
 	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr {return           self .data_elements();}
@@ -2615,7 +2616,7 @@ using array_mref = array_ref<
 
 template<class TT, std::size_t N>
 constexpr auto ref(
-	TT(&arr)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+	TT(&arr)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
 ) {
 	return array_ref<typename std::remove_all_extents<TT[N]>::type, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
 }
@@ -2639,7 +2640,7 @@ struct array_ptr
 		std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), Ptr>,int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
 	>
 	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions) array_ptr is more general than pointer c-array
-	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
+	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays  // NOSONAR
 
 	constexpr auto operator*() const {
 		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};
