@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(assignments) {
 		std::vector<double> vec(5 * 7L, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 		std::vector<double> wec(5 * 7L, 33.0);  // NOLINT(fuchsia-default-arguments-calls)
 
-		multi::array_ptr<double, 2> Bp(wec.data(), {5, 7});
+		multi::array_ptr<double, 2> const Bp(wec.data(), {5, 7});
 		make_ref(vec.data()) = *Bp;
 		make_ref(vec.data()) = Bp->sliced(0, 5);
 

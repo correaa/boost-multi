@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 		{15.0, 16.0, 17.0, 18.0, 19.0},
 	};
 
-	multi::array_ptr<double, 2> map{&arr};
+	multi::array_ptr<double, 2> const map{&arr};
 	BOOST_REQUIRE( &map->operator[](1)[1] == &arr[1][1] );
 	BOOST_REQUIRE( (*&arr)[1][1] == 6.0 );
 
