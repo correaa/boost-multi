@@ -142,19 +142,18 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::drop;
 	constexpr auto drop(difference_type n) && -> decltype(auto) {return ref::drop(n).element_moved();}
 
- protected:
-	static_array(static_array&& other, allocator_type const& alloc) noexcept          // 6b  TODO(correaa) move from array only
+ public:
+	static_array(decay_type&& other, allocator_type const& alloc) noexcept          // 6b  TODO(correaa) move from array only
 	: array_alloc{alloc}  // TODO(correaa) : handle allocation propagation here
-	, ref{other.base_, other.extensions()} {
+	, ref{std::exchange(other.base_, nullptr), other.extensions()} {
 		other.layout_mutable() = {};
 	//  other.ref::layout_t::operator=({});
-		other.base_ = nullptr;
+	//  other.base_ = nullptr;
 	}
 
-	static_array(static_array&& other) noexcept
+	static_array(decay_type&& other) noexcept
 	: static_array(std::move(other), allocator_type{}) {}  // 6b
 
- public:
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last, allocator_type const& alloc)
