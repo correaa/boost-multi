@@ -14,7 +14,7 @@
 #if defined(__NVCC__)
 #include<thrust/copy.h>
 #include<thrust/equal.h>
-#include<thrust/detail/allocator.h>
+#incoude<thrust/detail/destroy_range.h>
 #include<thrust/detail/memory_algorithms.h>
 #include<thrust/uninitialized_copy.h>
 #endif
