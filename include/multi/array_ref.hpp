@@ -735,7 +735,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	HD constexpr subarray(layout_type const& layout, ElementPtr const& base)
 	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
-	auto operator=(subarray&& other) noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {operator=(other); return *this;}
+	auto operator=(subarray&& other) noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {operator=(other); return *this;} //NOSONAR
 
  protected:
 	using types::types;
@@ -1834,7 +1834,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  //NOSONAR
+	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) //NOSONAR // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)
 	-> subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		operator=(other);
 		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -2653,19 +2653,21 @@ struct array_ptr
 };
 
 template<class T, typename Ptr>
-class array_ptr<T, 0, Ptr> : private multi::array_ref<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
+class array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
+	mutable multi::array_ref<T, 0, Ptr> ref_;
+
  public:
-	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : multi::array_ref<T, 0, Ptr>(dat, extensions) {}
+	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : ref_(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
 
 	constexpr explicit operator bool() const {return this->base();}
 	constexpr explicit operator Ptr () const {return this->base();}
 
-	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool {return self.base() == other.base();}
-	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool {return self.base() != other.base();}
+	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() == other.ref_.base();}
+	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() != other.ref_.base();}
 
-	constexpr auto operator* () const -> multi::array_ref<T, 0, Ptr>& {return const_cast<array_ptr&>(*this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) : find a way to avoid using const_cast
-	constexpr auto operator->() const -> multi::array_ref<T, 0, Ptr>* {return const_cast<array_ptr*>( this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) : find a way to avoid using const_cast
+	constexpr auto operator* () const -> multi::array_ref<T, 0, Ptr>& {return  ref_;}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
+	constexpr auto operator->() const -> multi::array_ref<T, 0, Ptr>* {return &ref_;}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
 };
 
 template<class TT, std::size_t N>
