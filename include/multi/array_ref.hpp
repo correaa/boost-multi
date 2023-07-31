@@ -735,7 +735,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	HD constexpr subarray(layout_type const& layout, ElementPtr const& base)
 	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
-	auto operator=(subarray&& other) noexcept(false) -> subarray& {operator=(other); return *this;}
+	auto operator=(subarray&& other) noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {operator=(other); return *this;}
 
  protected:
 	using types::types;
@@ -1834,7 +1834,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  // NOSONAR
+	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  //NOSONAR
 	-> subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		operator=(other);
 		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -2279,10 +2279,10 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		auto&& r1 = (*(reinterpret_cast<typename subarray::element_type* const&>(subarray::base_))).*member;  // ->*pm;
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
 		auto* p1 = &r1; P2 p2 = reinterpret_cast<P2&>(p1);
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
 #else
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*member))};  // this crashes nvcc 11.2-11.4 and some? gcc compiler
+		auto p2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
 	}
 
 	constexpr auto moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
@@ -2567,11 +2567,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
  public:
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
 	constexpr explicit operator TTN const&() const& { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
 	constexpr explicit operator TTN&() && { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
 	constexpr explicit operator TTN&() & { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
  private:
@@ -2623,7 +2623,7 @@ template<class TT, std::size_t N>
 constexpr auto ref(
 	TT(&arr)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
 ) {
-	return array_ref<typename std::remove_all_extents<TT[N]>::type, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
 }
 
 template<class T, dimensionality_type D, typename Ptr = T*>
@@ -2653,7 +2653,7 @@ struct array_ptr
 };
 
 template<class T, typename Ptr>
-class array_ptr<T, 0, Ptr> : multi::array_ref<T, 0, Ptr>{
+class array_ptr<T, 0, Ptr> : private multi::array_ref<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
  public:
 	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : multi::array_ref<T, 0, Ptr>(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
@@ -2780,7 +2780,7 @@ auto transposed(T(&array)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 
 }  // end namespace boost::multi
 
 #ifndef MULTI_SERIALIZATION_ARRAY_VERSION
-	#define MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version
+#define MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
 #endif
 
 // #define MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array
