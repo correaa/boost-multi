@@ -147,7 +147,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(decay_type&& other, allocator_type const& alloc) noexcept          // 6b  TODO(correaa) move from array only
 	: array_alloc{alloc}  // TODO(correaa) : handle allocation propagation here
 	, ref{std::exchange(other.base_, nullptr), other.extensions()} {
-		other.layout_mutable() = {};
+		std::move(other).layout_mutable() = {};
 	//  other.ref::layout_t::operator=({});
 	//  other.base_ = nullptr;
 	}
@@ -285,7 +285,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array{static_array<T, D>(values.begin(), values.end()), alloc} {}
 
 	template<class TT, std::size_t N>
-	constexpr explicit static_array(TT(&array)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility
+	constexpr explicit static_array(TT(&array)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
 	: static_array(std::begin(array), std::end(array)) {}
 
 	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
@@ -342,7 +342,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 			void
 		>
 	>;
-	using const_reference = typename std::conditional<
+	using const_reference = std::conditional_t<
 		(D > 1),
 		subarray<typename static_array::element, D - 1, typename static_array::element_const_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
 		typename std::conditional<
@@ -350,7 +350,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 			decltype(*std::declval<typename static_array::element_const_ptr>()),
 			void
 		>::type
-	>::type;
+	>;
 
 	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;
 	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;
@@ -460,6 +460,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
+	using decay_type = array<T, 0, Alloc>;
 
 	template<class Ptr>
 	void assign(Ptr data) & {
@@ -508,14 +509,12 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	using typename ref::difference_type;
 	constexpr explicit static_array(allocator_type const& alloc) : array_alloc{alloc} {}
 
- protected:
-	constexpr static_array(static_array&& other, allocator_type const& alloc)  // 6b
+	constexpr static_array(decay_type&& other, allocator_type const& alloc)  // 6b
 	: array_alloc{alloc}
 	, ref{other.base_, other.extensions()} {
 		other.ref::layout_t::operator=({});
 	}
 
- public:
 	using ref::operator==;
 	using ref::operator!=;
 
