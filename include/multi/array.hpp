@@ -142,19 +142,19 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::drop;
 	constexpr auto drop(difference_type n) && -> decltype(auto) {return ref::drop(n).element_moved();}
 
- protected:
-	static_array(static_array&& other, allocator_type const& alloc) noexcept          // 6b  TODO(correaa) move from array only
+	static_array(static_array&&) = delete;
+
+	static_array(decay_type&& other, allocator_type const& alloc) noexcept          // 6b  TODO(correaa) move from array only
 	: array_alloc{alloc}  // TODO(correaa) : handle allocation propagation here
-	, ref{other.base_, other.extensions()} {
+	, ref{std::exchange(other.base_, nullptr), other.extensions()} {
 		other.layout_mutable() = {};
 	//  other.ref::layout_t::operator=({});
-		other.base_ = nullptr;
+	//  other.base_ = nullptr;
 	}
 
-	static_array(static_array&& other) noexcept
+	explicit static_array(decay_type&& other) noexcept
 	: static_array(std::move(other), allocator_type{}) {}  // 6b
 
- public:
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last, allocator_type const& alloc)
@@ -276,7 +276,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	static_array(std::initializer_list<typename static_array<T, D>::value_type> values)
-	: static_array{static_array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
+	: static_array{array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> values,
@@ -288,16 +288,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr explicit static_array(TT(&array)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility
 	: static_array(std::begin(array), std::end(array)) {}
 
-	// template<class It> static auto distance(It a, It b) {
-	//  using std::distance;
-	//  return distance(a, b);
-	// }
-
 	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
 	constexpr auto end  () const& -> typename static_array::const_iterator {return ref:: end  ();}
-
-//  constexpr auto begin()     && -> typename static_array:: move_iterator {return ref::mbegin();}
-//  constexpr auto end  ()     && -> typename static_array:: move_iterator {return ref::mend  ();}
 
 	constexpr auto begin()      && -> typename static_array::      iterator {return ref:: begin();}
 	constexpr auto end  ()      && -> typename static_array::      iterator {return ref:: end  ();}
@@ -341,15 +333,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 	using element_move_ptr  = multi::move_ptr<typename static_array::element_ptr>;
 
-	using reference = typename std::conditional<
+	using reference = std::conditional_t<
 		(D > 1),
 		subarray<typename static_array::element, D - 1, typename static_array::element_ptr>,
-		typename std::conditional<
+		std::conditional_t<
 			D == 1,
 			typename std::iterator_traits<typename static_array::element_ptr>::reference,
 			void
-		>::type
-	>::type;
+		>
+	>;
 	using const_reference = typename std::conditional<
 		(D > 1),
 		subarray<typename static_array::element, D - 1, typename static_array::element_const_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
@@ -846,7 +838,7 @@ struct array : static_array<T, D, Alloc> {
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
-	: static_{static_array<T, D>(ilv.begin(), ilv.end())} {}  // construct all with default constructor and copy to special memory at the end
+	: static_{array<T, D>(ilv.begin(), ilv.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	array() = default;
 	array(array const&) = default;

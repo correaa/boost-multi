@@ -159,9 +159,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	       constexpr auto origin()           const&       -> decltype(auto) {return base_ + Layout::origin();}
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) {return self.origin();}
 
+	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
+ 
  protected:
 	using derived = subarray<T, D, ElementPtr, Layout>;
-	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
 	HD constexpr explicit array_types(std::nullptr_t nil) : Layout{}, base_{nil} {}
 
  public:
@@ -202,19 +203,23 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 template<class Ref, class Layout>
 struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
-: private Ref  // TODO(correaa) : remove inheritance from Ref??
-, boost::multi::iterator_facade<
+//: private Ref  // TODO(correaa) : remove inheritance from Ref??
+: boost::multi::iterator_facade<
 	subarray_ptr<Ref, Layout>, void, std::random_access_iterator_tag,
 	Ref const&, typename Layout::difference_type
 > {  //, boost::multi::totally_ordered2<subarray_ptr<Ref, Layout>, void>
+private:
+	mutable Ref ref_;
+
+public:
 	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	HD constexpr auto operator=(subarray_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
 	-> subarray_ptr& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
-		this->base_ = other.base_;
+		this->ref_.base_ = other.ref_.base_;
 	//  static_cast<Layout&>(*this)
-		this->layout_mutable() = other.layout();
+		this->ref_.layout_mutable() = other.ref_.layout();
 		return *this;
 	}
 
@@ -227,13 +232,13 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
-	HD constexpr subarray_ptr(std::nullptr_t nil) : Ref{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
+	HD constexpr subarray_ptr(std::nullptr_t nil) : ref_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
 	HD constexpr subarray_ptr() : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
 
 	template<class, class> friend struct subarray_ptr;
 
-	HD constexpr subarray_ptr(typename Ref::element_ptr base, layout_t<typename Ref::rank{} - 1>      lyt) : Ref{lyt, base} {}
-	HD constexpr subarray_ptr(typename Ref::element_ptr base, index_extensions<typename Ref::rank{}> exts) : Ref{base, exts} {}
+	HD constexpr subarray_ptr(typename Ref::element_ptr base, layout_t<typename Ref::rank{} - 1>      lyt) : ref_{lyt, base} {}
+	HD constexpr subarray_ptr(typename Ref::element_ptr base, index_extensions<typename Ref::rank{}> exts) : ref_{base, exts} {}
 	template<class Array>
 	// cppcheck-suppress noExplicitConstructor ; no information loss, allows comparisons
 	HD constexpr subarray_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
@@ -244,38 +249,39 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
-		this->base_ = other.base_;
+		this->ref_.base_ = other.ref_.base_;
 	//  static_cast<Layout&>(*this)
-		this->layout_mutable() = other.layout();
+		this->ref_.layout_mutable() = other.ref_.layout();
 		return *this;
 	}
-	HD constexpr explicit operator bool() const {return this->base_;}
+	HD constexpr explicit operator bool() const {return base();}
 
 	HD constexpr auto dereference() const -> Ref {return Ref{this->layout(), this->base_};}
 
-	HD constexpr auto  operator* () const -> Ref{return Ref{*this};}
+	HD constexpr auto  operator* () const -> Ref {return ref_;}
 
-	HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
+	HD constexpr auto operator->() const -> Ref* {return std::addressof(ref_);}
+	// HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
 	// HD constexpr auto operator->()       -> Ref* {return  this;}
 
 	HD constexpr auto  operator[](difference_type n) const -> Ref {return *(*this + n);}
 
 	HD constexpr auto operator<(subarray_ptr const& other) const -> bool {return distance_to(other) > 0;}
 
-	HD constexpr subarray_ptr(typename Ref::element_ptr base, Layout const& lyt) : Ref{lyt, base} {}
+	HD constexpr subarray_ptr(typename Ref::element_ptr base, Layout const& lyt) : ref_{lyt, base} {}
 
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
 	friend struct subarray;
 
-	HD constexpr auto base() const -> typename Ref::element_ptr {return this->base_;}
+	HD constexpr auto base() const -> typename Ref::element_ptr {return ref_.base();}
 
 	friend HD constexpr auto base(subarray_ptr const& self) {return self.base();}
 
-	using Ref::base_;
-	using Ref::layout;
+//  using Ref::base_;
+//  using Ref::layout;
 
 	constexpr auto operator==(subarray_ptr const& other) const -> bool {
-		return (this->base_ == other.base_) and (this->layout() == other.layout());
+		return (this->ref_.base_ == other.ref_.base_) and (this->ref_.layout() == other.ref_.layout());
 	}
 
 	// template<class Array>
@@ -284,20 +290,20 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	// }
 
 	template<class RR, class LL, std::enable_if_t<not std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>  // TODO(correaa) improve this
-	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self.layout() == other->layout();}
+	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self->layout() == other->layout();}
 	template<class RR, class LL, std::enable_if_t<not std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>
-	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self.layout() == other->layout();}
+	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self->layout() == other->layout();}
 
  protected:
-	HD constexpr void increment() {base_ += Ref::nelems();}
-	HD constexpr void decrement() {base_ -= Ref::nelems();}
+	HD constexpr void increment() {ref_.base_ += Ref::nelems();}
+	HD constexpr void decrement() {ref_.base_ -= Ref::nelems();}
 
-	HD constexpr void advance(difference_type n) {base_ += Ref::nelems()*n;}
+	HD constexpr void advance(difference_type n) {ref_.base_ += ref_.nelems()*n;}
 	HD constexpr auto distance_to(subarray_ptr const& other) const -> difference_type {
 		assert( Ref::nelems() == other.Ref::nelems() and Ref::nelems() != 0 );
-		assert( (other.base_ - base_)%Ref::nelems() == 0);
-		assert( layout() == other.layout() );
-		return (other.base_ - base_)/Ref::nelems();
+		assert( (other.base() - base())%Ref::nelems() == 0);
+		assert( ref_.layout() == other.ref_.layout() );
+		return (other.base() - base())/Ref::nelems();
 	}
 
  public:
@@ -353,14 +359,14 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
 	>
 	HD constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& other)
-	: ptr_{element_ptr{other.base()}, other.ptr_.layout()}, stride_{other.stride_} {}
+	: ptr_{element_ptr{other.base()}, other.ptr_->layout()}, stride_{other.stride_} {}
 
 	template<class EElement, typename PPtr,
 		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	HD constexpr/*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
-	: ptr_{element_ptr{other.ptr_.base_}, other.ptr_.layout()}, stride_{other.stride_} {}
+	: ptr_{element_ptr{other.ptr_->base()}, other.ptr_->layout()}, stride_{other.stride_} {}
 
 	array_iterator(array_iterator const&) = default;
 	auto operator=(array_iterator const&) -> array_iterator& = default;
@@ -374,12 +380,12 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	HD constexpr auto operator[](difference_type n) const -> subarray<element, D-1, element_ptr> {return *((*this) + n);}
 
 	friend HD constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {
-		return self.ptr_ == other.ptr_ and self.stride_== other.stride_ and self.ptr_.layout() == other.ptr_.layout();
+		return self.ptr_ == other.ptr_ and self.stride_== other.stride_ and self.ptr_->layout() == other.ptr_->layout();
 	}
 
 	HD constexpr auto operator< (array_iterator const& other) const -> bool {
 		assert(stride_ != 0);
-		return (0 < stride_)?(ptr_.base_ < other.ptr_.base_):(other.ptr_.base_ < ptr_.base_);
+		return (0 < stride_)?(ptr_.base() < other.ptr_.base()):(other.ptr_.base() < ptr_.base());
 	}
 
 	HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> lyt, index stride)
@@ -406,23 +412,23 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	ptr_type ptr_;
 	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?
 
-	HD constexpr void decrement() {ptr_.base_ -= stride_;}
-	HD constexpr void advance(difference_type n) {ptr_.base_ += stride_*n;}
+	HD constexpr void decrement() {ptr_->base_ -= stride_;}
+	HD constexpr void advance(difference_type n) {ptr_->base_ += stride_*n;}
 
  public:
-	HD constexpr auto base()              const&       -> element_ptr {return ptr_.base_;}
+	HD constexpr auto base()              const&       -> element_ptr {return ptr_.base();}
 	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr {return self.base();}
 
 	HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
 	friend constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
 
-	constexpr auto operator++() -> array_iterator& {ptr_.base_ += stride_; return *this;}
+	constexpr auto operator++() -> array_iterator& {ptr_->base_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {decrement(); return *this;}
 
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type {
 		assert(self.stride_ == other.stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
 		assert(self.stride_ != 0);              // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
-		return (self.ptr_.base_ - other.ptr_.base_)/self.stride_;
+		return (self.ptr_.base() - other.ptr_.base())/self.stride_;
 	}
 
 	constexpr auto operator+=(difference_type n) -> array_iterator& {advance(+n); return *this;}
@@ -1828,8 +1834,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	auto operator=(subarray&& other) &
-	noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  // NOSONAR
+	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  // NOSONAR
 	-> subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		operator=(other);
 		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -2465,7 +2470,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		return *this;
 	}
 
-	constexpr auto operator=(array_ref&& other) &  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  // NOSONAR
+	constexpr auto operator=(array_ref&& other) &  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  //NOSONAR
 	-> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(std::as_const(other));
@@ -2774,24 +2779,12 @@ auto transposed(T(&array)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 
 
 }  // end namespace boost::multi
 
-namespace boost::serialization {
-
 #ifndef MULTI_SERIALIZATION_ARRAY_VERSION
 	#define MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version
 #endif
 
 // #define MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array
 // #define MULTI_SERIALIZATION_ARRAY_VERSION -1 // save data as structured nested labels array
-// this is disabled! #define MULTI_SERIALIZATION_ARRAY_VERSION  2 // save data as binary object if possible even in XML and text mode (not portable)
 // #define MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
-
-//  template<typename T, boost::multi::dimensionality_type D, class A>
-//  struct version< boost::multi::array_ref<T, D, A> > {
-//    using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>; // typedef mpl::int_<1> type;
-////  typedef mpl::integral_c_tag tag;
-//  enum { value = type::value };
-//};
-
-}  // end namespace boost::serialization
 
 #endif  // MULTI_ARRAY_REF_HPP_
