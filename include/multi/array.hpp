@@ -483,17 +483,10 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	using alloc_traits = typename multi::allocator_traits<allocator_type>;
 	using ref = array_ref<T, 0, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
-	auto uninitialized_value_construct_if_not(std::true_type /*true */) {}
-	auto uninitialized_value_construct_if_not(std::false_type/*false*/) {
-		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
-	}
 	auto uninitialized_value_construct() {
-		uninitialized_value_construct_if_not(
-			std::integral_constant<bool,
-				std::is_trivially_default_constructible_v<typename static_array::element>
-				or multi::force_element_trivial_default_construction<typename static_array::element>
-			>{}
-		);
+		if constexpr(not(std::is_trivially_default_constructible_v<typename static_array::element> or multi::force_element_trivial_default_construction<typename static_array::element>)) {
+			return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
+		}
 	}
 
 	template<typename It> auto uninitialized_copy(It first) {return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());}
@@ -501,7 +494,10 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	auto uninitialized_move(It first) {
 		return adl_alloc_uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data_elements());
 	}
-	void destroy() {}  // TODO(correaa) array_alloc::destroy_n(this->data_elements(), this->num_elements());}
+	auto destroy() {
+		return adl_alloc_destroy_n(this->alloc(), this->data_elements(), this->num_elements());
+		// array_alloc::destroy_n(this->data_elements(), this->num_elements());
+	}
 
  public:
 	using typename ref::value_type;
@@ -512,7 +508,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	constexpr static_array(decay_type&& other, allocator_type const& alloc)  // 6b
 	: array_alloc{alloc}
 	, ref{other.base_, other.extensions()} {
-		other.ref::layout_t::operator=({});
+		std::move(other).ref::layout_t::operator=({});
 	}
 
 	using ref::operator==;
