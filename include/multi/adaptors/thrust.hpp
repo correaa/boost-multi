@@ -5,9 +5,15 @@
 #define MULTI_ADAPTORS_THRUST_HPP_
 #pragma once
 
+#ifndef hicup
+#define hicup cuda
+#endif
+
 #include "../array.hpp"
 
-#include "./thrust/cuda/managed.hpp"
+// #if hicup == cuda
+// #include "./thrust/cuda/managed.hpp"
+// #endif
 
 #include "./thrust/reference.hpp"
 
@@ -16,13 +22,19 @@
 #include <thrust/universal_allocator.h>
 #include <thrust/universal_ptr.h>
 
-#include <thrust/system/cuda/memory.h>  // ::thrust::cuda::allocator
+#if defined(__NVCC__)
+#include <thrust/system/cuda/memory.h> // for ::thrust::cuda::allocator
+#else
+#include <thrust/system/hip/memory.h>  // for ::thrust::hip::allocator
+#endif
+// #include <thrust/system/cuda/memory.h>  // ::thrust::cuda::allocator
 
 // #include <thrust/detail/type_traits/pointer_traits.h>
 
 #include <utility>  // std::copy
 
 #include <multi/adaptors/thrust/fix_pointer_traits.hpp>
+#include <multi/adaptors/thrust/fix_copy.hpp>
 
 // // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
 // namespace thrust {
@@ -43,10 +55,18 @@
 // }  // end namespace std
 // // end of nvcc thrust 11.5 workaround
 
+#if defined(__NVCC__)
+#define HICUP cuda
+#define HICUP_(NAME)  cuda ## NAME
+#else
+#define HICUP hip
+#define HICUP_(NAME)  hip ## NAME
+#endif
+
 namespace boost::multi {
 
 template<class T>
-struct pointer_traits<::thrust::pointer<T, ::thrust::cuda_cub::tag, T&>> : std::pointer_traits<::thrust::pointer<T, ::thrust::cuda_cub::tag, T&>> {
+struct pointer_traits<::thrust::pointer<T, ::thrust::HICUP::tag, T&>> : std::pointer_traits<::thrust::pointer<T, ::thrust::HICUP::tag, T&>> {
 	using default_allocator_type = ::thrust::universal_allocator<std::decay_t<T>>;
 };
 
@@ -55,10 +75,10 @@ struct pointer_traits<::thrust::pointer<T, ::thrust::cuda_cub::tag, T&>> : std::
 namespace boost::multi {
 
 template<class TT>
-struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>>
-: std::allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>> {
+struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::HICUP::universal_memory_resource>>
+: std::allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::HICUP::universal_memory_resource>> {
  private:
-	using Alloc = ::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>;
+	using Alloc = ::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::HICUP::universal_memory_resource>;
 	using base = std::allocator_traits<Alloc>;
 
  public:
@@ -81,28 +101,34 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	using device_index = int;
 	static auto get_current_device() -> device_index {
 		int device;
-		switch(cudaGetDevice(&device)) {
-			case cudaSuccess          : break;
-			case cudaErrorInvalidValue: assert(0);
+		switch(HICUP_(GetDevice)(&device)) {
+			case HICUP_(Success)          : break;
+			case HICUP_(ErrorInvalidValue): assert(0);
+			default: assert(0);
 		}
 		return device;
 	}
 	static void prefetch_to_device(const_void_pointer p, size_type byte_count, device_index d) {
-		switch(cudaMemPrefetchAsync(raw_pointer_cast(p), byte_count, d)) {
-			case cudaSuccess           : break;
-			case cudaErrorInvalidValue : assert(0); break;
-			case cudaErrorInvalidDevice: assert(0); break;
+		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(p), byte_count, d)) {
+			case HICUP_(Success)           : break;
+			case HICUP_(ErrorInvalidValue) : assert(0); break;
+			case HICUP_(ErrorInvalidDevice): assert(0); break;
+			default: assert(0);
 		}
 	}
 
 	static auto get_device(const_void_pointer p) -> device_index {
+		#if defined(__NVCC__)
 		cudaPointerAttributes attr{};
-		switch(cudaPointerGetAttributes(&attr, raw_pointer_cast(p))) {
-			case cudaSuccess: break;
-			case cudaErrorInvalidDevice: assert(0); break;
-			case cudaErrorInvalidValue: assert(0); break;
+		#else
+		hipPointerAttribute_t attr{};
+		#endif
+		switch(HICUP_(PointerGetAttributes)(&attr, raw_pointer_cast(p))) {
+			case HICUP_(Success): break;
+			case HICUP_(ErrorInvalidDevice): assert(0); break;
+			case HICUP_(ErrorInvalidValue): assert(0); break;
 		}
-		assert(attr.type == cudaMemoryTypeManaged);
+		assert(attr.type == HICUP_(MemoryTypeManaged));
 		return attr.device;
 	}
 };
@@ -193,11 +219,11 @@ namespace host      {template<class T, multi::dimensionality_type D> using array
 // defines multi::thrust::cuda::array
 // defines multi::thrust::cuda::managed::array
 namespace cuda {
-	template<class T, multi::dimensionality_type D> using array = multi::array<T, D, ::thrust::cuda::allocator<T>>;
+	template<class T, multi::dimensionality_type D> using array = multi::array<T, D, ::thrust::HICUP::allocator<T>>;
 
-	namespace managed {
-		template<class T, multi::dimensionality_type D> using array = multi::array<T, D, boost::multi::thrust::cuda::managed::allocator<T>>;
-	}  // end namespace managed
+	// namespace managed {
+	// 	template<class T, multi::dimensionality_type D> using array = multi::array<T, D, boost::multi::thrust::hip::managed::allocator<T>>;
+	// }  // end namespace managed
 }  // end namespace cuda
 
 namespace  mr {template<class T, multi::dimensionality_type D, class MR> using array = array<T, D, ::thrust::mr::allocator<T, MR>>;}
@@ -208,14 +234,14 @@ namespace pmr {
 
 namespace cuda {
 
-template<class T, multi::dimensionality_type D> using universal_array = multi::array<T, D, ::thrust::cuda::universal_allocator<T> >;
+template<class T, multi::dimensionality_type D> using universal_array = multi::array<T, D, ::thrust::HICUP::universal_allocator<T> >;
 
 namespace universal {
 	template<class T, multi::dimensionality_type D> using array = multi::thrust::cuda::universal_array<T, D>;
 }
 
 namespace pmr {
-	template<class T, multi::dimensionality_type D> using universal_array = ::boost::multi::thrust::pmr::array<T, D, ::thrust::cuda::universal_pointer<void>>;
+	template<class T, multi::dimensionality_type D> using universal_array = ::boost::multi::thrust::pmr::array<T, D, ::thrust::HICUP::universal_pointer<void>>;
 }  // end namespace pmr
 }  // end namespace cuda
 
@@ -226,157 +252,10 @@ namespace pmr {
 namespace boost::multi {
 
 template<class Q, class R>
-constexpr auto default_allocator_of(::thrust::pointer<Q, ::thrust::cuda_cub::tag, Q&> /*unused*/) {
-	return ::thrust::cuda::universal_allocator<typename std::iterator_traits<::thrust::pointer<Q, ::thrust::cuda_cub::tag, Q&>>::value_type>{};
+constexpr auto default_allocator_of(::thrust::pointer<Q, ::thrust::HICUP::tag, Q&> /*unused*/) {
+	return ::thrust::HICUP::universal_allocator<typename std::iterator_traits<::thrust::pointer<Q, ::thrust::HICUP::tag, Q&>>::value_type>{};
 }
 
-// copy_n
-#if 1
-template<class Q1, class L1, class Size, class Q2, class R2, class L2>
-auto copy_n(
-	boost::multi::elements_iterator_t<                  Q1*                                                , L1>   first, Size count,
-	boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2>, L2> d_first
-)-> boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2>, L2> {
-	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		if constexpr(L1::dimensionality == 1 and L2::dimensionality == 1) {
-			if(first.layout().stride() == 1 and d_first.layout().stride() == 1) {
-				auto s = cudaMemcpy  (raw_pointer_cast(d_first.current()),                                                                 first.current(),                                                               sizeof(Q2)* static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
-			} else {
-				auto s = cudaMemcpy2D(raw_pointer_cast(d_first.current()), static_cast<std::size_t>(d_first.layout().stride())*sizeof(Q2), first.current(), static_cast<std::size_t>(first.layout().stride())*sizeof(Q2), sizeof(Q2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
-			}
-			return d_first + count;
-		} else if constexpr(L1::dimensionality == 2 and L1::dimensionality == 2) {
-			if(std::get<1>(first.layout().strides()) == 1 and std::get<1>(d_first.layout().strides()) == 1 and count%std::get<1>(first.layout().sizes()) == 0) {
-				auto s = cudaMemcpy2D(raw_pointer_cast(d_first.current()), static_cast<std::size_t>(d_first.layout().stride())*sizeof(Q2), first.current(), static_cast<std::size_t>(first.layout().stride())*sizeof(Q2), static_cast<std::size_t>(std::get<1>(first.layout().sizes()))*sizeof(Q2), static_cast<std::size_t>(count/std::get<1>(first.layout().sizes())), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
-				return d_first + count;
-			}  // else fallthrough
-		}
-		cudaHostRegister(
-			const_cast<void*>(static_cast<void const*>(first.base())),
-			static_cast<std::size_t>                  (first.layout().hull_size()*sizeof(Q1)),
-			cudaHostRegisterPortable
-		);
-		auto ret = ::thrust::copy_n(
-			::thrust::cuda::par,
-			first, count, d_first
-		);
-		cudaHostUnregister(
-			const_cast<void*>(static_cast<void const*>(first.base()))
-		);
-		return ret;
-	} else {
-		return ::thrust::copy_n(first, count, d_first);
-	}
-	return d_first + count;
 }
 
-template<class Q1, class R1, class L1, class Size, class Q2, class L2>
-auto copy_n(
-	boost::multi::elements_iterator_t<::thrust::pointer<Q1, ::thrust::cuda_cub::tag, R1, ::thrust::use_default>, L1>   first, Size count,
-	boost::multi::elements_iterator_t<                  Q2*                                                    , L2> d_first
-)-> boost::multi::elements_iterator_t<                  Q2*                                                    , L2> {
-	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		if constexpr(L1::dimensionality == 1 and L2::dimensionality == 1) {
-			if(first.layout().stride() == 1 and d_first.layout().stride() == 1) {
-				auto s = cudaMemcpy  (                 d_first.current() ,                                                                 raw_pointer_cast(first.current()),                                                               sizeof(Q2)* static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
-			} else {
-				auto s = cudaMemcpy2D(                 d_first.current() , static_cast<std::size_t>(d_first.layout().stride())*sizeof(Q2), raw_pointer_cast(first.current()), static_cast<std::size_t>(first.layout().stride())*sizeof(Q2), sizeof(Q2), static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
-			}
-			return d_first + count;
-		} else if constexpr(L1::dimensionality == 2 and L1::dimensionality == 2) {
-			if(std::get<1>(first.layout().strides()) == 1 and std::get<1>(d_first.layout().strides()) == 1 and count%std::get<1>(first.layout().sizes()) == 0) {
-				auto s = cudaMemcpy2D(                 d_first.current() , static_cast<std::size_t>(d_first.layout().stride())*sizeof(Q2), raw_pointer_cast(first.current()), static_cast<std::size_t>(first.layout().stride())*sizeof(Q2), static_cast<std::size_t>(std::get<1>(first.layout().sizes()))*sizeof(Q2), static_cast<std::size_t>(count/std::get<1>(first.layout().sizes())), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
-				return d_first + count;
-			}
-		}
-		cudaHostRegister(
-			const_cast<void*>(static_cast<void const*>(d_first.base())),
-			static_cast<std::size_t>                  (d_first.layout().hull_size()*sizeof(Q1)),
-			cudaHostRegisterPortable
-		);
-		auto ret = ::thrust::copy_n(
-			::thrust::cuda::par,
-			first, count, d_first
-		);
-		cudaHostUnregister(
-			const_cast<void*>(static_cast<void const*>(d_first.base()))
-		);
-		return ret;
-	} else {
-		return ::thrust::copy_n(first, count, d_first);
-	}
-	return d_first + count;
-}
-
-template<class Q1, class L1, class Size, class Q2, class R2, class L2>
-auto uninitialized_copy_n(
-	boost::multi::elements_iterator_t<                  Q1*                                                    , L1>   first, Size count,
-	boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2, ::thrust::use_default>, L2> d_first
-)-> boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2, ::thrust::use_default>, L2> {
-	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		return boost::multi::copy_n(first, count, d_first);
-	} else {
-		return ::thrust::uninitialized_copy_n(first, count, d_first);
-	}
-}
-
-template<class Q1, class R1, class L1, class Size, class Q2, class L2>
-auto uninitialized_copy_n(
-	boost::multi::elements_iterator_t<::thrust::pointer<Q1, ::thrust::cuda_cub::tag, R1, ::thrust::use_default>, L1>   first, Size count,
-	boost::multi::elements_iterator_t<                  Q2*                                                    , L2> d_first
-)-> boost::multi::elements_iterator_t<                  Q2*                                                    , L2> {
-	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		return boost::multi::copy_n(first, count, d_first);
-	} else {
-		return ::thrust::uninitialized_copy_n(first, count, d_first);
-	}
-}
-
-template<class Q1, class L1, class Q2, class R2, class L2>
-auto copy(
-	boost::multi::elements_iterator_t<                  Q1*                             , L1>   first,
-	boost::multi::elements_iterator_t<                  Q1*                             , L1>   last ,
-	boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2>, L2> d_first
-)-> boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2>, L2> {
-	return boost::multi::copy_n(first, last - first, d_first);
-}
-
-template<class Q1, class R1, class L1, class Q2, class L2>
-auto copy(
-	boost::multi::elements_iterator_t<::thrust::pointer<Q1, ::thrust::cuda_cub::tag, R1>, L1>   first,
-	boost::multi::elements_iterator_t<::thrust::pointer<Q1, ::thrust::cuda_cub::tag, R1>, L1>   last ,
-	boost::multi::elements_iterator_t<                  Q2*                             , L2> d_first
-)-> boost::multi::elements_iterator_t<                  Q2*                             , L2> {
-	return boost::multi::copy_n(first, last - first, d_first);
-}
-
-template<class Q1, class L1, class Q2, class R2, class L2>
-auto uninitialized_copy(
-	boost::multi::elements_iterator_t<                  Q1*                             , L1>   first,
-	boost::multi::elements_iterator_t<                  Q1*                             , L1>   last ,
-	boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2>, L2> d_first
-)-> boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2>, L2> {
-	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		return boost::multi::copy(first, last, d_first);
-	} else {
-		return ::thrust::uninitialized_copy(first, last, d_first);
-	}
-}
-
-template<class Q1, class R1, class L1, class Q2, class L2>
-auto uninitialized_copy(
-	boost::multi::elements_iterator_t<::thrust::pointer<Q1, ::thrust::cuda_cub::tag, R1>, L1>   first,
-	boost::multi::elements_iterator_t<::thrust::pointer<Q1, ::thrust::cuda_cub::tag, R1>, L1>   last ,
-	boost::multi::elements_iterator_t<                  Q2*                             , L2> d_first
-)-> boost::multi::elements_iterator_t<                  Q2*                             , L2> {
-	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		return boost::multi::copy(first, last, d_first);
-	} else {
-		return ::thrust::uninitialized_copy(first, last, d_first);
-	}
-}
-
-#endif
-
-}  // end namespace boost::multi
 #endif
