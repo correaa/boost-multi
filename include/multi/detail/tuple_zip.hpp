@@ -175,7 +175,7 @@ template<class T0, class... Ts> constexpr auto tie(T0& head, Ts&... tail) {
 }
 
 template<class T0, class... Ts> constexpr auto ht_tuple(T0 head, tuple<Ts...> tail) {
-	return tuple(std::move(head), std::move(tail));
+	return tuple<T0, Ts...>(std::move(head), std::move(tail));
 }
 
 template<class T0, class Tuple> struct tuple_prepend;
