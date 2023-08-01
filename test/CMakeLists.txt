@@ -178,7 +178,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Wsuggest-attribute=cold # (gcc 12, not in 11, not in 7)
 -Wsuggest-attribute=const -Wsuggest-attribute=format
 # -Wsuggest-attribute=malloc # (gcc 8, not in 7)
--Wsuggest-attribute=noreturn -Wsuggest-attribute=pure
+-Wsuggest-attribute=noreturn # -Wsuggest-attribute=pure # (false positive in gcc 8.5.0 RedHat)
 -Wsuggest-final-methods -Wsuggest-final-types
 -Wsuggest-override # (gcc 12, not in gcc 11)
 -Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
