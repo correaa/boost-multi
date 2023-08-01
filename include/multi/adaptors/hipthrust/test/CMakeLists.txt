@@ -27,18 +27,19 @@ include(CTest)
 # add_test(NAME vector.cu.nvidia.x COMMAND vector.cu.nvidia.x)
 
 add_executable(vector.hip.amd.x vector.hip)
-set_source_files_properties(vector.hip PROPERTIES LANGUAGE HIP)
-
+# set_source_files_properties(vector.hip PROPERTIES LANGUAGE HIP)
 target_link_libraries(vector.hip.amd.x PRIVATE Boost::unit_test_framework roc::rocthrust)
 add_test(NAME vector.hip.amd.x COMMAND ./vector.hip.amd.x)
 
-
 add_executable(array.hip.amd.x array.hip)
-set_source_files_properties(array.hip PROPERTIES LANGUAGE HIP)
-
+# set_source_files_properties(array.hip PROPERTIES LANGUAGE HIP)
 target_link_libraries(array.hip.amd.x PRIVATE Boost::unit_test_framework multi roc::rocthrust)
 add_test(NAME array.hip.amd.x COMMAND ./array.hip.amd.x)
 
+add_executable(speed.hip.amd.x speed.hip)
+# set_source_files_properties(array.hip PROPERTIES LANGUAGE HIP)
+target_link_libraries(speed.hip.amd.x PRIVATE Boost::unit_test_framework multi roc::rocthrust)
+add_test(NAME speed.hip.amd.x COMMAND ./speed.hip.amd.x)
 
 # foreach(TEST_FILE ${TEST_SRCS})
 # # set(TEST_EXE "${TEST_FILE}")
