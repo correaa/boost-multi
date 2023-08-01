@@ -22,24 +22,26 @@
 
 #include <utility>  // std::copy
 
-// begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
-namespace thrust {
+#include <multi/adaptors/thrust/fix_pointer_traits.hpp>
 
-template<typename Element, typename Tag, typename Reference, typename Derived> class pointer;
-template<class T> struct pointer_traits;
+// // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
+// namespace thrust {
 
-}  // end namespace thrust
+// template<typename Element, typename Tag, typename Reference, typename Derived> class pointer;
+// template<class T> struct pointer_traits;
 
-namespace std {
+// }  // end namespace thrust
 
-template<class... As> struct pointer_traits<thrust::pointer<As...>>
-: thrust::detail::pointer_traits<thrust::pointer<As...>> {
-	template<class T>
-	using rebind = typename thrust::detail::pointer_traits<thrust::pointer<As...>>::template rebind<T>::other;
-};
+// namespace std {
 
-}  // end namespace std
-// end of nvcc thrust 11.5 workaround
+// template<class... As> struct pointer_traits<thrust::pointer<As...>>
+// : thrust::detail::pointer_traits<thrust::pointer<As...>> {
+//  template<class T>
+//  using rebind = typename thrust::detail::pointer_traits<thrust::pointer<As...>>::template rebind<T>::other;
+// };
+
+// }  // end namespace std
+// // end of nvcc thrust 11.5 workaround
 
 namespace boost::multi {
 
