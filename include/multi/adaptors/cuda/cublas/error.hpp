@@ -6,26 +6,38 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0 cublas-11.0 
 #ifndef MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
 #define MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
 
+#if defined(__NVCC__)
 #include<cublas_v2.h> // cublasStatus_t
+#else
+#include<hipblas/hipblas.h> // cublasStatus_t
+#endif
 
 #include<string>
 #include<system_error> // std::error_category
 #include<type_traits> // std::underlying_type
 
+#if defined(__NVCC__)
+#define hicup(name) cuda##name
+#define HICUP(name) CU##name
+#else
+#define hicup(name) hip##name
+#define HICUP(name) HIP##name
+#endif
+
 namespace boost{
 namespace multi::cuda::cublas{
 
-enum class error : typename std::underlying_type<cublasStatus_t>::type{
-	success               = CUBLAS_STATUS_SUCCESS,
-	not_initialized       = CUBLAS_STATUS_NOT_INITIALIZED,
-	allocation_failed     = CUBLAS_STATUS_ALLOC_FAILED,
-	invalid_value         = CUBLAS_STATUS_INVALID_VALUE,
-	architecture_mismatch = CUBLAS_STATUS_ARCH_MISMATCH,
-	mapping_error         = CUBLAS_STATUS_MAPPING_ERROR,
-	execution_failed      = CUBLAS_STATUS_EXECUTION_FAILED,
-	internal_error        = CUBLAS_STATUS_INTERNAL_ERROR,
-	not_supported         = CUBLAS_STATUS_NOT_SUPPORTED,
-	license_error         = CUBLAS_STATUS_LICENSE_ERROR
+enum class error : typename std::underlying_type<hicup(blasStatus_t)>::type{
+	success               = HICUP(BLAS_STATUS_SUCCESS),
+	not_initialized       = HICUP(BLAS_STATUS_NOT_INITIALIZED),
+	allocation_failed     = HICUP(BLAS_STATUS_ALLOC_FAILED),
+	invalid_value         = HICUP(BLAS_STATUS_INVALID_VALUE),
+	architecture_mismatch = HICUP(BLAS_STATUS_ARCH_MISMATCH),
+	mapping_error         = HICUP(BLAS_STATUS_MAPPING_ERROR),
+	execution_failed      = HICUP(BLAS_STATUS_EXECUTION_FAILED),
+	internal_error        = HICUP(BLAS_STATUS_INTERNAL_ERROR),
+	not_supported         = HICUP(BLAS_STATUS_NOT_SUPPORTED),
+//  license_error         = HICUP(BLAS_STATUS_LICENSE_ERROR),  // not supported by hip
 };
 
 std::string inline error_string(enum cublas::error err){ //https://stackoverflow.com/questions/13041399/equivalent-of-cudageterrorstring-for-cublas
@@ -39,7 +51,7 @@ std::string inline error_string(enum cublas::error err){ //https://stackoverflow
 	case cublas::error::execution_failed     : return "CUBLAS_STATUS_EXECUTION_FAILED";
 	case cublas::error::internal_error       : return "CUBLAS_STATUS_INTERNAL_ERROR"  ;
 	case cublas::error::not_supported        : return "CUBLAS_STATUS_NOT_SUPPORTED"   ;
-	case cublas::error::license_error        : return "CUBLAS_STATUS_LICENSE_ERROR"   ;
+//  case cublas::error::license_error        : return "CUBLAS_STATUS_LICENSE_ERROR"   ;
 	}
 	return "cublas status <unknown>";
 }
@@ -87,6 +99,9 @@ BOOST_AUTO_TEST_CASE(multi_cublas_error){
 	);
 
 }
+
+#undef hicup
+#undef HICUP
 
 #endif
 #endif

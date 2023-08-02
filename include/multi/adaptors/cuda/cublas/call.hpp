@@ -3,7 +3,19 @@
 
 #include "../cublas/error.hpp"
 
+#if defined(__NVCC__)
 #include<cuda_runtime.h> // cudaDeviceSynchronize
+#else
+#include<hip/hip_runtime.h> // cudaDeviceSynchronize
+#endif
+
+#if defined(__NVCC__)
+#define hicup(name) cuda##name
+#define HICUP(name) CU##name
+#else
+#define hicup(name) hip##name
+#define HICUP(name) HIP##name
+#endif
 
 namespace boost{
 namespace multi::cuda::cublas{
@@ -18,5 +30,8 @@ void call(Args... args){
 
 }
 }
+
+#undef hicup
+#undef HICUP
 #endif
 
