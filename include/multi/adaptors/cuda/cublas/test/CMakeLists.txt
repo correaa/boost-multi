@@ -23,7 +23,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(ENABLE_HIP)
 	enable_language(HIP)
 	find_package(hipblas REQUIRED ON)
-#   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
+	include(CMakePrintHelpers)
+
+	cmake_print_properties(TARGETS roc::hipblas PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
+	cmake_print_properties(TARGETS hipblas PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
+
+	#   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
 endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
