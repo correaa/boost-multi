@@ -18,16 +18,20 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0 cublas-11.0 
 
 #if defined(__NVCC__)
 #define hicup(name) cuda##name
+#define hicu(name) cu##name
+#define HICU(name) CU##name
 #define HICUP(name) CU##name
 #else
 #define hicup(name) hip##name
+#define hicu(name) hip##name
+#define HICU(name) HIP##name
 #define HICUP(name) HIP##name
 #endif
 
 namespace boost{
 namespace multi::cuda::cublas{
 
-enum class error : typename std::underlying_type<hicup(blasStatus_t)>::type{
+enum class error : typename std::underlying_type<hicu(blasStatus_t)>::type{
 	success               = HICUP(BLAS_STATUS_SUCCESS),
 	not_initialized       = HICUP(BLAS_STATUS_NOT_INITIALIZED),
 	allocation_failed     = HICUP(BLAS_STATUS_ALLOC_FAILED),

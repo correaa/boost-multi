@@ -112,8 +112,8 @@ template<class T>
 constexpr auto data_cast(T* p) {
 	     if constexpr(is_s<T>{}) {return reinterpret_cast<float          *>(p);}
 	else if constexpr(is_d<T>{}) {return reinterpret_cast<double         *>(p);}
-	else if constexpr(is_c<T>{}) {return reinterpret_cast<hipComplex      *>(p);}
-	else if constexpr(is_z<T>{}) {return reinterpret_cast<hipDoubleComplex*>(p);}
+	else if constexpr(is_c<T>{}) {return reinterpret_cast<hicu(Complex)  *>(p);}
+	else if constexpr(is_z<T>{}) {return reinterpret_cast<hicu(DoubleComplex)*>(p);}
 }
 
 template<class T>
@@ -200,10 +200,18 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		std::enable_if_t<std::is_convertible_v<XP, ::thrust::hicup()::pointer<X>>, int> = 0
 	>
 	void scal(ssize_t n, ALPHA const& alpha, XP x, ssize_t incx) const {
-		if(is_s<X>{}) {sync_call<hicu(blasSscal)>(n, (float           const*)alpha, (float          *)::thrust::raw_pointer_cast(x), incx);}
-		if(is_d<X>{}) {sync_call<hicu(blasDscal)>(n, (double          const*)alpha, (double         *)::thrust::raw_pointer_cast(x), incx);}
-		if(is_c<X>{}) {sync_call<hicu(blasCscal)>(n, (hicu(blasComplex)    const*)alpha, (hicu(blasComplex)      *)::thrust::raw_pointer_cast(x), incx);}
-		if(is_z<X>{}) {sync_call<hicu(blasZscal)>(n, (hicu(blasDoubleComplex) const*)alpha, (hicu(blasDoubleComplex)*)::thrust::raw_pointer_cast(x), incx);}
+	#ifdef __NVCC__
+		using Complex = cuComplex;
+		using DoubleComplex = cuDoubleComplex;
+	#else
+		using Complex = hipblasComplex;
+		using DoubleComplex = hipblasDoubleComplex;
+	#endif
+
+		if(is_s<X>{}) {sync_call<hicu(blasSscal)>(n, (float         const*)alpha, (float        *)::thrust::raw_pointer_cast(x), incx);}
+		if(is_d<X>{}) {sync_call<hicu(blasDscal)>(n, (double        const*)alpha, (double       *)::thrust::raw_pointer_cast(x), incx);}
+		if(is_c<X>{}) {sync_call<hicu(blasCscal)>(n, (Complex       const*)alpha, (Complex      *)::thrust::raw_pointer_cast(x), incx);}
+		if(is_z<X>{}) {sync_call<hicu(blasZscal)>(n, (DoubleComplex const*)alpha, (DoubleComplex*)::thrust::raw_pointer_cast(x), incx);}
 	}
 
 	template<class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type,
@@ -289,7 +297,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	>
 	void dotc(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
-		auto s = hicup(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
+		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
 		if constexpr(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {
