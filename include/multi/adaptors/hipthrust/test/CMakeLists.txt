@@ -6,6 +6,8 @@ project(boost-multi-adaptor-thrust-hip LANGUAGES CXX HIP)
 find_package(Boost     REQUIRED COMPONENTS timer unit_test_framework)
 find_package(rocthrust REQUIRED)
 
+include(CMakePrintHelpers)
+
 cmake_print_properties(TARGETS roc::rocthrust PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
 
 enable_testing()
