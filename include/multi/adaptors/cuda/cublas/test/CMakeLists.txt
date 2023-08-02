@@ -39,6 +39,15 @@ include(CTest)
 
 include_directories(${CMAKE_BINARY_DIR})
 
+if(ENABLE_HIP)
+	add_executable(all.hip.x all.hip)
+	#set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
+	target_link_libraries(all.hip.x PRIVATE multi)
+	target_link_libraries(all.hip.x PRIVATE roc::hipblas)
+	target_link_libraries(all.hip.x PRIVATE -lhipblas)
+endif()
+
+if(ENABLE_CUDA)
 find_package(CUDA REQUIRED)
 
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
@@ -52,15 +61,6 @@ set(TEST_SRCS
 	scal.cu
 	trsm.cu
 )
-
-
-if(ENABLE_HIP)
-	add_executable(all.hip.x all.hip)
-	#set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
-	target_link_libraries(all.hip.x PRIVATE multi)
-	target_link_libraries(all.hip.x PRIVATE roc::hipblas)
-	target_link_libraries(all.hip.x PRIVATE -lhipblas)
-endif()
 
 foreach(TEST_FILE ${TEST_SRCS})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
@@ -95,3 +95,4 @@ foreach(TEST_FILE ${TEST_SRCS})
 		add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 	endif()
 endforeach()
+endif()
