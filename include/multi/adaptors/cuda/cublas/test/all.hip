@@ -86,13 +86,13 @@ BOOST_AUTO_TEST_CASE(cublas_scal_complex_column) {
 	}
 }
 
-#if 0
+#if 1
 BOOST_AUTO_TEST_CASE(cublas_copy_complex) {
 	namespace blas = multi::blas;
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
 	multi::array<T, 1, Alloc> y = { 1.0 + I*9.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(cublas_swap_complex) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	multi::array<T, 1, Alloc> x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
 	multi::array<T, 1, Alloc> y = { 1.0 + I*9.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_column) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
 
@@ -189,16 +189,16 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_column) {
 		BOOST_REQUIRE( res == res2 );
 	}
 	{
-		multi::static_array<double, 0, thrust::cuda::allocator<double>> res2({}, 0.0);
+		multi::static_array<double, 0, thrust::hip::allocator<double>> res2({}, 0.0);
 		res2.assign( &blas::asum(x) );
 		res2 = blas::asum(x);
-		BOOST_REQUIRE(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+		BOOST_REQUIRE(( res == static_cast<multi::static_array<double, 0, thrust::hip::allocator<double>>::element_ref>(res2) ));
 		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
 	//  BOOST_REQUIRE( res == res2 );
 	}
 	{
-		multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::asum(x);
-		BOOST_REQUIRE(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+		multi::array<double, 0, thrust::hip::allocator<double>> res2 = blas::asum(x);
+		BOOST_REQUIRE(( res == static_cast<multi::static_array<double, 0, thrust::hip::allocator<double>>::element_ref>(res2) ));
 		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
 	//  BOOST_REQUIRE( res == res2 );
 	}
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_nans) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  std::numeric_limits<double>::quiet_NaN() + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
 
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_inf) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  std::numeric_limits<double>::infinity() + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
 
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 
 	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
 
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
 		BOOST_REQUIRE( res == res2 );
 	}
 	{
-		multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::nrm2(x);
+		multi::array<double, 0, thrust::hip::allocator<double>> res2 = blas::nrm2(x);
 		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
 	}
 }
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 
 	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
 	multi::array<T, 1, Alloc> const y = { 1.0 + I*2.0,  2.0 + I*3.0,  3.0 + I*5.0,  4.0 + I*7.0};
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 			BOOST_REQUIRE(res == res2);
 		}
 		{
-		//  auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex> >();
+		//  auto [x2, A2, B2] = generate_ABx<complex, thrust::hip::allocator<complex> >();
 		//  thrust::for_each(x2.begin(), x2.end(), [s] __device__ (T& e) {return e*=s;});
 			auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{});
 			BOOST_REQUIRE(res == res2);
@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 			BOOST_REQUIRE(res == res2);
 		}
 		{
-		//  auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex> >();
+		//  auto [x2, A2, B2] = generate_ABx<complex, thrust::hip::allocator<complex> >();
 		//  thrust::for_each(x2.begin(), x2.end(), [s] __device__ (T& e) {return e*=s;});
 			auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{}, thrust::plus<>{}, [] __device__ (T const& t1, T const& t2) {return conj(t1)*t2;});
 			BOOST_REQUIRE(res == res2);
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 			BOOST_REQUIRE(res == res2);
 		}
 		{
-		//  auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex> >();
+		//  auto [x2, A2, B2] = generate_ABx<complex, thrust::hip::allocator<complex> >();
 		//  thrust::for_each(x2.begin(), x2.end(), [s] __device__ (T& e) {return e*=s;});
 			auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{}, thrust::plus<>{}, [] __device__ (T const& t1, T const& t2) {return t1*conj(t2);});
 			BOOST_REQUIRE(res == res2);
@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 		//  BOOST_REQUIRE(res == res2);
 		// }
 		// {
-		// //  auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex> >();
+		// //  auto [x2, A2, B2] = generate_ABx<complex, thrust::hip::allocator<complex> >();
 		// //  thrust::for_each(x2.begin(), x2.end(), [s] __device__ (T& e) {return e*=s;});
 		//  auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{}, thrust::plus<>{}, [] __device__ (T const& t1, T const& t2) {return t1*conj(t2);});
 		//  BOOST_REQUIRE(res == res2);
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_one) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 
 	multi::array<complex, 1, Alloc> const x = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0}, {4.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<complex, 1, Alloc> y = { {2.1, 0.0}, {4.1, 0.0}, {6.1, 0.0}, {11.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
@@ -480,7 +480,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_mone) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 
 	multi::array<complex, 1, Alloc> const x = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0}, {4.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<complex, 1, Alloc> y = { {2.1, 0.0}, {4.1, 0.0}, {6.1, 0.0}, {11.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
@@ -517,7 +517,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_alpha) {
 	complex const I{0.0, 1.0};
 
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 
 	multi::array<complex, 1, Alloc> const x = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0}, {4.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<complex, 1, Alloc> y = { {2.1, 0.0}, {4.1, 0.0}, {6.1, 0.0}, {11.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_conj_complex_zero) {
 	namespace blas = multi::blas;
 	using T = complex;
 	complex const I{0.0, 1.0};
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 
 	// NOLINT(readability-identifier-length) BLAS naming
 	multi::array<complex, 2, Alloc> const A = {
@@ -591,7 +591,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_conj_complex_zero) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_conj_zero) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -642,7 +642,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 	namespace blas = multi::blas;
 	using T = complex;
 	complex const I{0.0, 1.0};
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 
 	// NOLINT(readability-identifier-length) BLAS naming
 	multi::array<complex, 2, Alloc> const A = {
@@ -694,7 +694,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_conjtrans_zero) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  std::allocator<complex>;  // thrust::cuda::allocator<complex>;
+	using Alloc =  std::allocator<complex>;  // thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -729,7 +729,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_conjtrans_zero) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_trans_one) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -772,7 +772,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_trans_one) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_none) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -847,7 +847,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_none) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_second) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -933,7 +933,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_second) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  thrust::cuda::allocator<complex>;
+	using Alloc =  thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1019,7 +1019,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1105,7 +1105,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  std::allocator<complex>;  // thrust::cuda::allocator<complex>;
+	using Alloc =  std::allocator<complex>;  // thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1157,7 +1157,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_first) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  std::allocator<complex>;  // thrust::cuda::allocator<complex>;
+	using Alloc =  std::allocator<complex>;  // thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1209,7 +1209,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_first) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_both) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc =  std::allocator<complex>;  // thrust::cuda::allocator<complex>;
+	using Alloc =  std::allocator<complex>;  // thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1232,7 +1232,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_both) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_second) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1290,7 +1290,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_second) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_second_plus) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1347,7 +1347,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_second_plus) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_first) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1420,7 +1420,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_first) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_both) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1495,7 +1495,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_both) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_herm) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1570,7 +1570,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_herm) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_trans) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1645,7 +1645,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_trans) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_herm) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1720,7 +1720,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_herm) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_conj) {
 	namespace blas = multi::blas;
 	using T = complex;
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 	complex const I{0.0, 1.0};
 
 	// NOLINT(readability-identifier-length) BLAS naming
@@ -1796,7 +1796,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_conj) {
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	multi::array<complex, 2, Alloc> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
@@ -1817,7 +1817,7 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const_UTH) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2, Alloc> const A = {
@@ -1843,7 +1843,7 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2, Alloc> const A = {
@@ -1868,7 +1868,7 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 // BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_conj_second) {
 //  namespace blas = multi::blas;
 //  using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-//  using Alloc = thrust::cuda::allocator<complex>;
+//  using Alloc = thrust::hip::allocator<complex>;
 
 //  // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 //  multi::array<complex, 2, Alloc> const A = {
@@ -1893,7 +1893,7 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_operator) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-	using Alloc = thrust::cuda::universal_allocator<complex>;
+	using Alloc = thrust::hip::universal_allocator<complex>;
 
 	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
@@ -1915,7 +1915,7 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	multi::array<complex, 2, Alloc> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
@@ -1937,7 +1937,7 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right_LT) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2, Alloc> const A = {
@@ -1961,7 +1961,7 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 // BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right_LH) {
 //  namespace blas = multi::blas;
 //  using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-//  using Alloc = thrust::cuda::allocator<complex>;
+//  using Alloc = thrust::hip::allocator<complex>;
 
 //  // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 //  multi::array<complex, 2, Alloc> const A = {
@@ -1985,7 +1985,7 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right_operator) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-	using Alloc = thrust::cuda::allocator<complex>;
+	using Alloc = thrust::hip::allocator<complex>;
 
 	multi::array<complex, 2, Alloc> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
