@@ -16,25 +16,22 @@ find_path(
 link_libraries(${BLAS_LIBRARIES})
 include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_HIP)
 	enable_language(HIP)
-	find_package(hipblas REQUIRED ON)
-#   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
+	find_package(hipBLAS REQUIRED)
 endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
+	find_package(CUDA)
 endif()
 
-find_package(CUDA)
-
 enable_testing()
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure") # needs cmake 3.17
 include(CTest)
 
 include_directories(${CMAKE_BINARY_DIR})
@@ -42,9 +39,8 @@ include_directories(${CMAKE_BINARY_DIR})
 if(ENABLE_HIP)
 	add_executable(all.hip.x all.hip)
 	#set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
-	target_link_libraries(all.hip.x PRIVATE multi)
-	target_link_libraries(all.hip.x PRIVATE roc::hipblas)
-	target_link_libraries(all.hip.x PRIVATE -lhipblas)
+	target_link_libraries(all.hip.x PRIVATE multi roc::hipblas Boost::unit_test_framework)
+	add_test(NAME all.hip.x COMMAND ./all.hip.x)
 endif()
 
 if(ENABLE_CUDA)
@@ -70,13 +66,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 		# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
 		target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 		target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
-	
+
 		target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
-		target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 		target_include_directories(${TEST_EXE}        PRIVATE ${CUDA_INCLUDE_DIRS})
 	
-		target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
-		target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+		target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework)
 	
 		target_link_libraries(${TEST_EXE} PRIVATE ${CUDA_LIBRARIES})
 		target_link_libraries(${TEST_EXE} PRIVATE -lcublas)
