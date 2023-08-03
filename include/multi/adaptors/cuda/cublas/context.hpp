@@ -249,7 +249,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		,int> =0
 	>
 	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
-		sync_call<hicu(blasZtrsm)>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, m, n, (DoubleComplex const*)&alpha, (DoubleComplex const*)raw_pointer_cast(aa), lda, (DoubleComplex*)raw_pointer_cast(bb), ldb);
+		sync_call<hicu(blasZtrsm)>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, m, n, (DoubleComplex const*)&alpha, (DoubleComplex*)raw_pointer_cast(aa), lda, (DoubleComplex*)raw_pointer_cast(bb), ldb);
 	}
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
