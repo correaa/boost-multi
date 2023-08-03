@@ -11,7 +11,7 @@
 
 #include "multi/detail/memory.hpp"
 
-#if defined(__NVCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_AMD__)
 #include<thrust/copy.h>
 #include<thrust/equal.h>
 #include<thrust/detail/allocator/destroy_range.h>
@@ -538,13 +538,16 @@ public:
 #if defined(__NVCC__)
 	template<class Alloc, class It, class Size> constexpr auto _(priority<2>/**/, Alloc& alloc, It first, Size n) const DECLRETURN(   (thrust::detail::destroy_range(alloc, first, first + n)))
 #endif
-	template<             class... As> constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(multi::              alloc_destroy_n              (std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
-	template<             class... As> constexpr auto _(priority<4>/**/,          As&&... args) const DECLRETURN(                     alloc_destroy_n              (std::forward<As>(args)...))
-	template<class T,     class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(std::decay_t<T>::    alloc_destroy_n(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T,     class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).alloc_destroy_n              (std::forward<As>(args)...))
+#if defined(__HIP_PLATFORM_AMD__)
+	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc& alloc, It first, Size n) const DECLRETURN(   (thrust::detail::destroy_range(alloc, first, first + n)))
+#endif
+	template<             class... As> constexpr auto _(priority<4>/**/,          As&&... args) const DECLRETURN(multi::              alloc_destroy_n              (std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
+	template<             class... As> constexpr auto _(priority<5>/**/,          As&&... args) const DECLRETURN(                     alloc_destroy_n              (std::forward<As>(args)...))
+	template<class T,     class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const DECLRETURN(std::decay_t<T>::    alloc_destroy_n(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T,     class... As> constexpr auto _(priority<7>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).alloc_destroy_n              (std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
+	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<7>{}, std::forward<As>(args)...))
 } adl_alloc_destroy_n;
 
 constexpr class adl_alloc_uninitialized_copy_t {
