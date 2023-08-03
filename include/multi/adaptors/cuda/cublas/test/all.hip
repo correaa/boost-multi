@@ -87,6 +87,49 @@ BOOST_AUTO_TEST_CASE(cublas_scal_complex_column) {
 }
 
 #if 1
+BOOST_AUTO_TEST_CASE(cublas_copy_complex_device) {
+	namespace blas = multi::blas;
+	complex const I{0.0, 1.0};
+
+	using T = complex;
+	using Alloc = thrust::device_allocator<complex>;
+
+	multi::array<T, 1, Alloc> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+	multi::array<T, 1, Alloc> y = { 1.0 + I*9.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+
+	blas::copy(x, y);
+	BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	{
+		thrust::copy(begin(x), end(x), begin(y));
+		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	}
+	{
+		blas::copy_n(x.begin(), x.size(), y.begin());
+		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	}
+	{
+		y() = blas::copy(x);
+		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	}
+	{
+		multi::array<T, 1, Alloc> yy = blas::copy(x);
+		BOOST_REQUIRE( static_cast<complex>(yy[0]) == 1.0 + I*8.0 );
+	}
+	{
+		y = blas::copy(x);
+		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	}
+	{
+		{
+			using blas::operators::operator<<;
+			y << x;
+		//  BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
+		}
+		BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
+	}
+}
+
+
 BOOST_AUTO_TEST_CASE(cublas_copy_complex) {
 	namespace blas = multi::blas;
 	complex const I{0.0, 1.0};
