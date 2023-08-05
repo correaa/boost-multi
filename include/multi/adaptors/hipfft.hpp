@@ -1,9 +1,56 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2023 Alfredo A. Correa
 
-#ifndef MULTI_ADAPTORS_CUFFTW_HPP
-#define MULTI_ADAPTORS_CUFFTW_HPP
+#ifndef MULTI_ADAPTORS_HIPFFT_HPP
+#define MULTI_ADAPTORS_HIPFFT_HPP
 
+#define HICU(name) HIP##name
+#define hicu(name) hip##name
+
+#define hipify(name)
+
+#define  CUFFT_FORWARD \
+        HIPFFT_FORWARD
+#define  CUFFT_INVERSE \
+        HIPFFT_BACKWARD
+#define  cufftDoubleComplex \
+        hipfftDoubleComplex
+#define  cufftHandle \
+	    hipfftHandle
+#define  cufftResult \
+	    hipfftResult
+#define  cufftExecZ2Z \
+	    hipfftExecZ2Z
+#define  CUFFT_SUCCESS \
+	    HIPFFT_SUCCESS
+#define  CUFFT_INVALID_PLAN \
+	    HIPFFT_INVALID_PLAN
+#define  CUFFT_INVALID_VALUE \
+	    HIPFFT_INVALID_VALUE
+#define  CUFFT_INTERNAL_ERROR \
+	    HIPFFT_INTERNAL_ERROR
+#define  CUFFT_EXEC_FAILED \
+	    HIPFFT_EXEC_FAILED
+#define CUFFT_SETUP_FAILED \
+       HIPFFT_SETUP_FAILED
+#define cudaDeviceSynchronize \
+	   hipDeviceSynchronize
+#define cufftPlanMany \
+       hipfftPlanMany
+#define CUFFT_Z2Z \
+       HIPFFT_Z2Z
+#define CUFFT_ALLOC_FAILED \
+       HIPFFT_ALLOC_FAILED
+#define CUFFT_INVALID_SIZE \
+	   HIPFFT_INVALID_SIZE
+#define cudaSuccess \
+		 hipSuccess
+
+#define cufft hipfft
+
+#include "../adaptors/cufft.hpp"
+
+#if 0
 #include "../config/MARK.hpp"
 
 #include "../adaptors/../utility.hpp"
@@ -21,11 +68,7 @@
 
 #include "../complex.hpp"
 
-#if defined(__NVCC__)
 #include<cufft.h>
-#else
-#include<hipfft/hipfft.h>
-#endif
 
 namespace boost{
 namespace multi{
@@ -73,9 +116,9 @@ public:
 	{} // needed in <=C++14 for return
 	void ExecZ2Z(complex_type const* idata, complex_type* odata, int direction) const{
 		++tl_execute_count;
-	//  assert(idata_ and odata_);
+	//  assert(idata_ and odata_); 
 	//  assert(direction_!=0);
-		cufftResult r = ::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction);
+		cufftResult r = ::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction); 
 		switch(r){
 			case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
 			case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
@@ -96,7 +139,7 @@ public:
 		//  case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
 			default                   : throw std::runtime_error{"cufftExecZ2Z unknown error"};
 		}
-		{auto s = cudaDeviceSynchronize(); assert(s == cudaSuccess);}  // TODO(correaa) check if it is really necessary
+		cudaDeviceSynchronize();
 	}
 	void swap(plan& other) {
 		using std::swap;
@@ -452,4 +495,5 @@ auto dft_backward(A const& a)
 }
 
 }}
+#endif
 #endif

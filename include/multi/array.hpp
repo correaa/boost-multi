@@ -806,11 +806,11 @@ struct array : static_array<T, D, Alloc> {
 
  public:
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()     && -> array      * = delete;       // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	constexpr auto operator&()     && -> array      * = delete;       // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()      & -> array      * {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	constexpr auto operator&()      & -> array      * {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() const& -> array const* {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	constexpr auto operator&() const& -> array const* {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 
 	friend auto sizes(array const& self) -> typename array::sizes_type {return self.sizes();}
 
