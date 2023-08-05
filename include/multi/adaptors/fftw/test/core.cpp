@@ -20,7 +20,7 @@ namespace fftw = multi::fftw;
 
 template<class M> auto power(M const& elem) -> decltype(std::norm(elem)) {return std::norm(elem);}
 
-template<class M, DELETE((M::rank::value < 1))>
+template<class M, class = std::enable_if_t<(M::rank::value >= 1)> >   // DELETE((M::rank::value < 1))>
 auto power(M const& array) {
 	return accumulate(begin(array), end(array), 0.0, [](auto const& alpha, auto const& omega) {return alpha + power(omega);});
 }

@@ -69,27 +69,27 @@ public:
 	{} // needed in <=C++14 for return
 	void ExecZ2Z(complex_type const* idata, complex_type* odata, int direction) const{
 		++tl_execute_count;
-	//	assert(idata_ and odata_); 
-	//	assert(direction_!=0);
+	//  assert(idata_ and odata_); 
+	//  assert(direction_!=0);
 		cufftResult r = ::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction); 
 		switch(r){
 			case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
 			case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
-		//	case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
-		//	case CUFFT_INVALID_TYPE   : throw std::runtime_error{"The user requests an unsupported type."};
+		//  case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
+		//  case CUFFT_INVALID_TYPE   : throw std::runtime_error{"The user requests an unsupported type."};
 			case CUFFT_INVALID_VALUE  : throw std::runtime_error{"At least one of the parameters idata, odata, and direction is not valid."};
 			case CUFFT_INTERNAL_ERROR : throw std::runtime_error{"Used for all internal driver errors."};
 			case CUFFT_EXEC_FAILED    : throw std::runtime_error{"CUFFT failed to execute an FFT on the GPU."};
 			case CUFFT_SETUP_FAILED   : throw std::runtime_error{"The cuFFT library failed to initialize."};
-		//	case CUFFT_INVALID_SIZE   : throw std::runtime_error{"The user specifies an unsupported FFT size."};
-		//	case CUFFT_UNALIGNED_DATA : throw std::runtime_error{"Unaligned data."};
-		//	case CUFFT_INCOMPLETE_PARAMETER_LIST: throw std::runtime_error{"Incomplete parameter list."};
-		//	case CUFFT_INVALID_DEVICE : throw std::runtime_error{"Invalid device."};
-		//	case CUFFT_PARSE_ERROR    : throw std::runtime_error{"Parse error."};
-		//	case CUFFT_NO_WORKSPACE   : throw std::runtime_error{"No workspace."};
-		//	case CUFFT_NOT_IMPLEMENTED: throw std::runtime_error{"Not implemented."};
-		//	case CUFFT_LICENSE_ERROR  : throw std::runtime_error{"License error."};
-		//	case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
+		//  case CUFFT_INVALID_SIZE   : throw std::runtime_error{"The user specifies an unsupported FFT size."};
+		//  case CUFFT_UNALIGNED_DATA : throw std::runtime_error{"Unaligned data."};
+		//  case CUFFT_INCOMPLETE_PARAMETER_LIST: throw std::runtime_error{"Incomplete parameter list."};
+		//  case CUFFT_INVALID_DEVICE : throw std::runtime_error{"Invalid device."};
+		//  case CUFFT_PARSE_ERROR    : throw std::runtime_error{"Parse error."};
+		//  case CUFFT_NO_WORKSPACE   : throw std::runtime_error{"No workspace."};
+		//  case CUFFT_NOT_IMPLEMENTED: throw std::runtime_error{"Not implemented."};
+		//  case CUFFT_LICENSE_ERROR  : throw std::runtime_error{"License error."};
+		//  case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
 			default                   : throw std::runtime_error{"cufftExecZ2Z unknown error"};
 		}
 		cudaDeviceSynchronize();
@@ -119,7 +119,7 @@ public:
 	void execute_dft(I&& i, O&& o) const{execute_dft(std::forward<I>(i), std::forward<O>(o), direction_);}
 	~plan() {
 		MULTI_MARK_SCOPE("cufft plan dtor");
-	//	if(h_) cufftDestroy(h_);
+	//  if(h_) cufftDestroy(h_);
 	}
 	using size_type = int;
 	using ssize_type = int;
@@ -160,9 +160,9 @@ public:
 		for(std::size_t i = 1; i != onembed.size(); ++i) {
 			assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
 			assert(ostrides[i-1]%ostrides[i]==0);
-			onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
+			onembed[i]=ostrides[i-1]/ostrides[i]; //    assert( onembed[i] <= ion[i] );
 			assert(istrides[i-1]%istrides[i]==0);
-			inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
+			inembed[i]=istrides[i-1]/istrides[i]; //    assert( inembed[i] <= ion[i] );
 		}
 
 		direction_ = s;
@@ -176,7 +176,7 @@ public:
 			switch(::cufftPlanMany(
 				/*cufftHandle *plan*/ &h_,
 				/*int rank*/          ion.size(),
-				/*int *n*/            ion.data(), //	/*NX*/      last - first,
+				/*int *n*/            ion.data(), //    /*NX*/      last - first,
 				/*int *inembed*/      inembed.data(),
 				/*int istride*/       istride,
 				/*int idist*/         1, //stride(first),
@@ -237,9 +237,9 @@ public:
 		for(std::size_t i = 1; i != onembed.size(); ++i) {
 			assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
 			assert(ostrides[i-1]%ostrides[i]==0);
-			onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
+			onembed[i]=ostrides[i-1]/ostrides[i]; //    assert( onembed[i] <= ion[i] );
 			assert(istrides[i-1]%istrides[i]==0);
-			inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
+			inembed[i]=istrides[i-1]/istrides[i]; //    assert( inembed[i] <= ion[i] );
 		}
 
 		plan ret;
@@ -254,7 +254,7 @@ public:
 			switch(::cufftPlanMany(
 				/*cufftHandle *plan*/ &ret.h_,
 				/*int rank*/          ion.size(),
-				/*int *n*/            ion.data(), //	/*NX*/      last - first,
+				/*int *n*/            ion.data(), //    /*NX*/      last - first,
 				/*int *inembed*/      inembed.data(),
 				/*int istride*/       istride,
 				/*int idist*/         stride(first),
@@ -265,22 +265,22 @@ public:
 				/*int batch*/         last - first //BATCH
 			)) {
 				case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
-			//	case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
+			//  case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
 				case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
-			//	case CUFFT_INVALID_TYPE   : throw std::runtime_error{"The user requests an unsupported type."};
+			//  case CUFFT_INVALID_TYPE   : throw std::runtime_error{"The user requests an unsupported type."};
 				case CUFFT_INVALID_VALUE  : throw std::runtime_error{"At least one of the parameters idata, odata, and direction is not valid."};
 				case CUFFT_INTERNAL_ERROR : throw std::runtime_error{"Used for all internal driver errors."};
-			//	case CUFFT_EXEC_FAILED    : throw std::runtime_error{"CUFFT failed to execute an FFT on the GPU."};
+			//  case CUFFT_EXEC_FAILED    : throw std::runtime_error{"CUFFT failed to execute an FFT on the GPU."};
 				case CUFFT_SETUP_FAILED   : throw std::runtime_error{"The cuFFT library failed to initialize."};
 				case CUFFT_INVALID_SIZE   : throw std::runtime_error{"The user specifies an unsupported FFT size."};
-			//	case CUFFT_UNALIGNED_DATA : throw std::runtime_error{"Unaligned data."};
-			//	case CUFFT_INCOMPLETE_PARAMETER_LIST: throw std::runtime_error{"Incomplete parameter list."};
-			//	case CUFFT_INVALID_DEVICE : throw std::runtime_error{"Invalid device."};
-			//	case CUFFT_PARSE_ERROR    : throw std::runtime_error{"Parse error."};
-			//	case CUFFT_NO_WORKSPACE   : throw std::runtime_error{"No workspace."};
-			//	case CUFFT_NOT_IMPLEMENTED: throw std::runtime_error{"Not implemented."};
-			//	case CUFFT_LICENSE_ERROR  : throw std::runtime_error{"License error."};
-			//	case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
+			//  case CUFFT_UNALIGNED_DATA : throw std::runtime_error{"Unaligned data."};
+			//  case CUFFT_INCOMPLETE_PARAMETER_LIST: throw std::runtime_error{"Incomplete parameter list."};
+			//  case CUFFT_INVALID_DEVICE : throw std::runtime_error{"Invalid device."};
+			//  case CUFFT_PARSE_ERROR    : throw std::runtime_error{"Parse error."};
+			//  case CUFFT_NO_WORKSPACE   : throw std::runtime_error{"No workspace."};
+			//  case CUFFT_NOT_IMPLEMENTED: throw std::runtime_error{"Not implemented."};
+			//  case CUFFT_LICENSE_ERROR  : throw std::runtime_error{"License error."};
+			//  case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
 				default                   : throw std::logic_error{"cufftPlanMany unknown error"};
 			}
 			cache<D>().insert(std::make_pair(std::make_tuple(ion, inembed, istride, stride(first), onembed, ostride, stride(d_first), last - first), ret.h_));
@@ -336,7 +336,7 @@ constexpr auto array_tail(Array const& t)
 	return array_tail_impl(t, std::make_index_sequence<std::tuple_size<Array>{} - 1>()); }
 
 template<typename In, class Out, std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0>
-auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
+auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)
 ->decltype(many_dft(i.begin(), i.end(), o.begin(), s),std::forward<Out>(o))
 {
 	assert(extension(i) == extension(o));
@@ -348,18 +348,27 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 			std::rotate(begin(which), ff, end(which));
 			// TODO(correaa) : make this more elegant
 			switch(n) {
-				case 0: dft(which, i                              , o                              , s); break;
+				case 0: dft(which, i()                            , o()                            , s); break;
 				case 1: dft(which, i.rotated()                    , o.rotated()                    , s); break;
 				case 2: dft(which, i.rotated().rotated()          , o.rotated().rotated()          , s); break;
 				case 3: dft(which, i.rotated().rotated().rotated(), o.rotated().rotated().rotated(), s); break;
 				default: assert(0);
 			}
 		}
-	} else if(which[0]==false) {
+	}
+	else if(which[0]==false) {
 		if(D==1 or std::none_of(begin(which)+1, end(which), [](auto e){return e;})){
-			if(base(o) != base(i)) std::forward<Out>(o) = i;
-			else if(o.layout() != i.layout()) std::forward<Out>(o) = +i;
+			if(base(o) != base(i)) o() = i;
+			else assert(0);
+			#if 0
+			else if(o.layout() != i.layout()) {
+				auto tmp = +i;
+				o() = tmp;
+				// std::forward<Out>(o) = tmp;
+			}
+			#endif
 		}
+		#if 1
 		else if(ff==end(which)) many_dft(i.begin(), i.end(), o.begin(), s);
 		else{
 			std::array<bool, D-1> tail = array_tail(which);
@@ -397,9 +406,20 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 				}
 			}
 		}
+		#endif
 	}
 	return std::forward<Out>(o);
 }
+
+template<typename In, class Out, std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0>
+auto dft_forward(std::array<bool, +D> which, In const& i, Out&& o) 
+->decltype(dft(which, i, std::forward<Out>(o), cufft::forward)) {
+	return dft(which, i, std::forward<Out>(o), cufft::forward); }
+
+template<typename In, class Out, std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0>
+auto dft_backward(std::array<bool, +D> which, In const& i, Out&& o) 
+->decltype(dft(which, i, std::forward<Out>(o), cufft::backward)) {
+	return dft(which, i, std::forward<Out>(o), cufft::backward); }
 
 template<typename In,  std::size_t D = In::dimensionality>
 NODISCARD("when passing a const argument")
@@ -414,7 +434,7 @@ auto dft(std::array<bool, D> which, In&& i, int sign)
 
 //template<typename... A> auto            dft_forward(A&&... a)
 //->decltype(cufft::dft(std::forward<A>(a)..., cufft::forward)){
-//	return cufft::dft(std::forward<A>(a)..., cufft::forward);}
+//  return cufft::dft(std::forward<A>(a)..., cufft::forward);}
 
 template<typename Array, typename A> NODISCARD("when passing a const argument")
 auto dft_forward(Array arr, A const& a) 
@@ -424,7 +444,7 @@ auto dft_forward(Array arr, A const& a)
 // template<typename Array, dimensionality_type D> NODISCARD("when passing a const argument")
 // auto dft_forward(Array arr, multi::cuda::array<std::complex<double>, D>&& a) 
 // ->decltype(cufft::dft(arr, a, cufft::forward), multi::cuda::array<std::complex<double>, D>{}){//assert(0);
-// 	return cufft::dft(arr, a, cufft::forward), std::move(a);}
+//  return cufft::dft(arr, a, cufft::forward), std::move(a);}
 
 template<typename A> NODISCARD("when passing a const argument")
 auto dft_forward(A const& a)

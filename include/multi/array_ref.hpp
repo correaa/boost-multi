@@ -5,20 +5,20 @@
 #define MULTI_ARRAY_REF_HPP_
 #pragma once
 
-#include <multi/memory/pointer_traits.hpp>
-#include <multi/utility.hpp>
+#include "../multi/memory/pointer_traits.hpp"
+#include "../multi/utility.hpp"
 
-#include <multi/config/ASSERT.hpp>
-#include <multi/config/DELETE.hpp>
-#include <multi/config/MARK.hpp>
-#include <multi/config/VERSION.hpp>
+// #include <multi/config/ASSERT.hpp>
+// #include <multi/config/DELETE.hpp>
+// #include <multi/config/MARK.hpp>
+// #include <multi/config/VERSION.hpp>
 
-#include <multi/detail/adl.hpp>
-#include <multi/detail/layout.hpp>
-#include <multi/detail/memory.hpp>         // for pointer_traits
-#include <multi/detail/operators.hpp>      // for random_iterable
-#include <multi/detail/serialization.hpp>
-#include <multi/detail/types.hpp>          // for dimensionality_type
+#include "../multi/detail/adl.hpp"
+#include "../multi/detail/layout.hpp"
+#include "../multi/detail/memory.hpp"         // for pointer_traits
+#include "../multi/detail/operators.hpp"      // for random_iterable
+#include "../multi/detail/serialization.hpp"
+#include "../multi/detail/types.hpp"          // for dimensionality_type
 
 #if defined(__NVCC__)
 #define HD __host__ __device__

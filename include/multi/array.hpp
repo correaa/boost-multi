@@ -1,10 +1,10 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_ARRAY_HPP_
 #define MULTI_ARRAY_HPP_
 
-#include "./array_ref.hpp"
+#include "../multi/array_ref.hpp"
 #include "./config/NO_UNIQUE_ADDRESS.hpp"
 
 #include "./detail/adl.hpp"
