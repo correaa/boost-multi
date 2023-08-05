@@ -355,7 +355,7 @@ rocm:
   script:
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
-    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev rocm-device-libs
+    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - cmake --version
@@ -371,66 +371,6 @@ rocm:
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest --output-on-failure
   needs: ["clang++", "g++"]
-
-# hip:
-#   stage: build
-#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-#   allow_failure: true
-#   tags:
-#     - nvidia-docker
-#   script:
-#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
-#     # https://docs.amd.com/en/latest/deploy/linux/quick_start.html
-#     # Make the directory if it doesn't exist yet.
-#     # This location is recommended by the distribution maintainers.
-#     - mkdir --parents --mode=0755 /etc/apt/keyrings
-#     # Download the key, convert the signing-key to a full
-#     # keyring required by apt and store in the keyring directory
-#     - wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | tee /etc/apt/keyrings/rocm.gpg > /dev/null
-#     # Kernel driver repository for jammy
-#     - | 
-#       tee /etc/apt/sources.list.d/amdgpu.list <<'EOF'
-#       deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/latest/ubuntu jammy main
-#       EOF
-#     # ROCm repository for jammy
-#     - |
-#       tee /etc/apt/sources.list.d/rocm.list <<'EOF'
-#       deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/debian jammy main
-#       EOF
-#     # Prefer packages from the rocm repository over system packages
-#     - "echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600"
-#     - apt-get -qq update
-#     - apt-get install --no-install-recommends -y amdgpu-dkms
-#     - apt-get install --no-install-recommends -y rocm-hip-libraries
-#     - apt-get install --no-install-recommends -y rocm-device-libs
-#     - apt-get install --no-install-recommends -y rocthrust
-#     - /opt/rocm/bin/hipconfig --full
-#     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
-#     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
-#     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
-#     - cmake --version
-#     - mkdir build && cd build
-#     - ls /opt
-#     - ls /opt/rocm
-#     - ls /opt/rocm/llvm/bin
-#     - ls /opt/rocm/bin
-#     - ls /usr/local
-#     - ls /usr/local/cuda-11/bin
-#     - /usr/local/cuda-11/bin/nvcc --version
-#     - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
-#     - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
-#     - export ROCM_PATH=/opt/rocm
-#     - export HIP_PATH=/opt/rocm
-#     - cmake .. -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
-#     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
-#     - ctest --output-on-failure
-#     # - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-#     # - cmake --build . --parallel 2 || cmake --build . --verbose
-#     # - ctest -j 2 --output-on-failure  # doesn't run
-#     # - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-#     # - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-#     # - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-#   needs: ["clang++", "g++"]
 
 circle:
   stage: build
