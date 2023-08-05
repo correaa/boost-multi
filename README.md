@@ -1154,9 +1154,9 @@ int main(){
 
 (Similarly works with [LLNL's Meta Allocator](https://github.com/llnl/metall))
 
-## CUDA Thrust (and HIP)
+## CUDA Thrust (and HIP Thrust)
 
-The library works out-of-the-box in combination with the CUDA Thrust library.
+The library works out-of-the-box in combination with the Thrust library.
 
 ```cpp
 #include <multi/array.hpp>  // this library
@@ -1176,7 +1176,7 @@ int main() {
 ```
 [(live)](https://godbolt.org/z/e7bjKqh69)
 
-which uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a ROCm compiler, or OpenMP or TBB in other cases).
+which uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a HIP/ROCm compiler, or OpenMP or TBB in other cases).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` (from `<thrust/universal_allocator.h>`) instead.
 
 More specific allocators can be used ensure CUDA backends, for example CUDA managed memory:
@@ -1201,6 +1201,10 @@ Multi can be used on existing memory in a non-invasive way via (non-owning) refe
 	using gpu_ptr = thrust::cuda::pointer<double>;  // or thrust::hip::pointer<double> 
 	multi::array_ref<double, 2, gpu_ptr> Aref({n, n}, gpu_ptr{raw_pointer});
 ```
+
+Finally, the element type of the device array has to be device-friendly to work correctly; 
+this includes all build in types, and classes with basic device operations, such as construction, destruction, and assigment.
+They notably do not include `std::complex<T>`, in which can be replaced by the device-friendly `thrust::complex<T>` can be used as replacement.
 
 ### Thrust memory resources
 
