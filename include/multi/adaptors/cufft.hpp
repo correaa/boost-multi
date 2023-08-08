@@ -134,6 +134,7 @@ public:
 		);
 
 		assert( s == cufftSuccess );
+		if(s != cufftSuccess) {throw std::runtime_error{"cufftPlanMany failed"};}
 	}
 
  private:
