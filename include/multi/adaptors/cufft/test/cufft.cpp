@@ -108,8 +108,48 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).real() == 0.0 );
 		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag() == 0.0 );
 	}
+	{
+		auto       fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
 
-	// auto fw2_gpu = multi::cufft::dft({true, true}, in_gpu, multi::cufft::forward);
+		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+		auto       fw_gpu2 = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+		auto       fw_gpu3 = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+
+		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
+		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
+
+		for(int i = 0; i != in_gpu.size(); ++i) {
+			multi::cufft::plan<1>({true}, in_gpu[i].layout(), fw_gpu[i].layout())
+				.execute(in_gpu[i].base(), fw_gpu[i].base(), multi::cufft::forward);
+		}
+
+		multi::cufft::plan<2>({false, true}, in_gpu.layout(), fw_gpu2.layout())
+			.execute(in_gpu.base(), fw_gpu2.base(), multi::cufft::forward);
+
+		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag() == 0.0 );
+
+		BOOST_TEST( (complex(fw_gpu[3][2]) - complex(fw_gpu2[3][2])).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[3][2]) - complex(fw_gpu2[3][2])).imag() == 0.0 );
+	}
+	{
+		auto       fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
+
+		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
+		auto const fw_gpu = multi::cufft::dft({true, true}, in_gpu, multi::cufft::forward);
+
+		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
+		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
+
+		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag() == 0.0 );
+
+		BOOST_TEST( (complex(fw_gpu[2][3]) - fw_cpu[2][3]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[2][3]) - fw_cpu[2][3]).imag() == 0.0 );
+	}
 	// BOOST_TEST( (complex(fw2_gpu[3][1]) - fw_cpu[3][1]).real() == 0.0 );
 	// BOOST_TEST( (complex(fw2_gpu[3][1]) - fw_cpu[3][1]).imag() == 0.0 );
 
