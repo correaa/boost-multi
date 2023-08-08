@@ -134,7 +134,6 @@ public:
 		);
 
 		assert( s == cufftSuccess );
-
 	}
 
  private:
@@ -178,7 +177,7 @@ public:
 	template<class IPtr, class OPtr>
 	void execute(IPtr idata, OPtr odata, int direction) {
 		if(first_howmany_ == DD) {
-			ExecZ2Z((complex_type const*)thrust::raw_pointer_cast(idata), (complex_type*)thrust::raw_pointer_cast(odata), direction);
+			ExecZ2Z((complex_type const*)::thrust::raw_pointer_cast(idata), (complex_type*)::thrust::raw_pointer_cast(odata), direction);
 			return;
 		}
 		if(first_howmany_ + 1 == DD) {
