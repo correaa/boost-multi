@@ -201,7 +201,7 @@ public:
 
 	template<class IPtr, class OPtr>
 	void operator()(IPtr idata, OPtr odata, int direction) const {
-		ExecZ2Z((complex_type const*)thrust::raw_pointer_cast(idata), (complex_type*)thrust::raw_pointer_cast(odata), direction);
+		ExecZ2Z((complex_type const*)::thrust::raw_pointer_cast(idata), (complex_type*)::thrust::raw_pointer_cast(odata), direction);
 	}
 	template<class I, class O>
 	O&& execute_dft(I&& i, O&& o, int direction) const {
