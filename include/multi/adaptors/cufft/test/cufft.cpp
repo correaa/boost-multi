@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
 
-		multi::cufft::plan<2>(std::string{}, {true, true}, in_gpu.layout(), fw_gpu.layout())
+		multi::cufft::plan<2>({true, true}, in_gpu.layout(), fw_gpu.layout())
 			.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
 
 		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).real() == 0.0 );
@@ -84,13 +84,26 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
 
-		// for(int i = 0; i != in_gpu.size(); ++i) {
-		//  multi::cufft::plan<1>(std::string{}, {true}, in_gpu[i].layout(), fw_gpu[i].layout())
-		//      .execute(in_gpu[i].base(), fw_gpu[i].base(), multi::cufft::forward);
-		// }
-		multi::cufft::plan<2> p(std::string{}, {false, true}, in_gpu.layout(), fw_gpu.layout());
+		multi::cufft::plan<2>({false, true}, in_gpu.layout(), fw_gpu.layout())
+			.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
 
-		p.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
+		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag() == 0.0 );
+	}
+	{
+		auto       fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
+
+		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+
+		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
+		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
+
+		for(int i = 0; i != in_gpu.size(); ++i) {
+			multi::cufft::plan<1>({true}, in_gpu[i].layout(), fw_gpu[i].layout())
+				.execute(in_gpu[i].base(), fw_gpu[i].base(), multi::cufft::forward);
+		}
 
 		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).real() == 0.0 );
 		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag() == 0.0 );

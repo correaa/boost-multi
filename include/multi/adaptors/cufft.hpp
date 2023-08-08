@@ -61,7 +61,7 @@ public:
 		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
 		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>
 	>
-	plan(std::string /*unused*/, std::array<bool, +D> which, ILayout const& in, OLayout const& out, int sign = 0) : sign_{sign} {
+	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out, int sign = 0) : sign_{sign} {
 
 		assert(in.sizes() == out.sizes());
 
@@ -220,6 +220,7 @@ public:
 	using size_type = int;
 	using ssize_type = int;
 
+#if 0
 	template<
 		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
 		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>//,
@@ -304,7 +305,8 @@ public:
 		//https://software.intel.com/content/www/us/en/develop/documentation/mkl-developer-reference-c/top/appendix-d-fftw-interface-to-intel-math-kernel-library/fftw3-interface-to-intel-math-kernel-library/using-fftw3-wrappers.html
 //      return ret;
 	}
-
+#endif
+#if 0
 	template<class ILayout, class OLayout, //std::enable_if_t<(I::dimensionality < 4), int> =0,
 		dimensionality_type D = ILayout::dimensionality//,
 		// typename = decltype(raw_pointer_cast(base(std::declval<I const&>())), reinterpret_cast<complex_type*      >(raw_pointer_cast(base(std::declval<O&>()))))
@@ -373,6 +375,7 @@ public:
 		// }
 		if(not h_) {throw std::runtime_error{"cufftPlanMany failed"};}
 	}
+#endif
 	template<class ILayout, class OLayout, dimensionality_type D = ILayout::dimensionality>
 	static plan many(ILayout const& i, OLayout const& o)
 	{
