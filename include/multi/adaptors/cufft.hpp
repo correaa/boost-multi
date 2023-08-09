@@ -133,8 +133,8 @@ public:
 			/*int batch*/         1 //BATCH
 		);
 
-		assert( s == cufftSuccess );
-		if(s != cufftSuccess) {throw std::runtime_error{"cufftPlanMany failed"};}
+		assert( s == CUFFT_SUCCESS );
+		if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
 	}
 
  private:
