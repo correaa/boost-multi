@@ -116,25 +116,63 @@ public:
 			inembed[i]=istrides[i-1]/istrides[i];
 		}
 
-		assert(first_howmany_ == D);
-		assert(ion_end - ion.begin() == D);
 
-		auto const s = ::cufftPlanMany(
-			/*cufftHandle *plan*/ &h_,
-			/*int rank*/          dims_end - dims.begin(),
-			/*int *n*/            ion.data(),
-			/*int *inembed*/      inembed.data(),
-			/*int istride*/       istride,
-			/*int idist*/         1, //stride(first),
-			/*int *onembed*/      onembed.data(),
-			/*int ostride*/       ostride,
-			/*int odist*/         1, //stride(d_first),
-			/*cufftType type*/    CUFFT_Z2Z,
-			/*int batch*/         1 //BATCH
-		);
+		while(true) {
+			if(first_howmany_ < D - 1) {
+				int nelems = 1;
+				for(int i = first_howmany_ + 1; i != D; ++i) {nelems *= which_iodims_[i].second.n;}
+				if(
+					which_iodims_[first_howmany_].second.is == nelems and
+					which_iodims_[first_howmany_].second.os == nelems
+				) {
+					which_iodims_[first_howmany_ + 1].second.n *= which_iodims_[first_howmany_].second.n;
+					++first_howmany_;
+				} else {
+					break;
+				}
+			} else {
+				break;
+			}
+		}
 
-		assert( s == CUFFT_SUCCESS );
-		if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
+		if(first_howmany_ == D) {
+			auto const s = ::cufftPlanMany(
+				/*cufftHandle *plan*/ &h_,
+				/*int rank*/          dims_end - dims.begin(),
+				/*int *n*/            ion.data(),
+				/*int *inembed*/      inembed.data(),
+				/*int istride*/       istride,
+				/*int idist*/         1, //stride(first),
+				/*int *onembed*/      onembed.data(),
+				/*int ostride*/       ostride,
+				/*int odist*/         1, //stride(d_first),
+				/*cufftType type*/    CUFFT_Z2Z,
+				/*int batch*/         1 //BATCH
+			);
+			assert( s == CUFFT_SUCCESS );
+			if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
+
+			return;
+		}
+		if(first_howmany_ == D - 1) {
+			auto const s = ::cufftPlanMany(
+				/*cufftHandle *plan*/ &h_,
+				/*int rank*/          dims_end - dims.begin(),
+				/*int *n*/            ion.data(),
+				/*int *inembed*/      inembed.data(),
+				/*int istride*/       istride,
+				/*int idist*/         which_iodims_[first_howmany_].second.is,
+				/*int *onembed*/      onembed.data(),
+				/*int ostride*/       ostride,
+				/*int odist*/         which_iodims_[first_howmany_].second.os,
+				/*cufftType type*/    CUFFT_Z2Z,
+				/*int batch*/         which_iodims_[first_howmany_].second.n
+			);
+			assert( s == CUFFT_SUCCESS );
+			if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
+
+			return;
+		}
 	}
 
  private:
@@ -181,13 +219,13 @@ public:
 			ExecZ2Z((complex_type const*)::thrust::raw_pointer_cast(idata), (complex_type*)::thrust::raw_pointer_cast(odata), direction);
 			return;
 		}
-		if(first_howmany_ + 1 == DD) {
+		if(first_howmany_ == DD - 1) {
 			if( which_iodims_[first_howmany_].first) throw std::runtime_error{"logic error"};
 			for(int i = 0; i != which_iodims_[first_howmany_].second.n; ++i) {
 				::cufftExecZ2Z(
 					h_,
-					const_cast<complex_type*>((complex_type const*)thrust::raw_pointer_cast(idata + i*which_iodims_[first_howmany_].second.is)),
-					                          (complex_type      *)thrust::raw_pointer_cast(odata + i*which_iodims_[first_howmany_].second.os) ,
+					const_cast<complex_type*>((complex_type const*)::thrust::raw_pointer_cast(idata + i*which_iodims_[first_howmany_].second.is)),
+					                          (complex_type      *)::thrust::raw_pointer_cast(odata + i*which_iodims_[first_howmany_].second.os) ,
 					direction
 				);
 			}
