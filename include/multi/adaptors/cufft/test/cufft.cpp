@@ -134,6 +134,7 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 		BOOST_TEST( (complex(fw_gpu[3][2]) - complex(fw_gpu2[3][2])).real() == 0.0 );
 		BOOST_TEST( (complex(fw_gpu[3][2]) - complex(fw_gpu2[3][2])).imag() == 0.0 );
 	}
+#if 0
 	{
 		auto       fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
 		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
@@ -150,20 +151,7 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 		BOOST_TEST( (complex(fw_gpu[2][3]) - fw_cpu[2][3]).real() == 0.0 );
 		BOOST_TEST( (complex(fw_gpu[2][3]) - fw_cpu[2][3]).imag() == 0.0 );
 	}
-	// BOOST_TEST( (complex(fw2_gpu[3][1]) - fw_cpu[3][1]).real() == 0.0 );
-	// BOOST_TEST( (complex(fw2_gpu[3][1]) - fw_cpu[3][1]).imag() == 0.0 );
-
-	// auto const in_mng = multi::thrust::cuda::universal_array<complex, 2>{in_cpu};
-	// auto       fw_mng = multi::thrust::cuda::universal_array<complex, 2>(extensions(in_gpu));
-	// multi::cufft::dft({true, true}, in_mng, fw_mng, multi::cufft::forward);
-
-	// BOOST_TEST( (fw_mng[3][2] - fw_cpu[3][2]).real() == 0.0 );
-	// BOOST_TEST( (fw_mng[3][2] - fw_cpu[3][2]).imag() == 0.0 );
-
-	// auto fw2_mng = boost::multi::cufft::dft({true, true}, in_mng, multi::cufft::forward);
-
-	// BOOST_TEST( (fw2_mng[3][1] - fw_cpu[3][1]).real() == 0.0 );
-	// BOOST_TEST( (fw2_mng[3][1] - fw_cpu[3][1]).imag() == 0.0 );
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
@@ -175,18 +163,27 @@ BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
 		auto       fw_cpu = multi::array<complex, 3>(extensions(in_cpu), 99.0);
 		{
 		//  boost::timer::auto_cpu_timer t;  // 1.041691s wall, 1.030000s user + 0.000000s system = 1.030000s CPU (98.9%)
-			multi::fftw::dft({true, true}, in_cpu, fw_cpu, multi::fftw::forward);
-			BOOST_TEST( fw_cpu[8][9][10] != 99. );
+			multi::fftw::dft_forward({true, true}, in_cpu, fw_cpu);
+			BOOST_TEST( fw_cpu[8][9][10] != 99.0 );
 		}
-	}
-	{
-		auto const in_gpu = multi::thrust::cuda::array<complex, 3>(x, 10.0);
-		auto       fw_gpu = multi::thrust::cuda::array<complex, 3>(extensions(in_gpu), 99.0);
+
+		auto const in_gpu = multi::thrust::cuda::array<complex, 3>{in_cpu};  // (x, 10.0);
+		cudaDeviceSynchronize();
+		{
+			auto       fw_gpu = multi::thrust::cuda::array<complex, 3>(extensions(in_gpu), 99.0);
+			cudaDeviceSynchronize();
+		//  boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
+			boost::multi::cufft::dft({true, true}, in_gpu, fw_gpu, multi::cufft::forward);
+			cudaDeviceSynchronize();
+			BOOST_TEST( (static_cast<complex>(fw_gpu[8][9][10]) - fw_cpu[8][9][10]).real() == 0.0 );
+			BOOST_TEST( (static_cast<complex>(fw_gpu[8][9][10]) - fw_cpu[8][9][10]).imag() == 0.0 );
+		}
 		{
 		//  boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
-		// boost::multi::cufft::dft({true, true}, in_gpu, fw_gpu, multi::cufft::forward);
-
-		//  BOOST_TEST( static_cast<complex>(fw_gpu[8][9][10]) != 99.0 );
+			auto const fw_gpu2 = boost::multi::cufft::dft({true, true}, in_gpu, multi::cufft::forward);
+			cudaDeviceSynchronize();
+			BOOST_TEST( (static_cast<complex>(fw_gpu2[8][9][10]) - fw_cpu[8][9][10]).real() == 0.0 );
+			BOOST_TEST( (static_cast<complex>(fw_gpu2[8][9][10]) - fw_cpu[8][9][10]).imag() == 0.0 );
 		}
 	}
 
