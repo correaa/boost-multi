@@ -25,13 +25,15 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE( arr[2] == 5.6 );
 	}
 	{
-		auto                                 il = {1.2, 3.4, 5.6};
+		auto const il = {1.2, 3.4, 5.6};
+
 		multi::static_array<double, 1> const arr(il);
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == il.begin()[2] );
 	}
 	{
-		auto                                 il = {1.2, 3.4, 5.6};
+		auto const il = {1.2, 3.4, 5.6};
+
 		multi::static_array<double, 1> const arr(begin(il), end(il));
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == il.begin()[2] );
@@ -44,7 +46,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE(( arr == decltype(arr){1.2, 3.4, 5.6} ));
 	}
 	{
-		auto                          values = {1.2, 3.4, 5.6};
+		auto const values = {1.2, 3.4, 5.6};
+
 		multi::array<double, 1> const arr(values.begin(), values.end());
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == 5.6 );
@@ -123,9 +126,7 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 #endif
 	}
 	{
-		std::array<double, 3> stdarr = {
-			{1.1, 2.2, 3.3},
-		};
+		std::array<double, 3> stdarr = {{1.1, 2.2, 3.3}};
 		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
 		BOOST_REQUIRE(( arr == decltype(arr){1.1, 2.2, 3.3} ));
 	}
@@ -230,7 +231,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 			{2.0 + 1.0 * I, 1.0 + 3.0 * I, 1.0 + 7.0 * I},
 			{3.0 + 4.0 * I, 4.0 + 2.0 * I, 0.0 + 0.0 * I},
 		};
-		BOOST_REQUIRE( arr[1][1] == 4. + 2.*I );
+		BOOST_REQUIRE( arr[1][1] == 4.0 + 2.0*I );
 	}
 }
 
@@ -255,8 +256,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 	{
 		using std::string;
 		multi::array<string, 3> B3 = {
-			{{"000", "001", "002"}, {"010", "011", "012"}},
-			{{"100", "101", "102"}, {"110", "111", "112"}},
+			{{"000", "001", "002"}, {"010", "011", "012"}},  // NOLINT(fuchsia-default-arguments-calls)
+			{{"100", "101", "102"}, {"110", "111", "112"}},  // NOLINT(fuchsia-default-arguments-calls)
 		};
 		BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
 	}
@@ -267,7 +268,7 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 	{
 #if not defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
-		static_assert(std::is_same<decltype(arr)::element_type, double>{}, "!");
+		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
 		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
@@ -281,34 +282,34 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 	{
 		multi::array arr({1.0, 2.0, 3.0});
-		static_assert(std::is_same<decltype(arr)::element_type, double>{}, "!");
+		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
 		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
 	}
 	{
 		multi::array arr({1.0, 2.0});
-		static_assert(std::is_same<decltype(arr)::element_type, double>{}, "!");
+		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
 		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr) == 2 and arr[1] == 2.0 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 	}
 	{
 		multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>, "!");
+		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 and num_elements(arr) == 2 and arr[1] == 2.0 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 	}
 	{
 		multi::array arr({9.0});  // multi::array arr = {9.0}; not working with CTAD
-		static_assert(std::is_same<decltype(arr)::element_type, double>{}, "!");
+		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==1 and arr[0]==9. );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
 	{
 		multi::array arr({9});  // multi::array arr = {9}; not working with CTAD
-		static_assert(std::is_same<decltype(arr)::element_type, int>{}, "!");
+		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 		BOOST_REQUIRE( size(arr) == 1 and num_elements(arr) == 1 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 		BOOST_REQUIRE( num_elements(arr) == 1 and arr[0] == 9.0 );
