@@ -1,7 +1,6 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi initializer_list"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
@@ -100,8 +99,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
 #pragma GCC diagnostic ignored "-Wc99-designator"
 		//      double const a[] = { [8] = 8.0, 9.0, 10.0 };
 		std::array<double, 11> const stdarr = {
-			{[8] = 8.0, 9.0, 10.0}
-                                                                                                                                                                                                      };
+			{[8] = 8.0, 9.0, 10.0},
+		};
 #pragma GCC diagnostic pop
 		multi::array<double, 1> arr = stdarr;
 		BOOST_REQUIRE( arr.size() == 11 );
@@ -125,8 +124,8 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 	}
 	{
 		std::array<double, 3> stdarr = {
-			{1.1, 2.2, 3.3}
-                                                                                                                                                                                                      };
+			{1.1, 2.2, 3.3},
+		};
 		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
 		BOOST_REQUIRE(( arr == decltype(arr){1.1, 2.2, 3.3} ));
 	}
@@ -137,8 +136,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		multi::static_array<double, 2> const arr = {
 			{ 1.2,  2.4, 3.6, 8.9},
 			{11.2, 34.4, 5.6, 1.1},
-			{15.2, 32.4, 5.6, 3.4}
-                                                                                                                                                                                                      };
+			{15.2, 32.4, 5.6, 3.4},
+		};
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( size(arr[0]) == 4 );
 		BOOST_REQUIRE(( arr == decltype(arr){
@@ -169,8 +168,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		arr = {
 			{ 0.0,  1.0, 02.0},
 			{10.0, 11.0, 12.0},
-			{20.0, 21.0, 22.0}
-                                                                                                                                                                                                      };
+			{20.0, 21.0, 22.0},
+		};
 		BOOST_REQUIRE( arr[1][2] == 12.0 );
 	}
 	{
@@ -180,11 +179,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE( vec[1] == 5.5 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const nested = {
-			{{{1.2, 2.4}},
-			 {{11.2, 34.4}},
-			 {{15.2, 32.4}}}
-                                                                                                                                                                                                      };
+		std::array<std::array<double, 2>, 3> const nested = {{{{1.2, 2.4}},{{11.2, 34.4}}, {{15.2, 32.4}}}};
+
 		using std::begin;
 		using std::end;
 		multi::static_array<double, 2> arr(begin(nested), end(nested));
@@ -194,11 +190,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE( arr[1][0] == 11.2 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const nested = {
-			{{{1.2, 2.4}},
-			 {{11.2, 34.4}},
-			 {{15.2, 32.4}}}
-                                                                                                                                                                                                      };
+		std::array<std::array<double, 2>, 3> const nested = {{{{1.2, 2.4}}, {{11.2, 34.4}}, {{15.2, 32.4}}}};
 		multi::static_array<double, 2> const arr(std::begin(nested), std::end(nested));
 
 		BOOST_REQUIRE((
@@ -226,8 +218,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		std::array<std::array<double, 2>, 3> nested = {
 			{{{1.0, 2.0}},
 			 {{2.0, 4.0}},
-			 {{3.0, 6.0}}}
-                                                                                                                                                                                                      };
+			 {{3.0, 6.0}}},
+		};
 		multi::array<double, 2> arr(begin(nested), end(nested));
 		BOOST_REQUIRE( num_elements(arr) == 6 and arr[2][1] == 6.0 );
 	}
@@ -236,8 +228,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		complex const            I{0., 1.};  // NOLINT(readability-identifier-length) imaginary unit
 		multi::array<complex, 2> arr = {
 			{2.0 + 1.0 * I, 1.0 + 3.0 * I, 1.0 + 7.0 * I},
-			{3.0 + 4.0 * I, 4.0 + 2.0 * I, 0.0 + 0.0 * I}
-                                                                                                                                                                                                      };
+			{3.0 + 4.0 * I, 4.0 + 2.0 * I, 0.0 + 0.0 * I},
+		};
 		BOOST_REQUIRE( arr[1][1] == 4. + 2.*I );
 	}
 }
@@ -252,17 +244,10 @@ BOOST_AUTO_TEST_CASE(multi_tests_static_array_initializer_list) {
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
 	multi::array<double, 3> const arr = {
-		{{1.2, 0.0},
-		 {2.4, 1.0}},
-		{
-                                                                                                                                                                                                       {11.2, 3.0},
-                                                                                                                                                                                                       {34.4, 4.0},
-		 },
-		{
-                                                                                                                                                                                                       {15.2, 99.0},
-                                                                                                                                                                                                       {32.4, 2.0},
-		 }
-                                                                                                   };
+		{  {1.2, 0.0},  {2.4, 1.0}},
+		{ {11.2, 3.0}, {34.4, 4.0}},
+		{{15.2, 99.0}, {32.4, 2.0}},
+	};
 	BOOST_REQUIRE( arr[1][1][0] == 34.4 and arr[1][1][1] == 4.0   );
 }
 
@@ -270,15 +255,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 	{
 		using std::string;
 		multi::array<string, 3> B3 = {
-			{
-                                                                                                                                                                                                                                                                                                          {"000", "001", "002"}, // std::string NOLINT(fuchsia-default-arguments-calls)
- {"010", "011", "012"}, // std::string NOLINT(fuchsia-default-arguments-calls)
-			},
-			{
-                                                                                                                                                                                                                                                                                                          {"100", "101", "102"},                                                                                                                                                                                                                                                                                                                                                                                                           // std::string NOLINT(fuchsia-default-arguments-calls)
-                                                                                                                                                                                                                                                                                                                                                                                                           {"110", "111", "112"}, // std::string NOLINT(fuchsia-default-arguments-calls)
-			}
-                                                                                                                                                                                                      };
+			{{"000", "001", "002"}, {"010", "011", "012"}},
+			{{"100", "101", "102"}, {"110", "111", "112"}},
+		};
 		BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
 	}
 }
