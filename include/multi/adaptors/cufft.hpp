@@ -221,7 +221,7 @@ public:
 			return;
 		}
 		if(first_howmany_ == DD - 1) {
-			if( which_iodims_[first_howmany_].first) throw std::runtime_error{"logic error"};
+			if( which_iodims_[first_howmany_].first) {throw std::runtime_error{"logic error"};}
 			for(int i = 0; i != which_iodims_[first_howmany_].second.n; ++i) {
 				::cufftExecZ2Z(
 					h_,
@@ -229,6 +229,20 @@ public:
 					                          (complex_type      *)::thrust::raw_pointer_cast(odata + i*which_iodims_[first_howmany_].second.os) ,
 					direction
 				);
+			}
+			return;
+		}
+		if(first_howmany_ == DD - 2) {
+			if( which_iodims_[first_howmany_ + 1].first) {throw std::runtime_error{"logic error"};}
+			for(int i = 0; i != which_iodims_[first_howmany_].second.n; ++i) {
+				for(int j = 0; j != which_iodims_[first_howmany_ + 1].second.n; ++j) {
+					::cufftExecZ2Z(
+						h_,
+						const_cast<complex_type*>((complex_type const*)::thrust::raw_pointer_cast(idata + i*which_iodims_[first_howmany_].second.is + j*which_iodims_[first_howmany_ + 1].second.is)),
+												  (complex_type      *)::thrust::raw_pointer_cast(odata + i*which_iodims_[first_howmany_].second.os + j*which_iodims_[first_howmany_ + 1].second.os) ,
+						direction
+					);
+				}
 			}
 			return;
 		}
