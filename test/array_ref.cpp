@@ -292,7 +292,6 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 	#endif
 
 	BOOST_REQUIRE( &aref[1][1] == vec.data() );
-
 }
 
 BOOST_AUTO_TEST_CASE(array_2D_with_offset) {
@@ -372,7 +371,6 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 
 		BOOST_REQUIRE( &other_darr4[1][0] == &darr[1][0] );
 	} catch(...) {}
-
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
@@ -446,13 +444,21 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 	//  BOOST_REQUIRE( sizes3 == 3 );
 	// }
 	{
-		long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
+		multi::size_t sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
 		BOOST_REQUIRE( sizes2 == 2 );
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
+	{
+		auto const [sizes1, sizes2, sizes3] = cref.sizes();
+
+		BOOST_REQUIRE( sizes1 == 4 );
+		BOOST_REQUIRE( sizes2 == 2 );
+		BOOST_REQUIRE( sizes3 == 3 );
+	}
+
 	// {
 	//  unsigned long sizes1, sizes2, sizes3;
 	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
@@ -581,8 +587,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
 	{
 		double(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3] == &arr[3] );
-    //  vvv this will warn with -Wold-style-cast
-	//  f1d5((double(&)[5])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	//  f1d5((double(&)[5])(arr));  // this will warn with -Wold-style-cast  NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 	{ //  vvv this syntax needs cast operator to be non-explicit
 	//  double(&carr)[5] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
@@ -605,9 +610,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 	{
 		double(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
-
-    //  vvv this will warn with -Wold-style-cast
-	//  f2d54((double(&)[5][4])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	//  f2d54((double(&)[5][4])(arr));  // this will warn with -Wold-style-cast NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 	{ //  vvv this syntax needs cast operator to be non-explicit
 	//  double(&carr)[5][4] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
@@ -705,6 +708,6 @@ BOOST_AUTO_TEST_CASE(diagonal) {
 	BOOST_REQUIRE( &mar({0, 3}, {0, 3}).diagonal()[2] == &arr[2][2] );
 
 	auto sum = 0.0;
-	for(auto const& aii : mar.diagonal() ) {sum += aii;};  // NOLINT(altera-unroll-loops) test for-range loop
+	for(auto const& aii : mar.diagonal() ) {sum += aii;}  // NOLINT(altera-unroll-loops) test for-range loop
 	BOOST_REQUIRE( sum == mar[0][0] + mar[1][1] + mar[2][2]);
 }

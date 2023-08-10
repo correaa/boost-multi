@@ -1,10 +1,9 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
-//#define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
 namespace fancy {
 

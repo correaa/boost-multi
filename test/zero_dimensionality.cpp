@@ -57,8 +57,9 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 	{
 		double doub = 2.0;
 		multi::array_ref<double, 0> arr(doub);
-		BOOST_REQUIRE(  static_cast<double&>(arr) ==  doub );
-		BOOST_REQUIRE( &static_cast<double&>(arr) == &doub );
+		double const& the_doub = static_cast<double&>(arr); 
+		BOOST_REQUIRE(  the_doub ==  doub );
+		BOOST_REQUIRE( &the_doub == &doub );
 	}
 	{
 		double doub = 2.0;

@@ -7,7 +7,7 @@
 
 #include <multi/adaptors/fftw.hpp>
 
-#include <chrono>
+#include <chrono>  // NOLINT(build/c++11)
 #include <complex>
 #include <iostream>
 #include <random>
