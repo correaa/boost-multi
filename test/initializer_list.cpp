@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE( vec[1] == 5.5 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const nested = {{{{1.2, 2.4}},{{11.2, 34.4}}, {{15.2, 32.4}}}};
+		std::array<std::array<double, 2>, 3> const nested = {{{{1.2, 2.4}}, {{11.2, 34.4}}, {{15.2, 32.4}}}};
 
 		using std::begin;
 		using std::end;
