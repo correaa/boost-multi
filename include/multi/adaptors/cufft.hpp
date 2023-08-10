@@ -117,23 +117,23 @@ public:
 		}
 
 
-		while(true) {
-			if(first_howmany_ < D - 1) {
-				int nelems = 1;
-				for(int i = first_howmany_ + 1; i != D; ++i) {nelems *= which_iodims_[i].second.n;}
-				if(
-					which_iodims_[first_howmany_].second.is == nelems and
-					which_iodims_[first_howmany_].second.os == nelems
-				) {
-					which_iodims_[first_howmany_ + 1].second.n *= which_iodims_[first_howmany_].second.n;
-					++first_howmany_;
-				} else {
-					break;
-				}
-			} else {
-				break;
-			}
-		}
+		// while(true) {
+		//  if(first_howmany_ < D - 1) {
+		//      int nelems = 1;
+		//      for(int i = first_howmany_ + 1; i != D; ++i) {nelems *= which_iodims_[i].second.n;}
+		//      if(
+		//          which_iodims_[first_howmany_].second.is == nelems and
+		//          which_iodims_[first_howmany_].second.os == nelems
+		//      ) {
+		//          which_iodims_[first_howmany_ + 1].second.n *= which_iodims_[first_howmany_].second.n;
+		//          ++first_howmany_;
+		//      } else {
+		//          break;
+		//      }
+		//  } else {
+		//      break;
+		//  }
+		// }
 
 		if(first_howmany_ == D) {
 			auto const s = ::cufftPlanMany(
@@ -173,6 +173,7 @@ public:
 
 			return;
 		}
+		throw std::runtime_error{"cufft not implemented yet"};
 	}
 
  private:
