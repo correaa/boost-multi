@@ -78,7 +78,6 @@ BOOST_AUTO_TEST_CASE(fftw_3D) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const) {
-
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0 *I, 4.0 + 5.0*I, 5.0 + 6.0*I};

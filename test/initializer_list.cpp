@@ -59,7 +59,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE(( arr == decltype(arr)::decay_type({1.2, 3.4, 5.6}) ));
 	}
 	{
-		std::array<double, 3> const stdarr = {{1.1, 2.2, 3.3}};
+		std::array<double, 3> const stdarr = {
+			{1.1, 2.2, 3.3}
+                                                                                                                                                                                                      };
 		using multi::num_elements;
 		BOOST_REQUIRE( num_elements(stdarr) == 3 );
 
@@ -73,14 +75,14 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 	{
-		#if not defined(__circle_build__)  // crashes circle 198
+#if not defined(__circle_build__)  // crashes circle 198
 		multi::static_array const arr = {1.2, 3.4, 5.6};
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == 5.6 );
 		BOOST_REQUIRE(( arr == multi::static_array{1.2, 3.4, 5.6} ));
-		#else
-		// multi::static_array const arr = {1.2, 3.4, 5.6};
-		#endif
+#else
+// multi::static_array const arr = {1.2, 3.4, 5.6};
+#endif
 	}
 	{
 		multi::array arr({1.2, 3.4, 5.6});
@@ -97,7 +99,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc99-designator"
 		//      double const a[] = { [8] = 8.0, 9.0, 10.0 };
-		std::array<double, 11> const stdarr = {{[8] = 8.0, 9.0, 10.0}};
+		std::array<double, 11> const stdarr = {
+			{[8] = 8.0, 9.0, 10.0}
+                                                                                                                                                                                                      };
 #pragma GCC diagnostic pop
 		multi::array<double, 1> arr = stdarr;
 		BOOST_REQUIRE( arr.size() == 11 );
@@ -140,15 +144,15 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE(( arr == decltype(arr){
 			{ 1.2,  2.4, 3.6, 8.9},
 			{11.2, 34.4, 5.6, 1.1},
-			{15.2, 32.4, 5.6, 3.4}
+			{15.2, 32.4, 5.6, 3.4},
 		}));
 	}
 	{
 		multi::array<double, 2> const arr = {
 			{ 1.2,  2.4, 3.6},
 			{11.2, 34.4, 5.6},
-			{15.2, 32.4, 5.6}
-                                                                                                                                                                                                      };
+			{15.2, 32.4, 5.6},
+		};
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( size(arr) == 3 and size(arr[0]) == 3 );
 		BOOST_REQUIRE( arr[1][1] == 34.4 );
@@ -157,8 +161,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		multi::array<double, 2> arr = {
 			{ 1.2,  2.4, 3.6},
 			{11.2, 34.4, 5.6},
-			{15.2, 32.4, 5.6}
-                                                                                                                                                                                                      };
+			{15.2, 32.4, 5.6},
+		};
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( size(arr) == 3 and size(arr[0]) == 3 );
 		BOOST_REQUIRE( arr[1][1] == 34.4 );
@@ -267,14 +271,14 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 		using std::string;
 		multi::array<string, 3> B3 = {
 			{
-				{"000", "001", "002"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-				{"010", "011", "012"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+                                                                                                                                                                                                                                                                                                          {"000", "001", "002"}, // std::string NOLINT(fuchsia-default-arguments-calls)
+ {"010", "011", "012"}, // std::string NOLINT(fuchsia-default-arguments-calls)
 			},
 			{
-				{"100", "101", "102"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-				{"110", "111", "112"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+                                                                                                                                                                                                                                                                                                          {"100", "101", "102"},                                                                                                                                                                                                                                                                                                                                                                                                           // std::string NOLINT(fuchsia-default-arguments-calls)
+                                                                                                                                                                                                                                                                                                                                                                                                           {"110", "111", "112"}, // std::string NOLINT(fuchsia-default-arguments-calls)
 			}
-		};
+                                                                                                                                                                                                      };
 		BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
 	}
 }
@@ -282,16 +286,16 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 	{
-		#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same<decltype(arr)::element_type, double>{}, "!");
 		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
-		#else
-		// multi::static_array arr(                             {1.0, 2.0, 3.0});  // crashes circle
-		// multi::static_array arr(std::initializer_list<double>{1.0, 2.0, 3.0});  // crashes circle
-		#endif
+#else
+// multi::static_array arr(                             {1.0, 2.0, 3.0});  // crashes circle
+// multi::static_array arr(std::initializer_list<double>{1.0, 2.0, 3.0});  // crashes circle
+#endif
 	}
 }
 
@@ -334,48 +338,48 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 
 BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 	{
-		#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::static_array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
-        });
+		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
-		#else
+#else
 		// // vvv--- gives segfault in circle
 		// multi::static_array const arr({
 		//  {1.0, 2.0, 3.0},
 		//  {4.0, 5.0, 6.0},
-        // });
-		#endif
+		// });
+#endif
 	}
 	{
-		#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
-        });
+		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
-		#else
+#else
 		// // vvv--- gives error in circle, not viable constructor
 		// multi::array const arr({
 		//  {1.0, 2.0, 3.0},
 		//  {4.0, 5.0, 6.0},
-        // });
+		// });
 
 		// vvv--- gives ODR violation in circle
-		// multi::array const arr(std::initializer_list<std::initializer_list<double>>{ 
+		// multi::array const arr(std::initializer_list<std::initializer_list<double>>{
 		//     {1.0, 2.0, 3.0},
 		//     {4.0, 5.0, 6.0},
-        // });
+		// });
 
 		// vvv--- gives ODR violation in circle
 		// multi::array const arr(std::initializer_list<std::initializer_list<double>>{
 		//  std::initializer_list<double>{1.0, 2.0, 3.0},
 		//  std::initializer_list<double>{4.0, 5.0, 6.0},
-        // });
-		#endif
+		// });
+#endif
 	}
 }
 #endif
