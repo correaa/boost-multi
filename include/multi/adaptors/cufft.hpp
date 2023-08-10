@@ -174,7 +174,7 @@ public:
 			assert( s == CUFFT_SUCCESS );
 			if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
 			if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
-
+			++first_howmany_;
 			return;
 		}
 		throw std::runtime_error{"cufft not implemented yet"};
