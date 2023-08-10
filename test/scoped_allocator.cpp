@@ -21,6 +21,7 @@ class allocator1 {
     using value_type = T;
 
     allocator1() noexcept = delete;
+	// NOLINTNEXTLINE(runtime/explicit)
 	allocator1(int* heap) : heap_{heap} { assert(heap_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
     template <class U> allocator1(allocator1<U> const& other) noexcept : heap_{other.heap_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
@@ -35,7 +36,6 @@ class allocator1 {
 	}
 	template <class U>
 	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ == other.heap_; }
-
 };
 
 template <class T, class U>
@@ -51,6 +51,7 @@ class allocator2 {
     using value_type = T;
 
     allocator2() noexcept = delete;
+	// NOLINTNEXTLINE(runtime/explicit)
 	allocator2(std::int64_t* heap) : heap_{heap} { assert(heap_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
     template<class U> allocator2(allocator2<U> const& other)  noexcept : heap_{other.heap_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 

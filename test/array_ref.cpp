@@ -557,12 +557,6 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
 		BOOST_REQUIRE( &carr[3] == &arr[3] );
 	//  f1d5((double(&)[5])(arr));  // this will warn with -Wold-style-cast  NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
-	{ //  vvv this syntax needs cast operator to be non-explicit
-	//  double(&carr)[5] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	//  BOOST_REQUIRE( &carr[3] == &arr[3] );
-
-	//  f1d5(arr);
-	}
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
@@ -579,12 +573,6 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 		double(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 	//  f2d54((double(&)[5][4])(arr));  // this will warn with -Wold-style-cast NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	}
-	{ //  vvv this syntax needs cast operator to be non-explicit
-	//  double(&carr)[5][4] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	//  BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
-
-	//  f2d54(arr);
 	}
 }
 
