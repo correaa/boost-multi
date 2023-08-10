@@ -1,7 +1,6 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-//#define BOOST_TEST_MODULE "C++ Unit Tests for Multi array reference"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
@@ -427,30 +426,6 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes2 == 2 );
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
-	// {
-	//  int sizes1, sizes2, sizes3;
-	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes(); // may give warning
-
-	//  BOOST_REQUIRE( sizes1 == 4 );
-	//  BOOST_REQUIRE( sizes2 == 2 );
-	//  BOOST_REQUIRE( sizes3 == 3 );
-	// }
-	// {
-	//  unsigned int sizes1, sizes2, sizes3;
-	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes(); // may give warning
-
-	//  BOOST_REQUIRE( sizes1 == 4 );
-	//  BOOST_REQUIRE( sizes2 == 2 );
-	//  BOOST_REQUIRE( sizes3 == 3 );
-	// }
-	{
-		multi::size_t sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
-		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
-
-		BOOST_REQUIRE( sizes1 == 4 );
-		BOOST_REQUIRE( sizes2 == 2 );
-		BOOST_REQUIRE( sizes3 == 3 );
-	}
 	{
 		auto const [sizes1, sizes2, sizes3] = cref.sizes();
 
@@ -458,16 +433,17 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes2 == 2 );
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
-
-	// {
-	//  unsigned long sizes1, sizes2, sizes3;
-	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
-
-	//  BOOST_REQUIRE( sizes1 == 4 );
-	//  BOOST_REQUIRE( sizes2 == 2 );
-	//  BOOST_REQUIRE( sizes3 == 3 );
-	// }
 	{
+		// NOLINTNEXTLINE(runtime/int)
+		long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
+		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
+
+		BOOST_REQUIRE( sizes1 == 4 );
+		BOOST_REQUIRE( sizes2 == 2 );
+		BOOST_REQUIRE( sizes3 == 3 );
+	}
+	{
+		// NOLINTNEXTLINE(runtime/int)
 		long long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
@@ -483,14 +459,6 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes2 == 2 );
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
-	// {
-	//  unsigned long long sizes1, sizes2, sizes3;
-	//  multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
-
-	//  BOOST_REQUIRE( sizes1 == 4 );
-	//  BOOST_REQUIRE( sizes2 == 2 );
-	//  BOOST_REQUIRE( sizes3 == 3 );
-	// }
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
@@ -621,7 +589,6 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(as_span) {
-	// using SpanInt = multi::array_ptr<int, 1> const&;
 	#if defined(__cpp_lib_span) and (__cpp_lib_span >=  202002L)
 	auto printMe0 = [](std::span<int> rng) {
         std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
