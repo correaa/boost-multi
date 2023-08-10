@@ -78,7 +78,6 @@ BOOST_AUTO_TEST_CASE(fftw_3D) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const) {
-
 	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0 *I, 4.0 + 5.0*I, 5.0 + 6.0*I};
@@ -108,14 +107,16 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)) {
-	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using complex = std::complex<double>;
+
+	[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> const in = {
-		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
-		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
-		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
-		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
-		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
+		{ 1.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
+		{ 3.0 + 3.0 * I,  7.0 - 4.0 * I,  1.0 + 9.0 * I},
+		{ 4.0 + 1.0 * I,  5.0 + 3.0 * I,  2.0 + 4.0 * I},
+		{ 3.0 - 1.0 * I,  8.0 + 7.0 * I,  2.0 + 1.0 * I},
+		{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I},
 	};
 	auto fwd = multi::fftw::dft({}, in, fftw::forward);
 	BOOST_REQUIRE( fwd == in );

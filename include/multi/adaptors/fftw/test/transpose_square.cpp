@@ -2,12 +2,13 @@
 // Copyright 2020-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
+
 #include<boost/test/unit_test.hpp>
 #include<boost/timer/timer.hpp>
 
 #include <multi/adaptors/fftw.hpp>
 
-#include <chrono>
+#include <chrono>  // NOLINT(build/c++11)
 #include <complex>
 #include <iostream>
 #include <random>

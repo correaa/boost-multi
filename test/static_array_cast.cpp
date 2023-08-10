@@ -72,7 +72,7 @@ class involuter {
 
 	constexpr auto operator==(involuter const& other) const {return it_ == other.it_;}
 	constexpr auto operator!=(involuter const& other) const {return it_ != other.it_;}
-	constexpr auto operator< (involuter const& other) const {return it_ <  other.it_;} 
+	constexpr auto operator< (involuter const& other) const {return it_ <  other.it_;}
 
 	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto) {it_+=n; return *this;}
 	constexpr auto operator+ (typename involuter::difference_type n) const {return involuter{it_+n, f_};}
