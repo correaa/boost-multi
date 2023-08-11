@@ -116,25 +116,33 @@ public:
 			inembed[i]=istrides[i-1]/istrides[i];
 		}
 
-		while(true) {
-		 if(first_howmany_ < D - 1) {
-		     int nelems = 1;
-		     for(int i = first_howmany_ + 1; i != D; ++i) {nelems *= which_iodims_[i].second.n;}
-		     if(
-		         which_iodims_[first_howmany_].second.is == nelems and
-		         which_iodims_[first_howmany_].second.os == nelems
-		     ) {
-		         which_iodims_[first_howmany_ + 1].second.n *= which_iodims_[first_howmany_].second.n;
-		         ++first_howmany_;
-		     } else {
-		         break;
-		     }
-		 } else {
-		     break;
-		 }
-		}
-
 		if(dims_end == dims.begin()) {throw std::runtime_error{"no ffts in any dimension is not supported"};}
+
+		while(first_howmany_ < D - 1) {
+			int nelems = 1;
+			// for(int i = D - 1; i != first_howmany_ + 1; --i) {
+			//  nelems *= which_iodims_[i].second.n;
+			//  if(
+			//      which_iodims_[i - 1].second.is == nelems and
+			//      which_iodims_[i - 1].second.os == nelems
+			//  ) {
+			//      for(int j = i - 1; j != first_howmany_; --j) {
+			//          which_iodims_[j].second.n *= which_iodims_[j + 1].second.n;
+			//      }
+			//  }
+
+			// }
+			for(int i = first_howmany_ + 1; i != D; ++i) {nelems *= which_iodims_[i].second.n;}
+			if(
+				which_iodims_[first_howmany_].second.is == nelems and
+				which_iodims_[first_howmany_].second.os == nelems
+			) {
+				which_iodims_[first_howmany_ + 1].second.n *= which_iodims_[first_howmany_].second.n;
+				++first_howmany_;
+			} else {
+				break;
+			}
+		}
 
 		if(first_howmany_ == D) {
 			auto const s = ::cufftPlanMany(
@@ -159,7 +167,7 @@ public:
 
 		std::sort(which_iodims_.begin() + first_howmany_, which_iodims_.begin() + D, [](auto const& a, auto const& b){return get<1>(a).n > get<1>(b).n;});
 
-		if(first_howmany_ == D - 1) {
+		if(first_howmany_ <= D - 1) {
 			auto const s = ::cufftPlanMany(
 				/*cufftHandle *plan*/ &h_,
 				/*int rank*/          dims_end - dims.begin(),
@@ -179,7 +187,7 @@ public:
 			++first_howmany_;
 			return;
 		}
-		throw std::runtime_error{"cufft not implemented yet"};
+		// throw std::runtime_error{"cufft not implemented yet"};
 	}
 
  private:
