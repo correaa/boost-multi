@@ -116,24 +116,23 @@ public:
 			inembed[i]=istrides[i-1]/istrides[i];
 		}
 
-
-		// while(true) {
-		//  if(first_howmany_ < D - 1) {
-		//      int nelems = 1;
-		//      for(int i = first_howmany_ + 1; i != D; ++i) {nelems *= which_iodims_[i].second.n;}
-		//      if(
-		//          which_iodims_[first_howmany_].second.is == nelems and
-		//          which_iodims_[first_howmany_].second.os == nelems
-		//      ) {
-		//          which_iodims_[first_howmany_ + 1].second.n *= which_iodims_[first_howmany_].second.n;
-		//          ++first_howmany_;
-		//      } else {
-		//          break;
-		//      }
-		//  } else {
-		//      break;
-		//  }
-		// }
+		while(true) {
+		 if(first_howmany_ < D - 1) {
+		     int nelems = 1;
+		     for(int i = first_howmany_ + 1; i != D; ++i) {nelems *= which_iodims_[i].second.n;}
+		     if(
+		         which_iodims_[first_howmany_].second.is == nelems and
+		         which_iodims_[first_howmany_].second.os == nelems
+		     ) {
+		         which_iodims_[first_howmany_ + 1].second.n *= which_iodims_[first_howmany_].second.n;
+		         ++first_howmany_;
+		     } else {
+		         break;
+		     }
+		 } else {
+		     break;
+		 }
+		}
 
 		if(dims_end == dims.begin()) {throw std::runtime_error{"no ffts in any dimension is not supported"};}
 
@@ -237,7 +236,8 @@ public:
 			return;
 		}
 		if(first_howmany_ == DD - 2) {
-			if( which_iodims_[first_howmany_ + 1].first) {throw std::runtime_error{"logic error"};}
+			if( which_iodims_[first_howmany_ + 0].first) {throw std::runtime_error{"logic error0"};}
+			if( which_iodims_[first_howmany_ + 1].first) {throw std::runtime_error{"logic error1"};}
 			for(int i = 0; i != which_iodims_[first_howmany_].second.n; ++i) {
 				for(int j = 0; j != which_iodims_[first_howmany_ + 1].second.n; ++j) {
 					::cufftExecZ2Z(
