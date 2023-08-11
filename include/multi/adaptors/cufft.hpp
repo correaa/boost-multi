@@ -156,6 +156,9 @@ public:
 
 			return;
 		}
+
+		std::sort(which_iodims_.begin() + first_howmany_, which_iodims_.begin() + D, [](auto const& a, auto const& b){return get<1>(a).n > get<1>(b).n;});
+
 		if(first_howmany_ == D - 1) {
 			auto const s = ::cufftPlanMany(
 				/*cufftHandle *plan*/ &h_,
