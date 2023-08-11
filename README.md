@@ -410,10 +410,14 @@ If element preservation is not desired, a simple assignment (move) from a new ar
 A = multi::array<double, 2>({4, 4});  // like A.reextents({4, 4}) but elements are not preserved.
 ```
 
-An alternative syntax, `.reextents({...}, value)` sets _new_ (not preexisting) elements to a certain value.
+An alternative syntax, `.reextents({...}, value)` sets _new_ (not preexisting) elements to a specific value.
 
-Subarrays, or views cannot change their size or be emptied (`A[1].reextents({4})` or `A[1].clear()` will not compile).
+Subarrays or views cannot change their size or be emptied (e.g. `A[1].reextents({4})` or `A[1].clear()` will not compile).
 For the same reason, subarrays cannot be assigned from an array or another subarray of a different size.
+
+Changing the size of arrays by `reextents`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
+In contrast, `static_array<T, D>`, which can be used in many cases as a replacement of `array<T, D>`, doesn't have operations that invalidate iterators as it cannot be resized or assigned from arrays of different size.
+(Preventing iterator invalidation can be a helpful technique in multithreaded programs.)
 
 ## Iteration
 
