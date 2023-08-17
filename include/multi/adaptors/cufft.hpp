@@ -203,7 +203,7 @@ public:
 		// ++tl_execute_count;
 	//  assert(idata_ and odata_); 
 	//  assert(direction_!=0);
-		cufftResult r = ::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction); 
+		cufftResult r = ::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction);
 		switch(r){
 			case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
 			case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
@@ -236,7 +236,6 @@ public:
 		}
 		if(first_howmany_ == DD - 1) {
 			if( which_iodims_[first_howmany_].first) {throw std::runtime_error{"logic error"};}
-			if(idata == odata) {throw std::runtime_error{"complicated inplace 1"};}
 			for(int i = 0; i != which_iodims_[first_howmany_].second.n; ++i) {
 				::cufftExecZ2Z(
 					h_,
@@ -250,7 +249,7 @@ public:
 		if(first_howmany_ == DD - 2) {
 			if( which_iodims_[first_howmany_ + 0].first) {throw std::runtime_error{"logic error0"};}
 			if( which_iodims_[first_howmany_ + 1].first) {throw std::runtime_error{"logic error1"};}
-			if(idata == odata) {throw std::runtime_error{"complicated inplace 1"};}
+			if(idata == odata) {throw std::runtime_error{"complicated inplace 2"};}
 			for(int i = 0; i != which_iodims_[first_howmany_].second.n; ++i) {
 				for(int j = 0; j != which_iodims_[first_howmany_ + 1].second.n; ++j) {
 					::cufftExecZ2Z(
