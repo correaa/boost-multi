@@ -310,9 +310,9 @@ cuda:
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["g++"]
 
-cuda-12.1.1:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+cuda-12.2.0:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
   stage: build
-  image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
+  image: nvcr.io/nvidia/cuda:12.2.0-devel-ubuntu22.04
   tags:
     - nvidia-docker
   script:
@@ -320,9 +320,9 @@ cuda-12.1.1:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - ls /usr/local
-    - ls /usr/local/cuda-12/bin
-    - /usr/local/cuda-12/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-12/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - ls /usr/local/cuda/bin
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
@@ -330,24 +330,6 @@ cuda-12.1.1:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-
 cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
-  tags:
-    - nvidia-docker
-  script:
-    - nvidia-smi
-    - apt-get -qq update
-    - DEBIAN_FRONTEND=noninteractive  apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - mkdir build && cd build
-    - ls /usr/local
-    - ls /usr/local/cuda-11/bin
-    - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-  needs: ["cuda"]
-
-cuda-11.5.0:
-  stage: build
-  image: nvcr.io/nvidia/cuda:11.5.0-devel-ubuntu20.04
   tags:
     - nvidia-docker
   script:
