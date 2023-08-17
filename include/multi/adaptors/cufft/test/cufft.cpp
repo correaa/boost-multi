@@ -16,9 +16,10 @@
 
 #include<cuda_runtime.h> // cudaDeviceSynchronize
 
-#include<chrono>
-#include<complex>
-#include<iostream>
+#include <chrono>
+#include <complex>
+#include <iostream>
+#include <random>
 
 namespace multi = boost::multi;
 using complex = thrust::complex<double>;
@@ -134,13 +135,12 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 		BOOST_TEST( (complex(fw_gpu[3][2]) - complex(fw_gpu2[3][2])).real() == 0.0 );
 		BOOST_TEST( (complex(fw_gpu[3][2]) - complex(fw_gpu2[3][2])).imag() == 0.0 );
 	}
-#if 0
 	{
 		auto       fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
 		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
 
 		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
-		auto const fw_gpu = multi::cufft::dft({true, true}, in_gpu, multi::cufft::forward);
+		auto const fw_gpu = multi::cufft::dft({false, true}, in_gpu, multi::cufft::forward);
 
 		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
@@ -151,7 +151,192 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 		BOOST_TEST( (complex(fw_gpu[2][3]) - fw_cpu[2][3]).real() == 0.0 );
 		BOOST_TEST( (complex(fw_gpu[2][3]) - fw_cpu[2][3]).imag() == 0.0 );
 	}
-#endif
+	{
+		auto       fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		multi::fftw::dft({true, false}, in_cpu, fw_cpu, multi::fftw::forward);
+
+		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
+		auto const fw_gpu = multi::cufft::dft({true, false}, in_gpu, multi::cufft::forward);
+
+		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
+		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
+
+		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag() == 0.0 );
+
+		BOOST_TEST( (complex(fw_gpu[2][3]) - fw_cpu[2][3]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[2][3]) - fw_cpu[2][3]).imag() == 0.0 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cufft_1D_combinations, *boost::unit_test::tolerance(0.0001)){
+
+	using complex = thrust::complex<double>;  // this can't be std::complex<double> in the gpu
+
+	auto const in_cpu = std::invoke([]{
+		multi::array<complex, 1> ret({128}, complex{});
+		std::default_random_engine generator;
+		std::uniform_real_distribution<double> distribution(1.0, 88.0);
+
+		std::generate(
+			reinterpret_cast<double*>(ret.data_elements()),
+			reinterpret_cast<double*>(ret.data_elements() + ret.num_elements()), [&]{return distribution(generator);}
+		);
+		return ret;
+	});
+
+	for(auto c : std::vector<std::array<bool, 1>>{
+		{true} //,
+		// {false},
+	}){
+		auto       fw_cpu = multi::array<complex, 1>(extensions(in_cpu));
+		multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
+
+		auto const in_gpu = multi::thrust::cuda::array<complex, 1>{in_cpu};
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 1>(extensions(in_gpu));
+
+		BOOST_TEST( fw_cpu[31].real() != 0.0 );
+		BOOST_TEST( fw_cpu[31].imag() != 0.0 );
+
+		multi::cufft::plan<1>(c, in_gpu.layout(), fw_gpu.layout())
+			.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
+
+		BOOST_TEST( (complex(fw_gpu[31]) - fw_cpu[31]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[31]) - fw_cpu[31]).imag() == 0.0 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cufft_2D_combinations, *boost::unit_test::tolerance(0.0001)){
+
+	using complex = thrust::complex<double>;  // this can't be std::complex<double> in the gpu
+
+	auto const in_cpu = std::invoke([]{
+		multi::array<complex, 2> ret({10, 20});
+		std::default_random_engine generator;
+		std::uniform_real_distribution<double> distribution(-1.0, 1.0);
+
+		std::generate(
+			reinterpret_cast<double*>(ret.data_elements()),
+			reinterpret_cast<double*>(ret.data_elements() + ret.num_elements()), [&]{return distribution(generator);}
+		);
+		return ret;
+	});
+
+	for(auto c : std::vector<std::array<bool, 2>>{
+		{true , true },
+		{true , false},
+		{false, true }//,
+	//  {false, false}
+	}){
+		auto       fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
+
+		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+
+		BOOST_TEST( fw_cpu[2][1].real() != 0.0 );
+		BOOST_TEST( fw_cpu[2][1].imag() != 0.0 );
+
+		multi::cufft::plan<2>(c, in_gpu.layout(), fw_gpu.layout())
+			.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
+
+		BOOST_TEST( (complex(fw_gpu[2][1]) - fw_cpu[2][1]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[2][1]) - fw_cpu[2][1]).imag() == 0.0 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cufft_3D, *boost::unit_test::tolerance(0.0001)){
+
+	using complex = thrust::complex<double>;  // this can't be std::complex<double> in the gpu
+
+	auto const in_cpu = std::invoke([]{
+		multi::array<complex, 3> ret({10, 20, 30});
+		std::default_random_engine generator;
+		std::uniform_real_distribution<double> distribution(-1.0, 1.0);
+
+		std::generate(
+			reinterpret_cast<double*>(ret.data_elements()), 
+			reinterpret_cast<double*>(ret.data_elements() + ret.num_elements()), [&]{return distribution(generator);}
+		);
+		return ret;
+	});
+
+	for(auto c : std::vector<std::array<bool, 3>>{
+		{true , true , true },
+		{true , true , false},
+		{true , false, true },
+		{true , false, false},
+		{false, true , true },
+		{false, true , false},
+		{false, false, true }//,
+	//  {false, false, false}
+	}){
+		auto       fw_cpu = multi::array<complex, 3>(extensions(in_cpu));
+		multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
+
+		auto const in_gpu = multi::thrust::cuda::array<complex, 3>{in_cpu};
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 3>(extensions(in_gpu));
+
+		BOOST_TEST( fw_cpu[3][2][1].real() != 0.0 );
+		BOOST_TEST( fw_cpu[3][2][1].imag() != 0.0 );
+
+		multi::cufft::plan<3>(c, in_gpu.layout(), fw_gpu.layout())
+			.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
+
+		BOOST_TEST( (complex(fw_gpu[3][2][1]) - fw_cpu[3][2][1]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[3][2][1]) - fw_cpu[3][2][1]).imag() == 0.0 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cufft_4D, *boost::unit_test::tolerance(0.0001)){
+
+	using complex = thrust::complex<double>;  // this can't be std::complex<double> in the gpu
+
+	auto const in_cpu = std::invoke([]{
+		multi::array<complex, 4> ret({10, 20, 30, 40});
+		std::default_random_engine generator;
+		std::uniform_real_distribution<double> distribution(-1.0, 1.0);
+
+		std::generate(
+			reinterpret_cast<double*>(ret.data_elements()), 
+			reinterpret_cast<double*>(ret.data_elements() + ret.num_elements()), [&]{return distribution(generator);}
+		);
+		return ret;
+	});
+
+	for(auto c : std::vector<std::array<bool, 4>>{
+		// {true , true , true , true },
+		{true , true , true , false},
+		{true , true , false, true },
+		{true , true , false, false},
+		{true , false, true , true },
+		{true , false, true , false},
+		{true , false, false, true },
+		{true , false, false, false},
+		{false, true , true , true },
+		{false, true , true , false},
+		{false, true , false, true },
+		{false, true , false, false},
+		{false, false, true , true },
+		{false, false, true , false},
+		{false, false, false, true }//,
+	//  {false, false, false, false}
+	}){
+		auto       fw_cpu = multi::array<complex, 4>(extensions(in_cpu));
+		multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
+
+		auto const in_gpu = multi::thrust::cuda::array<complex, 4>{in_cpu};
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 4>(extensions(in_gpu));
+
+		BOOST_TEST( fw_cpu[4][3][2][1].real() != 0.0 );
+		BOOST_TEST( fw_cpu[4][3][2][1].imag() != 0.0 );
+
+		multi::cufft::plan<4>(c, in_gpu.layout(), fw_gpu.layout())
+			.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
+
+		BOOST_TEST( (complex(fw_gpu[4][3][2][1]) - fw_cpu[4][3][2][1]).real() == 0.0 );
+		BOOST_TEST( (complex(fw_gpu[4][3][2][1]) - fw_cpu[4][3][2][1]).imag() == 0.0 );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
@@ -187,7 +372,7 @@ BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
 		}
 	}
 
-#if 0
+#if 1
 	{
 		multi::thrust::cuda::universal_array<complex, 3> const in_gpu(x, 10.); 
 		multi::thrust::cuda::universal_array<complex, 3> fw_gpu(extensions(in_gpu), 99.);
@@ -306,13 +491,12 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}();
 	}
-	std::clog<<"cache size "
-		<< multi::cufft::plan::cache<1>().size() <<' '
-		<< multi::cufft::plan::cache<2>().size() <<' '
-		<< multi::cufft::plan::cache<3>().size() <<' '
-		<< multi::cufft::plan::cache<4>().size() <<' '
-	<<std::endl;
-
+	// std::clog<<"cache size "
+	//  << multi::cufft::plan::cache<1>().size() <<' '
+	//  << multi::cufft::plan::cache<2>().size() <<' '
+	//  << multi::cufft::plan::cache<3>().size() <<' '
+	//  << multi::cufft::plan::cache<4>().size() <<' '
+	// <<std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(cufft_many_3D, *utf::tolerance(0.00001) ){
@@ -339,6 +523,7 @@ BOOST_AUTO_TEST_CASE(cufft_many_3D, *utf::tolerance(0.00001) ){
 #endif
 }
 
+#if 0
 BOOST_AUTO_TEST_CASE(cufft_4D, *utf::tolerance(0.00001) ){
 	auto const in = []{
 		multi::array<complex, 3> ret({10, 10, 10});
@@ -356,7 +541,9 @@ BOOST_AUTO_TEST_CASE(cufft_4D, *utf::tolerance(0.00001) ){
 	multi::thrust::cuda::array<complex, 3> out_gpu(extensions(in));
 
 //  multi::cufft::dft({true, false, true}, in_gpu, out_gpu, multi::fft::forward);//multi::cufft::forward);  
-	multi::cufft::many_dft(begin(in_gpu.rotated()), end(in_gpu.rotated()), begin( out_gpu.rotated() ), multi::fftw::forward);
-	BOOST_TEST( ( static_cast<complex>(out_gpu[5][4][3]) - out[5][4][3]).imag() == 0. );
+	// multi::cufft::many_dft(begin(in_gpu.rotated()), end(in_gpu.rotated()), begin( out_gpu.rotated() ), multi::fftw::forward);
+	// BOOST_TEST( ( static_cast<complex>(out_gpu[5][4][3]) - out[5][4][3]).imag() == 0. );
 }
+#endif
+
 #endif
