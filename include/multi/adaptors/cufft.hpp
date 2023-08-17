@@ -159,7 +159,7 @@ public:
 				/*int batch*/         1 //BATCH
 			);
 			assert( s == CUFFT_SUCCESS );
-			if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
+			if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed" + std::to_string(static_cast<int>(s))};}
 			if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
 
 			return;
