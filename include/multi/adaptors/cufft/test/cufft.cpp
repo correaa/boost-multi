@@ -317,8 +317,7 @@ BOOST_AUTO_TEST_CASE(cufft_3D, *boost::unit_test::tolerance(0.0001)){
 		multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
 		auto       fw_gpu = multi::thrust::cuda::array<complex, 3>(extensions(in_gpu));
 
-		multi::cufft::plan<3>(c, in_gpu.layout(), fw_gpu.layout())
-			.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
+		multi::cufft::dft(c, in_gpu, fw_gpu, multi::cufft::forward);
 
 		BOOST_TEST( fw_cpu[3][2][1].real() != 0.0 );
 		BOOST_TEST( fw_cpu[3][2][1].imag() != 0.0 );

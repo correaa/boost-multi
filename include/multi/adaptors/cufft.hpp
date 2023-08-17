@@ -531,8 +531,8 @@ public:
 
 template<typename In, class Out, dimensionality_type D = In::rank::value>
 auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)
-->decltype(cufft::plan<D>{which, i.layout(), o.layout()}(i.base(), o.base(), s), std::forward<Out>(o)) {
-	return cufft::plan<D>{which, i.layout(), o.layout()}(i.base(), o.base(), s), std::forward<Out>(o); }
+->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
+	return cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
