@@ -144,6 +144,8 @@ public:
 			}
 		}
 
+
+
 		if(first_howmany_ == D) {
 			auto const s = ::cufftPlanMany(
 				/*cufftHandle *plan*/ &h_,
@@ -529,10 +531,29 @@ public:
 #endif
 };
 
+template<dimensionality_type D>
+struct cached_plan {
+	inline static std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D> > cache;
+	typename std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D> >::iterator it;
+
+	cached_plan(cached_plan const&) = delete;
+	cached_plan(cached_plan&&) = delete;
+
+	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::size_type> in, boost::multi::layout_t<D, boost::multi::size_type> out) {
+		it = cache.find(std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>{which, in, out});
+		if(it == cache.end()) {it = cache.insert(std::make_pair(std::make_tuple(which, in, out), plan<D>(which, in, out))).first;}
+	}
+	template<class IPtr, class OPtr>
+	void execute(IPtr idata, OPtr odata, int direction) {
+		assert(it != cache.end());
+		it->second.execute(idata, odata, direction);
+	}
+};
+
 template<typename In, class Out, dimensionality_type D = In::rank::value>
 auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)
-->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
-	return cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
+//->decltype(cufft::cached_plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
+{   return cufft::cached_plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
