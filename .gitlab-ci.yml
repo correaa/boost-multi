@@ -475,6 +475,7 @@ inq cuda:
     - cd ../..
     - rm -f cmake/FindNCCL.cmake  # diable NCCL workaround
     - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
     - cmake --install .
