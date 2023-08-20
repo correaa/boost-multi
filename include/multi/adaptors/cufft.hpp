@@ -551,9 +551,9 @@ struct cached_plan {
 };
 
 template<typename In, class Out, dimensionality_type D = In::rank::value>
-auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)
-//->decltype(cufft::cached_plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
-{   return cufft::cached_plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
+auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)  // -> Out&&
+->decltype(cufft::cached_plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
+	return cufft::cached_plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
