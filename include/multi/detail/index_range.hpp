@@ -4,9 +4,9 @@
 #ifndef MULTI_DETAIL_INDEX_RANGE_HPP
 #define MULTI_DETAIL_INDEX_RANGE_HPP
 
-#include "multi/detail/serialization.hpp"
-#include "multi/detail/tuple_zip.hpp"
-#include "multi/detail/types.hpp"
+#include "../../multi/detail/serialization.hpp"
+#include "../../multi/detail/tuple_zip.hpp"
+#include "../../multi/detail/types.hpp"
 
 #include <algorithm>  // for min
 #include <iterator>   // for std::random_iterator_tag // std::reverse_iterator
@@ -236,13 +236,13 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 
 //  template<class OStream>
 //  friend auto operator<<(OStream& os, extension_t const& self) -> decltype(os<<"[]") {
-//  	if(self.empty()) {
-//  		return os << static_cast<range<IndexType> const&>(self);
-//  	}
-//  	if(self.first() == 0) {
-//  		return os <<"["<< self.last() <<"]";
-//  	}
-//  	return os << static_cast<range<IndexType> const&>(self);
+//      if(self.empty()) {
+//          return os << static_cast<range<IndexType> const&>(self);
+//      }
+//      if(self.first() == 0) {
+//          return os <<"["<< self.last() <<"]";
+//      }
+//      return os << static_cast<range<IndexType> const&>(self);
 //  }
 
 	[[nodiscard]] constexpr auto start () const -> IndexType {return this->first();}

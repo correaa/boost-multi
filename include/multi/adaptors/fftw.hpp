@@ -212,9 +212,9 @@ template<
 auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags flags)
 -> fftw_plan {
 
-	static_assert( sizeof(*base(  first)) == sizeof(real(*base(  first))) + sizeof(imag(*base(  first))), "input  must have complex pod layout");
+	static_assert( sizeof(*base(  first)) == sizeof((*base(  first)).real()) + sizeof((*base(  first)).imag()), "input  must have complex pod layout");
 	static_assert( sizeof(*base(  first)) == sizeof(fftw_complex)                                       , "input  must have complex pod layout");
-	static_assert( sizeof(*base(d_first)) == sizeof(real(*base(d_first))) + sizeof(imag(*base(d_first))), "output must have complex pod layout");
+	static_assert( sizeof(*base(d_first)) == sizeof((*base(d_first)).real()) + sizeof((*base(d_first)).imag()), "output must have complex pod layout");
 	static_assert( sizeof(*base(d_first)) == sizeof(fftw_complex)                                       , "output must have complex pod layout");
 
 	assert(strides(*first) == strides(*last));

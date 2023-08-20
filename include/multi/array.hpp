@@ -1,10 +1,10 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_ARRAY_HPP_
 #define MULTI_ARRAY_HPP_
 
-#include "./array_ref.hpp"
+#include "../multi/array_ref.hpp"
 #include "./config/NO_UNIQUE_ADDRESS.hpp"
 
 #include "./detail/adl.hpp"
@@ -833,7 +833,19 @@ struct array : static_array<T, D, Alloc> {
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
-	: static_{array<T, D>(ilv.begin(), ilv.end())} {}  // construct all with default constructor and copy to special memory at the end
+	: static_{array<T, D>(ilv.begin(), ilv.end())} {}
+
+	// template<class TTT = void, class Int, std::enable_if_t<sizeof(TTT*) and not std::is_same_v<T, int> and std::is_same_v<Int, int> and std::is_convertible_v<int, T> and D == 1, int> = 0>
+	// explicit array(std::initializer_list<Int> ilv, TTT* = nullptr)
+	// : static_{array<T, D>(ilv.begin(), ilv.end())} {
+	//  if(ilv.size() == 1) {throw std::runtime_error{"ambiguous call"};}
+	// }
+
+	// template<class TTT = void, class Int, std::enable_if_t<sizeof(TTT*) and not std::is_same_v<T, int> and std::is_same_v<Int, int> and std::is_convertible_v<int, T> and D == 1, int> = 0>
+	// array(std::initializer_list<Int> ilv, TTT* = nullptr, double = 0.0)
+	// : static_{array<T, D>(ilv.begin(), ilv.end())} {
+	//  if(ilv.size() == 1) {throw std::runtime_error{"ambiguous call"};}
+	// }
 
 	array() = default;
 	array(array const&) = default;

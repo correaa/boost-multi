@@ -19,6 +19,12 @@ template<class Array> auto paren(Array&& arr, bee const& /*unused*/) -> decltype
 }
 }  // end namespace test_bee
 
+BOOST_AUTO_TEST_CASE(overload_initlist) {
+	multi::array<double, 1> arr = {10.0};
+	test_bee::bee const zero;
+	BOOST_REQUIRE( &arr(0) == &arr(zero) );
+}
+
 BOOST_AUTO_TEST_CASE(overload_paren) {
 	multi::array<double, 1> arr({10});
 	test_bee::bee const zero;

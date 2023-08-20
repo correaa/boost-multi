@@ -319,17 +319,31 @@ cuda-12.1.1:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - ls /usr/local
-    - ls /usr/local/cuda-12/bin
-    - /usr/local/cuda-12/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-12/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda-11.2.2:
+cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
+  tags:
+    - nvidia-docker
+  script:
+    - nvidia-smi
+    - apt-get -qq update
+    - DEBIAN_FRONTEND=noninteractive  apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda"]
+
+cuda-11.5.0:
+  stage: build
+  image: nvcr.io/nvidia/cuda:11.5.0-devel-ubuntu20.04
   tags:
     - nvidia-docker
   script:
@@ -344,7 +358,6 @@ cuda-11.2.2:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
-
 
 rocm:
   stage: build
@@ -462,6 +475,7 @@ inq cuda:
     - cd ../..
     - rm -f cmake/FindNCCL.cmake  # diable NCCL workaround
     - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
     - cmake --install .
@@ -469,9 +483,9 @@ inq cuda:
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
-    - ctest -j 2 --output-on-failure --timeout 600
-    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
-  timeout: 1 hours 30 minutes
+    - ctest -j 2 --output-on-failure --timeout 2400
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
+  timeout: 2 hours 30 minutes
   needs: ["cuda", "inq"]
 
 qmcpack:

@@ -9,7 +9,7 @@
 #include<type_traits>  // std::conditional_t
 #include<utility>
 
-#include "multi/detail/memory.hpp"
+// #include <multi/detail/memory.hpp>
 
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_AMD__)
 #include<thrust/copy.h>
@@ -503,20 +503,23 @@ constexpr class adl_uninitialized_value_construct_n_t {
 
 constexpr class adl_uninitialized_default_construct_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const {return                  std::  uninitialized_default_construct_n(                      std::forward<As>(args)...);}
-	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     uninitialized_default_construct_n(                      std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  uninitialized_default_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).uninitialized_default_construct_n(                      std::forward<As>(args)...))
+	// #if defined(__NVCC__)
+	// template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(             thrust::uninitialized_default_construct_n(                      std::forward<As>(args)...))
+	// #endif
+	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(                     uninitialized_default_construct_n(                      std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  uninitialized_default_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).uninitialized_default_construct_n(                      std::forward<As>(args)...))
 
  public:
-		template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<4>{}, std::forward<As>(args)...));}
+		template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<5>{}, std::forward<As>(args)...));}
 } adl_uninitialized_default_construct_n;
 
 [[maybe_unused]] constexpr class adl_alloc_uninitialized_default_construct_n_t {
-	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const JUSTRETURN(         adl_uninitialized_default_construct_n(std::forward<As>(args)...))
-//  #if defined(__NVCC__)
-//  template<class Alloc, class... As> constexpr auto _(priority<3>/**/,        As&&... as) const DECLRETURN(          thrust::         uninitialized_construct_n_with_allocator(               std::forward<As>(as)...))
-//  #endif
-	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(              xtd::  alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
+	template<class Alloc, class... As>          constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const JUSTRETURN(         adl_uninitialized_default_construct_n(std::forward<As>(args)...))
+	#if defined(__NVCC__)
+	template<class Alloc, class It, class Size> constexpr auto _(priority<2>/**/, Alloc&& alloc, It first, Size n ) const DECLRETURN(          thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n))
+	#endif
+	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(              xtd::  alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 	template<class... As>          constexpr auto _(priority<4>/**/,          As&&... args) const DECLRETURN(                     alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  alloc_uninitialized_default_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))

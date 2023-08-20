@@ -79,6 +79,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+	target_link_libraries(${TEST_EXE} PRIVATE multi)
+
 	if(NOT ENABLE_CUDA)
 		target_compile_options(
 			${TEST_EXE}

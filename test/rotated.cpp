@@ -77,8 +77,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
 BOOST_AUTO_TEST_CASE(multi_rotate) {
 {
 	multi::array<double, 2> arr = {
-		{00, 01},
-		{10, 11}
+		{00.0, 01.0},
+		{10.0, 11.0}
 	};
 	BOOST_REQUIRE(       arr[1][0] == 10 );
 	BOOST_REQUIRE( (arr.rotated())[0][1] == 10 );
