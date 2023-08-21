@@ -22,6 +22,32 @@ namespace boost{
 namespace multi{
 namespace cufft{
 
+// cuFFT API errors
+static char const* _cudaGetErrorEnum(cufftResult error) {
+    switch (error) {
+        case CUFFT_SUCCESS:        return "CUFFT_SUCCESS";
+        case CUFFT_INVALID_PLAN:   return "CUFFT_INVALID_PLAN";
+        case CUFFT_ALLOC_FAILED:   return "CUFFT_ALLOC_FAILED";
+		case CUFFT_INVALID_TYPE:   return "CUFFT_INVALID_TYPE";
+		case CUFFT_INVALID_VALUE:  return "CUFFT_INVALID_VALUE";
+		case CUFFT_INTERNAL_ERROR: return "CUFFT_INTERNAL_ERROR";
+		case CUFFT_EXEC_FAILED:    return "CUFFT_EXEC_FAILED";
+        case CUFFT_SETUP_FAILED:   return "CUFFT_SETUP_FAILED";
+		case CUFFT_INVALID_SIZE:   return "CUFFT_INVALID_SIZE";
+		case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
+    }
+    return "<unknown>";
+}
+
+#define cufftSafeCall(err) __cufftSafeCall(err, __FILE__, __LINE__)
+inline void __cufftSafeCall(cufftResult err, const char *file, const int line) {
+	if( CUFFT_SUCCESS != err) {
+		fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", __FILE__, __LINE__, err, 
+                                _cudaGetErrorEnum(err));
+		cudaDeviceReset(); assert(0);
+	}
+}
+
 class sign {
 	int impl_ = 0;
 
@@ -145,8 +171,8 @@ public:
 		}
 
 		if(first_howmany_ == D) {
-			if constexpr(true or std::is_same_v<Alloc, void*>) {
-				auto const s = ::cufftPlanMany(
+			if constexpr(std::is_same_v<Alloc, void*>) {
+				cufftSafeCall(::cufftPlanMany(
 					/*cufftHandle *plan*/ &h_,
 					/*int rank*/          dims_end - dims.begin(),
 					/*int *n*/            ion.data(),
@@ -158,18 +184,11 @@ public:
 					/*int odist*/         1, //stride(d_first),
 					/*cufftType type*/    CUFFT_Z2Z,
 					/*int batch*/         1 //BATCH
-				);
-				assert( s == CUFFT_SUCCESS );
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed" + std::to_string(static_cast<int>(s))};}
-				if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
-
-				return;
+				));
 			} else {
-				auto s = cufftCreate(&h_);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				s = cufftSetAutoAllocation(h_, false);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				cufftMakePlanMany(
+				cufftSafeCall(cufftCreate(&h_));
+				cufftSafeCall(cufftSetAutoAllocation(h_, false));
+				cufftSafeCall(cufftMakePlanMany(
 					/*cufftHandle *plan*/ h_,
 					/*int rank*/          dims_end - dims.begin(),
 					/*int *n*/            ion.data(),
@@ -182,21 +201,22 @@ public:
 					/*cufftType type*/    CUFFT_Z2Z,
 					/*int batch*/         1, //BATCH
 					/*size_t **/          &workSize_
-				);
-				s = cufftGetSize(h_, &workSize_);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				cudaMalloc(&workArea_, workSize_);
-				// if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				s = cufftSetWorkArea(h_, workArea_);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				));
+				cufftSafeCall(cufftGetSize(h_, &workSize_));
+				workArea_ = raw_pointer_cast(alloc_.allocate(workSize_));
+				// auto s = cudaMalloc(&workArea_, workSize_);
+				// if(s != cudaSuccess) {throw std::runtime_error{"L212"};}
+				cufftSafeCall(cufftSetWorkArea(h_, workArea_));
 			}
+			if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
+			return;
 		}
 
 		std::sort(which_iodims_.begin() + first_howmany_, which_iodims_.begin() + D, [](auto const& a, auto const& b){return get<1>(a).n > get<1>(b).n;});
 
 		if(first_howmany_ <= D - 1) {
-			if constexpr(true or std::is_same_v<Alloc, void*>) {
-				auto const s = ::cufftPlanMany(
+			if constexpr(std::is_same_v<Alloc, void*>) {
+				cufftSafeCall(::cufftPlanMany(
 					/*cufftHandle *plan*/ &h_,
 					/*int rank*/          dims_end - dims.begin(),
 					/*int *n*/            ion.data(),
@@ -208,18 +228,11 @@ public:
 					/*int odist*/         which_iodims_[first_howmany_].second.os,
 					/*cufftType type*/    CUFFT_Z2Z,
 					/*int batch*/         which_iodims_[first_howmany_].second.n
-				);
-				assert( s == CUFFT_SUCCESS );
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
-				if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
-				++first_howmany_;
-				return;
+				));
 			} else {
-				auto s = cufftCreate(&h_);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				s = cufftSetAutoAllocation(h_, false);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				cufftMakePlanMany(
+				cufftSafeCall(cufftCreate(&h_));
+				cufftSafeCall(cufftSetAutoAllocation(h_, false));
+				cufftSafeCall(cufftMakePlanMany(
 					/*cufftHandle *plan*/ h_,
 					/*int rank*/          dims_end - dims.begin(),
 					/*int *n*/            ion.data(),
@@ -232,14 +245,14 @@ public:
 					/*cufftType type*/    CUFFT_Z2Z,
 					/*int batch*/         which_iodims_[first_howmany_].second.n,
 					/*size_t **/          &workSize_
-				);
-				s = cufftGetSize(h_, &workSize_);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				cudaMalloc(&workArea_, workSize_);
-				// if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				s = cufftSetWorkArea(h_, workArea_);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				));
+				cufftSafeCall(cufftGetSize(h_, &workSize_));
+				workArea_ = raw_pointer_cast(alloc_.allocate(workSize_));
+				cufftSafeCall(cufftSetWorkArea(h_, workArea_));
 			}
+			if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
+			++first_howmany_;
+			return;
 		}
 		// throw std::runtime_error{"cufft not implemented yet"};
 	}
@@ -248,30 +261,7 @@ public:
 	plan() = default;
 	plan(plan const&) = delete;
 	void ExecZ2Z(complex_type const* idata, complex_type* odata, int direction) const{
-		// ++tl_execute_count;
-	//  assert(idata_ and odata_); 
-	//  assert(direction_!=0);
-		cufftResult r = ::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction);
-		switch(r){
-			case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
-			case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
-		//  case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
-		//  case CUFFT_INVALID_TYPE   : throw std::runtime_error{"The user requests an unsupported type."};
-			case CUFFT_INVALID_VALUE  : throw std::runtime_error{"At least one of the parameters idata, odata, and direction is not valid."};
-			case CUFFT_INTERNAL_ERROR : throw std::runtime_error{"Used for all internal driver errors."};
-			case CUFFT_EXEC_FAILED    : throw std::runtime_error{"CUFFT failed to execute an FFT on the GPU."};
-			case CUFFT_SETUP_FAILED   : throw std::runtime_error{"The cuFFT library failed to initialize."};
-		//  case CUFFT_INVALID_SIZE   : throw std::runtime_error{"The user specifies an unsupported FFT size."};
-		//  case CUFFT_UNALIGNED_DATA : throw std::runtime_error{"Unaligned data."};
-		//  case CUFFT_INCOMPLETE_PARAMETER_LIST: throw std::runtime_error{"Incomplete parameter list."};
-		//  case CUFFT_INVALID_DEVICE : throw std::runtime_error{"Invalid device."};
-		//  case CUFFT_PARSE_ERROR    : throw std::runtime_error{"Parse error."};
-		//  case CUFFT_NO_WORKSPACE   : throw std::runtime_error{"No workspace."};
-		//  case CUFFT_NOT_IMPLEMENTED: throw std::runtime_error{"Not implemented."};
-		//  case CUFFT_LICENSE_ERROR  : throw std::runtime_error{"License error."};
-		//  case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
-			default                   : throw std::runtime_error{"cufftExecZ2Z unknown error"};
-		}
+		cufftSafeCall(::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));
 		// cudaDeviceSynchronize();
 	}
 
@@ -327,15 +317,11 @@ public:
 		return std::forward<O>(o);
 	}
 
-	
-	template<class I, class O>
-	void execute_dft(I&& i, O&& o, int direction) const{execute_dft(std::forward<I>(i), std::forward<O>(o), direction);}
 	~plan() {
 		if constexpr(not std::is_same_v<Alloc, void*>) {
-			cudaFree(workArea_);
-			// alloc_.deallocate(typename std::allocator_traits<Alloc>::pointer((char*)workArea_), workSize_*2);
+			alloc_.deallocate(typename std::allocator_traits<Alloc>::pointer((char*)workArea_), workSize_);
 		}
-		if(h_) {cufftDestroy(h_);}
+		if(h_) {cufftSafeCall(cufftDestroy(h_));}
 	}
 	using size_type = int;
 	using ssize_type = int;
