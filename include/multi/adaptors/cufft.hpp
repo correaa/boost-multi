@@ -4,22 +4,19 @@
 #ifndef MULTI_ADAPTORS_CUFFTW_HPP
 #define MULTI_ADAPTORS_CUFFTW_HPP
 
-// #include "../config/MARK.hpp"
-
 #include "../adaptors/../utility.hpp"
 #include "../adaptors/../array.hpp"
 #include "../adaptors/../config/NODISCARD.hpp"
 
 #include "../adaptors/cuda.hpp"
 
-// #include<numeric>
-
 #include<tuple>
 #include<array>
 
-#include "../complex.hpp"
+// #include "../complex.hpp"
 
-#include<cufft.h>
+#include <cufft.h>
+#include <cufftXt.h>
 
 namespace boost{
 namespace multi{
@@ -40,15 +37,20 @@ constexpr sign backward{CUFFT_INVERSE};
 
 static_assert(forward != none and none != backward and backward != forward, "!");
 
-template<dimensionality_type DD = -1>
+template<dimensionality_type DD = -1, class Alloc = void*>
 struct plan {
+	Alloc alloc_;
+	::size_t workSize_ = 0;
+	void* workArea_;
+
 	using complex_type = cufftDoubleComplex;
 	cufftHandle h_;
 	std::array<std::pair<bool, fftw_iodim64>, DD + 1> which_iodims_{};
 	int first_howmany_;
-	int sign_ = 0;
 
 public:
+	using allocator_type = Alloc;
+
 	plan(plan&& other) :
 		h_{std::exchange(other.h_, {})},
 		which_iodims_{other.which_iodims_},
@@ -59,7 +61,7 @@ public:
 		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
 		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>
 	>
-	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out, int sign = 0) : sign_{sign} {
+	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out, allocator_type alloc = {}) : alloc_{alloc} {
 
 		assert(in.sizes() == out.sizes());
 
@@ -143,101 +145,101 @@ public:
 		}
 
 		if(first_howmany_ == D) {
-			{
-				cufftHandle pp;
-				auto s = cufftCreate(&pp);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				::size_t workSize;
-				s = cufftGetSizeMany(
-
-
-				/*cufftHandle *plan*/ pp,
-				/*int rank*/          dims_end - dims.begin(),
-				/*int *n*/            ion.data(),
-				/*int *inembed*/      inembed.data(),
-				/*int istride*/       istride,
-				/*int idist*/         1, //stride(first),
-				/*int *onembed*/      onembed.data(),
-				/*int ostride*/       ostride,
-				/*int odist*/         1, //stride(d_first),
-				/*cufftType type*/    CUFFT_Z2Z,
-				/*int batch*/         1 //BATCH
-				, &workSize
+			if constexpr(true or std::is_same_v<Alloc, void*>) {
+				auto const s = ::cufftPlanMany(
+					/*cufftHandle *plan*/ &h_,
+					/*int rank*/          dims_end - dims.begin(),
+					/*int *n*/            ion.data(),
+					/*int *inembed*/      inembed.data(),
+					/*int istride*/       istride,
+					/*int idist*/         1, //stride(first),
+					/*int *onembed*/      onembed.data(),
+					/*int ostride*/       ostride,
+					/*int odist*/         1, //stride(d_first),
+					/*cufftType type*/    CUFFT_Z2Z,
+					/*int batch*/         1 //BATCH
 				);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftGetSizeMany failed" + std::to_string(static_cast<int>(s))};}
-				std::cerr << "size allocated " << workSize << " bytes" << std::endl;
-				cufftDestroy(pp);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftDestroy" + std::to_string(static_cast<int>(s))};}
+				assert( s == CUFFT_SUCCESS );
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed" + std::to_string(static_cast<int>(s))};}
+				if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
+
+				return;
+			} else {
+				auto s = cufftCreate(&h_);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				s = cufftSetAutoAllocation(h_, false);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				cufftMakePlanMany(
+					/*cufftHandle *plan*/ h_,
+					/*int rank*/          dims_end - dims.begin(),
+					/*int *n*/            ion.data(),
+					/*int *inembed*/      inembed.data(),
+					/*int istride*/       istride,
+					/*int idist*/         1, //stride(first),
+					/*int *onembed*/      onembed.data(),
+					/*int ostride*/       ostride,
+					/*int odist*/         1, //stride(d_first),
+					/*cufftType type*/    CUFFT_Z2Z,
+					/*int batch*/         1, //BATCH
+					/*size_t **/          &workSize_
+				);
+				s = cufftGetSize(h_, &workSize_);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				cudaMalloc(&workArea_, workSize_);
+				// if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				s = cufftSetWorkArea(h_, workArea_);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
 			}
-
-			auto const s = ::cufftPlanMany(
-				/*cufftHandle *plan*/ &h_,
-				/*int rank*/          dims_end - dims.begin(),
-				/*int *n*/            ion.data(),
-				/*int *inembed*/      inembed.data(),
-				/*int istride*/       istride,
-				/*int idist*/         1, //stride(first),
-				/*int *onembed*/      onembed.data(),
-				/*int ostride*/       ostride,
-				/*int odist*/         1, //stride(d_first),
-				/*cufftType type*/    CUFFT_Z2Z,
-				/*int batch*/         1 //BATCH
-			);
-			assert( s == CUFFT_SUCCESS );
-			if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed" + std::to_string(static_cast<int>(s))};}
-			if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
-
-			return;
 		}
 
 		std::sort(which_iodims_.begin() + first_howmany_, which_iodims_.begin() + D, [](auto const& a, auto const& b){return get<1>(a).n > get<1>(b).n;});
 
 		if(first_howmany_ <= D - 1) {
-
-			{
-				cufftHandle pp;
-				auto s = cufftCreate(&pp);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
-				::size_t workSize;
-				s = cufftGetSizeMany(
-				/*cufftHandle *plan*/ pp,
-				/*int rank*/          dims_end - dims.begin(),
-				/*int *n*/            ion.data(),
-				/*int *inembed*/      inembed.data(),
-				/*int istride*/       istride,
-				/*int idist*/         which_iodims_[first_howmany_].second.is,
-				/*int *onembed*/      onembed.data(),
-				/*int ostride*/       ostride,
-				/*int odist*/         which_iodims_[first_howmany_].second.os,
-				/*cufftType type*/    CUFFT_Z2Z,
-				/*int batch*/         which_iodims_[first_howmany_].second.n
-				, &workSize
+			if constexpr(true or std::is_same_v<Alloc, void*>) {
+				auto const s = ::cufftPlanMany(
+					/*cufftHandle *plan*/ &h_,
+					/*int rank*/          dims_end - dims.begin(),
+					/*int *n*/            ion.data(),
+					/*int *inembed*/      inembed.data(),
+					/*int istride*/       istride,
+					/*int idist*/         which_iodims_[first_howmany_].second.is,
+					/*int *onembed*/      onembed.data(),
+					/*int ostride*/       ostride,
+					/*int odist*/         which_iodims_[first_howmany_].second.os,
+					/*cufftType type*/    CUFFT_Z2Z,
+					/*int batch*/         which_iodims_[first_howmany_].second.n
 				);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftGetSizeMany failed" + std::to_string(static_cast<int>(s))};}
-				std::cerr << "size Allocated " << workSize << " bytes" << std::endl;
-				cufftDestroy(pp);
-				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftDestroy" + std::to_string(static_cast<int>(s))};}
+				assert( s == CUFFT_SUCCESS );
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
+				if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
+				++first_howmany_;
+				return;
+			} else {
+				auto s = cufftCreate(&h_);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				s = cufftSetAutoAllocation(h_, false);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				cufftMakePlanMany(
+					/*cufftHandle *plan*/ h_,
+					/*int rank*/          dims_end - dims.begin(),
+					/*int *n*/            ion.data(),
+					/*int *inembed*/      inembed.data(),
+					/*int istride*/       istride,
+					/*int idist*/         which_iodims_[first_howmany_].second.is,
+					/*int *onembed*/      onembed.data(),
+					/*int ostride*/       ostride,
+					/*int odist*/         which_iodims_[first_howmany_].second.os,
+					/*cufftType type*/    CUFFT_Z2Z,
+					/*int batch*/         which_iodims_[first_howmany_].second.n,
+					/*size_t **/          &workSize_
+				);
+				s = cufftGetSize(h_, &workSize_);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				cudaMalloc(&workArea_, workSize_);
+				// if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				s = cufftSetWorkArea(h_, workArea_);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
 			}
-
-
-			auto const s = ::cufftPlanMany(
-				/*cufftHandle *plan*/ &h_,
-				/*int rank*/          dims_end - dims.begin(),
-				/*int *n*/            ion.data(),
-				/*int *inembed*/      inembed.data(),
-				/*int istride*/       istride,
-				/*int idist*/         which_iodims_[first_howmany_].second.is,
-				/*int *onembed*/      onembed.data(),
-				/*int ostride*/       ostride,
-				/*int odist*/         which_iodims_[first_howmany_].second.os,
-				/*cufftType type*/    CUFFT_Z2Z,
-				/*int batch*/         which_iodims_[first_howmany_].second.n
-			);
-			assert( s == CUFFT_SUCCESS );
-			if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftPlanMany failed"};}
-			if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
-			++first_howmany_;
-			return;
 		}
 		// throw std::runtime_error{"cufft not implemented yet"};
 	}
@@ -245,12 +247,6 @@ public:
  private:
 	plan() = default;
 	plan(plan const&) = delete;
-	// plan(plan&& other)
-	// : idata_{std::exchange(other.idata_, nullptr)}
-	// , odata_{std::exchange(other.odata_, nullptr)}
-	// , direction_{std::exchange(other.direction_, 0)}
-	// , h_{std::exchange(other.h_, {})}
-	// {}
 	void ExecZ2Z(complex_type const* idata, complex_type* odata, int direction) const{
 		// ++tl_execute_count;
 	//  assert(idata_ and odata_); 
@@ -318,9 +314,6 @@ public:
 	}
 
 	template<class IPtr, class OPtr>
-	void execute(IPtr idata, OPtr odata) {execute(idata, odata, sign_);}
-
-	template<class IPtr, class OPtr>
 	void operator()(IPtr idata, OPtr odata, int direction) const {
 		ExecZ2Z((complex_type const*)::thrust::raw_pointer_cast(idata), (complex_type*)::thrust::raw_pointer_cast(odata), direction);
 	}
@@ -337,7 +330,13 @@ public:
 	
 	template<class I, class O>
 	void execute_dft(I&& i, O&& o, int direction) const{execute_dft(std::forward<I>(i), std::forward<O>(o), direction);}
-	~plan() {if(h_) cufftDestroy(h_);}
+	~plan() {
+		if constexpr(not std::is_same_v<Alloc, void*>) {
+			cudaFree(workArea_);
+			// alloc_.deallocate(typename std::allocator_traits<Alloc>::pointer((char*)workArea_), workSize_*2);
+		}
+		if(h_) {cufftDestroy(h_);}
+	}
 	using size_type = int;
 	using ssize_type = int;
 };
@@ -361,10 +360,15 @@ struct cached_plan {
 	}
 };
 
-template<typename In, class Out, dimensionality_type D = In::rank::value>
+template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
 auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)  // -> Out&&
 ->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
 	return cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
+
+template<typename In, class Out, dimensionality_type D = In::rank::value>
+auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)  // -> Out&&
+->decltype(cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
+	return cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
