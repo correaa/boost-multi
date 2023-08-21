@@ -4,7 +4,7 @@
 #ifndef MULTI_ADAPTORS_CUFFTW_HPP
 #define MULTI_ADAPTORS_CUFFTW_HPP
 
-#include "../config/MARK.hpp"
+// #include "../config/MARK.hpp"
 
 #include "../adaptors/../utility.hpp"
 #include "../adaptors/../array.hpp"
@@ -12,12 +12,10 @@
 
 #include "../adaptors/cuda.hpp"
 
-#include<numeric>
+// #include<numeric>
 
-#include<tuple> // std::apply
+#include<tuple>
 #include<array>
-
-#include<vector>
 
 #include "../complex.hpp"
 
@@ -144,9 +142,34 @@ public:
 			}
 		}
 
-
-
 		if(first_howmany_ == D) {
+			{
+				cufftHandle pp;
+				auto s = cufftCreate(&pp);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				::size_t workSize;
+				s = cufftGetSizeMany(
+
+
+				/*cufftHandle *plan*/ pp,
+				/*int rank*/          dims_end - dims.begin(),
+				/*int *n*/            ion.data(),
+				/*int *inembed*/      inembed.data(),
+				/*int istride*/       istride,
+				/*int idist*/         1, //stride(first),
+				/*int *onembed*/      onembed.data(),
+				/*int ostride*/       ostride,
+				/*int odist*/         1, //stride(d_first),
+				/*cufftType type*/    CUFFT_Z2Z,
+				/*int batch*/         1 //BATCH
+				, &workSize
+				);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftGetSizeMany failed" + std::to_string(static_cast<int>(s))};}
+				std::cerr << "size allocated " << workSize << " bytes" << std::endl;
+				cufftDestroy(pp);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftDestroy" + std::to_string(static_cast<int>(s))};}
+			}
+
 			auto const s = ::cufftPlanMany(
 				/*cufftHandle *plan*/ &h_,
 				/*int rank*/          dims_end - dims.begin(),
@@ -170,6 +193,33 @@ public:
 		std::sort(which_iodims_.begin() + first_howmany_, which_iodims_.begin() + D, [](auto const& a, auto const& b){return get<1>(a).n > get<1>(b).n;});
 
 		if(first_howmany_ <= D - 1) {
+
+			{
+				cufftHandle pp;
+				auto s = cufftCreate(&pp);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftCreate failed" + std::to_string(static_cast<int>(s))};}
+				::size_t workSize;
+				s = cufftGetSizeMany(
+				/*cufftHandle *plan*/ pp,
+				/*int rank*/          dims_end - dims.begin(),
+				/*int *n*/            ion.data(),
+				/*int *inembed*/      inembed.data(),
+				/*int istride*/       istride,
+				/*int idist*/         which_iodims_[first_howmany_].second.is,
+				/*int *onembed*/      onembed.data(),
+				/*int ostride*/       ostride,
+				/*int odist*/         which_iodims_[first_howmany_].second.os,
+				/*cufftType type*/    CUFFT_Z2Z,
+				/*int batch*/         which_iodims_[first_howmany_].second.n
+				, &workSize
+				);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftGetSizeMany failed" + std::to_string(static_cast<int>(s))};}
+				std::cerr << "size Allocated " << workSize << " bytes" << std::endl;
+				cufftDestroy(pp);
+				if(s != CUFFT_SUCCESS) {throw std::runtime_error{"cufftDestroy" + std::to_string(static_cast<int>(s))};}
+			}
+
+
 			auto const s = ::cufftPlanMany(
 				/*cufftHandle *plan*/ &h_,
 				/*int rank*/          dims_end - dims.begin(),
@@ -226,7 +276,7 @@ public:
 		//  case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
 			default                   : throw std::runtime_error{"cufftExecZ2Z unknown error"};
 		}
-		cudaDeviceSynchronize();
+		// cudaDeviceSynchronize();
 	}
 
  public:
@@ -290,245 +340,6 @@ public:
 	~plan() {if(h_) cufftDestroy(h_);}
 	using size_type = int;
 	using ssize_type = int;
-
-#if 0
-	template<
-		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
-		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>//,
-		// class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>()))))  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) interact with legacy code
-	>
-	auto cufft_plan_dft(std::array<bool, +D> which, ILayout const& in, OLayout const& out, int sign) -> cufftHandle {
-		assert(in.sizes() == out.sizes());
-
-		assert( (sign == -1) or (sign == +1) );
-
-		auto const sizes_tuple   = in.sizes();
-		auto const istride_tuple = in.strides();
-		auto const ostride_tuple = out.strides();
-
-		using boost::multi::detail::get;
-		auto which_iodims = std::apply([](auto... elems) {
-			return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems) + 1>{  // TODO(correaa) added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
-				std::pair<bool, fftw_iodim64>{
-					get<0>(elems),
-					fftw_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}
-				}...,
-				std::pair<bool, fftw_iodim64>{}
-			};
-		}, boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple));
-
-		std::stable_sort(which_iodims.begin(), which_iodims.end() - 1, [](auto const& a, auto const& b){return get<1>(a).is > get<1>(b).is;});
-
-		auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) {return std::get<0>(elem);});
-
-		std::array<fftw_iodim64, D> dims{};
-		auto const dims_end         = std::transform(which_iodims.begin(), part,         dims.begin(), [](auto elem) {return elem.second;});
-
-		std::array<fftw_iodim64, D> howmany_dims{};
-		auto const howmany_dims_end = std::transform(part, which_iodims.end() -1, howmany_dims.begin(), [](auto elem) {return elem.second;});
-
-		////////////////////////////////////////////////////////////////////////
-
-		std::array<int, D> istrides{};
-		std::array<int, D> ostrides{};
-		std::array<int, D> ion{};
-
-		auto const istrides_end = std::transform(dims.begin(), dims_end, istrides.begin(), [](auto elem) {return elem.is;});
-		auto const ostrides_end = std::transform(dims.begin(), dims_end, ostrides.begin(), [](auto elem) {return elem.os;});
-		auto const ion_end      = std::transform(dims.begin(), dims_end, ion.begin(),      [](auto elem) {return elem.n;});
-
-		int istride = *(istrides_end -1);
-		auto inembed = istrides; inembed.fill(0);
-		int ostride = *(ostrides_end -1);
-		auto onembed = ostrides; onembed.fill(0);
-
-		for(std::size_t i = 1; i != ion_end - ion.begin(); ++i) {
-			assert(ostrides[i-1] >= ostrides[i]);
-			assert(ostrides[i-1]%ostrides[i]==0);
-			onembed[i]=ostrides[i-1]/ostrides[i];
-			assert(istrides[i-1]%istrides[i]==0);
-			inembed[i]=istrides[i-1]/istrides[i];
-		}
-
-		assert(ion_end - ion.begin() == D);
-
-		::cufftHandle h;
-
-		::cufftPlanMany(
-			/*cufftHandle *plan*/ &h,
-			/*int rank*/          dims_end - dims.begin(),
-			/*int *n*/            ion.data(),
-			/*int *inembed*/      inembed.data(),
-			/*int istride*/       istride,
-			/*int idist*/         1, //stride(first),
-			/*int *onembed*/      onembed.data(),
-			/*int ostride*/       ostride,
-			/*int odist*/         1, //stride(d_first),
-			/*cufftType type*/    CUFFT_Z2Z,
-			/*int batch*/         1 //BATCH
-		);
-
-		assert(h == cufftSuccess );
-
-		return h;
-
-//      assert(ret &&"fftw lib returned a null plan, if you are using MKL check the limitations of their fftw interface"); 
-		//https://software.intel.com/content/www/us/en/develop/documentation/mkl-developer-reference-c/top/appendix-d-fftw-interface-to-intel-math-kernel-library/fftw3-interface-to-intel-math-kernel-library/using-fftw3-wrappers.html
-//      return ret;
-	}
-#endif
-#if 0
-	template<class ILayout, class OLayout, //std::enable_if_t<(I::dimensionality < 4), int> =0,
-		dimensionality_type D = ILayout::dimensionality//,
-		// typename = decltype(raw_pointer_cast(base(std::declval<I const&>())), reinterpret_cast<complex_type*      >(raw_pointer_cast(base(std::declval<O&>()))))
-	>
-	plan(ILayout const& i, OLayout const& o, sign s) {
-		assert( ILayout::dimensionality < 4 );
-		assert( CUFFT_FORWARD == s or CUFFT_INVERSE == s or s == 0 );
-		assert( sizes(i) == sizes(o) );
-
-		auto ion      = std::apply([](auto... t){return std::array{static_cast< size_type>(t)...};}, sizes  (i));
-		auto istrides = std::apply([](auto... t){return std::array{static_cast<ssize_type>(t)...};}, strides(i));
-		auto ostrides = std::apply([](auto... t){return std::array{static_cast<ssize_type>(t)...};}, strides(o));
-
-		std::array<std::tuple<int, int, int>, ILayout::dimensionality> ssn{};
-		for(std::size_t i = 0; i != ssn.size(); ++i) {ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);}
-		std::sort(ssn.begin(), ssn.end(), std::greater<>{});
-
-		for(std::size_t i = 0; i != ssn.size(); ++i) {
-			istrides[i] = std::get<0>(ssn[i]);
-			ostrides[i] = std::get<1>(ssn[i]);
-			ion[i]      = std::get<2>(ssn[i]);
-		}// = std::tuple<int, int, int>(istrides[i], ostrides[i], ion[i]);
-
-		int istride = istrides.back();
-		auto inembed = istrides; inembed.fill(0);
-		int ostride = ostrides.back();
-		auto onembed = ostrides; onembed.fill(0);
-		for(std::size_t i = 1; i != onembed.size(); ++i) {
-			assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
-			assert(ostrides[i-1]%ostrides[i]==0);
-			onembed[i]=ostrides[i-1]/ostrides[i]; //    assert( onembed[i] <= ion[i] );
-			assert(istrides[i-1]%istrides[i]==0);
-			inembed[i]=istrides[i-1]/istrides[i]; //    assert( inembed[i] <= ion[i] );
-		}
-
-		// direction_ = s;
-		// idata_ =                           reinterpret_cast<complex_type const*>(raw_pointer_cast(base(i))) ;
-		// odata_ = const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(base(o))));
-
-		// auto it = cache<D>().find(std::make_tuple(ion, inembed, istride, 1, onembed, ostride, 1, 1));
-		// if(it != cache<D>().end()) {
-		//  h_ = it->second;
-		// }else{
-			switch(::cufftPlanMany(
-				/*cufftHandle *plan*/ &h_,
-				/*int rank*/          ion.size(),
-				/*int *n*/            ion.data(), //    /*NX*/      last - first,
-				/*int *inembed*/      inembed.data(),
-				/*int istride*/       istride,
-				/*int idist*/         1, //stride(first),
-				/*int *onembed*/      onembed.data(),
-				/*int ostride*/       ostride,
-				/*int odist*/         1, //stride(d_first),
-				/*cufftType type*/    CUFFT_Z2Z,
-				/*int batch*/         1 //BATCH
-			)) {
-				case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
-				case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
-				case CUFFT_INVALID_VALUE  : throw std::runtime_error{"At least one of the parameters idata, odata, and direction is not valid."};
-				case CUFFT_INTERNAL_ERROR : throw std::runtime_error{"Used for all internal driver errors."};
-				case CUFFT_SETUP_FAILED   : throw std::runtime_error{"The cuFFT library failed to initialize."};
-				case CUFFT_INVALID_SIZE   : throw std::runtime_error{"The user specifies an unsupported FFT size."};
-				default                   : throw std::runtime_error{"cufftPlanMany unknown error"};
-			}
-			// cache<D>().insert(std::make_pair(std::make_tuple(ion, inembed, istride, 1, onembed, ostride, 1, 1), h_));
-		// }
-		if(not h_) {throw std::runtime_error{"cufftPlanMany failed"};}
-	}
-#endif
-#if 0
-	template<class ILayout, class OLayout, dimensionality_type D = ILayout::dimensionality>
-	static plan many(ILayout const& i, OLayout const& o)
-	{
-		// assert( CUFFT_FORWARD == sign or CUFFT_INVERSE == sign or sign == 0 );
-		assert( sizes(i) == sizes(o) );
-
-		auto ion      = std::apply([](auto... t){return std::array<size_type, D>{static_cast< size_type>(t)...};}, sizes  (i));
-
-		assert(strides(*first) == strides(*last));
-		auto istrides = std::apply([](auto... t){return std::array{static_cast<ssize_type>(t)...};}, strides(i));
-		auto ostrides = std::apply([](auto... t){return std::array{static_cast<ssize_type>(t)...};}, strides(o));
-
-		std::array<std::tuple<int, int, int>, D> ssn{};
-		for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
-		std::sort(ssn.begin(), ssn.end(), std::greater<>{});
-
-		for(std::size_t i = 0; i != ssn.size(); ++i){
-			istrides[i] = std::get<0>(ssn[i]);
-			ostrides[i] = std::get<1>(ssn[i]);
-			ion[i]      = std::get<2>(ssn[i]);
-		}
-
-		int istride = istrides.back();
-		auto inembed = istrides; inembed.fill(0);
-		int ostride = ostrides.back();
-		auto onembed = ostrides; onembed.fill(0);
-		for(std::size_t i = 1; i != onembed.size(); ++i) {
-			assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
-			assert(ostrides[i-1]%ostrides[i]==0);
-			onembed[i]=ostrides[i-1]/ostrides[i]; //    assert( onembed[i] <= ion[i] );
-			assert(istrides[i-1]%istrides[i]==0);
-			inembed[i]=istrides[i-1]/istrides[i]; //    assert( inembed[i] <= ion[i] );
-		}
-
-		plan ret;
-		// ret.direction_ = sign;
-		// ret.idata_ =                           reinterpret_cast<complex_type const*>(raw_pointer_cast(  first.base())) ;
-		// ret.odata_ = const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(d_first.base())));
-
-		// auto it = cache<D>().find(std::make_tuple(ion, inembed, istride, stride(first), onembed, ostride, stride(d_first), last - first));
-		// if(it != cache<D>().end()) {
-		//  ret.h_ = it->second;
-		// } else {
-			switch(::cufftPlanMany(
-				/*cufftHandle *plan*/ &ret.h_,
-				/*int rank*/          ion.size(),
-				/*int *n*/            ion.data(), //    /*NX*/      last - first,
-				/*int *inembed*/      inembed.data(),
-				/*int istride*/       istride,
-				/*int idist*/         stride(i),
-				/*int *onembed*/      onembed.data(),
-				/*int ostride*/       ostride,
-				/*int odist*/         stride(o),
-				/*cufftType type*/    CUFFT_Z2Z,
-				/*int batch*/         i.size() //BATCH
-			)) {
-				case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
-			//  case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
-				case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
-			//  case CUFFT_INVALID_TYPE   : throw std::runtime_error{"The user requests an unsupported type."};
-				case CUFFT_INVALID_VALUE  : throw std::runtime_error{"At least one of the parameters idata, odata, and direction is not valid."};
-				case CUFFT_INTERNAL_ERROR : throw std::runtime_error{"Used for all internal driver errors."};
-			//  case CUFFT_EXEC_FAILED    : throw std::runtime_error{"CUFFT failed to execute an FFT on the GPU."};
-				case CUFFT_SETUP_FAILED   : throw std::runtime_error{"The cuFFT library failed to initialize."};
-				case CUFFT_INVALID_SIZE   : throw std::runtime_error{"The user specifies an unsupported FFT size."};
-			//  case CUFFT_UNALIGNED_DATA : throw std::runtime_error{"Unaligned data."};
-			//  case CUFFT_INCOMPLETE_PARAMETER_LIST: throw std::runtime_error{"Incomplete parameter list."};
-			//  case CUFFT_INVALID_DEVICE : throw std::runtime_error{"Invalid device."};
-			//  case CUFFT_PARSE_ERROR    : throw std::runtime_error{"Parse error."};
-			//  case CUFFT_NO_WORKSPACE   : throw std::runtime_error{"No workspace."};
-			//  case CUFFT_NOT_IMPLEMENTED: throw std::runtime_error{"Not implemented."};
-			//  case CUFFT_LICENSE_ERROR  : throw std::runtime_error{"License error."};
-			//  case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
-				default                   : throw std::logic_error{"cufftPlanMany unknown error"};
-			}
-			// cache<D>().insert(std::make_pair(std::make_tuple(ion, inembed, istride, stride(first), onembed, ostride, stride(d_first), last - first), ret.h_));
-		// }
-		if(not ret.h_) {throw std::runtime_error{"cufftPlanMany failed"};}
-		return ret;
-	}
-#endif
 };
 
 template<dimensionality_type D>
@@ -552,8 +363,8 @@ struct cached_plan {
 
 template<typename In, class Out, dimensionality_type D = In::rank::value>
 auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)  // -> Out&&
-->decltype(cufft::cached_plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
-	return cufft::cached_plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
+->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
+	return cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
@@ -561,20 +372,9 @@ R dft(In const& i, int s) {
 	static_assert(std::is_trivially_default_constructible<typename In::element_type>{}, "!");
 	R ret(extensions(i), get_allocator(i));
 	cufft::dft(i, ret, s);
-	if(cudaDeviceSynchronize() != cudaSuccess) throw std::runtime_error{"Cuda error: Failed to synchronize"};
+	// if(cudaDeviceSynchronize() != cudaSuccess) throw std::runtime_error{"Cuda error: Failed to synchronize"};
 	return ret;
 }
-
-// template<typename It1, typename It2>
-// auto many_dft(It1 first, It1 last, It2 d_first, sign s)
-// // ->decltype(plan::many(first, last, d_first, s)(), d_first + (last - first)) {
-// {   return plan<>::many(multi::ref(first, last).layout(), multi::ref(d_first, d_first + (last - first)))(first->base(), d_first->base(), s), d_first + (last - first); }
-
-// template<typename In, class Out,  std::size_t D = In::dimensionality, std::enable_if_t<(D==1), int> = 0>
-// Out&& dft(std::array<bool, +D> which, In const& i, Out&& o, int s) {
-//  if(which[0]) return cufft::dft(i, std::forward<Out>(o), s);
-//  else return std::forward<Out>(std::forward<Out>(o) = i);
-// }
 
 template <class Array, std::size_t... Ns>
 constexpr auto array_tail_impl(Array const& t, std::index_sequence<Ns...>) {

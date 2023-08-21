@@ -403,9 +403,12 @@ BOOST_AUTO_TEST_CASE(cufft_4D, *boost::unit_test::tolerance(0.0001)){
 		{false, true , false, false},
 		{false, false, true , true },
 		{false, false, true , false},
-		{false, false, false, true }//,
+		{false, false, false, true },
 	//  {false, false, false, false}
 	}){
+
+		std::cerr << "case " << c[0] << " " << c[1] << " " << c[2] << " " << c[3] << std::endl;
+
 		auto       fw_cpu = multi::array<complex, 4>(extensions(in_cpu));
 		multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
 
