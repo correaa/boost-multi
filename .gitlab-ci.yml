@@ -443,10 +443,7 @@ inq:
     - cd inq
     - git submodule update
     - cd external_libs/multi
-    - git checkout master
-    - git pull
-    - git checkout $CI_COMMIT_SHA || git checkout $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-    - git pull
+    - git checkout $CI_COMMIT_SHA  # check that multi repo is mirrored correctly
     - cd ../..
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61
@@ -475,7 +472,7 @@ inq cuda:
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
-    - git checkout $CI_COMMIT_SHA || git checkout $CI_COMMIT_BRANCH
+    - git checkout $CI_COMMIT_SHA
     - cd ../..
     - rm -f cmake/FindNCCL.cmake  # diable NCCL workaround
     - mkdir build && cd build
