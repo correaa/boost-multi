@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_CUFFTW_HPP
 #define MULTI_ADAPTORS_CUFFTW_HPP
@@ -87,7 +87,7 @@ public:
 		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
 		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>
 	>
-	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out, allocator_type alloc = {}) : alloc_{alloc} {
+	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out, allocator_type const& alloc = {}) : alloc_{alloc} {
 
 		assert(in.sizes() == out.sizes());
 
@@ -347,19 +347,39 @@ struct cached_plan {
 };
 
 template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
-auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)  // -> Out&&
+auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)
 ->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
 	return cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
 
-template<typename In, class Out, dimensionality_type D = In::rank::value>
-auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)  // -> Out&&
+template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0>
+auto dft(std::array<bool, +D> which, In const& i, Out&& o, int s)
 ->decltype(cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), s), std::forward<Out>(o)) {
 	return cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), s), std::forward<Out>(o); }
+
+template<typename In, class Out, dimensionality_type D = In::rank::value>//, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
+auto dft_forward(std::array<bool, +D> which, In const& i, Out&& o)  -> Out&& {
+//->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), cufft::forward), std::forward<Out>(o)) {
+	return cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), cufft::forward), std::forward<Out>(o); }
+
+// template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0>
+// auto dft_forward(std::array<bool, +D> which, In const& i, Out&& o) // -> Out&& {
+// ->decltype(cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), cufft::forward), std::forward<Out>(o)) {
+//  return cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), cufft::forward), std::forward<Out>(o); }
+
+template<typename In, class Out, dimensionality_type D = In::rank::value>//, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
+auto dft_backward(std::array<bool, +D> which, In const& i, Out&& o) -> Out&& {
+//->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o)) {
+	return cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o); }
+
+template<typename In, class Out, dimensionality_type D = In::rank::value, class = typename In::allocator_type, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0>
+auto dft_backward(std::array<bool, +D> which, In const& i, Out&& o) -> Out&& {
+//->decltype(cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o)) {
+	return cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o); }
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
 R dft(In const& i, int s) {
-	static_assert(std::is_trivially_default_constructible<typename In::element_type>{}, "!");
+	static_assert(std::is_trivially_default_constructible<typename In::element_type>{});
 	R ret(extensions(i), get_allocator(i));
 	cufft::dft(i, ret, s);
 	// if(cudaDeviceSynchronize() != cudaSuccess) throw std::runtime_error{"Cuda error: Failed to synchronize"};
