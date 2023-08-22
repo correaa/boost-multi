@@ -601,6 +601,17 @@ auto dft_forward(std::array<bool, +D> which, A const& in, O&& out)
 ->decltype(fftw::dft(which, in, std::forward<O>(out), fftw::forward)) {
 	return fftw::dft(which, in, std::forward<O>(out), fftw::forward); }
 
+template<class A, multi::dimensionality_type D = A::rank::value>
+[[nodiscard]]  // ("when input argument is read only")
+auto dft_backward(std::array<bool, +D> which, A const& array)
+->decltype(fftw::dft(which, array, fftw::forward)) {
+	return fftw::dft(which, array, fftw::forward); }
+
+template<class A, class O, multi::dimensionality_type D = A::rank::value>
+auto dft_backward(std::array<bool, +D> which, A const& in, O&& out)
+->decltype(fftw::dft(which, in, std::forward<O>(out), fftw::forward)) {
+	return fftw::dft(which, in, std::forward<O>(out), fftw::forward); }
+
 template<typename A>
 [[nodiscard]]  // ("when input argument is read only")
 auto dft_forward(A const& array)
