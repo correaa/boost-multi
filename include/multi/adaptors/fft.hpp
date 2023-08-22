@@ -18,15 +18,10 @@ namespace fft{
 
 	template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, struct priority<I-1>>{};
 
-	template<class... Args> auto dft_aux_(priority<0>, Args&&... args) DECLRETURN(  fftw::dft(std::forward<Args>(args)...))
-	template<class... Args> auto dft_aux_(priority<1>, Args&&... args) DECLRETURN(cufft ::dft(std::forward<Args>(args)...))
-	template<class... Args> auto dft(Args&&... args) DECLRETURN(dft_aux_(priority<1>{}, std::forward<Args>(args)...))
-
-	template<class In, class... Args> auto dft(std::array<bool, std::decay_t<In>::dimensionality> which, In&& in, Args&&... args) DECLRETURN(dft_aux_(priority<1>{}, which, std::forward<In>(in), std::forward<Args>(args)...))
-
-	// template<class... Args> auto many_dft_aux_(priority<0>, Args&&... args) DECLRETURN(  fftw::many_dft(std::forward<Args>(args)...))
-	// template<class... Args> auto many_dft_aux_(priority<1>, Args&&... args) DECLRETURN(cufft ::many_dft(std::forward<Args>(args)...))
-	// template<class... Args> auto many_dft(Args&&... args) DECLRETURN(many_dft_aux_(priority<1>{}, std::forward<Args>(args)...))
+	template<class... Args> auto dft_aux_(priority<0>, Args&&... args) DECLRETURN(  fftw::dft_backward(std::forward<Args>(args)...))
+	template<class... Args> auto dft_aux_(priority<1>, Args&&... args) DECLRETURN(cufft ::dft_backward(std::forward<Args>(args)...))
+	template<class... Args> auto dft(Args&&... args) DECLRETURN(dft_backward_aux_(priority<1>{}, std::forward<Args>(args)...))
+	template<class In, class... Args> auto dft(std::array<bool, std::decay_t<In>::dimensionality> which, In&& in, Args&&... args) -> decltype(auto) {return dft_backward_aux_(priority<1>{}, which, std::forward<In>(in), std::forward<Args>(args)...);}
 
 	template<class... Args> auto dft_forward_aux_(priority<0>, Args&&... args) JUSTRETURN(  fftw::dft_forward(std::forward<Args>(args)...))
 	template<class... Args> auto dft_forward_aux_(priority<1>, Args&&... args) -> decltype(auto) {cufft ::dft_forward(std::forward<Args>(args)...);}
