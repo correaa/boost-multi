@@ -1,14 +1,11 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.16)
 
 #project(
 # boost-multi-adaptors-blas
 # VERSION 0.1
 # LANGUAGES CXX
 #)
-
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
@@ -55,7 +52,8 @@ if(BLAS_FOUND)
 	message("Some BLAS found: linker flags ${BLAS_LINKER_FLAGS}, libs ${BLAS_LIBRARIES}, libs95 ${BLAS95_LIBRARIES}")
 endif()
 
-link_libraries(BLAS::BLAS)
+link_libraries(${BLAS_LIBRARIES})
+# link_libraries(BLAS::BLAS) # needs cmake 3.18
 
 # include_directories(${CMAKE_BINARY_DIR})
 
