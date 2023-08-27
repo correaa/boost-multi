@@ -102,8 +102,11 @@ public:
 	->decltype(std::declval<decay_type>()!=other){
 		return self.operator decay_type()!=other;}
 
-	friend constexpr auto operator==(decay_type const& other, involuted const& self){
+	friend constexpr bool operator==(decay_type const& other, involuted const& self){
 		return other == self.operator decay_type();}
+
+	friend constexpr bool operator!=(decay_type const& other, involuted const& self){
+		return other != self.operator decay_type();}
 
 	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
 	friend constexpr auto operator==(DecayType const& other, involuted const& self) {
