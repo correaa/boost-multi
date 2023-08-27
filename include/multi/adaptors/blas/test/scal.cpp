@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_complex_2D) {
-	auto const I = std::complex<double>(0.0, 1.0);
+	auto const I = std::complex<double>(0.0, 1.0);  // NOLINT(readability-identifier-length) blas conventional name
 	multi::array<std::complex<double>, 2> arr = {
 		{1.0 + 0.0*I,  2.0 + 0.0*I,  3.0 + 0.0*I,  4.0 + 0.0*I},
 		{5.0 + 0.0*I,  6.0 + 0.0*I,  7.0 + 0.0*I,  8.0 + 0.0*I},
