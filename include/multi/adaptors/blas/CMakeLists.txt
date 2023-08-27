@@ -1,7 +1,5 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-cmake_minimum_required(VERSION 3.18)
-
-set(CMAKE_VERBOSE_MAKEFILE ON)
+cmake_minimum_required(VERSION 3.21)
 
 #project(
 # boost-multi-adaptors-blas
@@ -12,22 +10,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# if((NOT
-# 	CMAKE_CXX_COMPILER_ID
-# 	STREQUAL
-# 	"PGI"
-#    )
-#    AND (NOT
-#    CMAKE_CXX_COMPILER_ID
-#    STREQUAL
-#    "NVHPC"
-#    )
-#    AND (NOT
-# 		DART_COMPILER_NAME
-# 		STREQUAL
-# 		"nvcc"
-# 	   )
-# )
+message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
 set(BLA_VENDOR Intel10_64lp)
 find_package(BLAS)
@@ -42,15 +25,17 @@ if(BLAS_FOUND) # in some systems with MKL, regular BLAS headers need to be found
 	SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
 else()
 	message("Multi/BLAS: MKL environment not detected, looking for other BLAS")
-	set(BLA_VENDOR NVHPC)
-	find_package(BLAS)
-	if(BLAS_FOUND)
-		message("Multi/BLAS: NVHPC BLAS environment detected")
-		add_definitions(-DBLAS_DOT_RETURNS_VOID)
-		# add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-		#add_definitions(-DRETURN_BY_STACK)  # TODO(correaa) check
+	if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+		set(BLA_VENDOR NVHPC)
+		find_package(BLAS)
+		if(BLAS_FOUND)
+			message("Multi/BLAS: NVHPC BLAS environment detected")
+			add_definitions(-DBLAS_DOT_RETURNS_VOID)
+			# add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
+			# add_definitions(-DRETURN_BY_STACK)  # TODO(correaa) check
+		endif()
 	else()
-		message("Multi/BLAS: NVHPC BLAS environment not detected, looking for other BLAS")
+		message("Multi/BLAS: NVHPC environment not detected, looking for other BLAS")
 		unset(BLA_VENDOR)
 		find_package(BLAS)
 		find_path(
@@ -66,32 +51,13 @@ else()
 	endif()
 endif()
 
-    # link_libraries(${BLAS_LIBRARIES})
-    link_libraries(BLAS::BLAS)  # needs 3.18
+if(BLAS_FOUND)
+	message("Some BLAS found: linker flags ${BLAS_LINKER_FLAGS}, libs ${BLAS_LIBRARIES}, libs95 ${BLAS95_LIBRARIES}")
+endif()
 
-    # include_directories(BLAS::BLAS)  # does not including a real path so far
-	# find_path(
-	# 	BLAS_INCLUDE_DIRS
-	# 	cblas.h
-	# 	/usr/include
-	# 	/usr/local/include
-	# 	$ENV{BLAS_HOME}/include
-	# )
-# else()
-# 	link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
-# endif()
+link_libraries(BLAS::BLAS)
 
-message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
-
-# if(CMAKE_CXX_COMPILER_ID STREQUAL "PGI" OR CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
-# 	set(BLA_VENDOR NVHPC)
-# 	find_package(BLAS)
-# 	add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-# 	add_definitions(-DRETURN_BY_STACK)  # TODO(correaa) check
-# 	message("BLAS (e.g. dot) returns by stack")
-# endif()
-
-include_directories(${CMAKE_BINARY_DIR})
+# include_directories(${CMAKE_BINARY_DIR})
 
 if(BLAS_FOUND)
   add_subdirectory(test)
