@@ -832,26 +832,8 @@ file(
 	*.cpp
 )
 
-# add_executable(multi_test ${TEST_SRCS})
-# set_property(TARGET multi_test PROPERTY UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 999)
-
-# target_include_directories(multi_test        PRIVATE ${PROJECT_SOURCE_DIR}/include)
-# target_include_directories(multi_test SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
-# target_link_libraries     (multi_test        PRIVATE Boost::unit_test_framework   )
-
-# target_compile_definitions(multi_test PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi GLOBAL TEST")
-
-# if(NOT DEFINED ENABLE_CIRCLE)
-# target_compile_options(multi_test PRIVATE ${WARNS})
-# else()
-# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
-# target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
-# endif()
-
-# add_test(NAME multi_test COMMAND ./multi_test)
-
 if(NOT Boost_FOUND)
-	message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
+	message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 	add_executable(main main.cpp)
 	# target_link_libraries(main PRIVATE multi)
