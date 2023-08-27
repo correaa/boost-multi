@@ -49,6 +49,7 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex) {  // if you get a s
 	multi::array<complex, 1> const y = { {1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 	complex res{0.0, 0.0};
 	blas::dot(x, y, res);
+	// an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
 	BOOST_REQUIRE_EQUAL( real(res) , real(std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return alpha*std::conj(omega);})) );
 	BOOST_REQUIRE_EQUAL( imag(res) , imag(std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return alpha*std::conj(omega);})) );
 }

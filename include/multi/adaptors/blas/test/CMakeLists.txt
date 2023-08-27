@@ -9,13 +9,6 @@
 #]=]
 cmake_minimum_required(VERSION 3.11)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 if((NOT
 	CMAKE_CXX_COMPILER_ID
 	STREQUAL
@@ -134,6 +127,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
 
     target_link_libraries(${TEST_EXE} PRIVATE multi)
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
