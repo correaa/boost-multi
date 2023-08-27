@@ -58,6 +58,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
 	BOOST_REQUIRE( imag(*base(conjd_array)) == +3.0 );
 
 //  BOOST_TEST_REQUIRE( base(Bconj)->imag() == +3 );
+	BOOST_REQUIRE( conjd_array[0][1] == rotated(conjd_array)[1][0] );
 	BOOST_REQUIRE( rotated(conjd_array)[1][0] == conjd_array[0][1] );
 
 //  BOOST_REQUIRE( base(Bconj) == -3.0*I );
@@ -86,6 +87,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
 
 	BOOST_REQUIRE( blas::transposed(arr)[1][2] == arr[2][1] );
 	BOOST_REQUIRE( blas::transposed(arr) == ~arr );
+
+	BOOST_REQUIRE( blas::conj(arr)[1][2]             == blas::hermitized(arr)[2][1] );
+	BOOST_REQUIRE( blas::conj(blas::transposed(arr)) == blas::hermitized(arr) );
 
 	BOOST_REQUIRE( blas::hermitized(arr)[2][1] == blas::conj(arr)[1][2] );
 	BOOST_REQUIRE( blas::hermitized(arr)       == blas::conj(blas::transposed(arr)) );

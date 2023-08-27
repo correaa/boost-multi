@@ -94,23 +94,23 @@ public:
 	}
 
 	template<class DecayType>
-	constexpr auto operator==(DecayType&& other) const
+	friend constexpr auto operator==(involuted const& self, DecayType const& other)
 	->decltype(               std::declval<decay_type>()==other){
-		return this->operator decay_type()==other;}
+		return self.operator decay_type()==other;}
 	template<class DecayType>
-	constexpr auto operator!=(DecayType&& other) const
+	friend constexpr auto operator!=(involuted const& self, DecayType const& other)
 	->decltype(std::declval<decay_type>()!=other){
-		return this->operator decay_type()!=other;}
+		return self.operator decay_type()!=other;}
 
 	friend constexpr auto operator==(decay_type const& other, involuted const& self){
 		return other == self.operator decay_type();}
 
 	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
-	friend constexpr auto operator==(DecayType&& other, involuted const& self) {
+	friend constexpr auto operator==(DecayType const& other, involuted const& self) {
 		return other == self.operator decay_type();
 	}
 	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
-	friend constexpr auto operator!=(DecayType&& other, involuted const& self) {
+	friend constexpr auto operator!=(DecayType const& other, involuted const& self) {
 		return other != self.operator decay_type();\
 	}
 //  auto imag() const{return static_cast<decay_type>(*this).imag();}
