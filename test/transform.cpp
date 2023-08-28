@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(complex_assign) {
+BOOST_AUTO_TEST_CASE(complex_assign_from_init_list) {
 	std::complex<float> const cee(std::complex<double>{});  // NOLINT(fuchsia-default-arguments-calls) use 'c' for float complex, 'z' for double complex
 	multi::array<std::complex<float>, 1> const v1 = {cee, cee, cee};
 	multi::array<std::complex<float>, 1> const v2
