@@ -836,8 +836,8 @@ struct array : static_array<T, D, Alloc> {
 	: static_{array<T, D>(ilv.begin(), ilv.end())} {}
 
 	template<class OtherT, class = std::enable_if_t<std::is_constructible<typename static_array<T, D>::value_type, OtherT>::value and not std::is_convertible<OtherT, typename static_array<T, D>::value_type>::value and (D == 1) > >
-	explicit array(std::initializer_list<OtherT> ilv)
-	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& e) noexcept {return static_cast<T>(e);})} {}  // TODO(correaa) investigate why noexcept is necessary
+	explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept {return static_cast<T>(elem);})} {}  // TODO(correaa) investigate why noexcept is necessary
 
 	// template<class TTT = void, class Int, std::enable_if_t<sizeof(TTT*) and not std::is_same_v<T, int> and std::is_same_v<Int, int> and std::is_convertible_v<int, T> and D == 1, int> = 0>
 	// explicit array(std::initializer_list<Int> ilv, TTT* = nullptr)
