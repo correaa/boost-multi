@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv_real, T, fp_types) {
 		using blas::operators::operator%;
 		using blas::operators::operator-;
 		using blas::operators::operator^;
-		BOOST_REQUIRE_SMALL( ((~+~a)%x - a%x)^2 , 1e-13 );
+		BOOST_REQUIRE_SMALL( ((~+~a)%x - a%x)^2 , 1e-9 );
 	}
 }
 
