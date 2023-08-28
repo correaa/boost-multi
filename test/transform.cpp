@@ -244,3 +244,39 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		}
 	}
 }
+
+namespace multi = boost::multi;
+
+BOOST_AUTO_TEST_CASE(complex_assign) {
+	std::complex<float> c(std::complex<double>{});
+	multi::array<std::complex<float>, 1> v1 = {c, c, c};
+	multi::array<std::complex<float>, 1> v2 
+		= multi::array<std::complex<double>, 1>({std::complex<double>{}, std::complex<double>{}, std::complex<double>{}})
+			.element_transformed([](auto z) noexcept {return std::complex<float>(z);})
+	;
+	multi::array<std::complex<float>, 1> v3({std::complex<double>{}, std::complex<double>{}, std::complex<double>{}});
+	// multi::array<std::complex<float>, 1> v4 = {std::complex<double>{}, std::complex<double>{}, std::complex<double>{}};
+
+	multi::array<std::complex<float>, 2> M1 = {
+		{std::complex<float>{}, std::complex<float>{}, std::complex<float>{}},
+		{std::complex<float>{}, std::complex<float>{}, std::complex<float>{}},
+	};
+
+	multi::array<std::complex<float>, 2> M2({
+		{std::complex<float>{}, std::complex<float>{}, std::complex<float>{}},
+		{std::complex<float>{}, std::complex<float>{}, std::complex<float>{}},
+	});
+
+	multi::array<std::complex<float>, 2> M3(
+		multi::array<std::complex<double>, 2>({
+			{std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},
+			{std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},
+		})
+			.element_transformed([](auto z) noexcept {return std::complex<float>(z);})
+	);
+
+	// multi::array<std::complex<float>, 2> M4({
+	//  {std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},
+	//  {std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},
+	// });
+}
