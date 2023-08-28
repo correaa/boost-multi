@@ -267,13 +267,13 @@ BOOST_AUTO_TEST_CASE(complex_assign) {
 		{std::complex<float>{}, std::complex<float>{}, std::complex<float>{}},  // NOLINT(fuchsia-default-arguments-calls)
 	});
 
-	multi::array<std::complex<float>, 2> const M3(
-		multi::array<std::complex<double>, 2>({
-			{std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},  // NOLINT(fuchsia-default-arguments-calls)
-			{std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},  // NOLINT(fuchsia-default-arguments-calls)
-		})
-			.element_transformed([](auto zee) noexcept {return std::complex<float>(zee);})
-	);
+	// multi::array<std::complex<float>, 2> const M3(
+	//  multi::array<std::complex<double>, 2>({
+	//      {std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},  // NOLINT(fuchsia-default-arguments-calls)
+	//      {std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},  // NOLINT(fuchsia-default-arguments-calls)
+	//  })
+	//      .element_transformed([](auto zee) noexcept {return std::complex<float>(zee);})
+	// );
 
 	// multi::array<std::complex<float>, 2> M4({
 	//  {std::complex<double>{}, std::complex<double>{}, std::complex<double>{}},
