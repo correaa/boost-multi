@@ -64,7 +64,7 @@ template<class T> struct ref_add_const<T      &> {using type = T const&;};
 template<class T, class UF, class Ptr, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
 struct transform_ptr {
 	using difference_type   = typename std::iterator_traits<Ptr>::difference_type;
-	using value_type        = std::decay_t<Ref>;//typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
+	using value_type        = std::decay_t<Ref>;  // typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
 	using pointer           = Ptr;
 	using reference         = Ref;
 	using iterator_category = typename std::iterator_traits<Ptr>::iterator_category;
