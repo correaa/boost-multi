@@ -285,7 +285,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array{static_array<T, D>(values.begin(), values.end()), alloc} {}
 
 	template<class TT, std::size_t N>
-	constexpr explicit static_array(TT(&array)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
+	constexpr explicit static_array(TT(&array)[N])  // NOSONAR NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
 	: static_array(std::begin(array), std::end(array)) {}
 
 	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
@@ -400,9 +400,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		new_layout.unrotate();
 		return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-
-//  constexpr auto unrotated() const& {return unrotated(1);}
-//  constexpr auto unrotated()      & {return unrotated(1);}
 
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
