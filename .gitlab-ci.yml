@@ -103,7 +103,7 @@ g++-7:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
-    - cmake --version
+    - cmake --verison
     - g++-7 --version
     - mkdir build && cd build
     - CXX=g++-7 CXXFLAGS="-DBOOST_TEST_MAIN -DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Debug
@@ -320,6 +320,22 @@ cuda:
 cuda-12.2.0:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
   stage: build
   image: nvcr.io/nvidia/cuda:12.2.0-devel-ubuntu22.04
+  allow_failure: true  # 12.2 image not working at the moment
+  tags:
+    - nvidia-docker
+  script:
+    - nvidia-smi
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda"]
+
+cuda-12.1.1:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+  stage: build
+  image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
   tags:
     - nvidia-docker
   script:
