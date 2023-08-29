@@ -305,15 +305,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	>
 	/*mplct*/static_array(array_ref<TT, D, Args...>     & other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: array_alloc{}
-	, ref{array_alloc::allocate(other.num_elements()), other.extensions()} {
+	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		static_array::uninitialized_copy_elements(std::move(other).data_elements());
 	}
 
 	template<class TT, class... Args>
 	explicit static_array(array_ref<TT, D, Args...>     & other, std::enable_if_t<not multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
 	: array_alloc{}
-	, ref{array_alloc::allocate(other.num_elements()), other.extensions()} {
-		static_array::uninitialized_copy_elements(std::move(other).data_elements());
+	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
+		static_array::uninitialized_copy_elements(other.data_elements());
 	}
 
 	template<class TT, class... Args>
@@ -328,7 +328,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	/*mplct*/static_array(array_ref<TT, D, Args...> const& other, std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations,google-explicit-constructor,hicpp-explicit-conversions)
 	: array_alloc{}
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
-		static_array::uninitialized_copy_elements(std::move(other).data_elements());
+		static_array::uninitialized_copy_elements(other.data_elements());
+		// [[maybe_unused]] auto const fun = [&](){T dummy{*other.base()};};
 	}
 
 	template<class TT, class... Args>
