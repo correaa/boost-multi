@@ -641,7 +641,7 @@ Range argument can be substituted by `multi::all` to obtain the whole range.
 
 Conversion between two distinct array types is possible if the underlying elements allow it.
 The result is as if elements are converted one by one.
-Allowed conversions can be implicit or explicit and follow the behavior of the element types.
+Allowed conversions can be implicit or explicit and reflect the behavior of the element types. Array shapes (extensions) are preserved in the conversion.
 
 ```cpp
 // conversions from real to complex is implicit ...
@@ -650,41 +650,41 @@ std::complex<double> z = d;
 // ... therefore from array of reals to arrays of complex is also
 multi::array<double, 2> D({10, 10});
 multi::array<std::complex<double>, 2> Z = D;
-// but in the other direction, conversions are forbidden (implict or explicit)
+// in the other direction, conversions are (implict or explicit) forbidden
 // multi::array<double, 2> DD{Z};  // compilation error
 ```
 
 Another case is illustrated by `std::complex<float>` and `std::complex<double>`; in one direction, the conversion can be implicit, while in the other, it can only be explicit.
-The arrays reflect this behavior.
+The arrays reflect this behavior:
 
 ```cpp
 multi::array<std::complex<float>> C;
 multi::array<std::complex<double>> Z = C;  // implicit conversion ok
-```
-
-```cpp
-multi::array<std::complex<double>> Z;
-multi::array<std::complex<float>> C{Z};  // conversion needs to be explicit
+multi::array<std::complex<float>> C2{Z};  // conversion needs to be explicit
 ```
 
 Implicit conversions are generally considered harmful, but inconsistent conversions are worst; therefore, the library allows them when appropriate.
-To prevent implicit conversions, use element types with no implicit conversions.
-The main drawback of implicit conversions in this context is that they might incur unexpected (costly) type conversions.
+The main drawback of implicit conversions in this context is that they might incur unexpected (costly) data conversions when passing arguments to functions.
 
 ```cpp
-void fun(multi::array<std::complex<double> Z) { ... };
+void fun(multi::array<std::complex<double>> Z) { ... };
 ...
 multi::array<double, 2> D({10, 10});
-fun(D);  // real elements are converted to complex implicitly here
+fun(D);  // real elements are converted to complex silently here
 ```
+In many instances, specially in generic code, it might still be a desirable behavoir.
+
+To prevent implicit conversions, use element types with no implicit conversions when possible.
 
 Finally, arrays of unrelated element types are prevented from producing direct conversions, resulting in compilation errors.
-This type of conversions can be defined as element-wise transformations.
+This type of conversions can be defined as element-wise transformations if necessary.
 For example, to convert an array of integers to an array of text strings:
 
 ```cpp
 	multi::array<int, 2> const A = {{1, 2}, {3, 4}};
-	multi::array<std::string, 2> B = A.element_transformed([](int e) {return std::to_string(e);});
+
+	auto to_string = [](int e) {return std::to_string(e);};
+	multi::array<std::string, 2> B = A.element_transformed(to_string);
 ```
 
 ## Const-correctness
