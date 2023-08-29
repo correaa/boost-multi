@@ -199,12 +199,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		}
 	}
 
-	template<class TT, class... As>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
-	static_array(array_ref<TT, D, As...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	: static_array(other, allocator_type{}) {}
-	// ^^^ TODO(correaa) : check if really necessary
-
 	static_array(typename static_array::extensions_type extensions, typename static_array::element const& elem, allocator_type const& alloc)  // 2
 	: array_alloc{alloc}
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions} {
@@ -254,17 +248,93 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class TT, class... Args,
+		std::enable_if_t<       multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> =0,
+	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
+	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
+	/*mplct*/static_array(multi::subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array(other, allocator_type{}) {}
+
+	template<class TT, class... Args,
 	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
-	static_array(multi::subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	explicit static_array(multi::subarray<TT, D, Args...> const& other, std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
+	// NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	: static_array(other, allocator_type{}) {}
 
-	template<class TT, class... Args>
-	explicit static_array(array_ref<TT, D, Args...>&& other)
+	template<class TT, class... Args,
+		std::enable_if_t<       multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&>().base()), T>, int> =0,
+	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
+	// cppcheck-suppress noExplicitConstructor ; // NOLINTNEXTLINE(runtime/explicit)
+	/*mplct*/static_array(multi::subarray<TT, D, Args...>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array(other, allocator_type{}) {}
+
+	template<class TT, class... Args,
+		std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&>().base()), T>, int> =0,
+	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
+	explicit static_array(multi::subarray<TT, D, Args...>& other)
+	: static_array(other, allocator_type{}) {}
+
+	template<class TT, class... Args,
+		std::enable_if_t<       multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&&>().base()), T>, int> =0,
+	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
+	// cppcheck-suppress noExplicitConstructor ; // NOLINTNEXTLINE(runtime/explicit)
+	/*mplct*/static_array(multi::subarray<TT, D, Args...>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array(other) {}
+
+	template<class TT, class... Args,
+	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+	 class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
+	explicit static_array(multi::subarray<TT, D, Args...>&& other, std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
+	// NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	: static_array(other) {}  // NOLINT(fuchsia-default-arguments-calls)
+
+	template<class TT, class... Args,
+		std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> =0
+	>
+	/*mplct*/static_array(array_ref<TT, D, Args...>     & other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: array_alloc{}
 	, ref{array_alloc::allocate(other.num_elements()), other.extensions()} {
+		static_array::uninitialized_copy_elements(std::move(other).data_elements());
+	}
+
+	template<class TT, class... Args>
+	explicit static_array(array_ref<TT, D, Args...>     & other, std::enable_if_t<not multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
+	: array_alloc{}
+	, ref{array_alloc::allocate(other.num_elements()), other.extensions()} {
+		static_array::uninitialized_copy_elements(std::move(other).data_elements());
+	}
+
+	template<class TT, class... Args>
+	/*mplct*/static_array(array_ref<TT, D, Args...>     && other, std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations,google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array{other} {}  // NOLINT(fuchsia-default-arguments-calls)
+
+	template<class TT, class... Args>
+	explicit static_array(array_ref<TT, D, Args...>     && other, std::enable_if_t<not multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
+	: static_array{other} {}  // NOLINT(fuchsia-default-arguments-calls)
+
+	template<class TT, class... Args>
+	/*mplct*/static_array(array_ref<TT, D, Args...> const& other, std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations,google-explicit-constructor,hicpp-explicit-conversions)
+	: array_alloc{}
+	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
+		static_array::uninitialized_copy_elements(std::move(other).data_elements());
+	}
+
+	template<class TT, class... Args>
+	explicit static_array(array_ref<TT, D, Args...> const& other, std::enable_if_t<not multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
+	: array_alloc{}
+	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		static_array::uninitialized_copy_elements(std::move(other).data_elements());
 	}
 
@@ -285,7 +355,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array{static_array<T, D>(values.begin(), values.end()), alloc} {}
 
 	template<class TT, std::size_t N>
-	constexpr explicit static_array(TT(&array)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
+	constexpr explicit static_array(TT(&array)[N])  // NOSONAR NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
 	: static_array(std::begin(array), std::end(array)) {}
 
 	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
@@ -400,9 +470,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		new_layout.unrotate();
 		return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-
-//  constexpr auto unrotated() const& {return unrotated(1);}
-//  constexpr auto unrotated()      & {return unrotated(1);}
 
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
@@ -834,6 +901,10 @@ struct array : static_array<T, D, Alloc> {
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
 	: static_{array<T, D>(ilv.begin(), ilv.end())} {}
+
+	template<class OtherT, class = std::enable_if_t<std::is_constructible<typename static_array<T, D>::value_type, OtherT>::value and not std::is_convertible<OtherT, typename static_array<T, D>::value_type>::value and (D == 1) > >
+	explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept {return static_cast<T>(elem);})} {}  // TODO(correaa) investigate why noexcept is necessary
 
 	// template<class TTT = void, class Int, std::enable_if_t<sizeof(TTT*) and not std::is_same_v<T, int> and std::is_same_v<Int, int> and std::is_convertible_v<int, T> and D == 1, int> = 0>
 	// explicit array(std::initializer_list<Int> ilv, TTT* = nullptr)

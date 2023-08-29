@@ -268,7 +268,7 @@ constexpr class adl_uninitialized_copy_t {
 // #if defined(__NVCC__)
 //  template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
 // #endif
-	template<class... As>          constexpr auto _(priority<3>/**/,        As&&... args)       const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args)       const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args)       const DECLRETURN(  std::decay_t<T>::  uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args)       const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
 

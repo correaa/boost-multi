@@ -80,7 +80,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
 	};
 
 	namespace blas = multi::blas;
-	multi::array<complex, 2> conj_arr = blas::conj(arr);
+	multi::array<complex, 2> conj_arr{blas::conj(arr)};
+	multi::array<complex, 2> const conj_arr2 = blas::conj(arr);
 
 	BOOST_REQUIRE( conj_arr[2][1] == std::conj(arr[2][1]) );
 	BOOST_REQUIRE( blas::conj(arr)[2][1] == std::conj(arr[2][1]) );

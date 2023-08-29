@@ -1,6 +1,12 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;-*-
 # Copyright 2020-2023 Alfredo A. Correa
 
+# Install docker (for local CI or to set up CI machine)
+#   sudo apt install docker.io
+# Install gitlab-runner
+#    curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
+#    sudo apt-get install gitlab-runner
+
 # image: corraadock/gnudev:v2
 image: debian:stable
 
@@ -97,6 +103,7 @@ g++-7:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - cmake --version
     - g++-7 --version
     - mkdir build && cd build
     - CXX=g++-7 CXXFLAGS="-DBOOST_TEST_MAIN -DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Debug
@@ -309,6 +316,22 @@ cuda:
     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["g++"]
+
+cuda-12.2.0:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+  stage: build
+  image: nvcr.io/nvidia/cuda:12.2.0-devel-ubuntu22.04
+  allow_failure: true  # 12.2 image not working at the moment
+  tags:
+    - nvidia-docker
+  script:
+    - nvidia-smi
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda"]
 
 cuda-12.1.1:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
   stage: build

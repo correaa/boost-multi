@@ -17,6 +17,9 @@
 
 namespace boost::multi {
 
+template<class From, class To> constexpr bool is_implicitly_convertible_v = std::is_convertible_v<From, To>;
+template<class From, class To> constexpr bool is_explicitly_convertible_v = std::is_constructible_v<To, From>;
+
 template<class To, class From, std::enable_if_t<std::is_convertible<From, To>::value, int> =0>  // ::value (not _v) needed by intel's icpc 19
 constexpr auto implicit_cast(From&& r) -> To {return static_cast<To>(r);}  // NOLINT(readability-identifier-length) std naming
 
@@ -64,7 +67,7 @@ template<class T> struct ref_add_const<T      &> {using type = T const&;};
 template<class T, class UF, class Ptr, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
 struct transform_ptr {
 	using difference_type   = typename std::iterator_traits<Ptr>::difference_type;
-	using value_type        = std::decay_t<Ref>;//typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
+	using value_type        = std::decay_t<Ref>;  // typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
 	using pointer           = Ptr;
 	using reference         = Ref;
 	using iterator_category = typename std::iterator_traits<Ptr>::iterator_category;
