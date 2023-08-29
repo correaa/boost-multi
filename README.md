@@ -664,7 +664,7 @@ multi::array<std::complex<double>> Z = C;  // implicit conversion ok
 
 ```cpp
 multi::array<std::complex<double>> Z;
-multi::array<std::complex<double>> C{Z};  // conversion needs to be explicit
+multi::array<std::complex<float>> C{Z};  // conversion needs to be explicit
 ```
 
 Implicit conversions are generally considered harmful, but inconsistent conversions are worst; therefore, the library allows them when appropriate.
@@ -673,7 +673,7 @@ The main drawback of implicit conversions in this context is that they might inc
 
 ```cpp
 void fun(multi::array<std::complex<double> Z) { ... };
-
+...
 multi::array<double, 2> D({10, 10});
 fun(D);  // real elements are converted to complex implicitly here
 ```
