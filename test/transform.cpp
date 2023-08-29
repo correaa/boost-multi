@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	}
 }
 
-#if not defined(__NVCC__)
+#if not defined(__NVCC__) and (__GNUC_MINOR__ > 7)
 BOOST_AUTO_TEST_CASE(transformed_to_string) {
 	namespace multi               = boost::multi;
 	multi::array<int, 2> const AA = {
