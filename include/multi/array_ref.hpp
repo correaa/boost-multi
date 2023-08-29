@@ -8,11 +8,6 @@
 #include "../multi/memory/pointer_traits.hpp"
 #include "../multi/utility.hpp"
 
-// #include <multi/config/ASSERT.hpp>
-// #include <multi/config/DELETE.hpp>
-// #include <multi/config/MARK.hpp>
-// #include <multi/config/VERSION.hpp>
-
 #include "../multi/detail/adl.hpp"
 #include "../multi/detail/layout.hpp"
 #include "../multi/detail/memory.hpp"         // for pointer_traits
@@ -1635,9 +1630,8 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.data_ == other.data_;}
 //  friend constexpr auto operator!=(array_iterator const& a, array_iterator const& b) -> bool {return not(a.data_ == b.data_);}
 
-	HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference {return *data_;}  // NOLINT(readability-const-return-type)
+	HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference { return *data_; } // NOLINT(readability-const-return-type)
 
-	/*[[gnu::pure]]*/
 	constexpr auto operator-(array_iterator const& other) const -> difference_type {return -distance_to(other);}
 
 	constexpr auto operator+=(difference_type n) -> array_iterator& {data_ += stride_*n; return *this;}

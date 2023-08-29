@@ -74,7 +74,7 @@ public:
 
 	constexpr explicit operator decay_type()      &{return f_(r_);}
 	constexpr explicit operator decay_type() const&{return f_(r_);}
-	constexpr explicit operator decay_type()     &&{return f_(r_);}
+	constexpr /*plct*/ operator decay_type()     &&{return f_(r_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	constexpr auto operator*(decay_type const& other) const{return f_(r_)*other;}
 	constexpr auto operator&()&& -> decltype(auto){ // NOLINT(google-runtime-operator) : reference-like object
