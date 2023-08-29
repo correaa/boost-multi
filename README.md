@@ -637,14 +637,64 @@ auto                    block_value_3 = + A({1, 4}, {2, 4})        ;
 Any parenthesis argument can be either a range (with or without stride) or an index. 
 Range argument can be substituted by `multi::all` to obtain the whole range.
 
+## Conversions
+
+Conversion between two distinct array types is possible if the underlying elements allow it.
+The result is as if elements are converted one by one.
+Allowed conversions can be implicit or explicit and follow the behavior of the element types.
+
+```cpp
+// conversions from real to complex is implicit ...
+double d = 5.0;
+std::complex<double> z = d;
+// ... therefore from array of reals to arrays of complex is also
+multi::array<double, 2> D({10, 10});
+multi::array<std::complex<double>, 2> Z = D;
+// but in the other direction, conversions are forbidden (implict or explicit)
+// multi::array<double, 2> DD{Z};  // compilation error
+```
+
+Another case is illustrated by `std::complex<float>` and `std::complex<double>`; in one direction, the conversion can be implicit, while in the other, it can only be explicit.
+The arrays reflect this behavior.
+
+```cpp
+multi::array<std::complex<float>> C;
+multi::array<std::complex<double>> Z = C;  // implicit conversion ok
+```
+
+```cpp
+multi::array<std::complex<double>> Z;
+multi::array<std::complex<double>> C{Z};  // conversion needs to be explicit
+```
+
+Implicit conversions are generally considered harmful, but inconsistent conversions are worst; therefore, the library allows them when appropriate.
+To prevent implicit conversions, use element types with no implicit conversions.
+The main drawback of implicit conversions in this context is that they might incur unexpected (costly) type conversions.
+
+```cpp
+void fun(multi::array<std::complex<double> Z) { ... };
+
+multi::array<double, 2> D({10, 10});
+fun(D);  // real elements are converted to complex implicitly here
+```
+
+Finally, arrays of unrelated element types are prevented from producing direct conversions, resulting in compilation errors.
+This type of conversions can be defined as element-wise transformions.
+For example, to convert an array of integers to an array of text strings:
+
+```cpp
+	multi::array<int, 2> const A = {{1, 2}, {3, 4}};
+	multi::array<std::string, 2> B = A.element_transformed([](int e) {return std::to_string(e);});
+```
+
 ## Const-correctness
 
-Const-correctness refers to the property of a program of not allowing object mutation when it is not desired or when it would be logically incorrect.
+Const-correctness refers to the property of a program that disallows object mutation when it is not desired or logically incorrect.
 Honoring the constness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.
 The library goes to great lengths to ensure const-correctness for the whole or parts of any object.
 
 An array can be declared constant using the keyword `const`.
-A reference array (`array_ref`) is never resizable (or reassignable), but its elements are mutable unless the reference is declared with `const`.
+A reference array (`array_ref`) is never resizable (or reassignable), but its elements are, in principle, mutable.
 
 The design ensures that the constness of references and values is propagated to subarrays (views) and, ultimately, their elements.
 
