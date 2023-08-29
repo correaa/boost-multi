@@ -679,7 +679,7 @@ fun(D);  // real elements are converted to complex implicitly here
 ```
 
 Finally, arrays of unrelated element types are prevented from producing direct conversions, resulting in compilation errors.
-This type of conversions can be defined as element-wise transformions.
+This type of conversions can be defined as element-wise transformations.
 For example, to convert an array of integers to an array of text strings:
 
 ```cpp
