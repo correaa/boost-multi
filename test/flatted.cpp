@@ -1,7 +1,6 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi flattened operation"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -9,8 +8,9 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_flatted_3d) {
-	multi::array<double, 3>	arr({13, 4, 5});
+	multi::array<double, 3> arr({13, 4, 5});
 
+	BOOST_REQUIRE( arr.size() == 13 );
 	BOOST_REQUIRE( arr.rotated().is_flattable() );
 
 	{
@@ -24,6 +24,6 @@ BOOST_AUTO_TEST_CASE(array_flatted_3d) {
 }
 
 BOOST_AUTO_TEST_CASE(array_flatted_3d_bis) {
-	multi::array<double, 3>	const arr({13, 4, 5});
+	multi::array<double, 3> const arr({13, 4, 5});
 	BOOST_REQUIRE( arr.size() == 13 );
 }
