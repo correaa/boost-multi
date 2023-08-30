@@ -1,7 +1,6 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
@@ -107,5 +106,24 @@ BOOST_AUTO_TEST_CASE(multi_constructors) {
 }
 {
 	multi::array<double     , 1> const arr({0, 10})  ; BOOST_REQUIRE( size(arr)==2 );
+}
+{
+	using T = multi::array<std::string, 3>;
+
+	static_assert( std::is_nothrow_destructible_v<T> );
+	static_assert( std::is_default_constructible_v<T> );
+	static_assert( std::is_nothrow_default_constructible_v<T> );
+
+	static_assert( std::is_copy_constructible_v<T> );
+	static_assert( std::is_copy_assignable_v<T> );
+
+	// static_assert( std::is_nothrow_copy_constructible_v<T> );
+	// static_assert( std::is_nothrow_copy_assignable_v<T> );
+
+	static_assert( std::is_move_constructible_v<T> );
+	static_assert( std::is_move_assignable_v<T> );
+
+	static_assert( std::is_nothrow_move_constructible_v<T> );
+	static_assert( std::is_nothrow_move_assignable_v<T> );
 }
 }
