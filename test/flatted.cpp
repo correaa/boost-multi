@@ -10,6 +10,7 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(array_flatted_3d) {
 	multi::array<double, 3> arr({13, 4, 5});
 
+	BOOST_REQUIRE( arr.size() == 13 );
 	BOOST_REQUIRE( arr.rotated().is_flattable() );
 
 	{
