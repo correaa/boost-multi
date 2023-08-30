@@ -639,32 +639,31 @@ Range argument can be substituted by `multi::all` to obtain the whole range.
 
 ## Conversions
 
-Conversion between two distinct array types is possible if the underlying elements allow it.
-The result is as if elements are converted one by one.
-Allowed conversions can be implicit or explicit and reflect the behavior of the element types. Array shapes (extensions) are preserved in the conversion.
+Conversion between arrays of distinct types is possible if the underlying elements allow it.
+The result is as if elements are converted one by one; array sizes (extensions) are preserved.
+Allowed conversions can be implicit or explicit and reflect the behavior of the element types.
 
 ```cpp
-// conversions from real to complex is implicit ...
-double d = 5.0;
-std::complex<double> z = d;
-// ... therefore from array of reals to arrays of complex is also
-multi::array<double, 2> D({10, 10});
-multi::array<std::complex<double>, 2> Z = D;
-// in the other direction, conversions are (implict or explicit) forbidden
-// multi::array<double, 2> DD{Z};  // compilation error
+// implicit conversions from real to complex is allowed ...
+double                  d = 5.0;     std::complex<double>                  z = d;
+// ... therefore it is also allowed from array of reals to arrays of complex
+multi::array<double, 2> D({10, 10}); multi::array<std::complex<double>, 2> Z = D;
+// (implicit or explicit) conversions from real to complex are disallowed (compilation error)
+// multi::array<double, 2> D = Z;  // or D{Z};
 ```
 
-Another case is illustrated by `std::complex<float>` and `std::complex<double>`; in one direction, the conversion can be implicit, while in the other, it can only be explicit.
-The arrays reflect this behavior:
-
+Another case is illustrated by `std::complex<float>` and `std::complex<double>`; 
+in one direction, the conversion can be implicit, while in the other, it can only be explicit.
+This behavior is reflected in the corresponding arrays:
 ```cpp
-multi::array<std::complex<float>> C;
+multi::array<std::complex<float>>  C;
 multi::array<std::complex<double>> Z = C;  // implicit conversion ok
-multi::array<std::complex<float>> C2{Z};  // conversion needs to be explicit
+multi::array<std::complex<float>>  C2{Z};  // explicit conversion is allowed
+// multi::array<std::complex<float>>  C3 = Z;  // implicit conversion is disallowed (compilation error)
 ```
 
 Implicit conversions are generally considered harmful, but inconsistent conversions are worst; therefore, the library allows them when appropriate.
-The main drawback of implicit conversions in this context is that they might incur unexpected (costly) data conversions when passing arguments to functions.
+The main drawback of implicit conversions in this context is that they might incur unexpected (e.g. costly) data conversions when passing arguments to functions.
 
 ```cpp
 void fun(multi::array<std::complex<double>> Z) { ... };
@@ -677,7 +676,7 @@ In many instances, specially in generic code, it might still be a desirable beha
 To prevent implicit conversions, use element types with no implicit conversions when possible.
 
 Finally, arrays of unrelated element types are prevented from producing direct conversions, resulting in compilation errors.
-This type of conversions can be defined as element-wise transformations if necessary.
+Element-wise transformations can be used instead.
 For example, to convert an array of integers to an array of text strings:
 
 ```cpp
@@ -685,6 +684,7 @@ For example, to convert an array of integers to an array of text strings:
 
 	auto to_string = [](int e) {return std::to_string(e);};
 	multi::array<std::string, 2> B = A.element_transformed(to_string);
+	assert( B[1][1] == "4" );
 ```
 
 ## Const-correctness
