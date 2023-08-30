@@ -985,6 +985,12 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return subarray<T, D-1, ElementPtr>{new_layout, types::base_};
 	}
 
+	void flattened() const = delete;
+	// {
+	//  multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
+	//  return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
+	// }
+
 	// TODO(correaa) : define a diagonal_aux
 	constexpr auto diagonal()    && {return this->diagonal();}
 
