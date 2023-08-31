@@ -8,8 +8,8 @@ coverage:
     project:
       default:
         threshold: 0.5%
-    patch: yes
-    changes: no
+    patch: true
+    changes: false
   precision: 2
   round: down
   range: "99..100"
