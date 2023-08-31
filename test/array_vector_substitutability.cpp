@@ -217,14 +217,14 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 	//  multi::array<double, 2>                    AA = {{1, 2}, {3, 4}};
 	//  BOOST_REQUIRE( AA.num_elements() == 4 );
 
-	//  std::vector<std::vector<double>> const aa(AA);
+	//  std::vector<std::vector<double>> const aa(AA);  // TODO(correaa) circle
 	// }
-	{
-		multi::array<double, 2> const              AA = {{1, 2}, {3, 4}};
-		BOOST_REQUIRE( AA.num_elements() == 4 );
+	// {
+	//  multi::array<double, 2> const              AA = {{1, 2}, {3, 4}};
+	//  BOOST_REQUIRE( AA.num_elements() == 4 );
 
-		std::vector<multi::array<double, 1>> const aa(AA);
-	}
+	//  std::vector<multi::array<double, 1>> const aa(AA);  // TODO(correaa) circle
+	// }
 	// {
 	//  multi::array<double, 2>                    AA = {{1, 2}, {3, 4}};
 	//  BOOST_REQUIRE( AA.num_elements() == 4 );
