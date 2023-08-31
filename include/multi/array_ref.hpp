@@ -1341,6 +1341,15 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
+	template<
+		class Range,
+		std::enable_if_t<not has_extensions<std::decay_t<Range>>::value, int> =0,
+		std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
+		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))
+	>
+	constexpr explicit operator Range() const & {return Range(begin(), end());}
+
+
 	template<class Array> constexpr void swap(Array&& other) && noexcept {
 		assert( std::move(*this).extension() == std::forward<Array>(other).extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		elements().swap(other.elements());
@@ -2097,6 +2106,14 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr      >;
 	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_const_ptr>;
 	using    move_iterator =                 array_iterator<element_type, 1,                 element_move_ptr >;
+
+	template<
+		class Range,
+		std::enable_if_t<not has_extensions<std::decay_t<Range>>::value, int> =0,
+		std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
+		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))
+	>
+	constexpr explicit operator Range() const & {return Range(begin(), end());}
 
  private:
 	HD constexpr explicit subarray(iterator begin, iterator end)
