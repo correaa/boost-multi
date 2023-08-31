@@ -73,8 +73,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 , public array_ref<T, D, typename allocator_traits<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
 , boost::multi::random_iterable<static_array<T, D, typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>> {
 	static_assert(
-		   std::is_same<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, typename static_array::element>::value
-		or std::is_same<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, void                          >::value,  // allocator template can redundant or void (which can be a default for the allocator)
+		   std::is_same_v<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, typename static_array::element>
+		or std::is_same_v<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, void                          >,  // allocator template can be redundant or void (which can be a default for the allocator)
 		"allocator value type must match array value type"
 	);
  private:
@@ -148,15 +148,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: array_alloc{alloc}  // TODO(correaa) : handle allocation propagation here
 	, ref{std::exchange(other.base_, nullptr), other.extensions()} {
 		std::move(other).layout_mutable() = {};
-	//  other.ref::layout_t::operator=({});
-	//  other.base_ = nullptr;
 	}
 
 	explicit static_array(decay_type&& other) noexcept
 	: static_array(std::move(other), allocator_type{}) {}  // 6b
 
-	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
-	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
+	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	static_array(It first, It last, allocator_type const& alloc)
 	: array_alloc{alloc}
 	, ref {
@@ -214,11 +211,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions} {
 		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
-
-//  template<class ConstVoidPointer, std::enable_if_t<std::is_convertible_v<ConstVoidPointer, typename allocator_traits<Alloc>::const_void_pointer>, int> =0>
-//  explicit static_array(typename static_array::extensions_type extensions, ConstVoidPointer hint)
-//  : array_alloc{}
-//  , ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), hint), extensions} {}
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
 	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)  // 3
@@ -289,16 +281,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	>
 	// cppcheck-suppress noExplicitConstructor ; // NOLINTNEXTLINE(runtime/explicit)
 	/*mplct*/static_array(multi::subarray<TT, D, Args...>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: static_array(other) {}
+	: static_array(std::move(other), allocator_type{}) {}
 
 	template<class TT, class... Args,
+		std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&&>().base()), T>, int> =0,
 	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
 	 class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
-	explicit static_array(multi::subarray<TT, D, Args...>&& other, std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
-	// NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	: static_array(other) {}  // NOLINT(fuchsia-default-arguments-calls)
+	explicit static_array(multi::subarray<TT, D, Args...>&& other)
+	: static_array(std::move(other), allocator_type{}) {}
 
 	template<class TT, class... Args,
 		std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> =0
@@ -306,7 +297,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	/*mplct*/static_array(array_ref<TT, D, Args...>     & other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: array_alloc{}
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
-		static_array::uninitialized_copy_elements(std::move(other).data_elements());
+		static_array::uninitialized_copy_elements(other.data_elements());
 	}
 
 	template<class TT, class... Args>
@@ -316,13 +307,19 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		static_array::uninitialized_copy_elements(other.data_elements());
 	}
 
-	template<class TT, class... Args>
-	/*mplct*/static_array(array_ref<TT, D, Args...>     && other, std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations,google-explicit-constructor,hicpp-explicit-conversions)
-	: static_array{other} {}  // NOLINT(fuchsia-default-arguments-calls)
+	template<class TT, class... Args, std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>     &&>().base()), T>, int> =0>
+	/*mplct*/static_array(array_ref<TT, D, Args...>     && other)  // NOLINT(fuchsia-default-arguments-declarations,google-explicit-constructor,hicpp-explicit-conversions)
+	: array_alloc{}
+	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
+		static_array::uninitialized_copy_elements(std::move(other).data_elements());
+	}
 
 	template<class TT, class... Args>
 	explicit static_array(array_ref<TT, D, Args...>     && other, std::enable_if_t<not multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
-	: static_array{other} {}  // NOLINT(fuchsia-default-arguments-calls)
+	: array_alloc{}
+	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
+		static_array::uninitialized_copy_elements(std::move(other).data_elements());
+	}
 
 	template<class TT, class... Args>
 	/*mplct*/static_array(array_ref<TT, D, Args...> const& other, std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations,google-explicit-constructor,hicpp-explicit-conversions)
@@ -356,7 +353,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array{static_array<T, D>(values.begin(), values.end()), alloc} {}
 
 	template<class TT, std::size_t N>
-	constexpr explicit static_array(TT(&array)[N])  // NOSONAR NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
+	constexpr explicit static_array(TT(&array)[N])  // @SuppressWarnings(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
 	: static_array(std::begin(array), std::end(array)) {}
 
 	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
@@ -903,7 +900,7 @@ struct array : static_array<T, D, Alloc> {
 	array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
 	: static_{array<T, D>(ilv.begin(), ilv.end())} {}
 
-	template<class OtherT, class = std::enable_if_t<std::is_constructible<typename static_array<T, D>::value_type, OtherT>::value and not std::is_convertible<OtherT, typename static_array<T, D>::value_type>::value and (D == 1) > >
+	template<class OtherT, class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> and not std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> and (D == 1) > >
 	explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept {return static_cast<T>(elem);})} {}  // TODO(correaa) investigate why noexcept is necessary
 
@@ -1064,7 +1061,7 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	friend void swap(array& self, array& other) {self.swap(other);}
+	friend void swap(array& self, array& other) noexcept(true/*noexcept(self.swap(other))*/) {self.swap(other);}
 
 	void assign(typename array::extensions_type extensions, typename array::element const& elem) {
 		if(array::extensions() == extensions) {
@@ -1090,8 +1087,8 @@ struct array : static_array<T, D, Alloc> {
 	void assign(std::initializer_list<value_type> values) {assign(values.begin(), values.end());}
 
 	template<class Range> auto assign(Range&& other) &
-	->decltype(assign(adl_begin(other), adl_end(other))) {  // TODO(correaa) use forward
-		return assign(adl_begin(other), adl_end(other)); }
+	->decltype(assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)))) {  // TODO(correaa) use forward
+		return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other))); }
 
 	auto operator=(std::initializer_list<value_type> values) -> array& {
 		assign(values.begin(), values.end());
@@ -1099,7 +1096,8 @@ struct array : static_array<T, D, Alloc> {
 	}
 
 	template<class... TTs>
-	[[deprecated]] auto reextent(std::tuple<TTs...> const& other) -> array& {
+	[[deprecated("use extensions for reextents, not tuples")]]
+	auto reextent(std::tuple<TTs...> const& other) -> array& {
 		return reextent(
 			std::apply([](auto const&... extensions) {return typename array::extensions_type(extensions...);}, other)
 		);  // paren is important here ext_type(...) for allow narrowing casts ^^^
@@ -1238,7 +1236,7 @@ template<typename T, dimensionality_type D, typename P> array(subarray<T, D, P>)
 
 template <class T, std::size_t N>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-auto decay(const T(&arr)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>> {
+auto decay(const T(&arr)[N]) noexcept -> multi::array<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>> {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>>(data_elements(arr), extensions(arr));
 }
