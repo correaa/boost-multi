@@ -176,10 +176,16 @@ BOOST_AUTO_TEST_CASE(assign_equality) {
 	}
 	{
 		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
-		std::vector<double> const aa(AA);
+		auto const aa(AA().operator std::vector<double>());
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
+	// {
+	//  multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
+	//  std::vector<double> const aa(AA);
+
+	//  BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
+	// }
 	{
 		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 		multi::array<double, 1> const AA(aa.begin(), aa.end());
