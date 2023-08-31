@@ -123,11 +123,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	void allocate() {this->base_ = array_alloc::allocate(static_cast<typename allocator_traits<typename static_array::allocator_type>::size_type>(static_array::num_elements()));}
 
  public:
-	using value_type = typename std::conditional<
+	using value_type = typename std::conditional_t<
 		(D > 1),  // this parenthesis is needed
 		array<typename static_array::element, D-1, allocator_type>,
 		typename static_array::element
-	>::type;
+	>;
 
 	using typename ref::size_type;
 	using typename ref::difference_type;
@@ -220,7 +220,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value)  // 3
 	= delete;
 
-//  analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
 	explicit static_array(typename static_array::extensions_type extensions, allocator_type const& alloc)
 	: array_alloc{alloc}
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions} {
@@ -249,12 +248,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
+		std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> =0,
 	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
-	explicit static_array(multi::subarray<TT, D, Args...> const& other, std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
-	// NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	explicit static_array(multi::subarray<TT, D, Args...> const& other)
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
@@ -413,11 +411,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using const_reference = std::conditional_t<
 		(D > 1),
 		subarray<typename static_array::element, D - 1, typename static_array::element_const_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
-		typename std::conditional<
+		std::conditional_t<
 			D == 1,
 			decltype(*std::declval<typename static_array::element_const_ptr>()),
 			void
-		>::type
+		>
 	>;
 
 	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;
@@ -592,8 +590,8 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	explicit static_array(multi::subarray<TT, 0, Args...> const& other, allocator_type const& alloc)
 	: array_alloc{alloc}
 	, ref(static_array::allocate(other.num_elements()), extensions(other)) {
-		if(other.base()) {adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + 1, this->base());}  // ref::begin());
-		// using std::copy; copy(other.begin(), other.end(), this->begin());
+		assert( other.num_elements() <= 1 );
+		if(other.num_elements()) {adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + other.num_elements(), this->base());}  // ref::begin());
 	}
 
 	template<class TT, class... Args>
@@ -881,15 +879,13 @@ struct array : static_array<T, D, Alloc> {
 
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned int const version) {
-		using AT = multi::archive_traits<Archive>;
 		auto extensions_ = this->extensions();
-		arxiv &                   AT::make_nvp("extensions", extensions_);
-	//  arxiv & boost::serialization::make_nvp("extensions", extensions );
-	//  arxiv &        cereal       ::make_nvp("extensions", extensions );
-	//  arxiv &        BOOST_SERIALIZATION_NVP(              extensions );
-	//  arxiv &                     CEREAL_NVP(              extensions );
-	//  arxiv &                                              extensions  ;
-		if(this->extensions() != extensions_) {clear(); this->reextent(extensions_);}
+		using make_nvp = typename multi::archive_traits<Archive>::make_nvp;  // can be boost::serialization::make_nvp or cereal::make_nvp(
+		arxiv & make_nvp("extensions", extensions_);
+		if(this->extensions() != extensions_) {
+			clear();
+			this->reextent(extensions_);
+		}
 		static_::serialize(arxiv, version);
 	}
 
@@ -1070,7 +1066,7 @@ struct array : static_array<T, D, Alloc> {
 			this->clear();
 			(*this).array::layout_t::operator=(layout_t<D>{extensions});
 			this->base_ = this->static_::array_alloc::allocate(this->num_elements(), nullptr);
-			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);  // recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
+			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);
 		}
 	}
 

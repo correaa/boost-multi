@@ -160,3 +160,75 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_6) {
 	BOOST_REQUIRE( dest_v.size() == 4 );
 	BOOST_REQUIRE( dest_v[3] == 3.0 );
 }
+
+BOOST_AUTO_TEST_CASE(assign_equality) {
+	{
+		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
+		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+
+		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
+	}
+	{
+		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
+		std::vector<double> const aa(AA.begin(), AA.end());  // NOLINT(fuchsia-default-arguments-calls)
+
+		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
+	}
+	{
+		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
+		auto const aa(AA().operator std::vector<double>());
+
+		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
+	}
+	// {
+	//  multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
+	//  std::vector<double> const aa(AA);
+
+	//  BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
+	// }
+	{
+		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		multi::array<double, 1> const AA(aa.begin(), aa.end());
+
+		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
+	}
+	{
+		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		multi::array<double, 1> const AA(aa);
+
+		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
+	{
+		multi::array<double, 2> const               AA = {{1, 2}, {3, 4}};
+		BOOST_REQUIRE( AA.num_elements() == 4 );
+
+		std::vector<multi::array<double, 1>> const aa(AA.begin(), AA.end()); // NOLINT(fuchsia-default-arguments-calls)
+	}
+	{
+		multi::array<double, 2> const               AA = {{1, 2}, {3, 4}};
+		BOOST_REQUIRE( AA.num_elements() == 4 );
+
+		auto const aa(AA().operator std::vector<std::vector<double>>());
+	}
+	// {
+	//  multi::array<double, 2>                    AA = {{1, 2}, {3, 4}};
+	//  BOOST_REQUIRE( AA.num_elements() == 4 );
+
+	//  std::vector<std::vector<double>> const aa(AA);  // TODO(correaa) circle
+	// }
+	// {
+	//  multi::array<double, 2> const              AA = {{1, 2}, {3, 4}};
+	//  BOOST_REQUIRE( AA.num_elements() == 4 );
+
+	//  std::vector<multi::array<double, 1>> const aa(AA);  // TODO(correaa) circle
+	// }
+	// {
+	//  multi::array<double, 2>                    AA = {{1, 2}, {3, 4}};
+	//  BOOST_REQUIRE( AA.num_elements() == 4 );
+
+	//  multi::array<multi::array<double, 1>, 1> const aa(AA);  // TODO(correaa)
+	// }
+}

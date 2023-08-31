@@ -201,8 +201,8 @@ BOOST_AUTO_TEST_CASE(cufft_1D_combinations, *boost::unit_test::tolerance(0.0001)
 		multi::cufft::plan<1>(c, in_gpu.layout(), fw_gpu.layout())
 			.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
 
-		BOOST_TEST( (complex(fw_gpu[31]) - fw_cpu[31]).real() == 0.0 );
-		BOOST_TEST( (complex(fw_gpu[31]) - fw_cpu[31]).imag() == 0.0 );
+		BOOST_TEST( complex(fw_gpu[31]).real() == fw_cpu[31].real() );
+		BOOST_TEST( complex(fw_gpu[31]).imag() == fw_cpu[31].imag() );
 	}
 }
 
