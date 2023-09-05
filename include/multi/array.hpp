@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_ARRAY_HPP_
@@ -201,6 +200,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions} {
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
+
+	template<class... Ints, class... Ts>
+	static_array(std::tuple<Ints...> extensions, Ts&&... args)  // this is important to pass arguments to boost::interprocess::construct
+	: static_array{
+		std::apply([](auto... e) {return typename static_array::extensions_type{e...};}, extensions), 
+		std::forward<Ts>(args)...
+	} {}
 
 	template<class Element, std::enable_if_t<std::is_convertible<Element, typename static_array::element>{} and (D == 0), int> = 0>
 	explicit static_array(Element const& elem, allocator_type const& alloc)
