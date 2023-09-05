@@ -198,7 +198,7 @@ struct extensions_t {
 		};
 	}
 
-	template<std::size_t Index>
+	template<std::size_t Index, std::enable_if_t<(Index < D), int> =0>
 	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
@@ -250,7 +250,7 @@ template<> struct extensions_t<0> {
 	constexpr HD auto operator==(extensions_t const& /*other*/) const {return true ;}
 	constexpr HD auto operator!=(extensions_t const& /*other*/) const {return false;}
 
-	template<std::size_t Index>
+	template<std::size_t Index>  // TODO(correaa) = detele ?
 	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
@@ -349,7 +349,7 @@ template<> struct extensions_t<1> {
 	//  arxiv &                                                       extension  ;
 	}
 
-	template<std::size_t Index>
+	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
 	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
@@ -357,6 +357,16 @@ template<> struct extensions_t<1> {
 };
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
+
+template<class T>
+class wrapped {
+	T val_;
+ public:
+	explicit wrapped(T const& t) : val_{t} {}
+	T got() const {return val_;}
+};
+
+template<class T> auto wrap(T const& t) {return wrapped<T>(t);}
 
 template<boost::multi::dimensionality_type D>
 constexpr auto array_size_impl(const boost::multi::extensions_t<D>&)
