@@ -2763,6 +2763,15 @@ constexpr auto is_subarray_aux(...                            ) -> std::false_ty
 
 template<class A> struct is_subarray: decltype(is_subarray_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
+template<dimensionality_type D>
+struct of_dim {
+template<class T, class... Ts>
+static constexpr auto is_subarray_of_dim_aux(subarray<T, D, Ts...> const&) -> std::true_type;
+static constexpr auto is_subarray_of_dim_aux(...                         ) -> std::false_type;
+
+template<class A> struct is_subarray_of_dim: decltype(is_subarray_of_dim_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+};
+
 template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy
 // require N>1 (this is important because it forces calling placement new on the pointer
