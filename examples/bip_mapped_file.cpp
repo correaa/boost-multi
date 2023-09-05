@@ -1,10 +1,8 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $CXXFLAGS -std=c++17 $0 -o $0x -lstdc++fs -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2019-2022
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi interacting with Boost Interprocess"
 #define BOOST_TEST_DYN_LINK
+
 #include<boost/test/unit_test.hpp>
 
 #include<boost/interprocess/managed_mapped_file.hpp>
@@ -52,18 +50,18 @@ mremove(file);
 {
 	manager m{bip::create_only, file.c_str(), 1 << 25};
 	auto&& arr1d =
-		*m.construct<marray<int     , 1>>("arr1d")(multi::extensions_t<1>( 10         ), 99 , get_allocator(m));
+		*m.construct<marray<int     , 1>>("arr1d")(std::tuple{ 10       }, 99 , get_allocator(m));
 	auto&& arr2d =
-		*m.construct<marray<double  , 2>>("arr2d")(multi::extensions_t<2>({10, 10    }), 0.0, get_allocator(m));
+		*m.construct<marray<double  , 2>>("arr2d")(std::tuple{10, 10    }, 0.0, get_allocator(m));
 	auto&& arr3d =
-		*m.construct<marray<unsigned, 3>>("arr3d")(multi::extensions_t<3>({10, 10, 10}), 0u , get_allocator(m));
+		*m.construct<marray<unsigned, 3>>("arr3d")(std::tuple{10, 10, 10}, 0u , get_allocator(m));
 
 	arr1d[3]    = 33;
 	arr2d[4][5] = 45.001;
 
 	std::iota(arr3d[6][7].begin(), arr3d[6][7].end(), 100);
 
-//	m.flush(); // this produces uninitialized access in icpc 19.1 and might not be necessary
+//  m.flush(); // this produces uninitialized access in icpc 19.1 and might not be necessary
 }
 {
 	manager m{bip::open_only, file.c_str()};
@@ -160,4 +158,3 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_arrays_of_array) {
 		bip::shared_memory_object::remove("Demo");
 	}
 }
-
