@@ -202,29 +202,29 @@ BOOST_AUTO_TEST_CASE(assign_equality) {
 
 BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 	{
-		multi::array<double, 2> const               AA = {{1, 2}, {3, 4}};
+		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<multi::array<double, 1>> const aa(AA.begin(), AA.end()); // NOLINT(fuchsia-default-arguments-calls)
 	}
 	{
-		multi::array<double, 2> const               AA = {{1, 2}, {3, 4}};
+		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		auto const aa(AA().operator std::vector<std::vector<double>>());
 	}
-	// {
-	//  multi::array<double, 2>                    AA = {{1, 2}, {3, 4}};
-	//  BOOST_REQUIRE( AA.num_elements() == 4 );
+	{
+		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+		BOOST_REQUIRE( AA.num_elements() == 4 );
 
-	//  std::vector<std::vector<double>> const aa(AA);  // TODO(correaa) circle
-	// }
-	// {
-	//  multi::array<double, 2> const              AA = {{1, 2}, {3, 4}};
-	//  BOOST_REQUIRE( AA.num_elements() == 4 );
+		std::vector<std::vector<double>> const aa(AA);  // TODO(correaa) circle
+	}
+	{
+		multi::array<double, 2> const              AA = {{1.0, 2.0}, {3.0, 4.0}};
+		BOOST_REQUIRE( AA.num_elements() == 4 );
 
-	//  std::vector<multi::array<double, 1>> const aa(AA);  // TODO(correaa) circle
-	// }
+		std::vector<multi::array<double, 1>> const aa(AA);  // TODO(correaa) circle
+	}
 	// {
 	//  multi::array<double, 2>                    AA = {{1, 2}, {3, 4}};
 	//  BOOST_REQUIRE( AA.num_elements() == 4 );
