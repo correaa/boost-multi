@@ -201,10 +201,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
 
-	template<class... Ints, class... Ts>  // TODO(correaa) add implicit constructor from tuple to extensions_t
-	static_array(std::tuple<Ints...> extensions, Ts&&... args)  // this is important to pass arguments to boost::interprocess::construct
+	template<class... Exts, class... Ts>  // TODO(correaa) add implicit constructor from tuple to extensions_t ?
+	static_array(std::tuple<Exts...> extensions, Ts&&... args)  // this is important to pass arguments to boost::interprocess::construct
 	: static_array{
-	 std::apply([](auto... e) {return typename static_array::extensions_type{e...};}, extensions), 
+	 std::apply([](auto... exts) {return typename static_array::extensions_type{exts...};}, extensions), 
 	 std::forward<Ts>(args)...
 	} {}
 
