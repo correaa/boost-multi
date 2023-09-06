@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_LAYOUT_HPP
 #define MULTI_DETAIL_LAYOUT_HPP
@@ -159,9 +158,6 @@ struct extensions_t {
 	void serialize_impl(Archive& arxiv, std::index_sequence<I...> /*unused012*/) {
 		using boost::multi::detail::get;
 		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extension",      get<I>(impl_)) , 0U)...};
-	//  (void)std::initializer_list<unsigned>{(arxiv & boost::serialization::          make_nvp("extension", std::get<I>(impl_)) , 0U)...};
-	//  (void)std::initializer_list<unsigned>{(arxiv & cereal::                        make_nvp("extension", std::get<I>(impl_)) , 0U)...};
-	//  (void)std::initializer_list<unsigned>{(arxiv &                                                       std::get<I>(impl_)  , 0U)...};
 	}
 
  public:
@@ -198,7 +194,7 @@ struct extensions_t {
 		};
 	}
 
-	template<std::size_t Index>
+	template<std::size_t Index, std::enable_if_t<(Index < D), int> =0>
 	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
@@ -250,7 +246,7 @@ template<> struct extensions_t<0> {
 	constexpr HD auto operator==(extensions_t const& /*other*/) const {return true ;}
 	constexpr HD auto operator!=(extensions_t const& /*other*/) const {return false;}
 
-	template<std::size_t Index>
+	template<std::size_t Index>  // TODO(correaa) = detele ?
 	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
@@ -344,12 +340,9 @@ template<> struct extensions_t<1> {
 		using boost::multi::detail::get;
 		auto& extension_ = get<0>(impl_);
 		arxiv & multi::archive_traits<Archive>::make_nvp("extension", extension_);
-	//  arxiv & boost::serialization::          make_nvp("extension", extension );
-	//  arxiv & cereal::                        make_nvp("extension", extension );
-	//  arxiv &                                                       extension  ;
 	}
 
-	template<std::size_t Index>
+	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
 	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
