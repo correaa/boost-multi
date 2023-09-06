@@ -202,7 +202,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class... Exts, class... Ts>  // TODO(correaa) add implicit constructor from tuple to extensions_t ?
-	static_array(std::tuple<Exts...> extensions, Ts&&... args)  // this is important to pass arguments to boost::interprocess::construct
+	explicit static_array(std::tuple<Exts...> extensions, Ts&&... args)  // this is important to pass arguments to boost::interprocess::construct
 	: static_array{
 		std::apply([](auto... exts) {return typename static_array::extensions_type{exts...};}, extensions), 
 		std::forward<Ts>(args)...
