@@ -358,16 +358,6 @@ template<> struct extensions_t<1> {
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
-template<class T>
-class wrapped {
-	T val_;
- public:
-	explicit wrapped(T const& t) : val_{t} {}
-	T got() const {return val_;}
-};
-
-template<class T> auto wrap(T const& t) {return wrapped<T>(t);}
-
 template<boost::multi::dimensionality_type D>
 constexpr auto array_size_impl(const boost::multi::extensions_t<D>&)
 	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
