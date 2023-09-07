@@ -2529,16 +2529,15 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 	template<typename TT, class... As>
 	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
-		if(self.extensions() != other.extensions()) {return false;}  // TODO(correaa) : or assert?
-		return adl_equal(  // careful, this will not work if boost range is included somehow
+		if(self.extensions() != other.extensions()) { return false; }
+		return adl_equal(
 			other.data_elements(), other.data_elements() + other.num_elements(),
 			self .data_elements()
 		);
 	}
 	template<typename TT, class... As>
-	/*[[gnu::pure]]*/ friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
-		if(self.extensions() != other.extensions()) {return true;}  // TODO(correaa) : or assert?
-		return not adl_equal(other.data_elements(), other.data_elements() + self.num_elements(), self.data_elements());
+	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
+		return not operator==(self, other);
 	}
 
 	    HD constexpr auto data_elements()        &&       -> typename array_ref::element_ptr {return array_ref::base_;}
