@@ -45,7 +45,10 @@ include(CTest)
 #   message(STATUS "gpu detected: ${CUDA_ARCH_LIST}")
 # endif()
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
+find_package(Boost COMPONENTS unit_test_framework timer)
+if(NOT Boost_FOUND)
+	message(ERROR "  Cannot find Boost.Timer. Try\n    sudo apt install libboost-timer-dev  # in Debian/Ubuntu")
+endif()
 
 set(TEST_SRCS
     array.cu
