@@ -60,7 +60,7 @@ link_libraries(${BLAS_LIBRARIES})
 if(BLAS_FOUND)
   add_subdirectory(test)
 else()
-  message(WARNING "BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:")
-  message(WARNING "    sudo apt install libblas-dev")
-  message(WARNING "    sudo dnf install blas-devel  # in Fedora")
+  message(WARNING "BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:"
+                "\n    sudo apt install libblas-dev"
+                "\n    sudo dnf install blas-devel  # in Fedora")
 endif()

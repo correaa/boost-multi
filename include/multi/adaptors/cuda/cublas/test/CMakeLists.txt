@@ -4,7 +4,13 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
-find_package(BLAS REQUIRED)
+find_package(BLAS)
+if(BLAS_FOUND)
+else()
+  message(ERROR "BLAS not found. Please try:"
+                "\n    sudo apt install libblas-dev"
+                "\n    sudo dnf install blas-devel  # in Fedora")
+endif()
 find_path(
 	BLAS_INCLUDE_DIRS
 	cblas.h
