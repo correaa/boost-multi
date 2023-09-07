@@ -383,7 +383,7 @@ cuda-11.5.2 clang:  # other images https://catalog.ngc.nvidia.com/orgs/nvidia/co
     - CUDAToolkit_ROOT=/usr/local/cuda cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++ -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-  needs: ["cuda"]
+  needs: ["cuda", "clang++"]
 
 rocm:
   stage: build
