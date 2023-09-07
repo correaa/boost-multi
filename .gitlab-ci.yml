@@ -364,9 +364,9 @@ cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda-11.5.0 clang:
+cuda-11.5.2 clang:  # other images https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   stage: build
-  image: nvcr.io/nvidia/cuda:11.5.0-devel-ubuntu20.04
+  image: nvcr.io/nvidia/cuda:11.5.2-devel-ubuntu20.04
   tags:
     - nvidia-docker
   script:
