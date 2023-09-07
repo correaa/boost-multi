@@ -1,11 +1,11 @@
 #ifdef COMPILATION  // clang-format off
-${CXX:-c++} -std=c++17 $CXXFLAGS -I../include -I$HOME/metall/include $0 -o $0.$X && $0.$X && rm $0.$X;exit
+${CXX:-c++} -std=c++17 $CXXFLAGS -I../include -I$HOME/metall/include $0 -o$0.$X&&$0.$X&&rm $0.$X;exit
 #endif // clang-format on
 // Copyright 2019-2023 Alfredo A. Correa
 
 #include <cassert>
 #include <iostream>
-#include <numeric>  // iota
+#include <numeric>  // for std::iota
 
 #include <metall/metall.hpp>
 
@@ -55,11 +55,8 @@ int main() {
 		metall::manager m{metall::open_only, dir.c_str()};
 
 		auto const& arr1d = *m.find<marray<int, 1>>("arr1d").first;
-		assert(std::addressof(arr1d));
 		auto const& arr2d = *m.find<marray<double, 2>>("arr2d").first;
-		assert(std::addressof(arr2d));
 		auto const& arr3d = *m.find<marray<unsigned, 3>>("arr3d").first;
-		assert(std::addressof(arr3d));
 
 		auto const& arr3d_copy = *m.find<marray<unsigned, 3>>("arr3d_copy").first;
 		assert(std::addressof(arr3d));
