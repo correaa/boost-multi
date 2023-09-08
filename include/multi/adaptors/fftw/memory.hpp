@@ -18,7 +18,7 @@ struct allocator {
 	using value_type = T;
 	using size_type  = std::size_t;
 
-	auto allocate(size_type n) -> T* {
+	static auto allocate(size_type n) -> T* {
 		if(n == 0) {
 			return nullptr;
 		}
@@ -28,7 +28,7 @@ struct allocator {
 		}
 		return static_cast<T*>(ptr);
 	}
-	void deallocate(T* ptr, size_type n) {
+	static void deallocate(T* ptr, size_type n) {
 		if(n != 0) {
 			fftw_free(ptr);
 		}
