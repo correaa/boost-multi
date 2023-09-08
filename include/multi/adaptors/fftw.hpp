@@ -6,6 +6,8 @@
 
 #include <multi/array.hpp>
 
+#include <multi/adaptors/fftw/memory.hpp>
+
 #include<algorithm> // sort
 #include<complex>
 #include<numeric> // accumulate
@@ -437,7 +439,7 @@ class plan {
 	}
 
 private:
-	void execute() const {fftw_execute(impl_.get());} //TODO(correaa): remove const
+	void execute() const {fftw_execute(impl_.get());}  // TODO(correaa): remove const
 	template<class I, class O>
 	void execute_dft(I&& in, O&& out) const {
 		::fftw_execute_dft(impl_.get(), const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(out)))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
@@ -646,30 +648,6 @@ auto move(In&& in) {
 	return copy(std::forward<In>(in));
 }
 #endif
-
-template<class T>
-struct allocator {
-	using value_type = T;
-	using size_type  = std::size_t;
-
-	auto allocate(size_type n) -> T* {
-		if(n == 0) {return nullptr;}
-		if (n > max_size()) {throw std::length_error("multi::fftw::allocator<T>::allocate() overflow.");}
-		void* ptr = fftw_malloc(sizeof(T) * n);
-		if(ptr == nullptr) {throw std::bad_alloc{};}
-		return static_cast<T*>(ptr);
-	}
-	void deallocate(T* ptr, size_type n) {if(n != 0) {fftw_free(ptr);}}
-
-	constexpr auto operator==(allocator const& /*other*/) const -> bool {return true ;}
-	constexpr auto operator!=(allocator const& /*other*/) const -> bool {return false;}
-
- private:
-    static constexpr auto max_size() {return (static_cast<size_type>(0) - static_cast<size_type>(1)) / sizeof(T);}
-};
-
-// template<class T>
-// using allocator = std::allocator<T>;
 
 template<class T, boost::multi::dimensionality_type D>
 using static_array = ::boost::multi::static_array<T, D, fftw::allocator<T>>;
