@@ -22,9 +22,6 @@ struct allocator {
 		if(n == 0) {
 			return nullptr;
 		}
-		if(n > max_size()) {
-			throw std::length_error("multi::fftw::allocator<T>::allocate() overflow.");
-		}
 		void* ptr = fftw_malloc(sizeof(T) * n);
 		if(ptr == nullptr) {
 			throw std::bad_alloc{};
