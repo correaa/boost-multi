@@ -1,5 +1,5 @@
 #ifdef COMPILATION// sudo cpupower frequency-set --governor performance && sudo apt install libbenchmark-dev
-${CXX:-c++} -O3 -DNDEBUG `#-DNOEXCEPT_ASSIGNMENT` -I../../../../../include/ $0 -o $0x `pkg-config --libs benchmark fftw3`&&$0x&&rm $0x;exit
+${CXX:-c++} -Ofast -DNDEBUG -march=native `#-DNOEXCEPT_ASSIGNMENT` -I../../../../../include/ $0 -o $0x `pkg-config --libs benchmark fftw3`&&$0x&&rm $0x;exit
 #endif
 
 #include <benchmark/benchmark.h>
