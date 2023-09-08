@@ -1,13 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
 #pragma once
 
-#include "../adaptors/../array.hpp"
-
-#include "../detail/tuple_zip.hpp"
+#include <multi/array.hpp>
 
 #include<algorithm> // sort
 #include<complex>
@@ -20,14 +17,10 @@
 #include<fftw3.h> // external fftw3 library
 
 namespace boost::multi {
-
 namespace fftw {
+
 //  template<class T> auto alignment_of(T* p){return ::fftw_alignment_of((double*)p);}
-#if  __cpp_lib_as_const >= 201510
 using std::as_const;
-#else
-template<class T> constexpr std::add_const_t<T>& as_const(T& t) noexcept{return t;}
-#endif
 
 struct flags {
 	using underlying_type = decltype(FFTW_PRESERVE_INPUT); // NOLINT(hicpp-signed-bitwise) : macro definition in external library
