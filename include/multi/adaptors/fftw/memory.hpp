@@ -51,7 +51,7 @@ constexpr auto operator!=(allocator<T> const& /*a*/, allocator<U> const& /*b*/) 
 
 }  // namespace boost::multi::fftw
 
-#if not __INCLUDE_LEVEL__
+#if 0
 
 #include "../../array.hpp"
 
