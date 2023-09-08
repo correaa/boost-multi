@@ -1,7 +1,8 @@
 #if COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXXX $CXXFLAGS $0 -o $0x  -lfftw3 -lfftw3_mpi&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2020
+// Copyright 2020-2023 Alfredo A. Correa
+
 // apt-get install libfftw3-mpi-dev
 // compile with: mpicc simple_mpi_example.c  -Wl,-rpath=/usr/local/lib -lfftw3_mpi -lfftw3 -o simple_mpi_example */
 
@@ -19,8 +20,7 @@ $CXXX $CXXFLAGS $0 -o $0x  -lfftw3 -lfftw3_mpi&&$0x&&rm $0x;exit
 #include<memory>
 #include<type_traits>
 
-namespace boost{
-namespace multi{
+namespace boost::multi {
 namespace fftw{
 
 template<class T>
@@ -28,7 +28,6 @@ class allocator{
 public:
 	using value_type    = T;
 
-#if 1
 	using pointer       = value_type*;
 	using const_pointer = typename std::pointer_traits<pointer>::template
                                                      rebind<value_type const>;
@@ -40,24 +39,20 @@ public:
 	using size_type       = std::make_unsigned_t<difference_type>;
 
 	template <class U> struct rebind {typedef allocator<U> other;};
-#endif
 
-	allocator() noexcept {}  // not required, unless used
+	allocator() = default;
 	template <class U> allocator(allocator<U> const&) noexcept {}
 
 	NODISCARD("to avoid memory leak") 
 	value_type* allocate(std::size_t n) const{return static_cast<value_type*>(fftw_malloc(sizeof(T)*n));}
 
-//	value_type*  // Use pointer if pointer is not a value_type*
-//	allocate(std::size_t n){return static_cast<value_type*>(::operator new (n*sizeof(value_type)));}
+//  value_type*  // Use pointer if pointer is not a value_type*
+//  allocate(std::size_t n){return static_cast<value_type*>(::operator new (n*sizeof(value_type)));}
 
-	void deallocate(value_type* p, std::size_t){fftw_free(p);}
-//	void deallocate(value_type* p, std::size_t) noexcept  // Use pointer if pointer is not a value_type*
-//	{::operator delete(p);}
+	void deallocate(value_type* p, std::size_t) noexcept {fftw_free(p);}
 
 	static int alignment_of(value_type* p){return fftw_alignment_of((double*)p);}
 
-#if 1
 	value_type* allocate(std::size_t n, const_void_pointer){return allocate(n);}
 
 	template <class U, class ...Args>
@@ -73,7 +68,6 @@ public:
 	using propagate_on_container_move_assignment = std::false_type;
 	using propagate_on_container_swap            = std::false_type;
 	using is_always_equal                        = std::is_empty<allocator>;
-#endif
 };
 
 template <class T, class U>
@@ -84,72 +78,8 @@ bool operator!=(allocator<T> const& x, allocator<U> const& y) noexcept{
 	return !(x == y);
 }
 
-#if 0
-template<typename T>
-struct allocator{
-	using value_type      = T;
-	using pointer         = value_type*;
-	using size_type 	  = std::size_t;
-	using difference_type =	std::ptrdiff_t;
-	using propagate_on_container_move_assignment = std::true_type;
-//	NODISCARD("to avoid memory leak") 
-	pointer allocate(size_type n) const{return static_cast<pointer>(fftw_malloc(sizeof(T)*n));}
-	void deallocate(pointer data, size_type){fftw_free(data);}
-};
-#endif
-
-//template<> allocator<std::complex<double>>::pointer allocator<std::complex<double>>::allocate(size_type n){return reinterpret_cast<std::complex<double>*>(fftw_alloc_complex(n));}
-//template<> allocator<             double >::pointer allocator<             double >::allocate(size_type n){return                                         fftw_alloc_real(n)    ;}
-
-#if 0
-template<>
-struct allocator<std::complex<double>>{
-	using value_type      = std::complex<double>;
-	using pointer         = value_type*;
-	using size_type 	  = std::size_t;
-	using difference_type =	std::ptrdiff_t;
-	using propagate_on_container_move_assignment = std::true_type;
-	NODISCARD("to avoid memory leak") 
-	pointer allocate(size_type n){return reinterpret_cast<std::complex<double>*>(fftw_alloc_complex(n));}
-	void deallocate(pointer data, size_type){fftw_free(data);}
-};
-
-template<>
-struct allocator<double>{
-	using value_type      = double;
-	using pointer         = value_type*;
-	using size_type 	  = std::size_t;
-	using difference_type =	std::ptrdiff_t;
-	using propagate_on_container_move_assignment = std::true_type;
-	NODISCARD("to avoid memory leak") 
-	pointer allocate(size_type n){return fftw_alloc_real(n);}
-	void deallocate(pointer data, size_type){fftw_free(data);}
-};
-#endif
-
-}}}
-
-
-#if 0//__NVCC__
-namespace std{
-
-template<class T> struct allocator_traits<boost::multi::fftw::allocator<T>> : std::allocator_traits<std::allocator<T>>{
-	using base = std::allocator_traits<std::allocator<T>>;
-	template<class U> using rebind_alloc = boost::multi::fftw::allocator<U>;
-	template<class A>
-	static auto allocate(A& a, typename base::size_type n){return a.allocate(n);}
-};
-
 }
-#endif
-
-#if 0 //def __NVCC__
-namespace std{
-template<class T> struct allocator_traits<boost::multi::fftw::allocator<T>> : std::allocator_traits<std::allocator<T>>{
-	template<class U> using rebind_alloc = boost::multi::fftw::allocator<U>;
-};
 }
-#endif
 
 #if not __INCLUDE_LEVEL__
 
