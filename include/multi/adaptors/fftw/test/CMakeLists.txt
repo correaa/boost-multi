@@ -1,12 +1,3 @@
-# -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-#[=[Multi Test suite can be run like this:
-  mkdir -p build
-  cd build
-  cmake .. [-DENABLE_CUDA=1]
-  make -j
-  ctest -j --output-on-error [-T memcheck]
-  exit
-#]=]
 cmake_minimum_required(VERSION 3.11)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")

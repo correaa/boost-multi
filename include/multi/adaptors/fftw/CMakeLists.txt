@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 #project(
@@ -18,7 +17,7 @@ if(PKG_CONFIG_FOUND)
 		IMPORTED_TARGET
 	)
 	if(FFTW_FOUND)
-		include_directories(PkgConfig::FFTW)
+		# include_directories(PkgConfig::FFTW) this seems to be always incorrect
 		link_libraries(PkgConfig::FFTW)
 
 		include_directories(${CMAKE_BINARY_DIR})
