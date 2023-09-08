@@ -2,6 +2,7 @@
 // Copyright 2020-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
+
 #include<boost/test/unit_test.hpp>
 
 #include <multi/adaptors/fftw.hpp>
