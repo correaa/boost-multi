@@ -3,7 +3,7 @@
 -->
 # [Boost.]Multi
 
-> **Disclosure: Not an official or accepted Boost library and it is unrelated to the std::mspan proposal.**
+> **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mspan proposal.**
 
 _© Alfredo A. Correa, 2018-2023_
 
