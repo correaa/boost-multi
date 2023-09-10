@@ -34,7 +34,7 @@ auto p = multi::fftw::plan::[forward|backward]({which...}, in_layout, out_layout
 ```
 
 Input and output layout must have the same associated sizes.
-`{which...}` is a set of (at most D) boolean value that determined which dimensions are transformed; for example `{true, true, ...}` performs the FFT on all directions, ``{false, true, false, ...}` for the second dimension only and `{false, false, ...}` doesn't perform any Fourier transform, effectively performing a copy or a transposition.
+`{which...}` is a set of (at most D) boolean value that determined which dimensions are transformed; for example `{true, true, ...}` performs the FFT on all directions, ``{false, true, false, ...}` for the second dimension only and `{false, false, ...}` doesn't perform any Fourier transform, effectively performing a element-wise copy or transposition.
 
 The plans can be later executed (many times if necessary) as:
 ```cpp
@@ -42,7 +42,6 @@ p.execute(in_base, out_base);
 ```
 
 Executions of the same plan (or over the same data) are not thread-safe (the plan has internal buffers that are modified), so the `.execute` function is not marked `const`.
-However, one can construct independent copies (`auto p2{p};`), which can be used concurrently later.
 
 The use pattern of the FFTW adaptor (and the original FFTW) interface is somewhat entangled.
 The plan construction takes the arrays, and the execute takes the internal pointers to array data.
@@ -56,7 +55,7 @@ auto&& multi::fftw::dft::forward({which, ...}, In const& in, Out&& out) {
 }
 ```
 
-Finally, FFTW offers plans creation that are fast at the expense of complexity.
+<!-- Finally, FFTW offers plans creation that are fast at the expense of complexity.
 
 ```cpp
 auto p = multi::fftw::measured_plan::[forward|backward]({which...}, in_buffer, in_layout, out_buffer, out_layout);
@@ -72,4 +71,4 @@ auto p = multi::fftw::measured_plan::[forward|backward]({which...}, in.base(), i
 ```
 
 This type of plans are harder to use.
-
+ -->
