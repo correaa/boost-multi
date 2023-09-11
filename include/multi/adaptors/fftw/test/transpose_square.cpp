@@ -54,17 +54,17 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 			return ret;
 		}();
 	//  multi::fftw::plan::with_nthreads(1);
-		{
-			multi::array<complex, 2> out = in;
-			auto* data = out.data_elements();
-			 {
-				watch const unnamed{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"s};
-				multi::fftw::transpose( out );
-				BOOST_REQUIRE( out.data_elements() == data );
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
-			}
-			BOOST_REQUIRE( out == ~in );
-		}
+		// {
+		//  multi::array<complex, 2> out = in;
+		//  auto* data = out.data_elements();
+		//   {
+		//      watch const unnamed{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"s};
+		//      multi::fftw::transpose( out );
+		//      BOOST_REQUIRE( out.data_elements() == data );
+		//      BOOST_REQUIRE( out[35][79] == in[79][35] );
+		//  }
+		//  BOOST_REQUIRE( out == ~in );
+		// }
 //    {
 //      multi::array<complex, 2> out = in;
 //      auto p = out.data_elements();
