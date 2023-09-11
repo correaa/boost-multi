@@ -91,25 +91,25 @@ BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 //  BOOST_REQUIRE( bwd[2] == -2.0 - 2.0*I  );
 // }
 
-// BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
-//  using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
+	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-//  multi::array<complex, 2> const in = {
-//      {  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
-//      {  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
-//      {  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
-//      {  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
-//      { 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I},
-//  };
-//  multi::array<complex, 2> out(extensions(in));
+	multi::array<complex, 2> const in = {
+		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I},
+	};
+	multi::array<complex, 2> out(extensions(in));
 
-//  multi::fftw::dft_forward({false, false}, in, out);  // out = in;
+	multi::fftw::dft_forward({false, false}, in, out);  // out = in;
 
-//  BOOST_TEST_REQUIRE( in[2][3].real() == out[2][3].real() );
-//  BOOST_TEST_REQUIRE( in[2][3].imag() == out[2][3].imag() );
+	BOOST_TEST_REQUIRE( in[2][3].real() == out[2][3].real() );
+	BOOST_TEST_REQUIRE( in[2][3].imag() == out[2][3].imag() );
 
-//  BOOST_REQUIRE( out == in );
-// }
+	BOOST_REQUIRE( out == in );
+}
 
 // BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)) {
 //  using complex = std::complex<double>;
@@ -168,32 +168,34 @@ BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 //  BOOST_REQUIRE( dft_forward(rotated(in)) == rotated(fwd) );
 // }
 
-// BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
-//  using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
+	using complex = std::complex<double>;
 
-//  multi::array<complex, 2> const in = {
-//      {  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
-//      {  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
-//      {  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
-//      {  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
-//      { 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
-//  };
-//  multi::array<complex, 2> out(extensions(in));
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-//  using multi::fftw::dft_forward;
+	multi::array<complex, 2> const in = {
+		{ 1.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
+		{ 3.0 + 3.0 * I,  7.0 - 4.0 * I,  1.0 + 9.0 * I},
+		{ 4.0 + 1.0 * I,  5.0 + 3.0 * I,  2.0 + 4.0 * I},
+		{ 3.0 - 1.0 * I,  8.0 + 7.0 * I,  2.0 + 1.0 * I},
+		{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I},
+	};
+	multi::array<complex, 2> out(extensions(in));
 
-//  multi::fftw::dft({fftw::none, fftw::forward}, in, out);
-//  BOOST_REQUIRE( dft_forward(in[0]) == out[0] );
+	using multi::fftw::dft_forward;
 
-//  multi::fftw::dft({false, true}, rotated(in), rotated(out), fftw::forward);
-//  BOOST_REQUIRE( dft_forward(rotated(in)[0]) == rotated(out)[0] );
+	// multi::fftw::dft({fftw::none, fftw::forward}, in, out);
+	// BOOST_REQUIRE( dft_forward(in[0]) == out[0] );
 
-//  multi::fftw::dft_forward({false, false}, rotated(in), rotated(out));
-//  BOOST_REQUIRE( in == out );
+	// multi::fftw::dft_forward({false, true}, rotated(in), rotated(out));
+	// BOOST_REQUIRE( dft_forward(rotated(in)[0]) == rotated(out)[0] );
 
-//  multi::fftw::many_dft(in.begin(), in.end(), out.begin(), fftw::forward);
-//  BOOST_REQUIRE( dft_forward(in[0]) == out[0] );
-// }
+	multi::fftw::dft_forward({false, false}, rotated(in), rotated(out));
+	BOOST_REQUIRE( in == out );
+
+	// multi::fftw::many_dft(in.begin(), in.end(), out.begin(), fftw::forward);
+	// BOOST_REQUIRE( dft_forward(in[0]) == out[0] );
+}
 
 // BOOST_AUTO_TEST_CASE(fftw_1D_const_forward) {
 //  using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
