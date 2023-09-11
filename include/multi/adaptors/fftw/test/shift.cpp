@@ -57,13 +57,14 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 	multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);  BOOST_REQUIRE(arr.size() == 19586);
 	multi::array<std::complex<double>, 1>       res(arr.extensions());                  BOOST_REQUIRE(res.size() == 19586);
 
-	fftw::plan fdft{arr, res, multi::fftw::forward};
+	auto fdft = fftw::plan::forward({true}, arr.base(), arr.layout(), res.base(), res.layout());
+	// fftw::plan fdft({true}, arr.layout(), res.layout(), multi::fftw::forward);
 
 	[&, unnamed = watch{}] {
 		auto const repeat = 40;
 		std::for_each(
 			multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto /*idx*/) {
-			fdft(arr.base(), res.base());
+			fdft.execute(arr.base(), res.base());
 			std::rotate(res.begin(), res.begin() + res.size()/2, res.end());
 		});
 	    BOOST_TEST_MESSAGE( "FFTW shift "<< unnamed.elapsed_sec()/repeat <<" sec" );  // prints  0.000882224 sec
