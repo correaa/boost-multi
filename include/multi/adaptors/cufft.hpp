@@ -268,7 +268,7 @@ public:
 
  public:
 	template<class IPtr, class OPtr>
-	void execute(IPtr idata, OPtr odata, int direction) {
+	void execute(IPtr idata, OPtr odata, int direction) {  // TODO(correaa) make const
 		if(first_howmany_ == DD) {
 			ExecZ2Z((complex_type const*)::thrust::raw_pointer_cast(idata), (complex_type*)::thrust::raw_pointer_cast(odata), direction);
 			return;
@@ -302,6 +302,14 @@ public:
 			return;
 		}
 		throw std::runtime_error{"error2"};
+	}
+	template<class IPtr, class OPtr>
+	void execute_forward(IPtr idata, OPtr odata) {  // TODO(correaa) make const
+		execute(idata, odata, cufft::forward);
+	}
+	template<class IPtr, class OPtr>
+	void execute_backward(IPtr idata, OPtr odata) {  // TODO(correaa) make const
+		execute(idata, odata, cufft::backward);
 	}
 
 	template<class IPtr, class OPtr>
