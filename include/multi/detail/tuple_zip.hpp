@@ -56,9 +56,9 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	// template<class TT0, class... TTs, class = std::enable_if_t<std::is_constructu,int*> =0>
 	// constexpr tuple(tuple<TT0, TTs...> const& other)
 
+	constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)  }, head_{std::move(head)} {}
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)  }, head_{std::move(head)} {}
-	constexpr explicit tuple(T0 head, Ts...        tail) : tail_type{          tail...}, head_{          head } {}
+	constexpr          tuple(T0 head, Ts...        tail) : tail_type{          tail...}, head_{          head } {}
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
