@@ -180,6 +180,7 @@ auto fftw_plan_dft_3d(
 }
 #endif
 
+#if 0
 template<class T, class Tpl>
 constexpr auto to_array(Tpl const& tpl) {
 	return std::apply(
@@ -187,20 +188,6 @@ constexpr auto to_array(Tpl const& tpl) {
 		tpl
 	);
 }
-
-#if 0
-#if(__cpp_if_constexpr >= 201606)
-//https://stackoverflow.com/a/35110453/225186
-template<class T> constexpr auto _constx(T&&t) -> std::remove_reference_t<T>{return t;}
-#define logic_assert(C, M)                                                                                                                                                                                                   \
-	if constexpr(noexcept(_constx(C)))                                                                                        \
-		static_assert((C), M); \
-	else                                                                                                                      \
-		assert((C) && (M));
-#else
-#define logic_assert(ConditioN, MessagE) assert(ConditioN&& MessagE);
-#endif
-#endif
 
 template<
 	typename It1, class It2,
@@ -289,32 +276,24 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign)
 	-> fftw_plan {
 	return fftw_plan_many_dft(first, last, d_first, sign, fftw::estimate);
 }
+#endif
 
-template<
-	class InPtr, class In, class OutPtr, class Out, dimensionality_type D = std::decay_t<In>::rank_v,
-	class = std::enable_if_t<D == std::decay_t<Out>::rank_v>//,
-//  class = decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/ (base(std::declval<Out&>()))))  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) interact with legacy code
->
+template<class InPtr, class In, class OutPtr, class Out, dimensionality_type D = In::rank_v>
 auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layout, OutPtr out_base, Out&& out_layout, int sign, fftw::flags /*flags*/) -> fftw_plan {
-	// static_assert(sizeof(*base(in)) == sizeof((*base(in)).real()) + sizeof((*base(in)).imag()) and sizeof(*base(in)) == sizeof(fftw_complex),
-	//               "input must have complex pod layout");
-	// static_assert(sizeof(*base(out)) == sizeof((*base(out)).real()) + sizeof((*base(in)).imag()) and sizeof(*base(out)) == sizeof(fftw_complex),
-	//               "output must have complex pod layout");
-
 	assert(in_layout.extensions() == out_layout.extensions());
 
-	auto const sizes_tuple   = in_layout.sizes();
+	auto const sizes_tuple = in_layout.sizes();
+
 	auto const istride_tuple = in_layout.strides();
 	auto const ostride_tuple = out_layout.strides();
 
 	using boost::multi::detail::get;
 	auto which_iodims = std::apply(
 		[](auto... elems) {
-			return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems) + 1>{
-  // TODO(correaa) added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
-				std::pair<bool, fftw_iodim64>{get<0>(elems), fftw_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}}
-                                                                                                                                                                                                                                                                                                                                                                                                             ...,
-				std::pair<bool, fftw_iodim64>{},
+			return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems) + 1>{  // added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
+  // clang-format off
+				std::pair{get<0>(elems), fftw_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}}..., {},  // added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
+  // clang-format on
 			};
 		},
 		boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple)
@@ -322,14 +301,13 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 	auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) { return std::get<0>(elem); });
 
 	std::array<fftw_iodim64, D> dims{};
-	auto const                  dims_end = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
-
 	std::array<fftw_iodim64, D> howmany_dims{};
+
+	auto const                  dims_end = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
 	auto const                  howmany_dims_end = std::transform(part, which_iodims.end() - 1, howmany_dims.begin(), [](auto elem) { return elem.second; });
 
 	assert(in_base);
 	assert(out_base);
-
 
 	assert((sign == -1) or (sign == +1));
 
@@ -338,9 +316,9 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 		/*const fftw_iodim64 *dims         */ dims.data(),
 		/*int                 howmany_rank */ howmany_dims_end - howmany_dims.begin(),
 		/*const fftw_iodim   *howmany_dims */ howmany_dims.data(),
-		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ (in_base ))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) FFTW is taken as non-const while it is really not touched
+		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ (in_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) FFTW is taken as non-const while it is really not touched
 		/*fftw_complex       *out          */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double>       *>*/ (out_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast)
-		sign, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT | FFTW_UNALIGNED
+		sign, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
 	);
 
 	assert(ret && "fftw lib returned a null plan, if you are using MKL check the limitations of their fftw interface");
@@ -413,7 +391,7 @@ inline void initialize_threads() {
 inline void initialize_threads() {}
 #endif
 
-enum sign : decltype(FFTW_FORWARD) { 
+enum sign : decltype(FFTW_FORWARD) {
 	backward = FFTW_BACKWARD,
 	none     = 0,
 	forward  = FFTW_FORWARD,
@@ -421,7 +399,7 @@ enum sign : decltype(FFTW_FORWARD) {
 
 static_assert(forward != none and none != backward and backward != forward);
 
-enum class direction : decltype(FFTW_FORWARD) { 
+enum class direction : decltype(FFTW_FORWARD) {
 	backward = FFTW_BACKWARD,
 	none     = 0,
 	forward  = FFTW_FORWARD,
@@ -444,7 +422,7 @@ class environment {
 	auto operator=(environment&&)      = delete;
 
 	template<class In, class Out>
-	auto make_plan_forward (std::array<bool, +In::rank_v> which, In const& in, Out&& out);
+	auto make_plan_forward(std::array<bool, +In::rank_v> which, In const& in, Out&& out);
 	template<class In, class Out>
 	auto make_plan_backward(std::array<bool, +In::rank_v> which, In const& in, Out&& out);
 
@@ -458,15 +436,14 @@ class plan {
 
  public:
 	plan(plan const&) = delete;
-	plan(plan &&)     = delete;
+	plan(plan&&)      = delete;
 	~plan()           = default;
 
 	template<class InPtr, class In, class OutPtr, class Out>
 	explicit plan(
-		std::array<bool, In::rank_v> which, 
-		InPtr in_base, In in_layout, 
-		OutPtr out_base, Out out_layout
-		, sign ss
+		std::array<bool, In::rank_v> which,
+		InPtr in_base, In in_layout,
+		OutPtr out_base, Out out_layout, sign ss
 	) : impl_{fftw_plan_dft(which, in_base, in_layout, out_base, out_layout, ss, fftw::estimate), &fftw_destroy_plan} {
 		assert(impl_);
 	}
@@ -482,16 +459,16 @@ class plan {
 
 	template<class I, class O>
 	void execute(I* in, O* out) const {
-		static_assert(sizeof(in ->imag()) == sizeof(double));
+		static_assert(sizeof(in->imag()) == sizeof(double));
 		static_assert(sizeof(out->imag()) == sizeof(double));
 
-		static_assert(sizeof(*in ) == sizeof(fftw_complex));
+		static_assert(sizeof(*in) == sizeof(fftw_complex));
 		static_assert(sizeof(*out) == sizeof(fftw_complex));
 
 		::fftw_execute_dft(
 			const_cast<fftw_plan>(impl_.get()),  // NOLINT(cppcoreguidelines-pro-type-const-cast) https://www.fftw.org/fftw3_doc/Thread-safety.html
-			const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(in )),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
-			                          reinterpret_cast<fftw_complex      *>(out)    // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
+			const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(in)),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
+			reinterpret_cast<fftw_complex*>(out)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
 		);
 	}
 
@@ -543,8 +520,8 @@ class plan {
 };
 
 template<class In, class Out>
-auto environment::make_plan_forward (std::array<bool, +In::rank_v> which, In const& in, Out&& out) {
-	return plan::forward (which, in, std::forward<Out>(out));
+auto environment::make_plan_forward(std::array<bool, +In::rank_v> which, In const& in, Out&& out) {
+	return plan::forward(which, in, std::forward<Out>(out));
 }
 
 template<class In, class Out>
@@ -568,8 +545,9 @@ using std::decay_t;
 
 template<class In, class Out, std::size_t D = In::rank_v>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, sign dir)
-->decltype(plan{which, in.base(), in.layout(), out.base(), out.layout(), dir}.execute(in.base(), out.base()), std::forward<Out>(out)) {
-	return plan{which, in.base(), in.layout(), out.base(), out.layout(), dir}.execute(in.base(), out.base()), std::forward<Out>(out); }
+	-> decltype(plan{which, in.base(), in.layout(), out.base(), out.layout(), dir}.execute(in.base(), out.base()), std::forward<Out>(out)) {
+	return plan{which, in.base(), in.layout(), out.base(), out.layout(), dir}.execute(in.base(), out.base()), std::forward<Out>(out);
+}
 
 // template<typename T, dimensionality_type D, class... Args>
 // auto rotate(multi::array<T, D, Args...>& inout) -> decltype(auto) {
@@ -620,17 +598,20 @@ auto dft(std::array<bool, +D> which, In&& in, sign dir)
 
 template<class A, class O, multi::dimensionality_type D = A::rank_v>
 auto dft_forward(std::array<bool, +D> which, A const& in, O&& out)
-->decltype(fftw::dft(which, in, std::forward<O>(out), fftw::forward)) {
-	return fftw::dft(which, in, std::forward<O>(out), fftw::forward); }
+	-> decltype(fftw::dft(which, in, std::forward<O>(out), fftw::forward)) {
+	return fftw::dft(which, in, std::forward<O>(out), fftw::forward);
+}
 
 template<class A, class O, multi::dimensionality_type D = A::rank::value>
 auto dft_backward(std::array<bool, +D> which, A const& in, O&& out)
-->decltype(fftw::dft(which, in, std::forward<O>(out), fftw::backward)) {
-	return fftw::dft(which, in, std::forward<O>(out), fftw::backward); }
+	-> decltype(fftw::dft(which, in, std::forward<O>(out), fftw::backward)) {
+	return fftw::dft(which, in, std::forward<O>(out), fftw::backward);
+}
 
 template<typename... A> auto dft_backward(A&&... args)
-->decltype(dft(std::forward<A>(args)..., fftw::backward)) {
-	return dft(std::forward<A>(args)..., fftw::backward); }
+	-> decltype(dft(std::forward<A>(args)..., fftw::backward)) {
+	return dft(std::forward<A>(args)..., fftw::backward);
+}
 
 #if 0
 template<typename In, class R=typename std::decay_t<In>::decay_type>
