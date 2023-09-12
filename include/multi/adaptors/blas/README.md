@@ -1,9 +1,7 @@
 <!--
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
-# [Boost.]Multi BLAS Adaptor
-
-(not an official Boost library)
+# Multi BLAS Adaptor
 
 _© Alfredo A. Correa, 2018-2023_
 
@@ -14,7 +12,7 @@ The BLAS Adaptor provides an interface for BLAS and BLAS-like libraries (namely 
 
 ## Numeric Arrays, Conjugation Real and Imaginary parts
 
-This functions produce views (not copies) related to conjugation, real and imaginary parts.
+These functions produce views (not copies) related to conjugation, real and imaginary parts.
 
 ```cpp
 	using complex = std::complex<double>; 
@@ -47,7 +45,6 @@ This functions produce views (not copies) related to conjugation, real and imagi
 	assert( blas::real_doubled(B) == B_real_doubled );
 ```
 
-Usage:
 ```cpp
 	multi::array<double, 2> const a_real = {
 		{ 1.0, 3.0, 1.0},
