@@ -157,8 +157,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
  
  protected:
-	using derived = subarray<T, D, ElementPtr, Layout>;
-	HD constexpr explicit array_types(std::nullptr_t nil) : Layout{}, base_{nil} {}
+	// using derived = subarray<T, D, ElementPtr, Layout>;
+	// HD constexpr explicit array_types(std::nullptr_t nil) : Layout{}, base_{nil} {}
 
  public:
 	array_types() = default;
@@ -227,8 +227,8 @@ public:
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
-	HD constexpr subarray_ptr(std::nullptr_t nil) : ref_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
-	HD constexpr subarray_ptr() : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
+	// HD constexpr subarray_ptr(std::nullptr_t nil) : ref_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
+	/*HD*/ constexpr subarray_ptr() = default;  // : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
 
 	template<class, class> friend struct subarray_ptr;
 
@@ -336,8 +336,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;
 
-	HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}  //, stride_{1}
-	HD constexpr array_iterator() : array_iterator{nullptr} {}
+	// HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}  //, stride_{1}
+	/*HD*/ constexpr array_iterator() = default;  // : array_iterator{nullptr} {}
 
 	template<class, dimensionality_type, class> friend struct array_iterator;
 

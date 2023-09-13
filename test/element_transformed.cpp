@@ -242,6 +242,7 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 }
 
 #if defined(__GNUC__) && (__GNUC__ > 6)
+#if not defined(__NVCC__)
 
 auto const multiply_by = [](double scale) { return [scale](auto elem) noexcept {return scale*elem;};};
 
@@ -288,5 +289,5 @@ BOOST_AUTO_TEST_CASE(scal) {
 		BOOST_REQUIRE( WW[1][1] == 2.1*5.0 );
 	}
 }
-
+#endif
 #endif

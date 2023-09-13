@@ -144,13 +144,13 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 		BOOST_REQUIRE( rowP0 != rowP2 );
 		BOOST_REQUIRE( not(rowP0 == rowP2) );
 
-		rowP2 = decltype(rowP2){nullptr};
-		BOOST_REQUIRE( not rowP2 );
+		// rowP2 = decltype(rowP2){nullptr};
+		// BOOST_REQUIRE( not rowP2 );
 
-		auto rowP3 = std::exchange(rowP, nullptr);
-		BOOST_REQUIRE( rowP3 == &arr[2] );
-		BOOST_REQUIRE( rowP == nullptr );
-		BOOST_REQUIRE( not rowP );
+		// auto rowP3 = std::exchange(rowP, nullptr);
+		// BOOST_REQUIRE( rowP3 == &arr[2] );
+		// BOOST_REQUIRE( rowP == nullptr );
+		// BOOST_REQUIRE( not rowP );
 	}
 	{
 		auto rowP = &arr();
@@ -162,12 +162,12 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 
 		BOOST_REQUIRE( rowP == rowP2 );
 
-		rowP2 = decltype(rowP2){nullptr};
-		BOOST_REQUIRE( not rowP2 );
+		// rowP2 = decltype(rowP2){nullptr};
+		// BOOST_REQUIRE( not rowP2 );
 
-		auto rowP3 = std::exchange(rowP, nullptr);
-		BOOST_REQUIRE( rowP3 == &arr() );
-		BOOST_REQUIRE( rowP == nullptr );
-		BOOST_REQUIRE( not rowP );
+		// auto rowP3 = std::exchange(rowP, nullptr);
+		// BOOST_REQUIRE( rowP3 == &arr() );
+		// BOOST_REQUIRE( rowP == nullptr );
+		// BOOST_REQUIRE( not rowP );
 	}
 }
