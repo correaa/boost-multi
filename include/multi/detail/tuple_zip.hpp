@@ -5,10 +5,10 @@
 #define MULTI_DETAIL_TUPLE_ZIP_HPP
 #pragma once
 
-#include<cassert>
-#include<utility>
+#include <cassert>
+#include <utility>
 
-#include<tuple>  // for deprecated functions
+#include <tuple>  // for deprecated functions
 
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
@@ -17,97 +17,98 @@ template<class... Ts> class tuple;
 
 template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
  public:
-	constexpr tuple() = default;
+	constexpr tuple()             = default;
 	constexpr tuple(tuple const&) = default;
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
-	constexpr auto operator==(tuple const& /*other*/) const -> bool {return true ;}
-	constexpr auto operator!=(tuple const& /*other*/) const -> bool {return false;}
+	constexpr auto operator==(tuple const& /*other*/) const -> bool { return true; }
+	constexpr auto operator!=(tuple const& /*other*/) const -> bool { return false; }
 
-	constexpr auto operator< (tuple const& /*other*/) const {return false;}
-	constexpr auto operator> (tuple const& /*other*/) const {return false;}
+	constexpr auto operator<(tuple const& /*other*/) const { return false; }
+	constexpr auto operator>(tuple const& /*other*/) const { return false; }
 };
 
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference
 	using head_type = T0;
 	using tail_type = tuple<Ts...>;
-//  tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
 
  public:
-	constexpr auto head() const& -> T0 const&      { return           head_ ; }
-	constexpr auto head()     && -> decltype(auto) { return std::move(head_); }
-	constexpr auto head()      & -> T0      &      { return           head_ ; }
+	constexpr auto head() const& -> T0 const& { return head_; }
+	constexpr auto head() && -> decltype(auto) { return std::move(head_); }
+	constexpr auto head() & -> T0& { return head_; }
 
 	constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
-	constexpr auto tail()     && -> decltype(auto)   { return static_cast<tail_type     &&>(*this); }
-	constexpr auto tail()      & -> tail_type      & { return static_cast<tail_type      &>(*this); }
+	constexpr auto tail() && -> decltype(auto) { return static_cast<tail_type&&>(*this); }
+	constexpr auto tail() & -> tail_type& { return static_cast<tail_type&>(*this); }
 
-	constexpr tuple() = default;
+	constexpr tuple()             = default;
 	constexpr tuple(tuple const&) = default;
 
-	// template<class... TTs, class = std::enable_if<
-	//  std::is_constructible_v<head_type, decltype(std::declval<tuple const&>().head())> and
-	//  std::is_constructible_v<tail_type, decltype(std::declval<tuple const&>().tail())>
-	// >>
-	// constexpr tuple(tuple<TTs...> const& other) : head_{other.head()}, tuple<Ts...>{other.tail()} {}
-
-	// template<class TT0, class... TTs, class = std::enable_if_t<std::is_constructu,int*> =0>
-	// constexpr tuple(tuple<TT0, TTs...> const& other)
-
-	constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)  }, head_{std::move(head)} {}
+	constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)}, head_{std::move(head)} {}
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 head, Ts...        tail) : tail_type{          tail...}, head_{          head } {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
+	constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
 	template<class... TTs>
 	constexpr auto operator=(tuple<TTs...> const& other)  // NOLINT(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator) signature used for SFINAE
-	->decltype(std::declval<head_type&>() = other.head(), std::declval<tail_type&>() = other.tail(), std::declval<tuple&>()) {
+		-> decltype(std::declval<head_type&>() = other.head(), std::declval<tail_type&>() = other.tail(), std::declval<tuple&>()) {
 		head_ = other.head(), tail() = other.tail();
 		return *this;
 	}
 
-	constexpr auto operator==(tuple const& other) const -> bool {return head_ == other.head_ and tail() == other.tail();}
-	constexpr auto operator!=(tuple const& other) const -> bool {return head_ != other.head_ or  tail() != other.tail();}
+	constexpr auto operator==(tuple const& other) const -> bool { return head_ == other.head_ and tail() == other.tail(); }
+	constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ or tail() != other.tail(); }
 
-	constexpr auto operator< (tuple const& other) const {
-		if(head_ < other.head_) {return true ;}
-		if(other.head_ < head_) {return false;}
+	constexpr auto operator<(tuple const& other) const {
+		if(head_ < other.head_) {
+			return true;
+		}
+		if(other.head_ < head_) {
+			return false;
+		}
 		return tail() < other.tail();
 	}
-	constexpr auto operator> (tuple const& other) const {
-		if(head_ > other.head_) {return true ;}
-		if(other.head_ > head_) {return false;}
+	constexpr auto operator>(tuple const& other) const {
+		if(head_ > other.head_) {
+			return true;
+		}
+		if(other.head_ > head_) {
+			return false;
+		}
 		return tail() > other.tail();
 	}
 
  private:
-	template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N-1>> {};
+	template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N - 1>> {};
 
 	template<class Index>
 	constexpr auto at_aux(priority<0> /*prio*/, Index idx) const
-	->decltype(ht_tuple(std::declval<head_type const&>(), std::declval<tail_type const&>()[idx])) {
-		return ht_tuple(head()                          , tail()[idx]                           );}
+		-> decltype(ht_tuple(std::declval<head_type const&>(), std::declval<tail_type const&>()[idx])) {
+		return ht_tuple(head(), tail()[idx]);
+	}
 
 	template<class Index>
 	constexpr auto at_aux(priority<1> /*prio*/, Index idx) const
-	->decltype(ht_tuple(std::declval<head_type const&>()[idx], std::declval<tail_type const&>())) {
-		return ht_tuple(head()                          [idx], tail()                          ); }
+		-> decltype(ht_tuple(std::declval<head_type const&>()[idx], std::declval<tail_type const&>())) {
+		return ht_tuple(head()[idx], tail());
+	}
 
  public:
 	template<class Index>
 	constexpr auto operator[](Index idx) const
-	->decltype(std::declval<tuple<T0, Ts...> const&>().at_aux(priority<1>{}, idx)){
-		return this->                                  at_aux(priority<1>{}, idx);}
+		-> decltype(std::declval<tuple<T0, Ts...> const&>().at_aux(priority<1>{}, idx)) {
+		return this->at_aux(priority<1>{}, idx);
+	}
 
 	template<std::size_t N>
 	constexpr auto get() const& -> auto const& {  // NOLINT(readability-identifier-length) std naming
 		if constexpr(N == 0) {
 			return head();
 		} else {
-			return tail().template get<N-1>();
+			return tail().template get<N - 1>();
 		}
 	}
 
@@ -116,7 +117,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		if constexpr(N == 0) {
 			return head();
 		} else {
-			return tail().template get<N-1>();
+			return tail().template get<N - 1>();
 		}
 	}
 
@@ -125,42 +126,40 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		if constexpr(N == 0) {
 			return std::move(*this).head();
 		} else {
-			return std::move(*this).tail().template get<N-1>();
+			return std::move(*this).tail().template get<N - 1>();
 		}
 	}
-
-
 };
 
 #if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
 //  TODO(correaa) : this class can be collapsed with the general case with [[no_unique_address]] in C++20
 template<class T0> class tuple<T0> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	T0 head_;
+	T0      head_;
 	tuple<> tail_;
 
  public:
-	constexpr auto head() const& -> T0 const& {return           head_ ;}
-	constexpr auto head()     && -> T0     && {return std::move(head_);}
-	constexpr auto head()      & -> T0      & {return           head_ ;}
+	constexpr auto head() const& -> T0 const& { return head_; }
+	constexpr auto head() && -> T0&& { return std::move(head_); }
+	constexpr auto head() & -> T0& { return head_; }
 
-	constexpr auto tail() const& -> tuple<> const& {return           tail_ ;}
-	constexpr auto tail()     && -> tuple<>     && {return std::move(tail_);}
-	constexpr auto tail()      & -> tuple<>      & {return           tail_ ;}
+	constexpr auto tail() const& -> tuple<> const& { return tail_; }
+	constexpr auto tail() && -> tuple<>&& { return std::move(tail_); }
+	constexpr auto tail() & -> tuple<>& { return tail_; }
 
-	constexpr tuple() = default;
+	constexpr tuple()             = default;
 	constexpr tuple(tuple const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 t0, tuple<> sub) : head_{std::move(t0)}, tail_{sub} {}
-	constexpr explicit tuple(T0 t0)                  : head_{std::move(t0)}, tail_{}    {}
+	constexpr tuple(T0 t0, tuple<> sub) : head_{std::move(t0)}, tail_{sub} {}
+	constexpr explicit tuple(T0 t0) : head_{std::move(t0)}, tail_{} {}
 
 	constexpr auto operator=(tuple const& other) -> tuple& = default;
 
-	constexpr auto operator==(tuple const& other) const {return head_ == other.head_;}
-	constexpr auto operator!=(tuple const& other) const {return head_ != other.head_;}
+	constexpr auto operator==(tuple const& other) const { return head_ == other.head_; }
+	constexpr auto operator!=(tuple const& other) const { return head_ != other.head_; }
 
-	constexpr auto operator< (tuple const& other) const {return head_ < other.head_;}
-	constexpr auto operator> (tuple const& other) const {return head_ > other.head_;}
+	constexpr auto operator<(tuple const& other) const { return head_ < other.head_; }
+	constexpr auto operator>(tuple const& other) const { return head_ > other.head_; }
 };
 #endif
 
@@ -189,40 +188,40 @@ template<class T0, class Tuple>
 using tuple_prepend_t = typename tuple_prepend<T0, Tuple>::type;
 
 template<class T0, class... Ts>
-constexpr auto head(tuple<T0, Ts...> const& t) ->  decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+constexpr auto head(tuple<T0, Ts...> const& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 	return t.head();
 }
 
 template<class T0, class... Ts>
-constexpr auto head(tuple<T0, Ts...> && t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+constexpr auto head(tuple<T0, Ts...>&& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 	return std::move(t.head());
 }
 
 template<class T0, class... Ts>
-constexpr auto head(tuple<T0, Ts...> & t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+constexpr auto head(tuple<T0, Ts...>& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 	return t.head();
 }
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(t.tail()) {return t.tail();}  // NOLINT(readability-identifier-length) std naming
+constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...>     && t) -> decltype(std::move(t).tail()) {return std::move(t).tail();}  // NOLINT(readability-identifier-length) std naming
+constexpr auto tail(tuple<T0, Ts...>&& t) -> decltype(std::move(t).tail()) { return std::move(t).tail(); }  // NOLINT(readability-identifier-length) std naming
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(t.tail()) {return t.tail();}  // NOLINT(readability-identifier-length) std naming
+constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
-#if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = implicit_return_from_non_void_function
-	#else
-		#pragma    diagnostic push
-		#pragma    diag_suppress = implicit_return_from_non_void_function
-	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic push
-	#pragma    diag_suppress = implicit_return_from_non_void_function
+#if defined __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function
+#else
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
+#endif
+#elif defined      __NVCOMPILER
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
 #endif
 #if not defined(_MSC_VER)
 #pragma GCC diagnostic push
@@ -233,17 +232,17 @@ constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readab
 	if constexpr(N == 0) {
 		return t.head();
 	} else {
-		return get<N-1>(t.tail());
+		return get<N - 1>(t.tail());
 	}
 }
 #if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic pop
-	#else
-		#pragma    diagnostic pop
-	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic pop
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diagnostic pop
+#else
+#pragma diagnostic pop
+#endif
+#elif defined      __NVCOMPILER
+#pragma diagnostic pop
 #endif
 
 template<std::size_t N, class T0, class... Ts>
@@ -251,7 +250,7 @@ constexpr auto get(tuple<T0, Ts...>& t) -> auto& {  // NOLINT(readability-identi
 	if constexpr(N == 0) {
 		return t.head();
 	} else {
-		return get<N-1>(t.tail());
+		return get<N - 1>(t.tail());
 	}
 }
 
@@ -260,7 +259,7 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-iden
 	if constexpr(N == 0) {
 		return std::move(t).head();
 	} else {
-		return get<N-1>(std::move(t.tail()));
+		return get<N - 1>(std::move(t.tail()));
 	}
 }
 #if not defined(_MSC_VER)
@@ -289,50 +288,53 @@ struct tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {
 	using type = typename tuple_element<N - 1, boost::multi::detail::tuple<Ts...>>::type;
 };
 
-//using boost::multi::detail::get;
+// using boost::multi::detail::get;
 
 template<std::size_t N, class... Ts>
 constexpr auto get(boost::multi::detail::tuple<Ts...> const& t)  // NOLINT(readability-identifier-length) std naming
-->decltype(boost::multi::detail::get<N>(t)) {
- return boost::multi::detail::get<N>(t); }
+	-> decltype(boost::multi::detail::get<N>(t)) {
+	return boost::multi::detail::get<N>(t);
+}
 
 template<std::size_t N, class... Ts>
-constexpr auto get(boost::multi::detail::tuple<Ts...> & t)  // NOLINT(readability-identifier-length) std naming
-->decltype(boost::multi::detail::get<N>(t)) {
- return boost::multi::detail::get<N>(t); }
+constexpr auto get(boost::multi::detail::tuple<Ts...>& t)  // NOLINT(readability-identifier-length) std naming
+	-> decltype(boost::multi::detail::get<N>(t)) {
+	return boost::multi::detail::get<N>(t);
+}
 
 template<std::size_t N, class... Ts>
-constexpr auto get(boost::multi::detail::tuple<Ts...> && t)  // NOLINT(readability-identifier-length) std naming
-->decltype(boost::multi::detail::get<N>(std::move(t))) {
- return boost::multi::detail::get<N>(std::move(t)); }
+constexpr auto get(boost::multi::detail::tuple<Ts...>&& t)  // NOLINT(readability-identifier-length) std naming
+	-> decltype(boost::multi::detail::get<N>(std::move(t))) {
+	return boost::multi::detail::get<N>(std::move(t));
+}
 
-template <class F, class Tuple, std::size_t... I>
-constexpr auto apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...>/*012*/) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+template<class F, class Tuple, std::size_t... I>
+constexpr auto apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 	(void)t;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
-    return std::forward<F>(f)(boost::multi::detail::get<I>(std::forward<Tuple>(t))...);
+	return std::forward<F>(f)(boost::multi::detail::get<I>(std::forward<Tuple>(t))...);
 }
 
-template <class F, class... Ts>
+template<class F, class... Ts>
 constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...> const& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-    return apply_timpl(
-        std::forward<F>(f), t,
-        std::make_index_sequence<sizeof...(Ts)>{}
+	return apply_timpl(
+		std::forward<F>(f), t,
+		std::make_index_sequence<sizeof...(Ts)>{}
 	);
 }
 
-template <class F, class... Ts>
+template<class F, class... Ts>
 constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...>& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-    return apply_timpl(
-        std::forward<F>(f), t,
-        std::make_index_sequence<sizeof...(Ts)>{}
+	return apply_timpl(
+		std::forward<F>(f), t,
+		std::make_index_sequence<sizeof...(Ts)>{}
 	);
 }
 
-template <class F, class... Ts>
+template<class F, class... Ts>
 constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...>&& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-    return apply_timpl(
-        std::forward<F>(f), std::move(t),
-        std::make_index_sequence<sizeof...(Ts)>{}
+	return apply_timpl(
+		std::forward<F>(f), std::move(t),
+		std::make_index_sequence<sizeof...(Ts)>{}
 	);
 }
 
