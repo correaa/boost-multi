@@ -227,7 +227,7 @@ public:
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
-	// HD constexpr subarray_ptr(std::nullptr_t nil) : ref_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
+	HD constexpr subarray_ptr(std::nullptr_t nil) : ref_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
 	/*HD*/ constexpr subarray_ptr() = default;  // : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
 
 	template<class, class> friend struct subarray_ptr;
@@ -336,7 +336,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;
 
-	// HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}  //, stride_{1}
+	HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}  //, stride_{1}
 	/*HD*/ constexpr array_iterator() = default;  // : array_iterator{nullptr} {}
 
 	template<class, dimensionality_type, class> friend struct array_iterator;
