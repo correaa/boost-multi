@@ -105,7 +105,7 @@ struct transform_ptr {
 
 	constexpr auto operator-(transform_ptr const& other) const -> difference_type {return p_ - other.p_;}
 
-	constexpr auto operator[](difference_type n) const -> reference {return *((*this) + n);}
+	constexpr auto operator[](difference_type n) const -> reference {return *((*this) + n);}  // NOLINT(readability-const-return-type) transformed_view might return by const value.
 
 	constexpr auto operator==(transform_ptr const& other) const -> bool {return p_ == other.p_;}
 	constexpr auto operator!=(transform_ptr const& other) const -> bool {return p_ != other.p_;}
