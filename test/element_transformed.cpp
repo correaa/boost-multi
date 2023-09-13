@@ -245,10 +245,10 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 
 auto const multiply_by = [](double scale) { return [scale](auto elem) noexcept {return scale*elem;};};
 
-template<class Matrix, class = decltype(double{}*typename Matrix::element_type{})>
+template<class Matrix>
 auto operator*(double scale, Matrix const& ma) 
-//->decltype(ma.element_transformed(multiply_by(scale))) {
-{   return ma.element_transformed(multiply_by(scale)); }
+->decltype(ma.element_transformed(multiply_by(scale))) {  // never implement an unconstrained free operator, hence this decltype(...)
+	return ma.element_transformed(multiply_by(scale)); }
 
 BOOST_AUTO_TEST_CASE(scal) {
 	multi::array<double, 1> const vv = {1.0, 2.0, 3.0};
