@@ -870,8 +870,8 @@ auto hermitized(Array2D const& arr) {
 int main() {
     using namespace std::complex_literals;
 	multi::array A = {
-		{ 1. + 2.i,  3. +  4.i},
-		{ 8. + 9.i, 10. + 11.i}
+		{ 1.0 + 2.0i,  3.0 +  4.0i},
+		{ 8.0 + 9.0i, 10.0 + 11.0i}
 	};
 
 	auto const& Ah = hermitized(A);
@@ -895,6 +895,22 @@ In this example the original arrays is transformed into a transposed array with 
 	assert( B[1][0] == A[0][1] * 2 );
 ```
 ([live](https://godbolt.org/z/b7E56Mjc8))
+
+Since `elements_transformed` is view (reference) to the original data, it is important to understand the semantics of evaluation an possible allocations associated with it.
+As mentioned in other sections using `auto` and/or `+` appropriately can lead to simple and efficient expressions.
+
+| Construction    | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes |
+| -------- | ------- | ------- | ------- | ------- |
+| `multi::array<T, 2> [const] B = A.element_transformed(fun);` | Yes        | No  | Yes | Implicit conversion to `T` if result is different, dimensions must match   |
+| `multi::array<T, 2> [const] B{A.element_transformed(fun)};` | Yes        | No  | Yes | Explicit conversion to `T` if result is different, dimensions must match   |
+| `auto [const] B = + A.elements_transformed(fun);`           | Yes         | No  | Yes | Types and dimension are deduced, result is contiguous, preferred |
+| `auto [const] B = A.element_transformed(fun);`               | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`, usually `const`, not recommended   |
+| `auto[&&\|const&] B = A.elements_transformed(fun);`           | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`, usually `const&`, preferred way  |
+
+| Assigment    | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes |
+| -------- | ------- | ------- | ------- | ------- |
+| `B = A.elements_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, if can be a writable subarray, preferred  |
+| `B = + A.elements_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | not recommended |
 
 # Interoperability with other software
 
