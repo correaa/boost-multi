@@ -281,13 +281,11 @@ struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 };
 
 template<std::size_t N, class T0, class... Ts>
-struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {
+struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
 	using type = typename tuple_element<N - 1, boost::multi::detail::tuple<Ts...>>::type;
 };
 
-// using boost::multi::detail::get;
-
-// NOLINTEND(cert-dcl58-cpp) define stuff in STD  // TODO(correaa) this is bad
+// NOLINTBEGIN(cert-dcl58-cpp) define stuff in STD  // TODO(correaa) this is bad
 namespace std {
 
 template<std::size_t N, class... Ts>

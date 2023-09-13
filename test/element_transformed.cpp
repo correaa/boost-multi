@@ -241,12 +241,14 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 //  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
 }
 
+#if defined(__GNUC__) && (__GNUC__ > 6)
+
 auto const multiply_by = [](double scale) { return [scale](auto elem) noexcept {return scale*elem;};};
 
 template<class Matrix, class = decltype(double{}*typename Matrix::element_type{})>
 auto operator*(double scale, Matrix const& ma) 
-->decltype(ma.element_transformed(multiply_by(scale))) {
-	return ma.element_transformed(multiply_by(scale)); }
+//->decltype(ma.element_transformed(multiply_by(scale))) {
+{   return ma.element_transformed(multiply_by(scale)); }
 
 BOOST_AUTO_TEST_CASE(scal) {
 	multi::array<double, 1> const vv = {1.0, 2.0, 3.0};
@@ -286,3 +288,5 @@ BOOST_AUTO_TEST_CASE(scal) {
 		BOOST_REQUIRE( WW[1][1] == 2.1*5.0 );
 	}
 }
+
+#endif
