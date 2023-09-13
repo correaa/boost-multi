@@ -58,7 +58,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
 	constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)  }, head_{std::move(head)} {}
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 head, Ts...        tail) : tail_type{          tail...}, head_{          head } {}
+	constexpr          tuple(T0 head, Ts...        tail) : tail_type{          tail...}, head_{          head } {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
