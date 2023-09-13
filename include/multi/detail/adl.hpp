@@ -264,7 +264,7 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 }
 
 constexpr class adl_uninitialized_copy_t {
-	template<class InIt, class FwdIt, class=decltype(std::addressof(*std::declval<FwdIt>()))>  // sfinae friendy std::uninitialized_copy
+	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
 	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const DECLRETURN(       std::uninitialized_copy(first, last, d_first))
 // #if defined(__NVCC__)
 //  template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
