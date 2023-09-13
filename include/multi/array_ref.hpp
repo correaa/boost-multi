@@ -564,7 +564,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 
 	constexpr auto current() const -> pointer {return base_ + std::apply(l_, ns_);}
 	HD constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
-	HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
+	HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}  // NOLINT(readability-const-return-type) transformed_elements may return const values
 	HD constexpr auto operator[](difference_type const& n) const -> reference {
 		auto const nn = std::apply(xs_, ns_);
 		return base_[std::apply(l_, xs_.from_linear(nn + n))];
@@ -1981,7 +1981,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
  private:
 	constexpr auto strided_aux(difference_type diff) const -> subarray {
-		typename types::layout_t const new_layout = {this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
+		auto const new_layout = typename types::layout_t{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
 
@@ -2688,6 +2688,15 @@ constexpr auto addressof(TT(&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-a
 
 template<class T, dimensionality_type D, typename Ptr = T*>
 using array_cptr = array_ptr<T, D,  typename std::pointer_traits<Ptr>::template rebind<T const>>;
+
+template<dimensionality_type D, class Ptr,
+	class Extensions = multi::extensions_t<D>,
+	class Strides = typename multi::layout_t<D>::strides_type
+>
+constexpr auto make_subarray(Ptr base, multi::extensions_t<D> exts, Strides ss) {
+	using ret_type = multi::subarray<typename std::pointer_traits<Ptr>::element_type, D, Ptr>;
+	return ret_type(typename ret_type::layout_type{exts, ss}, base);
+}
 
 template<dimensionality_type D, class P>
 constexpr auto make_array_ref(P data, multi::extensions_t<D> extensions) {
