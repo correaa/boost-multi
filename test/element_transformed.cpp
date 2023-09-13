@@ -240,3 +240,49 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 	BOOST_TEST(  const_indirect_v[1][2] ==  11111.0 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) testing legacy type
 //  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
 }
+
+auto const multiply_by = [](double scale) { return [scale](auto elem) noexcept {return scale*elem;};};
+
+template<class Matrix, class = decltype(double{}*typename Matrix::element_type{})>
+auto operator*(double scale, Matrix const& ma) 
+->decltype(ma.element_transformed(multiply_by(scale))) {
+	return ma.element_transformed(multiply_by(scale)); }
+
+BOOST_AUTO_TEST_CASE(scal) {
+	multi::array<double, 1> const vv = {1.0, 2.0, 3.0};
+	{
+		multi::array<double, 1> const ww = 2.1*vv;  // allocation
+		BOOST_REQUIRE( ww[1] == 2.1*2.0 );
+	}
+	{
+		auto const ww = + 2.1*vv;  // allocation
+		BOOST_REQUIRE( ww[1] == 2.1*2.0 );
+	}
+	{
+		auto const ww = 2.1*vv;  // no allocation but might dangle (w is a reference effectively) don't do it (add & to signal reference)
+		BOOST_REQUIRE( ww[1] == 2.1*2.0 );
+	}
+	{
+		multi::array<double, 1> ww(3);  // allocation (and for generic types it may do useless initialization), can't be const
+		ww = 2.1*vv;  // no allocation here!
+		BOOST_REQUIRE( ww[1] == 2.1*2.0 );
+	}
+	multi::array<double, 2> const VV = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
+	{
+		multi::array<double, 2> const WW = 2.1*VV;  // allocation (no useless initialization)
+		BOOST_REQUIRE( WW[1][1] == 2.1*5.0 );
+	}
+	{
+		auto const WW = + 2.1*VV;  // allocation (no useless initialization)
+		BOOST_REQUIRE( WW[1][1] == 2.1*5.0 );
+	}
+	{
+		auto const WW = 2.1*VV;  // no allocation but might dangle (w is a reference effectively) don't do it (add & to signal reference)
+		BOOST_REQUIRE( WW[1][1] == 2.1*5.0 );  // evaluation here
+	}
+	{
+		multi::array<double, 2> WW(VV.extensions());  // allocation (and for generic types it may do useless initialization), can't be const
+		WW = 2.1*VV;  // no allocation here!
+		BOOST_REQUIRE( WW[1][1] == 2.1*5.0 );
+	}
+}
