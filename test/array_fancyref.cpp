@@ -30,6 +30,7 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	constexpr auto operator+(difference_type /*unused*/) const noexcept -> ptr {return *this;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
+	constexpr decltype(auto) operator[](difference_type /*unused*/) const {return operator*();}
 
 	auto operator+=(difference_type /*difference*/) noexcept -> ptr& {return *this;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
