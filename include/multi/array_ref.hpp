@@ -161,7 +161,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// HD constexpr explicit array_types(std::nullptr_t nil) : Layout{}, base_{nil} {}
 
  public:
-	array_types() = default;
+	array_types() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) some base_ types cannot be initialized
 
 	HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
 	: Layout{lyt}, base_{data} {}
