@@ -156,7 +156,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
  
- public:
 	array_types() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) some base_ types cannot be initialized
 
 	HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
