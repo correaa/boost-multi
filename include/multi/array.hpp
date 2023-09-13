@@ -256,7 +256,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class TT, class... Args,
 		std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> =0,
 	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
-		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+		class = decltype(adl_uninitialized_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	explicit static_array(multi::subarray<TT, D, Args...> const& other)
 	: static_array(other, allocator_type{}) {}
