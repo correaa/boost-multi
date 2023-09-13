@@ -269,26 +269,26 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-iden
 }  // end namespace detail
 }  // end namespace boost::multi
 
-// NOLINTBEGIN(cert-dcl58-cpp) define stuff in STD
-namespace std {
-
 template<class... Ts>
-struct tuple_size<boost::multi::detail::tuple<Ts...>> {
+struct std::tuple_size<boost::multi::detail::tuple<Ts...>> {
 	// cppcheck-suppress unusedStructMember
 	static constexpr std::size_t value = sizeof...(Ts);
 };
 
 template<class T0, class... Ts>
-struct tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {
+struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {
 	using type = T0;
 };
 
 template<std::size_t N, class T0, class... Ts>
-struct tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {
+struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {
 	using type = typename tuple_element<N - 1, boost::multi::detail::tuple<Ts...>>::type;
 };
 
 // using boost::multi::detail::get;
+
+// NOLINTEND(cert-dcl58-cpp) define stuff in STD  // TODO(correaa) this is bad
+namespace std {
 
 template<std::size_t N, class... Ts>
 constexpr auto get(boost::multi::detail::tuple<Ts...> const& t)  // NOLINT(readability-identifier-length) std naming
@@ -309,14 +309,14 @@ constexpr auto get(boost::multi::detail::tuple<Ts...>&& t)  // NOLINT(readabilit
 }
 
 template<class F, class Tuple, std::size_t... I>
-constexpr auto apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+constexpr auto std_apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 	(void)t;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
 	return std::forward<F>(f)(boost::multi::detail::get<I>(std::forward<Tuple>(t))...);
 }
 
 template<class F, class... Ts>
 constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...> const& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-	return apply_timpl(
+	return std_apply_timpl(
 		std::forward<F>(f), t,
 		std::make_index_sequence<sizeof...(Ts)>{}
 	);
@@ -324,7 +324,7 @@ constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...> const& t) -> decl
 
 template<class F, class... Ts>
 constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...>& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-	return apply_timpl(
+	return std_apply_timpl(
 		std::forward<F>(f), t,
 		std::make_index_sequence<sizeof...(Ts)>{}
 	);
@@ -332,7 +332,7 @@ constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...>& t) -> decltype(a
 
 template<class F, class... Ts>
 constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...>&& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-	return apply_timpl(
+	return std_apply_timpl(
 		std::forward<F>(f), std::move(t),
 		std::make_index_sequence<sizeof...(Ts)>{}
 	);
