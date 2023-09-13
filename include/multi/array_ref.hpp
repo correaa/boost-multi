@@ -156,10 +156,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
  
- protected:
-	// using derived = subarray<T, D, ElementPtr, Layout>;
-	// HD constexpr explicit array_types(std::nullptr_t nil) : Layout{}, base_{nil} {}
-
  public:
 	array_types() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) some base_ types cannot be initialized
 
@@ -228,7 +224,7 @@ public:
 
 	// cppcheck-suppress noExplicitConstructor
 	HD constexpr subarray_ptr(std::nullptr_t nil) : ref_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
-	/*HD*/ constexpr subarray_ptr() = default;  // : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
+	constexpr subarray_ptr() = default;  // do not assume the pointer type can be initialized to null
 
 	template<class, class> friend struct subarray_ptr;
 
@@ -337,7 +333,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using layout_type = typename reference::layout_type;
 
 	HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}  //, stride_{1}
-	/*HD*/ constexpr array_iterator() = default;  // : array_iterator{nullptr} {}
+	constexpr array_iterator() = default;  // do not assume the pointer type can be initialized to null
 
 	template<class, dimensionality_type, class> friend struct array_iterator;
 
