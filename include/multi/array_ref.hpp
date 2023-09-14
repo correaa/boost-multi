@@ -2688,9 +2688,9 @@ template<dimensionality_type D, class Ptr,
 	class Extensions = multi::extensions_t<D>,
 	class Strides = typename multi::layout_t<D>::strides_type
 >
-constexpr auto make_subarray(Ptr base, multi::extensions_t<D> exts, Strides ss) {
-	using ret_type = multi::subarray<typename std::pointer_traits<Ptr>::element_type, D, Ptr>;
-	return ret_type(typename ret_type::layout_type{exts, ss}, base);
+constexpr auto make_subarray_ptr(Ptr base, multi::extensions_t<D> exts, Strides ss) {
+	using ret_type = multi::subarray_ptr<multi::subarray<typename std::pointer_traits<Ptr>::element_type, D, Ptr>, multi::layout_t<D>> ;
+	return ret_type(base, multi::layout_t<D>{exts, ss});
 }
 
 template<dimensionality_type D, class P>

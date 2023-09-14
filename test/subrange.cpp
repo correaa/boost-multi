@@ -73,12 +73,12 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section) {
 		BOOST_REQUIRE( arr({0, 2}, {0, 2}) == arr2({0, 2}, {0, 2}) );
 		BOOST_REQUIRE( arr[1][1] == 96.0 );
 
-		auto&& sarr = multi::make_subarray(arr2.base(), arr2.extensions(), arr2.strides());
+		auto&& sarr = *multi::make_subarray_ptr(arr2.base(), arr2.extensions(), arr2.strides());
 
 		BOOST_REQUIRE( &sarr == &arr2 );
 		BOOST_REQUIRE( &sarr[1][0] == &arr2[1][0] );
 
-		auto&& sarr2 = multi::make_subarray<2>(
+		auto&& sarr2 = *multi::make_subarray_ptr<2>(
 			arr2.base(), 
 			{std::get<0>(arr2.extensions()), std::get<1>(arr2.extensions())}, 
 			{std::get<0>(arr2.strides()   ), std::get<1>(arr2.strides()   )}
