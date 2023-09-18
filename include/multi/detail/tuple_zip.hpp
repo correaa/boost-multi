@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2021-2023 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_TUPLE_ZIP_HPP
