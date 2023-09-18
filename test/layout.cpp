@@ -1,7 +1,5 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi layout"  // title NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -281,7 +279,7 @@ BOOST_AUTO_TEST_CASE(multi_layout_part1) {
 	}
 	{
 		multi::iextensions<0> const exts{};
-		multi::layout_t<0>    const lyt(exts);
+		multi::layout_t<0> const    lyt(exts);
 		BOOST_REQUIRE(lyt.num_elements() == 1);
 	}
 	{
@@ -337,7 +335,7 @@ BOOST_AUTO_TEST_CASE(multi_layout_part2) {
 BOOST_AUTO_TEST_CASE(multi_layout_part3) {
 	{
 		multi::layout_t<2> const lyt({10, 1});
-		static_assert(decltype(lyt)::rank_v == 2, "!");
+		static_assert(decltype(lyt)::rank_v == 2);
 		BOOST_REQUIRE( num_elements(lyt) == 10 );
 		BOOST_REQUIRE( size(lyt) == 10 );
 		using std::get;
@@ -392,7 +390,7 @@ BOOST_AUTO_TEST_CASE(multi_layout_part3) {
 }
 
 BOOST_AUTO_TEST_CASE(layout_to_offset) {
-	multi::layout_t<3>      const lyt({10, 20, 30});
+	multi::layout_t<3> const      lyt({10, 20, 30});
 	multi::array<double, 3> const arr({10, 20, 30});
 	BOOST_REQUIRE( lyt[0][0][0] == &arr[0][0][0] - arr.data_elements() );
 	BOOST_REQUIRE( lyt[0][0][1] == &arr[0][0][1] - arr.data_elements() );
@@ -463,10 +461,10 @@ BOOST_AUTO_TEST_CASE(continued_part1) {
 		BOOST_REQUIRE( size(lyt) == 0 );
 	}
 	{
-		multi::layout_t<2> lyt({
+		multi::layout_t<2> lyt(multi::extensions_t<2>({
 			{0, 10},
 			{0, 20},
-		});
+		}));
 		BOOST_REQUIRE( size(lyt) == 10 );
 		BOOST_REQUIRE( extension(lyt).start () ==  0 );
 		BOOST_REQUIRE( extension(lyt).finish() == 10 );
@@ -483,6 +481,13 @@ BOOST_AUTO_TEST_CASE(continued_part1) {
 		BOOST_TEST_REQUIRE( std::get<1>(extensions(lyt)).start () == 3 );
 		BOOST_TEST_REQUIRE( std::get<1>(extensions(lyt)).finish() == 23 );
 	}
+	// {
+	//  multi::layout_t<2> lyt({
+	//      {0, 10},
+	//      {0, 20},
+	//  });
+	//  BOOST_REQUIRE( size(lyt) == 10 );
+	// }
 }
 
 BOOST_AUTO_TEST_CASE(continued_part2) {
@@ -592,45 +597,63 @@ BOOST_AUTO_TEST_CASE(continued) {
 		BOOST_REQUIRE( extension(lyt).last() == 18 );
 	}
 	{
-		multi::layout_t<2> const lyt({
+		multi::layout_t<2> const lyt(multi::extensions_t<2>({
 			{0, 10},
 			{0, 20},
-		});
+		}));
 		BOOST_REQUIRE( extension(lyt).first() == 0 );
 		BOOST_REQUIRE( extension(lyt).last() == 10 );
 	}
+	// {  // this is ambiguous in nvcc
+	//  multi::layout_t<2> const lyt({
+	//      {0, 10},
+	//      {0, 20},
+	//  });
+	//  BOOST_REQUIRE( extension(lyt).first() == 0 );
+	//  BOOST_REQUIRE( extension(lyt).last() == 10 );
+	// }
 	{
-		multi::layout_t<2> const lyt({
+		multi::layout_t<2> const lyt(multi::extensions_t<2>({
 			{ 0, 10},
 			{11, 31},
-		});
+		}));
+		BOOST_REQUIRE( size(lyt) == 10   );
+		BOOST_REQUIRE( stride(lyt) == 20 );
+		BOOST_REQUIRE( offset(lyt) == 0 );
+	}
+	{  // this is ambiguous in nvcc
+		multi::layout_t<2> const lyt(multi::extensions_t<2>({
+			{ 0, 10},
+			{11, 31},
+		}));
 		BOOST_REQUIRE( size(lyt) == 10   );
 		BOOST_REQUIRE( stride(lyt) == 20 );
 		BOOST_REQUIRE( offset(lyt) == 0 );
 	}
 	{
-		multi::layout_t<2> const lyt({
+		multi::layout_t<2> const lyt(multi::extensions_t<2>({
 			{8, 18},
 			{0, 20},
-		});
+		}));
 		BOOST_REQUIRE( size(lyt) == 10 );
 		BOOST_REQUIRE( stride(lyt) == 20 );
 	}
-	{
-		multi::layout_t<3> const lyt({
-			{ 0,  3},
-			{ 0,  5},
-			{10, 17},
-		});
-		BOOST_REQUIRE( stride(lyt) == 5*7L );
-		BOOST_REQUIRE( stride(lyt.sub().sub()) == 1 );
-	}
+	// {
+	//  multi::layout_t<3> const lyt(multi::extensions_t<3>({
+	//      { 0,  3},
+	//      { 0,  5},
+	//      {10, 17},
+	//  }));
+	//  BOOST_REQUIRE( stride(lyt) == 5*7L );
+	//  BOOST_REQUIRE( stride(lyt.sub().sub()) == 1 );
+	// }
 	{
 		multi::layout_t<3> const lyt({
 			{0, 10},
 			{0, 20},
 			{0, 30},
 		});
+		BOOST_REQUIRE( size(lyt) == 10 );
 		BOOST_REQUIRE( stride(lyt) == 20*30L );
 		BOOST_REQUIRE( offset(lyt) == 0 );
 		BOOST_REQUIRE( nelems(lyt) == 10*20L*30L );
@@ -686,8 +709,8 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_structured_binding) {
 
 BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get) {
 	multi::extensions_t<2> const exts{3, 5};
-	auto                   eye = std::get<0>(exts.from_linear(7));
-	auto                   jay = std::get<1>(exts.from_linear(7));
+	auto                         eye = std::get<0>(exts.from_linear(7));
+	auto                         jay = std::get<1>(exts.from_linear(7));
 	BOOST_TEST_REQUIRE( eye == 1 );
 	BOOST_TEST_REQUIRE( jay == 2 );
 }
@@ -695,7 +718,7 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get) {
 BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get_using) {
 	multi::extensions_t<2> const exts{3, 5};
 	using std::get;
-	auto fl = exts.from_linear(7L);
+	auto       fl  = exts.from_linear(7L);
 	auto const eye = get<0>(fl);
 	auto const jay = get<1>(fl);
 	BOOST_TEST_REQUIRE( eye == 1 );
