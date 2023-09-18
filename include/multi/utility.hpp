@@ -86,7 +86,7 @@ struct transform_ptr {
 	template<class... As>
 	constexpr transform_ptr(pointer ptr, UF fun) : p_{ptr}, f_(std::move(fun)) {}
 
-	template<class Other>
+	template<class Other, class = typename Other::pointer>
 	// cppcheck-suppress noExplicitConstructor
 	constexpr transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use conditional explicit idiom here
 
@@ -105,7 +105,7 @@ struct transform_ptr {
 
 	constexpr auto operator-(transform_ptr const& other) const -> difference_type {return p_ - other.p_;}
 
-	constexpr auto operator[](difference_type n) const -> reference {return *((*this) + n);}
+	constexpr auto operator[](difference_type n) const -> reference {return *((*this) + n);}  // NOLINT(readability-const-return-type) transformed_view might return by const value.
 
 	constexpr auto operator==(transform_ptr const& other) const -> bool {return p_ == other.p_;}
 	constexpr auto operator!=(transform_ptr const& other) const -> bool {return p_ != other.p_;}
