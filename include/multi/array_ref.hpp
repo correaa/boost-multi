@@ -1981,7 +1981,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
  private:
 	constexpr auto strided_aux(difference_type diff) const -> subarray {
-		typename types::layout_t const new_layout = {this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
+		auto const new_layout = typename types::layout_t{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
 
