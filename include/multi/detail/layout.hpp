@@ -426,6 +426,7 @@ struct layout_t<0, SSize>
  public:
 	layout_t() = default;
 	HD constexpr explicit layout_t(extensions_type const& /*nil*/) {}
+	HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
 
 	HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
@@ -539,7 +540,20 @@ struct layout_t
 		nelems_{boost::multi::detail::get<0>(extensions.base()).size()*sub().num_elements()}
 	{}
 
-	HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
+	HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides) :
+		sub_{
+			std::apply(
+				[](auto const&... subextensions) {return multi::extensions_t<D-1>{subextensions...};},
+				detail::tail(extensions.base())
+			),
+			detail::tail(strides)
+		},
+		stride_{boost::multi::detail::get<0>(strides)},
+		offset_{boost::multi::detail::get<0>(extensions.base()).first()*stride_},
+		nelems_{boost::multi::detail::get<0>(extensions.base()).size()*sub().num_elements()}
+	{}
+
+	HD constexpr explicit layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	constexpr auto origin() const {return sub_.origin() - offset_;}
