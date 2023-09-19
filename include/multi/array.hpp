@@ -375,12 +375,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto begin()      & -> typename static_array::      iterator {return ref:: begin();}
 	constexpr auto end  ()      & -> typename static_array::      iterator {return ref:: end  ();}
 
-	constexpr auto operator[](index idx) const& -> typename static_array::const_reference {return ref::operator[](idx);}
-	constexpr auto operator[](index idx)     && -> decltype(auto)                         {
+	HD constexpr auto operator[](index idx) const& -> typename static_array::const_reference {return ref::operator[](idx);}
+	HD constexpr auto operator[](index idx)     && -> decltype(auto)                         {
 		if constexpr(D == 1) {return std::move(ref::operator[](idx)       );}
 		else                 {return           ref::operator[](idx).moved();}  // NOLINT(readability/braces)
 	}
-	constexpr auto operator[](index idx)      & -> typename static_array::      reference {return ref::operator[](idx);}
+	HD constexpr auto operator[](index idx)      & -> typename static_array::      reference {return ref::operator[](idx);}
 
  protected:
 	void deallocate() {
