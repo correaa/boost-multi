@@ -1,11 +1,19 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_OPERATORS_HPP
 #define MULTI_DETAIL_OPERATORS_HPP
+#pragma once
 
 #include<type_traits>  // for enable_if
 #include<utility>  // for forward
+
+#ifndef HD
+#if defined(__NVCC__)
+#define HD __host__ __device__
+#else
+#define HD
+#endif
+#endif
 
 namespace boost::multi {
 
@@ -144,7 +152,7 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
 	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
 
-	constexpr auto operator[](difference_type idx) const -> reference {return *(self() + idx);}
+	HD constexpr auto operator[](difference_type idx) const -> reference {return *(self() + idx);}
 };
 
 // template<class T, class Reference>
