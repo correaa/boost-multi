@@ -751,7 +751,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
 
-#ifdef __NVCC__
+#if defined(__NVCC__) or defined(__NVCOMPILER)
  public:
 	explicit subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 #else
