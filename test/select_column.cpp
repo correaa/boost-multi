@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 	BOOST_REQUIRE( col2[0] == 02. );
 	BOOST_REQUIRE( col2[1] == 12. );
 	BOOST_REQUIRE(( col2 == multi::array<double, 1>{02.0, 12.0, 22.0, 32.0} ));
-	BOOST_REQUIRE(( col2 == multi::array<double, 1>(rotated(arr)[2]) ));
-	BOOST_REQUIRE(( col2 == rotated(arr)[2] ));
+	BOOST_REQUIRE(( col2 == multi::array<double, 1>(arr.rotated()[2]) ));
+	BOOST_REQUIRE(( col2 == arr.rotated()[2] ));
 	BOOST_REQUIRE(( col2 == arr(arr.extension(), 2) ));
 }
 

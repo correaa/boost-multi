@@ -359,12 +359,12 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	auto operator=(array_iterator const&) -> array_iterator& = default;
 
 	HD constexpr explicit operator bool() const {return ptr_->base();}  // TODO(correaa) implement bool conversion for subarray_ptr
-	HD constexpr auto operator*() const -> subarray<element, D-1, element_ptr> {return {*ptr_};}
+	HD constexpr auto operator*() const {return reference{ptr_->layout(), ptr_->base()};}//subarray<element, D-1, element_ptr>{};}
 
 	HD constexpr auto operator->() const -> decltype(auto) {return ptr_;}
 
 	HD constexpr auto operator+ (difference_type n) const -> array_iterator {array_iterator ret{*this}; ret += n; return ret;}
-	HD constexpr auto operator[](difference_type n) const -> subarray<element, D-1, element_ptr> {return *((*this) + n);}
+	HD constexpr auto operator[](difference_type n) const -> reference /*subarray<element, D-1, element_ptr>*/ {return *((*this) + n);}
 
 	friend HD constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {
 		return self.ptr_ == other.ptr_ and self.stride_== other.stride_ and self.ptr_->layout() == other.ptr_->layout();
@@ -751,9 +751,15 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
 
+#ifdef __NVCC__
  public:
-	subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
+	explicit subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
+#else
+ protected:
+	explicit subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
+#endif
 
+ public:
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
 	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
@@ -977,8 +983,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
 
-	friend constexpr auto flatted(subarray const& self) {return self.flatted();}
-	       constexpr auto flatted()           const& {
+	// friend constexpr auto flatted(subarray const& self) {return self.flatted();}
+	constexpr auto flatted()           const& {
 		assert(is_flattable() && "flatted doesn't work for all layouts!");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<D-1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
@@ -1105,9 +1111,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return basic_const_array{new_layout, new_base_};
 	}
 
-	friend constexpr auto rotated(subarray const&  self) -> basic_const_array {return           self .rotated();}
-	friend constexpr auto rotated(subarray      &  self) -> subarray       {return           self .rotated();}
-	friend /*constexpr*/ auto rotated(subarray      && self) -> subarray       {return std::move(self).rotated();}
+	// friend constexpr auto rotated(subarray const&  self) -> basic_const_array {return           self .rotated();}
+	// friend constexpr auto rotated(subarray      &  self) -> subarray       {return           self .rotated();}
+	// friend /*constexpr*/ auto rotated(subarray      && self) -> subarray       {return std::move(self).rotated();}
 
 	HD constexpr auto unrotated()      & {
 		typename types::layout_t new_layout = this->layout();
