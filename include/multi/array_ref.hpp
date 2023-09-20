@@ -756,7 +756,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	explicit subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 #else
  protected:
-	explicit subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)  // NOLINIT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correaa) consider delete in this #if branch
+	explicit subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correaa) consider delete in this #if branch
 #endif
 
  public:
