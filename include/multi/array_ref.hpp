@@ -756,10 +756,10 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	explicit subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 #else
  public:
-	explicit subarray(subarray&&) noexcept = delete;  // lints(readability-redundant-access-specifiers)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correaa) consider delete in this #if branch
+	explicit subarray(subarray&&) noexcept = default;  // TODO(correaa) delete? // lints(readability-redundant-access-specifiers)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correaa) consider delete in this #if branch
 #endif
 
- public:
+ public:  // NOLINT(readability-redundant-access-specifiers)
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
 	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
