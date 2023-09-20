@@ -120,18 +120,18 @@ BOOST_AUTO_TEST_CASE(fill) {
 		{ 50.0,  6.0,  7.0,  8.0,  9.0}
 	};
 	using std::all_of;
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 5.;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 5.0;}) );
 
 	using std::fill;
 	fill(d2D[1].begin(), d2D[1].end(), 8.);
 
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 8.;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 8.0;}) );
 
-	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 8.);
-	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& elem) {return elem == 8.;}) );
+	fill(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), 8.0);
+	BOOST_REQUIRE( all_of(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), [](auto&& elem) {return elem == 8.;}) );
 
-	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.);
-	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) {return elem == 8.;}) );
+	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.0);
+	BOOST_REQUIRE( all_of(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), [](auto&& elem) {return elem == 8.0;}) );
 
 	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{randdev()}]() mutable {return gauss(gen);};
 	multi::array<double, 2> r2D({5, 5});
@@ -156,7 +156,7 @@ template<class BinaryOp, class Column, class Array, class Out>
 auto broadcast(BinaryOp op, Column const& col, Array const& in, Out&& out) -> Out&& {  // NOLINT(readability-identifier-length) clang-tidy 14 bug
 	std::transform(
 		begin(~in), end(~in), begin(~out), begin(~out),
-		[acol = (~col)[0], &op](auto const& Acol, auto&& Bcol) {
+		[acol = (~col)[0], &op](auto const& Acol, auto&& Bcol) -> decltype(auto) {
 			std::transform(begin(Acol), end(Acol), begin(acol), begin(Bcol), op);
 			return std::forward<decltype(Bcol)>(Bcol);
 		}
