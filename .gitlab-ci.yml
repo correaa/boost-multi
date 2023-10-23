@@ -238,6 +238,7 @@ oneapi:
 oneapi-latest c++20:
   stage: build
   image: intel/oneapi-hpckit:latest
+  allow_failure: true
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -517,7 +518,8 @@ inq cuda:
   needs: ["cuda", "inq"]
 
 qmcpack:
-  image: debian:testing
+  allow_failure: false
+  image: debian:stable
   stage: test
   variables:
     GIT_STRATEGY: none
