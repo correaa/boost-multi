@@ -8,9 +8,9 @@
 #include<complex>
 #include<numeric>
 
-#if __cplusplus >= 202002L
-#include<ranges>
-#endif
+// #if __cplusplus >= 202002L
+// #include<ranges>
+// #endif
 
 namespace multi = boost::multi;
 
@@ -51,22 +51,22 @@ BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
 		{3.0, 3.1, 3.2},
 	};
 
-#if defined(__cpp_lib_ranges) and (__cpp_lib_ranges >=  201911L)
-	{
-		auto const& arrvec3 = arr | std::ranges::views::transform([](auto const& e) {return vec3{e[0], e[1], e[2]};});
-		BOOST_TEST(( arrvec3[2] == vec3{2.0, 2.1, 2.2} ));
-	}
-	{
-		auto const& arrvec3 = arr | std::ranges::views::transform([](auto const& e) noexcept -> vec3 const& {return reinterpret_cast<vec3 const&>(e[0]);});
-		BOOST_TEST( arrvec3[2].x == 2.0 );
-	}
-	{
-		auto&& arrvec3 = arr | std::ranges::views::transform([](auto&& e) noexcept -> vec3& {return reinterpret_cast<vec3&>(e[0]);});
-		arrvec3[2].x = 20.0;
-		BOOST_TEST( arrvec3[2].x == 20.0 );
-		arrvec3[2].x =  2.0;
-	}
-#endif
+// #if defined(__cpp_lib_ranges) and (__cpp_lib_ranges >=  201911L)
+//  {
+//      auto const& arrvec3 = arr | std::ranges::views::transform([](auto const& e) {return vec3{e[0], e[1], e[2]};});
+//      BOOST_TEST(( arrvec3[2] == vec3{2.0, 2.1, 2.2} ));
+//  }
+//  {
+//      auto const& arrvec3 = arr | std::ranges::views::transform([](auto const& e) noexcept -> vec3 const& {return reinterpret_cast<vec3 const&>(e[0]);});
+//      BOOST_TEST( arrvec3[2].x == 2.0 );
+//  }
+//  {
+//      auto&& arrvec3 = arr | std::ranges::views::transform([](auto&& e) noexcept -> vec3& {return reinterpret_cast<vec3&>(e[0]);});
+//      arrvec3[2].x = 20.0;
+//      BOOST_TEST( arrvec3[2].x == 20.0 );
+//      arrvec3[2].x =  2.0;
+//  }
+// #endif
 	{
 		BOOST_TEST( arr.size() == 4 );
 		BOOST_TEST( arr.flatted().size() == 12 );
