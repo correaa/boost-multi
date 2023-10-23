@@ -73,10 +73,10 @@ BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
 		BOOST_TEST( arr.flatted().strided(3).size() == 4 );
 		BOOST_TEST( arr.flatted().strided(3).reinterpret_array_cast<vec3>().size() == 4 );
 
-		// auto&& arrvec3 = arr.flatted().strided(3).reinterpret_array_cast<vec3>();
+		auto&& arrvec3 = arr.flatted().strided(3).reinterpret_array_cast<vec3>();
 
-		// BOOST_TEST( arr.flatted().size() == arrvec3.size()*3 );
-		// BOOST_TEST( &arrvec3[2].x == &arr[2][0] );
+		BOOST_TEST( arr.flatted().size() == arrvec3.size()*3 );
+		BOOST_TEST( &arrvec3[2].x == &arr[2][0] );
 	}
 	// {
 	//  auto&& arrvec3 = arr.reinterpret_array_cast<vec3>(3);
