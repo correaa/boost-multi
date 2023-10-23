@@ -531,9 +531,9 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 }
 
-void f1d5(double(&carr)[5]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-void f1d5(double(&carr)[5]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	BOOST_REQUIRE(carr[1] == 1.0);
+auto f1d5(double(&carr)[5]) -> double;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(double(&carr)[5]) -> double {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	return carr[1];
 }
 
 void f2d54(double(&carr)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
@@ -542,7 +542,7 @@ void f2d54(double(&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hi
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
-	multi::array<double, 1> arr(5);
+	multi::array<double, 1> arr({5}, double{});
 	BOOST_REQUIRE( arr.size() == 5 );
 	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
@@ -550,7 +550,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
 		auto& carr = static_cast<double(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3] == &arr[3] );
 
-		f1d5(static_cast<double(&)[5]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		BOOST_REQUIRE(f1d5(static_cast<double(&)[5]>(arr)) == 1.0);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 	{
 		double(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)

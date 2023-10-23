@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"  // test tile NOLINT(cppcoreguidelines-macro-usage)
@@ -8,6 +7,10 @@
 
 #include<complex>
 #include<numeric>
+
+// #if __cplusplus >= 202002L
+// #include<ranges>
+// #endif
 
 namespace multi = boost::multi;
 
@@ -35,9 +38,56 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 	BOOST_REQUIRE( & arr[8].z == & arr.reinterpret_array_cast<double>(3)[8][2] );
 }
 
+BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
+	struct vec3 {
+		double x, y, z; // NOLINT(misc-non-private-member-variables-in-classes)
+		[[maybe_unused]] auto operator==(vec3 const& other) const -> bool {return x == other.x and y == other.y and z == other.z;}
+	};
+
+	multi::array<double, 2> arr = {
+		{0.0, 0.1, 0.2},
+		{1.0, 1.1, 1.2},
+		{2.0, 2.1, 2.2},
+		{3.0, 3.1, 3.2},
+	};
+
+// #if defined(__cpp_lib_ranges) and (__cpp_lib_ranges >=  201911L)
+//  {
+//      auto const& arrvec3 = arr | std::ranges::views::transform([](auto const& e) {return vec3{e[0], e[1], e[2]};});
+//      BOOST_TEST(( arrvec3[2] == vec3{2.0, 2.1, 2.2} ));
+//  }
+//  {
+//      auto const& arrvec3 = arr | std::ranges::views::transform([](auto const& e) noexcept -> vec3 const& {return reinterpret_cast<vec3 const&>(e[0]);});
+//      BOOST_TEST( arrvec3[2].x == 2.0 );
+//  }
+//  {
+//      auto&& arrvec3 = arr | std::ranges::views::transform([](auto&& e) noexcept -> vec3& {return reinterpret_cast<vec3&>(e[0]);});
+//      arrvec3[2].x = 20.0;
+//      BOOST_TEST( arrvec3[2].x == 20.0 );
+//      arrvec3[2].x =  2.0;
+//  }
+// #endif
+	{
+		BOOST_TEST( arr.size() == 4 );
+		BOOST_TEST( arr.flatted().size() == 12 );
+		BOOST_TEST( arr.flatted().strided(3).size() == 4 );
+		BOOST_TEST( arr.flatted().strided(3).reinterpret_array_cast<vec3>().size() == 4 );
+
+		// auto&& arrvec3 = arr.flatted().strided(3).reinterpret_array_cast<vec3>();
+
+		// BOOST_TEST( arr.flatted().size() == arrvec3.size()*3 );
+		// BOOST_TEST( &arrvec3[2].x == &arr[2][0] );
+	}
+	// {
+	//  auto&& arrvec3 = arr.reinterpret_array_cast<vec3>(3);
+	//  arrvec3[2].x = 20.0;
+	//  BOOST_TEST( arrvec3[2].x == 20.0 );
+	// }
+}
+
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimension) {
 	using complex = std::complex<double>;
-	multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, complex{1., 2.});
+	multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, complex{1.0, 2.0});
 	BOOST_REQUIRE(  size(arr) == 100 );
 
 	{
