@@ -1507,8 +1507,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(multi::size_type count) & -> subarray<std::decay_t<T2>, D + 1, P2> {
-		static_assert( sizeof(T)%sizeof(T2) == 0,
-			"error: reinterpret_array_cast is limited to integral stride values");
+		// static_assert( sizeof(T)%sizeof(T2) == 0,
+		//  "error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( count > 0 );
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -2298,12 +2298,42 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	constexpr auto element_moved() && {return element_moved();}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
-	constexpr auto reinterpret_array_cast() const& -> subarray<std::decay_t<T2>, 1, P2> {  // TODO(correaa) : use rebind for return type
-		static_assert( sizeof(T)%sizeof(T2)== 0,
-			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
+	constexpr auto reinterpret_array_cast()  const& {
+		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
 
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), reinterpret_pointer_cast<P2>(this->base())};
+		return subarray<std::decay_t<T2>, 1, P2>{
+			layout_type{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
+			reinterpret_pointer_cast<P2>(this->base())
+		};
 	}
+
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	constexpr auto reinterpret_array_cast()  & {
+		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
+
+		return subarray<std::decay_t<T2>, 1, P2>{
+			layout_type{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
+			reinterpret_pointer_cast<P2>(this->base())
+		};
+	}
+
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	constexpr auto reinterpret_array_cast() && {
+		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
+
+		return subarray<std::decay_t<T2>, 1, P2>{
+			layout_type{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
+			reinterpret_pointer_cast<P2>(this->base())
+		};
+	}
+
+	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	// constexpr auto reinterpret_array_cast() const& -> subarray<std::decay_t<T2>, 1, P2> {  // TODO(correaa) : use rebind for return type
+	//  // static_assert( sizeof(T)%sizeof(T2)== 0,
+	//  //  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
+
+	//  return {this->layout().scale(sizeof(T)/sizeof(T2)), reinterpret_pointer_cast<P2>(this->base())};
+	// }
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const> >
 	constexpr auto reinterpret_array_cast(size_type n) const& -> subarray<std::decay_t<T2>, 2, P2> {  // TODO(correaa) : use rebind for return type
@@ -2319,8 +2349,8 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	// TODO(correaa) : rename to reinterpret_pointer_cast?
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type n)& -> subarray<std::decay_t<T2>, 2, P2> {
-		static_assert( sizeof(T)%sizeof(T2)== 0,
-			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
+		// static_assert( sizeof(T)%sizeof(T2)== 0,
+		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
 		return subarray<std::decay_t<T2>, 2, P2>{
 			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n},
@@ -2329,7 +2359,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type n)&& -> subarray<std::decay_t<T2>, 2, P2> {
-		return this->reinterpret_array_cast(n);
+		return this->reinterpret_array_cast<T2, P2>(n);
 	}
 
 	template<class TT = typename subarray::element_type>
