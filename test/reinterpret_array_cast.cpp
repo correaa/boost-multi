@@ -8,7 +8,9 @@
 #include<complex>
 #include<numeric>
 
+#if __cplusplus >= 202002L
 #include<ranges>
+#endif
 
 namespace multi = boost::multi;
 
