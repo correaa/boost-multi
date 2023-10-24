@@ -162,8 +162,10 @@ BOOST_AUTO_TEST_CASE(submultis_are_allocable) {
 BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 	multi::array<double, 2> const AA = {{1.0, 2.0}, {3.0, 4.0}};
 
-	multi::array<double, 1>* A0P = std::malloc(sizeof(A0));
-	new(A0P) multi::array<double, 1>{AA[0]};
-	A0P->~multi::array<double, 1>();
+	using D1 = multi::array<double, 1>;
+
+	auto* A0P = static_cast<D1*>(std::malloc(sizeof(D1)));
+	new(A0P) D1{AA[0]};
+	A0P->~D1();
 	std::free(A0P);
 }
