@@ -519,7 +519,7 @@ inq cuda:
 
 qmcpack:
   allow_failure: false
-  image: debian:stable
+  image: debian:latest
   stage: test
   variables:
     GIT_STRATEGY: none
