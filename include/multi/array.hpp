@@ -91,6 +91,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref = array_ref<T, D, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
 	void* operator new(std::size_t count) {return ::operator new(count);}
+	void* operator new(std::size_t count, void* ptr) {return ::operator new(count, ptr);}
 	void operator delete(void* ptr) noexcept {::operator delete(ptr);}  // this overrides the deleted delete operator in reference (base) class subarray
 
  protected:
