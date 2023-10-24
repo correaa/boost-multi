@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(views_cannot_be_elements2) {
 
 BOOST_AUTO_TEST_CASE(submultis_are_allocable) {
 	multi::array<double, 2> const AA = {{1.0, 2.0}, {3.0, 4.0}};
-	auto pp = std::unique_ptr<multi::array<double, 1>>(new multi::array<double, 1>{AA[0]});
+	[[maybe_unused]] auto pp = std::unique_ptr<multi::array<double, 1>>(new multi::array<double, 1>{AA[0]});  // NOLINT(modernize-make-unique) testing new
 	BOOST_REQUIRE(pp);
 }
 
@@ -164,8 +164,8 @@ BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 
 	using D1 = multi::array<double, 1>;
 
-	auto* A0P = static_cast<D1*>(std::malloc(sizeof(D1)));
+	auto* A0P = static_cast<D1*>(std::malloc(sizeof(D1)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc) testing malloc
 	new(A0P) D1{AA[0]};
 	A0P->~D1();
-	std::free(A0P);
+	std::free(A0P);  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc) testing free
 }
