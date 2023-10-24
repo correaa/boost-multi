@@ -144,6 +144,8 @@ BOOST_AUTO_TEST_CASE(views_cannot_be_elements) {
 	std::vector<decltype(AA[0])> vv;
 	vv.emplace_back(AA[0]);
 	vv.push_back(AA[0]);
+	// auto&& A0 = AA[0];
+	// vv.push_back(A0);
 }
 
 BOOST_AUTO_TEST_CASE(views_cannot_be_elements2) {
@@ -159,6 +161,6 @@ BOOST_AUTO_TEST_CASE(submultis_are_allocable) {
 
 BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 	multi::array<double, 2> const AA = {{1.0, 2.0}, {3.0, 4.0}};
-	auto&& A0 = AA[0];
+	multi::array<double, 1> A0 = AA[0];
 	new(std::addressof(A0)) multi::array<double, 1>{AA[0]};
 }
