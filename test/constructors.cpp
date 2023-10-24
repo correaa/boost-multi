@@ -155,8 +155,8 @@ BOOST_AUTO_TEST_CASE(views_cannot_be_elements2) {
 
 BOOST_AUTO_TEST_CASE(submultis_are_allocable) {
 	multi::array<double, 2> const AA = {{1.0, 2.0}, {3.0, 4.0}};
-	[[maybe_unused]] multi::array<double, 1>* pp = new multi::array<double, 1>{AA[0]};
-	delete pp;
+	auto pp = std::unique_ptr<multi::array<double, 1>>(new multi::array<double, 1>{AA[0]});
+	BOOST_REQUIRE(pp);
 }
 
 BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
