@@ -467,7 +467,8 @@ struct layout_t<0, SSize>
 	constexpr auto origin()    const -> offset_type {return 0;}
 
 	constexpr auto reverse()          -> layout_t& {return *this;}
-	constexpr auto scale(size_type /*size*/) const {return *this;}
+	[[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
+	constexpr auto scale(size_type /*num*/, size_type /*den*/) const {return *this;}
 
 //  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
 	friend HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
@@ -688,8 +689,13 @@ struct layout_t
 		return std::abs(size()*stride())>std::abs(sub_.hull_size())?size()*stride():sub_.hull_size();
 	}
 
-	constexpr auto scale(size_type factor) const {
+	[[deprecated("use two arg version")]] constexpr auto scale(size_type factor) const {
 		return layout_t{sub_.scale(factor), stride_*factor, offset_*factor, nelems_*factor};
+	}
+
+	constexpr auto scale(size_type num, size_type den) const {
+		assert( (stride_*num) % den == 0 );
+		return layout_t{sub_.scale(num, den), stride_*num/den, offset_*num/den, nelems_*num/den};
 	}
 };
 
