@@ -1440,7 +1440,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 			"Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements."
 		);
 
-		return subarray<T2, D, P2>{this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*member))};
+		return subarray<T2, D, P2>{this->layout().scale(sizeof(T), sizeof(T2)), static_cast<P2>(&(this->base_->*member))};
 	}
 
 	template<
@@ -1454,7 +1454,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 			"Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements"
 		);
 
-		return subarray<T2, D, P2>{this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*member))};
+		return subarray<T2, D, P2>{this->layout().scale(sizeof(T), sizeof(T2)), static_cast<P2>(&(this->base_->*member))};
 	}
 
 	template<
@@ -1486,11 +1486,11 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	template<class T2, class P2>
 	constexpr auto reinterpret_array_cast_aux() const -> rebind<T2, P2> {
-		static_assert( sizeof(T)%sizeof(T2) == 0,
-			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+		// static_assert( sizeof(T)%sizeof(T2) == 0,
+		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
 		return {
-			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
+			this->layout().scale(sizeof(T), sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
 			reinterpret_pointer_cast<P2>(this->base())  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
 		};
 	}
@@ -1513,7 +1513,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		assert( count > 0 );
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return {
-			layout_t<D + 1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, count}.rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
+			layout_t<D + 1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
 			reinterpret_pointer_cast<P2>(this->base())  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
 		};
 	}
@@ -1528,7 +1528,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		return {
-			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, count}.rotate(),
+			layout_t<D+1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),
 			static_cast<P2>(static_cast<void*>(this->base()))
 		};
 	}
@@ -2291,7 +2291,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 #else
 		auto p2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
+		return {this->layout().scale(sizeof(T), sizeof(T2)), p2};
 	}
 
 	constexpr auto moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
@@ -2356,7 +2356,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
 		return subarray<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n},
+			layout_t<2>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n},
 			reinterpret_pointer_cast<P2>(this->base())
 		}.rotated();
 	}
