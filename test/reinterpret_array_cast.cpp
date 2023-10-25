@@ -85,6 +85,53 @@ BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
 	// }
 }
 
+BOOST_AUTO_TEST_CASE(multi_lower_dimension_2d) {
+	struct vec3 {
+		double x, y, z; // NOLINT(misc-non-private-member-variables-in-classes)
+	};
+
+	multi::array<double, 2> d2 = {
+		{0.0, 0.1, 0.2, 0.0, 0.1, 0.2, 0.0, 0.1, 0.2},
+		{1.0, 1.1, 1.2, 1.0, 1.1, 1.2, 1.0, 1.1, 1.2},
+		{2.0, 2.1, 2.2, 2.0, 2.1, 2.2, 2.0, 2.1, 2.2},
+		{3.0, 3.1, 3.2, 3.0, 3.1, 3.2, 3.0, 3.1, 3.2},
+	};
+
+	{
+		auto&& d2strided3 = d2.unrotated().strided(3).rotated();//.reinterpret_array_cast<vec3>();
+		BOOST_TEST( d2strided3.size() == 4 );
+		BOOST_TEST( d2strided3[0].size() == 3 );
+		BOOST_TEST( &d2strided3[1][2] == &d2[1][6] );
+	}
+	{
+		auto&& v2view = d2.unrotated().strided(3).rotated().reinterpret_array_cast<vec3>();
+		BOOST_TEST( v2view.size() == 4 );
+		BOOST_TEST( v2view[0].size() == 3 );
+		BOOST_TEST( &v2view[1][2].x == &d2[1][6] );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_lower_dimension_3d) {
+	struct vec3 {
+		double x, y, z; // NOLINT(misc-non-private-member-variables-in-classes)
+	};
+
+	multi::array<double, 3> d3({4, 15, 9}, 0.0);
+
+	{
+		auto&& d3strided3 = d3.unrotated().strided(3).rotated();
+		BOOST_TEST( d3strided3.size() == 4 );
+		BOOST_TEST( d3strided3[0][0].size() == 3 );
+		BOOST_TEST( &d3strided3[3][1][2] == &d3[3][1][6] );
+	}
+	{
+		auto&& v3view = d3.unrotated().strided(3).rotated().reinterpret_array_cast<vec3>();
+		BOOST_TEST( v3view.size() == 4 );
+		BOOST_TEST( v3view[0][0].size() == 3 );
+		BOOST_TEST( &v3view[3][1][2].x == &d3[3][1][6] );
+	}
+}
+
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimension) {
 	using complex = std::complex<double>;
 	multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, complex{1.0, 2.0});
