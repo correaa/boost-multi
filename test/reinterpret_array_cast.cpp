@@ -129,6 +129,8 @@ BOOST_AUTO_TEST_CASE(multi_lower_dimension_3d) {
 		BOOST_TEST( v3view.size() == 4 );
 		BOOST_TEST( v3view[0][0].size() == 3 );
 		BOOST_TEST( &v3view[3][1][2].x == &d3[3][1][6] );
+		BOOST_TEST( &v3view[3][1][2].y == &d3[3][1][7] );
+		BOOST_TEST( &v3view[3][1][2].z == &d3[3][1][8] );
 	}
 }
 
