@@ -691,14 +691,14 @@ For example, to convert an array of integers to an array of text strings:
 
 ## Const-correctness
 
-Const-correctness refers to the property of a program that disallows object mutation when it is not desired or logically incorrect.
-Honoring the constness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.
+Const-correctness refers to the syntactic property of a program to disallow object mutation when it is not desired or logically incorrect.
+Honoring the const-ness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.
 The library goes to great lengths to ensure const-correctness for the whole or parts of any object.
 
-An array can be declared constant using the keyword `const`.
-A reference array (`array_ref`) is never resizable (or reassignable), but its elements are, in principle, mutable.
+Arrays are resizable, and their elements can be mutated unless declared constant (using the keyword `const`).
 
-The design ensures that the constness of references and values is propagated to subarrays (views) and, ultimately, their elements.
+A reference array or subarray is never resizable, but its elements are mutable if not declared `const`.
+The design ensures that the const-ness of references and values propagates to subarrays (views) and, ultimately, their elements.
 
 ```cpp
 template<class Array1D>
@@ -719,7 +719,7 @@ int main() {
 
 As a general rule for passing generic arrays as arguments, pass them as `Array const&` (in the context of `template<class Array>`);
 unless mutation is expected, in which case take arguments as `Array&&` (note the double ampersand, i.e., universal/forwarding reference).
-Analogously, views can be *named* into "constant language references" using `auto const&` and, if mutation is desired, `auto&&` should be used.
+Analogously, subarrays can be locally *named* into "constant language references" using `auto const&` and, if mutation is desired, `auto&&` should be used.
 Regular references `Array&` or `auto&` in general do not have the expected behavior for views.
 
 ```cpp
