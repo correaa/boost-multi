@@ -240,7 +240,7 @@ oneapi-latest c++20:
   image: intel/oneapi-hpckit:latest
   allow_failure: true
   script:
-    - apt-get update --allow-unauthenticated && apt-get install --allow-unauthenticated --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - apt-get update --allow-insecure-repositories && apt-get install --allow-insecure-repositories --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_CXX_STANDARD=20
