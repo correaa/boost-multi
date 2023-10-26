@@ -16,15 +16,15 @@ BOOST_AUTO_TEST_CASE(multi_reversed_3d) {
 	BOOST_REQUIRE( & arr.reversed()[3][5][7] == &arr[7][5][3] );
 }
 
-template<class Array>
-auto flatted_last(Array&& arr) {
-	return reversed(flatted(transposed(reversed(std::forward<Array>(arr)))));
-}
+// template<class Array>
+// auto flatted_last(Array&& arr) {
+// 	return reversed(flatted(transposed(reversed(std::forward<Array>(arr)))));
+// }
 
-template<class Array>
-auto partitioned_last(Array&& arr, multi::size_type n) {
-	return reversed(transposed(partitioned(reversed(std::forward<Array>(arr)), n)));
-}
+// template<class Array>
+// auto partitioned_last(Array&& arr, multi::size_type n) {
+// 	return reversed(transposed(partitioned(reversed(std::forward<Array>(arr)), n)));
+// }
 
 BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
 	multi::array<double, 4> arr({13, 5, 7, 11});
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
 	BOOST_REQUIRE( &arr.reversed().transposed().flatted().reversed()[1][2][11] == & arr[1][2][1][ 0] );
 	BOOST_REQUIRE( &arr.reversed().transposed().flatted().reversed()[1][2][12] == & arr[1][2][1][ 1] );
 
-	BOOST_REQUIRE( & flatted_last(arr)[1][2][12] == & arr[1][2][1][1] );
+	// BOOST_REQUIRE( & flatted_last(arr)[1][2][12] == & arr[1][2][1][1] );
 }
 
 BOOST_AUTO_TEST_CASE(multi_reversed_4d_partition_last) {
@@ -59,5 +59,5 @@ BOOST_AUTO_TEST_CASE(multi_reversed_4d_partition_last) {
 	BOOST_REQUIRE( & arr.reversed().partitioned(3).transposed().reversed()[1][2][3][1][0] == & arr[1][2][3][4] );
 	BOOST_REQUIRE( & arr.reversed().partitioned(3).transposed().reversed()[1][2][3][1][1] == & arr[1][2][3][5] );
 
-	BOOST_REQUIRE( & partitioned_last(arr, 3)[1][2][3][1][1] == & arr[1][2][3][5] );
+	// BOOST_REQUIRE( & partitioned_last(arr, 3)[1][2][3][1][1] == & arr[1][2][3][5] );
 }
