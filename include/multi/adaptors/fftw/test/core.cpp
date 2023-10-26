@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
 	// multi::fftw::dft_forward({false, true}, rotated(in), rotated(out));
 	// BOOST_REQUIRE( dft_forward(rotated(in)[0]) == rotated(out)[0] );
 
-	multi::fftw::dft_forward({false, false}, in.rotated(), out.rotated());
+	multi::fftw::dft_forward({false, false}, rotated(in), rotated(out));
 	BOOST_REQUIRE( in == out );
 
 	// multi::fftw::many_dft(in.begin(), in.end(), out.begin(), fftw::forward);
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE(fftw_many1_from_2) {
 	fftw::dft_forward({false, true}, in, out);
 
 	multi::array<complex, 2> out2({3, 10});
-	std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) -> decltype(auto) {
+	std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {
 		fftw::dft_forward({true}, in_elem, out2_elem);
 		return std::forward<decltype(out2_elem)>(out2_elem);
 	});
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE(fftw_many2_from_3) {
 	fftw::dft_forward({false, true, true}, in, out);
 
 	multi::array<complex, 3> out2({3, 5, 6});
-	std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) -> decltype(out2_elem) {
+	std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {
 		fftw::dft_forward({true, true}, in_elem, out2_elem);
 		return std::forward<decltype(out2_elem)>(out2_elem);
 	});

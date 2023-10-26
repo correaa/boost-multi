@@ -13,21 +13,21 @@ using core::syrk;
 template<typename AA, typename BB, class A2D, class C2D>
 auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) {  // NOLINT(readability-identifier-length) BLAS naming
 //->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
-	assert( size(c) == size(c.rotated()) );
+	assert( size(c) == size(rotated(c)) );
 	if(stride(a)==1) {
-		if(stride(c)==1) {syrk(flip(c_side)==filling::upper?'L':'U', 'N', size(c), size(a          ), &alpha, base(a), stride(a.rotated()), &beta, base(c), stride(c.rotated()));}
-		else             {syrk(c_side      ==filling::upper?'L':'U', 'N', size(c), size(a.rotated()), &alpha, base(a), stride(a.rotated()), &beta, base(c), stride(c          ));}
+		if(stride(c)==1) {syrk(flip(c_side)==filling::upper?'L':'U', 'N', size(c), size(a         ), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(rotated(c)));}
+		else             {syrk(c_side      ==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(        c ));}
 	} else {
-		if(stride(c)==1) {syrk(flip(c_side)==filling::upper?'L':'U', 'T', size(c), size(a.rotated()), &alpha, base(a), stride(a), &beta, base(c), stride(c.rotated()));}
-		else             {syrk(c_side      ==filling::upper?'L':'U', 'T', size(c), size(a.rotated()), &alpha, base(a), stride(a), &beta, base(c), stride(c          ));}
+		if(stride(c)==1) {syrk(flip(c_side)==filling::upper?'L':'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(rotated(c)));}
+		else             {syrk(c_side      ==filling::upper?'L':'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(        c ));}
 	}
 	return std::forward<C2D>(c);
 }
 
 template<typename AA, class A2D, class C2D>
 auto syrk(filling c_side, AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(syrk(c_side, alpha, a, 0.0, std::forward<C2D>(c))) {
-	return syrk(c_side, alpha, a, 0.0, std::forward<C2D>(c)); }
+->decltype(syrk(c_side, alpha, a, 0., std::forward<C2D>(c))) {
+	return syrk(c_side, alpha, a, 0., std::forward<C2D>(c)); }
 
 template<typename AA, class A2D, class C2D>
 auto syrk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
