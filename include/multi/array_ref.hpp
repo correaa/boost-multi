@@ -752,7 +752,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
 
  public:
-	subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
+	explicit subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
