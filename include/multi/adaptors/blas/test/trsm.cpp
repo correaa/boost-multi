@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 			{2.0},
 			{3.0},
 		};
-		multi::array<double, 2> BT = transposed(B);
+		multi::array<double, 2> BT = rotated(B);
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, blas::T(BT));
 		BOOST_REQUIRE_CLOSE( (~BT)[2][0] , 0.375 , 0.00001);
 	}

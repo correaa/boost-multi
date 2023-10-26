@@ -223,14 +223,14 @@ BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {
 	BOOST_REQUIRE( begin  == arr.begin() );
 }
 
-// BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D) {
-// 	multi::array<double, 2> arr = {
-// 		{  1.0,   2.0},
-// 		{ 10.0,  20.0},
-// 		{100.0, 200.0}
-// 	};
-// 	BOOST_REQUIRE( (*arr.begin())[1] == 2.0 );
-// 	auto rbegin = std::make_reverse_iterator(arr.end());
+BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D) {
+	multi::array<double, 2> arr = {
+		{  1.0,   2.0},
+		{ 10.0,  20.0},
+		{100.0, 200.0}
+	};
+	BOOST_REQUIRE( (*arr.begin())[1] == 2.0 );
+	auto rbegin = std::make_reverse_iterator(arr.end());
 
-// 	BOOST_TEST( (*rbegin)[1] == 200.0 );
-// }
+	BOOST_TEST( (*rbegin)[1] == 200.0 );
+}
