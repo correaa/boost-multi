@@ -177,18 +177,18 @@ BOOST_AUTO_TEST_CASE(layout) {
 
 		BOOST_REQUIRE( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
 
-		// std::array<std::array<decltype(B2({
-		// 	                                  0, 2
-        //                                                                                                                                                                                               },
-		//                                   {0, 2})),
-		//                       2>,
-		//            2>
-		// 	B2blk = {{
-		// 		{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
-		// 		{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
-		// 	}};
+		std::array<std::array<decltype(B2({
+			                                  0, 2
+                                                                                                                                                                                                      },
+		                                  {0, 2})),
+		                      2>,
+		           2>
+			B2blk = {{
+				{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
+				{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
+			}};
 
-		// BOOST_REQUIRE( &B2blk[1][1][1][1] == &B2[3][3] );
+		BOOST_REQUIRE( &B2blk[1][1][1][1] == &B2[3][3] );
 	}
 	{
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(layout) {
 			{3.0},
 		};
 		BOOST_REQUIRE( size(B2) == 3 );
-		BOOST_REQUIRE( size(B2.rotated()) == 1 );
+		BOOST_REQUIRE( size(rotated(B2)) == 1 );
 		BOOST_REQUIRE( size(B2[0]) == 1);
 		BOOST_REQUIRE( B2   .stride() == 1 );
 		BOOST_REQUIRE( B2[0].stride() == 1 );

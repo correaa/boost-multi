@@ -8,7 +8,7 @@
 
 namespace boost::multi::blas {
 
-template<class M> auto transposed(M const& array) -> decltype(auto){return array.rotated();}
+template<class M> auto transposed(M const& array) -> decltype(auto){return rotated(array);}
 
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element_type>
 auto conjugated_transposed(A&& array) -> decltype(auto) {
@@ -36,7 +36,7 @@ template<class A>
 auto hermitized(A&& array) -> decltype(auto) {return conjugated_transposed(std::forward<A>(array));}
 
 template<class A>
-auto transposed(A&& array) -> decltype(auto) {return std::forward<A>(array).rotated();}
+auto transposed(A&& array) -> decltype(auto) {return rotated(std::forward<A>(array));}
 
 namespace operators {
 

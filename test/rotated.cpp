@@ -17,15 +17,15 @@ BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 	BOOST_REQUIRE( std::get<1>(sizes(arr)) == 4 );
 	BOOST_REQUIRE( std::get<2>(sizes(arr)) == 5 );
 
-	auto&& RA = arr.rotated();
+	auto&& RA = rotated(arr);
 	BOOST_REQUIRE(( sizes(RA) == decltype(sizes(RA)){4, 5, 3} ));
 	BOOST_REQUIRE(  &arr[0][1][2] == &RA[1][2][0] );
 
-	auto&& UA = arr.unrotated();
+	auto&& UA = unrotated(arr);
 	BOOST_REQUIRE(( sizes(UA) == decltype(sizes(UA)){5, 3, 4} ));
 	BOOST_REQUIRE( &arr[0][1][2] == &UA[2][0][1] );
 
-	auto&& RRA = RA.rotated();
+	auto&& RRA = rotated(RA);
 	BOOST_REQUIRE(( sizes(RRA) == decltype(sizes(RRA)){5, 3, 4} ));
 	BOOST_REQUIRE( &arr[0][1][2] == &RRA[2][0][1] );
 }
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
 	multi::array_ref<double, 2> arr (&stdarr [0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 	multi::array_ref<double, 2> arr2(&stdarr2[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 
-	arr2.rotated() = arr.rotated();
+	rotated(arr2) = rotated(arr);
 	BOOST_REQUIRE( arr2[1][1] == 6  );
 	BOOST_REQUIRE( arr2[2][1] == 11 );
 	BOOST_REQUIRE( arr2[1][2] == 7  );
