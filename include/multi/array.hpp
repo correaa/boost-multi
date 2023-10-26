@@ -465,12 +465,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
  public:
-	constexpr auto rotated() const& {return std::move(*this).rotated_aux();}
-	constexpr auto rotated()      & {return std::move(*this).rotated_aux();}
-	constexpr auto rotated()     && {return std::move(*this).rotated_aux();}
+	constexpr auto rotated() const& -> decltype(auto) {return std::move(*this).rotated_aux();}
+	constexpr auto rotated()      & -> decltype(auto) {return std::move(*this).rotated_aux();}
+	constexpr auto rotated()     && -> decltype(auto) {return std::move(*this).rotated_aux();}
 
-	friend constexpr auto rotated(static_array&       self) -> decltype(auto) {return self.rotated();}
-	friend /*constexpr*/ auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
+	// friend constexpr     auto rotated(static_array&       self) -> decltype(std::declval<static_array      &>().rotated()) {return self.rotated();}
+	// friend /*constexpr*/ auto rotated(static_array const& self) -> decltype(std::declval<static_array const&>().rotated()) {return self.rotated();}
 
 	constexpr auto unrotated() const& {
 		typename static_array::layout_t new_layout = this->layout();
@@ -483,8 +483,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
-	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
-	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
+	// friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
+	// friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
 	template<class TT, class... Args>
 	auto operator=(multi::subarray<TT, D, Args...> const& other) -> static_array& {
