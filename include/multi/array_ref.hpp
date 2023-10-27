@@ -991,6 +991,12 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	//  return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
 	// }
 
+	constexpr auto broadcast() const& {
+		// using boost::multi::detail::get;
+		multi::layout_t<D + 1> new_layout{layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		return subarray<T, D+1, typename subarray::element_const_ptr>{new_layout, types::base_};
+	}
+
 	// TODO(correaa) : define a diagonal_aux
 	constexpr auto diagonal()    && {return this->diagonal();}
 
@@ -1704,6 +1710,11 @@ struct subarray<T, 0, ElementPtr, Layout>
 	constexpr operator element_ref ()                             & {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_cref()                        const& {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 
+	constexpr auto broadcast() const& {
+		multi::layout_t<1> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		return subarray<T, 1, typename subarray::element_const_ptr>{new_layout, types::base_};
+	}
+
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int const /*version*/) {
 		using AT = multi::archive_traits<Archive>;
@@ -1863,6 +1874,11 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
+	constexpr auto broadcast() const& {
+		multi::layout_t<2> new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		return subarray<T, 2, typename subarray::element_const_ptr>{new_layout, types::base_};
+	}
+
 	HD constexpr auto operator[](index idx) const& -> typename subarray::const_reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	HD constexpr auto operator[](index idx)      & -> typename subarray::      reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	HD constexpr auto operator[](index idx)     && -> typename subarray::      reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
