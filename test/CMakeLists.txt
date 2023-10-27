@@ -832,6 +832,8 @@ file(
 	*.cpp
 )
 
+# find_package(TBB REQUIRED)
+
 if(NOT Boost_FOUND)
 	message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
@@ -855,14 +857,17 @@ if(NOT Boost_FOUND)
 else()
 
 	foreach(TEST_FILE ${TEST_SRCS})
-		set(TEST_EXE "${TEST_FILE}.x")
+		cmake_path(GET TEST_FILE STEM TEST_EXE)  # needs 3.20
+		# set(TEST_EXE "${TEST_FILE}.x")
 		add_executable(${TEST_EXE} ${TEST_FILE})
 
 		if(ENABLE_CUDA OR DEFINED CXXCUDA)
 			set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 		endif()
 
-		target_link_libraries(${TEST_EXE} PRIVATE multi)
+		# target_link_libraries(${TEST_EXE} PRIVATE TBB::tbb)
+
+		target_link_libraries(${TEST_EXE} PRIVATE    multi)
 
 		target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 		target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
