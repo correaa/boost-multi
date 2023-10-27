@@ -926,8 +926,20 @@ Along with STL itself, the library tries to interact with other existing quality
 
 ### Ranges (C++20)
 
-Although no exhaustive test has been performed, the library is expected to work with STL ranges. 
-The library works well with Ranges-v3 which is approximately a superset of STL ranges (see example below).
+[Standard ranges](https://en.cppreference.com/w/cpp/ranges), together with the array constructors provided by the library, enable a functional programming style;
+this allows to work with immutable variables in many cases in place of mutable imperative code.
+
+```cpp
+    multi::array<double, 2> const A = {{...}};
+    multi::array<double, 1> const V = {...};
+
+    multi::array<double, 1> const R = std::views::zip_transform(std::plus<>{}, A[0], V);
+	// multi::array<double, 1> R(V.size());  // in the alternative imperative code, R is created...
+    // for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...then mutated
+```
+[(live)](https://godbolt.org/z/M84arKMnT)
+
+The library also works well with Ranges-v3 which is approximately a superset of STL ranges (see below).
 
 ### Polymorphic Memory Resources
 
