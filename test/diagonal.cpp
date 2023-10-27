@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(broadcast_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(broadcast_0D) {
-	multi::array<int, 1> const arr = {0, 1, 2, 3};
+	multi::array<int, 1> arr = {0, 1, 2, 3};
 	multi::array<int, 0> const vv(2);
 
 	auto const& v1D = vv.broadcast();
@@ -119,4 +119,10 @@ BOOST_AUTO_TEST_CASE(broadcast_0D) {
 	std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});
 
 	BOOST_TEST( r1D[3] == arr[3] + 2 );
+
+	std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) {return ve;});
+	BOOST_TEST( arr[3] == 2 );
+
+	// std::copy_n(v1D.begin(), arr.size(), arr.begin());
+	// BOOST_TEST( arr[3] == 2 );
 }
