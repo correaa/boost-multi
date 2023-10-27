@@ -6,7 +6,9 @@
 
 #include <multi/array.hpp>
 
+#include <execution>
 #include <numeric>
+#include <ranges>
 
 namespace multi = boost::multi;
 
@@ -106,6 +108,11 @@ BOOST_AUTO_TEST_CASE(broadcast_1D) {
 	BOOST_TEST( &a2D[1][2] == &arr[2] );
 }
 
+template<class RandomIterator>
+struct bidirectional_iterator_wrapper : RandomIterator {
+	using iterator_category = std::bidirectional_iterator_tag;
+};
+
 BOOST_AUTO_TEST_CASE(broadcast_0D) {
 	multi::array<int, 1> arr = {0, 1, 2, 3};
 	multi::array<int, 0> const vv(2);
@@ -118,11 +125,27 @@ BOOST_AUTO_TEST_CASE(broadcast_0D) {
 	multi::array<int, 1> r1D({4}, 0);
 	std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});
 
+	// works too (in parallel)
+	// std::transform(std::execution::par, arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});
+
 	BOOST_TEST( r1D[3] == arr[3] + 2 );
+
+	// random access assumptions (it + n - n == it) that copy_n makes are incompatible with a broadcasted iterator, std::ranges::copy_n has the same problem
+	// std::copy_n(v1D.begin(), arr.size(), arr.begin());
+	// BOOST_TEST( arr[3] == 2 );
+
+	// doesn't work either
+	// std::copy_n(std::execution::par, v1D.begin(), arr.size(), arr.begin());
+	// BOOST_TEST( arr[3] == 2 );
+
+	// works: hack to convert random access into bidirectional
+	std::copy_n(bidirectional_iterator_wrapper{v1D.begin()}, arr.size(), arr.begin());
+	BOOST_TEST( arr[3] == 2 );
+
+	// works, but it might not be really parallel
+	// std::copy_n(std::execution::par, bidirectional_iterator_wrapper{v1D.begin()}, arr.size(), arr.begin());
+	// BOOST_TEST( arr[3] == 2 );
 
 	std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) {return ve;});
 	BOOST_TEST( arr[3] == 2 );
-
-	// std::copy_n(v1D.begin(), arr.size(), arr.begin());
-	// BOOST_TEST( arr[3] == 2 );
 }
