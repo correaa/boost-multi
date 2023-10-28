@@ -6,7 +6,6 @@
 
 // #include <execution>
 #include <numeric>
-#include <ranges>
 
 namespace multi = boost::multi;
 
