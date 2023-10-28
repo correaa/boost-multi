@@ -1,12 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi array diagonal"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
-#include <execution>
+// #include <execution>
 #include <numeric>
 #include <ranges>
 
@@ -110,6 +108,7 @@ BOOST_AUTO_TEST_CASE(broadcast_1D) {
 
 template<class RandomIterator>
 struct bidirectional_iterator_wrapper : RandomIterator {
+	explicit bidirectional_iterator_wrapper(RandomIterator it) : RandomIterator{it} {}  // not needed in C++20
 	using iterator_category = std::bidirectional_iterator_tag;
 };
 
