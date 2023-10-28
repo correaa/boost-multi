@@ -857,8 +857,8 @@ if(NOT Boost_FOUND)
 else()
 
 	foreach(TEST_FILE ${TEST_SRCS})
-		cmake_path(GET TEST_FILE STEM TEST_EXE)  # needs 3.20
-		# set(TEST_EXE "${TEST_FILE}.x")
+		# cmake_path(GET TEST_FILE STEM TEST_EXE)  # needs 3.20
+		set(TEST_EXE "${TEST_FILE}.x")
 		add_executable(${TEST_EXE} ${TEST_FILE})
 
 		if(ENABLE_CUDA OR DEFINED CXXCUDA)
