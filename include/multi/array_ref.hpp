@@ -993,7 +993,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	constexpr auto broadcast() const& {
 		// using boost::multi::detail::get;
-		multi::layout_t<D + 1> new_layout{layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, std::numeric_limits<size_type>::max()};
 		return subarray<T, D+1, typename subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
@@ -1875,7 +1875,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
  public:
 	constexpr auto broadcast() const& {
-		multi::layout_t<2> new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		multi::layout_t<2> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
 		return subarray<T, 2, typename subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
