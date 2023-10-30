@@ -34,7 +34,9 @@ endif()
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
-	find_package(CUDA)
+	find_package(CUDAToolkit REQUIRED COMPONENTS cuBLAS)
+	# find_package(CUDA)
+	# find_package(cuBLAS)
 endif()
 
 enable_testing()
@@ -50,7 +52,7 @@ if(ENABLE_HIP)
 endif()
 
 if(ENABLE_CUDA)
-find_package(CUDA REQUIRED)
+# find_package(CUDA REQUIRED)
 
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
@@ -79,9 +81,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 		target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework)
 	
 		target_link_libraries(${TEST_EXE} PRIVATE ${CUDA_LIBRARIES})
-		target_link_libraries(${TEST_EXE} PRIVATE -lcublas)
-	
-		target_include_directories(${TEST_EXE} PRIVATE /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/math_libs/include)
+		target_link_libraries(${TEST_EXE} PRIVATE CUDA::cublas)
+
+		# target_include_directories(${TEST_EXE} PRIVATE /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/math_libs/include)
 	
 		# if(NOT ENABLE_CUDA) target_compile_options  (${TEST_EXE} PRIVATE $<$<CXX_COMPILER_ID:GNU>: -Werror -Wall -Wextra -fno-common -Wpedantic -Wformat-truncation -fstack-usage>#-Wconversion
 		# $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
