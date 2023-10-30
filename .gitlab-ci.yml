@@ -339,9 +339,9 @@ cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda-12.2.2:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+cuda-12.1.1:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
   stage: build
-  image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04 # nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
+  image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
   tags:
     - nvidia-docker
   script:
