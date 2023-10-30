@@ -14,7 +14,7 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda")
 endif()
 
-find_package(CUDA QUIET)
+# find_package(CUDA QUIET)
 include_directories(${CUDA_INCLUDE_DIRS})
 link_libraries(${CUDA_CUFFT_LIBRARIES})
 
