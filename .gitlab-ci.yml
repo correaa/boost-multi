@@ -239,7 +239,9 @@ oneapi-latest c++20:
   stage: build
   image: intel/oneapi-hpckit:latest
   allow_failure: true
-  script:
+  script:  # https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2023-0/apt.html
+    - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+    - echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
     - apt-get update --allow-insecure-repositories && apt-get install --allow-insecure-repositories --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
