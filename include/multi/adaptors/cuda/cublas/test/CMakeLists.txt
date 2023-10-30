@@ -48,6 +48,8 @@ endif()
 if(ENABLE_CUDA)
 # find_package(CUDA REQUIRED)
 
+find_package(CUDAToolkit REQUIRED COMPONENTS cuBLAS)
+
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
 	all.cu
