@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 
 BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
 	struct vec3 {
-		double x, y, z; // NOLINT(misc-non-private-member-variables-in-classes)
+		double x, y, z;  // NOLINT(misc-non-private-member-variables-in-classes)
 		[[maybe_unused]] auto operator==(vec3 const& other) const -> bool {return x == other.x and y == other.y and z == other.z;}
 	};
 
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
 
 BOOST_AUTO_TEST_CASE(multi_lower_dimension_2d) {
 	struct vec3 {
-		double x, y, z; // NOLINT(misc-non-private-member-variables-in-classes)
+		double x, y, z;  // NOLINT(misc-non-private-member-variables-in-classes)
 	};
 
 	multi::array<double, 2> d2 = {
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(multi_lower_dimension_2d) {
 	};
 
 	{
-		auto&& d2strided3 = d2.unrotated().strided(3).rotated();//.reinterpret_array_cast<vec3>();
+		auto&& d2strided3 = d2.unrotated().strided(3).rotated();
 		BOOST_TEST( d2strided3.size() == 4 );
 		BOOST_TEST( d2strided3[0].size() == 3 );
 		BOOST_TEST( &d2strided3[1][2] == &d2[1][6] );
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(multi_lower_dimension_2d) {
 
 BOOST_AUTO_TEST_CASE(multi_lower_dimension_3d) {
 	struct vec3 {
-		double x, y, z; // NOLINT(misc-non-private-member-variables-in-classes)
+		double x, y, z;  // NOLINT(misc-non-private-member-variables-in-classes)
 	};
 
 	multi::array<double, 3> d3({4, 15, 9}, 0.0);

@@ -130,6 +130,7 @@ clang++ cpplint:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - clang++ --version
+    - cpplint --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
