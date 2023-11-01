@@ -15,7 +15,11 @@
 #include<tuple>      // needed by a deprecated function
 #include<utility>    // for move
 
+#if not(__GNUC__ and (__GNUC_MAJOR__<=7))
+#if not(__clang__ and (__clang_major__<=7))
 #include<memory_resource>
+#endif
+#endif
 
 namespace boost::multi {
 
