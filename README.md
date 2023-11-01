@@ -945,8 +945,8 @@ The library also works well with Ranges-v3 which is approximately a superset of 
 
 ### Polymorphic Memory Resources
 
-In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers as described in this example. 
-For example, this code uses a buffer to allocate memory for two arrays, we will see how this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
+In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's polymorphic memory resources (PMR) which allows using advanced allocation strategies, including preallocated buffers.
+For example, this code uses a buffer as memory for two arrays; this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
 
 ```cpp
 #include <memory_resource>  // for polymorphic memory resource, monotonic buffer
@@ -962,7 +962,7 @@ int main() {
 }
 ```
 `multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.
-This particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. [(live)](https://godbolt.org/z/fP9P5Ksvb)
+In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. [(live)](https://godbolt.org/z/fP9P5Ksvb)
 
 The library also supports allocators from other libraries, including those returning special pointer types (see [CUDA Thrust](#cuda-thrust) Thurst section).
 
