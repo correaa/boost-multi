@@ -614,7 +614,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	explicit static_array(multi::static_array<TT, 0, Args...> const& other, allocator_type const& alloc)  // TODO(correaa) : call other constructor (above)
 	: array_alloc{alloc}, ref(static_array::allocate(other.num_elements())
 	, extensions(other)) {
-		if(other.data_elements() and other.num_elements()) {
+		if(other.data_elements() && other.num_elements()) {
 			if constexpr(std::is_trivial_v<T>) {
 									adl_copy_n(                       other.data_elements(), other.num_elements(), this->data_elements());
 			} else {
@@ -668,7 +668,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 
 	template<class Singleton,
-		std::enable_if_t<not std::is_base_of_v<static_array, Singleton> and not std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
+		std::enable_if_t<! std::is_base_of_v<static_array, Singleton> and ! std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
 		class = decltype(adl_copy_n(                       &std::declval<Singleton>(), 1, typename static_array::element_ptr{}))
 	>
 	// NOLINTNEXTLINE(runtime/explicit)
@@ -861,7 +861,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 		return std::move(*this);
 	}
 
-	template<class Other, std::enable_if_t<not std::is_base_of<array, std::decay_t<Other>>{}, int> /*dummy*/=0>
+	template<class Other, std::enable_if_t<! std::is_base_of<array, std::decay_t<Other>>{}, int> /*dummy*/=0>
 	auto operator=(Other const& other) -> array& {this->assign(&other); return *this;}  // NOLINT(google-runtime-operator) allow assigment from other ranges
 
 	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array& {
@@ -1215,12 +1215,12 @@ template<class T>        array(IL<IL<IL<IL<IL<T>>>>>) ->        array<T, 5>;
 template<class T>        array(T[]                  ) ->        array<T, 1>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
-template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, 0>;
-template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<1>, T) -> array<T, 1>;
-template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<2>, T) -> array<T, 2>;
-template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<3>, T) -> array<T, 3>;
-template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<4>, T) -> array<T, 4>;
-template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<5>, T) -> array<T, 5>;
+template<class T, class = std::enable_if_t<! multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, 0>;
+template<class T, class = std::enable_if_t<! multi::is_allocator_v<T>>> array(iextensions<1>, T) -> array<T, 1>;
+template<class T, class = std::enable_if_t<! multi::is_allocator_v<T>>> array(iextensions<2>, T) -> array<T, 2>;
+template<class T, class = std::enable_if_t<! multi::is_allocator_v<T>>> array(iextensions<3>, T) -> array<T, 3>;
+template<class T, class = std::enable_if_t<! multi::is_allocator_v<T>>> array(iextensions<4>, T) -> array<T, 4>;
+template<class T, class = std::enable_if_t<! multi::is_allocator_v<T>>> array(iextensions<5>, T) -> array<T, 5>;
 
 // generalization, will not work with naked {n, m, ...} notation (or single integer notation)
 template<dimensionality_type D, class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> >
