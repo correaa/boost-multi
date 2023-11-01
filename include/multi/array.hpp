@@ -154,7 +154,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(static_array&&) = delete;
 
 	static_array(decay_type&& other, allocator_type const& alloc) noexcept
-	: array_alloc{alloc}  // TODO(correaa) : handle allocation propagation here
+	: array_alloc{alloc}
 	, ref{std::exchange(other.base_, nullptr), other.extensions()} {
 		std::move(other).layout_mutable() = {};
 	}
@@ -177,9 +177,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
 	template<
-		class Range, class = std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>,
+		class Range, class = std::enable_if_t<! std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(/*static_array*/(std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
-		class = std::enable_if_t<not is_subarray<Range const&>{}>
+		class = std::enable_if_t<! is_subarray<Range const&>{}>
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
@@ -211,14 +211,14 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
 
-	// template<class... Exts, class... Ts>  // TODO(correaa) add implicit constructor from tuple to extensions_t ?
+	// template<class... Exts, class... Ts>
 	// explicit static_array(std::tuple<Exts...> extensions, Ts&&... args)  // this is important to pass arguments to boost::interprocess::construct
 	// : static_array{
 	// 	std::apply([](auto... exts) {return typename static_array::extensions_type{exts...};}, extensions), 
 	// 	std::forward<Ts>(args)...
 	// } {}
 
-	template<class Element, std::enable_if_t<std::is_convertible<Element, typename static_array::element>{} and (D == 0), int> = 0>
+	template<class Element, std::enable_if_t<std::is_convertible_v<Element, typename static_array::element> && (D == 0), int> = 0>
 	explicit static_array(Element const& elem, allocator_type const& alloc)
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
@@ -256,7 +256,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	template<class TT, class... Args,
 		std::enable_if_t<       multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> =0,
-	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
@@ -264,16 +263,14 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
-		std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> =0,
-	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		std::enable_if_t<! multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> =0,
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	explicit static_array(multi::subarray<TT, D, Args...> const& other)
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
-		std::enable_if_t<       multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&>().base()), T>, int> =0,
-	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		std::enable_if_t<  multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&>().base()), T>, int> =0,
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor ; // NOLINTNEXTLINE(runtime/explicit)
@@ -281,16 +278,14 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
-		std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&>().base()), T>, int> =0,
-	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		std::enable_if_t<! multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&>().base()), T>, int> =0,
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	explicit static_array(multi::subarray<TT, D, Args...>& other)
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
-		std::enable_if_t<       multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&&>().base()), T>, int> =0,
-	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
+		std::enable_if_t<  multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&&>().base()), T>, int> =0,
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor ; // NOLINTNEXTLINE(runtime/explicit)
@@ -298,15 +293,14 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(std::move(other), allocator_type{}) {}
 
 	template<class TT, class... Args,
-		std::enable_if_t<not    multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&&>().base()), T>, int> =0,
-	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
-	 class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+		std::enable_if_t<! multi::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&&>().base()), T>, int> =0,
+		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...>&&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	explicit static_array(multi::subarray<TT, D, Args...>&& other)
 	: static_array(std::move(other), allocator_type{}) {}
 
 	template<class TT, class... Args,
-		std::enable_if_t<    multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> =0
+		std::enable_if_t<  multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> =0
 	>
 	/*mplct*/static_array(array_ref<TT, D, Args...>     & other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: array_alloc{}
@@ -315,7 +309,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class TT, class... Args>
-	explicit static_array(array_ref<TT, D, Args...>     & other, std::enable_if_t<not multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
+	explicit static_array(array_ref<TT, D, Args...>     & other, std::enable_if_t<! multi::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/= nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
 	: array_alloc{}
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		static_array::uninitialized_copy_elements(other.data_elements());
@@ -329,7 +323,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class TT, class... Args,
-		std::enable_if_t<not multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>     &&>().base()), T>, int> = 0
+		std::enable_if_t<! multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>     &&>().base()), T>, int> = 0
 	>
 	explicit static_array(array_ref<TT, D, Args...>     && other)  // NOLINT(fuchsia-default-arguments-declarations)
 	: array_alloc{}
@@ -348,7 +342,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class TT, class... Args,
-		std::enable_if_t<not multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...> const&>().base()), T>, int> =0
+		std::enable_if_t<! multi::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...> const&>().base()), T>, int> =0
 	>
 	explicit static_array(array_ref<TT, D, Args...> const& other)  // NOLINT(fuchsia-default-arguments-declarations)
 	: array_alloc{}
@@ -613,7 +607,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	: array_alloc{alloc}
 	, ref(static_array::allocate(other.num_elements()), extensions(other)) {
 		assert( other.num_elements() <= 1 );
-		if(other.num_elements()) {adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + other.num_elements(), this->base());}  // ref::begin());
+		if(other.num_elements()) {adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + other.num_elements(), this->base());}
 	}
 
 	template<class TT, class... Args>
