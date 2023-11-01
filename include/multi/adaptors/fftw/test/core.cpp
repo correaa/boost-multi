@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
 //  fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
 	fftw::dft_forward(
 		{true, true, true},
-		multi::array_ref<complex, 3>(data_elements(io), extensions(io)), 
+		multi::array_ref<complex, 3>(data_elements(io), extensions(io)),
 		multi::array_ref<complex, 3>(data_elements(io), extensions(io))
 	);
 	BOOST_REQUIRE( powerin - power(io)/num_elements(io) < 1e-10 );
