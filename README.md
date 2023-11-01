@@ -945,7 +945,7 @@ The library also works well with Ranges-v3 which is approximately a superset of 
 
 ### Polymorphic Memory Resources
 
-In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's polymorphic memory resources (PMR) which allows using advanced allocation strategies, including preallocated buffers.
+In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's [polymorphic memory resources (PMR)](https://en.cppreference.com/w/cpp/header/memory_resource) which allows using advanced allocation strategies, including preallocated buffers.
 For example, this code uses a buffer as memory for two arrays; this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
 
 ```cpp
