@@ -15,6 +15,12 @@
 #include<tuple>      // needed by a deprecated function
 #include<utility>    // for move
 
+#if not(defined(__GNUC__) and (__GNUC__<=7))
+#if not(defined(__clang__) and (__clang_major__<=7))
+#include<memory_resource>
+#endif
+#endif
+
 namespace boost::multi {
 
 template <class T>
@@ -754,7 +760,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return *(this->base_);
 	}
-	constexpr operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr operator std::add_rvalue_reference_t<typename std::iterator_traits<typename static_array::element_ptr>::reference>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return std::move(*(this->base_));
 	}
 	constexpr operator typename std::iterator_traits<typename static_array::element_ptr>::reference()& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
@@ -883,7 +889,6 @@ struct array : static_array<T, D, Alloc> {
 		"only exact type of array element or void (default?) is allowed as allocator value type"
 	);
 
- public:
 	// NOLINTNEXTLINE(runtime/operator)
 	auto operator&()     && -> array      * = delete;       // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
@@ -915,18 +920,6 @@ struct array : static_array<T, D, Alloc> {
 	template<class OtherT, class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> and not std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> and (D == 1) > >
 	explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept {return static_cast<T>(elem);})} {}  // TODO(correaa) investigate why noexcept is necessary
-
-	// template<class TTT = void, class Int, std::enable_if_t<sizeof(TTT*) and not std::is_same_v<T, int> and std::is_same_v<Int, int> and std::is_convertible_v<int, T> and D == 1, int> = 0>
-	// explicit array(std::initializer_list<Int> ilv, TTT* = nullptr)
-	// : static_{array<T, D>(ilv.begin(), ilv.end())} {
-	//  if(ilv.size() == 1) {throw std::runtime_error{"ambiguous call"};}
-	// }
-
-	// template<class TTT = void, class Int, std::enable_if_t<sizeof(TTT*) and not std::is_same_v<T, int> and std::is_same_v<Int, int> and std::is_convertible_v<int, T> and D == 1, int> = 0>
-	// array(std::initializer_list<Int> ilv, TTT* = nullptr, double = 0.0)
-	// : static_{array<T, D>(ilv.begin(), ilv.end())} {
-	//  if(ilv.size() == 1) {throw std::runtime_error{"ambiguous call"};}
-	// }
 
 	array() = default;
 	array(array const&) = default;
@@ -1250,13 +1243,13 @@ template <class T, std::size_t N>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 auto decay(const T(&arr)[N]) noexcept -> multi::array<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>> {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>>(data_elements(arr), extensions(arr));
+	return multi::array_cref<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>>(data_elements(arr), extensions(arr));
 }
 
 template<class T, std::size_t N>
 struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using reference = T&;
-	using element = std::remove_all_extents_t<T[N]>;  //  NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+	using element = std::remove_all_extents_t<T[N]>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using decay_type = multi::array<T, 1>;
 };
 
@@ -1282,7 +1275,7 @@ namespace boost::serialization {
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version< boost::multi::array<T, D, A> > {
 	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>;  // typedef mpl::int_<1> type;
-	enum { value = type::value };
+	enum { value = type::value };  //NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
 };
 
 }  // end namespace boost::serialization
