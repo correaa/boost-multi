@@ -990,9 +990,9 @@ and for this reason, there is no single substitute for `std::span` for all cases
 Depending on how it is used, either `multi::array_ref<T, 1> [const& | &&]` or `multi::array_ptr<T [const], 1>` may replace the features of `std::span`.
 The former typically works when using it as function argument.
 
-## Comparison to other array libraries (mdsan, Eigen, etc)
+## Comparison to other array libraries (mdspan, Eigen, etc)
 
-The C++23 standard is projected to provide `mdspan`, a non-owning _multidimensional_ array.
+The C++23 standard is projected to provide `std::mdspan`, a non-owning _multidimensional_ array.
 So here is an appropriate point to compare the two libraries.
 Although the goals are similar, the two libraries differ in their generality and approach; in a few words: 
 
