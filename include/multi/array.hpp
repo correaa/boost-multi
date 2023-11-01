@@ -754,7 +754,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return *(this->base_);
 	}
-	constexpr operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr operator std::add_rvalue_reference_t<typename std::iterator_traits<typename static_array::element_ptr>::reference>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return std::move(*(this->base_));
 	}
 	constexpr operator typename std::iterator_traits<typename static_array::element_ptr>::reference()& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
