@@ -218,10 +218,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// 	std::forward<Ts>(args)...
 	// } {}
 
-	template<class Element,
-		std::enable_if_t<(D == 0) && sizeof(Element*), int> =0,  // separate reqs for circle
-		std::enable_if_t<std::is_convertible_v<Element, typename static_array::element>, int> =0
-	>
+	template<class Element, std::enable_if_t<std::is_convertible_v<Element, typename static_array::element> && (D == 0), int> = 0>
 	explicit static_array(Element const& elem, allocator_type const& alloc)
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
