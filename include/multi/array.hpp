@@ -79,7 +79,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 , boost::multi::random_iterable<static_array<T, D, typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>> {
 	static_assert(
 		   std::is_same_v<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, typename static_array::element>
-		or std::is_same_v<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, void                          >,  // allocator template can be redundant or void (which can be a default for the allocator)
+		|| std::is_same_v<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, void                          >,  // allocator template can be redundant or void (which can be a default for the allocator)
 		"allocator value type must match array value type"
 	);
  private:
@@ -115,7 +115,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	auto uninitialized_default_construct() {
 		return uninitialized_default_construct_if(std::integral_constant<
 			bool,
-			std::is_trivially_default_constructible_v<typename static_array::element> or multi::force_element_trivial_default_construction<typename static_array::element>
+			std::is_trivially_default_constructible_v<typename static_array::element> || multi::force_element_trivial_default_construction<typename static_array::element>
 		>{});
 	}
 
@@ -124,7 +124,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	void destroy() {
-		if constexpr(not (std::is_trivially_destructible_v<typename static_array::element> or multi::force_element_trivial_default_construction<typename static_array::element>)) {
+		if constexpr(! (std::is_trivially_destructible_v<typename static_array::element> || multi::force_element_trivial_default_construction<typename static_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
 	}
@@ -153,7 +153,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	static_array(static_array&&) = delete;
 
-	static_array(decay_type&& other, allocator_type const& alloc) noexcept          // 6b  TODO(correaa) move from array only
+	static_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}  // TODO(correaa) : handle allocation propagation here
 	, ref{std::exchange(other.base_, nullptr), other.extensions()} {
 		std::move(other).layout_mutable() = {};
@@ -556,7 +556,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 
 	template<class Singleton,
-		std::enable_if_t<not std::is_base_of_v<static_array, Singleton> and not std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
+		std::enable_if_t<! std::is_base_of_v<static_array, Singleton> && ! std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
 		class = decltype(adl_copy_n(                       &std::declval<Singleton>(), 1, typename static_array::element_ptr{}))
 	>
 	auto operator=(Singleton const& single) -> static_array& {
@@ -569,7 +569,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	using ref = array_ref<T, 0, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
 	auto uninitialized_value_construct() {
-		if constexpr(not(std::is_trivially_default_constructible_v<typename static_array::element> or multi::force_element_trivial_default_construction<typename static_array::element>)) {
+		if constexpr(!(std::is_trivially_default_constructible_v<typename static_array::element> || multi::force_element_trivial_default_construction<typename static_array::element>)) {
 			return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 		}
 	}
