@@ -148,14 +148,14 @@ clang++ sani:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-testing c++23:
+clang++-15 c++20:
   stage: build
   image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-15 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23
+    - clang++-15 --version
+    - CXX=clang++-15 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
