@@ -45,9 +45,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr tuple()             = default;
 	constexpr tuple(tuple const&) = default;
 
+	// TODO(correaa) make conditional explicit constructor depending on the conversions for T0, Ts...
 	constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)}, head_{std::move(head)} {}
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
 	constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
+
+	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
+	constexpr tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
