@@ -219,6 +219,7 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<std::vector<double>> const aa(AA);
+		BOOST_REQUIRE( aa.size() == 2 );
 		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
 	#endif
 	}
@@ -228,9 +229,13 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 
 	}
 	{
+	#if not defined(__circle_build__)
+
 		multi::array<double, 2> const              AA = {{1.0, 2.0}, {3.0, 4.0}};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<multi::array<double, 1>> const aa(AA);
+		BOOST_REQUIRE( aa.size() == 2 );
+	#endif
 	}
 }
