@@ -73,12 +73,18 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
+
+	static_assert( std::is_same_v<multi::static_array<double, 0>::element, double> );
+	static_assert( std::is_same_v<multi::static_array<double, 1>::element, double> );
+
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 	{
+#if not defined(__circle_build__)  // crashes circle 198 and 200 in docker
 		multi::static_array const arr = {1.2, 3.4, 5.6};
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == 5.6 );
 		BOOST_REQUIRE(( arr == multi::static_array{1.2, 3.4, 5.6} ));
+#endif
 	}
 	{
 		multi::array arr({1.2, 3.4, 5.6});
@@ -260,11 +266,13 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 	{
+#if not defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
 		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
+#endif
 	}
 }
 
@@ -307,12 +315,14 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 
 BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 	{
+	#if not defined(__circle_build__)
 		multi::static_array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
+	#endif
 	}
 	{
 		multi::array const arr({
