@@ -148,14 +148,14 @@ clang++ sani:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-testing c++20:
+clang++-testing c++23:
   stage: build
   image: debian:testing
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -391,7 +391,7 @@ circle-latest:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle"]
+#  needs: ["circle"]
 
 inq:
   allow_failure: false
