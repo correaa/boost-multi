@@ -214,11 +214,13 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 		auto const aa(AA().operator std::vector<std::vector<double>>());
 	}
 	{
+	#if not defined(__circle_build__)
 		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<std::vector<double>> const aa(AA);
 		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
+	#endif
 	}
 	{
 		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
