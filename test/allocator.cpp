@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 //  BOOST_REQUIRE( arr[1][2] == 99.0 );
 }
 
-#if (__cpp_lib_memory_resource >= 201603)
+#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
 BOOST_AUTO_TEST_CASE(pmr) {
 	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
