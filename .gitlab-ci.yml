@@ -7,36 +7,12 @@
 #    curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
 #    sudo apt-get install gitlab-runner
 
-# image: corraadock/gnudev:v2
 image: debian:stable
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
   RT_VERSION: "0.1"
-
-# OLDGNUSANICHECKCOV:
-#   stage: build
-#   image: debian:stable
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-#     - mkdir build && cd build
-#     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
-#     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-#     - lcov --directory . --capture --output-file coverage.info
-#     - lcov --remove coverage.info '/usr/*' --output-file coverage.info
-#     - lcov --list coverage.info && genhtml coverage.info
-#     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
-#   coverage: /^\s*lines:\s*\d+.\d+\%/
-#   artifacts:
-#     name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
-#     expire_in: 2 days
-#     reports:
-#       coverage_report:
-#         coverage_format: cobertura
-#         path: build/coverage.xml
 
 g++:
   stage: build
@@ -154,6 +130,7 @@ clang++ cpplint:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - clang++ --version
+    - cpplint --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
@@ -197,32 +174,6 @@ clang++-7:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
-
-
-# OLDCLANGTIDYSANI:
-#   stage: build
-#   image: debian:testing
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang-13 clang-tidy-14 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
-#     - mkdir build && cd build
-#     - clang++-13 --version
-#     - clang-tidy-14 --version
-#     - CXX=clang++-13 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY="clang-tidy-14" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure
-
-# NEWCLANGSTD20LINT:
-#   stage: build
-#   image: debian:testing
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config cpplint
-#     - cpplint --recursive include/multi/array.hpp
-#     - mkdir build && cd build
-#     - clang++ --version
-#     - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#   needs: ["clang++"]
 
 oneapi:
   stage: build
@@ -370,28 +321,6 @@ cuda-12.1.1:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/
 #     - ctest -j 2 --output-on-failure
 #   needs: ["cuda"]
 
-# cuda-11.5.2 clang:  # other images https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
-#   stage: build
-#   image: nvcr.io/nvidia/cuda:11.5.2-devel-ubuntu20.04
-#   allow_failure: true
-#   tags:
-#     - nvidia-docker
-#   script:
-#     - nvidia-smi
-#     - apt-get -qq update
-#     - DEBIAN_FRONTEND=noninteractive  apt-get install --no-install-recommends -y clang cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-#     - mkdir build && cd build
-#     - cmake --version
-#     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
-#     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
-#     - cmake --version
-#     - clang++ --version
-#     - /usr/local/cuda/bin/nvcc --version
-#     - CUDAToolkit_ROOT=/usr/local/cuda cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++ -DCMAKE_CUDA_ARCHITECTURES=61
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#   needs: ["cuda", "clang++"]
-
 rocm:
   stage: build
   image: rocm/dev-ubuntu-22.04
@@ -447,7 +376,7 @@ circle-187:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle"]
+#  needs: ["circle"]
 
 circle-latest:
   stage: build
@@ -463,7 +392,7 @@ circle-latest:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle"]
+#  needs: ["circle"]
 
 inq:
   allow_failure: false
@@ -563,4 +492,3 @@ qmcpack-cuda:
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
   needs: ["qmcpack","cuda"]
-

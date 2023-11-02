@@ -98,6 +98,60 @@ BOOST_AUTO_TEST_CASE(linearize) {
 	BOOST_REQUIRE( get<2>(point) == 25 );
 }
 
+BOOST_AUTO_TEST_CASE(layout_tuple_2d) {
+	multi::extensions_t<2> const x1({51, 52});
+	multi::extensions_t<2> const x2({multi::iextension{0, 51}, multi::iextension{0, 52}});
+	BOOST_REQUIRE( x1 == x2 );
+
+	multi::extensions_t<2> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}));
+	BOOST_REQUIRE( x1 == x3 );
+
+	multi::extensions_t<2> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52});
+	BOOST_REQUIRE( x1 == x4 );
+
+	multi::extensions_t<2> const x5 = std::tuple{multi::iextension{0, 51}, multi::iextension{0, 52}};
+	BOOST_REQUIRE( x1 == x5 );
+
+	multi::extensions_t<2> const x6 = std::tuple{51, 52};
+	BOOST_REQUIRE( x1 == x6 );
+
+	multi::extensions_t<2> const x7{51, 52};
+	BOOST_REQUIRE( x1 == x7 );
+
+	multi::extensions_t<2> const x8 = {51, 52};
+	BOOST_REQUIRE( x1 == x8 );
+
+	auto const x9 = multi::extensions_t<2>{51, 52};
+	BOOST_REQUIRE( x1 == x9 );
+
+	// multi::extensions_t x10{51, 52, 53};  // TODO(correaa) should it work?
+	// BOOST_REQUIRE( x1 == x10 );
+}
+
+BOOST_AUTO_TEST_CASE(layout_tuple_3d) {
+	multi::extensions_t<3> const x1({51, 52, 53});
+	multi::extensions_t<3> const x2({multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}});
+	BOOST_REQUIRE( x1 == x2 );
+
+	multi::extensions_t<3> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}));
+	BOOST_REQUIRE( x1 == x3 );
+
+	multi::extensions_t<3> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53});
+	BOOST_REQUIRE( x1 == x4 );
+
+	multi::extensions_t<3> const x5 = std::tuple{multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}};
+	BOOST_REQUIRE( x1 == x5 );
+
+	multi::extensions_t<3> const x6 = std::tuple{51, 52, 53};
+	BOOST_REQUIRE( x1 == x6 );
+
+	multi::extensions_t<3> const x7{51, 52, 53};
+	BOOST_REQUIRE( x1 == x7 );
+
+	// multi::extensions_t x8{51, 52, 53};  // TODO(correaa) should it work?
+	// BOOST_REQUIRE( x1 == x8 );
+}
+
 BOOST_AUTO_TEST_CASE(layout_0) {
 	multi::array<double, 3> arr(
 #if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
