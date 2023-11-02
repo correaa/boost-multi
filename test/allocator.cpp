@@ -1,15 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
-#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603L)
-#include <memory_resource>  // for polymorphic memory resource, monotonic buffer
-#endif
-
+#include <memory_resource>
 #include <vector>
 
 namespace multi = boost::multi;
