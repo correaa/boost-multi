@@ -6,16 +6,14 @@
 
 #include <multi/array.hpp>
 
-#if(MULTI_PROVIDES_PMR_ARRAY)
 #include <memory_resource>  // for polymorphic memory resource, monotonic buffer
-#endif
 
 #include <numeric>
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
-#if(MULTI_PROVIDES_PMR_ARRAY)
+#if (__cpp_lib_memory_resource >= 201603)
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
@@ -73,7 +71,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 }
 
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
-#if(MULTI_PROVIDES_PMR_ARRAY)
+#if (__cpp_lib_memory_resource >= 201603)
 //  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 

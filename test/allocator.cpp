@@ -94,11 +94,10 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 	BOOST_REQUIRE( *ptr == 2.0 );
 
 //  multi::array<double const, 2, std::allocator<double>> arr({10, 10}, 99.0);
-//
 //  BOOST_REQUIRE( arr[1][2] == 99.0 );
 }
 
-#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603L)
+#if (__cpp_lib_memory_resource >= 201603)
 BOOST_AUTO_TEST_CASE(pmr) {
 	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
@@ -111,9 +110,7 @@ BOOST_AUTO_TEST_CASE(pmr) {
 	BOOST_REQUIRE(Aarr[0][0] == 'a');
 	BOOST_REQUIRE(Barr[0][0] == 'b');
 }
-#endif
 
-#if(MULTI_PROVIDES_PMR_ARRAY)
 BOOST_AUTO_TEST_CASE(pmr2) {
 	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
