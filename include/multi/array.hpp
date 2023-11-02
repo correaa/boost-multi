@@ -218,7 +218,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// 	std::forward<Ts>(args)...
 	// } {}
 
-	template<class Element, std::enable_if_t<std::is_convertible_v<Element, typename static_array::element> && (D == 0), int> = 0>
+	template<class Element, std::enable_if_t<(D == 0) && std::is_convertible_v<Element, typename static_array::element>, int> = 0>
 	explicit static_array(Element const& elem, allocator_type const& alloc)
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
@@ -1269,7 +1269,7 @@ namespace boost::serialization {
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version< boost::multi::array<T, D, A> > {
 	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>;  // typedef mpl::int_<1> type;
-	enum { value = type::value };  //NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
+	enum class value_t { value = type::value };  //NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
 };
 
 }  // end namespace boost::serialization
