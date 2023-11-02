@@ -15,7 +15,7 @@
 #include<tuple>      // needed by a deprecated function
 #include<utility>    // for move
 
-#if not(defined(__GNUC__) and (__GNUC__<=7))
+#if (not defined(_LIBCPP_VERSION)) or (_LIBCPP_VERSION > 7)
 #include<memory_resource>
 #endif
 
