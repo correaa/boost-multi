@@ -15,10 +15,8 @@
 #include<tuple>      // needed by a deprecated function
 #include<utility>    // for move
 
-#if not(defined(__GNUC__) and (__GNUC__<=7))
-#if not(defined(__clang__) and (__clang_major__<=7))
+#if not( (defined(__GNUC__) and (__GNUC__<=7)) or (defined(__clang__) and (__clang_major__<=7)) )
 #include<memory_resource>
-#endif
 #endif
 
 namespace boost::multi {
@@ -338,7 +336,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: array_alloc{}
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		static_array::uninitialized_copy_elements(other.data_elements());
-		// [[maybe_unused]] auto const fun = [&](){T dummy{*other.base()};};
 	}
 
 	template<class TT, class... Args,
@@ -523,7 +520,7 @@ template<class T, class Alloc>
 struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
 : protected array_allocator<Alloc>
 , public array_ref<T, 0, typename allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer> {
-	static_assert( std::is_same<typename allocator_traits<Alloc>::value_type, typename static_array::element>{},
+	static_assert( std::is_same_v<typename allocator_traits<Alloc>::value_type, typename static_array::element>,
 		"allocator value type must match array value type");
 
  private:
@@ -531,11 +528,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
  public:
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()     && -> static_array      * = delete;       // NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
+	auto operator&()     && -> static_array      * = delete;       //NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()      & -> static_array      * {return this;}  // NOLINT(google-runtime-operator) : override from base
+	auto operator&()      & -> static_array      * {return this;}  //NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() const& -> static_array const* {return this;}  // NOLINT(google-runtime-operator) : override from base
+	auto operator&() const& -> static_array const* {return this;}  //NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
 
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
@@ -652,23 +649,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
 	static_array() : static_array(multi::iextensions<0>{}) {}
 
-	explicit static_array(typename static_array::element const& elem)       // 2
+	explicit static_array(typename static_array::element const& elem)
 	: static_array(multi::iextensions<0>{}, elem) {}
 
-	template<class Pointer, class = decltype(typename Pointer::bla{})>  // , class = decltype(adl_copy_n(std::declval<Pointer>(), 1, typename static_array::element_ptr{}))>
-	explicit static_array(Pointer data)
-	: ref(data?static_array::allocate(1):nullptr, typename static_array::extensions_type{}) {
-	//  if(data) {
-			// if constexpr(std::is_trivial_v<T>) {
-									adl_copy_n(                       data, 1, this->data_elements());
-			// } else {
-			//  adl_alloc_uninitialized_copy_n(static_array::alloc(), data, 1, this->data_elements());
-			// }
-	//  }
-	}
-
 	template<class Singleton,
-		std::enable_if_t<! std::is_base_of_v<static_array, Singleton> and ! std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
+		std::enable_if_t<! std::is_base_of_v<static_array, Singleton> && ! std::is_same_v<Singleton, typename static_array::element_type>, int> =0,
 		class = decltype(adl_copy_n(                       &std::declval<Singleton>(), 1, typename static_array::element_ptr{}))
 	>
 	// NOLINTNEXTLINE(runtime/explicit)
@@ -800,9 +785,9 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
+//  TODO(correaa) find a symbolic way to express rotations, A << 1, A >> 1, A <<o; A >>o; ~A; !A; ++A; A++; --A; A--; -A; +A; e<<A; A>>e; e>>A; <<A; ~A;
 //  constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
 //  constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
-
 //  constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
 //  constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
 
@@ -879,7 +864,7 @@ struct array : static_array<T, D, Alloc> {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
 		   std::is_same_v<typename array::alloc_traits::value_type, std::remove_const_t<T>>
-		or std::is_same_v<typename array::alloc_traits::value_type, void                  >,
+		|| std::is_same_v<typename array::alloc_traits::value_type, void                  >,
 		"only exact type of array element or void (default?) is allowed as allocator value type"
 	);
 
@@ -911,7 +896,7 @@ struct array : static_array<T, D, Alloc> {
 	array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
 	: static_{array<T, D>(ilv.begin(), ilv.end())} {}
 
-	template<class OtherT, class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> and not std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> and (D == 1) > >
+	template<class OtherT, class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> && ! std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> && (D == 1) > >
 	explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept {return static_cast<T>(elem);})} {}  // TODO(correaa) investigate why noexcept is necessary
 
@@ -1024,8 +1009,8 @@ struct array : static_array<T, D, Alloc> {
 	template<
 		class Range,
 		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
-		std::enable_if_t<not has_data_elements<std::decay_t<Range>>::value, int> =0,
-		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> =0
+		std::enable_if_t<! has_data_elements<std::decay_t<Range>>::value, int> =0,
+		std::enable_if_t<! std::is_base_of<array, std::decay_t<Range>>{}, int> =0
 	>
 	auto operator=(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
@@ -1044,9 +1029,9 @@ struct array : static_array<T, D, Alloc> {
 	template<
 		class Range,
 		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
-		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> = 0
+		std::enable_if_t<! std::is_base_of<array, std::decay_t<Range>>{}, int> =0
 	>
-	auto from(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
+	auto from(Range&& other) -> array& {  // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
 			this->operator()() = other;
 		//  static_::operator=(other);
@@ -1076,7 +1061,7 @@ struct array : static_array<T, D, Alloc> {
 	template<class It>
 	auto assign(It first, It last) -> array& {
 		using std::next; using std::all_of;
-		if(adl_distance(first, last) == array::size()) {  // and multi::extensions(*first) == multi::extensions(*array::begin())){
+		if(adl_distance(first, last) == array::size()) {
 			static_::ref::assign(first);
 		} else {
 			this->operator=(array(first, last));
@@ -1094,13 +1079,13 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	template<class... TTs>
-	[[deprecated("use extensions for reextents, not tuples")]]
-	auto reextent(std::tuple<TTs...> const& other) -> array& {
-		return reextent(
-			std::apply([](auto const&... extensions) {return typename array::extensions_type(extensions...);}, other)
-		);  // paren is important here ext_type(...) for allow narrowing casts ^^^
-	}
+	// template<class... TTs>
+	// [[deprecated("use extensions for reextents, not tuples")]]
+	// auto reextent(std::tuple<TTs...> const& other) -> array& {
+	// 	return reextent(
+	// 		std::apply([](auto const&... extensions) {return typename array::extensions_type(extensions...);}, other)
+	// 	);  // paren is important here ext_type(...) for allow narrowing casts ^^^
+	// }
 
 	auto reextent(typename array::extensions_type const& extensions) && -> array&& {
 		if(extensions == this->extensions()) {return std::move(*this);}
@@ -1113,7 +1098,7 @@ struct array : static_array<T, D, Alloc> {
 			),
 			this->data_elements()  // used as hint
 		);
-		if constexpr(not (std::is_trivially_default_constructible_v<typename array::element> or multi::force_element_trivial_default_construction<typename array::element>)) {
+		if constexpr(! (std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
 		}
 		return std::move(*this);
@@ -1130,7 +1115,7 @@ struct array : static_array<T, D, Alloc> {
 			),
 			extensions
 		};
-		if constexpr(not (std::is_trivially_default_constructible_v<typename array::element> or multi::force_element_trivial_default_construction<typename array::element>)) {
+		if constexpr(! (std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
 		auto const is = intersection(this->extensions(), extensions);
@@ -1212,7 +1197,7 @@ template<class T>        array(IL<IL<IL<IL<IL<T>>>>>) ->        array<T, 5>;
 
 #undef IL
 
-template<class T>        array(T[]                  ) ->        array<T, 1>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+template<class T>        array(T[]                  ) ->        array<T, 1>;  //NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
 template<class T, class = std::enable_if_t<! multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, 0>;
@@ -1243,32 +1228,29 @@ auto decay(const T(&arr)[N]) noexcept -> multi::array<std::remove_all_extents_t<
 template<class T, std::size_t N>
 struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using reference = T&;
-	using element = std::remove_all_extents_t<T[N]>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+	using element = std::remove_all_extents_t<T[N]>;  //NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using decay_type = multi::array<T, 1>;
 };
 
 }  // end namespace boost::multi
 
-namespace boost::multi::pmr {
-
 #if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603))
-//  # or defined(__INTEL_LLVM_COMPILER) or defined(__INTEL_COMPILER)  // workaround for icpx 2022.2.0 with gcc 9.3 and icpc icpc 2021.7.0
-template <class T, boost::multi::dimensionality_type D>
-using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
-#define MULTI_PROVIDES_PMR_ARRAY 1  // NOLINT(cppcoreguidelines-macro-usage)
-#else
-// template <class T, boost::multi::dimensionality_type D>
-// struct [[deprecated("no PMR allocator")]] array;  // your version of C++ doesn't provide polymorphic_allocators
-#define MULTI_PROVIDES_PMR_ARRAY 0  // NOLINT(cppcoreguidelines-macro-usage)
-#endif
-
+namespace boost::multi::pmr {
+	template <class T, boost::multi::dimensionality_type D>
+	using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
 }  // end namespace boost::multi::pmr
+#else
+namespace boost::multi::pmr {
+	template <class T, boost::multi::dimensionality_type D>
+	struct [[deprecated("no PMR allocator")]] array;  // your version of C++ doesn't provide polymorphic_allocators
+}  // end namespace boost::multi::pmr
+#endif
 
 namespace boost::serialization {
 
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version< boost::multi::array<T, D, A> > {
-	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>;  // typedef mpl::int_<1> type;
+	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>;
 	enum class value_t { value = type::value };  //NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
 };
 
