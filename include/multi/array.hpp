@@ -15,7 +15,7 @@
 #include<tuple>      // needed by a deprecated function
 #include<utility>    // for move
 
-#if (not defined(_LIBCPP_VERSION)) or (_LIBCPP_VERSION > 7)
+#if __cplusplus > 201703L
 #include<memory_resource>
 #endif
 
