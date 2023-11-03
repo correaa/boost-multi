@@ -72,9 +72,9 @@ g++ sanitizer:
     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
 
-g++-oldold:
+g++-oldstable:
   stage: build
-  image: debian:oldoldstable
+  image: debian:oldstable
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
