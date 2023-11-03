@@ -15,7 +15,9 @@
 #include<tuple>      // needed by a deprecated function
 #include<utility>    // for move
 
+#if not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20170502)
 #include<memory_resource>
+#endif
 
 namespace boost::multi {
 
