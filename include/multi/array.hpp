@@ -15,9 +15,7 @@
 #include<tuple>      // needed by a deprecated function
 #include<utility>    // for move
 
-#if __cplusplus > 201703L
 #include<memory_resource>
-#endif
 
 namespace boost::multi {
 
@@ -212,8 +210,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// template<class... Exts, class... Ts>
 	// explicit static_array(std::tuple<Exts...> extensions, Ts&&... args)  // this is important to pass arguments to boost::interprocess::construct
 	// : static_array{
-	// 	std::apply([](auto... exts) {return typename static_array::extensions_type{exts...};}, extensions), 
-	// 	std::forward<Ts>(args)...
+	//  std::apply([](auto... exts) {return typename static_array::extensions_type{exts...};}, extensions), 
+	//  std::forward<Ts>(args)...
 	// } {}
 
 	template<class Element, std::enable_if_t<(D == 0) && std::is_convertible_v<Element, typename static_array::element>, int> = 0>
@@ -1082,9 +1080,9 @@ struct array : static_array<T, D, Alloc> {
 	// template<class... TTs>
 	// [[deprecated("use extensions for reextents, not tuples")]]
 	// auto reextent(std::tuple<TTs...> const& other) -> array& {
-	// 	return reextent(
-	// 		std::apply([](auto const&... extensions) {return typename array::extensions_type(extensions...);}, other)
-	// 	);  // paren is important here ext_type(...) for allow narrowing casts ^^^
+	//  return reextent(
+	//    std::apply([](auto const&... extensions) {return typename array::extensions_type(extensions...);}, other)
+	//  );  // paren is important here ext_type(...) for allow narrowing casts ^^^
 	// }
 
 	auto reextent(typename array::extensions_type const& extensions) && -> array&& {
