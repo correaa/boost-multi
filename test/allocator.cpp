@@ -4,7 +4,6 @@
 
 #include <multi/array.hpp>
 
-#include <memory_resource>
 #include <vector>
 
 namespace multi = boost::multi;
