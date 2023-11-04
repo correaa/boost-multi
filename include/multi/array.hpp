@@ -15,7 +15,7 @@
 #include<tuple>      // needed by a deprecated function
 #include<utility>    // for move
 
-#if not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20181206)
+#if not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20190222)
 #include<memory_resource>
 #endif
 
