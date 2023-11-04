@@ -1,17 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi complex"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
 #include <complex>
-
-#if(MULTI_PROVIDES_PMR_ARRAY)
-#include <memory_resource>  // for polymorphic memory resource, monotonic buffer
-#endif
-
 #include <vector>
 
 namespace multi = boost::multi;
@@ -32,10 +25,10 @@ BOOST_AUTO_TEST_CASE(pmr_double) {
 	BOOST_REQUIRE(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
 }
 
-#if(MULTI_PROVIDES_PMR_ARRAY)
+#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  999.9, 999.9, 999.9, 999.9}};
-	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
+	std::pmr::monotonic_buffer_resource pool(static_cast<void*>(std::data(buffer)), 12*sizeof(double));
 
 	multi::pmr::array<double, 2> Aarr({2, 2}, &pool);
 
