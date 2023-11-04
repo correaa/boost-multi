@@ -4,8 +4,6 @@
 
 #include <multi/array.hpp>
 
-#include <memory_resource>  // for polymorphic memory resource, monotonic buffer
-
 #include <numeric>
 
 namespace multi = boost::multi;
