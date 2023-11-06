@@ -1,7 +1,7 @@
 // Copyright 2023 Alfredo A. Correa
 
-#ifndef MULTI_MEMORY_STATIC_ALLOCATOR_HPP
-#define MULTI_MEMORY_STATIC_ALLOCATOR_HPP
+#ifndef MULTI_DETAIL_STATIC_ALLOCATOR_HPP
+#define MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 
 #include "../config/NODISCARD.hpp"
 #include "../config/NO_UNIQUE_ADDRESS.hpp"
