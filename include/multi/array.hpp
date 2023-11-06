@@ -149,7 +149,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::drop;
 	constexpr auto drop(difference_type n) && -> decltype(auto) {return ref::drop(n).element_moved();}
 
-	static_array(static_array&&) = delete;
+	static_array(static_array&& other) noexcept : static_array{other.element_moved()} {}
 
 	static_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}
@@ -514,6 +514,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	void serialize(Archive& arxiv, unsigned int const version) {
 		ref::serialize(arxiv, version);
 	}
+
+ private:
+	void swap(static_array& other) noexcept {operator()().swap(other());}
+
+ public:
+	friend void swap(static_array& lhs, static_array& rhs) noexcept {
+		lhs.swap(rhs);
+	}
+
 };
 
 template<class T, class Alloc>
