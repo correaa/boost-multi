@@ -3,6 +3,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
+#include <multi/detail/static_allocator.hpp>
 
 #include <vector>
 
@@ -128,5 +129,129 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	BOOST_TEST( buffer[1] == 5.0 );
 
 	BOOST_REQUIRE(Aarr[0][0] == 4.0);
+}
+
+BOOST_AUTO_TEST_CASE(static_allocator) {
+	multi::detail::static_allocator<double, 32> sa{};
+	auto* pp = sa.allocate(10);
+	new(std::next(pp, 8)) double{4.2};
+	BOOST_REQUIRE( *std::next(pp, 8) == 4.2 );
+	// (pp + 8)->~double();
+	sa.deallocate(pp, 10);
+}
+
+BOOST_AUTO_TEST_CASE(static_allocator_on_vector_double) {
+	std::vector<double, multi::detail::static_allocator<double, 32>> vv(10, 4.2);  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( vv[3] == 4.2 );
+
+	auto ww = vv;
+	BOOST_REQUIRE( ww[3] == 4.2 );
+
+	ww[3] = 5.1;
+	BOOST_REQUIRE( ww[3] == 5.1 );
+	BOOST_REQUIRE( vv[3] == 4.2 );
+
+	auto xx = std::move(ww);
+	BOOST_REQUIRE( ww.empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+	BOOST_REQUIRE( vv[3] == 4.2 );
+	BOOST_REQUIRE( xx[3] == 5.1 );
+
+	// swap(xx, vv);
+	// BOOST_REQUIRE( vv[3] == 5.1 );
+	// BOOST_REQUIRE( xx[3] == 4.2 );
+
+	{
+		std::vector< std::vector<double, multi::detail::static_allocator<double, 32>> > const VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_REQUIRE( VV.size() == 3 );
+		// swap(VV[0], VV[1]);
+		// std::sort(VV.begin(), VV.end());
+		// BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
+		// VV.resize(10, xx);
+		// std::sort(VV.begin(), VV.end());
+		// BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(static_allocator_on_vector_string) {
+	std::string const cat = "catcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcat";  // NOLINT(fuchsia-default-arguments-calls)
+	std::string const dog = "dogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdog";  // NOLINT(fuchsia-default-arguments-calls)
+
+	std::vector<std::string, multi::detail::static_allocator<std::string, 32>> vv(10, cat);  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( vv[3] == cat );
+
+	auto ww = vv;
+	BOOST_REQUIRE( ww[3] == cat );
+
+	ww[3] = dog;
+	BOOST_REQUIRE( ww[3] == dog );
+	BOOST_REQUIRE( vv[3] == cat );
+
+	auto xx = std::move(ww);
+	BOOST_REQUIRE( vv[3] == cat );
+	BOOST_REQUIRE( xx[3] == dog );
+	BOOST_REQUIRE( ww.empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+
+	// vv.resize(15);
+
+	// swap(xx, vv);
+	// BOOST_REQUIRE( vv[3] == dog );
+	// BOOST_REQUIRE( xx[3] == cat );
+
+	{
+		std::vector< std::vector<std::string, multi::detail::static_allocator<std::string, 32>> > const VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_REQUIRE( VV.size() == 3 );
+		// swap(VV[0], VV[1]);
+		// std::sort(VV.begin(), VV.end());
+		// BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
+		// VV.resize(10, xx);
+		// std::sort(VV.begin(), VV.end());
+		// BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
+	}
+}
+
+template<class T, multi::dimensionality_type D, std::size_t Capacity>
+using small_array = multi::static_array<T, D, multi::detail::static_allocator<T, Capacity>>;
+
+template<class T> void what(T&&) = delete;
+
+BOOST_AUTO_TEST_CASE(small_array_double) {
+	small_array<double, 2, 4UL*4UL> vv({4, 4}, 4.2);
+
+	BOOST_REQUIRE( vv[3][3] == 4.2 );
+
+	auto ww = vv;
+	BOOST_REQUIRE( ww[3][3] == 4.2 );
+	BOOST_REQUIRE( ww.base() != vv.base() );
+	auto* wwb = ww.base();
+	auto* vvb = vv.base();
+
+	ww[3][3] = 5.1;
+	BOOST_REQUIRE( ww[3][3] == 5.1 );
+	BOOST_REQUIRE( vv[3][3] == 4.2 );
+
+	swap(ww, vv);
+	BOOST_REQUIRE( vv[3][3] == 5.1 );
+	BOOST_REQUIRE( ww[3][3] == 4.2 );
+
+	BOOST_REQUIRE( ww.base() == wwb );
+	BOOST_REQUIRE( vv.base() == vvb );
+
+	auto xx = std::move(ww);
+	BOOST_REQUIRE( vv[3][3] == 5.1 );
+	BOOST_REQUIRE( xx[3][3] == 4.2 );
+	// BOOST_REQUIRE( ww[3][3] == 4.2 );
+	BOOST_REQUIRE( xx.base() != vv.base() );
+	// BOOST_REQUIRE( ww.empty() );
+
+	{
+		std::vector< small_array<double, 2, 4UL*4UL> > VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_REQUIRE( VV.size() == 3 );
+		swap(VV[0], VV[1]);
+		std::sort(VV.begin(), VV.end());
+		BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
+		VV.resize(10, xx);
+		std::sort(VV.begin(), VV.end());
+		BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
+	}
 }
 #endif
