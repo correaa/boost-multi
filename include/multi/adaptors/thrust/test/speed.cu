@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 	multi::array<T, 2, thrust::cuda::universal_allocator<T>> src({n, n});
 	multi::array<T, 2, thrust::cuda::universal_allocator<T>> dst(extensions(src));
 
-	auto const threshold = 0.15;
+	auto const threshold = 0.10;
 
 	auto const size = src.num_elements() * sizeof(T) / 1e9;
 
