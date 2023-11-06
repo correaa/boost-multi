@@ -86,4 +86,4 @@ template <class T, std::size_t N, class U>
 [[deprecated("don't swap dynamic container with static_allocator")]] void swap(static_allocator<T, N>& a1, static_allocator<U, N>& a2) = delete;
 
 }  // end namespace boost::multi::detail
-#endif  // MULTI_MEMORY_STATIC_ALLOCATOR_HPP
+#endif  // MULTI_DETAIL_STATIC_ALLOCATOR_HPP
