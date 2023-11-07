@@ -20,12 +20,13 @@
 #define HD
 #endif
 
-#include<algorithm>   // fpr copy_n
-#include<cstring>     // for memset in reinterpret_cast
-#include<functional>  // for invoke
-#include<iterator>    // for next
-#include<memory>      // for pointer_traits
-#include<utility>     // for forward
+#include <algorithm>   // fpr copy_n
+#include <array>
+#include <cstring>     // for memset in reinterpret_cast
+#include <functional>  // for invoke
+#include <iterator>    // for next
+#include <memory>      // for pointer_traits
+#include <utility>     // for forward
 
 #if not defined(__NVCC__) /*and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)*/
 	#define MULTI_NONV_CONSTEXPR   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
@@ -168,7 +169,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  protected:
 	template<
 		class ArrayTypes,
-		typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
+		typename = std::enable_if_t<! std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, decltype(multi::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// underlying pointers are explicitly convertible
@@ -177,7 +178,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	template<
 		class ArrayTypes,
-		typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
+		typename = std::enable_if_t<! std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
 		decltype(multi::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
@@ -275,9 +276,9 @@ public:
 		return (this->ref_.base_ == other.ref_.base_) and (this->ref_.layout() == other.ref_.layout());
 	}
 
-	template<class RR, class LL, std::enable_if_t<not std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>  // TODO(correaa) improve this
+	template<class RR, class LL, std::enable_if_t<! std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>  // TODO(correaa) improve this
 	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self->layout() == other->layout();}
-	template<class RR, class LL, std::enable_if_t<not std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>
+	template<class RR, class LL, std::enable_if_t<! std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>
 	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self->layout() == other->layout();}
 
  protected:
