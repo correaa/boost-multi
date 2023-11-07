@@ -2,11 +2,12 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
-#include "multi/utility.hpp"
+#include <multi/array.hpp>
+#include <multi/utility.hpp>
 
-#include "multi/detail/tuple_zip.hpp"
+#include <multi/detail/tuple_zip.hpp>
 
+#include <array>
 #include <tuple>
 
 namespace multi = boost::multi;

@@ -1,10 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi member cast"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
+
+#include <array>
 
 namespace multi = boost::multi;
 
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	    { "Al"s, 1430, 35},
 	    {"Bob"s, 3212, 34},
 	};
-	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
+	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);  // compilation error in apple due to incompatible sizes
 	BOOST_REQUIRE(size(d1D_names) == size(d1D));
 	BOOST_REQUIRE(d1D_names[1] == d1D[1].name);
 	BOOST_REQUIRE(&d1D_names[1] == &d1D[1].name);

@@ -1,9 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
+
+#include <array>
 
 namespace multi = boost::multi;
 
@@ -35,12 +36,14 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	{
+		// clang-format off
 		std::array<std::array<double, 5>, 4> arr{
 			{{{0.0, 1.0, 2.0, 3.0, 4.0}},
 			 {{5.0, 6.0, 7.0, 8.0, 9.0}},
 			 {{10.0, 11.0, 12.0, 13.0, 14.0}},
 			 {{15.0, 16.0, 17.0, 18.0, 19.0}}},
 		};
+		// clang-format on
 
 		multi::array_ptr<double, 2> const arrP{&arr};
 
@@ -91,7 +94,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	{
 		std::vector<double>                v1(100, 3.0);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 		std::vector<double> const          v2(100, 4.0);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
-		multi::array_ptr<double, 2>  const v1P2D(v1.data(), {10, 10});
+		multi::array_ptr<double, 2> const  v1P2D(v1.data(), {10, 10});
 		multi::array_cptr<double, 2> const v2P2D(v2.data(), {10, 10});
 
 		*v1P2D = *v2P2D;
@@ -134,7 +137,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 		rowP = *std::addressof(rowP);
 
 		auto rowP2 = rowP;
-		rowP2 = rowP;  // self assigment
+		rowP2      = rowP;  // self assigment
 
 		BOOST_REQUIRE( rowP == rowP2 );
 		BOOST_REQUIRE( not(rowP != rowP2) );
