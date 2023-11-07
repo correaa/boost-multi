@@ -1,16 +1,12 @@
 // Copyright 2018-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
-#include<complex>
-#include<numeric>
-
-// #if __cplusplus >= 202002L
-// #include<ranges>
-// #endif
+#include <array>
+#include <complex>
+#include <numeric>
 
 namespace multi = boost::multi;
 
