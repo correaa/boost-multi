@@ -1,10 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi member cast"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
+
+#include <array>
 
 namespace multi = boost::multi;
 
@@ -85,6 +85,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	BOOST_REQUIRE(not(SoA(1, 1) != SoA(0, 0)));
 }
 
+#if not defined(__clang__) or not defined(__apple_build_version__)
 struct alignas(32) employee {
 	std::string name;
 	int16_t salary;
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	    { "Al"s, 1430, 35},
 	    {"Bob"s, 3212, 34},
 	};
-	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
+	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);  // compilation error in apple due to incompatible sizes
 	BOOST_REQUIRE(size(d1D_names) == size(d1D));
 	BOOST_REQUIRE(d1D_names[1] == d1D[1].name);
 	BOOST_REQUIRE(&d1D_names[1] == &d1D[1].name);
@@ -119,3 +120,4 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(d2D_names == d2D_names_copy);
 	BOOST_REQUIRE(base(d2D_names) != base(d2D_names_copy));
 }
+#endif
