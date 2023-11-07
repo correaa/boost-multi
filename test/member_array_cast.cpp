@@ -85,20 +85,29 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	BOOST_REQUIRE(not(SoA(1, 1) != SoA(0, 0)));
 }
 
-#if not defined(__clang__) or not defined(__apple_build_version__)  // this test fail to compile in apple because of alignment/size isses TODO(correaa)
-struct alignas(32) employee {
+// #if not defined(__clang__) or not defined(__apple_build_version__)  // this test fail to compile in apple because of alignment/size isses TODO(correaa)
+
+struct employee_dummy {
 	std::string name;
-	int16_t salary;
+	short salary;  // NOLINT(google-runtime-int)
 	std::size_t age;
-	//  private:  // char padding_[9];// std::array<char, 9> padding_;  // use alignment or padding to allow member_cast
+};
+
+struct employee {
+	std::string name;
+	short salary;  // NOLINT(google-runtime-int)
+	std::size_t age;
+	char padding_ [(((offsetof(employee_dummy, age) + sizeof(age))/sizeof(std::string)+1)*sizeof(std::string) - (offsetof(employee_dummy, age) + sizeof(age)) )] = {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 };
 
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
-	using namespace std::string_literals;  // NOLINT(build/namespaces) ""s
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
+
 	multi::array<employee, 1> d1D = {
 	    { "Al"s, 1430, 35},
 	    {"Bob"s, 3212, 34},
 	};
+
 	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
 	BOOST_REQUIRE(size(d1D_names) == size(d1D));
 	BOOST_REQUIRE(d1D_names[1] == d1D[1].name);
@@ -120,4 +129,4 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(d2D_names == d2D_names_copy);
 	BOOST_REQUIRE(base(d2D_names) != base(d2D_names_copy));
 }
-#endif
+// #endif
