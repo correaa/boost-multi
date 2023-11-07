@@ -22,28 +22,35 @@ if(BLAS_FOUND) # in some systems with MKL, regular BLAS headers need to be found
 	SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
 else()
 	message("Multi/BLAS: MKL environment not detected, looking for other BLAS")
-	if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
-		set(BLA_VENDOR NVHPC)
-		find_package(BLAS)
-		if(BLAS_FOUND)
-			message("Multi/BLAS: NVHPC BLAS environment detected")
-			add_definitions(-DBLAS_DOT_RETURNS_VOID)
-			# add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-			# add_definitions(-DRETURN_BY_STACK)  # TODO(correaa) check
-		endif()
+	set(BLA_VENDOR Apple)
+	if(BLAS_FOUND) # in some systems with MKL, regular BLAS headers need to be found for it to work
+		message("Multi/BLAS: Applen BLAS (Accelerate) environment detected")
+		add_definitions(-DBLAS_DOT_RETURNS_VOID)
 	else()
-		message("Multi/BLAS: NVHPC environment not detected, looking for other BLAS")
-		unset(BLA_VENDOR)
-		find_package(BLAS)
-		find_path(
-			BLAS_INCLUDE_DIRS
-			cblas.h
-			/usr/include
-			/usr/local/include
-			$ENV{BLAS_HOME}/include
-		)
-		if(BLAS_FOUND)
-			message("Some BLAS found")
+		message("Multi/BLAS: Apple BLAS (Accelerate) environment NOT detected")
+		if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+			set(BLA_VENDOR NVHPC)
+			find_package(BLAS)
+			if(BLAS_FOUND)
+				message("Multi/BLAS: NVHPC BLAS environment detected")
+				add_definitions(-DBLAS_DOT_RETURNS_VOID)
+				# add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
+				# add_definitions(-DRETURN_BY_STACK)  # TODO(correaa) check
+			endif()
+		else()
+			message("Multi/BLAS: NVHPC environment not detected, looking for other BLAS")
+			unset(BLA_VENDOR)
+			find_package(BLAS)
+			find_path(
+				BLAS_INCLUDE_DIRS
+				cblas.h
+				/usr/include
+				/usr/local/include
+				$ENV{BLAS_HOME}/include
+			)
+			if(BLAS_FOUND)
+				message("Some BLAS found")
+			endif()
 		endif()
 	endif()
 endif()
