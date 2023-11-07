@@ -1,10 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
+#include <array>
 #include <complex>
 
 namespace multi = boost::multi;

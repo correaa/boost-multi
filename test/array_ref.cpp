@@ -1,16 +1,15 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
+#include <array>
 #include <iostream>  // for std::cout
 #include <numeric>  // for std::iota
 #if defined(__cpp_lib_span) and (__cpp_lib_span >=  202002L)
 #include <span>
 #endif
-
 
 namespace multi = boost::multi;
 
