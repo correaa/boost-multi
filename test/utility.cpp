@@ -161,7 +161,6 @@ BOOST_AUTO_TEST_CASE(multi_utility_test) {
 	using multi::dimensionality;
 	using multi::extension;
 	using multi::extensions;
-	//  using multi::origin;
 	using multi::num_elements;
 	using multi::size;
 	using multi::sizes;
