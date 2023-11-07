@@ -376,7 +376,7 @@ circle-187:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-#  needs: ["circle"]
+  needs: ["circle"]
 
 circle-latest:
   stage: build
@@ -392,7 +392,7 @@ circle-latest:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-#  needs: ["circle"]
+  needs: ["circle"]
 
 inq:
   allow_failure: false
