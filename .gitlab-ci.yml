@@ -113,7 +113,6 @@ clang++:
 
 deb:
   stage: build
-  image: debian:stable
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -134,12 +133,12 @@ package:
   stage: deploy
   script:
     - mkdir public  # create a folder called public
-    - cp multi_all.deb public  # copy the deb file into the public folder
+    - cp build/multi_all.deb public  # copy the deb file into the public folder
   artifacts:
     paths:
       - public  # instruct GitLab to keep the public folder
   only:
-    - master  # deploy the pdf only for commits made to the master branch
+    - master  # deploy only for commits made to the master branch
   needs: ["deb"]
 
 clang++ tidy:
