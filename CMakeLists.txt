@@ -125,6 +125,8 @@ if(MULTI_BUILD_PACKAGE)
   set(CPACK_PACKAGE_NAME ${PROJECT_NAME}
     CACHE STRING "The resulting package name"
   )
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
+  set(CPACK_PACKAGE_ARCHITECTURE "all")
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Multidimensional arrays for C++"
     CACHE STRING "Package description for the package metadata"
   )
