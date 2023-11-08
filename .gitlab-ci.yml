@@ -122,20 +122,19 @@ deb:
     - ctest -j 2 --output-on-failure
     - cpack -G DEB
     - ls -all
-    - ls /usr/include -all
-    - dpkg -i multi_*.deb
-    - ls /usr/include
+    - dpkg -i multi_all.deb
+    - ls -all /usr/include/multi
     - c++ ../test/main.cpp
   artifacts:
     paths:
-      - multi_*.deb
+      - multi_all.deb
   needs: ["g++", "clang++"]
 
 package:
   stage: deploy
   script:
     - mkdir public  # create a folder called public
-    - cp multi_*.deb public  # copy the deb file into the public folder
+    - cp multi_all.deb public  # copy the deb file into the public folder
   artifacts:
     paths:
       - public  # instruct GitLab to keep the public folder
