@@ -122,10 +122,26 @@ deb:
     - ctest -j 2 --output-on-failure
     - cpack -G DEB
     - ls -all
-    - dpkg --dry-run -i multi_0.80.1_amd64.deb
+    - ls /usr/include -all
     - dpkg -i multi_0.80.1_amd64.deb
+    - ls /usr/include
     - c++ ../test/main.cpp
+  artifacts:
+    paths:
+      - multi_0.80.1_amd64.deb
   needs: ["g++", "clang++"]
+
+package:
+  stage: deploy
+  script:
+    - mkdir public  # create a folder called public
+    - cp multi_0.80.1_amd64.deb public  # copy the deb file into the public folder
+  artifacts:
+    paths:
+      - public  # instruct GitLab to keep the public folder
+  only:
+    - master  # deploy the pdf only for commits made to the master branch
+  needs: ["deb"]
 
 clang++ tidy:
   stage: build
