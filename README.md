@@ -783,7 +783,7 @@ bool multi::force_element_trivial_default_construction<std::complex<double>> = t
 ```
 
 With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
-The rule will only apply to this library’s contains, not to other containers, such as `std::vector` or indivial `std::complex` elements.
+The rule will only apply to this library's containers (`multi::array`, etc), and not to other containers (such as `std::vector`) or individual `std::complex` variables.
 
 ## Type Requirements
 
