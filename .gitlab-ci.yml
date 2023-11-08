@@ -111,6 +111,37 @@ clang++:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
 
+deb:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+    - cpack -G DEB
+    - ls -all
+    - dpkg -i multi_all.deb
+    - ls -all /usr/include/multi
+    - c++ ../test/main.cpp
+  artifacts:
+    paths:
+      - build/multi_all.deb
+  needs: ["g++", "clang++"]
+
+package:
+  stage: deploy
+  script:
+    - mkdir public  # create a folder called public
+    - cp multi_all.deb public  # copy the deb file into the public folder
+  artifacts:
+    paths:
+      - public  # instruct GitLab to keep the public folder
+  only:
+    - master  # deploy the pdf only for commits made to the master branch
+  needs: ["deb"]
+
 clang++ tidy:
   stage: build
   image: debian:stable

@@ -29,6 +29,14 @@ project(
 include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
 include(GNUInstallDirs)
+
+find_program(MEMORYCHECK_COMMAND valgrind)
+set(VALGRIND_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
+
+# must go before `include(CTest)`
+set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
+set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")
+
 include(CTest)
 
 option(MULTI_BUILD_PACKAGE "Build package files as well" ON)
@@ -114,13 +122,39 @@ if(MULTI_BUILD_PACKAGE)
     list(APPEND binary-generators "RPM")
   endif()
 
+  set(CPACK_PACKAGE_NAME ${PROJECT_NAME}
+    CACHE STRING "The resulting package name"
+  )
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
+  set(CPACK_PACKAGE_ARCHITECTURE "all")
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Multidimensional arrays for C++"
+    CACHE STRING "Package description for the package metadata"
+  )
+
+  set(CPACK_PACKAGE_VENDOR "alfredo.correa@gmail.com")
+  # set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
+  # SET(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_SOURCE_DIR}/_packages")
+  # set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/some")#/${CMAKE_PROJECT_VERSION}")
+
+  # set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+  # set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+  # set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+
+  set(CPACK_PACKAGE_CONTACT "alfredo.correa@gmail.com")
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Alfredo A. Correa")
+
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+  set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+  set(CPACK_DEBIAN_FILE_NAME "multi_all.deb")
+  # set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)#ONE_PER_GROUP)
+  # set(CPACK_DEB_COMPONENT_INSTALL YES)
+
   set(CPACK_SOURCE_GENERATOR ${source-generators})
   set(CPACK_GENERATOR ${binary-generators})
 
-  set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
-  set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}")
-
-  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Alfredo A. Correa")
+  # set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
+  # set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}")
 
   list(
     APPEND
@@ -133,10 +167,3 @@ if(MULTI_BUILD_PACKAGE)
 
   include(CPack)
 endif()
-
-find_program(MEMORYCHECK_COMMAND valgrind)
-set(VALGRIND_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
-
-# must go before `include(CTest)`
-set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
-set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")
