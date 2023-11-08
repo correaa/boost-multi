@@ -123,7 +123,7 @@ deb:
     - ctest -j 2 --output-on-failure
     - cpack -G DEB
     - dpkg -i multi_0.80.1_amd64.deb
-needs: ["g++", "clang++"]
+  needs: ["g++", "clang++"]
 
 clang++ tidy:
   stage: build
