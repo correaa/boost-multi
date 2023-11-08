@@ -123,19 +123,19 @@ deb:
     - cpack -G DEB
     - ls -all
     - ls /usr/include -all
-    - dpkg -i multi_0.80.1_amd64.deb
+    - dpkg -i multi_*.deb
     - ls /usr/include
     - c++ ../test/main.cpp
   artifacts:
     paths:
-      - multi_0.80.1_amd64.deb
+      - multi_*.deb
   needs: ["g++", "clang++"]
 
 package:
   stage: deploy
   script:
     - mkdir public  # create a folder called public
-    - cp multi_0.80.1_amd64.deb public  # copy the deb file into the public folder
+    - cp multi_*.deb public  # copy the deb file into the public folder
   artifacts:
     paths:
       - public  # instruct GitLab to keep the public folder
