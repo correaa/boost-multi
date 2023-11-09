@@ -1,27 +1,23 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2020-2023 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_ADL_HPP
 #define MULTI_DETAIL_ADL_HPP
 #pragma once
 
-#include<cstddef>      // std::size_t
-#include<type_traits>  // std::conditional_t
-#include<utility>
-
-// #include <multi/detail/memory.hpp>
-
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_AMD__)
-#include<thrust/copy.h>
-#include<thrust/equal.h>
-#include<thrust/detail/allocator/destroy_range.h>
-#include<thrust/detail/memory_algorithms.h>
-#include<thrust/uninitialized_copy.h>
+#include <thrust/copy.h>
+#include <thrust/equal.h>
+#include <thrust/detail/allocator/destroy_range.h>
+#include <thrust/detail/memory_algorithms.h>
+#include <thrust/uninitialized_copy.h>
 #endif
 
-#include<algorithm>  // for std::copy, std::copy_n, std::equal, etc
-#include<iterator>   // for begin, end
-#include<memory>     // for uninitialized_copy, etc
+#include <algorithm>  // for std::copy, std::copy_n, std::equal, etc
+#include <cstddef>      // std::size_t
+#include <iterator>   // for begin, end
+#include <memory>     // for uninitialized_copy, etc
+#include <type_traits>  // std::conditional_t
+#include <utility>
 
 #define BOOST_MULTI_DEFINE_ADL(FuN)  /*NOLINT(cppcoreguidelines-macro-usage) TODO(correaa) consider replacing for all ADL'd operations*/ \
 namespace boost { \
@@ -447,13 +443,29 @@ auto alloc_uninitialized_fill_n(Alloc& alloc, ForwardIt first, Size n, T const& 
 
 constexpr class adl_begin_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(                std::begin(std::forward<As>(args)...))
-	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     begin(std::forward<As>(args)...))
+//  template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     begin(std::forward<As>(args)...))  // this is catching boost::range_iterator if Boost 1.53 is included
+// #if defined(__NVCC__)  // this is no thrust::begin
+// 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(::thrust::           begin(                      std::forward<As>(args)...))
+// #endif
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(    std::decay_t<T>::begin(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).begin(std::forward<As>(args)...))
 
  public:
 	template<class... As> [[nodiscard]] constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
 } adl_begin;
+
+constexpr class adl_end_t {
+	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(              std::  end(std::forward<As>(args)...))
+	// template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     end(std::forward<As>(args)...))
+// #if defined(__NVCC__)  // this is no thrust::end
+//	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(::thrust::           end(                      std::forward<As>(args)...))
+// #endif
+	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  end(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).end(std::forward<As>(args)...))
+
+ public:
+	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
+} adl_end;
 
 constexpr class adl_size_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(                std::size(std::forward<As>(args)...))
@@ -464,16 +476,6 @@ constexpr class adl_size_t {
  public:
 	template<class... As> [[nodiscard]] constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
 } adl_size;
-
-constexpr class adl_end_t {
-	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(              std::  end(std::forward<As>(args)...))
-	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     end(std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  end(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).end(std::forward<As>(args)...))
-
- public:
-	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_end;
 
 constexpr class adl_swap_ranges_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(              std::  swap_ranges(std::forward<As>(args)...))
