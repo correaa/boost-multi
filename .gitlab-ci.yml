@@ -134,6 +134,7 @@ package:
   script:
     - mkdir public  # create a folder called public
     - cp build/multi_all.deb public  # copy the deb file into the public folder
+    - ls public/
   artifacts:
     paths:
       - public  # instruct GitLab to keep the public folder
