@@ -126,20 +126,8 @@ deb:
     - c++ ../test/main.cpp
   artifacts:
     paths:
-      - build/multi_all.deb
+      - build/*
   needs: ["g++", "clang++"]
-
-package:
-  stage: deploy
-  script:
-    - mkdir public  # create a folder called public
-    - cp build/multi_all.deb public  # copy the deb file into the public folder
-  artifacts:
-    paths:
-      - public  # instruct GitLab to keep the public folder
-  only:
-    - master  # deploy only for commits made to the master branch
-  needs: ["deb"]
 
 clang++ tidy:
   stage: build
