@@ -44,6 +44,9 @@ namespace adl { \
 namespace boost::multi {
 
 template <class Element>
+inline constexpr bool force_element_trivial_destruction = false;
+
+template <class Element>
 inline constexpr bool force_element_trivial_default_construction = false;
 
 }  // end namespace boost::multi
