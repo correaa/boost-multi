@@ -21,9 +21,6 @@
 
 namespace boost::multi {
 
-template <class Element>
-inline constexpr bool force_element_trivial_default_construction = false;
-
 template<class Allocator>
 struct array_allocator {
 	using allocator_type = Allocator;
@@ -54,11 +51,11 @@ struct array_allocator {
 	}
 	template<typename It>
 	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
-		if constexpr(std::is_trivial_v<typename std::iterator_traits<pointer_>::value_type>) {
-			return                     adl_copy_n(        first, count, d_first);
-		} else {
+		// if constexpr(std::is_trivial_v<typename std::iterator_traits<pointer_>::value_type>) {
+		//  return                     adl_copy_n(        first, count, d_first);
+		// } else {
 			return adl_alloc_uninitialized_copy_n(alloc_, first, count, d_first);
-		}
+		// }
 	}
 	template<typename It>
 	auto destroy_n(It first, size_type n) {return adl_alloc_destroy_n(this->alloc(), first, n);}
