@@ -48,6 +48,11 @@ class nrm2_ptr {
 	friend constexpr auto uninitialized_copy_n(nrm2_ptr first, Size2 count, ItOut d_first)
 	->decltype(blas::nrm2_n(std::declval<ItX>(), Size2{}     , d_first), d_first + count) {assert(count == 1);
 		return blas::nrm2_n(first.x_first_     , first.count_, d_first), d_first + count; }
+
+	template<class ItOut, class Size2>
+	static constexpr auto uninitialized_copy_n(nrm2_ptr first, Size2 count, ItOut d_first)
+	->decltype(blas::nrm2_n(std::declval<ItX>(), Size2{}     , d_first), d_first + count) {assert(count == 1);
+		return blas::nrm2_n(first.x_first_     , first.count_, d_first), d_first + count; }
 };
 
 template<class X, class Ptr = nrm2_ptr<typename X::const_iterator, typename X::size_type>>
