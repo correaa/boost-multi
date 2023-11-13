@@ -102,16 +102,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
 
-	auto uninitialized_default_construct_if(std::true_type /*true */) { /*noop*/ }
-	auto uninitialized_default_construct_if(std::false_type /*false*/) {
-		return adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
-	}
-
 	auto uninitialized_default_construct() {
-		return uninitialized_default_construct_if(std::integral_constant<
-			bool,
-			std::is_trivially_default_constructible_v<typename static_array::element> || multi::force_element_trivial_default_construction<typename static_array::element>
-		>{});
+		if constexpr(! (std::is_trivially_default_constructible_v<typename static_array::element> || multi::force_element_trivial_default_construction<typename static_array::element>) ) {
+			return adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
+		}
 	}
 
 	template<typename It> auto uninitialized_copy_elements(It first) {
@@ -119,7 +113,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	void destroy() {
-		if constexpr(! (std::is_trivially_destructible_v<typename static_array::element> || multi::force_element_trivial_default_construction<typename static_array::element>)) {
+		if constexpr(! (std::is_trivially_destructible_v<typename static_array::element> || multi::force_element_trivial_destruction<typename static_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
 	}
@@ -193,11 +187,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())),
 		other.extensions()
 	} {
-		if constexpr(std::is_trivial_v<T>) {
-			                    adl_copy_n(                       other.data_elements(), other.num_elements(), this->data_elements());
-		} else {
-			adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
-		}
+		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
 	}
 
 	static_array(typename static_array::extensions_type extensions, typename static_array::element const& elem, allocator_type const& alloc)  // 2
@@ -617,13 +607,9 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	explicit static_array(multi::static_array<TT, 0, Args...> const& other, allocator_type const& alloc)  // TODO(correaa) : call other constructor (above)
 	: array_alloc{alloc}, ref(static_array::allocate(other.num_elements())
 	, extensions(other)) {
-		if(other.data_elements() && other.num_elements()) {
-			if constexpr(std::is_trivial_v<T>) {
-									adl_copy_n(                       other.data_elements(), other.num_elements(), this->data_elements());
-			} else {
-				adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
-			}
-		}
+		// if(other.data_elements() && other.num_elements()) {
+			adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
+		// }
 	}
 
 	template<class TT, class... Args>
@@ -666,11 +652,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	static_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: ref(static_array::allocate(1), typename static_array::extensions_type{})
 	{
-		if constexpr(std::is_trivial_v<T>) {
-									adl_copy_n(                       &single, 1, this->data_elements());
-		} else {
-			adl_alloc_uninitialized_copy_n(static_array::alloc(), &single, 1, this->data_elements());
-		}
+		adl_alloc_uninitialized_copy_n(static_array::alloc(), &single, 1, this->data_elements());
 	}
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, value_type>{}>>
