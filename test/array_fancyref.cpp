@@ -21,7 +21,12 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 
 	ptr() noexcept = default;
 	explicit ptr(std::nullptr_t) noexcept {}
-	template<class Other> constexpr explicit ptr(ptr<Other> const& /*other*/) noexcept {}
+	template<class Other>
+	constexpr explicit ptr(ptr<Other> const& /*other*/) noexcept {}
+	template<class Other,
+		class = decltype(boost::multi::implicit_cast<pointer>(std::declval<typename Other::pointer>()))
+	>
+	constexpr          ptr(ptr<Other> const& /*other*/) noexcept {}
 	constexpr ptr(ptr const& /*other*/) noexcept {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default)
 
 	// vvv it is important that these two functions are device or device host functions
