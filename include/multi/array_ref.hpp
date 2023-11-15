@@ -865,7 +865,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
  private:
-	constexpr auto take_aux(difference_type n) const {
+	constexpr auto taked_aux(difference_type n) const {
 		assert( n <= this->size() );
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -877,12 +877,12 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto take(difference_type n) const& -> basic_const_array {return take_aux(n);}
-	constexpr auto take(difference_type n)     && -> subarray       {return take_aux(n);}
-	constexpr auto take(difference_type n)      & -> subarray       {return take_aux(n);}
+	constexpr auto taked(difference_type n) const& -> basic_const_array {return taked_aux(n);}
+	constexpr auto taked(difference_type n)     && -> subarray          {return taked_aux(n);}
+	constexpr auto taked(difference_type n)      & -> subarray          {return taked_aux(n);}
 
  private:
-	constexpr auto drop_aux(difference_type n) const {
+	constexpr auto dropped_aux(difference_type n) const {
 		assert( n <= this->size() );
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -894,9 +894,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto drop(difference_type n) const& -> basic_const_array {return drop_aux(n);}
-	constexpr auto drop(difference_type n)     && -> subarray       {return drop_aux(n);}
-	constexpr auto drop(difference_type n)      & -> subarray       {return drop_aux(n);}
+	constexpr auto dropped(difference_type n) const& -> basic_const_array {return dropped_aux(n);}
+	constexpr auto dropped(difference_type n)     && -> subarray       {return dropped_aux(n);}
+	constexpr auto dropped(difference_type n)      & -> subarray       {return dropped_aux(n);}
 
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
@@ -1926,7 +1926,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  private:
-	constexpr auto take_aux(difference_type count) const {
+	HD constexpr auto taked_aux(difference_type count) const {
 		assert( count <= this->size() );  // calculating size is expensive that is why
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -1938,12 +1938,12 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	constexpr auto take(difference_type count) const& -> basic_const_array {return take_aux(count);}
-	constexpr auto take(difference_type count)     && -> subarray       {return take_aux(count);}
-	constexpr auto take(difference_type count)      & -> subarray       {return take_aux(count);}
+	constexpr auto taked(difference_type count) const& -> basic_const_array {return taked_aux(count);}
+	constexpr auto taked(difference_type count)     && -> subarray          {return taked_aux(count);}
+	constexpr auto taked(difference_type count)      & -> subarray          {return taked_aux(count);}
 
  private:
-	constexpr auto drop_aux(difference_type count) const -> subarray {
+	HD constexpr auto dropped_aux(difference_type count) const -> subarray {
 		assert( count <= this->size() );
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -1955,20 +1955,21 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	constexpr auto drop(difference_type count) const& -> basic_const_array {return drop_aux(count);}
-	constexpr auto drop(difference_type count)     && -> subarray       {return drop_aux(count);}
-	constexpr auto drop(difference_type count)      & -> subarray       {return drop_aux(count);}
+	constexpr auto dropped(difference_type count) const& -> basic_const_array {return dropped_aux(count);}
+	constexpr auto dropped(difference_type count)     && -> subarray       {return dropped_aux(count);}
+	constexpr auto dropped(difference_type count)      & -> subarray       {return dropped_aux(count);}
 
  private:
-	HD /*[[gnu::pure]]*/ constexpr auto sliced_aux(index first, index last) const {
-		typename types::layout_t new_layout = this->layout();
-		if(this->is_empty()) {
-			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-			new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
-		} else {
-			(new_layout.nelems() /= this->size())*=(last - first);
-		}
-		return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
+	HD constexpr auto sliced_aux(index first, index last) const {
+		return taked_aux(last).dropped_aux(first);
+		// typename types::layout_t new_layout = this->layout();
+		// if(this->is_empty()) {
+		// 	assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// 	new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
+		// } else {
+		// 	(new_layout.nelems() /= this->size())*=(last - first);
+		// }
+		// return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
