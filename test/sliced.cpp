@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(multi_array_take) {
 		{13.0, 14.0, 15.0, 16.0},
 	};
 	BOOST_REQUIRE((
-		arr.take(2) == multi::array<double, 2>{
+		arr.taked(2) == multi::array<double, 2>{
 			{ 1.0,  2.0,  3.0,  4.0},
 			{ 5.0,  6.0,  7.0,  8.0},
 		}
@@ -80,15 +80,15 @@ BOOST_AUTO_TEST_CASE(multi_array_take) {
 
 BOOST_AUTO_TEST_CASE(drop) {
 	multi::array<double, 2> arr = {
-		{ 1.,  2.,  3.,  4.},
-		{ 5.,  6.,  7.,  8.},
-		{ 9., 10., 11., 12.},
-		{13., 14., 15., 16.},
+		{ 1.0,  2.0,  3.0,  4.0},
+		{ 5.0,  6.0,  7.0,  8.0},
+		{ 9.0, 10.0, 11.0, 12.0},
+		{13.0, 14.0, 15.0, 16.0},
 	};
 	BOOST_REQUIRE((
-		arr.drop(2) == multi::array<double, 2>{
-			{ 9., 10., 11., 12.},
-			{13., 14., 15., 16.},
+		arr.dropped(2) == multi::array<double, 2>{
+			{ 9.0, 10.0, 11.0, 12.0},
+			{13.0, 14.0, 15.0, 16.0},
 		}
 	));
 }

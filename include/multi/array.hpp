@@ -130,11 +130,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::operator();
 	HD constexpr auto operator()()     && -> decltype(auto) {return ref::element_moved();}
 
-	using ref::take;
-	constexpr auto take(difference_type n) && -> decltype(auto) {return ref::take(n).element_moved();}
+	using ref::taked;
+	constexpr auto taked(difference_type n) && -> decltype(auto) {return ref::taked(n).element_moved();}
 
-	using ref::drop;
-	constexpr auto drop(difference_type n) && -> decltype(auto) {return ref::drop(n).element_moved();}
+	using ref::dropped;
+	constexpr auto dropped(difference_type n) && -> decltype(auto) {return ref::dropped(n).element_moved();}
 
 	static_array(static_array&& other) noexcept : static_array{other.element_moved()} {}
 
