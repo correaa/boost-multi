@@ -53,8 +53,8 @@ class iterator_facade {
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<> >
 class range {
-	IndexType     first_;  // = {};
-	IndexTypeLast last_; //  = first_;
+	IndexType     first_ = {};
+	IndexTypeLast last_  = first;  // TODO(correaa) check how to do partially initialzed
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
