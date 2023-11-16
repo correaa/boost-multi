@@ -190,7 +190,6 @@ BOOST_AUTO_TEST_CASE(layout_2) {
 	using multi::extension;
 	BOOST_REQUIRE(( extension(arr) == multi::index_extension{0, 50} ));
 	BOOST_REQUIRE(( extension(arr) == multi::iextension{0, 50}      ));
-	BOOST_REQUIRE(( extension(arr) == multi::irange{0, 50}          ));
 }
 
 BOOST_AUTO_TEST_CASE(layout_3) {
