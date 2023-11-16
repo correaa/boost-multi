@@ -4,7 +4,7 @@
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi subrange selection"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
 #include<numeric>  // for std::iota
 
@@ -197,4 +197,42 @@ BOOST_AUTO_TEST_CASE(subrange_2D_issue129) {
 
 //  BOOST_REQUIRE( arr(0, {0, 512, 2})[  1] ==   2. );  // TODO(correaa) coompilation error
 //  BOOST_REQUIRE( arr(0, {0, 512, 2})[255] == 510. );  // TODO(correaa) coompilation error
+}
+
+BOOST_AUTO_TEST_CASE(subrange_start_finish) {
+	multi::array<double, 2> arr = {
+		{ 1.0,  2.0},
+		{ 3.0,  4.0},
+		{ 5.0,  6.0},
+		{ 7.0,  8.0},
+		{ 9.0, 10.0},
+		{11.0, 12.0},
+		{13.0, 14.0},
+	};
+	BOOST_REQUIRE( &arr({2, 5}, 1)[0] == &arr[2][1] );
+
+	multi::irange const rng(2, 5);
+	BOOST_REQUIRE( &arr(rng, 1)[0] == &arr[2][1] );
+
+	struct : multi::irange {
+		using multi::irange::irange;
+	} const rng2(2, 5);
+
+	BOOST_REQUIRE( &arr(rng2, 1)[0] == &arr[2][1] );
+
+	class rng3_t {
+		int start_;
+		int finish_;
+
+	 public:
+		rng3_t(int start, int finish) : start_{start}, finish_{finish} {}  // NOLINT(bugprone-easily-swappable-parameters)
+	 	auto first () const {return start_;}
+	 	auto last  () const {return finish_;}
+	} const rng3{2, 5};
+
+	multi::irange const rng4(rng3);
+
+	BOOST_REQUIRE( &arr(rng4, 1)[0] == &arr[2][1] );
+
+	BOOST_REQUIRE( &arr(rng3, 1)[0] == &arr[2][1] );
 }

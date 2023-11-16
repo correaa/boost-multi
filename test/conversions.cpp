@@ -15,8 +15,8 @@ BOOST_AUTO_TEST_CASE(complex_conversion_float_to_double) {
 
 	std::complex<double> const zee = cee;
 
-	static_assert(    multi::is_explicitly_convertible_v<std::complex<float>, std::complex<double>> );
-	static_assert(    multi::is_implicitly_convertible_v<std::complex<float>, std::complex<double>> );
+	static_assert(    multi::detail::is_explicitly_convertible_v<std::complex<float>, std::complex<double>> );
+	static_assert(    multi::detail::is_implicitly_convertible_v<std::complex<float>, std::complex<double>> );
 
 	BOOST_TEST(cee.real() == zee.real());
 
@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_CASE(complex_conversion_float_to_double) {
 BOOST_AUTO_TEST_CASE(complex_conversion_double_to_float) {
 	std::complex<double> const zee{1.0, 2.0};
 
-	static_assert(    multi::is_explicitly_convertible_v<std::complex<double>, std::complex<float>>);
-	static_assert(not multi::is_implicitly_convertible_v<std::complex<double>, std::complex<float>>);
+	static_assert(    multi::detail::is_explicitly_convertible_v<std::complex<double>, std::complex<float>>);
+	static_assert(not multi::detail::is_implicitly_convertible_v<std::complex<double>, std::complex<float>>);
 
 	std::complex<float> const cee{zee};
 
