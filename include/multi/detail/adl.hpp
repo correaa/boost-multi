@@ -99,7 +99,7 @@ constexpr class adl_equal_t {
 
 template<class... Args> struct adl_custom_copy;
 
-#ifndef(_MSC_VER)
+#ifndef _MSC_VER
 template<class... As, class = std::enable_if_t<sizeof...(As) == 0> > void copy(As...) = delete;
 #endif
 
