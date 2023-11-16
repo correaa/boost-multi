@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	BOOST_REQUIRE( &mar.reindexed(1)[1][0] == &mar[0][0] );
 
 	BOOST_REQUIRE( sizes(mar[0].reindexed(1)) == sizes(mar[0]) );
-	BOOST_REQUIRE( mar[0].reindexed(1).extension().start () == mar[0].extension().start () + 1 );
-	BOOST_REQUIRE( mar[0].reindexed(1).extension().finish() == mar[0].extension().finish() + 1 );
+	BOOST_REQUIRE( mar[0].reindexed(1).extension().first() == mar[0].extension().first () + 1 );
+	BOOST_REQUIRE( mar[0].reindexed(1).extension().last() == mar[0].extension().last() + 1 );
 
 	auto diff = &mar[0].reindexed(1)[1] - &mar[0][0];
 	BOOST_REQUIRE( diff == 0 );
@@ -169,8 +169,8 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 		BOOST_REQUIRE( size(arrC) == 3 );
 		BOOST_REQUIRE( size(arrC) == size(arrB) );
 
-		BOOST_REQUIRE( arrC.extension().start()  == 2 );
-		BOOST_REQUIRE( arrC.extension().finish() == 5 );
+		BOOST_REQUIRE( arrC.extension().first()  == 2 );
+		BOOST_REQUIRE( arrC.extension().last() == 5 );
 	}
 }
 
@@ -220,23 +220,23 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 	{
 		auto exts = aref.extensions();
 		BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
-		BOOST_REQUIRE( std::get<1>(exts).start()  == 1 );
-		BOOST_REQUIRE( std::get<1>(exts).finish() == 4 );
+		BOOST_REQUIRE( std::get<1>(exts).first()  == 1 );
+		BOOST_REQUIRE( std::get<1>(exts).last () == 4 );
 		BOOST_REQUIRE( std::get<1>(exts) == multi::iextension(1, 4) );
 		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 	}
 	{
 		auto const exts = aref.extensions();
 		BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
-		BOOST_REQUIRE( std::get<1>(exts).start()  == 1 );
-		BOOST_REQUIRE( std::get<1>(exts).finish() == 4 );
+		BOOST_REQUIRE( std::get<1>(exts).first()  == 1 );
+		BOOST_REQUIRE( std::get<1>(exts).last () == 4 );
 		BOOST_REQUIRE( std::get<1>(exts) == multi::iextension(1, 4) );
 		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 	}
 	{
 		BOOST_REQUIRE( std::get<0>(aref.extensions()) == multi::iextension(1, 3) );
-		BOOST_REQUIRE( std::get<1>(aref.extensions()).start()  == 1 );
-		BOOST_REQUIRE( std::get<1>(aref.extensions()).finish() == 4 );
+		BOOST_REQUIRE( std::get<1>(aref.extensions()).first()  == 1 );
+		BOOST_REQUIRE( std::get<1>(aref.extensions()).last () == 4 );
 		BOOST_REQUIRE( std::get<1>(aref.extensions()) == multi::iextension(1, 4) );
 		BOOST_REQUIRE( aref.extensions() == decltype(aref.extensions())(multi::iextension(1, 3), multi::iextension(1, 4)) );
 	}
@@ -295,8 +295,8 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 BOOST_AUTO_TEST_CASE(array_2D_with_offset) {
 	multi::array<double, 2> const arr({multi::iextension(1, 3), multi::iextension(2, 5)}, 1.2);
 
-	BOOST_REQUIRE( arr.extension().start()  == 1 );
-	BOOST_REQUIRE( arr.extension().finish() == 3 );
+	BOOST_REQUIRE( arr.extension().first()  == 1 );
+	BOOST_REQUIRE( arr.extension().last () == 3 );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D) {
@@ -319,8 +319,8 @@ BOOST_AUTO_TEST_CASE(array_ref_1D) {
 	BOOST_REQUIRE( *extension(mar1).begin() == 1 );
 
 	BOOST_REQUIRE( size(mar1) == size(mar) );
-	BOOST_REQUIRE( mar1.layout().extension().start() == 1 );
-	BOOST_REQUIRE( extension(mar1).start() == 1 );
+	BOOST_REQUIRE( mar1.layout().extension().first() == 1 );
+	BOOST_REQUIRE( extension(mar1).first() == 1 );
 	BOOST_REQUIRE( &mar1[1]     == &arr[0] );  // NOLINT(readability-container-data-pointer) test access
 	BOOST_REQUIRE(  mar1.base() == &arr[0] );  // NOLINT(readability-container-data-pointer) test access
 	BOOST_REQUIRE(  mar1.base() ==  arr.data() );
