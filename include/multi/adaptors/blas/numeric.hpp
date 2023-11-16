@@ -168,10 +168,10 @@ class involuter {
 
 //  involuter(involuter const& other) = default;
 
-	template<class Other, decltype(multi::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
+	template<class Other, decltype(detail::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
 	HD constexpr/*implct*/involuter(Other const& other) : it_{other.it_}, f_{other.f_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicit conversion of underlying type
-	template<class Other, decltype(explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
+	template<class Other, decltype(detail::explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	HD constexpr explicit involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
 
 	constexpr auto operator*() const {return reference{*it_, f_};}

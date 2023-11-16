@@ -374,7 +374,7 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 //  return fftw_plan_dft(in.layout(), in.base(), out.layout(), out.base(), dir, flags);
 // }
 
-template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(multi::implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))>  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(detail::implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))>  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 auto fftw_plan_dft(In const& in, Out&& out, int dir) {
 	return fftw_plan_dft(in, out, dir, fftw::estimate);
 }

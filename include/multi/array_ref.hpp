@@ -170,7 +170,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	template<
 		class ArrayTypes,
 		typename = std::enable_if_t<! std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
-		, decltype(multi::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+		, decltype(multi::detail::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// underlying pointers are explicitly convertible
 	HD constexpr explicit array_types(ArrayTypes const& other)
@@ -179,7 +179,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	template<
 		class ArrayTypes,
 		typename = std::enable_if_t<! std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
-		decltype(multi::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+		decltype(multi::detail::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	HD constexpr /*implt*/ array_types(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
@@ -273,13 +273,13 @@ public:
 	friend HD constexpr auto base(subarray_ptr const& self) {return self.base();}
 
 	constexpr auto operator==(subarray_ptr const& other) const -> bool {
-		return (this->ref_.base_ == other.ref_.base_) and (this->ref_.layout() == other.ref_.layout());
+		return (this->ref_.base_ == other.ref_.base_) && (this->ref_.layout() == other.ref_.layout());
 	}
 
 	template<class RR, class LL, std::enable_if_t<! std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>  // TODO(correaa) improve this
-	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self->layout() == other->layout();}
+	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() && self->layout() == other->layout();}
 	template<class RR, class LL, std::enable_if_t<! std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>
-	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self->layout() == other->layout();}
+	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() && self->layout() == other->layout();}
 
  protected:
 	HD constexpr void increment() {ref_.base_ += Ref::nelems();}
@@ -343,13 +343,13 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
 	template<
 		class EElement, typename PPtr,
-		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
+		decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
 	>
 	HD constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& other)
 	: ptr_{element_ptr{other.base()}, other.ptr_->layout()}, stride_{other.stride_} {}
 
 	template<class EElement, typename PPtr,
-		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
+		decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	HD constexpr/*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
@@ -367,7 +367,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	HD constexpr auto operator[](difference_type n) const -> subarray<element, D-1, element_ptr> {return *((*this) + n);}
 
 	friend HD constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {
-		return self.ptr_ == other.ptr_ and self.stride_== other.stride_ and self.ptr_->layout() == other.ptr_->layout();
+		return self.ptr_ == other.ptr_ && self.stride_== other.stride_ && self.ptr_->layout() == other.ptr_->layout();
 	}
 
 	HD constexpr auto operator< (array_iterator const& other) const -> bool {
@@ -519,7 +519,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	constexpr auto base() const -> const_pointer {return base_;}
 	HD constexpr auto layout() const -> layout_type {return l_;}
 
-	template<class Other, decltype(multi::implicit_cast<pointer>(std::declval<Other>().base_))* = nullptr>
+	template<class Other, decltype(multi::detail::implicit_cast<pointer>(std::declval<Other>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
 	HD constexpr /*impl*/ elements_iterator_t(Other const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	template<class Other>
@@ -602,10 +602,10 @@ struct elements_range_t {
 	layout_type l_;
 
  public:
-	template<class OtherRange, decltype(multi::implicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
+	template<class OtherRange, decltype(multi::detail::implicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible  // NOLINTNEXTLINE(runtime/explicit)
 	constexpr /*impl*/ elements_range_t(OtherRange const& other) : base_{other.base}, l_{other.l_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to reproduce the implicitness of the argument
-	template<class OtherRange, decltype(multi::explicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
+	template<class OtherRange, decltype(multi::detail::explicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
 	constexpr explicit elements_range_t(OtherRange const& other) : elements_range_t{other} {}
 
 	constexpr elements_range_t(pointer base, layout_type lyt) : base_{base}, l_{lyt} {}
@@ -631,12 +631,12 @@ struct elements_range_t {
 	elements_range_t(elements_range_t     &&) = delete;
 
 	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
-		if( is_empty() and other.is_empty()) {return true;}
-		return size() == other.size() and     adl_equal(other.begin(), other.end(), begin());
+		if( is_empty() && other.is_empty()) {return true;}
+		return size() == other.size() &&     adl_equal(other.begin(), other.end(), begin());
 	}
 	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
-		if(is_empty() and other.is_empty()) {return false;}
-		return size() != other.size() or  not adl_equal(other.begin(), other.end(), begin());
+		if(is_empty() && other.is_empty()) {return false;}
+		return size() != other.size() ||  ! adl_equal(other.begin(), other.end(), begin());
 	}
 
 	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  other)  & noexcept {assert(size() == other.size()); adl_swap_ranges(begin(), end(), other.begin());}
@@ -674,13 +674,13 @@ struct elements_range_t {
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& other)  & -> elements_range_t& {assert(size() == other.size());
-		if(not is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
+		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
 		return *this;
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());
-		if(not is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
+		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
 		return *this;
 	}
 
@@ -912,21 +912,21 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using iextension = typename subarray::index_extension;
 
-	constexpr auto stenciled(iextension iex)                                                         & -> subarray{return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex)                                                         & -> subarray{return blocked(iex.first(), iex.last());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                        & -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                       & -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)      & -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs)     & -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();}
 
-	constexpr auto stenciled(iextension iex)                                                        && -> subarray{return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex)                                                        && -> subarray{return blocked(iex.first(), iex.last());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                       && -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                      && -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)     && -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs)    && -> subarray{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();}
 
-	constexpr auto stenciled(iextension iex)                                                    const& -> basic_const_array {return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex)                                                    const& -> basic_const_array {return blocked(iex.first(), iex.last());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                   const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                  const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
@@ -1009,7 +1009,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return {new_layout, types::base_};
 	}
 
-	template<class Dummy = void, std::enable_if_t<(D > 1) and sizeof(Dummy*), int> =0>
+	template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>
 	constexpr auto diagonal() const& -> subarray<T, D-1, typename subarray::element_const_ptr> {
 		auto square_size = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
@@ -1288,7 +1288,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<
 		class Range,
-		class = std::enable_if_t<not std::is_base_of_v<subarray, Range>>,
+		class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>,
 		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename subarray::size_type>(), std::declval<typename subarray::iterator>()))
 	>
 	constexpr auto operator=(Range const& rng) &  // check that you LHS is not read-only
@@ -1299,7 +1299,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		adl_copy(adl_begin(rng), adl_end(rng), begin());
 		return *this;
 	}
-	template<class Range, class = std::enable_if_t<not std::is_base_of_v<subarray, Range>>>
+	template<class Range, class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>>
 	constexpr auto operator=(Range const& rng) && -> subarray& {operator=(rng); return *this;}
 
 	template<class TT, class... As>
@@ -1349,7 +1349,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<
 		class Range,
-		std::enable_if_t<not has_extensions<std::decay_t<Range>>::value, int> =0,
+		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
 	//  std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
 		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))
 	>
@@ -1369,18 +1369,18 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, D, As...> const& other) -> bool {
-		return (self.extension() == other.extension()) and (self.elements() == other.elements());
+		return (self.extension() == other.extension()) && (self.elements() == other.elements());
 	}
 	template<class TT, class... As>
 	friend constexpr auto operator!=(subarray const& self, subarray<TT, D, As...> const& other) -> bool {
-		return (self.extension() != other.extension()) or  (self.elements() != other.elements());
+		return (self.extension() != other.extension()) ||  (self.elements() != other.elements());
 	}
 
 	constexpr auto operator==(subarray const& other) const -> bool {
-		return (this->extension() == other.extension()) and (this->elements() == other.elements());
+		return (this->extension() == other.extension()) && (this->elements() == other.elements());
 	}
 	constexpr auto operator!=(subarray const& other) const -> bool {
-		return (this->extension() != other.extension()) or  (this->elements() != other.elements());
+		return (this->extension() != other.extension()) ||  (this->elements() != other.elements());
 	}
 
  private:
@@ -1395,7 +1395,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  public:
 	/*[[gnu::pure]]*/ constexpr auto operator< (subarray const& other) const& -> bool {return lexicographical_compare(*this, other);}
-	/*[[gnu::pure]]*/ constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other or lexicographical_compare(*this, other);}
+	/*[[gnu::pure]]*/ constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare(*this, other);}
 	constexpr auto operator> (subarray const& other) const& -> bool {return other < *this;}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>>
@@ -1570,7 +1570,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	template<
 		class Other,
-		decltype(multi::implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
+		decltype(multi::detail::implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
 		decltype(std::declval<Other const&>().base())* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
@@ -1579,7 +1579,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	template<
 		class Other,
-		decltype(multi::explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
+		decltype(multi::detail::explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
 		decltype(std::declval<Other const&>().data_)* = nullptr
 	>
 	constexpr explicit array_iterator(Other const& other)
@@ -1592,7 +1592,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	template<
 		class EElement, typename PPtr,
-		typename = decltype(multi::implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
+		typename = decltype(multi::detail::implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
 	>
 	HD constexpr /*impl*/ array_iterator(array_iterator<EElement, 1, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of original pointer
 	: data_{other.data_}, stride_{other.stride_} {}
@@ -1686,7 +1686,7 @@ struct subarray<T, 0, ElementPtr, Layout>
 		assert(this->num_elements() == 1);
 		return adl_equal(&elem, std::next(&elem, this->num_elements()), this->base());
 	}
-	constexpr auto operator!=(element const& elem) const {return not operator==(elem);}
+	constexpr auto operator!=(element const& elem) const {return ! operator==(elem);}
 
 	template<class Range0>
 	constexpr
@@ -1699,7 +1699,7 @@ struct subarray<T, 0, ElementPtr, Layout>
 	constexpr auto elements_at(size_type idx [[maybe_unused]])     && -> element_ref  {assert(idx < this->num_elements()); return *(this->base_);}
 	constexpr auto elements_at(size_type idx [[maybe_unused]])      & -> element_ref  {assert(idx < this->num_elements()); return *(this->base_);}
 
-	constexpr auto operator!=(subarray const& other) const {return not adl_equal(other.base_, other.base_ + 1, this->base_);}
+	constexpr auto operator!=(subarray const& other) const {return ! adl_equal(other.base_, other.base_ + 1, this->base_);}
 	constexpr auto operator==(subarray const& other) const {return     adl_equal(other.base_, other.base_ + 1, this->base_);}
 
 	using decay_type = typename types::element;
@@ -1995,7 +1995,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		return sliced(first, last).reindexed(first);
 	}
 	/*[[gnu::pure]]*/ constexpr auto stenciled(typename subarray::index_extension ext) -> subarray {
-		return blocked(ext.start(), ext.finish());
+		return blocked(ext.first(), ext.last());
 	}
 
  private:
@@ -2127,7 +2127,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	template<
 		class Range,
-		std::enable_if_t<not has_extensions<std::decay_t<Range>>::value, int> =0,
+		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
 	//  std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
 		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))
 	>
@@ -2192,7 +2192,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	template<
 		class Range,
-		class = std::enable_if_t<not std::is_base_of_v<subarray, Range>>  // ,
+		class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>  // ,
 	//  class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename subarray::size_type>(), std::declval<typename subarray::iterator>()))
 	>
 	constexpr auto momo(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
@@ -2205,7 +2205,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	template<
 		class Range,
-		class = std::enable_if_t<not std::is_base_of_v<subarray, Range>>  // ,
+		class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>  // ,
 	//  class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename subarray::size_type>(), std::declval<typename subarray::iterator>()))
 	>
 	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
@@ -2215,7 +2215,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	//  adl_copy(adl_begin(rng), adl_end(rng), begin());
 		return *this;
 	}
-	template<class Range, class = std::enable_if_t<not std::is_base_of_v<subarray, Range>>>
+	template<class Range, class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>>
 	constexpr auto operator=(Range const& rng) && -> subarray& {operator=(rng); return *this;}
 
 	template<class It> constexpr auto assign(It first) &&
@@ -2224,15 +2224,15 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
-		return self.extension() == other.extension() and self.elements() == other.elements();
+		return self.extension() == other.extension() && self.elements() == other.elements();
 	}
 	template<class TT, class... As>
 	friend constexpr auto operator!=(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
-		return self.extension() != other.extension() or self.elements() != other.elements();
+		return self.extension() != other.extension() || self.elements() != other.elements();
 	}
 
 	friend constexpr auto operator< (subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other);}
-	friend constexpr auto operator<=(subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other) or self == other;}
+	friend constexpr auto operator<=(subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other) || self == other;}
 
 	constexpr void swap(subarray&& other) && noexcept {
 		assert(this->extension() == other.extension());
@@ -2240,8 +2240,8 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
-	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) noexcept {std::move(self).swap(std::forward<A>(other));}
-	template<class A, typename = std::enable_if_t<not std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept {std::move(self).swap(std::forward<A>(other));}
+	template<class A, typename = std::enable_if_t<! std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) noexcept {std::move(self).swap(std::forward<A>(other));}
+	template<class A, typename = std::enable_if_t<! std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept {std::move(self).swap(std::forward<A>(other));}
 
  private:
 	template<class A1, class A2>
@@ -2437,11 +2437,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) = delete;
 	#endif
 
-	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
+	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
 	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
 
-	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
+	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
@@ -2467,7 +2467,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 	template<
 		class Array,
-		std::enable_if_t<not std::is_base_of_v<array_ref, std::decay_t<Array>>, int> =0,
+		std::enable_if_t<! std::is_base_of_v<array_ref, std::decay_t<Array>>, int> =0,
 		std::enable_if_t<std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
 	>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
@@ -2479,7 +2479,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	 extensions(array)
 	) {}
 
-	template<class TT = void, std::enable_if_t<sizeof(TT*) and D == 0, int> =0>
+	template<class TT = void, std::enable_if_t<sizeof(TT*) && D == 0, int> =0>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
 	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
 		T& elem // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
@@ -2504,7 +2504,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  public:
 	HD constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
 
-	template<class TT, class... As, std::enable_if_t<not std::is_base_of_v<array_ref, array_ref<TT, D, As...>> ,int> =0>
+	template<class TT, class... As, std::enable_if_t<! std::is_base_of_v<array_ref, array_ref<TT, D, As...>> ,int> =0>
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
 		assert(this->extensions() == other.extensions());
 		array_ref::copy_elements(other.data_elements());
@@ -2586,16 +2586,16 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
-		return not operator==(self, other);
+		return ! operator==(self, other);
 	}
 
 	    HD constexpr auto data_elements()        &&       -> typename array_ref::element_ptr {return array_ref::base_;}
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	// data() is here for compatibility with std::vector
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data() const& {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()     && {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()      & {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() const& {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data()     && {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data()      & {return data_elements();}
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
 	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr {return           self .data_elements();}
@@ -2849,10 +2849,13 @@ auto transposed(T(&array)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 
 
 #ifndef MULTI_SERIALIZATION_ARRAY_VERSION
 #define MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
-#endif
-
 // #define MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array
 // #define MULTI_SERIALIZATION_ARRAY_VERSION -1 // save data as structured nested labels array
 // #define MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
+
+namespace boost::multi {
+	constexpr inline int serialization_array_version = MULTI_SERIALIZATION_ARRAY_VERSION;
+}  // end namespace boost::multi
+#endif
 
 #endif  // MULTI_ARRAY_REF_HPP_

@@ -4,6 +4,7 @@
 #ifndef MULTI_DETAIL_INDEX_RANGE_HPP
 #define MULTI_DETAIL_INDEX_RANGE_HPP
 
+#include "../../multi/detail/implicit_cast.hpp"
 #include "../../multi/detail/serialization.hpp"
 #include "../../multi/detail/tuple_zip.hpp"
 #include "../../multi/detail/types.hpp"
@@ -52,8 +53,8 @@ class iterator_facade {
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<> >
 class range {
-	IndexType     first_ = {};
-	IndexTypeLast last_  = first_;
+	IndexType     first_;  // = {};
+	IndexTypeLast last_; //  = first_;
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
@@ -81,16 +82,21 @@ class range {
 
 	range() = default;
 
-	template<class Range, typename = std::enable_if_t<std::is_same_v<std::decay_t<Range>, value_type>> >
-	// cxxcheck-suppress internalAstError ; because bug in cppcheck
-	constexpr explicit range(Range&& other)
+	template<class Range, decltype(
+		detail::implicit_cast<IndexType    >(std::declval<Range&&>().first()),
+		detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
+	)* = nullptr>
+	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions)
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
-	constexpr range(IndexType first, IndexTypeLast last) noexcept
-	: first_{first}, last_{last} {}
+	template<class Range, decltype(
+		detail::explicit_cast<IndexType    >(std::declval<Range&&>().first()),
+		detail::explicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
+	)* = nullptr>
+	constexpr explicit     range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload)
+	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
-	constexpr range(IndexType first, IndexTypeLast last, Plus /*plus*/, Minus /*minus*/) noexcept
-	: first_{first}, last_{last} {}
+	constexpr range(IndexType first, IndexTypeLast last) : first_{first}, last_{last} {}
 
 	class const_iterator : public boost::multi::iterator_facade<
 		const_iterator,
@@ -162,7 +168,7 @@ class range {
 		}
 		return begin() + (value - front());
 	}
-	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const {return (value >=first_) and (value < last_);}
+	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const -> bool {return (value >=first_) && (value < last_);}
 	template<class Value> [[nodiscard]] constexpr auto count   (Value const& value) const -> value_type {return contains(value);}
 
 	friend constexpr auto intersection(range const& self, range const& other) {
@@ -245,8 +251,8 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 //      return os << static_cast<range<IndexType> const&>(self);
 //  }
 
-	[[nodiscard]] constexpr auto start () const -> IndexType {return this->first();}
-	[[nodiscard]] constexpr auto finish() const -> IndexType {return this->last ();}
+	// [[nodiscard]] constexpr auto start () const -> IndexType {return this->first();}
+	// [[nodiscard]] constexpr auto finish() const -> IndexType {return this->last ();}
 
 	friend constexpr auto operator==(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) == static_cast<range<IndexType> const&>(other);}
 	friend constexpr auto operator!=(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) != static_cast<range<IndexType> const&>(other);}
