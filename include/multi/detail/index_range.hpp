@@ -54,7 +54,7 @@ class iterator_facade {
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<> >
 class range {
 	IndexType     first_ = {};
-	IndexTypeLast last_  = first;  // TODO(correaa) check how to do partially initialzed
+	IndexTypeLast last_  = first_;  // TODO(correaa) check how to do partially initialzed
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
@@ -254,8 +254,11 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	// [[nodiscard]] constexpr auto start () const -> IndexType {return this->first();}
 	// [[nodiscard]] constexpr auto finish() const -> IndexType {return this->last ();}
 
-	friend constexpr auto operator==(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) == static_cast<range<IndexType> const&>(other);}
-	friend constexpr auto operator!=(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) != static_cast<range<IndexType> const&>(other);}
+	constexpr auto operator==(extension_t const& other) const {return static_cast<range<IndexType> const&>(*this) == static_cast<range<IndexType> const&>(other);}
+	constexpr auto operator!=(extension_t const& other) const {return static_cast<range<IndexType> const&>(*this) != static_cast<range<IndexType> const&>(other);}
+
+	// friend constexpr auto operator==(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) == static_cast<range<IndexType> const&>(other);}
+	// friend constexpr auto operator!=(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) != static_cast<range<IndexType> const&>(other);}
 
 	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
 		using std::max; using std::min;
