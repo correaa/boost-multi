@@ -3,8 +3,17 @@ from conan.tools.files import copy
 
 
 class MultiConan(ConanFile):
-    name = "multi"
+    name = "b-multi"
     version = "0.80.1"
+    homepage = "https://gitlab.com/correaa/boost-multi"
+    description = "Multidimensional array access to contiguous or regularly contiguous memory. (Not an official Boost library)"
+    topics = (
+        "array",
+        "multidimensional",
+        "library",
+    )
+    license = "Boost"
+    url = "https://gitlab.com/correaa/boost-multi"
     # No settings/options are necessary, this is header only
     exports_sources = "include/*"
     no_copy_source = True
