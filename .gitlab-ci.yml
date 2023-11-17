@@ -126,7 +126,7 @@ deb:
     - c++ ../test/main.cpp
   artifacts:
     paths:
-      - build/*
+      - build/multi_all.deb
   needs: ["g++", "clang++"]
 
 clang++ tidy:
