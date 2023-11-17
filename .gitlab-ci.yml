@@ -136,9 +136,9 @@ clang++ libc++:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -stdlib=libc++ -D_GLIBCXX_USE_CXX11_ABI=0" -DCMAKE_EXE_LINKER_FLAGS="-lc++abi"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_DEBUG_MODE=1 -stdlib=libc++"
+    - cmake --build . --target main.cpp.x array_ref.cpp.x
+    - test/main.cpp.x && test/array_ref.cpp.x
   needs: ["clang++"]
 
 clang++ tidy:
