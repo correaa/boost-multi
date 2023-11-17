@@ -11,12 +11,6 @@
 #include <span>
 #endif
 
-namespace boost::unit_test::ut_detail {
-    auto normalize_test_case_name(const_string name) -> std::string {
-        return ( name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-    }
-}
-
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
