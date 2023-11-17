@@ -12,7 +12,7 @@
 #endif
 
 namespace boost::unit_test::ut_detail {
-    std::string normalize_test_case_name(const_string name) {
+    auto normalize_test_case_name(const_string name) -> std::string {
         return ( name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
     }
 }

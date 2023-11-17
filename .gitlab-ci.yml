@@ -138,7 +138,8 @@ clang++ libc++:
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_DEBUG_MODE=1 -stdlib=libc++"
     - cmake --build . --target main.cpp.x array_ref.cpp.x
-    - test/main.cpp.x && test/array_ref.cpp.x
+    - test/main.cpp.x
+    - test/array_ref.cpp.x
   needs: ["clang++"]
 
 clang++ tidy:
