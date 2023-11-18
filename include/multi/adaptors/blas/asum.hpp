@@ -33,6 +33,9 @@ struct asum_ptr {
 
 	template<class... As>
 	friend auto uninitialized_copy_n(asum_ptr first, As... as) {return copy_n(first, as...);}
+
+	template<class... As>
+	static auto uninitialized_copy_n(asum_ptr first, As... as) {return copy_n(first, as...);}
 };
 
 template<class A1D>
