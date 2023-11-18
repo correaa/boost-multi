@@ -9,7 +9,8 @@
 #include "../../multi/detail/tuple_zip.hpp"
 #include "../../multi/detail/types.hpp"
 
-#include <algorithm>  // for min
+#include <algorithm>  // for std::min
+#include <functional> // for std::plus<>
 #include <iterator>   // for std::random_iterator_tag // std::reverse_iterator
 #include <limits>     // for numeric_limits
 #include <utility>    // for forward

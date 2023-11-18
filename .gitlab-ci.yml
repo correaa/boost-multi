@@ -129,6 +129,18 @@ deb:
       - build/multi_all.deb
   needs: ["g++", "clang++"]
 
+clang++ libc++:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - clang++ --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++"
+    - cmake --build . --target main.cpp.x
+    - test/main.cpp.x
+  needs: ["clang++"]
+
 clang++ tidy:
   stage: build
   image: debian:stable
