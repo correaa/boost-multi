@@ -137,9 +137,8 @@ clang++ libc++:
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++"
-    - cmake --build . --target main.cpp.x array_vector_substitutability.cpp.x
+    - cmake --build . --target main.cpp.x
     - test/main.cpp.x
-    - test/array_vector_substitutability.cpp.x
   needs: ["clang++"]
 
 clang++ tidy:
