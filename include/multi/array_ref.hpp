@@ -142,11 +142,16 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		typename std::iterator_traits<element_const_ptr>::reference
 	>;
 
-	HD constexpr auto  base() const  -> element_ptr       {return base_;}
+	HD constexpr auto  base() &      -> element_ptr       {return base_;}
+	HD constexpr auto  base() &&     -> element_ptr       {return base_;}
+	HD constexpr auto  base() const& -> element_const_ptr {return base_;}
+
 	HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
-	friend /*constexpr*/ auto  base(array_types const& self) -> element_ptr  {return self.base();}
+	friend /*constexpr*/ auto  base(array_types & self) -> element_ptr  {return self.base();}
+	friend /*constexpr*/ auto  base(array_types && self) -> element_ptr  {return std::move(self).base();}
+	friend /*constexpr*/ auto  base(array_types const& self) -> element_const_ptr  {return self.base();}
 
 	    HD constexpr auto layout()           const        -> layout_t const& {return *this;}
 	friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
@@ -749,7 +754,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 
  private:
-	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
+	constexpr auto elements_aux() const {return elements_range{this->base_, this->layout()};}
 
  public:
 	subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
@@ -798,9 +803,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 	HD constexpr auto at_aux(index idx) const {
-		return reference{
+		return reference {
 			this->layout().sub(),
-			this->base() + (idx*this->layout().stride() - this->layout().offset())
+			this->base_ + (idx*this->layout().stride() - this->layout().offset())
 		};  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 	}
 
@@ -860,7 +865,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
  private:
-	constexpr auto take_aux(difference_type n) const {
+	constexpr auto taked_aux(difference_type n) const {
 		assert( n <= this->size() );
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -868,16 +873,16 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 			this->layout().offset(),
 			this->stride()*n
 		};
-		return subarray{new_layout, this->base()};
+		return subarray{new_layout, this->base_};
 	}
 
  public:
-	constexpr auto take(difference_type n) const& -> basic_const_array {return take_aux(n);}
-	constexpr auto take(difference_type n)     && -> subarray       {return take_aux(n);}
-	constexpr auto take(difference_type n)      & -> subarray       {return take_aux(n);}
+	constexpr auto taked(difference_type n) const& -> basic_const_array {return taked_aux(n);}
+	constexpr auto taked(difference_type n)     && -> subarray          {return taked_aux(n);}
+	constexpr auto taked(difference_type n)      & -> subarray          {return taked_aux(n);}
 
  private:
-	constexpr auto drop_aux(difference_type n) const {
+	constexpr auto dropped_aux(difference_type n) const {
 		assert( n <= this->size() );
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -885,13 +890,13 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 			this->layout().offset(),
 			this->stride()*(this->size() - n)
 		};
-		return subarray{new_layout, this->base() + n*this->layout().stride() - this->layout().offset()};
+		return subarray{new_layout, this->base_ + n*this->layout().stride() - this->layout().offset()};
 	}
 
  public:
-	constexpr auto drop(difference_type n) const& -> basic_const_array {return drop_aux(n);}
-	constexpr auto drop(difference_type n)     && -> subarray       {return drop_aux(n);}
-	constexpr auto drop(difference_type n)      & -> subarray       {return drop_aux(n);}
+	constexpr auto dropped(difference_type n) const& -> basic_const_array {return dropped_aux(n);}
+	constexpr auto dropped(difference_type n)     && -> subarray       {return dropped_aux(n);}
+	constexpr auto dropped(difference_type n)      & -> subarray       {return dropped_aux(n);}
 
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
@@ -899,7 +904,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
-		return subarray{new_layout, this->base() + (first*this->layout().stride() - this->layout().offset())};
+		return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
@@ -1275,7 +1280,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 	constexpr auto home_aux() const -> cursor_t<typename subarray::element_ptr, D, typename subarray::strides_type> {
-		return {this->base(), this->strides()};
+		return {this->base_, this->strides()};
 	}
 
  public:
@@ -1497,7 +1502,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 		return {
 			this->layout().scale(sizeof(T), sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
-			reinterpret_pointer_cast<P2>(this->base())  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
+			reinterpret_pointer_cast<P2>(this->base_)  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
 		};
 	}
 
@@ -1535,7 +1540,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		return {
 			layout_t<D+1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),
-			static_cast<P2>(static_cast<void*>(this->base()))
+			static_cast<P2>(static_cast<void*>(this->base_))
 		};
 	}
 
@@ -1866,7 +1871,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
  private:
 	HD constexpr auto at_aux(index idx) const -> typename subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		auto ba = this->base();  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
+		auto ba = this->base_;  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto of = (idx*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 		return *pt;  // in C++17 this is allowed even with syntethic references
@@ -1921,7 +1926,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  private:
-	constexpr auto take_aux(difference_type count) const {
+	HD constexpr auto taked_aux(difference_type count) const {
 		assert( count <= this->size() );  // calculating size is expensive that is why
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -1929,16 +1934,16 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 			this->layout().offset(),
 			this->stride()*count
 		};
-		return subarray{new_layout, this->base()};
+		return subarray{new_layout, this->base_};
 	}
 
  public:
-	constexpr auto take(difference_type count) const& -> basic_const_array {return take_aux(count);}
-	constexpr auto take(difference_type count)     && -> subarray       {return take_aux(count);}
-	constexpr auto take(difference_type count)      & -> subarray       {return take_aux(count);}
+	constexpr auto taked(difference_type count) const& -> basic_const_array {return taked_aux(count);}
+	constexpr auto taked(difference_type count)     && -> subarray          {return taked_aux(count);}
+	constexpr auto taked(difference_type count)      & -> subarray          {return taked_aux(count);}
 
  private:
-	constexpr auto drop_aux(difference_type count) const -> subarray {
+	HD constexpr auto dropped_aux(difference_type count) const -> subarray {
 		assert( count <= this->size() );
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -1946,24 +1951,25 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 			this->layout().offset(),
 			this->stride()*(this->size() - count)
 		};
-		return subarray{new_layout, this->base() + (count*this->layout().stride() - this->layout().offset())};
+		return subarray{new_layout, this->base_ + (count*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
-	constexpr auto drop(difference_type count) const& -> basic_const_array {return drop_aux(count);}
-	constexpr auto drop(difference_type count)     && -> subarray       {return drop_aux(count);}
-	constexpr auto drop(difference_type count)      & -> subarray       {return drop_aux(count);}
+	constexpr auto dropped(difference_type count) const& -> basic_const_array {return dropped_aux(count);}
+	constexpr auto dropped(difference_type count)     && -> subarray       {return dropped_aux(count);}
+	constexpr auto dropped(difference_type count)      & -> subarray       {return dropped_aux(count);}
 
  private:
-	HD /*[[gnu::pure]]*/ constexpr auto sliced_aux(index first, index last) const {
-		typename types::layout_t new_layout = this->layout();
-		if(this->is_empty()) {
-			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-			new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
-		} else {
-			(new_layout.nelems() /= this->size())*=(last - first);
-		}
-		return subarray{new_layout, this->base() + (first*this->layout().stride() - this->layout().offset())};
+	HD constexpr auto sliced_aux(index first, index last) const {
+		return taked_aux(last).dropped_aux(first);
+		// typename types::layout_t new_layout = this->layout();
+		// if(this->is_empty()) {
+		// 	assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// 	new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
+		// } else {
+		// 	(new_layout.nelems() /= this->size())*=(last - first);
+		// }
+		// return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
@@ -1974,7 +1980,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 
  private:
-	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
+	constexpr auto elements_aux() const {return elements_range{this->base_, this->layout()};}
 
  public:
 	constexpr auto  elements()      & ->       elements_range {return elements_aux();}
@@ -2128,7 +2134,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<
 		class Range,
 		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
-	//  std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
+	//  std::enable_if_t<! multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
 		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))
 	>
 	constexpr explicit operator Range() const & {return Range(begin(), end());}  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
@@ -2254,11 +2260,11 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
  public:
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const -> subarray<T2, 1, P2> {  // name taken from std::static_pointer_cast
-		return {this->layout(), static_cast<P2>(this->base())};
+		return {this->layout(), static_cast<P2>(this->base_)};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
 	constexpr auto static_array_cast(Args&&... args) const -> subarray<T2, 1, P2> {  // name taken from std::static_pointer_cast
-		return {this->layout(), P2{this->base(), std::forward<Args>(args)...}};
+		return {this->layout(), P2{this->base_, std::forward<Args>(args)...}};
 	}
 
 	template<class UF>
@@ -2322,7 +2328,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 		return subarray<std::decay_t<T2>, 1, P2>{
 			layout_type{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
-			reinterpret_pointer_cast<P2>(this->base())
+			reinterpret_pointer_cast<P2>(this->base_)
 		};
 	}
 
@@ -2502,7 +2508,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
  public:
-	HD constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
+	HD constexpr auto data_elements() const& -> typename array_ref::element_const_ptr {return array_ref::base_;}
 
 	template<class TT, class... As, std::enable_if_t<! std::is_base_of_v<array_ref, array_ref<TT, D, As...>> ,int> =0>
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
@@ -2559,7 +2565,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  private:
 	constexpr auto elements_aux() const {
 		return elements_type{
-			this->data_elements(),
+			this->base_,
 			typename elements_type::extensions_type{multi::iextension{this->num_elements()}}
 		};
 	}
@@ -2589,7 +2595,10 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		return ! operator==(self, other);
 	}
 
-	    HD constexpr auto data_elements()        &&       -> typename array_ref::element_ptr {return array_ref::base_;}
+	    HD constexpr auto data_elements() &      -> typename array_ref::element_ptr       {return array_ref::base_;}
+	    HD constexpr auto data_elements() &&     -> typename array_ref::element_ptr       {return array_ref::base_;}
+	//  HD constexpr auto data_elements() const& -> typename array_ref::element_const_ptr {return array_ref::base_;}
+
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	// data() is here for compatibility with std::vector
