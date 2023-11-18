@@ -32,7 +32,7 @@ The code is completely independent and with important differences in the impleme
 
 ## Using the library, installation and tests
 
-You can try the library [online](https://godbolt.org/z/dvacqK8jE) before using it locally.
+You can try the library [online](https://godbolt.org/z/dvacqK8jE) before using it.
 
 _Multi_ doesn't require installation, a single header `#include <multi/array.hpp>` is enough to use the full core library.
 _Multi_ has no dependencies (except for the standard C++ library) and can be used immediately after downloading it.
@@ -41,14 +41,14 @@ _Multi_ has no dependencies (except for the standard C++ library) and can be use
 git clone https://gitlab.com/correaa/boost-multi.git
 ```
 
-Although installation is not necessary, the library can still be installed system-wide or at user-space with CMake.
+Although installation is not necessary, the library can still be installed with CMake.
 The header (and cmake) files will typically end up in `/usr/local/include/multi` and `/usr/local/share/multi`.
 
 ```bash
 cd boost-multi
 mkdir -p build && cd build
 cmake ..  # --install-prefix=$HOME/.local
-sudo cmake --install .
+cmake --install .  # or sudo ...
 ```
 
 _Testing_ the library requires Boost.Test library, installed for example via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
@@ -59,26 +59,25 @@ cmake --build .
 ctest
 ```
 
-Other CMake projects (targets) can depend on Multi by adding a simple `add_subdirectory(my_multi_path)` or by `find_package`:
+Once installed, other CMake projects (targets) can depend on Multi by adding a simple `add_subdirectory(my_multi_path)` or by `find_package`:
 
 ```cmake
 find_package(multi)  # see https://gitlab.com/correaa/boost-multi#using-the-library-installation-and-tests
-...
-target_link_library(my_target PUBLIC multi)
 ```
 
-Alternatively to `find_package` the library can be fetched on demand by the CMake project:
+Alternatively to `find_package` the library can be fetched on demand:
 ```cmake
+include(FetchContent)
 FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
 FetchContent_MakeAvailable(multi)
 ...
-target_link_library(my_target PUBLIC multi)
+target_link_libraries(my_target PUBLIC multi)
 ```
 
 The code requires compilers with standard C++17 support, for reference any of:
 LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`), 
 GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a), 
-Nvidia's    [`nvcc`](https://godbolt.org/z/Kdh5PeP5f) (11.0+) and `nvc++` (22.7+), 
+Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) and `nvc++` (22.7+), 
 Intel's      `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
 Baxter's    [`circle`](https://www.circle-lang.org/) (build 187+),
 and 
