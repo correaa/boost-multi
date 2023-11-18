@@ -8,11 +8,12 @@
 
 #include<complex>
 
-namespace boost::unit_test::ut_detail {
-    auto normalize_test_case_name(const_string name) -> std::string {
-        return ( name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));  // NOLINT(fuchsia-default-arguments-calls)
-    }
-}
+// workaround for libc++ and boost test
+// namespace boost::unit_test::ut_detail {
+//     auto normalize_test_case_name(const_string name) -> std::string {
+//         return ( name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));  // NOLINT(fuchsia-default-arguments-calls)
+//     }
+// }  // end namespace boost::unit_test::ut_detail
 
 namespace multi = boost::multi;
 
