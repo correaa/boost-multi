@@ -665,3 +665,45 @@ BOOST_AUTO_TEST_CASE(diagonal) {
 	for(auto const& aii : mar.diagonal() ) {sum += aii;}  // NOLINT(altera-unroll-loops) test for-range loop
 	BOOST_REQUIRE( sum == mar[0][0] + mar[1][1] + mar[2][2]);
 }
+
+BOOST_AUTO_TEST_CASE(function_passing) {
+	multi::array<double, 2> arr({3, 3});
+	multi::array_ref<double, 2>& arrR = arr;
+
+	arrR[0][0] = 2.1;
+
+	arr.reextent({5, 5});
+
+	assert( &arrR[0][0] == &arr[0][0] );
+}
+
+namespace boost::multi {
+template<class T, boost::multi::dimensionality_type D, class Alloc = std::allocator<std::decay_t<T>> >
+using Array =
+	std::conditional_t<std::is_reference_v<T>,
+		std::conditional_t<
+			std::is_const_v<std::remove_reference_t<T>>,
+			boost::multi::array_ref<std::remove_const_t<std::remove_reference_t<T>>, D> const&,
+			boost::multi::array_ref<                    std::remove_reference_t<T> , D>      &
+		>,
+		multi::array<T, D, Alloc>
+	>
+;
+}  // end namespace boost::multi
+
+BOOST_AUTO_TEST_CASE(function_passing_2) {
+	multi::Array<double , 2> arr({3, 3});
+	[[maybe_unused]] multi::Array<double&, 2> arrR = arr;
+
+	arrR[0][0] = 5.1;
+
+	[[maybe_unused]] multi::Array<double const&, 2> arrCR = arr;
+
+	assert( &arrCR[0][0] == &arrR[0][0] );
+
+	[[maybe_unused]] multi::Array<double const&, 2> arrCR2 = arrCR;
+
+	arr.reextent({5, 5});
+
+	assert( &arrR[0][0] == &arr[0][0] );
+}
