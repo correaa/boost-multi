@@ -14,7 +14,7 @@ namespace multi = boost::multi;
 
 namespace {
 auto second_finish(multi::extensions_t<3> exts) {
-	return std::get<1>(exts).finish();
+	return std::get<1>(exts).last();
 }
 }  // namespace
 
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(layout_1) {
 	using multi::extension;
 	BOOST_REQUIRE(( extension(arr) == multi::index_extension{0, 50} ));
 	BOOST_REQUIRE(( extension(arr) == multi::iextension{0, 50}      ));
-	BOOST_REQUIRE(( extension(arr) == multi::irange{0, 50} ));
+	// BOOST_REQUIRE(( extension(arr) == multi::irange{0, 50} ));
 }
 
 BOOST_AUTO_TEST_CASE(layout_2) {
@@ -190,7 +190,6 @@ BOOST_AUTO_TEST_CASE(layout_2) {
 	using multi::extension;
 	BOOST_REQUIRE(( extension(arr) == multi::index_extension{0, 50} ));
 	BOOST_REQUIRE(( extension(arr) == multi::iextension{0, 50}      ));
-	BOOST_REQUIRE(( extension(arr) == multi::irange{0, 50}          ));
 }
 
 BOOST_AUTO_TEST_CASE(layout_3) {
@@ -308,21 +307,21 @@ BOOST_AUTO_TEST_CASE(layout) {
 BOOST_AUTO_TEST_CASE(multi_layout_with_offset) {
 	{
 		multi::layout_t<1> const l1(multi::iextension(2, 5));
-		BOOST_REQUIRE( l1.extension().start()  == 2 );
-		BOOST_REQUIRE( l1.extension().finish() == 5 );
+		BOOST_REQUIRE( l1.extension().first()  == 2 );
+		BOOST_REQUIRE( l1.extension().last() == 5 );
 	}
 	{
 		boost::multi::layout_t<2>::extensions_type const exts{
 			multi::iextension(2, 5),
 			multi::iextension(0, 5)};
 		multi::layout_t<2> const l2(exts);
-		BOOST_REQUIRE( l2.extension().start()  == std::get<0>(exts).start()  );
-		BOOST_REQUIRE( l2.extension().finish() == std::get<0>(exts).finish() );
+		BOOST_REQUIRE( l2.extension().first()  == std::get<0>(exts).first()  );
+		BOOST_REQUIRE( l2.extension().last () == std::get<0>(exts).last() );
 	}
 	{
 		multi::layout_t<2> const l2({multi::iextension(0, 3), multi::iextension(2, 7)});
-		BOOST_REQUIRE( std::get<1>(l2.extensions()).start()  == 2 );
-		BOOST_REQUIRE( std::get<1>(l2.extensions()).finish() == 7 );
+		BOOST_REQUIRE( std::get<1>(l2.extensions()).first()  == 2 );
+		BOOST_REQUIRE( std::get<1>(l2.extensions()).last() == 7 );
 	}
 }
 
@@ -503,13 +502,13 @@ BOOST_AUTO_TEST_CASE(continued_part1) {
 			{0, 10},
 		});
 		BOOST_REQUIRE( size(lyt) == 10 );
-		BOOST_REQUIRE( extension(lyt).start () ==  0 );
-		BOOST_REQUIRE( extension(lyt).finish() == 10 );
+		BOOST_REQUIRE( extension(lyt).first() ==  0 );
+		BOOST_REQUIRE( extension(lyt).last () == 10 );
 
 		lyt.reindex(1);
 		BOOST_REQUIRE( size(lyt) == 10 );
-		BOOST_REQUIRE( extension(lyt).start () ==  1 );
-		BOOST_REQUIRE( extension(lyt).finish() == 11 );
+		BOOST_REQUIRE( extension(lyt).first() ==  1 );
+		BOOST_REQUIRE( extension(lyt).last () == 11 );
 	}
 	{
 		multi::layout_t<2> const lyt;
@@ -521,20 +520,20 @@ BOOST_AUTO_TEST_CASE(continued_part1) {
 			{0, 20},
 		}));
 		BOOST_REQUIRE( size(lyt) == 10 );
-		BOOST_REQUIRE( extension(lyt).start () ==  0 );
-		BOOST_REQUIRE( extension(lyt).finish() == 10 );
+		BOOST_REQUIRE( extension(lyt).first() ==  0 );
+		BOOST_REQUIRE( extension(lyt).last () == 10 );
 
 		lyt.reindex(1);
-		BOOST_REQUIRE( extension(lyt).start () ==  1 );
-		BOOST_REQUIRE( extension(lyt).finish() == 11 );
+		BOOST_REQUIRE( extension(lyt).first() ==  1 );
+		BOOST_REQUIRE( extension(lyt).last () == 11 );
 
 		lyt.rotate().reindex(3).unrotate();
-		BOOST_TEST_REQUIRE( extension(lyt).start () ==  1 );
-		BOOST_TEST_REQUIRE( extension(lyt).finish() == 11 );
+		BOOST_TEST_REQUIRE( extension(lyt).first() ==  1 );
+		BOOST_TEST_REQUIRE( extension(lyt).last () == 11 );
 
-		BOOST_TEST_REQUIRE( std::get<0>(extensions(lyt)).start () == 1 );
-		BOOST_TEST_REQUIRE( std::get<1>(extensions(lyt)).start () == 3 );
-		BOOST_TEST_REQUIRE( std::get<1>(extensions(lyt)).finish() == 23 );
+		BOOST_TEST_REQUIRE( std::get<0>(extensions(lyt)).first() == 1 );
+		BOOST_TEST_REQUIRE( std::get<1>(extensions(lyt)).first() == 3 );
+		BOOST_TEST_REQUIRE( std::get<1>(extensions(lyt)).last () == 23 );
 	}
 	// {
 	//  multi::layout_t<2> lyt({

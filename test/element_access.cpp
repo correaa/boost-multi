@@ -104,14 +104,14 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 	BOOST_REQUIRE(           arr[1][2] == "h"                                     );
 
 	BOOST_REQUIRE(      size(arr          ({1, 3}, {2, 5})) == 2                  );
-	BOOST_REQUIRE( extension(arr          ({1, 3}, {2, 5})).start() == 0          );
+	BOOST_REQUIRE( extension(arr          ({1, 3}, {2, 5})).first() == 0          );
 	BOOST_REQUIRE(           arr          ({1, 3}, {2, 5}).num_elements() == 2*3L );
 	BOOST_REQUIRE(           arr          ({1, 3}, {2, 5}).num_elements() == 2*3L );
 	BOOST_REQUIRE(           arr          ({1, 3}, {2, 5})[0][0] == "h"           );
 	BOOST_REQUIRE(          &arr          ({1, 3}, {2, 5})[0][0] == &arr[1][2]      );
 
 	BOOST_REQUIRE(      size(arr.stenciled({1, 3}, {2, 5})) == 2                  );
-	BOOST_REQUIRE( extension(arr.stenciled({1, 3}, {2, 5})).start() == 1          );
+	BOOST_REQUIRE( extension(arr.stenciled({1, 3}, {2, 5})).first() == 1          );
 	BOOST_REQUIRE(           arr.stenciled({1, 3}, {2, 5}).num_elements() == 2*3L );
 	BOOST_REQUIRE(           arr.stenciled({1, 3}, {2, 5}) [1][2] == "h"          );
 	BOOST_REQUIRE(          &arr.stenciled({1, 3}, {2, 5}) [1][2] == &arr[1][2]     );

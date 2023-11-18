@@ -26,6 +26,8 @@ project(
   VERSION 0.80.1
   LANGUAGES CXX)
 
+include_directories(${PROJECT_SOURCE_DIR}/include)  # workaround for vscode to detect headers https://stackoverflow.com/a/68139743/225186
+
 include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
 include(GNUInstallDirs)
