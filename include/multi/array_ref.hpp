@@ -1961,15 +1961,15 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
-		return taked_aux(last).dropped_aux(first);
-		// typename types::layout_t new_layout = this->layout();
-		// if(this->is_empty()) {
-		//  assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		//  new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
-		// } else {
-		//  (new_layout.nelems() /= this->size())*=(last - first);
-		// }
-		// return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
+		typename types::layout_t new_layout = this->layout();
+		if(this->is_empty()) {
+			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+			new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
+		} else {
+			(new_layout.nelems() /= this->size())*=(last - first);
+		}
+
+		return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
@@ -2216,7 +2216,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	>
 	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
 	-> subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal
+		assert(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
 		adl_copy_n(adl_begin(rng), adl_size(rng), begin());
 	//  adl_copy(adl_begin(rng), adl_end(rng), begin());
 		return *this;
