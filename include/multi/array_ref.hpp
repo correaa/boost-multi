@@ -684,7 +684,7 @@ struct elements_range_t {
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
-	auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());
+	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());
 		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
 		return *this;
 	}
@@ -1964,10 +1964,10 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		return taked_aux(last).dropped_aux(first);
 		// typename types::layout_t new_layout = this->layout();
 		// if(this->is_empty()) {
-		// 	assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		// 	new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
+		//  assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		//  new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
 		// } else {
-		// 	(new_layout.nelems() /= this->size())*=(last - first);
+		//  (new_layout.nelems() /= this->size())*=(last - first);
 		// }
 		// return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
@@ -2216,7 +2216,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	>
 	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
 	-> subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == adl_size(rng));
+		assert(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal
 		adl_copy_n(adl_begin(rng), adl_size(rng), begin());
 	//  adl_copy(adl_begin(rng), adl_end(rng), begin());
 		return *this;
