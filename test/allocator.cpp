@@ -148,7 +148,7 @@ constexpr auto f() {
 
 BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
 	static_assert(f() == 3);
-	BOOST_REQUIRE( f() == 10 );
+	BOOST_REQUIRE( f() == 3 );
 }
 
 constexpr auto g() {
