@@ -199,6 +199,16 @@ BOOST_AUTO_TEST_CASE(subrange_2D_issue129) {
 //  BOOST_REQUIRE( arr(0, {0, 512, 2})[255] == 510. );  // TODO(correaa) coompilation error
 }
 
+class rng3_t {
+	int start_;
+	int finish_;
+
+	public:
+	rng3_t(int start, int finish) : start_{start}, finish_{finish} {}  // NOLINT(bugprone-easily-swappable-parameters)
+	auto first () const {return start_;}
+	auto last  () const {return finish_;}
+};
+
 BOOST_AUTO_TEST_CASE(subrange_start_finish) {
 	multi::array<double, 2> arr = {
 		{ 1.0,  2.0},
@@ -220,15 +230,7 @@ BOOST_AUTO_TEST_CASE(subrange_start_finish) {
 
 	BOOST_REQUIRE( &arr(rng2, 1)[0] == &arr[2][1] );
 
-	class rng3_t {
-		int start_;
-		int finish_;
-
-	 public:
-		rng3_t(int start, int finish) : start_{start}, finish_{finish} {}  // NOLINT(bugprone-easily-swappable-parameters)
-	 	auto first () const {return start_;}
-	 	auto last  () const {return finish_;}
-	} const rng3{2, 5};
+	rng3_t const rng3{2, 5};
 
 	multi::irange const rng4(rng3);
 

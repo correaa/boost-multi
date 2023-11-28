@@ -355,7 +355,7 @@ inline auto has_extensions_aux(...     ) -> std::false_type;
 template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
 template<class T, std::enable_if_t<has_extensions<T>::value, int> =0>
-[[nodiscard]] auto extensions(T const& array) -> std::decay_\
+[[nodiscard]] constexpr auto extensions(T const& array) -> std::decay_\
 t<decltype(array.extensions())> {
 	return array.extensions();  }
 
