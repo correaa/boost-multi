@@ -154,12 +154,8 @@ BOOST_AUTO_TEST_CASE(layout_tuple_3d) {
 }
 
 BOOST_AUTO_TEST_CASE(layout_0) {
-	multi::array<double, 3> arr(
-#if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
-		multi::extensions_t<3>
-#endif
-		{51, 52, 53}
-	);
+	multi::array<double, 3> arr({51, 52, 53});
+
 	BOOST_REQUIRE( size(arr)  == 51       );
 	BOOST_REQUIRE( arr.size() == 51       );
 
