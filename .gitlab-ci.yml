@@ -188,29 +188,29 @@ clang++ sani:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-15 c++20:
+clang++-14 c++20:
   stage: build
   image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-15 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-14 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - clang++-15 --version
-    - CXX=clang++-15 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
+    - clang++-14 --version
+    - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["clang++"]
 
-clang++-16 c++23:
+clang++-15 c++23:
   stage: build
   image: debian:latest
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-16 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-15 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - clang++-16 --version
-    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
+    - clang++-15 --version
+    - CXX=clang++-15 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["clang++-15 c++20"]
+  needs: ["clang++-14 c++20"]
 
 clang++-7:
   stage: build

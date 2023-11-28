@@ -140,8 +140,6 @@ BOOST_AUTO_TEST_CASE(static_allocator) {
 	sa.deallocate(pp, 10);
 }
 
-#if __cplusplus >= 202002L
-
 #if defined( __cpp_constexpr) &&  (__cpp_constexpr  > 202110L)
 constexpr auto f() {
     std::vector<int> v = {1, 2, 3};
@@ -151,9 +149,7 @@ constexpr auto f() {
 BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
 	static_assert(f() == 3);
 }
-#endif
 
-#if !defined(__clang__) and !defined(__NVCOMPILER)
 constexpr auto g() {
 	multi::array<int, 2> arr = {{4, 5, 6}, {1, 2, 3}, {7, 8, 9}};
 	std::sort(arr.begin(), arr.end());
@@ -169,7 +165,6 @@ BOOST_AUTO_TEST_CASE(constexpr_allocator) {
 	static_assert( gg == 10 );
 	BOOST_REQUIRE( gg == 10 );
 }
-#endif
 #endif
 
 BOOST_AUTO_TEST_CASE(static_allocator_on_vector_double) {
