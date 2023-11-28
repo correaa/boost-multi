@@ -34,8 +34,8 @@ struct array_allocator {
 	using pointer_   = typename allocator_traits::pointer;
 
  protected:
-	auto alloc()      & -> allocator_type      & {return alloc_;}
-	auto alloc() const& -> allocator_type const& {return alloc_;}
+	constexpr auto alloc()      & -> allocator_type      & {return alloc_;}
+	constexpr auto alloc() const& -> allocator_type const& {return alloc_;}
 
 	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
 
@@ -108,7 +108,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
 
-	void destroy() {
+	constexpr void destroy() {
 		if constexpr(! (std::is_trivially_destructible_v<typename static_array::element> || multi::force_element_trivial_destruction<typename static_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
@@ -138,7 +138,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	static_array(static_array&& other) noexcept : static_array{other.element_moved()} {}
 
-	static_array(decay_type&& other, allocator_type const& alloc) noexcept
+	constexpr static_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}
 	, ref{std::exchange(other.base_, nullptr), other.extensions()} {
 		std::move(other).layout_mutable() = {};
@@ -154,11 +154,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(layout_type {index_extension {adl_distance(first, last)}*multi::extensions(*first)}.num_elements())),
 		index_extension {adl_distance(first, last)}*multi::extensions(*first)
 	} {
+		// adl_copy(first, last, ref::begin());
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
 	}
 
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
-	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
 	template<
@@ -219,7 +219,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	explicit static_array(typename static_array::extensions_type extensions, allocator_type const& alloc)
 	: array_alloc{alloc}
-	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions} {
+	, ref(array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_default_construct();
 	}
 
@@ -230,9 +230,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
-	static_array(multi::subarray<TT, D, Args...> const& other, allocator_type const& alloc)
-	: static_array(other.extensions(), alloc) {
-		adl_uninitialized_copy(other.begin(), other.end(), this->begin());  // TODO(correaa): call this conditionally on T properties
+	constexpr static_array(multi::subarray<TT, D, Args...> const& other, allocator_type const& alloc)
+	: array_alloc{alloc}
+	, ref(array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())), other.extensions()) {
+		adl_uninitialized_copy(other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
 	}
 
 	template<class TT, class... Args,
@@ -240,7 +241,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	/*mplct*/static_array(multi::subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr /*mplct*/static_array(multi::subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
@@ -367,7 +368,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	HD constexpr auto operator[](index idx)      & -> typename static_array::      reference {return ref::operator[](idx);}
 
  protected:
-	void deallocate() {
+	constexpr void deallocate() {
 		if(this->num_elements()) {
 			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
 		}
@@ -884,7 +885,7 @@ struct array : static_array<T, D, Alloc> {
 	: static_{array<T, D>(ilv.begin(), ilv.end())} {}
 
 	template<class OtherT, class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> && ! std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> && (D == 1) > >
-	explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+	constexpr explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept {return static_cast<T>(elem);})} {}  // TODO(correaa) investigate why noexcept is necessary
 
 	array() = default;
