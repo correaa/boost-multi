@@ -692,7 +692,7 @@ For example, to convert an array of integers to an array of text strings:
 
 ## Const-correctness
 
-Const-correctness refers to the syntactic property of a program to disallow object mutation when it is not desired or logically incorrect.
+Const-correctness refers to the property of a program to disallow mutation of certain objects when it is undesired or logically incorrect.
 Honoring the const-ness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.
 The library goes to great lengths to ensure const-correctness for the whole or parts of any object.
 
@@ -746,6 +746,21 @@ int main() {
 //  fill_99( coll1_take3_const );  // doesn't compile because coll1_take3_const is const
 }
 ```
+
+## Compile-time evaluation (constexpr-all-the-things)
+
+With certain limitations imposed by the language, arrays can be declared in contexts with compile-time evaluation.
+
+```cpp
+constexpr auto trace() {
+	multi::array<int, 2> arr = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+	arr[2][2] = 10;
+	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end());
+}
+
+static_assert( trace() == 4 + 2 + 10 );
+```
+https://godbolt.org/z/Porre3z8s
 
 ## Partially formed elements
 
