@@ -89,15 +89,18 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 
 struct employee_dummy {
 	std::string name;
+	// NOLINTNEXTLINE(runtime/int)
 	short salary;  // NOLINT(google-runtime-int)
 	std::size_t age;
 };
 
 struct employee {
 	std::string name;
+	// NOLINTNEXTLINE(runtime/int)
 	short salary;  // NOLINT(google-runtime-int)
 	std::size_t age;
-	char padding_ [(((offsetof(employee_dummy, age) + sizeof(age))/sizeof(std::string)+1)*sizeof(std::string) - (offsetof(employee_dummy, age) + sizeof(age)) )] = {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	char padding_ [(((offsetof(employee_dummy, age) + sizeof(age))/sizeof(std::string)+1)*sizeof(std::string) - (offsetof(employee_dummy, age) + sizeof(age)) )] = {};
 };
 
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
