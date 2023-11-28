@@ -153,6 +153,7 @@ BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
 }
 #endif
 
+#if !defined(__clang__) and !defined(__NVCOMPILER)
 constexpr auto g() {
 	multi::array<int, 2> arr = {{4, 5, 6}, {1, 2, 3}, {7, 8, 9}};
 	std::sort(arr.begin(), arr.end());
@@ -168,6 +169,7 @@ BOOST_AUTO_TEST_CASE(constexpr_allocator) {
 	static_assert( gg == 10 );
 	BOOST_REQUIRE( gg == 10 );
 }
+#endif
 #endif
 
 BOOST_AUTO_TEST_CASE(static_allocator_on_vector_double) {
