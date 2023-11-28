@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(static_allocator) {
 
 #if __cplusplus >= 202002L
 
-#if !defined(__NVCOMPILER)
+#if !defined(__NVCOMPILER) and !defined(__INTEL_LLVM_COMPILER)
 constexpr auto f() {
     std::vector<int> v = {1, 2, 3};
     return v.size();
