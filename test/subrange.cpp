@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(subrange_2D_issue129) {
 //  BOOST_REQUIRE( arr(0, {0, 512, 2})[255] == 510. );  // TODO(correaa) coompilation error
 }
 
-class {
+class rng3_t {
 	int start_;
 	int finish_;
 
