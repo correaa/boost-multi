@@ -581,20 +581,20 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 
 BOOST_AUTO_TEST_CASE(as_span) {
 	#if defined(__cpp_lib_span) and (__cpp_lib_span >=  202002L)
-	auto printMe0 = [](std::span<int> rng) {
+	auto print_me0 = [](std::span<int> rng) {
         std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
 		std::for_each(rng.begin(), rng.end(), [](auto const& elem) {std::cout << elem << ' ';});
         std::cout << "\n\n";
 	};
 	#endif
 
-	auto printMe1 = [](multi::array_ref<int, 1> rng) {
+	auto print_me1 = [](multi::array_ref<int, 1> const& rng) {
         std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
 		std::for_each(rng.begin(), rng.end(), [](auto const& elem) {std::cout << elem << ' ';});
         std::cout << "\n\n";
 	};
 
-	auto printMe2 = [](multi::array_ptr<int, 1> ptr) {
+	auto print_me2 = [](multi::array_ptr<int, 1> const& ptr) {
         std::cout << "ptr->size(): " << ptr->size() << '\n';  // (4)
 		std::for_each(ptr->begin(), ptr->end(), [](auto const& elem) {std::cout << elem << ' ';});
         std::cout << "\n\n";
@@ -602,51 +602,51 @@ BOOST_AUTO_TEST_CASE(as_span) {
 
 	#if defined(__cpp_lib_span) and (__cpp_lib_span >=  202002L)
     {
-        int arr[] = {1, 2, 3, 4};
-        printMe0(arr);
+        int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy arrays
+        print_me0(arr);
 
-        std::vector vec = {1, 2, 3, 4, 5};
-        printMe0(vec);
+        std::vector vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
+        print_me0(vec);
 
         std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
-        printMe0(arr2);
+        print_me0(arr2);
     }
 	#endif
     {
         int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
 
-        printMe1(multi::array_ref<int, 1>{arr});
-        printMe1(                         arr );
+        print_me1(multi::array_ref<int, 1>{arr});
+        print_me1(                         arr );
 
         std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
 
-        printMe1( *multi::array_ptr<int, 1>{vec.data(), 5} );
+        print_me1( *multi::array_ptr<int, 1>{vec.data(), 5} );
 
         std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
 
-		printMe1(arr2);
-		printMe1(*multi::array_ptr<int, 1>{ arr2.data(), {6} });
+		print_me1(arr2);
+		print_me1(*multi::array_ptr<int, 1>{ arr2.data(), {6} });
 
 
         multi::static_array<int, 1> marr({10}, 99);
-        printMe1(*multi::array_ptr<int, 1>{marr.data_elements(), 10});
+        print_me1(*multi::array_ptr<int, 1>{marr.data_elements(), 10});
 
-	    // printMe2(&marr);
+	    // print_me2(&marr);
     }
     {
         int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
-        printMe2(multi::array_ptr<int, 1>{&arr});
-        printMe2(                         &arr );
+        print_me2(multi::array_ptr<int, 1>{&arr});
+        print_me2(                         &arr );
 
         std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
-        printMe2( {vec.data(), 5} );
+        print_me2( {vec.data(), 5} );
 
         std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
-	//  printMe2(&arr2);  // this crashes clang-tidy
-		printMe2({arr2.data(), {6} });
+	//  print_me2(&arr2);  // this crashes clang-tidy
+		print_me2({arr2.data(), {6} });
 
     //  multi::static_array<int, 1> marr({10}, 99);
-    //  printMe2(&marr);  // TODO(correaa) make this work
+    //  print_me2(&marr);  // TODO(correaa) make this work
     }
 }
 
