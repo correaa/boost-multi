@@ -140,6 +140,32 @@ BOOST_AUTO_TEST_CASE(static_allocator) {
 	sa.deallocate(pp, 10);
 }
 
+#if __cplusplus >= 202002L
+constexpr auto f() {
+    std::vector<int> v = {1, 2, 3};
+    return v.size();
+}
+
+BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
+	static_assert(f() == 3);
+}
+
+constexpr auto g() {
+	multi::array<int, 2> arr = {{4, 5, 6}, {1, 2, 3}, {7, 8, 9}};
+	std::sort(arr.begin(), arr.end());
+	for(auto it = arr.diagonal().begin(); it != arr.diagonal().end(); ++it) {
+		*it += 5;
+	}
+	return arr[1][1];
+}
+
+BOOST_AUTO_TEST_CASE(constexpr_allocator) {
+	constexpr auto gg = g();
+	static_assert( gg == 10 );
+	BOOST_REQUIRE( gg == 10 );
+}
+#endif
+
 BOOST_AUTO_TEST_CASE(static_allocator_on_vector_double) {
 	std::vector<double, multi::detail::static_allocator<double, 32>> vv(10, 4.2);  // NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( vv[3] == 4.2 );
