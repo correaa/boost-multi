@@ -273,31 +273,33 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 
 constexpr class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
-	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const DECLRETURN(       std::uninitialized_copy(first, last, d_first))
+	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const
+	// DECLRETURN(       std::uninitialized_copy(first, last, d_first))
+	{
+	#if __cplusplus >= 202002L
+		using ValueType = typename std::iterator_traits<FwdIt>::value_type;
+		if(
+			   std::is_constant_evaluated() 
+			&& (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
+		) {
+			return std::              copy(first, last, d_first);
+	    } else
+	#endif
+		{
+			return std::uninitialized_copy(first, last, d_first);
+		}
+	}
 // #if defined(__NVCC__)
 //  template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
 // #endif
-	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args)       const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
-	template<class TB, class TE, class DB>  constexpr auto _(priority<4>/**/, TB first, TE last, DB d_first) const DECLRETURN(std::decay_t<DB>::   uninitialized_copy(first, last, d_first))
-	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args)       const DECLRETURN(  std::decay_t<T>::  uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args)       const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
+	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB   first, As&&... args       ) const DECLRETURN(                        uninitialized_copy(                 first , std::forward<As>(args)...))
+	template<class TB, class TE, class DB> constexpr auto _(priority<4>/**/, TB   first, TE last, DB d_first) const DECLRETURN(std::decay_t<DB>      ::uninitialized_copy(                 first , last, d_first            ))
+	template<class TB, class... As       > constexpr auto _(priority<5>/**/, TB&& first, As&&... args       ) const DECLRETURN(std::decay_t<TB>      ::uninitialized_copy(std::forward<TB>(first), std::forward<As>(args)...))
+	template<class TB, class... As       > constexpr auto _(priority<6>/**/, TB&& first, As&&... args       ) const DECLRETURN(std::forward<TB>(first).uninitialized_copy(                         std::forward<As>(args)...))
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
 } adl_uninitialized_copy;
-
-// constexpr class adl_uninitialized_copy_t {
-//  template<class... As>                   constexpr auto _(priority<1>/**/, As&&... args                 ) const DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
-// #if defined(__NVCC__)
-//  template<class... As>                   constexpr auto _(priority<2>/**/, As&&... args                 ) const DECLRETURN(thrust::                           copy(                    std::forward<As>(args)...))  // TODO(correaa) use uninit functions from Thrust
-// #endif
-//  template<class... As>                   constexpr auto _(priority<3>/**/, As&&... args                 ) const DECLRETURN(                     uninitialized_copy(std::forward<As>(args)...))
-//  template<class T, class... As>          constexpr auto _(priority<5>/**/, T&& arg, As&&... args        ) const DECLRETURN(std::decay_t<T>::    uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
-//  template<class T, class... As>          constexpr auto _(priority<6>/**/, T&& arg, As&&... args        ) const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
-
-//  public:
-//  template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<6>{}, std::forward<As>(args)...);}  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
-// } adl_uninitialized_copy;
 
 namespace xtd {
 
@@ -415,6 +417,9 @@ constexpr auto alloc_uninitialized_copy(std::allocator<T>&/*allocator*/, InputIt
 }
 
 template<class Alloc, class InputIt, class ForwardIt, class=decltype(std::addressof(*std::declval<ForwardIt>())), class=std::enable_if_t<std::is_constructible_v<typename std::iterator_traits<ForwardIt>::value_type, typename std::iterator_traits<InputIt>::reference>>>
+#if __cplusplus >= 202002L
+constexpr
+#endif
 auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, ForwardIt d_first) {
 // ->std::decay_t<decltype(a.construct(std::addressof(*d_first), *first), d_first)> // problematic in clang-11 + gcc-9
 	ForwardIt current = d_first;
@@ -589,12 +594,11 @@ public:
 } adl_alloc_destroy_n;
 
 constexpr class adl_alloc_uninitialized_copy_t {
-	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&&/*alloc*/, As&&... args) const DECLRETURN(                     adl_uninitialized_copy(std::forward<As>(args)...))
-// TODO(correaa) : remove T from below?
-	template<class T,     class... As> constexpr auto _(priority<2>/**/, T&& arg, As&&... args) const DECLRETURN(                xtd::alloc_uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T,     class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(                     alloc_uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T,     class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(    std::decay_t<T>::alloc_uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T,     class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).alloc_uninitialized_copy(std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&&/*ll*/, As&&... args) const DECLRETURN(                             adl_uninitialized_copy(                            std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<2>/**/, Alloc&& alloc, As&&... args) const DECLRETURN(                      xtd::alloc_uninitialized_copy(std::forward<Alloc>(alloc), std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<3>/**/, Alloc&& alloc, As&&... args) const DECLRETURN(                           alloc_uninitialized_copy(std::forward<Alloc>(alloc), std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<4>/**/, Alloc&& alloc, As&&... args) const DECLRETURN(      std::decay_t<Alloc>::alloc_uninitialized_copy(std::forward<Alloc>(alloc), std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<5>/**/, Alloc&& alloc, As&&... args) const DECLRETURN(std::forward<Alloc>(alloc).alloc_uninitialized_copy(                            std::forward<As>(args)...))
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))

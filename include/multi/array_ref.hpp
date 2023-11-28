@@ -576,11 +576,11 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	}  // explicit here is necessary for nvcc/thrust
 
 	HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
-		// assert(base_ == other.base_ and l_ == other.l_);  // TODO(correaa) calling host function from host device
+		assert(base_ == other.base_ && l_ == other.l_);  // TODO(correaa) calling host function from host device
 		return n_ == other.n_;  // and base_ == other.base_ and l_ == other.l_;
 	}
 	HD constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
-		// assert(base_ == other.base_ and l_ == other.l_);  // TODO(correaa) calling host function from host device
+		assert(base_ == other.base_ && l_ == other.l_);  // TODO(correaa) calling host function from host device
 		return n_ != other.n_;
 	}
 };
@@ -684,7 +684,7 @@ struct elements_range_t {
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
-	auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());
+	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());
 		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
 		return *this;
 	}
@@ -1851,7 +1851,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
+	constexpr auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
 	-> subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		operator=(other);
 		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -1961,15 +1961,15 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
-		return taked_aux(last).dropped_aux(first);
-		// typename types::layout_t new_layout = this->layout();
-		// if(this->is_empty()) {
-		// 	assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		// 	new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
-		// } else {
-		// 	(new_layout.nelems() /= this->size())*=(last - first);
-		// }
-		// return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
+		typename types::layout_t new_layout = this->layout();
+		if(this->is_empty()) {
+			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+			new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
+		} else {
+			(new_layout.nelems() /= this->size())*=(last - first);
+		}
+
+		return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
@@ -2216,7 +2216,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	>
 	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
 	-> subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == adl_size(rng));
+		assert(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
 		adl_copy_n(adl_begin(rng), adl_size(rng), begin());
 	//  adl_copy(adl_begin(rng), adl_end(rng), begin());
 		return *this;
@@ -2758,14 +2758,6 @@ template<class P> auto make_array_ref(P data, extensions_t<2> exts) {return make
 template<class P> auto make_array_ref(P data, extensions_t<3> exts) {return make_array_ref<3>(data, exts);}
 template<class P> auto make_array_ref(P data, extensions_t<4> exts) {return make_array_ref<4>(data, exts);}
 template<class P> auto make_array_ref(P data, extensions_t<5> exts) {return make_array_ref<5>(data, exts);}
-
-// In ICC you need to specify the dimensionality in make_array_ref<D>
-// #if defined(__INTEL_COMPILER)
-// template<dimensionality_type D, class P>
-// auto make_array_ref(P p, std::initializer_list<index_extension> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
-// template<dimensionality_type D, class P>
-// auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
-// #endif
 
 #if defined(__cpp_deduction_guides)
 
