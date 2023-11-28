@@ -141,6 +141,8 @@ BOOST_AUTO_TEST_CASE(static_allocator) {
 }
 
 #if __cplusplus >= 202002L
+
+#if !defined(__NVCOMPILER)
 constexpr auto f() {
     std::vector<int> v = {1, 2, 3};
     return v.size();
@@ -149,6 +151,7 @@ constexpr auto f() {
 BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
 	static_assert(f() == 3);
 }
+#endif
 
 constexpr auto g() {
 	multi::array<int, 2> arr = {{4, 5, 6}, {1, 2, 3}, {7, 8, 9}};
@@ -156,7 +159,8 @@ constexpr auto g() {
 	for(auto it = arr.diagonal().begin(); it != arr.diagonal().end(); ++it) {
 		*it += 5;
 	}
-	return arr[1][1];
+	auto ret = arr[1][1];
+	return ret;
 }
 
 BOOST_AUTO_TEST_CASE(constexpr_allocator) {
