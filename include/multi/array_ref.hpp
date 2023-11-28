@@ -2759,14 +2759,6 @@ template<class P> auto make_array_ref(P data, extensions_t<3> exts) {return make
 template<class P> auto make_array_ref(P data, extensions_t<4> exts) {return make_array_ref<4>(data, exts);}
 template<class P> auto make_array_ref(P data, extensions_t<5> exts) {return make_array_ref<5>(data, exts);}
 
-// In ICC you need to specify the dimensionality in make_array_ref<D>
-// #if defined(__INTEL_COMPILER)
-// template<dimensionality_type D, class P>
-// auto make_array_ref(P p, std::initializer_list<index_extension> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
-// template<dimensionality_type D, class P>
-// auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
-// #endif
-
 #if defined(__cpp_deduction_guides)
 
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
