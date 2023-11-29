@@ -421,54 +421,53 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;
 	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;
 
-	friend MULTI_NONV_CONSTEXPR auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
+	friend auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
 
 	       HD constexpr auto data_elements()            const& ->                        element_const_ptr {return this->base_;}
 	       HD constexpr auto data_elements()                 & -> typename static_array::element_ptr       {return this->base_;}
 	       HD constexpr auto data_elements()                && -> typename static_array::element_move_ptr  {return std::make_move_iterator(this->base_);}
-	friend constexpr auto data_elements(static_array const& self) {return           self .data_elements();}
-	friend constexpr auto data_elements(static_array      & self) {return           self .data_elements();}
-	friend constexpr auto data_elements(static_array     && self) {return std::move(self).data_elements();}
+	MULTI_FRIEND_CONSTEXPR auto data_elements(static_array const& self) {return           self .data_elements();}
+	MULTI_FRIEND_CONSTEXPR auto data_elements(static_array      & self) {return           self .data_elements();}
+	MULTI_FRIEND_CONSTEXPR auto data_elements(static_array     && self) {return std::move(self).data_elements();}
 
 	       constexpr auto base()                 &       -> typename static_array::element_ptr       { return ref::base(); }
 	       constexpr auto base()            const&       -> typename static_array::element_const_ptr { return typename static_array::element_const_ptr{ref::base()}; }
 
-	friend MULTI_NONV_CONSTEXPR auto base(static_array      & self) -> typename static_array::element_ptr       { return self.base(); }
-	friend MULTI_NONV_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
+	MULTI_FRIEND_CONSTEXPR auto base(static_array      & self) -> typename static_array::element_ptr       { return self.base(); }
+	MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
 
 	       constexpr auto origin()                 &       -> typename static_array::element_ptr       {return ref::origin();}
 	       constexpr auto origin()            const&       -> typename static_array::element_const_ptr {return ref::origin();}
-	friend MULTI_NONV_CONSTEXPR auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
-	friend MULTI_NONV_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
+	MULTI_FRIEND_CONSTEXPR auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
+	MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
 
- private:
-	constexpr auto rotated_aux() const {
-		typename static_array::layout_t new_layout = this->layout();
-		new_layout.rotate();
-		return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-	}
+//  private:
+//  constexpr auto rotated_aux() const {
+//      typename static_array::layout_t new_layout = this->layout();
+//      new_layout.rotate();
+//      return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+//  }
 
- public:
-	constexpr auto rotated() const& {return std::move(*this).rotated_aux();}
-	constexpr auto rotated()      & {return std::move(*this).rotated_aux();}
-	constexpr auto rotated()     && {return std::move(*this).rotated_aux();}
+	// constexpr auto rotated() const& {return std::move(*this).rotated_aux();}
+	// constexpr auto rotated()      & {return std::move(*this).rotated_aux();}
+	// constexpr auto rotated()     && {return std::move(*this).rotated_aux();}
 
-	friend constexpr auto rotated(static_array&       self) -> decltype(auto) {return self.rotated();}
-	friend /*constexpr*/ auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
+	// friend constexpr auto rotated(static_array&       self) -> decltype(auto) {return self.rotated();}
+	// friend /*constexpr*/ auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
 
-	constexpr auto unrotated() const& {
-		typename static_array::layout_t new_layout = this->layout();
-		new_layout.unrotate();
-		return subarray<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
-	}
-	constexpr auto unrotated()      & {
-		typename static_array::layout_t new_layout = this->layout();
-		new_layout.unrotate();
-		return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-	}
+	// constexpr auto unrotated() const& -> subarray<T, D, typename static_array::element_ptr> const {
+	//  typename static_array::layout_t new_layout = this->layout();
+	//  new_layout.unrotate();
+	//  return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+	// }
+	// constexpr auto unrotated()      & {
+	//  typename static_array::layout_t new_layout = this->layout();
+	//  new_layout.unrotate();
+	//  return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+	// }
 
-	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
-	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
+	// friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
+	// friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
 	template<class TT, class... Args>
 	auto operator=(multi::subarray<TT, D, Args...> const& other) -> static_array& {
@@ -712,17 +711,17 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 
-	friend MULTI_NONV_CONSTEXPR auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
+	MULTI_FRIEND_CONSTEXPR auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
 
 	       constexpr auto base()                 &       -> typename static_array::element_ptr       {return ref::base();}
 	       constexpr auto base()            const&       -> typename static_array::element_const_ptr {return ref::base();}
-	friend constexpr auto base(static_array      & self) -> typename static_array::element_ptr       {return self.base();}
-	friend constexpr auto base(static_array const& self) -> typename static_array::element_const_ptr {return self.base();}
+	MULTI_FRIEND_CONSTEXPR auto base(static_array      & self) -> typename static_array::element_ptr       {return self.base();}
+	MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr {return self.base();}
 
 	       constexpr auto origin()                 &       -> typename static_array::element_ptr       {return ref::origin();}
 	       constexpr auto origin()            const&       -> typename static_array::element_const_ptr {return ref::origin();}
-	friend constexpr auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
-	friend constexpr auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
+	MULTI_FRIEND_CONSTEXPR auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
+	MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
 
 	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return *(this->base_);
@@ -904,9 +903,9 @@ struct array : static_array<T, D, Alloc> {
 	}
 	friend auto clear(array& self) noexcept -> array& {return self.clear();}
 
-	friend auto data_elements(array const& self) {return self.data_elements();}
-	friend auto data_elements(array      & self) {return self.data_elements();}
-	friend auto data_elements(array     && self) {return std::move(self).data_elements();}
+	MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) {return           self .data_elements();}
+	MULTI_FRIEND_CONSTEXPR auto data_elements(array      & self) {return           self .data_elements();}
+	MULTI_FRIEND_CONSTEXPR auto data_elements(array     && self) {return std::move(self).data_elements();}
 
 	auto move() & -> subarray<typename array::element, D, multi::move_ptr<typename array::element>> {
 		subarray<typename array::element, D, multi::move_ptr<typename array::element>>
@@ -921,7 +920,7 @@ struct array : static_array<T, D, Alloc> {
 	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_{std::move(other), alloc} {}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {}
 
-	friend MULTI_NONV_CONSTEXPR auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
+	friend auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
 
 	void swap(array& other) noexcept {
 		using std::swap;
