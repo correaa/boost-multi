@@ -738,6 +738,23 @@ inline auto trace_separate_sub(multi::subarray<double, 2> const& arr) -> double 
 	return std::accumulate(diag.begin(), diag.end(), double{0});
 }
 
+inline auto trace_separate_ref2(multi::array_const_view<double, 2> arr) -> double {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), double{0});
+}
+
+// unusable for arrays
+inline auto trace_separate_ref3(multi::array_ref<double, 2> arr) -> double {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), double{0});
+}
+
+// unusable for arrays
+inline auto trace_separate_sub3(multi::subarray<double, 2> arr) -> double {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), double{0});
+}
+
 BOOST_AUTO_TEST_CASE(function_passing_3) {
 	multi::array<double , 2> const arr({3, 3}, 1.0);
 
@@ -762,7 +779,78 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 
 	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
 	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
+
+	BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
+
+//  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
+//  BOOST_REQUIRE(( trace_separate_sub3                        (arr) == 3 ));  // not allowed
 }
+
+
+#if __cplusplus >= 202003L
+BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
+
+	auto buffer = std::make_unique<double[]>(9); std::fill_n(buffer.get(), 9, 1.0);
+
+	multi::array<double , 2>    const  arr  ({3, 3}, 1.0);
+	multi::array_ref<double, 2> const  aref (buffer.get(), {3, 3});
+	auto const& asub = arr({0, 3}, {0, 3});
+
+	auto deduce_array = []<class Arr>(Arr const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), typename Arr::element_type{0});};
+
+	BOOST_REQUIRE( deduce_array(arr) == 3 );
+	BOOST_REQUIRE( deduce_array(aref) == 3 );
+	BOOST_REQUIRE( deduce_array(asub) == 3 );
+
+
+	auto deduce_element = []<class T>(multi::array<T, 2> const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0});};
+
+	BOOST_REQUIRE( deduce_element(arr) == 3 );
+	// BOOST_REQUIRE( deduce_element(aref) == 3 );
+	// BOOST_REQUIRE( deduce_element(asub) == 3 );
+
+
+	auto deduce_element_ref = []<class T>(multi::array_ref<T, 2> const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0});};
+
+	BOOST_REQUIRE( deduce_element_ref(arr) == 3 );
+	BOOST_REQUIRE( deduce_element_ref(aref) == 3 );
+	// BOOST_REQUIRE( deduce_element_ref(asub) == 3 );
+
+
+	auto deduce_element_sub = []<class T, class Ptr>(multi::subarray<T, 2, Ptr> const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0});};
+
+	BOOST_REQUIRE( deduce_element_sub(arr) == 3 );
+	BOOST_REQUIRE( deduce_element_sub(aref) == 3 );
+	BOOST_REQUIRE( deduce_element_sub(asub) == 3 );
+
+//  BOOST_REQUIRE( trace_array_deduce        (arr) == 3 );
+//  BOOST_REQUIRE( trace_array_deduce<double>(arr) == 3 );
+
+//  BOOST_REQUIRE(  trace_generic                              (arr) == 3  );
+//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr) == 3 ));
+// //  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
+
+//  BOOST_REQUIRE(  trace_generic                              (arr()) == 3  );
+//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr()) == 3 ));  // this will make a copy
+// //  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr()) == 3 ));  // can't generate element_type
+
+//  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2> >(arr) == 3 ));
+// //  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2>&>(arr) == 3 ));  // can't generate element_type
+//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr) == 3 ));
+// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr) == 3 ));  // can't generate element_type
+
+// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr({0, 3}, {0, 3})) == 3 ));
+// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr()) == 3 ));  // can't generate element_type
+
+//  BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
+//  BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
+
+//  BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
+
+//  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
+//  BOOST_REQUIRE(( trace_separate_sub3                        (arr) == 3 ));  // not allowed
+}
+#endif
 
 template<class T>
 auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
