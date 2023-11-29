@@ -809,9 +809,10 @@ The alternative, not using broadcast, is to write a very similar function,
 
     row_fixed_dot(A, b, dots3);
 ```
+(https://godbolt.org/z/9ndvfKqhc)
 
 Broadcasted arrays do not behave like normal array views in several aspects:
-First, broadcasted arrays are "infinite" in the broadcasted dimension; iteration will never reach the end position, and calling `.size()` is undefined behavior.
+First, broadcasted arrays are infinite in the broadcasted dimension; iteration will never reach the end position, and calling `.size()` is undefined behavior.
 Explicit loops or algorithms that depend on reaching `.end()` from `.begin()` will effectively be non-terminating.
 
 For illustration purposes only, `fill` here is replaced by `copy`; problematic uses are highlighted:
@@ -821,7 +822,7 @@ For illustration purposes only, `fill` here is replaced by `copy`; problematic u
     std::fill(B.begin(), B.end(), b);                                       // canonical way
     std::copy_n(b.broadcasted().begin(), v.size(), v.end());                // equivalent, using broadcast
 
-    std::copy_n(b.broadcasted().begin(), b.broadcasted().size(), v.end());  // incorrect, undefined behavior broadcasted has no useful size()
+    std::copy_n(b.broadcasted().begin(), b.broadcasted().size(), v.end());  // incorrect, undefined behavior, no useful size()
     std::copy  (b.begin(), b.end(), v.begin());                             // incorrect, undefined behavior, non-terminating loop
 ```
 
