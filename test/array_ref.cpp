@@ -711,3 +711,91 @@ BOOST_AUTO_TEST_CASE(function_passing_2) {
 
 	assert( &arrR[0][0] == &arr[0][0] );
 }
+
+template<class T>
+auto trace_array_deduce(multi::array<T, 2> const& arr) -> T {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), T{0});
+}
+
+template double trace_array_deduce(multi::array<double, 2> const&);
+
+template<class Array, typename T = typename Array::element_type>
+auto trace_generic(Array const& arr) -> T {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), T{0});
+}
+
+template double trace_generic<multi::array<double, 2>>(multi::array<double, 2> const&);
+
+inline auto trace_separate_ref(multi::array_ref<double, 2> const& arr) -> double {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), double{0});
+}
+
+inline auto trace_separate_sub(multi::subarray<double, 2> const& arr) -> double {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), double{0});
+}
+
+BOOST_AUTO_TEST_CASE(function_passing_3) {
+	multi::array<double , 2> const arr({3, 3}, 1.0);
+
+	BOOST_REQUIRE( trace_array_deduce        (arr) == 3 );
+	BOOST_REQUIRE( trace_array_deduce<double>(arr) == 3 );
+
+	BOOST_REQUIRE(  trace_generic                              (arr) == 3  );
+	BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr) == 3 ));
+//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
+
+	BOOST_REQUIRE(  trace_generic                              (arr()) == 3  );
+	BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr()) == 3 ));  // this will make a copy
+//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr()) == 3 ));  // can't generate element_type
+
+	BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2> >(arr) == 3 ));
+//  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2>&>(arr) == 3 ));  // can't generate element_type
+	BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr) == 3 ));
+//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr) == 3 ));  // can't generate element_type
+
+//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr({0, 3}, {0, 3})) == 3 ));
+//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr()) == 3 ));  // can't generate element_type
+
+	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
+	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
+}
+
+template<class T>
+auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
+	arr[0][1] = 4.0;
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), T{0});
+}
+
+template double mut_trace_array_deduce(multi::array<double, 2>&);
+
+template<class Array, typename T = typename Array::element_type>
+auto mut_trace_generic(Array& arr) -> T {
+	arr[0][1] = 4.0;
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), T{0});
+}
+
+BOOST_AUTO_TEST_CASE(function_passing_4) {
+	multi::array<double , 2> arr({3, 3}, 1.0);
+
+	BOOST_REQUIRE( mut_trace_array_deduce        (arr) == 3 );
+	BOOST_REQUIRE( mut_trace_array_deduce<double>(arr) == 3 );
+
+	BOOST_REQUIRE(  mut_trace_generic                              (arr) == 3  );
+	BOOST_REQUIRE(( mut_trace_generic<multi::array    <double, 2> >(arr) == 3 ));
+#if 0
+//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
+	BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2> >(arr) == 3 ));
+//  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2>&>(arr) == 3 ));  // can't generate element_type
+	BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr) == 3 ));
+//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr) == 3 ));  // can't generate element_type
+
+	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
+	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
+#endif
+}
