@@ -762,6 +762,77 @@ static_assert( trace() == 4 + 2 + 10 );
 ```
 https://godbolt.org/z/Porre3z8s
 
+## Broadcast (infinite views)
+
+Broadcasting is a technique by which arrays are reinterpreted as having a higher dimension by repeating elements.
+The technique allows the reuse of operations designed for high dimensionality and effectively apply them to arrays of lower dimensionality.
+The result is generally an economy in the number of distinct operations that need to be provided in exchange for understanding how and where to exploit the broadcast operations.
+
+Broadcasting is popular in array-based languages, such as Julia and NumPy, and the broadcast is generally applied automatically to match the dimension expected by the operation and other operation inputs.
+
+Since the technique is very popular, the library provides a basic broadcasting version with certain limitations.
+
+Here is an example of an algorithm designed for two 2D arrays to obtain the row-by-row inner product.
+
+```cpp
+    auto row_by_row_dot = [](auto const& A2D, auto const& B2D, auto& results) {
+        std::transform(A2D.begin(), A2D.end(), B2D.begin(), results.begin(),
+            [](auto const& Arow, auto const& Brow) {return std::inner_product(Arow.begin(), Arow.end(), Brow.begin(), 0);}
+        );
+    };
+
+    auto A = multi::array<int, 2>{{ 0,  1}, { 2,  3}, { 4,  5}};
+    auto B = multi::array<int, 2>{{10, 11}, {12, 13}, {14, 15}};
+
+    auto dots = multi::array<int, 1>({A.size()});
+
+    row_by_row_dot(A, B, dots);
+```
+
+If, for some reason, we want to obtain the inner product against a _single_ right-hand vector instead of several (a single 1D array of two elements), we would need to (re)write the function (or copy the repeated vector into the 2D `B` array, which is not ideal.)
+Broadcasting can help reuse the same function without changes.
+
+```cpp
+    multi::array<int, 1> b = {10, 11};
+
+    row_by_row_dot(A, b.broadcasted(), dots);
+```
+
+The alternative, not using broadcast, is to write a very similar function,
+
+```cpp
+    auto row_fixed_dot = [](auto const& A2D, auto const& b1D, auto& results) {
+        std::transform(A2D.begin(), A2D.end(), results.begin(),
+            [&b1D](auto const& Arow) {return std::inner_product(Arow.begin(), Arow.end(), b1D.begin(), 0);}
+        );
+    };
+
+    row_fixed_dot(A, b, dots3);
+```
+
+Broadcasted arrays do not behave like normal array views in several aspects:
+First, broadcasted arrays are "infinite" in the broadcasted dimension; iteration will never reach the end position, and calling `.size()` is undefined behavior.
+Explicit loops or algorithms that depend on reaching `.end()` from `.begin()` will effectively be non-terminating.
+
+For illustration purposes only, `fill` here is replaced by `copy`; problematic uses are highlighted:
+
+```cpp
+    multi::array<double, 2> B({10, 2});
+    std::fill(B.begin(), B.end(), b);                                       // canonical way
+    std::copy_n(b.broadcasted().begin(), v.size(), v.end());                // equivalent, using broadcast
+
+    std::copy_n(b.broadcasted().begin(), b.broadcasted().size(), v.end());  // incorrect, undefined behavior broadcasted has no useful size()
+    std::copy  (b.begin(), b.end(), v.begin());                             // incorrect, undefined behavior, non-terminating loop
+```
+
+Unlike popular languages, broadcasting is not automatic in the library and is applied to the leading dimension only, one dimension at a time.
+Broadcasting in non-leading dimensions can be achieved by transpositions and index rotation.
+
+Finally, these array views are strictly read-only and can alias their element addresses, e.g. `&b.broadcasted()[1][0] == &b.broadcasted()[2][0]` (since internal strides layouts can be zero).
+
+Abuse of broadcast can make it harder to reason about operations; its primary use is to reuse existing implementations of algorithms when implementations for a specific dimensions are not available.
+These algorithms need to be compatible with broadcasted views (e.g., no explicit use of `.size()` or infinite loops stemming from problematic use of `.begin()/end()`.)
+
 ## Partially formed elements
 
 The library can take advantage of types with [partially formed](https://marcmutz.wordpress.com/tag/partially-formed-state/) state when
