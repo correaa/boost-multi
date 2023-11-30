@@ -995,7 +995,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	//  return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
 	// }
 
-	constexpr auto broadcast() const& {
+	constexpr auto broadcasted() const& {
 		// using boost::multi::detail::get;
 		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, std::numeric_limits<size_type>::max()};
 		return subarray<T, D+1, typename subarray::element_const_ptr>{new_layout, types::base_};
@@ -1710,7 +1710,7 @@ struct subarray<T, 0, ElementPtr, Layout>
 	constexpr operator element_ref ()                             & {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_cref()                        const& {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 
-	constexpr auto broadcast() const& {
+	constexpr auto broadcasted() const& {
 		multi::layout_t<1> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
 		return subarray<T, 1, typename subarray::element_const_ptr>{new_layout, types::base_};
 	}
@@ -1874,7 +1874,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	constexpr auto broadcast() const& {
+	constexpr auto broadcasted() const& {
 		multi::layout_t<2> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
 		return subarray<T, 2, typename subarray::element_const_ptr>{new_layout, types::base_};
 	}
