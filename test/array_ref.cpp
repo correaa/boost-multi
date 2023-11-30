@@ -744,13 +744,19 @@ inline auto trace_separate_ref2(multi::array_const_view<double, 2> arr) -> doubl
 }
 
 // unusable for arrays
-inline auto trace_separate_ref3(multi::array_ref<double, 2> arr) -> double {
+inline auto trace_separate_ref3(multi::array_view<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), double{0});
 }
 
 // unusable for arrays
-inline auto trace_separate_sub3(multi::subarray<double, 2> arr) -> double {
+inline auto trace_separate_ref4(multi::array_ref<double, 2> arr) -> double {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), double{0});
+}
+
+// unusable for arrays
+inline auto trace_separate_sub4(multi::subarray<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), double{0});
 }
@@ -781,11 +787,11 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
 
 	BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
-
 //  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
-//  BOOST_REQUIRE(( trace_separate_sub3                        (arr) == 3 ));  // not allowed
-}
 
+//  BOOST_REQUIRE(( trace_separate_ref4                        (arr) == 3 ));  // not allowed
+//  BOOST_REQUIRE(( trace_separate_sub4                        (arr) == 3 ));  // not allowed
+}
 
 #if __cplusplus >= 202003L
 BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
