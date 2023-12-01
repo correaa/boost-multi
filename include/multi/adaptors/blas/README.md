@@ -62,6 +62,26 @@ These functions produce views (not copies) related to conjugation, real and imag
 	blas::real_doubled(c) = blas::gemm(1., a_real, blas::real_doubled(b)); // c = a_real*b
 ```
 
+## GEMM
+
+```
+#include<multi/array.hpp>
+#include<multi/adaptors/blas.hpp>
+
+namespace multi = boost::multi;
+
+int main() {
+    multi::array<double, 2> const A({2, 2});
+    multi::array<double, 2> const B({2, 2});
+
+    multi::array<double, 2> const C1 = multi::blas::gemm(1.0, A, B);
+    auto const C2 = + multi::blas::gemm(1.0, A, B);
+}
+```
+https://godbolt.org/z/d1E7donWM
+
+(need linking to BLAS to work, e.g. `-lblas` or `-lopenblas` or `-lmkl`)
+
 ## Table of features
 
 All these operations are now supported for CPU and GPU memory, real and complex.
