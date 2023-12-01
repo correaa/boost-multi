@@ -323,7 +323,9 @@ Constructing or assigning from an existing array generates a copy of the origina
 
 ```cpp
 auto B2 = A2;  // same as multi::array<double, 2> B2 = A2;
-assert( B2        == A2        );  // copies have the same value (and also the same shape)
+
+assert(  B2       ==  A2       );  // copies have the same value (and also the same shape)
+assert(  B2[0][0] ==  A2[0][0] )
 assert( &B2[0][0] != &A2[0][0] );  // but they are independent
 ```
 
