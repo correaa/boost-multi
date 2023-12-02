@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(size(d2D_names) == size(d2D));
 	BOOST_REQUIRE(d2D_names[1][1] == "David");
 
-	multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(std::mem_fn(&employee::name));
+	multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(&employee::name);
 	BOOST_REQUIRE(d2D_names_copy_members[1][1] == "David");
 	BOOST_REQUIRE(d2D_names_copy_members       == d2D_names);
 
@@ -146,9 +146,13 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 
 	multi::array<A, 2> const A = { { {1, 1.1}, {2, 2.2} }, { {3, 3.3}, {4, 4.4} } };
 
-    multi::array<int, 2> B = A.element_transformed(std::mem_fn(& A::id));
+    // multi::array<int, 2> B = A.element_transformed(std::mem_fn(& A::id));
+       multi::array<int, 2> B = A.element_transformed(            & A::id );
 
     BOOST_REQUIRE( B[1][1] == 4 );
+
+	// A.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
+	// BOOST_REQUIRE( A[1][1].id == 5 );
 
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
