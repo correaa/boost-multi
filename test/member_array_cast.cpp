@@ -128,8 +128,39 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(size(d2D_names) == size(d2D));
 	BOOST_REQUIRE(d2D_names[1][1] == "David");
 
+	multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(std::mem_fn(&employee::name));
+	BOOST_REQUIRE(d2D_names_copy_members[1][1] == "David");
+	BOOST_REQUIRE(d2D_names_copy_members       == d2D_names);
+
 	multi::array<std::string, 2> d2D_names_copy{d2D_names};
 	BOOST_REQUIRE(d2D_names == d2D_names_copy);
 	BOOST_REQUIRE(base(d2D_names) != base(d2D_names_copy));
 }
+
+BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
+
+    struct A {
+        int id;
+        double data;
+    };
+
+	multi::array<A, 2> const A = { { {1, 1.1}, {2, 2.2} }, { {3, 3.3}, {4, 4.4} } };
+
+    multi::array<int, 2> B = A.element_transformed(std::mem_fn(& A::id));
+
+    BOOST_REQUIRE( B[1][1] == 4 );
+
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
+
+	multi::array<employee, 2> d2D = {
+	    {  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
+	    {{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
+	};
+
+    // multi::array<std::size_t, 2> d2D_ages_copy =
+	d2D.element_transformed(std::mem_fn(&employee::age));
+
+
+}
+
 // #endif
