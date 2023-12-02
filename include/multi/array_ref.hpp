@@ -163,7 +163,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  
  protected:
 	using derived = subarray<T, D, ElementPtr, Layout>;
-	HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_{nullptr} {}
+	HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
 
  public:
 	array_types() = default;
