@@ -1382,6 +1382,34 @@ Finally, the element type of the device array has to be device-friendly to work 
 this includes all build in types, and classes with basic device operations, such as construction, destruction, and assigment.
 They notably do not include `std::complex<T>`, in which can be replaced by the device-friendly `thrust::complex<T>` can be used as replacement.
 
+### OMP Thrust
+
+In a consistent way, Thrust can also handle OpenMP allocations and multi-threaded algorithms of arrays:
+
+```cpp
+#include <multi/array.hpp>
+#include <thrust/system/omp/memory.h>
+
+namespace multi = boost::multi;
+
+int main() {
+
+	multi::array<double, 2, thrust::omp::allocator<double>> A({10,10});
+	multi::array<double, 2, thrust::omp::allocator<double>> B({10,10});
+
+	A[5][0] = 50.0;
+
+    // copy row 0
+	thrust::copy(
+        A.rotated()[0].begin(), A.rotated()[0].end(),
+        B.rotated()[0].begin()
+    );
+	assert( B[5][0] == 50.0 );
+}
+```
+https://godbolt.org/z/e3cGbY87r
+
+
 ### Thrust memory resources
 
 GPU memory is relative expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issue.
