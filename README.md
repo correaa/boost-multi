@@ -1382,9 +1382,10 @@ Finally, the element type of the device array has to be device-friendly to work 
 this includes all build in types, and classes with basic device operations, such as construction, destruction, and assigment.
 They notably do not include `std::complex<T>`, in which can be replaced by the device-friendly `thrust::complex<T>` can be used as replacement.
 
-### OMP Thrust
+### OpenMP via Thrust
 
-In a consistent way, Thrust can also handle OpenMP allocations and multi-threaded algorithms of arrays:
+In an analog way, Thrust can also handle OpenMP (omp) allocations and multi-threaded algorithms of arrays.
+The OMP backend can be enabled by the compiler flags `-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_BACKEND_OMP` or by using the explicit `omp` system types: 
 
 ```cpp
 #include <multi/array.hpp>
@@ -1393,22 +1394,22 @@ In a consistent way, Thrust can also handle OpenMP allocations and multi-threade
 namespace multi = boost::multi;
 
 int main() {
-
 	multi::array<double, 2, thrust::omp::allocator<double>> A({10,10});
 	multi::array<double, 2, thrust::omp::allocator<double>> B({10,10});
 
 	A[5][0] = 50.0;
 
     // copy row 0
-	thrust::copy(
-        A.rotated()[0].begin(), A.rotated()[0].end(),
-        B.rotated()[0].begin()
-    );
+	thrust::copy(A.rotated()[0].begin(), A.rotated()[0].end(), B.rotated()[0].begin());
+
 	assert( B[5][0] == 50.0 );
+
+	auto C = B;  // uses omp automatically for copying behind the scenes
 }
 ```
 https://godbolt.org/z/e3cGbY87r
 
+Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
 ### Thrust memory resources
 
