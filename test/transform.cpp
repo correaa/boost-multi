@@ -210,8 +210,16 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			{-10.0, -11.0, -12.0, -13.0, -14.0},
 			{-15.0, -16.0, -17.0, -18.0, -19.0},
 		};
-		auto&& negd_arr = arr.static_array_cast<double, test::negater<double*>>();
+		auto&& negd_arr = arr.static_array_cast<double, test::negater<double const*>>();
 		BOOST_REQUIRE( negd_arr[1][1] == neg[1][1] );
+
+		auto&& negd_arr2 = arr.static_array_cast<double, test::negater<double*>>();
+
+		BOOST_REQUIRE(negd_arr2[1][1] == -6.0 );
+		negd_arr2[1][1] = 3.0;  // TODO(correaa) violating constness!
+		BOOST_REQUIRE(negd_arr2[1][1] == +3.0 );
+		BOOST_REQUIRE(     arr [1][1] == -3.0 );
+
 	}
 	{
 #if defined(__cpp_deduction_guides)

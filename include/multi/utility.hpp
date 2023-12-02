@@ -75,7 +75,9 @@ struct transform_ptr {
 		>
 	;
 
-	template<class... As>
+	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
+
+	// template<class... As>  // TODO(correaa) investigate this class... As thing
 	constexpr transform_ptr(pointer ptr, UF fun) : p_{ptr}, f_(std::move(fun)) {}
 
 	template<class Other, class = typename Other::pointer>
