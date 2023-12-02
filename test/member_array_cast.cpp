@@ -137,6 +137,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(base(d2D_names) != base(d2D_names_copy));
 }
 
+#if not defined(__circle_build__)
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 
     struct record {
@@ -155,6 +156,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
 	// BOOST_REQUIRE( recs[1][1].id == 5 );
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
