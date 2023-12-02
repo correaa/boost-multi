@@ -163,7 +163,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  
  protected:
 	using derived = subarray<T, D, ElementPtr, Layout>;
-	HD constexpr explicit array_types(std::nullptr_t nil) : Layout{}, base_{nil} {}
+	HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
 
  public:
 	array_types() = default;
@@ -1394,20 +1394,32 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	/*[[gnu::pure]]*/ constexpr auto operator< (subarray const& other) const& -> bool {return lexicographical_compare(*this, other);}
-	/*[[gnu::pure]]*/ constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare(*this, other);}
+	constexpr auto operator< (subarray const& other) const& -> bool {return lexicographical_compare(*this, other);}
+	constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare(*this, other);}
 	constexpr auto operator> (subarray const& other) const& -> bool {return other < *this;}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>>
-	constexpr auto static_array_cast() const -> subarray<T2, D, P2> {
-		P2 p2{this->base_};
-		return subarray<T2, D, P2>{this->layout(), p2};
-	}
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
-	constexpr auto static_array_cast(Args&&... args) const -> subarray<T2, D, P2> {  // name taken from std::static_pointer_cast
-		return {this->layout(), P2{this->base(), std::forward<Args>(args)...}};
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));  // TODO(correaa) might violate constness
 	}
 
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	constexpr auto static_array_cast() && {  // name taken from std::static_pointer_cast
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));
+	}
+
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	constexpr auto static_array_cast() & {  // name taken from std::static_pointer_cast
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));
+	}
+
+ private:
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
+	constexpr auto static_array_cast(Args&&... args) const & {  // name taken from std::static_pointer_cast
+		return subarray<T2, D, P2>(this->layout(), P2{this->base_, std::forward<Args>(args)...});
+	}
+
+ public:
 	template<class UF>
 	constexpr auto element_transformed(UF&& fun) const& {
 		return static_array_cast<
