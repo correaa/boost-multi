@@ -139,21 +139,24 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 
-    struct A {
+    struct record {
         int id;
         double data;
     };
 
-	multi::array<A, 2> const A = { { {1, 1.1}, {2, 2.2} }, { {3, 3.3}, {4, 4.4} } };
+	multi::array<record, 2> const recs = { { {1, 1.1}, {2, 2.2} }, { {3, 3.3}, {4, 4.4} } };
 
-    // multi::array<int, 2> B = A.element_transformed(std::mem_fn(& A::id));
-       multi::array<int, 2> B = A.element_transformed(            & A::id );
+    // multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
+       multi::array<int, 2> ids = recs.element_transformed(            & record::id );
 
-    BOOST_REQUIRE( B[1][1] == 4 );
+    BOOST_REQUIRE( ids[1][1] == 4 );
+	BOOST_REQUIRE( ids == recs.member_cast<int>(&record::id) );
 
-	// A.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
-	// BOOST_REQUIRE( A[1][1].id == 5 );
+	// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
+	// BOOST_REQUIRE( recs[1][1].id == 5 );
+}
 
+BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 	multi::array<employee, 2> d2D = {
@@ -163,8 +166,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 
     // multi::array<std::size_t, 2> d2D_ages_copy =
 	d2D.element_transformed(std::mem_fn(&employee::age));
-
-
+	BOOST_REQUIRE( d2D.element_transformed(std::mem_fn(&employee::age)) == d2D.element_transformed(&employee::age) );
 }
 
 // #endif
