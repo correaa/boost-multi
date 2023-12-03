@@ -1400,7 +1400,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
-		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));  // TODO(correaa) might violate constness
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));  // TODO(correaa) might violate constness
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
