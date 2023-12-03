@@ -567,8 +567,8 @@ struct context { // stateless (and thread safe)
 
 	template<class... As>
 	static auto gemv(As&&... args)
-//  ->decltype(core::gemv(std::forward<As>(args)...)) {
-	{   return core::gemv(std::forward<As>(args)...); }
+	->decltype(core::gemv(std::forward<As>(args)...)) {
+	    return core::gemv(std::forward<As>(args)...); }
 
 	template<class... As>
 	static auto asum(As... args)
