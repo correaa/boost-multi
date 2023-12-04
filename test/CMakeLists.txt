@@ -72,6 +72,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wctor-dtor-privacy
 -Wdangling-else
 # -Wdangling-pointer # (gcc 12, not in 11)
+-Wdangling-reference
 -Wdate-time
 -Wdelete-incomplete -Wdelete-non-virtual-dtor
 -Wdeprecated
