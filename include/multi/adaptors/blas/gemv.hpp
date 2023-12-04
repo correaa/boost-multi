@@ -113,6 +113,7 @@ class gemv_iterator {
 		// static_assert(std::is_trivially_default_constructible_v<typename It1DOut::value_type>);
 		#if defined(__cpp_lib_start_lifetime_as)
 		auto count = last - first;
+		// or use start_lifetime_as_array<typename It1DOut::value_type>(std::addressof(*result), count); since this is always called on contiguos iterators
 		for(; count > 0; ++result, --count) {
 			std::start_lifetime_as<typename It1DOut::value_type>(std::addressof(*result));
 		}
