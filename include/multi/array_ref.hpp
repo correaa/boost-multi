@@ -2306,7 +2306,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		class Element = typename subarray::element,
 		class PM = T2 std::decay_t<Element>::*
 	>
-	constexpr auto member_cast(PM member) const -> subarray<T2, 1, P2> {
+	constexpr auto member_cast(PM member) const {
 		static_assert(sizeof(T)%sizeof(T2) == 0,
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. "
 			"Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements"
@@ -2320,7 +2320,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 #else
 		auto p2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
-		return {this->layout().scale(sizeof(T), sizeof(T2)), p2};
+		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), p2);
 	}
 
 	constexpr auto moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
