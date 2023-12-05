@@ -315,9 +315,9 @@ BOOST_AUTO_TEST_CASE(props_of_static_allocator) {
         ww = std::move(vv);
         BOOST_REQUIRE( vv.size() == 0 );  // NOLINT(readability-container-size-empty,bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
 
-    //  std::vector<double, multi::detail::static_allocator<double, 32>> xx(20, 0.2);  // NOLINT(fuchsia-default-arguments-calls)
-	// 	swap( ww, xx );
-	// 	BOOST_REQUIRE(( ww == std::vector<double, multi::detail::static_allocator<double, 32>>(20, 0.2) ));  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double, multi::detail::static_allocator<double, 32>> xx(20, 0.2);  // NOLINT(fuchsia-default-arguments-calls)
+		swap( ww, xx );
+		BOOST_REQUIRE(( ww == std::vector<double, multi::detail::static_allocator<double, 32>>(20, 0.2) ));  // NOLINT(fuchsia-default-arguments-calls)
     }
 }
 #endif
