@@ -80,6 +80,24 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
 }
 
+BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
+	double arr[][4] = {
+		{                      },
+		{ 0.0,  1.0,  2.0,  3.0},
+		{ 5.0,  6.0,  7.0,  8.0},
+		{10.0, 11.0, 12.0, 13.0},
+		{15.0, 16.0, 17.0, 18.0},
+		{                      }
+	};
+
+	multi::array_ref<double, 2> const map(&arr[1][0], {4, 4});
+	// multi::array_ref<double, 2> const map{reinterpret_cast<double(&)[4][4]>(arr)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	auto const& diag = map.diagonal();
+	BOOST_REQUIRE( diag.begin() != diag.end() );
+	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+}
+
 BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	auto* arrp = new double[4UL*4UL];  // NOLINT(cppcoreguidelines-owning-memory)
