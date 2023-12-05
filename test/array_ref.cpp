@@ -48,6 +48,55 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	// *(cmar.data_elements()) = 99.0;
 }
 
+BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
+	double arr[4][4] = {
+		{ 0.0,  1.0,  2.0,  3.0},
+		{ 5.0,  6.0,  7.0,  8.0},
+		{10.0, 11.0, 12.0, 13.0},
+		{15.0, 16.0, 17.0, 18.0},
+	};
+
+	multi::array_ref<double, 2> const map{arr};  // multi::array_ref<double, 2> const map(&arr[0][0], {4, 4});
+	auto const& diag = map.diagonal();
+	BOOST_REQUIRE( diag.begin() != diag.end() );
+	// -Werror=array-bounds
+	// BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
+	double arr[5][4] = {
+		{ 0.0,  1.0,  2.0,  3.0},
+		{ 5.0,  6.0,  7.0,  8.0},
+		{10.0, 11.0, 12.0, 13.0},
+		{15.0, 16.0, 17.0, 18.0},
+	};
+
+	multi::array_ref<double, 2> const map(&arr[0][0], {4, 4});
+	// multi::array_ref<double, 2> const map{reinterpret_cast<double(&)[4][4]>(arr)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	auto const& diag = map.diagonal();
+	BOOST_REQUIRE( diag.begin() != diag.end() );
+	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub) {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
+	auto* arrp = new double[4UL*4UL];  // NOLINT(cppcoreguidelines-owning-memory)
+	arrp[ 0] =  0.0; arrp[ 1] =  1.0; arrp[ 2] =  2.0; arrp[ 3] =  3.0;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	arrp[ 4] =  5.0; arrp[ 5] =  6.0; arrp[ 6] =  7.0; arrp[ 7] =  8.0;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	arrp[ 8] = 10.0; arrp[ 9] = 11.0; arrp[10] = 12.0; arrp[11] = 13.0;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	arrp[12] = 15.0; arrp[13] = 16.0; arrp[14] = 17.0; arrp[15] = 18.0;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+	{
+		multi::array_ref<double, 2> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		auto const& diag = map.diagonal();
+		BOOST_REQUIRE( diag.begin() != diag.end() );
+		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+	}
+	delete[] arrp;  // NOLINT(cppcoreguidelines-owning-memory)
+}
+
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
 	std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};
