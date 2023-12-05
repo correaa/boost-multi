@@ -48,13 +48,13 @@ class static_allocator {
 
 	~static_allocator() = default;
 
-	auto select_on_container_copy_construction() -> static_allocator 
-	= delete;
-	// {return static_allocator{};}
+	auto select_on_container_copy_construction() -> static_allocator
+	// = delete;
+	{return static_allocator{};}
 
-	using propagate_on_container_move_assignment = std::true_type;  // this forces to call move assignment of the allocator by std::vector
-	using propagate_on_container_copy_assignment = std::true_type;
-	using propagate_on_container_swap            = std::true_type;
+	using propagate_on_container_move_assignment = std::false_type;  // this forces to call move assignment of the allocator by std::vector
+	using propagate_on_container_copy_assignment = std::false_type;
+	using propagate_on_container_swap            = std::false_type;
 
 	static constexpr auto capacity() { return N; }
 
