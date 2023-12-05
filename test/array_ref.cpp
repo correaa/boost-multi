@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub) {
 		multi::array_ref<double, 2> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		auto const& diag = map.diagonal();
 		BOOST_REQUIRE( diag.begin() != diag.end() );
-		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );  // is this UB?
 	}
 	delete[] arrp;  // NOLINT(cppcoreguidelines-owning-memory)
 }
