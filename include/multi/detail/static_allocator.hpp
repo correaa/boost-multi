@@ -48,9 +48,9 @@ class static_allocator {
 
 	~static_allocator() = default;
 
-	auto select_on_container_copy_construction() -> static_allocator
-	// = delete;
-	{return static_allocator{};}
+	auto select_on_container_copy_construction() noexcept -> static_allocator
+	= delete;
+	// {return static_allocator{};}
 
 	using propagate_on_container_move_assignment = std::false_type;  // this forces to call move assignment of the allocator by std::vector
 	using propagate_on_container_copy_assignment = std::false_type;
@@ -69,17 +69,17 @@ class static_allocator {
 		assert(n <= N);
 	}
 
-	using is_always_equal = std::false_type;
+	using is_always_equal = std::true_type;
 };
 
 template<class T, std::size_t N, class U>
-auto operator==(static_allocator<T, N> const& a1, static_allocator<U, N> const& a2) noexcept
-{ return &a1 == &a2; }
+constexpr auto operator==(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> const& /*a2*/) noexcept
+{ return true; } // &a1 == &a2; }
 // = delete;
 
 template <class T, std::size_t N, class U>
-auto operator!=(static_allocator<T, N> const& a1, static_allocator<U, N> const& a2) noexcept // this is used *by the elements* when resizing a vector
-{ return &a1 != &a2;}
+auto operator!=(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> const& /*a2*/) noexcept // this is used *by the elements* when resizing a vector
+{ return false; } // &a1 != &a2;}
 // = delete
 
 template <class T, std::size_t N, class U>
