@@ -275,14 +275,20 @@ auto conj(A&& array) -> A&& {
 	return std::forward<A>(array);
 }
 
-template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,
-	std::enable_if_t<not is_conjugated<A>{} and is_complex_array<A>{}, int> =0>
+template<
+	class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, 
+	// typename Ptr=typename D::element_ptr,
+	typename Ptr = std::decay_t<decltype(std::declval<A&&>().base())>,
+	std::enable_if_t<not is_conjugated<A>{} and is_complex_array<A>{}, int> =0
+>
 auto conj(A&& array) -> decltype(auto) {
 	return std::forward<A>(array).template static_array_cast<Elem, conjugater<Ptr>>();
 }
 
-template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr::underlying_type,
-	std::enable_if_t<    is_conjugated<A>{}, int> =0>
+template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, 
+	typename Ptr=typename decltype(std::declval<A&&>().base())::underlying_type,
+	std::enable_if_t<    is_conjugated<A>{}, int> =0
+>
 auto conj(A&& array)
 ->decltype(std::forward<A>(array).template static_array_cast<Elem, Ptr>()) {
 	return std::forward<A>(array).template static_array_cast<Elem, Ptr>(); }
