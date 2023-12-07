@@ -1487,9 +1487,23 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>>
 	using rebind = subarray<std::decay_t<T2>, D, P2>;
 
-	template<class T2 = std::remove_const_t<T>, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
-	constexpr auto const_array_cast() && -> rebind<T2, P2> {
-		return {this->layout(), const_cast<P2>(this->base())};  // NOLINT(cppcoreguidelines-pro-type-const-cast) : to implement consts cast
+	template<
+		class T2 = std::remove_const_t<T>,
+		class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
+		std::enable_if_t<
+			std::is_same_v<  // check that pointer family is not changed
+				typename std::pointer_traits<P2>::template rebind<T2>,
+				typename std::pointer_traits<element_ptr>::template rebind<T2>
+			>
+			&& 
+			std::is_same_v<  // check that only constness is changed
+				std::remove_const_t<typename std::pointer_traits<P2>::element_type>,
+				std::remove_const_t<typename subarray::element_type>
+			>
+		, int> =0
+	>
+	constexpr auto const_array_cast() const {
+		return rebind<T2, P2>(this->layout(), (P2)(this->base()));  // NOLINT(cppcoreguidelines-pro-type-const-cast) : to implement consts cast
 	}
 
 	constexpr auto as_const() const {
