@@ -135,7 +135,8 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wnonnull -Wnonnull-compare
 -Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
 -Wnull-dereference
--Wodr -Wold-style-cast
+-Wodr 
+-Wno-old-style-cast  # TODO(correaa) fix this
 # -Wopenacc-parallelism # (gcc 12, not in 11)
 -Wopenmp-simd -Woverflow
 -Woverlength-strings -Woverloaded-virtual
@@ -560,7 +561,8 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wnullability -Wnullability-completeness -Wnullability-completeness-on-arrays -Wnullability-declspec -Wnullability-extension -Wnullability-inferred-on-nested-type
 -Wnullable-to-nonnull-conversion
 -Wodr
--Wold-style-cast -Wold-style-definition
+-Wno-old-style-cast  # TODO(correaa) fix this
+-Wold-style-definition
 -Wopencl-unsupported-rgba
 # -Wopenmp (clang 11, not in clang 9)
 # -Wopenmp-51-extensions (clang 13, not in clang 11)
