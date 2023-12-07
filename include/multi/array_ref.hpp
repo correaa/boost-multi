@@ -1398,19 +1398,19 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare(*this, other);}
 	constexpr auto operator> (subarray const& other) const& -> bool {return other < *this;}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>  // TODO(correaa) should it be rebind<T2 const>?
 	constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
-		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));  // TODO(correaa) might violate constness
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() && {  // name taken from std::static_pointer_cast
-		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() & {  // name taken from std::static_pointer_cast
-		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
 	}
 
  private:
@@ -1487,9 +1487,23 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>>
 	using rebind = subarray<std::decay_t<T2>, D, P2>;
 
-	template<class T2 = std::remove_const_t<T>, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
-	constexpr auto const_array_cast() && -> rebind<T2, P2> {
-		return {this->layout(), const_cast<P2>(this->base())};  // NOLINT(cppcoreguidelines-pro-type-const-cast) : to implement consts cast
+	template<
+		class T2 = std::remove_const_t<T>,
+		class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
+		std::enable_if_t<
+			std::is_same_v<  // check that pointer family is not changed
+				typename std::pointer_traits<P2>::template rebind<T2>,
+				typename std::pointer_traits<element_ptr>::template rebind<T2>
+			>
+			&& 
+			std::is_same_v<  // check that only constness is changed
+				std::remove_const_t<typename std::pointer_traits<P2>::element_type>,
+				std::remove_const_t<typename subarray::element_type>
+			>
+		, int> =0
+	>
+	constexpr auto const_array_cast() const {
+		return rebind<T2, P2>(this->layout(), (P2)(this->base()));  // NOLINT(cppcoreguidelines-pro-type-const-cast,google-readability-casting) : to implement consts cast, TODO(correaa) improve this
 	}
 
 	constexpr auto as_const() const {
@@ -2306,7 +2320,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		class Element = typename subarray::element,
 		class PM = T2 std::decay_t<Element>::*
 	>
-	constexpr auto member_cast(PM member) const -> subarray<T2, 1, P2> {
+	constexpr auto member_cast(PM member) const {
 		static_assert(sizeof(T)%sizeof(T2) == 0,
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. "
 			"Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements"
@@ -2320,7 +2334,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 #else
 		auto p2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
-		return {this->layout().scale(sizeof(T), sizeof(T2)), p2};
+		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), p2);
 	}
 
 	constexpr auto moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}

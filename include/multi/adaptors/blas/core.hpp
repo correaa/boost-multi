@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP  // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
@@ -567,8 +567,8 @@ struct context { // stateless (and thread safe)
 
 	template<class... As>
 	static auto gemv(As&&... args)
-//  ->decltype(core::gemv(std::forward<As>(args)...)) {
-	{   return core::gemv(std::forward<As>(args)...); }
+	->decltype(core::gemv(std::forward<As>(args)...)) {
+	    return core::gemv(std::forward<As>(args)...); }
 
 	template<class... As>
 	static auto asum(As... args)

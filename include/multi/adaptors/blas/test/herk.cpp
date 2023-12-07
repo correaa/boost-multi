@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 	}
 	#if 1
 	{
-		multi::array<complex, 2> const c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
+		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
 		static_assert(blas::is_conjugated<decltype(blas::H(c))>{});
 
 		blas::herk(blas::filling::lower, 1.0, arr, 0.0, blas::H(c));  // c†=c=aa†=(aa†)†, `c` in upper triangular

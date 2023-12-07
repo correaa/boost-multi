@@ -75,18 +75,23 @@ struct transform_ptr {
 		>
 	;
 
+	#if defined(__GNUC__) and (__GNUC__ < 8)
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
+	#endif
 
-	// template<class... As>  // TODO(correaa) investigate this class... As thing
 	constexpr transform_ptr(pointer ptr, UF fun) : p_{ptr}, f_(std::move(fun)) {}
 
-	template<class Other, class = typename Other::pointer>
+	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* =nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use conditional explicit idiom here
+	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use conditional explicit idiom here
+
+	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* =nullptr>
+	constexpr explicit transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}
 
 	constexpr auto functor() const -> UF {return f_;}
 	constexpr auto base() const -> Ptr const& {return p_;}
 	constexpr auto operator*() const -> reference {  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
+		// invoke allows for example to use .transformed( &member) instead of .transformed( std::mem_fn(&member) )
 		return std::invoke(f_, *p_);  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
 	//  return f_(*p_);  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
 	}
