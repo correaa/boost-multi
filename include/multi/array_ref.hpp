@@ -1503,7 +1503,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		, int> =0
 	>
 	constexpr auto const_array_cast() const {
-		return rebind<T2, P2>(this->layout(), (P2)(this->base()));  // NOLINT(cppcoreguidelines-pro-type-const-cast) : to implement consts cast
+		return rebind<T2, P2>(this->layout(), (P2)(this->base()));  // NOLINT(cppcoreguidelines-pro-type-const-cast,google-readability-casting) : to implement consts cast, TODO(correaa) improve this
 	}
 
 	constexpr auto as_const() const {
