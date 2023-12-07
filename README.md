@@ -836,6 +836,28 @@ Finally, these array views are strictly read-only and can alias their element ad
 Abuse of broadcast can make it harder to reason about operations; its primary use is to reuse existing implementations of algorithms when implementations for a specific dimensions are not available.
 These algorithms need to be compatible with broadcasted views (e.g., no explicit use of `.size()` or infinite loops stemming from problematic use of `.begin()/end()`.)
 
+As a final example, consider a function that computes the elements-by-element product of two 2D arrays,
+
+```cpp
+    auto hadamard = [](auto const& A, auto const& B) {  // A has size MxN, and B has size PxQ
+        multi::array<int, 2> ret({A.size(), (~B).size()});  // output has size MxQ, assumption M < P and Q < N
+        for(auto i : A.extension() ) for(auto j : (~B).extension())
+            ret[i][j] = A[i][j]*B[i][j];
+        return ret;
+    };
+```
+
+As it is, this function can be reused to calculate the outer product of two 1D arrays:
+
+```cpp
+    auto outer = [&](auto const& a, auto const& b) {  // a has size M, b has size Q
+ 		// a.broadbased() has size inf x M, transposed M x inf, b.broadcasted() has size inf x Q, 
+        return hadamard(a.broadcasted().transposed(), b.broadcasted());  // output has size M x Q
+    };
+```
+
+Note that the function acting on 2D arrays, doesn't use the undefined (infinite) sizes (second dimension of `A` and first dimension of `B`).
+
 ## Partially formed elements
 
 The library can take advantage of types with [partially formed](https://marcmutz.wordpress.com/tag/partially-formed-state/) state when
