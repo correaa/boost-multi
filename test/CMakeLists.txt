@@ -137,7 +137,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
 -Wnull-dereference
 -Wodr 
--Wno-old-style-cast  # TODO(correaa) fix this
+-Wold-style-cast  # TODO(correaa) fix this
 # -Wopenacc-parallelism # (gcc 12, not in 11)
 -Wopenmp-simd -Woverflow
 -Woverlength-strings -Woverloaded-virtual
@@ -187,7 +187,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Wswitch-outside-range # (gcc 11, not in gcc 9)
 -Wswitch-unreachable
 -Wsync-nand -Wsynth
--Wno-system-headers # (expects system headers to be warning-compliant which they are not)
+-Wno-system-headers  # (expects system headers to be warning-compliant which they are not)
 -Wtautological-compare
 -Wno-templates # (disallows templates, C-tool)
 -Wterminate # (gcc 12, not in 11)
@@ -454,7 +454,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 #-Wignored-pragma-intrinsic
 #-Wignored-pragma-optimize
 #-Wignored-pragmas (other compilers need pragmas)
--Wno-ignored-qualifiers
+-Wno-ignored-qualifiers  # turns out that returning const types is not really ignored by the compiler and prevents certain misleading syntaxes
 # -Wignored-reference-qualifiers (clang 15, not in clang 13)
 -Wimplicit -Wimplicit-atomic-properties
 # -Wimplicit-const-int-float-conversion (clang 11, not in clang 9)
@@ -562,7 +562,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wnullability -Wnullability-completeness -Wnullability-completeness-on-arrays -Wnullability-declspec -Wnullability-extension -Wnullability-inferred-on-nested-type
 -Wnullable-to-nonnull-conversion
 -Wodr
--Wno-old-style-cast  # TODO(correaa) fix this
+-Wold-style-cast
 -Wold-style-definition
 -Wopencl-unsupported-rgba
 # -Wopenmp (clang 11, not in clang 9)
@@ -614,7 +614,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wqualified-void-return-type
 -Wquoted-include-in-framework-header
 # -Wrange-loop-analysis (this check is overzealous in clang 9)
--Wno-range-loop-analysis
+-Wrange-loop-analysis
 # -Wrange-loop-bind-reference -Wrange-loop-construct (clang 11, not in clang 9)
 -Wreadonly-iboutlet-property
 -Wreceiver-expr -Wreceiver-forward-class
@@ -637,7 +637,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Rround-trip-cc1-args (clang 13, not in clang 11)
 # -Wrtti (clang 13, not in clang 11)
 -Wshadow
--Wno-old-style-cast  # TODO(correaa) fix this
+-Wold-style-cast
 -Woverloaded-virtual
 -Rsanitize-address
 # -Rsearch-path-usage
@@ -709,7 +709,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wundef
 # -Wundef-prefix (clang 11, not in clang 9)
 -Wundefined-bool-conversion -Wundefined-func-template -Wundefined-inline -Wundefined-internal -Wundefined-internal-type
--Wno-undefined-reinterpret-cast 
+-Wno-undefined-reinterpret-cast  # needed to cast to c-array
 -Wundefined-var-template
 # -Wunderaligned-exception-object (not in clang 7)
 -Wunevaluated-expression
@@ -729,7 +729,6 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Wunknown-warning-option
 -Wunnamed-type-template-args
 -Wunneeded-internal-declaration -Wunneeded-member-function
--Wno-unknown-pragmas
 # -Wunqualified-std-cast-call (clang 15, not in clang 13)
 -Wunreachable-code -Wunreachable-code-aggressive -Wunreachable-code-break
 # -Wunreachable-code-fallthrough (clang 15, not in clang 13)
@@ -779,7 +778,7 @@ $<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra # also IntelLLVM, XL (ibm), XL
 -Wformat -Wformat=2 -Wformat-security
 -Wic-pointer
 -Wnarrowing
--Wno-return-type
+-Wreturn-type
 -Wnon-virtual-dtor
 -Wnonnull
 -Wmaybe-uninitialized
@@ -799,7 +798,7 @@ $<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra # also IntelLLVM, XL (ibm), XL
 -Wsign-compare
 -Wshorten-64-to-32
 -Wmissing-prototypes
--Wno-strict-aliasing
+-Wstrict-aliasing
 -Wno-unknown-pragmas
 -Wstrict-prototypes
 -Wtrigraphs
