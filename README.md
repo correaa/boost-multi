@@ -839,20 +839,17 @@ These algorithms need to be compatible with broadcasted views (e.g., no explicit
 As a final example, consider a function that computes the elements-by-element product of two 2D arrays,
 
 ```cpp
-    auto hadamard = [](auto const& A, auto const& B) {  // A has size MxN, and B has size PxQ
-        multi::array<int, 2> ret({A.size(), (~B).size()});  // output has size MxQ, assumption M < P and Q < N
+    auto hadamard = [](auto const& A, auto const& B, auto&& C) {
         for(auto i : A.extension() ) for(auto j : (~B).extension())
-            ret[i][j] = A[i][j]*B[i][j];
-        return ret;
+            C[i][j] = A[i][j]*B[i][j];
     };
 ```
 
 As it is, this function can be reused to calculate the outer product of two 1D arrays:
 
 ```cpp
-    auto outer = [&](auto const& a, auto const& b) {  // a has size M, b has size Q
- 		// a.broadbased() has size inf x M, transposed M x inf, b.broadcasted() has size inf x Q, 
-        return hadamard(a.broadcasted().transposed(), b.broadcasted());  // output has size M x Q
+    auto outer = [&]<typename T>(auto const& a, auto const& b, T&& C) {
+        return hadamard(~(a.broadcasted()), b.broadcasted(), std::forward<T>(C));
     };
 ```
 
