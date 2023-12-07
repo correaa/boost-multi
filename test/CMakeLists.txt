@@ -636,7 +636,7 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 # -Rround-trip-cc1-args (clang 13, not in clang 11)
 # -Wrtti (clang 13, not in clang 11)
 -Wshadow
--Wold-style-cast
+-Wno-old-style-cast  # TODO(correaa) fix this
 -Woverloaded-virtual
 -Rsanitize-address
 # -Rsearch-path-usage
