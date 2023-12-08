@@ -3,13 +3,13 @@
 
 #include "../cublas/error.hpp"
 
-#if defined(__NVCC__)
-#include<cuda_runtime.h> // cudaDeviceSynchronize
+#if not defined(MULTI_USE_HIP)
+#include<cuda_runtime.h>  // cudaDeviceSynchronize
 #else
-#include<hip/hip_runtime.h> // cudaDeviceSynchronize
+#include<hip/hip_runtime.h>  // cudaDeviceSynchronize
 #endif
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #define hicup(name) cuda##name
 #define HICUP(name) CU##name
 #else

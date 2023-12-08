@@ -3,7 +3,7 @@
 #ifndef MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
 #define MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #include<cublas_v2.h> // cublasStatus_t
 #else
 #include<hipblas/hipblas.h> // cublasStatus_t
@@ -13,7 +13,7 @@
 #include<system_error> // std::error_category
 #include<type_traits> // std::underlying_type
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #define hicup(name) cuda##name
 #define hicu(name) cu##name
 #define HICU(name) CU##name
@@ -101,7 +101,9 @@ BOOST_AUTO_TEST_CASE(multi_cublas_error){
 
 }
 
+#undef hicu
 #undef hicup
+#undef HICU
 #undef HICUP
 
 #endif
