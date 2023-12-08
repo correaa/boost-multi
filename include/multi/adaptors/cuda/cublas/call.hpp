@@ -1,5 +1,7 @@
+// Copyright 2020-2023 Alfredo A. Correa
 #ifndef MULTI_ADAPTORS_CUDA_CUBLAS_CALL_HPP
 #define MULTI_ADAPTORS_CUDA_CUBLAS_CALL_HPP
+#pragma once
 
 #include "../cublas/error.hpp"
 
@@ -17,8 +19,7 @@
 #define HICUP(name) HIP##name
 #endif
 
-namespace boost{
-namespace multi::cuda::cublas{
+namespace boost::multi::cuda::cublas{
 
 template<auto Function, class... Args> // needs C++17
 void call(Args... args){
@@ -29,9 +30,7 @@ void call(Args... args){
 #define CUBLAS_(F) call<F>
 
 }
-}
 
 #undef hicup
 #undef HICUP
 #endif
-

@@ -14,8 +14,6 @@
 #include <hipblas/hipblas.h>
 #endif
 
-#include<mutex>
-
 #if not defined(MULTI_USE_HIP)
 #define hicup(name) cuda##name
 #define hicu(name) cu##name
@@ -53,6 +51,8 @@ class side {
 		switch(trans) {
 			case 'L': return HICU(BLAS_SIDE_LEFT);
 			case 'R': return HICU(BLAS_SIDE_RIGHT);
+			default: assert(0);
+
 		}
 		assert(0); return hicu(blasSideMode_t){};
 	}()} {}
