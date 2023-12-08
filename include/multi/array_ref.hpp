@@ -1503,7 +1503,11 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		, int> =0
 	>
 	constexpr auto const_array_cast() const {
-		return rebind<T2, P2>(this->layout(), reinterpret_cast<P2 const&>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		if constexpr(std::is_pointer_v<P2>) {
+			return rebind<T2, P2>(this->layout(), const_cast      <P2       >(this->base_));  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+		} else {
+			return rebind<T2, P2>(this->layout(), reinterpret_cast<P2 const&>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		}
 	}
 
 	constexpr auto as_const() const {
