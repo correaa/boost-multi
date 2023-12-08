@@ -25,8 +25,7 @@
 #define HICUP(name) HIP##name
 #endif
 
-namespace boost{
-namespace multi::cuda::cublas{
+namespace boost::multi::cuda::cublas{
 
 enum class error : typename std::underlying_type<hicu(blasStatus_t)>::type{
 	success               = HICUP(BLAS_STATUS_SUCCESS),
@@ -68,9 +67,8 @@ inline std::error_code make_error_code(cublas::error err) noexcept{
 }
 
 }
-}
 
-namespace std{
+namespace std {
 	template<> struct is_error_code_enum<::boost::multi::cuda::cublas::error> : true_type{};
 }
 
