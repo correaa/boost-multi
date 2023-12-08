@@ -1,7 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0 cublas-11.0 blas` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2020
+// Copyright 2020-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
 #define MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
