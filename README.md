@@ -771,8 +771,7 @@ The technique allows the reuse of operations designed for high dimensionality an
 The result is generally an economy in the number of distinct operations that need to be provided in exchange for understanding how and where to exploit the broadcast operations.
 
 Broadcasting is popular in array-based languages, such as Julia and NumPy, and the broadcast is generally applied automatically to match the dimension expected by the operation and other operation inputs.
-
-Since the technique is very popular, the library provides a basic broadcasting version with certain limitations.
+The library provides a basic form of broadcasting with certain limitations.
 
 Here is an example of an algorithm designed for two 2D arrays to obtain the row-by-row inner product.
 
@@ -816,6 +815,7 @@ The alternative, not using broadcast, is to write a very similar function,
 Broadcasted arrays do not behave like normal array views in several aspects:
 First, broadcasted arrays are infinite in the broadcasted dimension; iteration will never reach the end position, and calling `.size()` is undefined behavior.
 Explicit loops or algorithms that depend on reaching `.end()` from `.begin()` will effectively be non-terminating.
+Second, these array views are strictly read-only and alias their element addresses, e.g. `&b.broadcasted()[1][0] == &b.broadcasted()[2][0]` (since internal layouts' strides can be zero).
 
 For illustration purposes only, `fill` here is replaced by `copy`; problematic uses are highlighted:
 
@@ -826,22 +826,21 @@ For illustration purposes only, `fill` here is replaced by `copy`; problematic u
 
     std::copy_n(b.broadcasted().begin(), b.broadcasted().size(), v.end());  // incorrect, undefined behavior, no useful size()
     std::copy  (b.begin(), b.end(), v.begin());                             // incorrect, undefined behavior, non-terminating loop
+	B = b.broadcasted();                                                    // incorrect, undefined behavior
 ```
 
 Unlike popular languages, broadcasting is not automatic in the library and is applied to the leading dimension only, one dimension at a time.
 Broadcasting in non-leading dimensions can be achieved by transpositions and index rotation.
 
-Finally, these array views are strictly read-only and can alias their element addresses, e.g. `&b.broadcasted()[1][0] == &b.broadcasted()[2][0]` (since internal strides layouts can be zero).
-
-Abuse of broadcast can make it harder to reason about operations; its primary use is to reuse existing implementations of algorithms when implementations for a specific dimensions are not available.
+Abuse of broadcast can make it harder to reason about operations; its primary use is to reuse existing efficient implementations of algorithms when implementations for a specific lower dimensions are not available.
 These algorithms need to be compatible with broadcasted views (e.g., no explicit use of `.size()` or infinite loops stemming from problematic use of `.begin()/end()`.)
 
 As a final example, consider a function that computes the elements-by-element product of two 2D arrays,
 
 ```cpp
     auto hadamard = [](auto const& A, auto const& B, auto&& C) {
-        for(auto i : A.extension() ) for(auto j : (~B).extension())
-            C[i][j] = A[i][j]*B[i][j];
+        auto const [is, js] = C.extensions();
+        for(auto i : is) for(auto j : js) C[i][j] = A[i][j]*B[i][j];
     };
 ```
 
@@ -852,6 +851,7 @@ As it is, this function can be reused to calculate the outer product of two 1D a
         return hadamard(~(a.broadcasted()), b.broadcasted(), std::forward<T>(C));
     };
 ```
+(https://godbolt.org/z/5o95qGdKz)
 
 Note that the function acting on 2D arrays, doesn't use the undefined (infinite) sizes (second dimension of `A` and first dimension of `B`).
 
