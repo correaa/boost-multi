@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2023 Alfredo A. Correa
 #pragma once
 
 #include <multi/config/MARK.hpp>
@@ -8,7 +7,7 @@
 #include <multi/adaptors/blas/traits.hpp>
 #include <multi/adaptors/blas/core.hpp>
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #include <thrust/system/cuda/memory.h>  // for thrust::cuda::pointer
 #else
 #include <thrust/system/hip/memory.h>  // for thrust::cuda::pointer
@@ -17,7 +16,7 @@
 
 #include<mutex>
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #define hicup(name) cuda##name
 #define hicu(name) cu##name
 #define HICU(name) CU##name
