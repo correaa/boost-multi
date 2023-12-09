@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_AXPY_HPP
@@ -28,7 +27,7 @@ template<class Context, class X1D, class Y1D, typename = decltype( std::declval<
 auto axpy(Context ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 ->decltype(/*axpy_n(std::forward<Context>(ctxt), alpha, x.begin( ), x.size( ), y.begin( )),*/ std::forward<Y1D>(y)) {
 	assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
-	return axpy_n(ctxt, alpha,   begin(x),   size(x),   begin(y)), std::forward<Y1D>(y); }
+	return axpy_n(ctxt, alpha,   begin(x),   size(y),   begin(y)), std::forward<Y1D>(y); }
 
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0 )>
 auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names

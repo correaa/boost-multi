@@ -9,6 +9,18 @@
 
 namespace multi = boost::multi;
 
+BOOST_AUTO_TEST_CASE(empty_stride) {
+	multi::array<double, 2> ma;
+	BOOST_REQUIRE(ma.size() == 0);
+	BOOST_REQUIRE(ma.stride() != 0);
+	BOOST_REQUIRE(size(ma) == 0);
+
+	multi::array<double, 2> ma0({0, 0}, 0.0);
+	BOOST_REQUIRE(ma0.size() == 0);
+	BOOST_REQUIRE(ma0.stride() != 0);
+	BOOST_REQUIRE(size(ma0) == 0);
+}
+
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	std::vector<multi::array<double, 2>> va;
 	std::transform(

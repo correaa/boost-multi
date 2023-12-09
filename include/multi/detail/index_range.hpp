@@ -176,7 +176,7 @@ class range {
 		auto new_first = max(self.first(), other.first());
 		auto new_last  = min(self.last() , other.last() );
 		new_first = min(new_first, new_last);
-		return range<decltype(new_first), decltype(new_last)>{new_first, new_last};
+		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}
 	[[nodiscard]] constexpr auto contains(value_type const& value) const {return value >= first_ and value < last_;}
 };
