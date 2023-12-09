@@ -1,19 +1,11 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2021-2022 Alfredo A. Correa
+// Copyright 2021-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_THRUST_HPP_
 #define MULTI_ADAPTORS_THRUST_HPP_
 #pragma once
 
-#ifndef hicup
-#define hicup cuda
-#endif
-
 #include "../array.hpp"
-
-// #if hicup == cuda
-// #include "./thrust/cuda/managed.hpp"
-// #endif
 
 #include "./thrust/reference.hpp"
 
@@ -22,7 +14,7 @@
 #include <thrust/universal_allocator.h>
 #include <thrust/universal_ptr.h>
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #include <thrust/system/cuda/memory.h> // for ::thrust::cuda::allocator
 #else
 #include <thrust/system/hip/memory.h>  // for ::thrust::hip::allocator
@@ -55,7 +47,7 @@
 // }  // end namespace std
 // // end of nvcc thrust 11.5 workaround
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #define HICUP cuda
 #define HICUP_(NAME)  cuda ## NAME
 #else
@@ -222,7 +214,7 @@ namespace cuda {
 	template<class T, multi::dimensionality_type D> using array = multi::array<T, D, ::thrust::HICUP::allocator<T>>;
 
 	// namespace managed {
-	// 	template<class T, multi::dimensionality_type D> using array = multi::array<T, D, boost::multi::thrust::hip::managed::allocator<T>>;
+	//  template<class T, multi::dimensionality_type D> using array = multi::array<T, D, boost::multi::thrust::hip::managed::allocator<T>>;
 	// }  // end namespace managed
 }  // end namespace cuda
 
@@ -257,5 +249,8 @@ constexpr auto default_allocator_of(::thrust::pointer<Q, ::thrust::HICUP::tag, Q
 }
 
 }
+
+#undef HICUP
+#undef HICUP_
 
 #endif

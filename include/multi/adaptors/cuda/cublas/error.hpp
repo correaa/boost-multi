@@ -1,12 +1,9 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0 cublas-11.0 blas` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2020
+// Copyright 2020-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
 #define MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #include<cublas_v2.h> // cublasStatus_t
 #else
 #include<hipblas/hipblas.h> // cublasStatus_t
@@ -16,7 +13,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0 cublas-11.0 
 #include<system_error> // std::error_category
 #include<type_traits> // std::underlying_type
 
-#if defined(__NVCC__)
+#if not defined(MULTI_USE_HIP)
 #define hicup(name) cuda##name
 #define hicu(name) cu##name
 #define HICU(name) CU##name
@@ -28,8 +25,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0 cublas-11.0 
 #define HICUP(name) HIP##name
 #endif
 
-namespace boost{
-namespace multi::cuda::cublas{
+namespace boost::multi::cuda::cublas{
 
 enum class error : typename std::underlying_type<hicu(blasStatus_t)>::type{
 	success               = HICUP(BLAS_STATUS_SUCCESS),
@@ -71,9 +67,8 @@ inline std::error_code make_error_code(cublas::error err) noexcept{
 }
 
 }
-}
 
-namespace std{
+namespace std {
 	template<> struct is_error_code_enum<::boost::multi::cuda::cublas::error> : true_type{};
 }
 
@@ -104,7 +99,9 @@ BOOST_AUTO_TEST_CASE(multi_cublas_error){
 
 }
 
+#undef hicu
 #undef hicup
+#undef HICU
 #undef HICUP
 
 #endif
