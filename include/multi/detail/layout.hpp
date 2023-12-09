@@ -552,7 +552,7 @@ struct layout_t
 				detail::tail(extensions.base())
 			)
 		},
-		stride_{sub_.num_elements()},
+		stride_{sub_.num_elements()?sub_.num_elements():1},
 		offset_{boost::multi::detail::get<0>(extensions.base()).first()*stride_},
 		nelems_{boost::multi::detail::get<0>(extensions.base()).size()*sub().num_elements()}
 	{}
@@ -624,12 +624,12 @@ struct layout_t
 	constexpr auto    empty()        const noexcept {return is_empty();}
 
 	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
-	/*[[gnu::pure]]*/
 	       constexpr auto size()        const        noexcept -> size_type {
 	//  if(nelems_ == 0) {return 0;}
 	//  MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
-		return nelems_ == 0?0:nelems_/stride_;
+		// if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
+		// return nelems_ == 0?0:nelems_/stride_;
+		return nelems_/stride_;
 	}
 
 	constexpr HD auto stride()       -> stride_type      & {return stride_;}
