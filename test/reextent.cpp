@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reextent"  // test title NOLINT(cppcoreguidelines-macro-usage)
@@ -19,10 +18,10 @@ BOOST_AUTO_TEST_CASE(array_reextent) {
 	BOOST_REQUIRE(size(arr3) == 2);
 	BOOST_REQUIRE(size(arr3[0]) == 3);
 
-	arr.reextent({5, 4}, 99.);
+	arr.reextent({5, 4}, 99.0);
 	BOOST_REQUIRE( num_elements(arr)== 5L*4L );
-	BOOST_REQUIRE( arr[1][2] ==  6. );  // reextent preserves values when it can...
-	BOOST_REQUIRE( arr[4][3] == 99. );  // ...and gives selected value to the rest
+	BOOST_REQUIRE( arr[1][2] ==  6.0 );  // reextent preserves values when it can...
+	BOOST_REQUIRE( arr[4][3] == 99.0 );  // ...and gives selected value to the rest
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_noop) {
