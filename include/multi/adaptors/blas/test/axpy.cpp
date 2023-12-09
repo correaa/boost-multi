@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS axpy"
@@ -28,6 +27,33 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_real) {
 
 	blas::axpy(2.0, b, arr[1]);  // daxpy
 	BOOST_REQUIRE( arr[1][2] == 2.0*b[2] + AC[1][2] );
+}
+
+BOOST_AUTO_TEST_CASE(blas_axpy_repeat) {
+	multi::array<double, 1> a1D = multi::iextension(3);
+	BOOST_REQUIRE( a1D[0] == 0.0 );
+	BOOST_REQUIRE( a1D[1] == 1.0 );
+	BOOST_REQUIRE( a1D[2] == 2.0 );
+
+	multi::array<double, 1> const b1D = {3.0, 3.0, 3.0};
+
+	blas::axpy(1.0, b1D, a1D);
+	BOOST_REQUIRE( a1D[0] == 3.0 );
+	BOOST_REQUIRE( a1D[1] == 4.0 );
+	BOOST_REQUIRE( a1D[2] == 5.0 );
+
+	blas::axpy_n(1.0, multi::array<double, 0>(3.0).broadcasted().begin(), 3, a1D.begin());
+	BOOST_REQUIRE( a1D[0] == 6.0 );
+	BOOST_REQUIRE( a1D[1] == 7.0 );
+	BOOST_REQUIRE( a1D[2] == 8.0 );
+
+	// blas::axpy(1.0, multi::array<double, 0>(3.0).broadcasted(), a1D);
+	// BOOST_REQUIRE( a1D[0] == 6.0 );
+	// BOOST_REQUIRE( a1D[1] == 7.0 );
+	// BOOST_REQUIRE( a1D[2] == 8.0 );
+
+	// blas::axpy(2.0, b, arr[1]);  // daxpy
+	// BOOST_REQUIRE( arr[1][2] == 2.0*b[2] + AC[1][2] );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_double) {
