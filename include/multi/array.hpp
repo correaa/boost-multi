@@ -1093,7 +1093,7 @@ struct array : static_array<T, D, Alloc> {
 
 	auto reextent(typename array::extensions_type const& extensions)  & -> array& {
 		if(extensions == this->extensions()) {return *this;}
-		auto&& tmp = typename array::ref{
+		auto&& tmp = typename array::ref(
 			this->static_::array_alloc::allocate(
 				static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
 					typename array::layout_t{extensions}.num_elements()
@@ -1101,7 +1101,7 @@ struct array : static_array<T, D, Alloc> {
 				this->data_elements()  // used as hint
 			),
 			extensions
-		};
+		);
 		if constexpr(! (std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
