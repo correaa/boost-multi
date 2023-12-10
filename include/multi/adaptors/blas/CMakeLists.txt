@@ -67,7 +67,7 @@ find_package(BLAS)
 # endif()
 
 if(BLAS_FOUND)
-	message("Some BLAS found: linker flags ${BLAS_LINKER_FLAGS}, libs ${BLAS_LIBRARIES}, libs95 ${BLAS95_LIBRARIES}")
+	message("Some BLAS found: linker flags: ${BLAS_LINKER_FLAGS}, libs: ${BLAS_LIBRARIES}, libs95: ${BLAS95_LIBRARIES}")
 	foreach(lib ${BLAS_LIBRARIES})
 		if(${lib} MATCHES "mkl")
 			message("Some BLAS found matches MKL")
