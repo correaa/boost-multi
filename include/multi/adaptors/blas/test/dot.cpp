@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS dot"
@@ -200,5 +199,53 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 	{
 		complex c = blas::dot(blas::C(A[1]), A[2]);  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) {return conj(alpha)*omega;}) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
+	namespace blas = multi::blas;
+	using complex = std::complex<double>;
+	// using T = complex;
+	using Alloc =  std::allocator<complex>;  // thrust::cuda::allocator<complex>;
+	complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length)
+
+	multi::array<complex, 2, Alloc> const A = {  // NOLINT(readability-identifier-length) BLAS naming
+		{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+		{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+	};
+	multi::array<complex, 2, Alloc> const B = {  // NOLINT(readability-identifier-length) BLAS naming
+		{3.0 - 4.0 * I, 19.0 - 1.0 * I},
+		{1.0 + 5.0 * I,  8.0 - 8.0 * I},
+	};
+	{
+		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		auto CC = C;
+		{
+			auto const [is, js] = C.extensions();
+			for(auto i : is) {
+				for(auto j : js) {
+					C[i][j] *= 0.0;
+					for(auto k : B.extension()) {
+						C[i][j] += A[i][k]*conj(B[k][j]);
+					}
+				}
+			}
+		}
+		// TODO(correaa) MKL gives an error here
+		// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
+		{
+			std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
+				return std::transform(
+					begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& Ce) {
+						return 1.0*blas::dot(Ar, blas::C(Bc)) + 0.0*Ce;  // NOLINT(fuchsia-default-arguments-calls)
+					}
+				), std::forward<decltype(Cr)>(Cr);
+			});
+		}
+		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+
+		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 }
