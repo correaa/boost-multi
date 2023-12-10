@@ -325,6 +325,7 @@ cuda:
 cuda mkl:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+  allow_failure: true  # TODO(correaa) detect MKL-as-blas and set dot options
   tags:
     - nvidia-docker
   script:
