@@ -23,10 +23,15 @@ auto axpy_n(Context ctxt, typename It1::value_type alpha, It1 first, Size n, Out
 //->decltype(ctxt->axpy(n, &alpha, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
 {   return ctxt->axpy(n, &alpha, base(first) , stride(first) , base(d_first) , stride(d_first)) , d_first + n; }
 
-template<class Context, class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0 )>
+template<class Context, class X1DIt, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0, *X1DIt{} )>
+auto axpy(Context ctxt, typename X1DIt::element alpha, X1DIt x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
+->decltype(/*axpy_n(std::forward<Context>(ctxt), alpha, x.begin( ), x.size( ), y.begin( )),*/ std::forward<Y1D>(y)) {
+	return axpy_n(ctxt, alpha,   x,   size(y),   begin(y)), std::forward<Y1D>(y); }
+
+template<class Context, class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0, size(std::declval<X1D const&>()) )>
 auto axpy(Context ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 ->decltype(/*axpy_n(std::forward<Context>(ctxt), alpha, x.begin( ), x.size( ), y.begin( )),*/ std::forward<Y1D>(y)) {
-	assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
+	assert(x.size() == y.size() );  // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
 	return axpy_n(ctxt, alpha,   begin(x),   size(y),   begin(y)), std::forward<Y1D>(y); }
 
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0 )>
@@ -35,7 +40,7 @@ auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readabi
 //->decltype(/*axpy_n(alpha, x.begin(), x.size(), y.begin()),*/ axpy_n(alpha, x.begin(), size(x), y.begin()), std::forward<Y1D>(y)) 
 {
 	auto ctxtp = blas::default_context_of(x.base());
-	return axpy(ctxtp, alpha, x, std::forward<Y1D>(y));
+	return boost::multi::blas::axpy(ctxtp, alpha, x, std::forward<Y1D>(y));
 //  assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
 //  return axpy_n(ctxtp, alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y);
 }
