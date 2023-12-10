@@ -42,6 +42,8 @@ BOOST_AUTO_TEST_CASE(blas_axpy_repeat) {
 	BOOST_REQUIRE( a1D[1] == 4.0 );
 	BOOST_REQUIRE( a1D[2] == 5.0 );
 
+	// BOOST_REQUIRE(( multi::array<double, 0>(3.0).broadcasted().size() != 0 ));
+
 	blas::axpy_n(1.0, multi::array<double, 0>(3.0).broadcasted().begin(), 3, a1D.begin());
 	BOOST_REQUIRE( a1D[0] == 6.0 );
 	BOOST_REQUIRE( a1D[1] == 7.0 );
