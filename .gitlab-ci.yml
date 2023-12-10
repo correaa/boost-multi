@@ -330,7 +330,7 @@ cuda mkl:
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - echo 'no' | apt-get install --no-install-recommends -y libmkl-full-dev
+    - yes | apt-get install --no-install-recommends -y libmkl-full-dev
     - mkdir build && cd build
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
