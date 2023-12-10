@@ -225,9 +225,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
 			for(auto i : is) {
 				for(auto j : js) {
 					C[i][j] *= 0.0;
-					for(auto k : B.extension()) {
-						C[i][j] += A[i][k]*conj(B[k][j]);
-					}
+					for(auto k : B.extension()) {C[i][j] += A[i][k]*conj(B[k][j]);}  // NOLINT(altera-unroll-loops)
 				}
 			}
 		}
