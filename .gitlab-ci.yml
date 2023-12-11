@@ -403,7 +403,7 @@ rocm:
   script:
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
-    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
+    - apt-get install --no-install-recommends -y rocthrust-dev librocblas-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - cmake --version
@@ -415,7 +415,7 @@ rocm:
     - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
-    - cmake .. -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
+    - cmake .. -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest --output-on-failure
   needs: ["clang++", "g++"]
