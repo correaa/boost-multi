@@ -72,38 +72,9 @@ namespace std {
 	template<> struct is_error_code_enum<::boost::multi::cuda::cublas::error> : true_type{};
 }
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_CUDA
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
-
-//#include "../../array.hpp"
-//#include "../../utility.hpp"
-
-//#include "../../adaptors/cuda.hpp"
-//#include "../../adaptors/blas.hpp"
-//#include "../../adaptors/blas/cuda.hpp"
-
-#include<cassert>
-
-namespace multi = boost::multi;
-
-
-BOOST_AUTO_TEST_CASE(multi_cublas_error){
-
-	BOOST_CHECK_THROW(
-		throw (std::system_error{multi::cuda::cublas::make_error_code(multi::cuda::cublas::error::not_initialized), "error test"}), 
-		std::system_error
-	);
-
-}
-
 #undef hicu
 #undef hicup
 #undef HICU
 #undef HICUP
 
 #endif
-#endif
-
