@@ -1,5 +1,4 @@
-# -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.18)
 
 #project(
 # boost-multi-adaptors-blas
@@ -7,7 +6,7 @@ cmake_minimum_required(VERSION 3.16)
 # LANGUAGES CXX
 #)
 
-message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+#message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
 #set(BLA_VENDOR Intel10_64lp)
 find_package(BLAS)
@@ -87,15 +86,16 @@ if(BLAS_FOUND)
 	endforeach()
 endif()
 
-link_libraries(${BLAS_LIBRARIES})
-# link_libraries(BLAS::BLAS) # needs cmake 3.18
+# link_libraries(${BLAS_LIBRARIES})
+link_libraries(BLAS::BLAS) # needs cmake 3.18
 
 # include_directories(${CMAKE_BINARY_DIR})
 
 if(BLAS_FOUND)
   add_subdirectory(test)
 else()
-  message(WARNING "BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:"
-                "\n    sudo apt install libblas-dev"
-                "\n    sudo dnf install blas-devel  # in Fedora")
+	message(WARNING "BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:"
+		"\n    sudo apt install libblas-dev"
+		"\n    sudo dnf install blas-devel  # in Fedora")
+	message(WARNING "BLA_VENDOR was set to ${BLA_VENDOR}\n")
 endif()
