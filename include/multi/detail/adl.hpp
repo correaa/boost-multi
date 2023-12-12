@@ -1,14 +1,13 @@
 // Copyright 2020-2023 Alfredo A. Correa
-
 #ifndef MULTI_DETAIL_ADL_HPP
 #define MULTI_DETAIL_ADL_HPP
 #pragma once
 
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_AMD__)
+#if defined(__NVCC__) || defined(MULTI_USE_HIP)
 #include <thrust/copy.h>
-#include <thrust/equal.h>
 #include <thrust/detail/allocator/destroy_range.h>
 #include <thrust/detail/memory_algorithms.h>
+#include <thrust/equal.h>
 #include <thrust/uninitialized_copy.h>
 #endif
 
