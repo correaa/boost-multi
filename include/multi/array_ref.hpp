@@ -981,7 +981,12 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
 	constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
-	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
+	constexpr auto is_flattable() const -> bool{
+		return
+			   (this->size() <= 1)
+			|| (this->stride() == this->layout().sub().nelems())
+		;
+	}
 
 	friend constexpr auto flatted(subarray const& self) {return self.flatted();}
 	       constexpr auto flatted()           const& {
