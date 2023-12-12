@@ -565,10 +565,16 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	auto uninitialized_move(It first) {
 		return adl_alloc_uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data_elements());
 	}
-	auto destroy() {
-		return adl_alloc_destroy_n(this->alloc(), this->data_elements(), this->num_elements());
-		// array_alloc::destroy_n(this->data_elements(), this->num_elements());
+
+	constexpr void destroy() {
+		if constexpr(! (std::is_trivially_destructible_v<typename static_array::element> || multi::force_element_trivial_destruction<typename static_array::element>)) {
+			array_alloc::destroy_n(this->data_elements(), this->num_elements());
+		}
 	}
+	// auto destroy() {
+	//  return adl_alloc_destroy_n(this->alloc(), this->data_elements(), this->num_elements());
+	//  // array_alloc::destroy_n(this->data_elements(), this->num_elements());
+	// }
 
  public:
 	using typename ref::value_type;
