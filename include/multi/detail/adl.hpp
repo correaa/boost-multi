@@ -3,7 +3,7 @@
 #define MULTI_DETAIL_ADL_HPP
 #pragma once
 
-#if defined(__NVCC__) || defined(MULTI_USE_HIP)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__)
 #include <thrust/copy.h>
 #include <thrust/detail/allocator/destroy_range.h>
 #include <thrust/detail/memory_algorithms.h>
@@ -577,7 +577,7 @@ public:
 
 [[maybe_unused]] constexpr class alloc_destroy_n_t {
 	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const DECLRETURN(             adl_destroy_n              (std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(MULTI_USE_HIP)
+#if defined(__NVCC__)  // || defined(MULTI_USE_HIP)
 	template<class Alloc, class It, class Size> constexpr auto _(priority<2>/**/, Alloc& alloc, It first, Size n) const DECLRETURN(   (thrust::detail::destroy_range(alloc, first, first + n)))
 #endif
 	template<             class... As> constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(multi::              alloc_destroy_n              (std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
