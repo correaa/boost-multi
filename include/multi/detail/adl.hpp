@@ -53,7 +53,7 @@ inline constexpr bool force_element_trivial_default_construction = force_element
 
 #ifdef _MULTI_FORCE_TRIVIAL_STD_COMPLEX
 template<class T>
-inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivially_v<T>;
+inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivial_v<T>;
 
 template<class T>
 inline constexpr bool force_element_trivial_destruction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
