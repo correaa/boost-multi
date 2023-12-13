@@ -397,7 +397,7 @@ cuda-12.1.1:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/
 rocm:
   stage: build
   image: rocm/dev-ubuntu-22.04
-  allow_failure: true
+  allow_failure: false
   tags:
     - nvidia-docker
   script:
