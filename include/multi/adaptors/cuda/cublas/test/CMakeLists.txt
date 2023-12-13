@@ -42,6 +42,8 @@ if(ENABLE_HIP)
 	add_executable(all.hip.x all.hip)
 	#set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
 	target_link_libraries(all.hip.x PRIVATE multi roc::hipblas Boost::unit_test_framework)
+	target_compile_definitions(all.hip.x PRIVATE BOOST_TEST_DYN_LINK=1)
+
 	add_test(NAME all.hip.x COMMAND ./all.hip.x)
 endif()
 
