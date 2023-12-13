@@ -75,7 +75,7 @@ struct transform_ptr {
 		>
 	;
 
-	#if defined(__GNUC__) and (__GNUC__ < 8)
+	#if defined(__GNUC__) and (__GNUC__ < 9)
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
 	#endif
 
