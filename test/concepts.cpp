@@ -1,8 +1,7 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2022 Alfredo A. Correa
+// Copyright 2022-2023 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi concepts"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
+
 #include <boost/mpl/list.hpp>
 
 #include <multi/array.hpp>
