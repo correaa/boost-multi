@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2021-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_THRUST_HPP_
@@ -119,6 +118,7 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 			case HICUP_(Success): break;
 			case HICUP_(ErrorInvalidDevice): assert(0); break;
 			case HICUP_(ErrorInvalidValue): assert(0); break;
+			default: assert(0);  // 71 enumeration values not handled in switch: 'hipErrorOutOfMemory', 'hipErrorNotInitialized', 'hipErrorDeinitialized'...
 		}
 		assert(attr.type == HICUP_(MemoryTypeManaged));
 		return attr.device;
