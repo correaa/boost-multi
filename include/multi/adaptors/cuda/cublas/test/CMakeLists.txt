@@ -25,6 +25,7 @@ include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
 if(ENABLE_HIP)
 	enable_language(HIP)
 	find_package(hipBLAS REQUIRED)
+	find_package(rocthrust REQUIRED)
 endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
