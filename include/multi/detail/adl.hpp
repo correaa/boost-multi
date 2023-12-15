@@ -368,7 +368,7 @@ namespace xtd {
 constexpr class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
-#if defined(__NVCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__)
 	template<class... As>          constexpr auto _(priority<3>/**/, As&&... args) const DECLRETURN(                    ::thrust::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As, class OutputIt = std::decay_t<decltype((std::declval<As>(), ...))>,
 		std::enable_if_t<
