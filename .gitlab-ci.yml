@@ -179,7 +179,7 @@ clang++ sani:
   stage: build
   image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libllvm libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
