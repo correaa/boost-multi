@@ -1929,19 +1929,19 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	constexpr auto front()      & ->       reference {return *begin();}
 	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
 
-	template<class ElementPtr2,
-		std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
-	>
-	constexpr explicit operator subarray<T, 1, ElementPtr2, Layout>&& () & {
-		return std::move(reinterpret_array_cast<T, ElementPtr2>());
-	}
+	// template<class ElementPtr2,
+	//  std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
+	// >
+	// constexpr explicit operator subarray<T, 1, ElementPtr2, Layout>&& () & {
+	//  return std::move(reinterpret_array_cast<T, ElementPtr2>());
+	// }
 
-	template<class ElementPtr2,
-		std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
-	>
-	constexpr explicit operator subarray<T, 1, ElementPtr2, Layout>&& () && {
-		return std::move(reinterpret_array_cast<T, ElementPtr2>());
-	}
+	// template<class ElementPtr2,
+	//  std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
+	// >
+	// constexpr explicit operator subarray<T, 1, ElementPtr2, Layout>&& () && {
+	//  return std::move(reinterpret_array_cast<T, ElementPtr2>());
+	// }
 
 	template<class ElementPtr2,
 		std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
