@@ -809,9 +809,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	HD constexpr auto operator[](index idx) const& -> const_reference {return at_aux(idx);}
-	HD constexpr auto operator[](index idx)     && ->       reference {return at_aux(idx);}
-	HD constexpr auto operator[](index idx)      & ->       reference {return at_aux(idx);}
+	HD constexpr auto operator[](index idx) const& { return const_reference{at_aux(idx)}; }
+	HD constexpr auto operator[](index idx)     && ->     reference {return at_aux(idx) ; }
+	HD constexpr auto operator[](index idx)      & ->     reference {return at_aux(idx) ; }
 
 	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)> >
 	HD constexpr auto operator[](Tuple const& tup) const
@@ -1929,6 +1929,27 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	constexpr auto front()      & ->       reference {return *begin();}
 	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
 
+	// template<class ElementPtr2,
+	//  std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
+	// >
+	// constexpr explicit operator subarray<T, 1, ElementPtr2, Layout>&& () & {
+	//  return std::move(reinterpret_array_cast<T, ElementPtr2>());
+	// }
+
+	// template<class ElementPtr2,
+	//  std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
+	// >
+	// constexpr explicit operator subarray<T, 1, ElementPtr2, Layout>&& () && {
+	//  return std::move(reinterpret_array_cast<T, ElementPtr2>());
+	// }
+
+	template<class ElementPtr2,
+		std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
+	>
+	constexpr operator subarray<T, 1, ElementPtr2, Layout>&& () const & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) think if this can be solved by inheritance from subarray<T, D, const ptr>
+		return std::move(reinterpret_cast<subarray<T, 1, ElementPtr2, Layout> const&>(*this));  // NOLINT([ppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
+	}
+
  private:
 	template<class Self, typename Tuple, std::size_t ... I, subarray* = nullptr>
 	static constexpr auto apply_impl(Self&& self, Tuple const& tuple, std::index_sequence<I...> /*012*/) -> decltype(auto) {
@@ -2005,7 +2026,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	HD constexpr auto sliced(index first, index last) const& -> basic_const_array const {return sliced_aux(first, last);}  // NOLINT(readability-const-return-type)
+	HD constexpr auto sliced(index first, index last) const& -> basic_const_array const {return basic_const_array{sliced_aux(first, last)};}  // NOLINT(readability-const-return-type)
 	HD constexpr auto sliced(index first, index last)      & -> subarray       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> subarray       {return sliced_aux(first, last);}
 
