@@ -565,7 +565,7 @@ qmcpack-cuda:
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
   needs: ["qmcpack","cuda"]
 
-qmcpack-cuda:
+qmcpack-cuda-12
   stage: test
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
   tags:
