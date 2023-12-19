@@ -2026,7 +2026,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	}
 
  public:
-	HD constexpr auto sliced(index first, index last) const& -> basic_const_array const {return sliced_aux(first, last);}  // NOLINT(readability-const-return-type)
+	HD constexpr auto sliced(index first, index last) const& -> basic_const_array const {return basic_const_array{sliced_aux(first, last)};}  // NOLINT(readability-const-return-type)
 	HD constexpr auto sliced(index first, index last)      & -> subarray       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> subarray       {return sliced_aux(first, last);}
 
