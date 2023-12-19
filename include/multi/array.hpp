@@ -1231,11 +1231,11 @@ struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arr
 
 // common_reference for compatibility with ranges
 #if defined(__cpp_lib_common_reference) or defined( __cpp_lib_ranges)
-template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array&&, ::boost::multi::array<T, D, A...>                    &> { using type = ::boost::multi::array<T, D, A...>::basic_const_array&&;};
-template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array&&, ::boost::multi::array<T, D, A...>               const&> { using type = ::boost::multi::array<T, D, A...>::basic_const_array&&;};
-template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...>      &,      typename ::boost::multi::array<T, D, A...>::basic_const_array&&> { using type = ::boost::multi::array<T, D, A...>::basic_const_array&&;};
-template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...> const&,      typename ::boost::multi::array<T, D, A...>::basic_const_array&&> { using type = ::boost::multi::array<T, D, A...>::basic_const_array&&;};
-template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array  , ::boost::multi::array<T, D, A...>                    &> { using type = ::boost::multi::array<T, D, A...>::basic_const_array  ;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array&&, ::boost::multi::array<T, D, A...>                    &> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array&&;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array&&, ::boost::multi::array<T, D, A...>               const&> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array&&;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...>      &,      typename ::boost::multi::array<T, D, A...>::basic_const_array&&> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array&&;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...> const&,      typename ::boost::multi::array<T, D, A...>::basic_const_array&&> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array&&;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array  , ::boost::multi::array<T, D, A...>                    &> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array  ;};
 #endif
 
 #if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603))
