@@ -15,7 +15,7 @@
 #include<type_traits>  // for std::common_reference
 #include<utility>  // for std::move
 
-#if (not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20190503)) and (not defined(_LIBCPP_VERSION) or (_LIBCPP_VERSION > 14000))
+#if (not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20210601)) and (not defined(_LIBCPP_VERSION) or (_LIBCPP_VERSION > 14000))
 #include<memory_resource>
 #endif
 
