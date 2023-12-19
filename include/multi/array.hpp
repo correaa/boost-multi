@@ -10,10 +10,10 @@
 #include "./detail/memory.hpp"
 #include "./detail/type_traits.hpp"
 
-#include<algorithm>  // for copy
-#include<memory>     // for allocator_traits
-#include<tuple>      // needed by a deprecated function
-#include<utility>    // for move
+#include<memory>   // for std::allocator_traits
+#include<tuple>  // needed by a deprecated function
+#include<type_traits>  // for std::common_reference
+#include<utility>  // for std::move
 
 #if (not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20190503)) and (not defined(_LIBCPP_VERSION) or (_LIBCPP_VERSION > 14000))
 #include<memory_resource>
@@ -492,9 +492,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
-	constexpr explicit operator subarray<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
-		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
-	}
+
+	// constexpr explicit operator subarray<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
+	// return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
+	// }
 
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned int const version) {
@@ -1226,6 +1227,16 @@ struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arr
 };
 
 }  // end namespace boost::multi
+
+
+// common_reference for compatibility with ranges
+#if defined(__cpp_lib_common_reference) or defined( __cpp_lib_ranges)
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array&&, ::boost::multi::array<T, D, A...>                    &> { using type = ::boost::multi::array<T, D, A...>::basic_const_array&&;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array&&, ::boost::multi::array<T, D, A...>               const&> { using type = ::boost::multi::array<T, D, A...>::basic_const_array&&;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...>      &,      typename ::boost::multi::array<T, D, A...>::basic_const_array&&> { using type = ::boost::multi::array<T, D, A...>::basic_const_array&&;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...> const&,      typename ::boost::multi::array<T, D, A...>::basic_const_array&&> { using type = ::boost::multi::array<T, D, A...>::basic_const_array&&;};
+template<class T, boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array  , ::boost::multi::array<T, D, A...>                    &> { using type = ::boost::multi::array<T, D, A...>::basic_const_array  ;};
+#endif
 
 #if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603))
 namespace boost::multi::pmr {
