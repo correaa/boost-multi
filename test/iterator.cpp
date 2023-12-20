@@ -45,6 +45,16 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 		BOOST_REQUIRE( cbb == arr2 );
 		BOOST_REQUIRE( arr2 == cbb );
 	}
+	{
+		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
+		BOOST_REQUIRE( size(arr) == 100 );
+		BOOST_REQUIRE( begin(arr) < end(arr) );
+
+		auto arr2 = arr.end();
+		auto arr3 = arr2 - 1;
+
+		BOOST_REQUIRE( arr3 + 1 == arr2 );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(iterator_2d) {
