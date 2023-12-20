@@ -1048,7 +1048,23 @@ this allows to work with immutable variables in many cases in place of mutable i
 ```
 [(live)](https://godbolt.org/z/M84arKMnT)
 
-The library also works well with Ranges-v3 which is approximately a superset of STL ranges (see below).
+In this other example, for a specific array the first row with odd sum has their values replaced:
+
+```cpp
+    static constexpr auto accumulate = [](auto const& R) {return std::ranges::fold_left(R, 0, std::plus<>{});};
+
+	auto arr = multi::array<int, 2>{
+        {2, 0, 2, 2},
+        {2, 7, 0, 2},  // this row adds to an odd number
+        {2, 2, 0, 4},
+    };
+
+    auto const row = std::ranges::find_if(arr, [](auto const& r) {return accumulate(r) %2 == 1;});
+    if(row != arr.end()) *row = {9, 9, 9, 9};
+
+	assert(arr[1][0] == 9 );
+```
+[(live)](https://godbolt.org/z/cT9WGffM3)
 
 ### Polymorphic Memory Resources
 
