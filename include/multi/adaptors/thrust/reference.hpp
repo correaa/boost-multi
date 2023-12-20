@@ -3,12 +3,13 @@
 
 #pragma once
 
-#include<thrust/detail/reference.h>
+#include<thrust/detail/reference.h>  // hipthrust needs this
 
 namespace thrust {
 
+    // TODO(correaa) consider restrict this for universal memory only
     template<class T1, class Tag1, class T2, class Tag2>
-    HD auto operator*(
+    HD constexpr auto operator*(
         thrust::tagged_reference<T1, Tag1> const& r1, 
         thrust::tagged_reference<T2, Tag2> const& r2 
     )
@@ -16,7 +17,7 @@ namespace thrust {
         return thrust::raw_reference_cast(r1) * thrust::raw_reference_cast(r2); }
 
     template<class T1, class Tag1, class T2>
-    HD auto operator*(
+    HD constexpr auto operator*(
         thrust::tagged_reference<T1, Tag1> const& r1, 
         T2 const& r2
     )
@@ -24,10 +25,7 @@ namespace thrust {
         return thrust::raw_reference_cast(r1) * r2; }
 
     template<class T1, class T2, class Tag2>
-    // #ifndef __CUDA_ARCH__
-    // [[deprecated]]
-    // #endif
-    HD auto operator*(
+    HD constexpr auto operator*(
         T1 const& r1,
         thrust::tagged_reference<T2, Tag2> const& r2
     )
