@@ -1661,7 +1661,6 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	element_ptr data_{nullptr};  // TODO(correaa) : consider uninitialized pointer
 	stride_type stride_ = {1};
 
-	/*[[gnu::pure]]*/
 	constexpr auto distance_to(array_iterator const& other) const -> difference_type {
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return (other.data_ - data_)/stride_;
@@ -1669,6 +1668,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
  public:
 	HD constexpr auto operator+(difference_type n) const -> array_iterator {array_iterator ret{*this}; ret+=n; return ret;}
+	HD constexpr auto operator-(difference_type n) const -> array_iterator {array_iterator ret{*this}; ret-=n; return ret;}
 
 	[[deprecated("use base() for iterator")]]
 	constexpr auto data() const -> element_ptr {return data_;}
