@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi iterators"  // title NOLINT(cppcoreguidelines-macro-usage)
@@ -45,6 +44,16 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 		BOOST_REQUIRE( cbb == arr2 );
 		BOOST_REQUIRE( arr2 == cbb );
 	}
+	{
+		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
+		BOOST_REQUIRE( size(arr) == 100 );
+		BOOST_REQUIRE( begin(arr) < end(arr) );
+
+		auto const arrend = arr.end();
+		auto const arrlast = arrend - 1;
+
+		BOOST_REQUIRE( arrlast + 1 == arrend );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(iterator_2d) {
@@ -57,16 +66,21 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 		BOOST_REQUIRE( arr.cend() - arr.cbegin() == arr.size() );
 
 		using iter = multi::array<double, 2>::iterator;
-		static_assert( std::is_same_v< iter::element   , double >, "!");
-		static_assert( std::is_same_v< iter::value_type, multi::array<double, 1> >, "!");
-		static_assert( std::is_same_v< iter::reference, multi::subarray<double, 1>>, "!");
-		static_assert( std::is_same_v< iter::element_ptr, double*>, "!");
+		static_assert( std::is_same_v< iter::element   , double > );
+		static_assert( std::is_same_v< iter::value_type, multi::array<double, 1> > );
+		static_assert( std::is_same_v< iter::reference, multi::subarray<double, 1>> );
+		static_assert( std::is_same_v< iter::element_ptr, double*> );
 
 		using citer = multi::array<double, 2>::const_iterator;
-		static_assert( std::is_same_v< citer::element   , double >, "!");
-		static_assert( std::is_same_v< citer::value_type, multi::array<double, 1> >, "!");
-		static_assert( std::is_same_v< citer::reference, multi::subarray<double, 1, double const*>>, "!");
-		static_assert( std::is_same_v< citer::element_ptr, double const* >, "!");
+		static_assert( std::is_same_v< citer::element   , double > );
+		static_assert( std::is_same_v< citer::value_type, multi::array<double, 1> > );
+		static_assert( std::is_same_v< citer::reference, multi::subarray<double, 1, double const*>> );
+		static_assert( std::is_same_v< citer::element_ptr, double const* > );
+
+		auto const arrend = arr.end();
+		auto const arrlast = arrend - 1;
+
+		BOOST_REQUIRE( arrlast + 1 == arrend );
 	}
 	{
 		std::vector<double> vec(10000);  // std::vector NOLINT(fuchsia-default-arguments-calls)
