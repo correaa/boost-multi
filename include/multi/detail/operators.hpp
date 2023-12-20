@@ -109,11 +109,11 @@ struct affine_with_unit : steppable<Self> {  // affine_with_unit<Self, Differenc
 	friend constexpr auto operator++(affine_with_unit& self) -> Self& {return self.self() += difference_type{1};}
 	friend constexpr auto operator--(affine_with_unit& self) -> Self& {return self.self() -= difference_type{1};}
 
-	friend constexpr auto operator-(affine_with_unit const& self, difference_type const& diff) -> Self {
-		auto ret{self.self()};
-		ret += (-diff);
-		return ret;
-	}
+	// friend constexpr auto operator-(affine_with_unit const& self, difference_type const& diff) -> Self {
+	//  auto ret{self.self()};
+	//  ret += (-diff);
+	//  return ret;
+	// }
 	constexpr auto operator+(difference_type const& diff) const -> Self {
 		auto ret{cself()};
 		ret += diff;
@@ -173,8 +173,9 @@ struct addable2 {
 template<class T, class D>
 struct subtractable2 {
 	using difference_type = D;
-	template<class TT, class = T>
-	friend auto operator-(TT&& self, difference_type const& diff) -> T {T tmp{std::forward<TT>(self)}; tmp -= diff; return tmp;}
+	// TODO(correaa) clang 16 picks up this and converts the difference_type to TT !!
+	// template<class TT, class = T>
+	// friend auto operator-(TT&& self, difference_type const& diff) -> T {T tmp{std::forward<TT>(self)}; tmp -= diff; return tmp;}
 };
 
 template<class T, class Difference>
