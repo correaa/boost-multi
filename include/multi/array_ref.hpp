@@ -863,16 +863,17 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reindexed(index first, Indexes... idxs)&& -> subarray {
 		return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
+
  private:
 	constexpr auto taked_aux(difference_type n) const {
 		assert( n <= this->size() );
-		typename types::layout_t const new_layout{
+		typename types::layout_t const new_layout(
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
 			this->stride()*n
-		};
-		return subarray{new_layout, this->base_};
+		);
+		return subarray(new_layout, this->base_);
 	}
 
  public:
@@ -889,7 +890,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 			this->layout().offset(),
 			this->stride()*(this->size() - n)
 		};
-		return subarray{new_layout, this->base_ + n*this->layout().stride() - this->layout().offset()};
+		return subarray(new_layout, this->base_ + n*this->layout().stride() - this->layout().offset());
 	}
 
  public:
