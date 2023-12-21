@@ -138,7 +138,7 @@ deb:
       - build/multi_all.deb
   needs: ["g++", "clang++"]
 
-clang++ libc++:
+clang++ libc++:  # clang 14 as of Dec 2023
   stage: build
   image: debian:stable
   script:
@@ -188,7 +188,7 @@ clang++ sanitizer:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-testing c++20:
+clang++-testing c++20:  # clang 16 as of Dec 2023
   stage: build
   image: debian:testing
   script:
@@ -205,15 +205,15 @@ clang++-17 libc++ c++23:
   image: debian:testing
   script:  # clang 17 doesn't work with gcc 13 libstd
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang clang-17 cmake make libblas-dev libc++-17-dev libc++abi-17-dev libfftw3-dev pkg-config tar wget
-    - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz
+    - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
     - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++"  # libc++ only works with boost test compiled with libc++
+    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
     - clang++-17 --version
-    - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_DEBUG=1 -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1" -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib -DBoost_NO_SYSTEM_PATHS=ON
+    - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_DEBUG=1 -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"  # -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib -DBoost_NO_SYSTEM_PATHS=ON
     - cmake --build . --target main.cpp.x
     - test/main.cpp.x
     - cmake --build . --parallel 2 || cmake --build . --verbose
