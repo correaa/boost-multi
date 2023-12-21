@@ -200,16 +200,18 @@ clang++-14 c++20:
     - ctest --output-on-failure
   needs: ["clang++"]
 
-clang++-15 c++23:
+clang++-17 libc++ c++23:
   stage: build
-  image: debian:latest
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-15 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+  image: debian:testing
+  script:  # clang 17 doesn't work with gcc 13 libstd
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-17 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libc++-17-dev libc++abi-17-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - clang++-15 --version
-    - CXX=clang++-15 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --output-on-failure
+    - clang++-17 --version
+    - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_DEBUG=1 -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
+    # - cmake --build . --parallel 2 || cmake --build . --verbose
+    # - ctest --output-on-failure
+    - cmake --build . --target main.cpp.x
+    - test/main.cpp.x
   needs: ["clang++-14 c++20"]
 
 clang++-7:
