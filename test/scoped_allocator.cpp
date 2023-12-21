@@ -87,8 +87,8 @@ class allocator2 {
 template<class T, class U>
 auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept { return not(self == other); }
 
-#if not defined(__clang__) or not defined(__apple_build_version__)
 BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
+#if !defined(_LIBCPP_VERSION)
 	std::int32_t heap1 = 0;
 	std::int64_t heap2 = 0;
 
@@ -110,9 +110,11 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 	}
 	BOOST_TEST( heap1 == 0 );
 	BOOST_TEST( heap2 == 0 );
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
+#if !defined(_LIBCPP_VERSION)
 	std::int32_t heap1 = 0;
 	std::int64_t heap2 = 0;
 
@@ -129,9 +131,11 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
 		BOOST_TEST( heap1 == 1  );
 		BOOST_TEST( heap2 == 1L );
 	}
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector_auto) {
+#if !defined(_LIBCPP_VERSION)
 	std::int32_t heap1 = 0;
 	std::int64_t heap2 = 0;
 
@@ -148,5 +152,5 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector_auto) {
 		BOOST_TEST( heap1 == 1  );
 		BOOST_TEST( heap2 == 1L );
 	}
-}
 #endif
+}
