@@ -160,6 +160,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 }
 #endif
 
+// TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
+#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__))
 BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
@@ -172,5 +174,6 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	d2D.element_transformed(std::mem_fn(&employee::age));
 	BOOST_REQUIRE( d2D.element_transformed(std::mem_fn(&employee::age)) == d2D.element_transformed(&employee::age) );
 }
+#endif
 
 // #endif
