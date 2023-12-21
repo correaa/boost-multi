@@ -144,7 +144,7 @@ constexpr class adl_copy_t {
 	>
 	                               constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first) const DECLRETURN(std::copy(first, last, d_first))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__)
-	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(           thrust::copy(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(         ::thrust::copy(std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(                   copy(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::copy(std::forward<T>(arg), std::forward<As>(args)...))
@@ -314,9 +314,9 @@ constexpr class adl_uninitialized_copy_t {
 			return std::uninitialized_copy(first, last, d_first);
 		}
 	}
-// #if defined(__NVCC__)
-//  template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
-// #endif
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__)
+	template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(                  ::thrust::uninitialized_copy(                    std::forward<As>(args)...))
+#endif
 	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB   first, As&&... args       ) const DECLRETURN(                        uninitialized_copy(                 first , std::forward<As>(args)...))
 	template<class TB, class TE, class DB> constexpr auto _(priority<4>/**/, TB   first, TE last, DB d_first) const DECLRETURN(std::decay_t<DB>      ::uninitialized_copy(                 first , last, d_first            ))
 	template<class TB, class... As       > constexpr auto _(priority<5>/**/, TB&& first, As&&... args       ) const DECLRETURN(std::decay_t<TB>      ::uninitialized_copy(std::forward<TB>(first), std::forward<As>(args)...))
@@ -653,10 +653,13 @@ constexpr class adl_alloc_uninitialized_copy_t {
 constexpr class uninitialized_fill_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(               std::    uninitialized_fill_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                        uninitialized_fill_n(std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN( std::forward<T>(arg).uninitialized_fill_n(std::forward<As>(args)...))
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__)
+	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(              ::thrust::uninitialized_fill_n(std::forward<As>(args)...))
+#endif
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN( std::forward<T>(arg).uninitialized_fill_n(std::forward<As>(args)...))
 
  public:
-	template<class T1, class... As> constexpr auto operator()(T1&& arg, As&&... args) const DECLRETURN(_(priority<3>{}, arg, std::forward<As>(args)...))
+	template<class T1, class... As> constexpr auto operator()(T1&& arg, As&&... args) const DECLRETURN(_(priority<4>{}, arg, std::forward<As>(args)...))
 } adl_uninitialized_fill_n;
 
 [[maybe_unused]] constexpr class alloc_uninitialized_fill_n_t {
