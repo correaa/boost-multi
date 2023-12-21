@@ -74,7 +74,7 @@ g++ sanitizer:
 
 g++-7:
   stage: build
-  image: debian:oldoldstable
+  image: debian:oldoldstable  # default is gcc 8 as of Dec 2023
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
@@ -209,7 +209,7 @@ clang++-17 libc++ c++23:
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
     - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install  # libc++ only works with boost test compiled with libc++
+    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
     - clang++-17 --version
