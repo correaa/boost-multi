@@ -208,7 +208,7 @@ clang++-17 libc++ c++23:
     - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
-    - ./bootstrap.sh --with-toolset=clang
+    - ./bootstrap.sh --with-toolset=clang-17
     - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++"  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
