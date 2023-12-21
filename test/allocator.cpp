@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(static_allocator) {
 	sa.deallocate(pp, 10);
 }
 
-#if defined( __cpp_constexpr) &&  (__cpp_constexpr  > 202110L)
+#if defined( __cpp_constexpr) &&  (__cpp_constexpr  > 202306L)
 constexpr auto f() {
     std::vector<int> v = {1, 2, 3};
     return v.size();

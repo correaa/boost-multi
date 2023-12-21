@@ -871,6 +871,7 @@ else()
 		target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework   )
 		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
 		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_DYN_LINK=1)
+		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_NO_CXX98_FUNCTION_BASE=1)
 
 		target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
