@@ -868,7 +868,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 	multi::array_ref<double, 2> const  aref (buffer.get(), {3, 3});
 	auto const& asub = arr({0, 3}, {0, 3});
 
-	auto deduce_array = []<class Arr>(Arr const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), typename Arr::element_type{0});};
+	auto deduce_array = []<class Arr>(Arr const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), typename Arr::element_type{0});};  // NOLINT cpplint 1.6.1 gets confused
 
 	BOOST_REQUIRE( deduce_array(arr) == 3 );
 	BOOST_REQUIRE( deduce_array(aref) == 3 );
