@@ -8,7 +8,6 @@
 
 
 BOOST_AUTO_TEST_CASE(range_accumulate) {
-
 #if defined(__cpp_lib_ranges_fold) and (__cpp_lib_ranges_fold >= 202207L)
 	namespace multi = boost::multi;
 
@@ -31,11 +30,9 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 
 	BOOST_REQUIRE( result - values.begin() == 4 );
 #endif
-
 }
 
 BOOST_AUTO_TEST_CASE(range_find) {
-
 #if defined(__cpp_lib_ranges_fold) and (__cpp_lib_ranges_fold >= 202207L)
 	namespace multi = boost::multi;
 
@@ -55,5 +52,4 @@ BOOST_AUTO_TEST_CASE(range_find) {
 		BOOST_REQUIRE( *needle == a[1] );
 	}
 #endif
-
 }

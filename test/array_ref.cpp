@@ -862,7 +862,6 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 
 #if __cplusplus >= 202003L
 BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
-
 	auto buffer = std::make_unique<double[]>(9); std::fill_n(buffer.get(), 9, 1.0);
 
 	multi::array<double , 2>    const  arr  ({3, 3}, 1.0);
@@ -875,20 +874,17 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 	BOOST_REQUIRE( deduce_array(aref) == 3 );
 	BOOST_REQUIRE( deduce_array(asub) == 3 );
 
-
 	auto deduce_element = []<class T>(multi::array<T, 2> const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0});};
 
 	BOOST_REQUIRE( deduce_element(arr) == 3 );
 	// BOOST_REQUIRE( deduce_element(aref) == 3 );
 	// BOOST_REQUIRE( deduce_element(asub) == 3 );
 
-
 	auto deduce_element_ref = []<class T>(multi::array_ref<T, 2> const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0});};
 
 	BOOST_REQUIRE( deduce_element_ref(arr) == 3 );
 	BOOST_REQUIRE( deduce_element_ref(aref) == 3 );
 	// BOOST_REQUIRE( deduce_element_ref(asub) == 3 );
-
 
 	auto deduce_element_sub = []<class T, class Ptr>(multi::subarray<T, 2, Ptr> const& a) {return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0});};
 
