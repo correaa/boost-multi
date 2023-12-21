@@ -215,7 +215,6 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		BOOST_REQUIRE( negd_arr[1][1] == neg[1][1] );
 		BOOST_REQUIRE( negd_arr[1][1] == -6.0 );
 		// negd_arr2[1][1] = 3.0;  // can't compile, ok, read-only
-
 	}
 	{
 #if defined(__cpp_deduction_guides)
