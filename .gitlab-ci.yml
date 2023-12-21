@@ -200,18 +200,6 @@ clang++-14 c++20:
     - ctest --output-on-failure
   needs: ["clang++"]
 
-clang++-16 libc++ c++23:
-  stage: build
-  image: debian:testing
-  script:  # clang 17 doesn't work with gcc 13 libstd
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-16 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libc++-16-dev libc++abi-16-dev libfftw3-dev pkg-config
-    - mkdir build && cd build
-    - clang++-16 --version
-    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --output-on-failure
-  needs: ["clang++-14 c++20"]
-
 clang++-17 libc++ c++23:
   stage: build
   image: debian:testing
