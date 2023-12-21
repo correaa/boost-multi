@@ -1085,13 +1085,15 @@ int main() {
 	multi::pmr::array<char, 2> A({2, 2}, 'a', &pool);
 	multi::pmr::array<char, 2> B({3, 2}, 'b', &pool);
 
-	assert( buffer == std::string{"aaaabbbbbbXX"} );
+	assert( buffer != std::string{"XXXXXXXXXXXX"} );
+	assert( buffer == std::string{"aaaabbbbbbXX"} );  // dependends on implementation, in libc++ it is reversed "XXbbbbbbaaaa"
 }
 ```
+
 `multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.
 In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. [(live)](https://godbolt.org/z/fP9P5Ksvb)
 
-The library also supports allocators from other libraries, including those returning special pointer types (see [CUDA Thrust](#cuda-thrust) Thurst section).
+The library also supports allocators from other libraries, including those returning special pointer types (see [CUDA Thrust](#cuda-thrust) Thurst section, and Boost.Interprocess section).
 
 ### Substitutability with standard vector and span
 
