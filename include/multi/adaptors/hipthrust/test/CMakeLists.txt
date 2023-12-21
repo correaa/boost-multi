@@ -48,6 +48,7 @@ add_executable(speed.hip.amd.x speed.hip)
 set_source_files_properties(speed.hip PROPERTIES LANGUAGE HIP)
 target_link_libraries(speed.hip.amd.x PRIVATE Boost::unit_test_framework Boost::timer multi roc::rocthrust)
 target_compile_definitions(speed.hip.amd.x PRIVATE BOOST_TEST_DYN_LINK=1)
+target_compile_definitions(speed.hip.amd.x PRIVATE BOOST_TEST_MODULE="C++ Unit Tests for Multi CUDA thrust universal copy and assignment")
 
 add_test(NAME speed.hip.amd.x COMMAND ./speed.hip.amd.x)
 
