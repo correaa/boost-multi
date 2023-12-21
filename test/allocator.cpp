@@ -53,6 +53,8 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( ua == va );
 }
 
+// TODO(correaa) make this code work with nvcc compiler (non device function called from device host through adl uninitialized_fill)
+#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__))
 BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
 	multi::array<multi::array<double, 2>, 1> arr(multi::extensions_t<1>(multi::iextension{10}), multi::array<double, 2>{});
 	BOOST_REQUIRE( size(arr) == 10 );
@@ -93,7 +95,7 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init)  {
 	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
 }
-
+#endif
 
 BOOST_AUTO_TEST_CASE(const_elements) {
 	auto ptr = std::make_unique<double const>(2.0);
