@@ -188,7 +188,7 @@ clang++ sanitizer:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-14 c++20:
+clang++-15 c++20:
   stage: build
   image: debian:testing
   script:
@@ -218,7 +218,7 @@ clang++-17 libc++ c++23:
     - test/main.cpp.x
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["clang++-14 c++20"]
+  needs: ["clang++-15 c++20"]
 
 clang++-7:
   stage: build
