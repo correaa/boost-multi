@@ -1,4 +1,3 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2021-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_THRUST_FIX_POINTER_TRAITS_HPP_
@@ -6,6 +5,8 @@
 #pragma once
 
 #include <thrust/memory.h>
+
+#include <memory>   // for std::pointer_traits
 
 // #include <thrust/detail/type_traits/pointer_traits.h>
 
@@ -17,15 +18,18 @@ template<class T> struct pointer_traits;
 
 }  // end namespace thrust
 
-namespace std {
+// namespace std {
 
-template<class... As> struct pointer_traits<thrust::pointer<As...>>
-: thrust::detail::pointer_traits<thrust::pointer<As...>> {
+template<class... As>
+struct std::pointer_traits<::thrust::pointer<As...>>
+: ::thrust::detail::pointer_traits<thrust::pointer<As...>> {
 	template<class T>
-	using rebind = typename thrust::detail::pointer_traits<thrust::pointer<As...>>::template rebind<T>::other;
+	using rebind = typename ::thrust::detail::pointer_traits<::thrust::pointer<As...>>::template rebind<T>::other;
 };
 
-}  // end namespace std
+//}  
+
+// end namespace std
 // end of nvcc thrust 11.5 workaround
 
 #endif
