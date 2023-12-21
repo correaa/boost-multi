@@ -213,7 +213,7 @@ clang++-17 libc++ c++23:
     - cd ..
     - mkdir build && cd build
     - clang++-17 --version
-    - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_DEBUG=1 -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1" -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib
+    - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_DEBUG=1 -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1" -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib -DBoost_NO_SYSTEM_PATHS=ON
     - cmake --build . --target main.cpp.x
     - test/main.cpp.x
     - cmake --build . --parallel 2 || cmake --build . --verbose
