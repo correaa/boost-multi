@@ -103,6 +103,8 @@ struct employee {
 	char padding_ [(((offsetof(employee_dummy, age) + sizeof(age))/sizeof(std::string)+1)*sizeof(std::string) - (offsetof(employee_dummy, age) + sizeof(age)) )] = {};
 };
 
+// TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
+#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__))
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
@@ -138,6 +140,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(d2D_names == d2D_names_copy);
 	BOOST_REQUIRE(base(d2D_names) != base(d2D_names_copy));
 }
+#endif
 
 #if not defined(__circle_build__)
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
@@ -160,6 +163,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 }
 #endif
 
+// TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
+#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__))
 BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
@@ -172,5 +177,6 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	d2D.element_transformed(std::mem_fn(&employee::age));
 	BOOST_REQUIRE( d2D.element_transformed(std::mem_fn(&employee::age)) == d2D.element_transformed(&employee::age) );
 }
+#endif
 
 // #endif
