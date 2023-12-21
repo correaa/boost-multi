@@ -92,7 +92,6 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_2) {
 	BOOST_TEST( buffer[buffer.size() - 4] == 996.0 );
 	BOOST_TEST( buffer[buffer.size() - 3] == 997.0 );
 #endif
-
 }
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
@@ -115,8 +114,6 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
 #elif defined(_LIBCPP_VERSION)
 	BOOST_TEST( static_cast<void*>(buffer.data() + 4) == static_cast<void*>(&Aarr[0][0]) );
 #endif
-
-
 }
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized_3) {
@@ -134,7 +131,6 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_3) {
 	BOOST_TEST( buffer[buffer.size() - 4] == 40.0 );
 	BOOST_TEST( buffer[buffer.size() - 3] == 50.0 );
 #endif
-
 }
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
