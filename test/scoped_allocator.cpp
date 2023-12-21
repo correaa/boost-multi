@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 
 	{
 		using InnerCont = std::vector<int, allocator2<int>>;
-		using OuterCont = 
+		using OuterCont =
 			std::vector<
 				InnerCont,
 				std::scoped_allocator_adaptor<
@@ -117,9 +117,9 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 		BOOST_TEST( heap1 == 1  );
 		BOOST_TEST( heap2 == 1L );
 	}
+
 	BOOST_TEST( heap1 == 0 );
 	BOOST_TEST( heap2 == 0 );
-// #endif
 }
 
 BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
