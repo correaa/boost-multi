@@ -184,24 +184,6 @@ clang++-latest libc++:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-testing libc++:
-  stage: build
-  image: debian:testing  # clang 16.0.6 as of Dec 2023
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
-    - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
-    - tar -xf boost_1_84_0.tar.gz 
-    - cd boost_1_84_0
-    - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
-    - cd ..
-    - mkdir build && cd build
-    - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
-    - cmake --build .
-    - ctest -j 2 --output-on-failure
-  needs: ["clang++"]
-
 clang++-testing tidy:
   stage: build
   image: debian:testing  # clang 16.0.6 as of Dec 2023
@@ -254,11 +236,11 @@ clang++-17-unstable libc++ c++23:
     - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"  # -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib -DBoost_NO_SYSTEM_PATHS=ON
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["clang++-testing libc++", "clang++-testing c++20"]
+  needs: ["clang++-latest libc++", "clang++-testing c++20"]
 
 clang++-fedora c++23:
   stage: build
-  image: fedora:stable  # clang 17.0.6 as of Dec 2023
+  image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
   script:  # clang 17 doesn't work with gcc 13 libstd
     - dnf install -y ca-certificates clang cmake make libblas-dev libfftw3-dev pkg-config tar wget
     - mkdir build && cd build
