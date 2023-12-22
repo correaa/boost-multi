@@ -180,7 +180,7 @@ g++ cpplint:
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
-clang++-latest sanitizer:
+clang++-latest sanitizer:  # debian-latest: clang 14 as of Dec 2023
   stage: build
   image: debian:latest
   script:
@@ -193,7 +193,7 @@ clang++-latest sanitizer:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-testing c++20:  # clang 16 as of Dec 2023
+clang++-testing c++20:  # debian-testing: clang 16 as of Dec 2023
   stage: build
   image: debian:testing
   script:
@@ -223,9 +223,9 @@ clang++-17 libc++ c++23:
     - test/main.cpp.x
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["clang++ libc++"]
+  needs: ["clang++ libc++", "clang++-testing c++20"]
 
-clang++-7:
+clang++-7:  # debian:olooldstable clang++-8
   stage: build
   image: debian:oldoldstable
   script:
@@ -241,7 +241,7 @@ clang++-7:
 
 oneapi:
   stage: build
-  image: intel/oneapi-hpckit:2023.0.0-devel-ubuntu22.04
+  image: intel/oneapi-hpckit:2023.0.0-devel-ubuntu22.04  # Intel(R) oneAPI DPC++/C++ Compiler 2023.0.0 (2023.0.0.20221201)
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -252,9 +252,9 @@ oneapi:
 
 oneapi-latest c++20:
   stage: build
-  image: intel/oneapi-hpckit:latest
+  image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
   allow_failure: false
-  script:  # https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2023-0/apt.html
+  script:
     - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
     - echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -335,10 +335,9 @@ cuda:
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["g++"]
 
-cuda mkl:
+cuda-11.8 mkl:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-  allow_failure: true  # TODO(correaa) detect MKL-as-blas and set dot options
   tags:
     - nvidia-docker
   script:
