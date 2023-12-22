@@ -148,6 +148,42 @@ deb:
       - build/multi_all.deb
   needs: ["g++", "clang++"]
 
+clang++ libc++:
+  stage: build
+  image: debian:stable
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
+    - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
+    - tar -xf boost_1_84_0.tar.gz 
+    - cd boost_1_84_0
+    - ./bootstrap.sh --with-toolset=clang
+    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
+    - cd ..
+    - mkdir build && cd build
+    - clang++ --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++-latest libc++:
+  stage: build
+  image: debian:latest
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
+    - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
+    - tar -xf boost_1_84_0.tar.gz 
+    - cd boost_1_84_0
+    - ./bootstrap.sh --with-toolset=clang
+    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
+    - cd ..
+    - mkdir build && cd build
+    - clang++ --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
 clang++-testing libc++:
   stage: build
   image: debian:testing  # clang 16.0.6 as of Dec 2023
