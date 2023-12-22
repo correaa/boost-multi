@@ -101,22 +101,25 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	auto* arrp = new double[4UL * 4UL];  // NOLINT(cppcoreguidelines-owning-memory)
-	arrp[0]    = 0.0;
-	arrp[1]    = 1.0;
-	arrp[2]    = 2.0;
-	arrp[3]    = 3.0;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	arrp[4]    = 5.0;
-	arrp[5]    = 6.0;
-	arrp[6]    = 7.0;
-	arrp[7]    = 8.0;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	arrp[8]    = 10.0;
-	arrp[9]    = 11.0;
-	arrp[10]   = 12.0;
-	arrp[11]   = 13.0;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	arrp[12]   = 15.0;
-	arrp[13]   = 16.0;
-	arrp[14]   = 17.0;
-	arrp[15]   = 18.0;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+	// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	arrp[0]  = 0.0;
+	arrp[1]  = 1.0;
+	arrp[2]  = 2.0;
+	arrp[3]  = 3.0;
+	arrp[4]  = 5.0;
+	arrp[5]  = 6.0;
+	arrp[6]  = 7.0;
+	arrp[7]  = 8.0;
+	arrp[8]  = 10.0;
+	arrp[9]  = 11.0;
+	arrp[10] = 12.0;
+	arrp[11] = 13.0;
+	arrp[12] = 15.0;
+	arrp[13] = 16.0;
+	arrp[14] = 17.0;
+	arrp[15] = 18.0;
+	// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	{
 		multi::array_ref<double, 2> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
@@ -171,8 +174,8 @@ BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
 		{{{0.0, 1.0, 2.0, 3.0, 4.0}},
 		 {{5.0, 6.0, 7.0, 8.0, 9.0}},
 		 {{10.0, 11.0, 12.0, 13.0, 14.0}},
-		 {{15.0, 16.0, 17.0, 18.0, 19.0}}}
-                                                                                                   };
+		 {{15.0, 16.0, 17.0, 18.0, 19.0}}},
+	};
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
 	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
@@ -180,13 +183,13 @@ BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
+	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
 	double(&&arr)[4][5] = {
-  // NOLINT(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
 		{ 0.0,  1.0,  2.0,  3.0,  4.0},
 		{ 5.0,  6.0,  7.0,  8.0,  9.0},
 		{10.0, 11.0, 12.0, 13.0, 14.0},
-		{15.0, 16.0, 17.0, 18.0, 19.0}
-                                                                                                   };
+		{15.0, 16.0, 17.0, 18.0, 19.0},
+	};
 
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): special type
 	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
@@ -492,10 +495,10 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	std::string const dc3D[4][2][3] = {
-		{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{{"C0a", "C0b", "C0c"}, {"C1a", "C1b", "C1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{{"D0a", "D0b", "D0c"}, {"D1a", "D1b", "D1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}}, // std::string NOLINT(fuchsia-default-arguments-calls)
+		{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}}, // std::string NOLINT(fuchsia-default-arguments-calls)
+		{{"C0a", "C0b", "C0c"}, {"C1a", "C1b", "C1c"}}, // std::string NOLINT(fuchsia-default-arguments-calls)
+		{{"D0a", "D0b", "D0c"}, {"D1a", "D1b", "D1c"}}, // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
 	multi::array_cref<std::string, 3> cref(&dc3D[0][0][0], {4, 2, 3});
 	BOOST_REQUIRE( num_elements(cref) == 24 and cref[2][1][1] == "C1b" );
@@ -768,7 +771,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 }
 
 BOOST_AUTO_TEST_CASE(diagonal) {
-	// NOLINTNEXTLINT(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
+	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
 	double(&&arr)[4][3] = {
 		{ 0.0,  1.0,  2.0},
 		{ 5.0,  1.0,  7.0},
