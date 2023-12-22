@@ -138,7 +138,7 @@ deb:
       - build/multi_all.deb
   needs: ["g++", "clang++"]
 
-clang++ libc++:  # debian-stable: clang 14 as of Dec 2023
+clang++-testing libc++:  # debian-testing: clang 14 as of Dec 2023
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
@@ -151,8 +151,7 @@ clang++ libc++:  # debian-stable: clang 14 as of Dec 2023
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_DEBUG=1 -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
-    - cmake --build . --target main.cpp.x
-    - test/main.cpp.x
+    - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
