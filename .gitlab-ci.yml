@@ -72,9 +72,9 @@ g++ cppcheck cpplint:  # debian-stable: gcc 12 as of Dec 2023
 #     - ctest -j 2 --output-on-failure
 #   needs: ["g++"]
 
-g++-latest sanitizer:
+g++-testing sanitizer:
   stage: build
-  image: debian:latest
+  image: debian:testing
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -98,7 +98,7 @@ g++-7:
     - ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
 
-g++-latest c++20:  # debian-latest: default is gcc 12
+g++-testing c++20:
   stage: build
   image: debian:testing
   script:
@@ -109,7 +109,7 @@ g++-latest c++20:  # debian-latest: default is gcc 12
     - ctest --output-on-failure
   needs: ["g++"]
 
-g++-testing c++23:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
+g++-unstable c++23:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
   image: debian:testing
   script:
@@ -118,7 +118,7 @@ g++-testing c++23:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["g++-latest c++20"]
+  needs: ["g++-testing c++20"]
 
 clang++:
   stage: build
@@ -148,9 +148,9 @@ deb:
       - build/multi_all.deb
   needs: ["g++", "clang++"]
 
-clang++-latest libc++:  # debian-testing: clang 14 as of Dec 2023
+clang++-testing libc++:
   stage: build
-  image: debian:latest
+  image: debian:testing  # clang 16.0.6 as of Dec 2023
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
     - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
@@ -166,9 +166,9 @@ clang++-latest libc++:  # debian-testing: clang 14 as of Dec 2023
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-latest tidy:
+clang++-testing tidy:
   stage: build
-  image: debian:latest  # clang 14.0.6 as of Dec 2023
+  image: debian:testing  # clang 16.0.6 as of Dec 2023
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -178,9 +178,9 @@ clang++-latest tidy:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-latest sanitizer:
+clang++-testing sanitizer:
   stage: build
-  image: debian:latest  # clang 14.0.6 as of Dec 2023
+  image: debian:latest   # clang 16.0.6 as of Dec 2023
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libclang-rt-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -191,9 +191,9 @@ clang++-latest sanitizer:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-latest c++20:
+clang++-testing c++20:
   stage: build
-  image: debian:latest  # clang 14.0.6 as of Dec 2023
+  image: debian:latest  # clang 16.0.6 as of Dec 2023
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -203,9 +203,9 @@ clang++-latest c++20:
     - ctest --output-on-failure
   needs: ["clang++"]
 
-clang++-17-testing libc++ c++23:
+clang++-17-unstable libc++ c++23:
   stage: build
-  image: debian:testing  $ clang 16.0.6 as of Dec 2023
+  image: debian:unstable  $ clang 16.0.6 as of Dec 2023
   script:  # clang 17 doesn't work with gcc 13 libstd
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang clang-17 cmake make libblas-dev libc++-17-dev libc++abi-17-dev libfftw3-dev pkg-config tar wget
     - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
@@ -221,18 +221,18 @@ clang++-17-testing libc++ c++23:
     - test/main.cpp.x
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["clang++-latest libc++", "clang++-latest c++20"]
+  needs: ["clang++-testing libc++", "clang++-testing c++20"]
 
 clang++-oldoldstable:
   stage: build
   image: debian:oldoldstable  # clang 7.0.1 as of Dec 2023
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-7 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - mkdir build && cd build
-    - clang++-7 --version
-    - CXX=clang++-7 CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release
+    - clang++ --version
+    - CXX=clang++ CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
