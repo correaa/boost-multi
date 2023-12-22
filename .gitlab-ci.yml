@@ -49,17 +49,29 @@ coverage:
         path: build/coverage.xml
   needs: ["g++"]
 
-g++ cppcheck:
+g++ cppcheck cpplint:
   stage: build
-  image: debian:stable
+  image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
+
+# g++ cpplint:
+#   stage: build
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
+#     - mkdir build && cd build
+#     - g++ --version
+#     - cpplint --version
+#     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#   needs: ["g++"]
 
 g++ sanitizer:
   stage: build
@@ -167,18 +179,6 @@ clang++ tidy:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-g++ cpplint:
-  stage: build
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
-    - mkdir build && cd build
-    - g++ --version
-    - cpplint --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-  needs: ["g++"]
-
 clang++-latest sanitizer:  # debian-latest: clang 14 as of Dec 2023
   stage: build
   image: debian:latest
@@ -222,7 +222,7 @@ clang++-17 libc++ c++23:
     - test/main.cpp.x
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["clang++ libc++", "clang++-testing c++20"]
+  needs: ["clang++-latest libc++", "clang++-testing c++20"]
 
 clang++-7:  # debian:olooldstable clang++-8
   stage: build
