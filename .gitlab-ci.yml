@@ -141,7 +141,7 @@ deb:
 clang++ libc++:  # debian-stable: clang 14 as of Dec 2023
   stage: build
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
     - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
@@ -168,22 +168,21 @@ clang++ tidy:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++ cpplint:
+g++ cpplint:
   stage: build
-  image: debian:stable
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
-    - clang++ --version
+    - g++ --version
     - cpplint --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-  needs: ["clang++"]
+  needs: ["g++"]
 
-clang++ sanitizer:
+clang++-latest sanitizer:
   stage: build
-  image: debian:testing
+  image: debian:latest
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libclang-rt-dev libfftw3-dev pkg-config
     - mkdir build && cd build
