@@ -73,9 +73,9 @@ g++ cppcheck cpplint:
 #     - ctest -j 2 --output-on-failure
 #   needs: ["g++"]
 
-g++ sanitizer:
+g++-latest sanitizer:
   stage: build
-  image: debian:stable
+  image: debian:latest
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -123,7 +123,6 @@ g++-13 c++23:
 
 clang++:
   stage: build
-  image: debian:stable
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -150,8 +149,9 @@ deb:
       - build/multi_all.deb
   needs: ["g++", "clang++"]
 
-clang++-testing libc++:  # debian-testing: clang 14 as of Dec 2023
+clang++-latest libc++:  # debian-testing: clang 14 as of Dec 2023
   stage: build
+  image: debian:latest
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
     - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
