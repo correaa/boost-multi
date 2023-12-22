@@ -138,16 +138,22 @@ deb:
       - build/multi_all.deb
   needs: ["g++", "clang++"]
 
-clang++ libc++:  # clang 14 as of Dec 2023
+clang++ libc++:  # debian-stable: clang 14 as of Dec 2023
   stage: build
-  image: debian:stable
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config
+    - wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz --quiet
+    - tar -xf boost_1_84_0.tar.gz 
+    - cd boost_1_84_0
+    - ./bootstrap.sh --with-toolset=clang
+    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
+    - cd ..
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_DEBUG=1 -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
     - cmake --build . --target main.cpp.x
     - test/main.cpp.x
+    - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
 clang++ tidy:
@@ -218,7 +224,7 @@ clang++-17 libc++ c++23:
     - test/main.cpp.x
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["clang++-testing c++20"]
+  needs: ["clang++ libc++"]
 
 clang++-7:
   stage: build
