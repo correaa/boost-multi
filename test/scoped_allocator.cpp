@@ -87,16 +87,25 @@ class allocator2 {
 template<class T, class U>
 auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept { return not(self == other); }
 
-#if not defined(__clang__) or not defined(__apple_build_version__)
 BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 	std::int32_t heap1 = 0;
 	std::int64_t heap2 = 0;
 
 	{
 		using InnerCont = std::vector<int, allocator2<int>>;
-		using OuterCont = std::vector<InnerCont, std::scoped_allocator_adaptor<allocator1<InnerCont>, allocator2<int>>>;
+		using OuterCont =
+			std::vector<
+				InnerCont,
+				std::scoped_allocator_adaptor<
+					allocator1<InnerCont>,
+					allocator2<int>
+				>
+			>
+		;
 
-		OuterCont cont({&heap1, &heap2});  // gives ambiguous construction in apple clang 14
+		// OuterCont cont({&heap1, &heap2});  // gives ambiguous construction in libc++
+		OuterCont cont({&heap1, allocator2<int>{&heap2}});
+
 		cont.resize(2);
 
 		cont.resize(10);
@@ -108,6 +117,7 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 		BOOST_TEST( heap1 == 1  );
 		BOOST_TEST( heap2 == 1L );
 	}
+
 	BOOST_TEST( heap1 == 0 );
 	BOOST_TEST( heap2 == 0 );
 }
@@ -120,7 +130,8 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
 	using OuterCont = multi::array<InnerCont, 2, std::scoped_allocator_adaptor<allocator1<InnerCont>, allocator2<int>>>;
 
 	{
-		OuterCont cont({3, 4}, {&heap1, &heap2});  // gives ambiguous construction in apple clang 14
+		// OuterCont cont({3, 4}, {&heap1, &heap2});  // gives ambiguous construction in libc++
+		OuterCont cont({3, 4}, {&heap1,  allocator2<int>{&heap2}});  // gives ambiguous construction in libc++
 
 		cont[1][2].resize(10);
 		cont[1][2].resize(100);
@@ -139,7 +150,8 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector_auto) {
 	using OuterCont = multi::array<InnerCont, 2, std::scoped_allocator_adaptor<allocator1<>, allocator2<>>>;
 
 	{
-		OuterCont cont({3, 4}, {&heap1, &heap2});  // gives ambiguous construction in apple clang 14
+		// OuterCont cont({3, 4}, {&heap1, &heap2});  // gives ambiguous construction in libc++
+		OuterCont cont({3, 4}, {&heap1, allocator2<>{&heap2}});
 
 		cont[1][2].resize(10);
 		cont[1][2].resize(100);
@@ -149,4 +161,3 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector_auto) {
 		BOOST_TEST( heap2 == 1L );
 	}
 }
-#endif

@@ -108,16 +108,26 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 
 #if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
 BOOST_AUTO_TEST_CASE(pmr) {
-	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
+	std::array<char, 13> buffer = {{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Aarr({2, 2}, 'a', &pool);
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Barr({3, 2}, 'b', &pool);
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Aarr({2, 2}, 'x', &pool);
+	Aarr[0][0] = 'x'; Aarr[0][1] = 'y';
+	Aarr[1][0] = 'z'; Aarr[1][1] = '&';
 
-	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Barr({3, 2}, 'o', &pool);
 
-	BOOST_REQUIRE(Aarr[0][0] == 'a');
-	BOOST_REQUIRE(Barr[0][0] == 'b');
+	BOOST_REQUIRE(( buffer != std::array<char, 13>{{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}} ));
+
+#if defined(__GLIBCXX__)
+	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'x', 'y', 'z', '&', 'o', 'o', 'o', 'o', 'o', 'o', 'A', 'B', 'C'}} ));
+#endif
+#if defined(_LIBCPP_VERSION)
+	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'0', '1', '2', 'o', 'o', 'o', 'o', 'o', 'o', 'x', 'y', 'z', '&'}} ));
+#endif
+
+	BOOST_REQUIRE(Aarr[0][0] == 'x');
+	BOOST_REQUIRE(Barr[0][0] == 'o');
 }
 
 BOOST_AUTO_TEST_CASE(pmr2) {
@@ -127,14 +137,19 @@ BOOST_AUTO_TEST_CASE(pmr2) {
 	multi::pmr::array<char, 2> Aarr({2, 2}, 'a', &pool);
 	multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
 
+#if defined(__GLIBCXX__)
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
+#endif
+#if defined(_LIBCPP_VERSION)
+	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'X', 'X', 'X', 'b', 'b', 'b', 'b', 'b', 'b', 'a', 'a', 'a', 'a'}} ));
+#endif
 
 	BOOST_REQUIRE(Aarr[0][0] == 'a');
 	BOOST_REQUIRE(Barr[0][0] == 'b');
 }
 
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
-	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  999.9, 999.9, 999.9, 999.9}};
+	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  996.0, 997.0, 998.0, 999.0}};
 	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
 
 	multi::pmr::array<double, 2> Aarr({2, 2}, &pool);
@@ -142,7 +157,12 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	BOOST_TEST( buffer[0] == 4.0 );
 	BOOST_TEST( buffer[1] == 5.0 );
 
+#if defined(__GLIBCXX__)
 	BOOST_REQUIRE(Aarr[0][0] == 4.0);
+#endif
+#if defined(_LIBCPP_VERSION)
+	BOOST_REQUIRE(Aarr[0][0] == 996.0);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(static_allocator) {

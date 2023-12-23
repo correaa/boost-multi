@@ -863,16 +863,17 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reindexed(index first, Indexes... idxs)&& -> subarray {
 		return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
+
  private:
 	constexpr auto taked_aux(difference_type n) const {
 		assert( n <= this->size() );
-		typename types::layout_t const new_layout{
+		typename types::layout_t const new_layout(
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
 			this->stride()*n
-		};
-		return subarray{new_layout, this->base_};
+		);
+		return subarray(new_layout, this->base_);
 	}
 
  public:
@@ -889,7 +890,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 			this->layout().offset(),
 			this->stride()*(this->size() - n)
 		};
-		return subarray{new_layout, this->base_ + n*this->layout().stride() - this->layout().offset()};
+		return subarray(new_layout, this->base_ + n*this->layout().stride() - this->layout().offset());
 	}
 
  public:
@@ -1405,9 +1406,21 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare(*this, other);}
 	constexpr auto operator> (subarray const& other) const& -> bool {return other < *this;}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>  // TODO(correaa) should it be rebind<T2 const>?
+	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>  // TODO(correaa) should it be rebind<T2 const>?
+	// constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
+	// 	#if not defined(H5_USE_110_API)  // TODO(correaa) workaround for qmc!! remove as soon as possible
+	// 	return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
+	// 	#else
+	// 	P2 p2;
+	// 	auto b = this->base();
+	// 	std::memcpy(std::addressof(p2), std::addressof(b), sizeof(p2));
+	// 	return subarray<T2, D, P2>(this->layout(), p2);
+	// 	#endif
+	// }
+
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
-		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));  // TODO(correaa) might violate constness
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
