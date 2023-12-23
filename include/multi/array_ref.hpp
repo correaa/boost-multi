@@ -1406,16 +1406,21 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare(*this, other);}
 	constexpr auto operator> (subarray const& other) const& -> bool {return other < *this;}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>  // TODO(correaa) should it be rebind<T2 const>?
+	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>  // TODO(correaa) should it be rebind<T2 const>?
+	// constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
+	// 	#if not defined(H5_USE_110_API)  // TODO(correaa) workaround for qmc!! remove as soon as possible
+	// 	return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
+	// 	#else
+	// 	P2 p2;
+	// 	auto b = this->base();
+	// 	std::memcpy(std::addressof(p2), std::addressof(b), sizeof(p2));
+	// 	return subarray<T2, D, P2>(this->layout(), p2);
+	// 	#endif
+	// }
+
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
-		#if not defined(H5_USE_110_API)  // TODO(correaa) workaround for qmc!! remove as soon as possible
-		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
-		#else
-		P2 p2;
-		auto b = this->base();
-		std::memcpy(std::addressof(p2), std::addressof(b), sizeof(p2));
-		return subarray<T2, D, P2>(this->layout(), p2);
-		#endif
+		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));  // TODO(correaa) might violate constness
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
