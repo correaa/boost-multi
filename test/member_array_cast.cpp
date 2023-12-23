@@ -144,7 +144,6 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 
 #if not defined(__circle_build__)
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
-
     struct record {
         int id;
         double data;
