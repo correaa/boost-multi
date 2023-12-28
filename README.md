@@ -776,39 +776,39 @@ The library provides a basic form of broadcasting with certain limitations.
 Here is an example of an algorithm designed for two 2D arrays to obtain the row-by-row inner product.
 
 ```cpp
-    auto row_by_row_dot = [](auto const& A2D, auto const& B2D, auto& results) {
-        std::transform(A2D.begin(), A2D.end(), B2D.begin(), results.begin(),
-            [](auto const& Arow, auto const& Brow) {return std::inner_product(Arow.begin(), Arow.end(), Brow.begin(), 0);}
-        );
-    };
+auto row_by_row_dot = [](auto const& A2D, auto const& B2D, auto& results) {
+	std::transform(A2D.begin(), A2D.end(), B2D.begin(), results.begin(),
+		[](auto const& Arow, auto const& Brow) {return std::inner_product(Arow.begin(), Arow.end(), Brow.begin(), 0);}
+	);
+};
 
-    auto A = multi::array<int, 2>{{ 0,  1}, { 2,  3}, { 4,  5}};
-    auto B = multi::array<int, 2>{{10, 11}, {12, 13}, {14, 15}};
+auto A = multi::array<int, 2>{{ 0,  1}, { 2,  3}, { 4,  5}};
+auto B = multi::array<int, 2>{{10, 11}, {12, 13}, {14, 15}};
 
-    auto dots = multi::array<int, 1>({A.size()});
+auto dots = multi::array<int, 1>({A.size()});
 
-    row_by_row_dot(A, B, dots);
+row_by_row_dot(A, B, dots);
 ```
 
 If, for some reason, we want to obtain the inner product against a _single_ right-hand vector instead of several (a single 1D array of two elements), we would need to (re)write the function (or copy the repeated vector into the 2D `B` array, which is not ideal.)
 Broadcasting can help reuse the same function without changes.
 
 ```cpp
-    multi::array<int, 1> b = {10, 11};
+multi::array<int, 1> b = {10, 11};
 
-    row_by_row_dot(A, b.broadcasted(), dots);
+row_by_row_dot(A, b.broadcasted(), dots);
 ```
 
 The alternative, not using broadcast, is to write a very similar function,
 
 ```cpp
-    auto row_fixed_dot = [](auto const& A2D, auto const& b1D, auto& results) {
-        std::transform(A2D.begin(), A2D.end(), results.begin(),
-            [&b1D](auto const& Arow) {return std::inner_product(Arow.begin(), Arow.end(), b1D.begin(), 0);}
-        );
-    };
+auto row_fixed_dot = [](auto const& A2D, auto const& b1D, auto& results) {
+	std::transform(A2D.begin(), A2D.end(), results.begin(),
+		[&b1D](auto const& Arow) {return std::inner_product(Arow.begin(), Arow.end(), b1D.begin(), 0);}
+	);
+};
 
-    row_fixed_dot(A, b, dots3);
+row_fixed_dot(A, b, dots3);
 ```
 (https://godbolt.org/z/9ndvfKqhc)
 
@@ -820,13 +820,15 @@ Second, these array views are strictly read-only and alias their element address
 For illustration purposes only, `fill` here is replaced by `copy`; problematic uses are highlighted:
 
 ```cpp
-    multi::array<double, 2> B({10, 2});
-    std::fill(B.begin(), B.end(), b);                                       // canonical way
-    std::copy_n(b.broadcasted().begin(), v.size(), v.end());                // equivalent, using broadcast
+multi::array<double, 2> B({10, 2});
+std::fill. (B.begin(), B.end(), b);                                       // canonical way
+std::fill_n(B.begin(), B.size(), b);                                      // canonical way
 
-    std::copy_n(b.broadcasted().begin(), b.broadcasted().size(), v.end());  // incorrect, undefined behavior, no useful size()
-    std::copy  (b.begin(), b.end(), v.begin());                             // incorrect, undefined behavior, non-terminating loop
-	B = b.broadcasted();                                                    // incorrect, undefined behavior
+std::copy_n(b.broadcasted().begin(), B.size(), B.begin());                // equivalent, using broadcast
+
+std::copy_n(b.broadcasted().begin(), b.broadcasted().size(), B.begin());  // incorrect, undefined behavior, no useful size()
+std::copy  (b.broadcasted().begin(), b.broadcasted().end(), B.begin());   // incorrect, undefined behavior, non-terminating loop (end is not reacheable)
+B = b.broadcasted();                                                      // incorrect, undefined behavior, B would be of infinite allocated size
 ```
 
 Unlike popular languages, broadcasting is not automatic in the library and is applied to the leading dimension only, one dimension at a time.
@@ -838,22 +840,22 @@ These algorithms need to be compatible with broadcasted views (e.g., no explicit
 As a final example, consider a function that computes the elements-by-element product of two 2D arrays,
 
 ```cpp
-    auto hadamard = [](auto const& A, auto const& B, auto&& C) {
-        auto const [is, js] = C.extensions();
-        for(auto i : is) for(auto j : js) C[i][j] = A[i][j]*B[i][j];
-    };
+auto hadamard = [](auto const& A, auto const& B, auto&& C) {
+	auto const [is, js] = C.extensions();
+	for(auto i : is) for(auto j : js) C[i][j] = A[i][j]*B[i][j];
+};
 ```
 
 As it is, this function can be reused to calculate the outer product of two 1D arrays:
 
 ```cpp
-    auto outer = [&]<typename T>(auto const& a, auto const& b, T&& C) {
-        return hadamard(~(a.broadcasted()), b.broadcasted(), std::forward<T>(C));
-    };
+auto outer = [&]<typename T>(auto const& a, auto const& b, T&& C) {
+	return hadamard(~(a.broadcasted()), b.broadcasted(), std::forward<T>(C));
+};
 ```
 (https://godbolt.org/z/5o95qGdKz)
 
-Note that the function acting on 2D arrays, doesn't use the undefined (infinite) sizes (second dimension of `A` and first dimension of `B`).
+Note that the function `hadamard`, acting on 2D arrays, doesn't use the undefined (infinite) sizes (second dimension of `A` and first dimension of `B`).
 
 ## Partially formed elements
 
