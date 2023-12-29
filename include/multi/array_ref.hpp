@@ -2309,10 +2309,11 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		return self.extension() != other.extension() || self.elements() != other.elements();
 	}
 
-	friend constexpr auto operator< (subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other);}
-	friend constexpr auto operator<=(subarray const& self, subarray const& other) -> bool {return lexicographical_compare(self, other) || self == other;}
-	friend constexpr auto operator> (subarray const& self, subarray const& other) -> bool {return lexicographical_compare(other, self);}
-	friend constexpr auto operator>=(subarray const& self, subarray const& other) -> bool {return lexicographical_compare(other, self) || self == other;}
+	friend constexpr auto operator<(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(self, other); }
+	friend constexpr auto operator>(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(other, self); }  // NOLINT(readability-suspicious-call-argument)
+
+	friend constexpr auto operator<=(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(self, other) || self == other; }
+	friend constexpr auto operator>=(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(other, self) || self == other; }
 
 	constexpr void swap(subarray&& other) && noexcept {
 		assert(this->extension() == other.extension());
@@ -2325,7 +2326,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
  private:
 	template<class A1, class A2>
-	 /*[[gnu::pure]]*/ static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {
+	static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {  // NOLINT(readability-suspicious-call-argument)
 		if(extension(self).first() > extension(other).first()) {return true ;}
 		if(extension(self).first() < extension(other).first()) {return false;}
 		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
