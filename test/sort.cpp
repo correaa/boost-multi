@@ -10,6 +10,23 @@
 
 namespace multi = boost::multi;
 
+BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
+	multi::array<int, 1> const tt = {1, 1, 1};
+	multi::array<int, 1> const uu = {2, 2, 2};
+
+	BOOST_REQUIRE(     tt <  uu   );
+	BOOST_REQUIRE( !  (tt >  uu)  );
+	BOOST_REQUIRE(     tt <= uu   );
+	BOOST_REQUIRE( !  (tt >= uu)  );
+	BOOST_REQUIRE( !  (tt == uu)  );
+	BOOST_REQUIRE(    (tt != uu)  );
+	BOOST_REQUIRE( not(uu <  tt)  );
+	BOOST_REQUIRE(    (uu >  tt)  );
+	BOOST_REQUIRE( !  (uu <= tt)  );
+	BOOST_REQUIRE(    (uu >= tt)  );
+
+}
+
 BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
 	std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( std::is_sorted(begin(vec), end(vec)) );
