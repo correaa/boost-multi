@@ -11,19 +11,19 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
-	multi::array<int, 1> t = {1, 1, 1};
-	multi::array<int, 1> u = {2, 2, 2};
+	multi::array<int, 1> const tt = {1, 1, 1};
+	multi::array<int, 1> const uu = {2, 2, 2};
 
-	BOOST_REQUIRE(     t <  u   );
-	BOOST_REQUIRE( !  (t >  u)  );
-	BOOST_REQUIRE(     t <= u   );
-	BOOST_REQUIRE( !  (t >= u)  );
-	BOOST_REQUIRE( !  (t == u)  );
-	BOOST_REQUIRE(    (t != u)  );
-	BOOST_REQUIRE( not(u <  t)  );
-	BOOST_REQUIRE(    (u >  t)  );
-	BOOST_REQUIRE( !  (u <= t)  );
-	BOOST_REQUIRE(    (u >= t)  );
+	BOOST_REQUIRE(     tt <  uu   );
+	BOOST_REQUIRE( !  (tt >  uu)  );
+	BOOST_REQUIRE(     tt <= uu   );
+	BOOST_REQUIRE( !  (tt >= uu)  );
+	BOOST_REQUIRE( !  (tt == uu)  );
+	BOOST_REQUIRE(    (tt != uu)  );
+	BOOST_REQUIRE( not(uu <  tt)  );
+	BOOST_REQUIRE(    (uu >  tt)  );
+	BOOST_REQUIRE( !  (uu <= tt)  );
+	BOOST_REQUIRE(    (uu >= tt)  );
 
 }
 
