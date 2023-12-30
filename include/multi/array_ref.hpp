@@ -1907,6 +1907,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		operator=(other);
 		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
+
 	constexpr auto operator=(subarray const& other)    & -> subarray& {
 		static_assert(std::is_copy_assignable_v<element_type>, "assignment requires element-wise assignment");  // TODO(correaa) : make sfinae friendly
 		if(this == std::addressof(other)) {return *this;}
@@ -1914,9 +1915,16 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		elements() = other.elements();
 		return *this;
 	}
+
 	constexpr auto operator=(subarray const& other) && -> subarray& {
 		if(this == std::addressof(other)) {return *this;}  // lints cert-oop54-cpp
 		operator=(other); return *this;
+	}
+
+	constexpr auto operator=(subarray const& other) const&& -> subarray const&& {  // this is needed to satify the std::indirectly_writable concept
+		if(this == std::addressof(other)) {return static_cast<subarray const&&>(*this);}  // lints cert-oop54-cpp
+		const_cast<subarray&&>(*this).operator=(other);
+		return static_cast<subarray const&&>(*this);
 	}
 
  private:
