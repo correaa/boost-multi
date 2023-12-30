@@ -1037,8 +1037,9 @@ Along with STL itself, the library tries to interact with other existing quality
 
 ### Ranges (C++20)
 
-[Standard ranges](https://en.cppreference.com/w/cpp/ranges) provides algorithms that omit the use of iterators when they are not necessary.
-In this example, for a specific array the first row with odd sum has their values replaced:
+[Standard ranges](https://en.cppreference.com/w/cpp/ranges) provides algorithms that omit the use of iterators when they are not necessary for the benefit of composition.
+
+In this example, we replace the values of the the first row for which the sum of the elements is odd:
 
 ```cpp
     static constexpr auto accumulate = [](auto const& R) {return std::ranges::fold_left(R, 0, std::plus<>{});};
@@ -1056,24 +1057,25 @@ In this example, for a specific array the first row with odd sum has their value
 ```
 [(live)](https://godbolt.org/z/cT9WGffM3)
 
-
-Together with the array constructors, the ranges library enable a functional programming style;
-this allows to work with immutable variables in many cases in place of mutable imperative code.
+Together with the array constructors, the ranges library enable a more functional programming style;
+this allows to work with immutable variables in many cases instead of mutable variables.
 
 ```cpp
     multi::array<double, 2> const A = {{...}};
     multi::array<double, 1> const V = {...};
 
     multi::array<double, 1> const R = std::views::zip_transform(std::plus<>{}, A[0], V);
+
 	// multi::array<double, 1> R(V.size());  // in the alternative imperative code, R is created...
     // for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...then mutated
 ```
 [(live)](https://godbolt.org/z/M84arKMnT)
 
 
-With the "pipe" (`|`) notation, this one-line expression will give the maximum value of the rows sums, [`std::ranges::max(arr | std::views::transform(accumulate))`](https://godbolt.org/z/hvqnsf4xb)
+The "pipe" (`|`) notation of standard ranges allow one-line expressions.
+In this example, the expression will yield the maximum value of the rows sums: [`std::ranges::max(arr | std::views::transform(accumulate))`](https://godbolt.org/z/hvqnsf4xb)
 
-Like in classic STL, range algorithms act in the first dimension by default, for example lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
+Like in classic STL, standard range algorithms acting on sequences operate in the first dimension by default, for example lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
 
 ```
 	auto A = multi::array<char, 2>{
@@ -1096,7 +1098,7 @@ Like in classic STL, range algorithms act in the first dimension by default, for
 	);
 ```
 
-To act on the second dimension (sort by columns), use `std::ranges::sort(~A)` (or ``std::ranges::sort(A.transposed())`).
+To operate on the second dimension (sort by columns), use `std::ranges::sort(~A)` (or ``std::ranges::sort(A.transposed())`).
 
 ### Polymorphic Memory Resources
 
