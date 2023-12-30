@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
@@ -38,6 +38,32 @@ BOOST_AUTO_TEST_CASE(sort_2D) {
 	std::ranges::sort(A);
 
 	BOOST_REQUIRE(  std::ranges::is_sorted(A));
+
+	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int *>>);
+}
+
+BOOST_AUTO_TEST_CASE(sort_strings) {
+	auto A = multi::array<char, 2>{
+		{'S', 'e', 'a', 'n', ' ', ' '},
+		{'A', 'l', 'e', 'x', ' ', ' '},
+		{'B', 'j', 'a', 'r', 'n', 'e'},
+	};
+	BOOST_REQUIRE(! std::ranges::is_sorted(A));
+
+	std::ranges::sort(A);
+
+	BOOST_REQUIRE(  std::ranges::is_sorted(A));
+
+	BOOST_REQUIRE((
+		A == multi::array<char, 2>{
+			{'A', 'l', 'e', 'x', ' ', ' '},
+			{'B', 'j', 'a', 'r', 'n', 'e' },
+			{'S', 'e', 'a', 'n', ' ', ' '},
+		}
+	));
+
+	std::ranges::sort(~A);
+	BOOST_REQUIRE(  std::ranges::is_sorted(~A));
 
 	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int *>>);
 }
