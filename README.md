@@ -1070,7 +1070,33 @@ this allows to work with immutable variables in many cases in place of mutable i
 ```
 [(live)](https://godbolt.org/z/M84arKMnT)
 
-Finally, using ranges, views and the pipe (`|`) notation, this one-line expression will give the maximum value of the rows sums, [`std::ranges::max(arr | std::views::transform(accumulate))`](https://godbolt.org/z/hvqnsf4xb)
+
+With the "pipe" (`|`) notation, this one-line expression will give the maximum value of the rows sums, [`std::ranges::max(arr | std::views::transform(accumulate))`](https://godbolt.org/z/hvqnsf4xb)
+
+Like classic STL algorithms act in the first dimension by default, for example lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
+
+```
+	auto A = multi::array<char, 2>{
+		{'S', 'e', 'a', 'n', ' ', ' '},
+		{'A', 'l', 'e', 'x', ' ', ' '},
+		{'B', 'j', 'a', 'r', 'n', 'e'},
+	};
+	assert(not std::ranges::is_sorted(A));
+
+	std::ranges::sort(A);
+
+	assert(    std::ranges::is_sorted(A));
+
+	assert(
+		A == multi::array<char, 2>{
+			{'A', 'l', 'e', 'x', ' ', ' '},
+			{'B', 'j', 'a', 'r', 'n', 'e' },
+			{'S', 'e', 'a', 'n', ' ', ' '},
+		}
+	);
+```
+
+To act on the second dimension (sort by columns), use `std::ranges::sort(~A)` (or ``std::ranges::sort(A.transposed())`).
 
 ### Polymorphic Memory Resources
 
