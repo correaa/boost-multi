@@ -28,6 +28,19 @@ BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
 }
 
 #if defined(__cpp_lib_ranges)
+BOOST_AUTO_TEST_CASE(sort_2D) {
+	multi::array<int, 2> A = {
+		{3, 3, 3},
+		{2, 2, 2},
+		{1, 1, 1},
+	};
+	BOOST_REQUIRE(! std::ranges::is_sorted(A));
+
+	std::ranges::sort(A);
+	
+	BOOST_REQUIRE(std::ranges::is_sorted(A));
+}
+
 BOOST_AUTO_TEST_CASE(sort_concept){
 	multi::array<int, 2> A = {
 		{3, 3, 3},
@@ -93,12 +106,14 @@ BOOST_AUTO_TEST_CASE(sort_concept){
 	//     >
 	// );
 
-	const_cast<
-		const std::iter_reference_t<boost::multi::array_iterator<int, 2, int *>> &&
-	>
-	(*A.begin()) =
-		std::forward<std::iter_rvalue_reference_t<multi::array_iterator<int, 2, int *> >>(*(A.begin() + 1))
-	;
+	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int *>>);
+
+	// const_cast<
+	//  const std::iter_reference_t<boost::multi::array_iterator<int, 2, int *>> &&
+	// >
+	// (*A.begin()) =
+	//  std::forward<std::iter_rvalue_reference_t<multi::array_iterator<int, 2, int *> >>(*(A.begin() + 1))
+	// ;
 }
 #endif
 
