@@ -24,7 +24,6 @@ BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
 	BOOST_REQUIRE(    (uu >  tt)  );
 	BOOST_REQUIRE( !  (uu <= tt)  );
 	BOOST_REQUIRE(    (uu >= tt)  );
-
 }
 
 #if defined(__cpp_lib_ranges)
@@ -37,83 +36,10 @@ BOOST_AUTO_TEST_CASE(sort_2D) {
 	BOOST_REQUIRE(! std::ranges::is_sorted(A));
 
 	std::ranges::sort(A);
-	
-	BOOST_REQUIRE(std::ranges::is_sorted(A));
-}
 
-BOOST_AUTO_TEST_CASE(sort_concept){
-	multi::array<int, 2> A = {
-		{3, 3, 3},
-		{2, 2, 2},
-		{1, 1, 1},
-	};
-
-	// assert(not std::is_sorted(A.begin(), A.end()));
-	// // assert(not std::ranges::is_sorted(A));
-
-	// static_assert(
-	//     std::totally_ordered_with<
-	//         boost::multi::array<int, 1> &,
-	//         boost::multi::array<int, 1> &
-	//     >
-	// );
-
-	// static_assert(
-	//     std::is_invocable_v<
-	//         std::ranges::less &,
-	//         boost::multi::array<int, 1> &,
-	//         boost::multi::array<int, 1> &
-	//     >
-	// );
-
-	// static_assert(
-	//     std::invocable<
-	//         std::ranges::less &,
-	//         boost::multi::array<int, 1> &,
-	//         boost::multi::array<int, 1> &
-	//     >
-	// );
-
-	// static_assert(
-	//     std::regular_invocable<
-	//         std::ranges::less &,
-	//         boost::multi::array<int, 1> &,
-	//         boost::multi::array<int, 1> &
-	//     >
-	// );
-
-	// static_assert(
-	//     std::predicate<
-	//         std::ranges::less &,
-	//         boost::multi::array<int, 1> &,
-	//         boost::multi::array<int, 1> &
-	//     >
-	// );
-
-	// static_assert(
-	//     std::relation<
-	//         std::ranges::less &, 
-	//         boost::multi::array<int, 1> &, 
-	//         boost::multi::array<int, 1> &
-	//     >
-	// );
-
-	// static_assert( 
-	//     std::strict_weak_order<
-	//         std::ranges::less &, 
-	//         std::iter_value_t<multi::array<int, 2>::const_iterator> &, 
-	//         std::iter_value_t<multi::array<int, 2>::const_iterator> &
-	//     >
-	// );
+	BOOST_REQUIRE(  std::ranges::is_sorted(A));
 
 	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int *>>);
-
-	// const_cast<
-	//  const std::iter_reference_t<boost::multi::array_iterator<int, 2, int *>> &&
-	// >
-	// (*A.begin()) =
-	//  std::forward<std::iter_rvalue_reference_t<multi::array_iterator<int, 2, int *> >>(*(A.begin() + 1))
-	// ;
 }
 #endif
 
