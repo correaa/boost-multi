@@ -5,7 +5,7 @@
 
 > **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal.**
 
-_© Alfredo A. Correa, 2018-2023_
+_© Alfredo A. Correa, 2018-2024_
 
 _Multi_ is a modern C++ library that provides access and manipulation of data in multidimensional arrays, for both CPU and GPU memory.
 
@@ -1073,7 +1073,7 @@ this allows to work with immutable variables in many cases in place of mutable i
 
 With the "pipe" (`|`) notation, this one-line expression will give the maximum value of the rows sums, [`std::ranges::max(arr | std::views::transform(accumulate))`](https://godbolt.org/z/hvqnsf4xb)
 
-Like classic STL algorithms act in the first dimension by default, for example lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
+Like in classic STL, range algorithms act in the first dimension by default, for example lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
 
 ```
 	auto A = multi::array<char, 2>{
@@ -1090,7 +1090,7 @@ Like classic STL algorithms act in the first dimension by default, for example l
 	assert(
 		A == multi::array<char, 2>{
 			{'A', 'l', 'e', 'x', ' ', ' '},
-			{'B', 'j', 'a', 'r', 'n', 'e' },
+			{'B', 'j', 'a', 'r', 'n', 'e'},
 			{'S', 'e', 'a', 'n', ' ', ' '},
 		}
 	);
