@@ -153,7 +153,7 @@ clang++ libc++:
   image: debian:stable
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
-    - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --quiet
+    - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
     - ./bootstrap.sh --with-toolset=clang
@@ -171,11 +171,11 @@ clang++-latest libc++:
   image: debian:latest
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
-    - wget https://downloads.sourceforge.net/project/boost/boost/1.64.0/boost_1_53_0.tar.gz --quiet
+    - wget https://downloads.sourceforge.net/project/boost/boost/1.53.0/boost_1_53_0.tar.gz --no-verbose
     - tar -xf boost_1_53_0.tar.gz 
     - cd boost_1_53_0
     - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags=-stdlib=libc++ cxxflags=-D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
+    - ./b2 toolset=clang cxxflags=-stdlib=libc++ cxxflags=-D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install -j4 # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
     - clang++ --version
