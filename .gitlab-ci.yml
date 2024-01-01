@@ -171,9 +171,9 @@ clang++-latest libc++:
   image: debian:latest
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
-    - wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose
-    - tar -xf boost_1_72_0.tar.gz 
-    - cd boost_1_72_0
+    - wget https://downloads.sourceforge.net/project/boost/boost/1.71.0/boost_1_71_0.tar.gz --no-verbose. # 1.70 doesn't install boost timer well
+    - tar -xf boost_1_71_0.tar.gz 
+    - cd boost_1_71_0
     - ./bootstrap.sh --with-toolset=clang
     - ./b2 toolset=clang cxxflags=-stdlib=libc++ cxxflags=-D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4 # libc++ only works with boost test compiled with libc++
     - cd ..
