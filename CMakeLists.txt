@@ -89,9 +89,9 @@ install(DIRECTORY "include/" TYPE INCLUDE)
 add_subdirectory(test)
 
 if(MULTI_BUILD_TESTS)
-  find_package(Boost 1.53 COMPONENTS unit_test_framework)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
+  find_package(Boost 1.65 COMPONENTS unit_test_framework)  # 1.65 needed for BOOST_TEST_GLOBAL_FIXTURE, you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
   if(NOT Boost_FOUND)
-    message(WARNING "Cannot find Boost 1.67+, Multi library will not be fully tested.")
+    message(WARNING "Cannot find Boost 1.65+, Multi library will not be fully tested.")
   else()
     enable_testing()
 
