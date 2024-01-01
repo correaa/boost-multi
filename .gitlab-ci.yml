@@ -157,7 +157,7 @@ clang++ libc++:
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
     - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
+    - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer -j4 install  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
     - clang++ --version
@@ -175,7 +175,7 @@ clang++-latest libc++:
     - tar -xf boost_1_64_0.tar.gz 
     - cd boost_1_64_0
     - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags="-stdlib=libc++ -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
+    - ./b2 toolset=clang cxxflags="-stdlib=libc++ -D_LIBCPP_ENABLE_CXX14_REMOVED_FEATURES=1" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer install  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
     - clang++ --version
