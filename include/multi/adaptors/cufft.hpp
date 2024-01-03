@@ -15,8 +15,10 @@
 
 // #include "../complex.hpp"
 
+#if !defined(__HIP_PLATFORM_AMD__)
 #include <cufft.h>
 #include <cufftXt.h>
+#endif
 
 namespace boost{
 namespace multi{
@@ -45,7 +47,9 @@ inline void __cufftSafeCall(cufftResult err, const char *file, const int line) {
 		std::cerr <<"CUFFT error in file "<< __FILE__ <<", line "<< __LINE__ <<"\nerror "<< err <<": "<<_cudaGetErrorEnum(err)<<"\n";
 		//fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", __FILE__, __LINE__, err, 
         //                        _cudaGetErrorEnum(err));
-		cudaDeviceReset(); assert(0);
+		cudaError_t r = cudaDeviceReset();
+		if(r != cudaSuccess) {assert(0);}
+		assert(0);
 	}
 }
 
@@ -61,6 +65,7 @@ class sign {
 constexpr sign forward{CUFFT_FORWARD};
 constexpr sign none{0};
 constexpr sign backward{CUFFT_INVERSE};
+// constexpr sign backward{CUFFT_BACKWARD};
 
 static_assert(forward != none and none != backward and backward != forward, "!");
 
@@ -418,7 +423,7 @@ constexpr auto array_tail(Array const& t)
 template<typename In,  std::size_t D = In::dimensionality>
 NODISCARD("when passing a const argument")
 auto dft(std::array<bool, D> which, In const& i, int sign)->std::decay_t<decltype(
-dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign))>{return 
+dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign))>{return
 dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign);}
 
 template<typename In,  std::size_t D = In::dimensionality>
