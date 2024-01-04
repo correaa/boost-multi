@@ -15,7 +15,9 @@
 
 // #include "../complex.hpp"
 
-#if !defined(__HIP_PLATFORM_AMD__)
+#include<thrust/memory.h>  // for raw_pointer_cast
+
+#if not defined(__HIP_ROCclr__)
 #include <cufft.h>
 #include <cufftXt.h>
 #endif
@@ -28,15 +30,23 @@ namespace cufft{
 static char const* _cudaGetErrorEnum(cufftResult error) {
     switch (error) {
         case CUFFT_SUCCESS:        return "CUFFT_SUCCESS";
-        case CUFFT_INVALID_PLAN:   return "CUFFT_INVALID_PLAN";
+
         case CUFFT_ALLOC_FAILED:   return "CUFFT_ALLOC_FAILED";
+		case CUFFT_EXEC_FAILED:    return "CUFFT_EXEC_FAILED";
+		case CUFFT_INCOMPLETE_PARAMETER_LIST: return "CUFFT_INCOMPLETE_PARAMETER_LIST";
+		case CUFFT_INTERNAL_ERROR: return "CUFFT_INTERNAL_ERROR";
+		case CUFFT_INVALID_DEVICE: return "CUFFT_INVALID_DEVICE";
+        case CUFFT_INVALID_PLAN:   return "CUFFT_INVALID_PLAN";
+		case CUFFT_INVALID_SIZE:   return "CUFFT_INVALID_SIZE";
 		case CUFFT_INVALID_TYPE:   return "CUFFT_INVALID_TYPE";
 		case CUFFT_INVALID_VALUE:  return "CUFFT_INVALID_VALUE";
-		case CUFFT_INTERNAL_ERROR: return "CUFFT_INTERNAL_ERROR";
-		case CUFFT_EXEC_FAILED:    return "CUFFT_EXEC_FAILED";
+		case CUFFT_NO_WORKSPACE:   return "CUFFT_NO_WORKSPACE";
+		case CUFFT_NOT_IMPLEMENTED:return "CUFFT_NOT_IMPLEMENTED";
+		case CUFFT_NOT_SUPPORTED : return "CUFFT_NOT_SUPPORTED";
+		case CUFFT_PARSE_ERROR:    return "CUFFT_PARSE_ERROR";
         case CUFFT_SETUP_FAILED:   return "CUFFT_SETUP_FAILED";
-		case CUFFT_INVALID_SIZE:   return "CUFFT_INVALID_SIZE";
 		case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
+		// case CUFFT_LICENSE_ERROR:  return "CUFFT_LICENSE_ERROR";
     }
     return "<unknown>";
 }
@@ -47,8 +57,7 @@ inline void __cufftSafeCall(cufftResult err, const char *file, const int line) {
 		std::cerr <<"CUFFT error in file "<< __FILE__ <<", line "<< __LINE__ <<"\nerror "<< err <<": "<<_cudaGetErrorEnum(err)<<"\n";
 		//fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", __FILE__, __LINE__, err, 
         //                        _cudaGetErrorEnum(err));
-		cudaError_t r = cudaDeviceReset();
-		if(r != cudaSuccess) {assert(0);}
+		cudaDeviceReset()==cudaSuccess?void():assert(0);
 		assert(0);
 	}
 }

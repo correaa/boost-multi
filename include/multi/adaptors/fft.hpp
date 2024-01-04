@@ -1,10 +1,15 @@
-// Copyright 2020-2023 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_FFT_HPP
 #define MULTI_ADAPTORS_FFT_HPP
 
 #include "../adaptors/fftw.hpp"
+
+#if not defined(__HIP_ROCclr__)
 #include "../adaptors/cufft.hpp"
+#else
+#include "../adaptors/hipfft.hpp"
+#endif
 
 namespace boost{
 namespace multi{
