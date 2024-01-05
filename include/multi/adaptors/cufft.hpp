@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2023 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_CUFFTW_HPP
 #define MULTI_ADAPTORS_CUFFTW_HPP
@@ -218,7 +217,7 @@ public:
 					/*size_t **/          &workSize_
 				));
 				cufftSafeCall(cufftGetSize(h_, &workSize_));
-				workArea_ = raw_pointer_cast(alloc_.allocate(workSize_));
+				workArea_ = ::thrust::raw_pointer_cast(alloc_.allocate(workSize_));
 				// auto s = cudaMalloc(&workArea_, workSize_);
 				// if(s != cudaSuccess) {throw std::runtime_error{"L212"};}
 				cufftSafeCall(cufftSetWorkArea(h_, workArea_));
@@ -262,7 +261,7 @@ public:
 					/*size_t **/          &workSize_
 				));
 				cufftSafeCall(cufftGetSize(h_, &workSize_));
-				workArea_ = raw_pointer_cast(alloc_.allocate(workSize_));
+				workArea_ = ::thrust::raw_pointer_cast(alloc_.allocate(workSize_));
 				cufftSafeCall(cufftSetWorkArea(h_, workArea_));
 			}
 			if(not h_) {throw std::runtime_error{"cufftPlanMany null"};}
