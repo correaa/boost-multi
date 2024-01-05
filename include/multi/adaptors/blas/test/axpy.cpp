@@ -14,7 +14,7 @@
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-using complex = multi::complex<double>;
+using complex = std::complex<double>;
 
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_real) {
 	multi::array<double, 2> arr = {
