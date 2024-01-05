@@ -5,19 +5,19 @@
 
 #include "../adaptors/fftw.hpp"
 
-#if not defined(__HIP_ROCclr__)
+#if defined(__NVCC__)
 #include "../adaptors/cufft.hpp"
-#else
+#else if defined(__HIP_PLATFORM_AMD__) or defined(__HIP_PLATFORM_NVIDIA__)
 #include "../adaptors/hipfft.hpp"
 #endif
 
-namespace boost{
-namespace multi{
-namespace fft{
+namespace boost {
+namespace multi {
+namespace fft {
 
-	static constexpr int forward = fftw::forward;//FFTW_FORWARD;
+	static constexpr int forward = fftw::forward;  // FFTW_FORWARD;
 	static constexpr int none = 0;
-	static constexpr int backward = fftw::backward;//FFTW_BACKWARD;
+	static constexpr int backward = fftw::backward;  // FFTW_BACKWARD;
 
 	static_assert( forward != none and none != backward and backward != forward, "!");
 
@@ -38,7 +38,7 @@ namespace fft{
 
 }}}
 
-#if not __INCLUDE_LEVEL__
+#if not __INCLUDE_LEVEL__  // TODO(correaa) remove this in-header test
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFT adaptor"
 #define BOOST_TEST_DYN_LINK
