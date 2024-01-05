@@ -1,18 +1,10 @@
-// Copyright 2020-2023 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_HIPFFT_HPP
 #define MULTI_ADAPTORS_HIPFFT_HPP
 
 #include <hipfft/hipfft.h>
 #include <hipfft/hipfftXt.h>
-
-
-// #define CONCAT_(A, B) A ## B
-// #define CONCAT(A, B) CONCAT_(A, B)
-
-// #define kufft(A) CONCAT(cufft, Result)
-
-// hipdefine(fftResult) -> #define cufftResult hipfftResult
 
 
 using cudaError_t = hipError_t;
