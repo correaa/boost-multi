@@ -327,10 +327,12 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using difference_type = typename layout_t<D>::difference_type;
 	using element = Element;
 	using element_ptr = ElementPtr;
+	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using value_type = typename subarray<element, D-1, element_ptr>::decay_type;
 
 	using pointer   = subarray<element, D-1, element_ptr>*;
 	using reference = subarray<element, D-1, element_ptr>;
+	using const_reference [[deprecated("not friendly with std::ranges concepts")]] = subarray<element, D-1, element_const_ptr>;  // TODO(correaa) should be const_subarray (base of subarray)
 
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -338,6 +340,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using rank = std::integral_constant<dimensionality_type, D>;  // TODO(correaa) make rank a function for compat with mdspan?
 
 	using ptr_type = subarray_ptr<subarray<element, D-1, element_ptr>, layout_t<D-1>>;
+
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;
 
@@ -711,7 +714,6 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using array_types<T, D, ElementPtr, Layout>::rank_v;
 
 	friend struct subarray<typename types::element, D + 1, typename types::element_ptr >;
-	friend struct subarray<typename types::element, D + 1, typename types::element_ptr&>;
 
 	using types::layout;
 	using typename types::element_type;
@@ -752,6 +754,10 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using       elements_range = elements_range_t<element_ptr      , layout_type>;
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
+
+	using index_gen [[deprecated("here to fulfill MultiArray concept")]] = char*;
+	using extent_gen [[deprecated("here to fulfill MultiArray concept")]] = void ;
+	using extent_range [[deprecated("here to fulfill MultiArray concept")]] = void;
 
  private:
 	constexpr auto elements_aux() const {return elements_range{this->base_, this->layout()};}
@@ -1215,6 +1221,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using       iterator = array_iterator<element, D, element_ptr      >;
 	using const_iterator = array_iterator<element, D, element_const_ptr>;
 	using  move_iterator = array_iterator<element, D, element_move_ptr >;
+
+	using reverse_iterator [[deprecated]] = std::reverse_iterator<iterator>;
+	using const_reverse_iterator[[deprecated]] = std::reverse_iterator<const_iterator>;
 
  private:
 	HD constexpr explicit subarray(iterator begin, iterator end)
