@@ -595,7 +595,7 @@ inq rocm:
     - ctest -j 2 --output-on-failure --timeout 2400
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400 || echo "ctest failed, probably due to lack of hardware"
   timeout: 2 hours 30 minutes
-  needs: ["rocm", "inq"]
+  needs: ["cuda", "inq"]
 
 qmcpack:
   stage: test
