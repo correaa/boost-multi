@@ -568,6 +568,7 @@ inq rocm:
   script:
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
@@ -575,22 +576,17 @@ inq rocm:
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - cmake --version
-    - mkdir build && cd build
-    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
-    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
-    - export ROCM_PATH=/opt/rocm
-    - export HIP_PATH=/opt/rocm
-    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
-    - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
     - git checkout $CI_COMMIT_SHA
     - cd ../..
-    - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
-    - /usr/local/cuda/bin/nvcc --version
+    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
+    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
+    - export ROCM_PATH=/opt/rocm
+    - export HIP_PATH=/opt/rocm
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
     - cmake --install .
