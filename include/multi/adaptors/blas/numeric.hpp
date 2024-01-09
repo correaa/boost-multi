@@ -220,7 +220,7 @@ struct conjugate {
 		return conj(static_cast<Complex>(zee));
 	}
 	#endif
-	#if defined(__HIP_PLATFORM_AMD__)
+	#if defined(__HIPCC__) || defined(__HIP_PLATFORM_AMD__)
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::hip::tag> zee) const {
 		return conj(static_cast<Complex>(zee));

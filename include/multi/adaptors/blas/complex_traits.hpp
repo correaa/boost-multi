@@ -4,7 +4,7 @@
 #define MULTI_ADAPTORS_BLAS_COMPLEX_TRAITS_HPP
 #pragma once
 
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIP_PLATFORM_NVIDIA__)
+#if defined(__NVCC__) || defined(__HIPCC__)  // defined(__HIP_PLATFORM_AMD__) || defined(__HIP_PLATFORM_NVIDIA__)
 #include<thrust/complex.h>
 #endif
 
@@ -24,7 +24,7 @@ struct complex_traits<std::complex<T>> {
 	constexpr static auto imaginary_unit() { return ::std::complex<T>{0, 1}; }
 };
 
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIP_PLATFORM_NVIDIA__)
+#if defined(__NVCC__) || defined(__HIPCC__)  // defined(__HIP_PLATFORM_AMD__) || defined(__HIP_PLATFORM_NVIDIA__)
 template<class T>
 struct complex_traits<::thrust::complex<T>> {
 	using real_type = typename ::thrust::complex<T>::value_type;
