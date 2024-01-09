@@ -7,7 +7,7 @@
 
 #if defined(__NVCC__)
 #include "../adaptors/cufft.hpp"
-#else if defined(__HIP_PLATFORM_AMD__) or defined(__HIP_PLATFORM_NVIDIA__)
+#elif (defined(__HIP_PLATFORM_AMD__) || defined(__HIP_PLATFORM_NVIDIA__))
 #include "../adaptors/hipfft.hpp"
 #endif
 
