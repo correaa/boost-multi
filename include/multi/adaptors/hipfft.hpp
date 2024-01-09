@@ -58,4 +58,8 @@ CU2HIPFFT_(Z2Z);
 
 #include "cufft.hpp"
 
+// namespace boost::multi{
+//     namespace cufft = hipfft;
+// }
+
 #endif

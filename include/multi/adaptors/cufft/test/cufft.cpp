@@ -9,7 +9,7 @@
 #include "../../../adaptors/fft.hpp"
 #include "../../../adaptors/fftw.hpp"
 
-#if not defined(__HIP_ROCclr__)
+#if (not (defined(__HIP_PLATFORM_AMD__) or defined(__HIP_PLATFORM_NVIDIA__))) and (not defined(__HIPCC__))
 #include "../../../adaptors/cufft.hpp"
 #else
 #include "../../../adaptors/hipfft.hpp"
@@ -20,7 +20,7 @@
 #include<thrust/complex.h>
 #include "../../../complex.hpp"
 
-#if not defined(__HIP_ROCclr__)
+#if not defined(__HIP_PLATFORM_AMD__) and not defined(__HIPCC__)
 #include<cuda_runtime.h>  // cudaDeviceSynchronize
 #else
 #endif

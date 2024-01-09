@@ -130,7 +130,7 @@ struct extensions_t {
 
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {
 		auto const sub_num_elements = extensions_t<D-1>{tail(this->base())}.num_elements();
-		#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__))
+		#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
 		assert( sub_num_elements != 0 );  // TODO(correaa) clang hip doesn't allow assert in host device functions
 		#endif
 		return multi::detail::ht_tuple(n/sub_num_elements, extensions_t<D-1>{tail(this->base())}.from_linear(n%sub_num_elements));
