@@ -7,8 +7,14 @@
 
 #if defined(__NVCC__)
 #include "../adaptors/cufft.hpp"
-#elif defined(__HIP_PLATFORM_AMD__) or defined(__HIP_PLATFORM_NVIDIA__)
+#elif defined(__HIPCC__)
+// #elif (defined(__HIP_PLATFORM_AMD__) or defined(__HIP_PLATFORM_NVIDIA__))
 #include "../adaptors/hipfft.hpp"
+
+// namespace boost::multi{
+//     namespace cufft = hipfft;
+// }
+
 #endif
 
 namespace boost {
