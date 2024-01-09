@@ -1520,9 +1520,10 @@ int main() {
 	...
 	using array2D = multi::array<double, 2, caching_allocator<double>>;
 
-	for(int i = 0; i != 10; ++i) { array2D A({100, 100}); ... use A ...}
+	for(int i = 0; i != 10; ++i) { array2D A({100, 100}); /*... use A ...*/ }
 }
 ```
+https://godbolt.org/z/rKG8PhsEh
 
 In the example, most of the memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
