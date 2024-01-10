@@ -351,19 +351,19 @@ public:
 
 template<dimensionality_type D, class Alloc = void*>
 struct cached_plan {
-	inline static std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >;
 	typename std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >::iterator it;
 
 	cached_plan(cached_plan const&) = delete;
 	cached_plan(cached_plan&&) = delete;
 
 	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::size_type> in, boost::multi::layout_t<D, boost::multi::size_type> out, Alloc const& alloc = {}) {
+		static thread_local std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >;
 		it = LEAKY_cache.find(std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>{which, in, out});
 		if(it == LEAKY_cache.end()) {it = LEAKY_cache.insert(std::make_pair(std::make_tuple(which, in, out), plan<D, Alloc>(which, in, out, alloc))).first;}
 	}
 	template<class IPtr, class OPtr>
 	void execute(IPtr idata, OPtr odata, int direction) {
-		assert(it != LEAKY_cache.end());
+		// assert(it != LEAKY_cache.end());
 		it->second.execute(idata, odata, direction);
 	}
 };
