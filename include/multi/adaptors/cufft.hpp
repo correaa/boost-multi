@@ -351,7 +351,7 @@ public:
 
 template<dimensionality_type D, class Alloc = void*>
 struct cached_plan {
-	inline static std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> > cache;
+	/*inline static*/ std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> > cache;
 	typename std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >::iterator it;
 
 	cached_plan(cached_plan const&) = delete;
