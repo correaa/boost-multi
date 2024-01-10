@@ -562,7 +562,7 @@ inq cuda:
 inq rocm:
   stage: test
   image: rocm/dev-ubuntu-22.04
-  allow_failure: true
+  allow_failure: false
   tags:
     - nvidia-docker
   script:
@@ -592,7 +592,6 @@ inq rocm:
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
-    - ctest -j 2 --output-on-failure --timeout 2400
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400 || echo "ctest failed, probably due to lack of hardware"
   timeout: 2 hours 30 minutes
   needs: ["rocm", "inq"]
