@@ -2480,7 +2480,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	#endif
 
 	#if defined(__cpp_lib_span) 
-	template<class Tconst, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> and D == 1, int> = 0>
+	template<class Tconst = const element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> and D == 1, int> = 0>
 	constexpr explicit operator std::span<Tconst>() const& {return std::span<T const>(this->data_elements(), this->size());}
 	#endif
 
