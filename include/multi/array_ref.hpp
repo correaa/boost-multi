@@ -26,6 +26,7 @@
 #include <functional>  // for invoke
 #include <iterator>    // for next
 #include <memory>      // for pointer_traits
+#include <span>
 #include <utility>     // for forward
 
 #if not defined(__NVCC__) /*and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)*/
@@ -2476,6 +2477,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) noexcept = default;  // this needs to be public in nvcc c++17
 	#else
 	array_ref(array_ref&&) = delete;
+	#endif
+
+	#if defined(__cpp_lib_span) 
+	template<class Tconst, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> and D == 1, int> = 0>
+	constexpr explicit operator std::span<Tconst>() const& {return std::span<T const>(this->data_elements(), this->size());}
 	#endif
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
