@@ -106,10 +106,14 @@ BOOST_AUTO_TEST_CASE(multi_array_involution) {
 	BOOST_REQUIRE( m5 == -5.0 );
 }
 
-BOOST_AUTO_TEST_CASE(static_array_self_assignment) {
-	multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
-	arr                                = arr;
-	BOOST_REQUIRE( arr[2] == 2.0 );
+BOOST_AUTO_TEST_CASE(static_array_self_assignment_exercise) {
+	std::array<multi::static_array<double, 1>, 2> arrarr{{
+		{0.0, 1.0, 2.0, 3.0, 4.0},
+		{5.0, 6.0, 7.0, 8.0, 9.0}
+	}};
+	std::copy(arrarr.begin(), arrarr.end(), arrarr.begin());
+
+	BOOST_REQUIRE( arrarr[0][2] == 2.0 );
 }
 
 BOOST_AUTO_TEST_CASE(static_array_cast) {
