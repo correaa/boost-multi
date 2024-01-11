@@ -26,7 +26,11 @@
 #include <functional>  // for invoke
 #include <iterator>    // for next
 #include <memory>      // for pointer_traits
+
+#if(__cplusplus >= 202002L)
 #include <span>
+#endif
+
 #include <utility>     // for forward
 
 #if not defined(__NVCC__) /*and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)*/
