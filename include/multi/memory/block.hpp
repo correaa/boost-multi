@@ -1,8 +1,9 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #ifndef MULTI_MEMORY_BLOCK_HPP_
 #define MULTI_MEMORY_BLOCK_HPP_
+
+#pragma message("Header 'multi/memory/block.hpp' is deprecated")
 
 #include <cassert>   // for assert
 #include <cstddef>   // for nullptr_t, size_t
