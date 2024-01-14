@@ -60,7 +60,7 @@ struct basic_block {
 }  // namespace detail
 
 template<typename Ptr, typename Diff>
-struct block : detail::basic_block<Ptr, Diff> {
+struct [[deprecated("to be removed")]] block : detail::basic_block<Ptr, Diff> {
 	using detail::basic_block<Ptr, Diff>::basic_block;
 };
 
