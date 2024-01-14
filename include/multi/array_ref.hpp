@@ -52,7 +52,7 @@ constexpr auto home(Array&& arr)
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
-struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
+struct array_types : private Layout {  // cppcheck-nosuppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 
