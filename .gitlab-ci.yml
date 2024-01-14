@@ -45,7 +45,7 @@ coverage:
     - curl https://deepsource.io/cli | sh
     - ls ./bin/ -all
     - chmod +x ./bin/deepsource
-    - ./bin/deepsource report --analyzer test-coverage --key cxx --value-file build/coverage.xml
+    - ./bin/deepsource report --analyzer test-coverage --key cxx --value-file ./coverage.xml
   coverage: /^\s*Percentage\s+Coverage:\s*\d+.\d+\%/
   # coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
