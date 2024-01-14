@@ -1582,6 +1582,34 @@ int main() {
 ```
 [(live)](https://godbolt.org/z/eKbeosrWa)
 
+## SYCL
+
+The SYCL library promises the unify CPU, GPU and FPGA code.
+At the moment, the array containers can use the Unified Shared Memory (USM) allocator, but no other tests have been investigated.
+
+```cpp
+    sycl::queue q;
+
+    sycl::usm_allocator<int, sycl::usm::alloc::shared> q_alloc(q);
+    multi::array<int, 1, decltype(q_alloc)> data(N, 1.0, q_alloc);
+
+    //# Offload parallel computation to device
+    q.parallel_for(sycl::range<1>(N), [=,ptr = data.base()] (sycl::id<1> i){
+        ptr[i] *= 2;
+    }).wait();
+```
+https://godbolt.org/z/8WG8qaf4s
+
+Algorithms are expected to work with oneAPI execution policies as well (not tested)
+
+```cpp
+  auto policy = oneapi::dpl::execution::dpcpp_default;
+  sycl::usm_allocator<int, sycl::usm::alloc::shared> alloc(policy.queue());
+  multi::array<int, 1, decltype(alloc)> vec(n, alloc);
+
+  std::fill(policy, vec.begin(), vec.end(), 42);
+```
+
 ## TotalView
 
 TotalView visual debugger (commercial), popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
