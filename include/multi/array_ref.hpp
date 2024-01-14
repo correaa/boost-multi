@@ -110,7 +110,7 @@ struct const_subarray : private Layout {  // cppcheck-nosuppress syntaxError ; f
 
 	using layout_t::is_compact;
 
-	friend constexpr auto size(const_subarray const& self) noexcept -> size_type { return self.size(); }
+	MULTI_FRIEND_CONSTEXPR constexpr auto size(const_subarray const& self) noexcept -> size_type { return self.size(); }
 	friend constexpr auto extension(const_subarray const& self) noexcept -> extension_type { return self.extension(); }
 	friend constexpr auto is_empty(const_subarray const& self) noexcept -> bool { return self.is_empty(); }
 	friend constexpr auto num_elements(const_subarray const& self) noexcept -> size_type { return self.num_elements(); }
