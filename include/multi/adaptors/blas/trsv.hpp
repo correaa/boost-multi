@@ -4,45 +4,54 @@
 
 #include "../blas/core.hpp"
 
-#include "../blas/operations.hpp" // uplo
 #include "../blas/filling.hpp"
+#include "../blas/operations.hpp"  // uplo
 #include "../blas/side.hpp"
 
 #include "../../config/NODISCARD.hpp"
 
 namespace boost::multi::blas {
 
-//enum DIAG : char{U='U', N='N'};
+// enum DIAG : char{U='U', N='N'};
 
-enum class diagonal : char {//typename std::underlying_type<char>::type{
-	unit = 'U',
-	non_unit = 'N', general = non_unit
+enum class diagonal : char {  // typename std::underlying_type<char>::type{
+	unit     = 'U',
+	non_unit = 'N',
+	general  = non_unit
 };
 
 using core::trsv;
 
-template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
-auto trsv_base(A&& a) {return base(a);}
+template<class A, std::enable_if_t<not is_conjugated<A>{}, int> = 0>
+auto trsv_base(A&& a) { return base(a); }
 
-template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0> 
-auto trsv_base(A&& a) {return underlying(base(a));}
+template<class A, std::enable_if_t<is_conjugated<A>{}, int> = 0>
+auto trsv_base(A&& a) { return underlying(base(a)); }
 
 template<class A2D, class X1D>
 auto trsv(filling a_nonzero_side, diagonal a_diag, A2D const& a, X1D&& x)
-->decltype(trsv(static_cast<char>(flip(a_nonzero_side)), 'N', static_cast<char>(a_diag), size(x), trsv_base(a), stride(rotated(a)), trsv_base(x), stride(x)), std::forward<X1D>(x))
-{
-//	if(is_conjugated(x)) trsv(a_nonzero_side, a_diag, conjugated(a), conjugated(std::forward<X1D>(x)));
+	-> decltype(trsv(static_cast<char>(flip(a_nonzero_side)), 'N', static_cast<char>(a_diag), size(x), trsv_base(a), stride(rotated(a)), trsv_base(x), stride(x)), std::forward<X1D>(x)) {
+	//	if(is_conjugated(x)) trsv(a_nonzero_side, a_diag, conjugated(a), conjugated(std::forward<X1D>(x)));
 	{
 		auto base_a = trsv_base(a);
 		auto base_x = trsv_base(x);
 		if(not is_conjugated<A2D>{}) {
-				 if(stride(        a )==1) {trsv(static_cast<char>(flip(a_nonzero_side)), 'N', static_cast<char>(a_diag), size(x), base_a, stride(rotated(a)), base_x, stride(x));}
-			else if(stride(rotated(a))==1) {trsv(static_cast<char>(     a_nonzero_side ), 'T', static_cast<char>(a_diag), size(x), base_a, stride(        a ), base_x, stride(x));}
-			else                           {assert(0);}
-		}else{
-				 if(stride(        a )==1) {assert(0);} //TODO fallback to trsm?
-			else if(stride(rotated(a))==1) {trsv(static_cast<char>(     a_nonzero_side ), 'C', static_cast<char>(a_diag), size(x), base_a, stride(        a ), base_x, stride(x));}
-			else                           {assert(0);}
+			if(stride(a) == 1) {
+				trsv(static_cast<char>(flip(a_nonzero_side)), 'N', static_cast<char>(a_diag), size(x), base_a, stride(rotated(a)), base_x, stride(x));
+			} else if(stride(rotated(a)) == 1) {
+				trsv(static_cast<char>(a_nonzero_side), 'T', static_cast<char>(a_diag), size(x), base_a, stride(a), base_x, stride(x));
+			} else {
+				assert(0);
+			}
+		} else {
+			if(stride(a) == 1) {
+				assert(0);
+			}  // TODO fallback to trsm?
+			else if(stride(rotated(a)) == 1) {
+				trsv(static_cast<char>(a_nonzero_side), 'C', static_cast<char>(a_diag), size(x), base_a, stride(a), base_x, stride(x));
+			} else {
+				assert(0);
+			}
 		}
 	}
 	return std::forward<X1D>(x);
@@ -50,11 +59,11 @@ auto trsv(filling a_nonzero_side, diagonal a_diag, A2D const& a, X1D&& x)
 
 template<class A2D, class X1D>
 auto trsv(filling a_nonzero_side, A2D const& a, X1D&& x)
-->decltype(trsv(a_nonzero_side, diagonal::general, a, std::forward<X1D>(x))) {
-	return trsv(a_nonzero_side, diagonal::general, a, std::forward<X1D>(x)); }
+	-> decltype(trsv(a_nonzero_side, diagonal::general, a, std::forward<X1D>(x))) {
+	return trsv(a_nonzero_side, diagonal::general, a, std::forward<X1D>(x));
+}
 
 #if 0
-
 
 #if 1
 template<class A2D, class X1D, class Ret = typename X1D::decay_type>
@@ -69,28 +78,28 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 
 }  // end namespace boost::multi::blas
 
-//#if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_TRSV
+// #if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_TRSV
 
-//#define BOOST_TEST_MODULE "C++ Unit Tests for Multi.BLAS trsv"
-//#define BOOST_TEST_DYN_LINK
-//#include<boost/test/unit_test.hpp>
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi.BLAS trsv"
+// #define BOOST_TEST_DYN_LINK
+// #include<boost/test/unit_test.hpp>
 
-//#include "../blas/gemm.hpp"
+// #include "../blas/gemm.hpp"
 
-//#include "../../array.hpp"
+// #include "../../array.hpp"
 
-//#include<iostream>
+// #include<iostream>
 
-//namespace multi = boost::multi;
+// namespace multi = boost::multi;
 
-//template<class M> decltype(auto) print_1D(M const& C){
+// template<class M> decltype(auto) print_1D(M const& C){
 //	using boost::multi::size; using std::cout;
 //	for(int i = 0; i != size(C); ++i)
 //		cout<< C[i] <<' ';
 //	cout<<std::endl;
-//}
+// }
 
-//template<class M> decltype(auto) print(M const& C){
+// template<class M> decltype(auto) print(M const& C){
 //	using boost::multi::size; using std::cout;
 //	for(int i = 0; i != size(C); ++i){
 //		for(int j = 0; j != size(C[i]); ++j)
@@ -98,13 +107,12 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //		cout<<std::endl;
 //	}
 //	return cout<<std::endl;
-//}
+// }
 
-//namespace utf = boost::unit_test;
-//namespace blas = multi::blas;
+// namespace utf = boost::unit_test;
+// namespace blas = multi::blas;
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsv_real_square, *utf::tolerance(0.0001)){
-
+// BOOST_AUTO_TEST_CASE(multi_blas_trsv_real_square, *utf::tolerance(0.0001)){
 
 //	{
 //		multi::array<double, 2> const A = {
@@ -130,7 +138,7 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //		BOOST_TEST( b[1] ==  0. );
 //		BOOST_TEST( b[2] ==  0. );
 //	}
-//#if 0
+// #if 0
 //	{
 //		multi::array<double, 1> b = {3., 3., 1.};
 //	//	trsv(filling::lower, diagonal::general, hermitized(A), b); // B<-Solve(A.X==B), B<-A⊤⁻¹.B, B⊤<-(A⊤⁻¹.B)⊤, B<-B⊤.A⁻¹
@@ -138,13 +146,13 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //	//	BOOST_TEST( b[1] == -0.857143 );
 //	//	BOOST_TEST( b[2] == -1.26786 );
 //	}
-//#endif
+// #endif
 //}
 
-//#if 0
-//using complex = std::complex<double>;
+// #if 0
+// using complex = std::complex<double>;
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsv_complex_real_case_square, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsv_complex_real_case_square, *utf::tolerance(0.00001)){
 //	multi::array<complex, 2> const A = {
 //		{ 1.,  3.,  4.},
 //		{NAN,  7.,  1.},
@@ -202,7 +210,7 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //	}
 //}
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsv_complex_square, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsv_complex_square, *utf::tolerance(0.00001)){
 //	namespace blas = multi::blas;
 
 //	multi::array<complex, 2> const A = {
@@ -235,29 +243,28 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //		trsv(filling::upper, diagonal::general, blas::H(A), b); // B<-Solve(A.X==B), B<-A⊤⁻¹.B, B⊤<-(A⊤⁻¹.B)⊤, B<-B⊤.A⁻¹
 //		print_1D(b);
 //		BOOST_TEST( real(b[0]) == -0.661693 ); BOOST_TEST( imag(b[0]) == -1.13934   );
-//		BOOST_TEST( real(b[1]) ==  0.135261 ); BOOST_TEST( imag(b[1]) == -0.0283944 ); 
-//		BOOST_TEST( real(b[2]) ==  0.415385 ); BOOST_TEST( imag(b[2]) ==  0.676923  ); 
+//		BOOST_TEST( real(b[1]) ==  0.135261 ); BOOST_TEST( imag(b[1]) == -0.0283944 );
+//		BOOST_TEST( real(b[2]) ==  0.415385 ); BOOST_TEST( imag(b[2]) ==  0.676923  );
 //	}
 //	{
 //		multi::array<complex, 1> b = {1. - 2.*I, 3. - 1.*I, 4. - 5.*I};
 //		trsv(filling::upper, diagonal::general, blas::H(A), blas::conj(b)); // B<-Solve(A.X==B), B<-A⊤⁻¹.B, B⊤<-(A⊤⁻¹.B)⊤, B<-B⊤.A⁻¹
 ////		print_1D(b);
 ////		BOOST_TEST( real(conjugated(b)[0]) == -0.661693 ); BOOST_TEST( imag(conjugated(b)[0]) == -1.13934   );
-////		BOOST_TEST( real(conjugated(b)[1]) ==  0.135261 ); BOOST_TEST( imag(conjugated(b)[1]) == -0.0283944 ); 
-////		BOOST_TEST( real(conjugated(b)[2]) ==  0.415385 ); BOOST_TEST( imag(conjugated(b)[2]) ==  0.676923  ); 
+////		BOOST_TEST( real(conjugated(b)[1]) ==  0.135261 ); BOOST_TEST( imag(conjugated(b)[1]) == -0.0283944 );
+////		BOOST_TEST( real(conjugated(b)[2]) ==  0.415385 ); BOOST_TEST( imag(conjugated(b)[2]) ==  0.676923  );
 //	}
 //	{
 //		multi::array<complex, 1> b = {1. + 2.*I, 3. + 1.*I, 4. + 5.*I};
 //	//	trsv(filling::lower, diagonal::general, hermitized(A), b); // B<-Solve(A.X==B), B<-A⊤⁻¹.B, B⊤<-(A⊤⁻¹.B)⊤, B<-B⊤.A⁻¹
 //	//	BOOST_TEST( real(b[0]) == -0.5      ); BOOST_TEST( imag(b[0]) ==  1.5        );
-//	//	BOOST_TEST( real(b[1]) ==  0.184564 ); BOOST_TEST( imag(b[1]) == -0.620805  ); 
-//	//	BOOST_TEST( real(b[2]) ==  0.691791 ); BOOST_TEST( imag(b[2]) ==  0.0227155 ); 
+//	//	BOOST_TEST( real(b[1]) ==  0.184564 ); BOOST_TEST( imag(b[1]) == -0.620805  );
+//	//	BOOST_TEST( real(b[2]) ==  0.691791 ); BOOST_TEST( imag(b[2]) ==  0.0227155 );
 //	}
 //}
 
-
-//#if 0
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1, *utf::tolerance(0.00001)){
+// #if 0
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1, *utf::tolerance(0.00001)){
 //	multi::array<double, 2> const A = {
 //		{10.,},
 //	};
@@ -285,9 +292,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //		trsm(filling::upper, diagonal::general, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 //		BOOST_TEST( B[0][1] == 4./10. );
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0, *utf::tolerance(0.00001)){
 //	multi::array<double, 2> const A;
 //	using multi::blas::side;
 //	using multi::blas::filling;
@@ -296,9 +303,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //		multi::array<double, 2> B;
 //		trsm(filling::upper, diagonal::general, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
 //	multi::array<double, 2> const A = {
 //		{ 1.,  3.,  4.},
 //		{ 0.,  7.,  1.},
@@ -356,7 +363,7 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //	}
 //}
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare_default_diagonal_gemm_check, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare_default_diagonal_gemm_check, *utf::tolerance(0.00001)){
 //	multi::array<double, 2> const A = {
 //		{ 1.,  3.,  4.},
 //		{ 0.,  7.,  1.},
@@ -408,9 +415,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //		//	for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
 //		}
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_1x1_check, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_1x1_check, *utf::tolerance(0.00001)){
 //	multi::array<double, 2> const A = {
 //		{ 4.},
 //	};
@@ -434,9 +441,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //			BOOST_REQUIRE( S[0][0] == 1.*5./4. );
 //		}
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_1x1_check, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_1x1_check, *utf::tolerance(0.00001)){
 //	using complex = std::complex<double>; complex const I = complex{0, 1};
 //	multi::array<complex, 2> const A = {
 //		{ 4. + 2.*I},
@@ -455,9 +462,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //			BOOST_TEST( imag(S[0][0]) == imag((3.+5.*I)*B[0][0]/A[0][0]) );
 //		}
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_one_check, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_one_check, *utf::tolerance(0.00001)){
 //	using complex = std::complex<double>; complex const I{0, 1};
 //	multi::array<complex, 2> const A = {
 //		{ 1. + 4.*I,  3.,  4.- 10.*I},
@@ -495,9 +502,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //			BOOST_TEST( real(S[2][0]) == 0.323529 );
 //		}
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_gemm_check, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_gemm_check, *utf::tolerance(0.00001)){
 //	using complex = std::complex<double>; complex const I{0, 1};
 //	multi::array<complex, 2> const A = {
 //		{ 1. + 4.*I,  3.,  4.- 10.*I},
@@ -535,9 +542,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //			BOOST_TEST( real(S[2][1]) == 0.147059  );
 //		}
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check, *utf::tolerance(0.00001)){
 //	using complex = std::complex<double>; complex const I{0, 1};
 //	multi::array<complex, 2> const A = {
 //		{ 1. + 4.*I,  3.,  4.- 10.*I},
@@ -576,9 +583,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //			BOOST_TEST( imag(B[1][2]) == -0.147059*2. );
 //		}
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const, *utf::tolerance(0.00001)){
+// BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const, *utf::tolerance(0.00001)){
 //	using complex = std::complex<double>; complex const I{0, 1};
 //	multi::array<complex, 2> const A = {
 //		{ 1. + 4.*I,  3.,  4.- 10.*I},
@@ -594,10 +601,9 @@ Ret trsv(filling a_nonzero_side, A2D const& a, X1D const& x, void* = 0){
 //	using multi::blas::hermitized;
 //	trsm(filling::upper, A, hermitized(B)); // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 //	BOOST_TEST( imag(B[1][2]) == -0.147059 );
-//}
-//#endif
-//#endif
+// }
+// #endif
+// #endif
 
-
-//#endif
+// #endif
 #endif

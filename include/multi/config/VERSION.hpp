@@ -5,9 +5,9 @@
 #define MULTI_CONFIG_VERSION_HPP_
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage,modernize-macro-to-enum) indicate library version
-#define MULTI_VERSION_MAJOR  0
+#define MULTI_VERSION_MAJOR 0
 #define MULTI_VERSION_MINOR 81
-#define MULTI_VERSION_MICRO  0
+#define MULTI_VERSION_MICRO 0
 // NOLINTEND(cppcoreguidelines-macro-usage,modernize-macro-to-enum)
 
 #endif  // MULTI_CONFIG_VERSION_HPP_

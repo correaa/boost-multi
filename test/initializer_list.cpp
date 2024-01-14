@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 	{
 		std::array<double, 3> const stdarr = {
 			{1.1, 2.2, 3.3}
-                                                                                                                                                                                                      };
+		};
 		using multi::num_elements;
 		BOOST_REQUIRE( num_elements(stdarr) == 3 );
 
@@ -124,7 +124,9 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 #endif
 	}
 	{
-		std::array<double, 3> stdarr = {{1.1, 2.2, 3.3}};
+		std::array<double, 3> stdarr = {
+			{1.1, 2.2, 3.3}
+		};
 		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
 		BOOST_REQUIRE(( arr == decltype(arr){1.1, 2.2, 3.3} ));
 	}
@@ -178,7 +180,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE( vec[1] == 5.5 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const nested = {{{{1.2, 2.4}}, {{11.2, 34.4}}, {{15.2, 32.4}}}};
+		std::array<std::array<double, 2>, 3> const nested = {
+			{{{1.2, 2.4}}, {{11.2, 34.4}}, {{15.2, 32.4}}}
+		};
 
 		using std::begin;
 		using std::end;
@@ -189,7 +193,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE( arr[1][0] == 11.2 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const nested = {{{{1.2, 2.4}}, {{11.2, 34.4}}, {{15.2, 32.4}}}};
+		std::array<std::array<double, 2>, 3> const nested = {
+			{{{1.2, 2.4}}, {{11.2, 34.4}}, {{15.2, 32.4}}}
+		};
 		multi::static_array<double, 2> const arr(std::begin(nested), std::end(nested));
 
 		BOOST_REQUIRE((
@@ -254,8 +260,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 	{
 		using std::string;
 		multi::array<string, 3> B3 = {
-			{{"000", "001", "002"}, {"010", "011", "012"}},  // NOLINT(fuchsia-default-arguments-calls)
-			{{"100", "101", "102"}, {"110", "111", "112"}},  // NOLINT(fuchsia-default-arguments-calls)
+			{{"000", "001", "002"}, {"010", "011", "012"}}, // NOLINT(fuchsia-default-arguments-calls)
+			{{"100", "101", "102"}, {"110", "111", "112"}}, // NOLINT(fuchsia-default-arguments-calls)
 		};
 		BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
 	}
@@ -264,13 +270,13 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 	{
-	#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
 		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
-	#endif
+#endif
 	}
 }
 
@@ -313,24 +319,24 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 
 BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 	{
-	#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::static_array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
-	#endif
+#endif
 	}
 	{
-	#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
-	#endif
+#endif
 	}
 }
 #endif

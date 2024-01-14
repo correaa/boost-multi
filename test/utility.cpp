@@ -186,7 +186,8 @@ BOOST_AUTO_TEST_CASE(multi_utility_test) {
 		BOOST_REQUIRE(data_elements(arr) == addressof(arr[0]));
 	}
 	{
-		double arr[2][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
+		double arr[2][3] = {
+  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		};

@@ -18,7 +18,7 @@ ${CXX:-c++} -std=c++17 $CXXFLAGS -I../include $0 -o $0.$X -lboost_unit_test_fram
 
 #include <scoped_allocator>
 
-namespace bip = boost::interprocess;
+	namespace bip = boost::interprocess;
 
 using manager = bip::managed_mapped_file;
 

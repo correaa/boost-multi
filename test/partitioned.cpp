@@ -116,7 +116,7 @@ template<class T> class propagate_const<T const&> {
 
  public:
 	explicit propagate_const(T const& other) : r_{other} {}
-	auto operator=(T const& other) -> propagate_const& = delete;
+	auto     operator=(T const& other) -> propagate_const& = delete;
 	explicit operator T const&() const noexcept { return r_; }
 };
 
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 	 public:  // NOLINT(whitespace/indent) bug in cpplint
 		propagate_const<double&> prop1;  // NOLINT(misc-non-private-member-variables-in-classes)
 		propagate_const<double&> prop2;  // NOLINT(misc-non-private-member-variables-in-classes)
-		internal_array_type slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)
+		internal_array_type      slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)
 		propagate_const<double&> prop3;  // NOLINT(misc-non-private-member-variables-in-classes)
 
 		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{row[8]} {}
@@ -182,17 +182,17 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	multi::array<double, 3> arr = {
 		{
-			{  0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
-			{  6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
-			{ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-			{ 18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-		},
+                                                                                                                                                                                                       {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+                                                                                                                                                                                                       {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+                                                                                                                                                                                                       {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+                                                                                                                                                                                                       {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		 },
 		{
-			{  0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
-			{  6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
-			{ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-			{ 18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-		}
+                                                                                                                                                                                                       {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+                                                                                                                                                                                                       {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+                                                                                                                                                                                                       {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+                                                                                                                                                                                                       {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		 }
 	};
 
 	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.strides());

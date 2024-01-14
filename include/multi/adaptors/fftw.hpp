@@ -290,7 +290,8 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 	using boost::multi::detail::get;
 	auto which_iodims = std::apply(
 		[](auto... elems) {
-			return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems) + 1>{  // added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
+			return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems) + 1>{
+  // added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
   // clang-format off
 				std::pair{get<0>(elems), fftw_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}}..., {},  // added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
   // clang-format on
@@ -303,8 +304,8 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 	std::array<fftw_iodim64, D> dims{};
 	std::array<fftw_iodim64, D> howmany_dims{};
 
-	auto const                  dims_end = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
-	auto const                  howmany_dims_end = std::transform(part, which_iodims.end() - 1, howmany_dims.begin(), [](auto elem) { return elem.second; });
+	auto const dims_end         = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
+	auto const howmany_dims_end = std::transform(part, which_iodims.end() - 1, howmany_dims.begin(), [](auto elem) { return elem.second; });
 
 	assert(in_base);
 	assert(out_base);

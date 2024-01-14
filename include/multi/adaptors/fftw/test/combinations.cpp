@@ -3,14 +3,14 @@
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
 
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <multi/adaptors/fftw.hpp>
 
-#include<chrono>
-#include<complex>
-#include<iostream>
-#include<random>
+#include <chrono>
+#include <complex>
+#include <iostream>
+#include <random>
 
 namespace multi = boost::multi;
 
@@ -22,56 +22,57 @@ namespace utf = boost::unit_test::framework;
 using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 using fftw_fixture = multi::fftw::environment;
-BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
+BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
 
 class watch : private std::chrono::high_resolution_clock {
 	std::string label;
-	time_point start = now();
+	time_point  start = now();
 
  public:
 	template<class String>
 	explicit watch(String&& label) : label{std::forward<String>(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
 
 	watch(watch const&) = delete;
-	watch(watch&&) = delete;
+	watch(watch&&)      = delete;
 
 	auto operator=(watch const&) = delete;
-	auto operator=(watch&&) = delete;
+	auto operator=(watch&&)      = delete;
 
-	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
-	~watch() { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
+	auto elapsed_sec() const { return std::chrono::duration<double>(now() - start).count(); }
+	~watch() { std::cerr << label << ": " << elapsed_sec() << " sec" << std::endl; }
 };
 
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
-constexpr auto exts = multi::extensions_t<4>({6, 12, 24, 12});
+constexpr auto exts                                          = multi::extensions_t<4>({6, 12, 24, 12});
 
-BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
+BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)) {
 	using complex = std::complex<double>;
 
 	auto const in = [] {
 		marray<complex, 4> ret(exts);
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
-			[eng = std::default_random_engine {std::random_device {}()},
-				uniform_01 = std::uniform_real_distribution<>{}]() mutable {
-				return complex{uniform_01(eng), uniform_01(eng)};
-			});
+		              [eng        = std::default_random_engine{std::random_device{}()},
+		               uniform_01 = std::uniform_real_distribution<>{}]() mutable {
+			              return complex{uniform_01(eng), uniform_01(eng)};
+		              });
 		return ret;
 	}();
 
-	std::vector<std::array<bool, 4>> const which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		{false, true , true , true },
-		{false, true , true , false},
-		{true , false, false, false},
-		{true , true , false, false},
-		{false, false, true , false},
+	std::vector<std::array<bool, 4>> const which_cases = {
+  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		{false,  true,  true,  true},
+		{false,  true,  true, false},
+		{ true, false, false, false},
+		{ true,  true, false, false},
+		{false, false,  true, false},
 		{false, false, false, false},
 	};
 
 	using std::cout;
 	for(auto which : which_cases) {  // NOLINT(altera-unroll-loops)
-		cout<<"case ";
+		cout << "case ";
 		copy(begin(which), end(which), std::ostream_iterator<bool>{cout, ", "});
-		cout<<"\n";
+		cout << "\n";
 
 		marray<complex, 4> out = in;
 		// {
@@ -79,24 +80,24 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 		//  multi::fftw::dft_forward(which, in, out);
 		// }
 		{
-			auto const pln = multi::fftw::plan::forward(which, in.base(), in.layout(), out.base(), out.layout());
+			auto const  pln = multi::fftw::plan::forward(which, in.base(), in.layout(), out.base(), out.layout());
 			watch const unnamed{"cpu_oplac planned %ws wall, CPU (%p%)\n"s};
 			pln.execute(in.base(), out.base());
 		}
 		{
-			auto in_rw = in;
+			auto        in_rw = in;
 			watch const unnamed{"cpu_iplac %ws wall, CPU (%p%)\n"s};
 			multi::fftw::dft_forward(which, in_rw, in_rw);
 		}
 		{
-			auto in_rw = in;
-			auto const pln = multi::fftw::plan::forward(which, in_rw.base(), in_rw.layout(), in_rw.base(), in_rw.layout());
+			auto        in_rw = in;
+			auto const  pln   = multi::fftw::plan::forward(which, in_rw.base(), in_rw.layout(), in_rw.base(), in_rw.layout());
 			watch const unnamed{"cpu_iplac planned %ws wall, CPU (%p%)\n"s};
 			pln.execute(in_rw.base(), in_rw.base());
 		}
 		{
-			auto in_rw = in;
-			auto const pln = multi::fftw::plan::forward(which, in_rw.base(), in_rw.layout(), in_rw.base(), in_rw.layout());
+			auto        in_rw = in;
+			auto const  pln   = multi::fftw::plan::forward(which, in_rw.base(), in_rw.layout(), in_rw.base(), in_rw.layout());
 			watch const unnamed{"cpu_iplac planned measured %ws wall, CPU (%p%)\n"s};
 			pln.execute(in_rw.base(), in_rw.base());
 		}
@@ -114,8 +115,8 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 	}
 }
 
-BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
-	using complex = std::complex<double>;
+BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled()) {
+	using complex  = std::complex<double>;
 	namespace fftw = multi::fftw;
 
 	marray<complex, 4> in(exts);
@@ -123,30 +124,30 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
 
 	BOOST_REQUIRE(in[0][0][0][0] == 1.2);
 	std::array<bool, 4> which = {false, true, true, true};
-	[&, unnamed = watch{utf::current_test_case().full_name()+" inplace FTTT"s}] {
+	[&, unnamed = watch{utf::current_test_case().full_name() + " inplace FTTT"s}] {
 		fftw::dft(which, in, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" inplace FTTT"s}] {
+	[&, unnamed = watch{utf::current_test_case().full_name() + " inplace FTTT"s}] {
 		fftw::dft(which, in, fftw::forward);
 	}();
 	auto in0000 = in[0][0][0][0];
 	BOOST_REQUIRE(in0000 != 1.2);
 
 	marray<complex, 4> out(exts);
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"s}] {
+	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"s}] {
+	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"s}] {
+	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"s}] {
+	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace+alloc FTTT"s}] {
 		marray<complex, 4> out2(exts);
 		fftw::dft(which, in, out2, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"s}] {
+	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace+alloc FTTT"s}] {
 		marray<complex, 4> out2(exts);
 		fftw::dft(which, in, out2, fftw::forward);
 	}();
@@ -154,12 +155,13 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
-	std::vector<std::array<bool, 4>> const which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		{false, true , true , true },
-		{false, true , true , false},
-		{true , false, false, false},
-		{true , true , false, false},
-		{false, false, true , false},
+	std::vector<std::array<bool, 4>> const which_cases = {
+  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		{false,  true,  true,  true},
+		{false,  true,  true, false},
+		{ true, false, false, false},
+		{ true,  true, false, false},
+		{false, false,  true, false},
 		{false, false, false, false},
 	};
 	using complex = std::complex<double>;
@@ -167,14 +169,15 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 	auto const in = [] {
 		marray<complex, 4> ret(exts);
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
-			[eng = std::default_random_engine {std::random_device {}()},
-				uniform_01 = std::uniform_real_distribution<>{}]() mutable{
-				return complex{uniform_01(eng), uniform_01(eng)};
-			});
+		              [eng        = std::default_random_engine{std::random_device{}()},
+		               uniform_01 = std::uniform_real_distribution<>{}]() mutable {
+			              return complex{uniform_01(eng), uniform_01(eng)};
+		              });
 		return ret;
 	}();
 
-	auto io = in; (void)io;
+	auto io = in;
+	(void)io;
 	BOOST_REQUIRE( io.extensions() == in.extensions() );
 
 	// namespace fftw = multi::fftw;

@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_context) {
 	};
 	auto const                     arr_copy = arr;
 	multi::array<complex, 1> const arr2     = arr[2];
-	blas::context ctxt{};
+	blas::context                  ctxt{};
 	blas::axpy(&ctxt, complex{2.0, 0.0}, arr2, arr[1]);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( arr[1][2] == 2.0*arr2[2] + arr_copy[1][2] );
 }
@@ -165,13 +165,15 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 	BOOST_REQUIRE( (arr[0] - arr2)[0] == complex{} );
 	BOOST_REQUIRE( (arr[0] - arr2)[1] == complex{} );
 
-	multi::array<complex, 1> X = {  /* NOLINT(readability-identifier-length) BLAS naming */
+	multi::array<complex, 1> X = {
+  /* NOLINT(readability-identifier-length) BLAS naming */
 		{10.0, 0.0},
 		{11.0, 0.0},
 		{12.0, 0.0},
 		{13.0, 0.0},
 	};
-	multi::array<complex, 1> const Y = {  /* NOLINT(readability-identifier-length) BLAS naming*/
+	multi::array<complex, 1> const Y = {
+  /* NOLINT(readability-identifier-length) BLAS naming*/
 		{10.0, 0.0},
 		{11.0, 0.0},
 		{12.0, 0.0},

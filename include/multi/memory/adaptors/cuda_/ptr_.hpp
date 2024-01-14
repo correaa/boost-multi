@@ -12,7 +12,7 @@
 #include "../../../config/DEPRECATED.hpp"
 
 #include <cassert>  // for debug
-#include <memory>   // for allocator
+#include <memory>  // for allocator
 #include <utility>  // for exchange
 
 #include <thrust/system/cuda/pointer.h>

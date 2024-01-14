@@ -4,4 +4,3 @@
 #pragma once
 
 #include "./cublas/context.hpp"
-

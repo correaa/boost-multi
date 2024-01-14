@@ -2,20 +2,20 @@
 // Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS copy"  // test tile NOLINT(cppcoreguidelines-macro-usage)
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "../../../array.hpp"
 
 #include "../../blas/copy.hpp"
 
-#include<complex>
+#include <complex>
 
 namespace multi = boost::multi;
-namespace blas = multi::blas;
+namespace blas  = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_blas_copy_n) {
 	multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 1> y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1>       y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming
 	blas::copy_n(x.begin(), x.size(), y.begin());
 	BOOST_REQUIRE( y == x );
 }
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real) {
-	namespace blas = multi::blas;
+	namespace blas              = multi::blas;
 	multi::array<double, 2> arr = {
 		{1.0,  2.0,  3.0,  4.0},
 		{5.0,  6.0,  7.0,  8.0},
@@ -49,8 +49,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real) {
 	BOOST_REQUIRE( arr[0][2] ==  3.0 );
 	BOOST_REQUIRE( arr[2][2] ==  3.0 );
 
-//  multi::blas::copy(begin(A[1]), end(A[1]), begin(A[2]));  // dcopy
-	blas::copy( arr[1]({0, size(arr[1])}), arr[2]({0, size(arr[1])}) );
+	//  multi::blas::copy(begin(A[1]), end(A[1]), begin(A[2]));  // dcopy
+	blas::copy(arr[1]({0, size(arr[1])}), arr[2]({0, size(arr[1])}));
 	BOOST_REQUIRE( arr[1][3] == 8.0 );
 	BOOST_REQUIRE( arr[2][3] == 8.0 );
 
@@ -70,11 +70,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy_row) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex) {
-	using complex = std::complex<double>; auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using complex                = std::complex<double>;
+	auto const               I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 	multi::array<complex, 2> arr = {
-		{1.0 + 3.0*I,  2.0 + 4.0*I,  3.0 + 5.0*I,  4.0 + 6.0*I},
-		{5.0 + 0.0*I,  6.0 + 0.0*I,  7.0 + 0.0*I,  8.0 + 0.0*I},
-		{9.0 + 0.0*I, 10.0 + 0.0*I, 11.0 + 0.0*I, 12.0 + 0.0*I}
+		{1.0 + 3.0 * I,  2.0 + 4.0 * I,  3.0 + 5.0 * I,  4.0 + 6.0 * I},
+		{5.0 + 0.0 * I,  6.0 + 0.0 * I,  7.0 + 0.0 * I,  8.0 + 0.0 * I},
+		{9.0 + 0.0 * I, 10.0 + 0.0 * I, 11.0 + 0.0 * I, 12.0 + 0.0 * I}
 	};
 	blas::copy(arr[0], arr[2]);
 	BOOST_REQUIRE( arr[0][2] == 3.0 + 5.0*I );

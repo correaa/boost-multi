@@ -2,11 +2,11 @@
 // Copyright 2021-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi slice"  // test tile NOLINT(cppcoreguidelines-macro-usage)
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
-#include<numeric>  // std::iota
+#include <numeric>  // std::iota
 
 namespace multi = boost::multi;
 
@@ -20,9 +20,9 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced) {
 	multi::array<double, 4> arr({10, 20, 30, 40}, 99.0);
 	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
-	static_assert( decltype( arr.sliced(0, 5) )::rank::value == decltype(arr)::rank::value);  // NOLINT(misc-redundant-expression)
-	static_assert( decltype( arr.sliced(0, 5) )::rank{} == decltype(arr)::rank{});  // NOLINT(misc-redundant-expression)
-	static_assert( decltype( arr.sliced(0, 5) )::rank_v == decltype(arr)::rank_v);  // NOLINT(misc-redundant-expression)
+	static_assert(decltype(arr.sliced(0, 5))::rank::value == decltype(arr)::rank::value);  // NOLINT(misc-redundant-expression)
+	static_assert(decltype(arr.sliced(0, 5))::rank{} == decltype(arr)::rank{});  // NOLINT(misc-redundant-expression)
+	static_assert(decltype(arr.sliced(0, 5))::rank_v == decltype(arr)::rank_v);  // NOLINT(misc-redundant-expression)
 
 	BOOST_REQUIRE(  arr.sliced( 0, 5)[1][2][3][4] ==  arr[1][2][3][4] );
 	BOOST_REQUIRE( &arr.sliced( 0, 5)[1][2][3][4] == &arr[1][2][3][4] );

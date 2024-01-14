@@ -12,8 +12,8 @@
 namespace multi = boost::multi;
 
 template<class M> auto power(M const& array) {
-	return std::accumulate(array.elements().begin(), array.elements().end(), 0.0, [](auto e1, auto e2) {return std::move(e1) + std::norm(e2);});
-//  return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
+	return std::accumulate(array.elements().begin(), array.elements().end(), 0.0, [](auto e1, auto e2) { return std::move(e1) + std::norm(e2); });
+	//  return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
 }
 
 using fftw_fixture = multi::fftw::environment;
@@ -43,7 +43,8 @@ BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
 // }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
-	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using complex                 = std::complex<double>;
+	[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
@@ -54,7 +55,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 	};
 	BOOST_REQUIRE( in[1][1] == 7.0 - 4.0*I );
 
-	auto const in_copy  = in;
+	auto const  in_copy = in;
 	auto* const in_base = in.base();
 	BOOST_REQUIRE( in_base == in.base() );
 
@@ -65,7 +66,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
-	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using complex                 = std::complex<double>;
+	[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
@@ -76,20 +78,21 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
 	};
 	BOOST_REQUIRE( in[1][1] == 7.0 - 4.0*I );
 
-	auto const in_copy  = in;
+	auto const  in_copy = in;
 	auto* const in_base = in.base();
 	BOOST_REQUIRE( in_base == in.base() );
 	BOOST_REQUIRE( in.size() == 5 );
 
-//  in = multi::fftw::ref(in).transposed();
+	//  in = multi::fftw::ref(in).transposed();
 
-//  BOOST_REQUIRE( in.size() == 3 );
-//  BOOST_REQUIRE( in == in_copy.transposed() );  // prove correctness
-//  BOOST_REQUIRE( in_base == in.base() );        // prove no allocation
+	//  BOOST_REQUIRE( in.size() == 3 );
+	//  BOOST_REQUIRE( in == in_copy.transposed() );  // prove correctness
+	//  BOOST_REQUIRE( in_base == in.base() );        // prove no allocation
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
-	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using complex                 = std::complex<double>;
+	[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
@@ -100,7 +103,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
 	};
 	BOOST_REQUIRE( in[1][1] == 7.0 - 4.0*I );
 
-	auto const in_copy  = in;
+	auto const  in_copy = in;
 	auto* const in_base = in.base();
 	BOOST_REQUIRE( in_base == in.base() );
 	BOOST_REQUIRE( in.size() == 5 );
@@ -113,7 +116,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
-	using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	using complex                 = std::complex<double>;
+	[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> in = {
 		{100.0 + 2.0 * I,  9.0 - 1.0 * I,  2.0 + 4.0 * I},
@@ -124,7 +128,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
 	};
 	BOOST_REQUIRE( in[1][1] == 7.0 - 4.0*I );
 
-	auto const in_copy  = in;
+	auto const  in_copy = in;
 	auto* const in_base = in.base();
 	BOOST_REQUIRE( in_base == in.base() );
 	BOOST_REQUIRE( in.size() == 5 );
@@ -133,7 +137,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
 
 	BOOST_REQUIRE( in.size() == 3 );
 	BOOST_REQUIRE( in == in_copy.transposed() );  // prove correctness
-	BOOST_REQUIRE( in_base != in.base() );        // prove no allocation
+	BOOST_REQUIRE( in_base != in.base() );  // prove no allocation
 }
 
 // BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_copy) {

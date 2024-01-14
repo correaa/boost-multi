@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(sort_2D) {
 
 	BOOST_REQUIRE(  std::ranges::is_sorted(A));
 
-	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int *>>);
+	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
 }
 
 BOOST_AUTO_TEST_CASE(sort_strings) {
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(sort_strings) {
 	std::ranges::sort(~A);
 	BOOST_REQUIRE(  std::ranges::is_sorted(~A));
 
-	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int *>>);
+	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
 }
 #endif
 

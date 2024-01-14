@@ -11,7 +11,7 @@ namespace boost::multi::fftw {
 
 template<class T = void> struct allocator;
 
-template<> struct allocator<void>{};
+template<> struct allocator<void> {};
 
 template<class T>
 struct allocator {

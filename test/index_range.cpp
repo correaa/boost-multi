@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 	BOOST_REQUIRE(( multi::range<std::ptrdiff_t>{5, 5}.empty() ));
 #endif
 	{
-		auto drng = multi::range<std::ptrdiff_t>{5, 10};
+		auto                drng = multi::range<std::ptrdiff_t>{5, 10};
 		std::vector<double> vec(drng.begin(), drng.end());  // testing std::vector NOLINT(fuchsia-default-arguments-calls)
 		BOOST_REQUIRE( vec[1] == 6 );
 	}

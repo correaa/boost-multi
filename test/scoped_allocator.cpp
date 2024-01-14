@@ -98,10 +98,7 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 				InnerCont,
 				std::scoped_allocator_adaptor<
 					allocator1<InnerCont>,
-					allocator2<int>
-				>
-			>
-		;
+					allocator2<int>>>;
 
 		// OuterCont cont({&heap1, &heap2});  // gives ambiguous construction in libc++
 		OuterCont cont({&heap1, allocator2<int>{&heap2}});
@@ -131,7 +128,7 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
 
 	{
 		// OuterCont cont({3, 4}, {&heap1, &heap2});  // gives ambiguous construction in libc++
-		OuterCont cont({3, 4}, {&heap1,  allocator2<int>{&heap2}});  // gives ambiguous construction in libc++
+		OuterCont cont({3, 4}, {&heap1, allocator2<int>{&heap2}});  // gives ambiguous construction in libc++
 
 		cont[1][2].resize(10);
 		cont[1][2].resize(100);

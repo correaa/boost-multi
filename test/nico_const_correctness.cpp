@@ -6,7 +6,7 @@
 
 #include "multi/array.hpp"
 
-#include<iostream>
+#include <iostream>
 
 namespace multi = boost::multi;
 
@@ -15,7 +15,7 @@ void print(Array1D const& coll) {
 	// *coll.begin() = 99;  // doesn't compile "assignment of read-only location"
 
 	std::copy(coll.begin(), coll.end(), std::ostream_iterator<typename Array1D::value_type>{std::cout, ", "});
-	std::cout<<std::endl;
+	std::cout << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(const_views) {
@@ -58,7 +58,7 @@ void print_2d(Array2D const& coll) {
 
 	std::for_each(coll.begin(), coll.end(), [](auto const& row) {
 		std::copy(row.begin(), row.end(), std::ostream_iterator<typename Array2D::element_type>(std::cout, ", "));
-		std::cout<<std::endl;
+		std::cout << std::endl;
 	});
 }
 

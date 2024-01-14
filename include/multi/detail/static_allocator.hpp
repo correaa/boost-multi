@@ -27,29 +27,24 @@ class static_allocator {
 
 	static_allocator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) buffer_ is not initialized
 
-	static_allocator(static_allocator const& /*other*/) // std::vector makes a copy right away
+	static_allocator(static_allocator const& /*other*/)  // std::vector makes a copy right away
 	// = default;  // this copies the internal buffer
 	{}
-	[[deprecated("don't move dynamic container with static_allocator")]]
-	static_allocator(static_allocator&& /*other*/)  // this is called *by the elements* during move construction of a vector
-	// = delete;
-	// {throw std::runtime_error("don't move dynamic container with static_allocator");}  // this is called *by the elements* during move construction of a vector
-	noexcept {}
+	[[deprecated("don't move dynamic container with static_allocator")]] static_allocator(static_allocator&& /*other*/)  // this is called *by the elements* during move construction of a vector
+		                  // = delete;
+		                  // {throw std::runtime_error("don't move dynamic container with static_allocator");}  // this is called *by the elements* during move construction of a vector
+		noexcept {}
 	// noexcept {std::memmove(buffer_.data(), other.buffer_.data(), sizeof(T)*N);}
 	// noexcept : buffer_{std::move(other.buffer_)} {}
 	// noexcept = default;
 
-	[[deprecated("don't move dynamic container with static_allocator")]]
-	auto operator=(static_allocator const& /*other*/) -> static_allocator&
-	= delete;
+	[[deprecated("don't move dynamic container with static_allocator")]] auto operator=(static_allocator const& /*other*/) -> static_allocator& = delete;
 
-	[[deprecated("don't move dynamic container with static_allocator")]] auto operator=(static_allocator&& other) -> static_allocator&
-	= delete;
+	[[deprecated("don't move dynamic container with static_allocator")]] auto operator=(static_allocator&& other) -> static_allocator& = delete;
 
 	~static_allocator() = default;
 
-	auto select_on_container_copy_construction() noexcept -> static_allocator
-	= delete;
+	auto select_on_container_copy_construction() noexcept -> static_allocator = delete;
 	// {return static_allocator{};}
 
 	using propagate_on_container_move_assignment = std::false_type;  // this forces to call move assignment of the allocator by std::vector
@@ -73,16 +68,15 @@ class static_allocator {
 };
 
 template<class T, std::size_t N, class U>
-constexpr auto operator==(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> const& /*a2*/) noexcept
-{ return true; } // &a1 == &a2; }
+constexpr auto operator==(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> const& /*a2*/) noexcept { return true; }  // &a1 == &a2; }
 // = delete;
 
-template <class T, std::size_t N, class U>
-auto operator!=(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> const& /*a2*/) noexcept // this is used *by the elements* when resizing a vector
-{ return false; } // &a1 != &a2;}
+template<class T, std::size_t N, class U>
+auto operator!=(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> const& /*a2*/) noexcept  // this is used *by the elements* when resizing a vector
+{ return false; }  // &a1 != &a2;}
 // = delete
 
-template <class T, std::size_t N, class U>
+template<class T, std::size_t N, class U>
 [[deprecated("don't swap dynamic container with static_allocator")]] void swap(static_allocator<T, N>& a1, static_allocator<U, N>& a2) = delete;
 
 }  // end namespace boost::multi::detail

@@ -11,7 +11,7 @@
 #include "../adaptors/blas/dot.hpp"
 #include "../adaptors/blas/gemm.hpp"
 #include "../adaptors/blas/gemv.hpp"
-//#include "../adaptors/blas/ger.hpp"
+// #include "../adaptors/blas/ger.hpp"
 #include "../adaptors/blas/herk.hpp"
 #include "../adaptors/blas/iamax.hpp"
 #include "../adaptors/blas/nrm2.hpp"
@@ -21,4 +21,3 @@
 #include "../adaptors/blas/trsm.hpp"
 
 #endif
-

@@ -2,7 +2,7 @@
 // Copyright 2019-2022 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reversed"  // test tile NOLINT(cppcoreguidelines-macro-usage)
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
@@ -32,7 +32,6 @@ BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
 	BOOST_TEST_REQUIRE( arr.reversed().size() == 11 );
 
 	BOOST_REQUIRE( &arr.reversed()[1][2][3][4] == &arr[4][3][2][1] );
-
 
 	BOOST_REQUIRE( std::get<0>( arr.reversed().transposed().flatted().reversed().sizes() ) == 13 );
 	BOOST_REQUIRE( std::get<1>( arr.reversed().transposed().flatted().reversed().sizes() ) ==  5 );

@@ -1,6 +1,6 @@
 #ifdef COMPILATION  // clang-format off
 ${CXX:-c++} -std=c++17 $CXXFLAGS -I../include -I$HOME/metall/include $0 -o$0.$X&&$0.$X&&rm $0.$X;exit
-#endif // clang-format on
+#endif  // clang-format on
 // Copyright 2019-2023 Alfredo A. Correa
 
 #include <cassert>
@@ -11,8 +11,8 @@ ${CXX:-c++} -std=c++17 $CXXFLAGS -I../include -I$HOME/metall/include $0 -o$0.$X&
 
 #include <multi/array.hpp>
 
-template<class T>
-using mallocator = metall::manager::allocator_type<T>;
+	template<class T>
+	using mallocator = metall::manager::allocator_type<T>;
 
 namespace multi = boost::multi;
 

@@ -2,11 +2,11 @@
 // Copyright 2019-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"  // test title NOLINT(cppcoreguidelines-macro-usage)
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
-#include<complex>
+#include <complex>
 
 namespace multi = boost::multi;
 
@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 		BOOST_REQUIRE( num_elements(m1) == 3 );
 
 		multi::array_ref<double, 0> m0(v1.data(), {});
-//      BOOST_REQUIRE(( &m0 == multi::array_ptr<double, 0>(v1.data(), {}) ));
+		//      BOOST_REQUIRE(( &m0 == multi::array_ptr<double, 0>(v1.data(), {}) ));
 		BOOST_REQUIRE( data_elements(m0) == v1.data() );
 		BOOST_REQUIRE( num_elements(m0) == 1 );
 
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 		BOOST_REQUIRE( a0 == 60.0 );
 	}
 	{
-		std::allocator<double> const alloc;
+		std::allocator<double> const   alloc;
 		multi::static_array<double, 0> a0(45.0, alloc);
 		BOOST_REQUIRE( num_elements(a0) == 1 );
 		BOOST_REQUIRE( a0 == 45.0 );
@@ -55,9 +55,9 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		BOOST_REQUIRE( size(arr) == 1 );
 	}
 	{
-		double doub = 2.0;
+		double                      doub = 2.0;
 		multi::array_ref<double, 0> arr(doub);
-		double const& the_doub = static_cast<double&>(arr);
+		double const&               the_doub = static_cast<double&>(arr);
 		BOOST_REQUIRE(  the_doub ==  doub );
 		BOOST_REQUIRE( &the_doub == &doub );
 	}
@@ -67,7 +67,9 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 
 		BOOST_REQUIRE( dd == doub );
 
-		multi::array_ptr<double, 1> const ap1(&doub, multi::extensions_t<1>{{0, 1}});
+		multi::array_ptr<double, 1> const ap1(&doub, multi::extensions_t<1>{
+			                                             {0, 1}
+                                                                                                                                                                                                      });
 		BOOST_REQUIRE( ap1->base() == &doub );
 		BOOST_REQUIRE( (*ap1).base() == &doub );
 

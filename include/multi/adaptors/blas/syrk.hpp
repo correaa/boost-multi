@@ -12,70 +12,80 @@ using core::syrk;
 
 template<typename AA, typename BB, class A2D, class C2D>
 auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) {  // NOLINT(readability-identifier-length) BLAS naming
-//->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
-	assert( size(c) == size(rotated(c)) );
-	if(stride(a)==1) {
-		if(stride(c)==1) {syrk(flip(c_side)==filling::upper?'L':'U', 'N', size(c), size(a         ), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(rotated(c)));}
-		else             {syrk(c_side      ==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(        c ));}
+	//->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
+	assert(size(c) == size(rotated(c)));
+	if(stride(a) == 1) {
+		if(stride(c) == 1) {
+			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'N', size(c), size(a), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(rotated(c)));
+		} else {
+			syrk(c_side == filling::upper ? 'L' : 'U', 'N', size(c), size(rotated(a)), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(c));
+		}
 	} else {
-		if(stride(c)==1) {syrk(flip(c_side)==filling::upper?'L':'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(rotated(c)));}
-		else             {syrk(c_side      ==filling::upper?'L':'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(        c ));}
+		if(stride(c) == 1) {
+			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(rotated(c)));
+		} else {
+			syrk(c_side == filling::upper ? 'L' : 'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(c));
+		}
 	}
 	return std::forward<C2D>(c);
 }
 
 template<typename AA, class A2D, class C2D>
 auto syrk(filling c_side, AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(syrk(c_side, alpha, a, 0., std::forward<C2D>(c))) {
-	return syrk(c_side, alpha, a, 0., std::forward<C2D>(c)); }
+	-> decltype(syrk(c_side, alpha, a, 0., std::forward<C2D>(c))) {
+	return syrk(c_side, alpha, a, 0., std::forward<C2D>(c));
+}
 
 template<typename AA, class A2D, class C2D>
 auto syrk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(syrk(filling::upper, alpha, a, syrk(filling::lower, alpha, a, std::forward<C2D>(c)))) {
-	return syrk(filling::upper, alpha, a, syrk(filling::lower, alpha, a, std::forward<C2D>(c))); }
+	-> decltype(syrk(filling::upper, alpha, a, syrk(filling::lower, alpha, a, std::forward<C2D>(c)))) {
+	return syrk(filling::upper, alpha, a, syrk(filling::lower, alpha, a, std::forward<C2D>(c)));
+}
 
 template<typename AA, class A2D, class Ret = typename A2D::decay_type>
 [[nodiscard]]  // ("because input argument is const")
 // this decay in the return type is important
 // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-auto syrk(AA alpha, A2D const& a) -> std::decay_\
+auto
+syrk(AA alpha, A2D const& a) -> std::decay_\
 t<decltype(syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))> {
-	return syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));  }
+	return syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
+}
 
 template<class A2D>
-[[nodiscard]]
-auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(syrk(1., A)) {
-	return syrk(1., A); }
+[[nodiscard]] auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
+	-> decltype(syrk(1., A)) {
+	return syrk(1., A);
+}
 
-} // end namespace boost::multi::blas
+}  // end namespace boost::multi::blas
 
-//#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
+// #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
-//#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS syrk"
-//#include<boost/test/unit_test.hpp>
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS syrk"
+// #include<boost/test/unit_test.hpp>
 
-//#include "../blas/gemm.hpp"
+// #include "../blas/gemm.hpp"
 
-//#include "../../array.hpp"
-//#include "../../utility.hpp"
+// #include "../../array.hpp"
+// #include "../../utility.hpp"
 
-//#include <boost/timer/timer.hpp>
+// #include <boost/timer/timer.hpp>
 
-//#include<complex>
-//#include<cassert>
-//#include<iostream>
-//#include<numeric>
-//#include<algorithm>
+// #include<complex>
+// #include<cassert>
+// #include<iostream>
+// #include<numeric>
+// #include<algorithm>
 
 ////#include<catch.hpp>
 
-//using std::cout;
-//using std::cerr;
+// using std::cout;
+// using std::cerr;
 
-//namespace multi = boost::multi;
+// namespace multi = boost::multi;
 
-//template<class M> decltype(auto) print(M const& C){
+// template<class M> decltype(auto) print(M const& C){
 //	using boost::multi::size;
 //	for(int i = 0; i != size(C); ++i){
 //		for(int j = 0; j != size(C[i]); ++j)
@@ -83,9 +93,9 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		std::cout << std::endl;
 //	}
 //	return std::cout << std::endl;
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_real){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_real){
 //	multi::array<double, 2> const a = {
 //		{ 1., 3., 4.},
 //		{ 9., 7., 1.}
@@ -96,7 +106,7 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		using blas::filling;
 //		using blas::transposed;
 //		syrk(filling::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//		BOOST_REQUIRE( c[2][1] == 19. ); 
+//		BOOST_REQUIRE( c[2][1] == 19. );
 //		BOOST_REQUIRE( c[1][2] == 9999. );
 //	}
 //	{
@@ -114,7 +124,7 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		using blas::filling;
 //		using blas::syrk;
 //		syrk(filling::lower, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//		BOOST_REQUIRE( c[1][0] == 34. ); 
+//		BOOST_REQUIRE( c[1][0] == 34. );
 //		BOOST_REQUIRE( c[0][1] == 9999. );
 //	}
 //	{
@@ -122,7 +132,7 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		namespace blas = multi::blas;
 //		using blas::filling;
 //		syrk(filling::upper, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
-//		BOOST_REQUIRE( c[0][1] == 34. ); 
+//		BOOST_REQUIRE( c[0][1] == 34. );
 //		BOOST_REQUIRE( c[1][0] == 9999. );
 //	}
 //	{
@@ -130,12 +140,12 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		namespace blas = multi::blas;
 //		using blas::filling;
 //		syrk(filling::upper, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
-//		BOOST_REQUIRE( c[0][1] == 34. ); 
+//		BOOST_REQUIRE( c[0][1] == 34. );
 //		BOOST_REQUIRE( c[1][0] == 9999. );
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_real_special_case){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_real_special_case){
 //	multi::array<double, 2> const a = {
 //		{ 1., 3., 4.},
 //	};
@@ -144,12 +154,12 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		namespace blas = multi::blas;
 //		using blas::filling;
 //		syrk(filling::lower, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//		//BOOST_REQUIRE( c[1][0] == 34. ); 
+//		//BOOST_REQUIRE( c[1][0] == 34. );
 //		//BOOST_REQUIRE( c[0][1] == 9999. );
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex_real_case){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex_real_case){
 //	using complex = std::complex<double>;
 //	multi::array<complex, 2> const a = {
 //		{ 1., 3., 4.},
@@ -164,9 +174,9 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		BOOST_REQUIRE( c[2][1] == 19. );
 //		BOOST_REQUIRE( c[1][2] == 9999. );
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex){
 //	using complex = std::complex<double>;
 //	constexpr auto const I = complex{0., 1.};
 //	multi::array<complex, 2> const a = {
@@ -195,13 +205,12 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		namespace blas = multi::blas;
 //		using blas::filling;
 //		syrk(filling::upper, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
-//		BOOST_REQUIRE( c[0][1] == complex(18., -21.) ); 
+//		BOOST_REQUIRE( c[0][1] == complex(18., -21.) );
 //		BOOST_REQUIRE( c[1][0] == 9999. );
 //	}
-//}
+// }
 
-
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex){
 //	using complex = std::complex<double>;
 //	constexpr auto const I = complex{0., 1.};
 //	multi::array<complex, 2> const a = {
@@ -233,9 +242,9 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		BOOST_REQUIRE( c[2][1]==complex(-3.,-34.) );
 //		BOOST_REQUIRE( c[1][2]==9999. );
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real){
 //	multi::array<double, 2> const a = {
 //		{ 1., 3., 4.},
 //		{ 9., 7., 1.}
@@ -284,12 +293,12 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		using multi::blas::filling;
 //		using multi::blas::transposed;
 //		syrk(filling::upper, 1., a, 0., transposed(c)); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
-//		BOOST_REQUIRE( c[0][1] == 9999. ); 
+//		BOOST_REQUIRE( c[0][1] == 9999. );
 //		BOOST_REQUIRE( c[1][0] == 34. );
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_implicit_zero){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_implicit_zero){
 //	multi::array<double, 2> const a = {
 //		{ 1., 3., 4.},
 //		{ 9., 7., 1.}
@@ -301,9 +310,9 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		BOOST_REQUIRE( c[1][0] == 34. );
 //		BOOST_REQUIRE( c[0][1] == 9999. );
 //	}
-//}
+// }
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_symmetrization){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_symmetrization){
 //	multi::array<double, 2> const a = {
 //		{ 1., 3., 4.},
 //		{ 9., 7., 1.}
@@ -337,29 +346,15 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		BOOST_REQUIRE( c[2][1] == 19. );
 //		BOOST_REQUIRE( c[1][2] == 19. );
 //	}
-//}
+// }
 
-//#if 0
-
-
+// #if 0
 
 //}
 
-
-
-
-
-
-
 //}
 
-
-
-
-
-
-
-//#if 0
+// #if 0
 //	{
 
 //		{
@@ -387,9 +382,9 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //			multi::array C = rotated(syrk(A)); // C = C^T = A^T*A, C is a value type matrix (with C-ordering, information is in upper triangular part)
 //			print(C) <<"---\n";
 //		}
-//		
+//
 //	}
-//#if 0
+// #if 0
 //	{
 //		multi::array<complex, 2> const A = {
 //			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
@@ -408,11 +403,11 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		auto C = syrk(rotated(A)); // C = C^T = A^T*A, C is a value type matrix (with C-ordering)
 //		print(C) <<"---\n";
 //	}
-//#endif
-//#endif
+// #endif
+// #endif
 //}
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_herk_fallback){
+// BOOST_AUTO_TEST_CASE(multi_blas_syrk_herk_fallback){
 //	multi::array<double, 2> const a = {
 //		{ 1., 3., 4.},
 //		{ 9., 7., 1.}
@@ -422,11 +417,11 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 //		namespace blas = multi::blas;
 //		using blas::filling;
 //		syrk(filling::lower, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//		BOOST_REQUIRE( c[1][0] == 34. ); 
+//		BOOST_REQUIRE( c[1][0] == 34. );
 //		BOOST_REQUIRE( c[0][1] == 9999. );
 //	}
-//}
-//#endif
+// }
+// #endif
 
-//#endif
+// #endif
 #endif

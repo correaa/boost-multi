@@ -8,7 +8,7 @@
 
 #include "../../complex.hpp"
 
-#include<type_traits>
+#include <type_traits>
 
 namespace multi = boost::multi;
 
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(float_complex_assignment) {
 }
 
 BOOST_AUTO_TEST_CASE(float_complex_aggregate) {
-	static_assert( std::is_aggregate_v<multi::complex<float>> );
+	static_assert(std::is_aggregate_v<multi::complex<float>>);
 
 	// auto const c = multi::complex<float>{._real = 1.0, ._imag = 2.0};
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(double_complex_abs) {
 
 BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {
 	using multi::literals::operator""_I;
-	multi::complex<double> zeta = 1.0 + 2.0_I;
+	multi::complex<double>       zeta = 1.0 + 2.0_I;
 	multi::complex<double> const yeta = 1.0 + 2.0_I;
 
 	zeta += yeta;

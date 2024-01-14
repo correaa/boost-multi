@@ -10,7 +10,7 @@
 
 namespace multi = boost::multi;
 
-inline auto what_is(multi::array<double              , 2> const& /*arr*/) { return std::string{"real"}; }  // std::string NOLINT(fuchsia-default-arguments-calls)
+inline auto what_is(multi::array<double, 2> const& /*arr*/) { return std::string{"real"}; }  // std::string NOLINT(fuchsia-default-arguments-calls)
 inline auto what_is(multi::array<std::complex<double>, 2> const& /*arr*/) { return std::string{"complex"}; }  // std::string NOLINT(fuchsia-default-arguments-calls)
 
 BOOST_AUTO_TEST_CASE(multi_array_overload) {

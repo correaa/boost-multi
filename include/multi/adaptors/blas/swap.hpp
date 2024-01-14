@@ -25,9 +25,9 @@ auto swap(It1 first, It2 last, It2 first2) -> It2 {
 
 template<class X1D, class Y1D>
 auto swap(X1D&& x, Y1D&& y) -> Y1D&& {  // NOLINT(readability-identifier-length) x, y conventional blas names
-	assert( size(x) == size(y) );
-//  assert( offset(x) == 0 and offset(y) == 0 );
-	swap( begin(x), end(x), begin(y) );
+	assert(size(x) == size(y));
+	//  assert( offset(x) == 0 and offset(y) == 0 );
+	swap(begin(x), end(x), begin(y));
 	return std::forward<Y1D>(y);
 }
 
@@ -41,8 +41,8 @@ auto operator^(X1D&& x, Y1D&& y) {  // NOLINT(readability-identifier-length) BLA
 }
 
 namespace operators {
-	using blas::operator^;
+using blas::operator^;
 }  // end namespace operators
 
-} // end namespace boost::multi::blas
+}  // end namespace boost::multi::blas
 #endif

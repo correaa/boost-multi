@@ -13,15 +13,14 @@ namespace memory {
 namespace cuda {
 
 namespace managed {
-	[[nodiscard]]
-	inline managed::ptr<void> malloc(size_t bytes) {
-	    MULTI_MARK_SCOPE("cuda::managed::malloc");
-	    return managed::ptr<void>{Cuda::Managed::malloc(bytes)};
-	}
-	inline void free(managed::ptr<void> p) {
-	    MULTI_MARK_SCOPE("cuda::managed::free");
-	    Cuda::Managed::free(static_cast<void*>(p));
-	}
+[[nodiscard]] inline managed::ptr<void> malloc(size_t bytes) {
+	MULTI_MARK_SCOPE("cuda::managed::malloc");
+	return managed::ptr<void>{Cuda::Managed::malloc(bytes)};
+}
+inline void free(managed::ptr<void> p) {
+	MULTI_MARK_SCOPE("cuda::managed::free");
+	Cuda::Managed::free(static_cast<void*>(p));
+}
 }  // end namespace managed
 }  // end namespace cuda
 }  // end namespace memory
