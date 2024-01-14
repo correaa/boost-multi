@@ -122,7 +122,7 @@ struct extensions_t {
 	friend constexpr auto operator*(index_extension const& extension, extensions_t const& self) -> extensions_t<D + 1> {
 		return extensions_t<D + 1>{
 			tuple{extension, self.base()}
-                                                                                                                                                                                                      };
+		};
 	}
 
 	friend HD auto operator==(extensions_t const& self, extensions_t const& other) { return self.impl_ == other.impl_; }
@@ -216,7 +216,7 @@ struct extensions_t {
 			tuple{
                                                                                                                                                                                                                                                                                                                index_extension{intersection(get<0>(self.impl_), get<0>(other.impl_))},
                                                                                                                                                                                                                                                                                                                intersection(extensions_t<D - 1>{tail(self.base())}, extensions_t<D - 1>{tail(other.base())}).base()}
-                                                                                                                                                                                                      };
+		};
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < D), int> = 0>
@@ -328,7 +328,7 @@ template<> struct extensions_t<1> {
 	static constexpr auto to_linear(index const& idx) -> difference_type /*const*/ { return idx; }
 	constexpr auto        operator()(index const& idx) const -> difference_type { return to_linear(idx); }
 	constexpr auto        operator[](index idx) const {
-		       return multi::detail::tuple<multi::index>{std::get<0>(impl_)[idx]};
+                                                                                                                                                                                                      return multi::detail::tuple<multi::index>{std::get<0>(impl_)[idx]};
 	}
 
 	template<class... Indices>
@@ -356,7 +356,8 @@ template<> struct extensions_t<1> {
 			intersection(
 				boost::multi::detail::get<0>(self.impl_),
 				boost::multi::detail::get<0>(other.impl_)
-			)};
+			)
+		};
 	}
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
@@ -549,7 +550,8 @@ struct layout_t
 		                                                                    std::apply(
 			                                                                    [](auto const&... subextensions) { return multi::extensions_t<D - 1>{subextensions...}; },
 			                                                                    detail::tail(extensions.base())
-		                                                                    )},
+		                                                                    )
+	                                                                    },
 	                                                                    stride_{sub_.num_elements() ? sub_.num_elements() : 1}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 
 	HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides) : sub_{
@@ -557,7 +559,8 @@ struct layout_t
 			                                                                                                 [](auto const&... subextensions) { return multi::extensions_t<D - 1>{subextensions...}; },
 			                                                                                                 detail::tail(extensions.base())
 		                                                                                                 ),
-		                                                                                                 detail::tail(strides)},
+		                                                                                                 detail::tail(strides)
+	                                                                                                 },
 	                                                                                                 stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 
 	HD constexpr explicit layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
