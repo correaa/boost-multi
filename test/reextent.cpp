@@ -112,8 +112,8 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
 }
 
 BOOST_AUTO_TEST_CASE(array_move_clear) {
-	multi::array<int, 1>    const iarr;
-	multi::array<double, 2> arr({2, 3});
+	multi::array<int, 1> const iarr;
+	multi::array<double, 2>    arr({2, 3});
 
 	arr = multi::array<double, 2>(extensions(arr), 123.0);
 	BOOST_REQUIRE( arr[1][2] == 123.0 );
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(array_vector_size) {
 
 BOOST_AUTO_TEST_CASE(array_iota) {
 	multi::array<double, 1> const Aarr(10);
-	multi::array<int, 1>    Barr(Aarr.extension().begin(), Aarr.extension().end());
+	multi::array<int, 1>          Barr(Aarr.extension().begin(), Aarr.extension().end());
 	BOOST_REQUIRE( Barr[0] == 0 );
 	BOOST_REQUIRE( Barr[1] == 1 );
 	BOOST_REQUIRE( Barr[9] == 9 );
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(array_iota) {
 #ifndef __INTEL_COMPILER
 BOOST_AUTO_TEST_CASE(extension_index_op) {
 	multi::array<double, 2> const Aarr({11, 13});
-	auto Aext = Aarr.extensions();
+	auto                          Aext = Aarr.extensions();
 	BOOST_REQUIRE( std::get<0>(Aext[3][5]) == 3 );
 	BOOST_REQUIRE( std::get<1>(Aext[3][5]) == 5 );
 

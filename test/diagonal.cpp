@@ -55,13 +55,13 @@ BOOST_AUTO_TEST_CASE(trace_test) {
 
 	BOOST_REQUIRE( trace_with_diagonal(arr) == trace_with_indices(arr) );
 	BOOST_REQUIRE( trace_with_diagonal(arr) == trace_with_accumulate(arr) );
-//  BOOST_REQUIRE( trace_with_diagonal(arr) == trace_with_reduce(arr) );
+	//  BOOST_REQUIRE( trace_with_diagonal(arr) == trace_with_reduce(arr) );
 }
 
 BOOST_AUTO_TEST_CASE(broadcasted) {
 	multi::array<int, 2> const arr = {
-		{0, 1, 2, 3},
-		{4, 5, 6, 7},
+		{0, 1,  2,  3},
+		{4, 5,  6,  7},
 		{8, 9, 10, 11},
 	};
 
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE(broadcasted) {
 		// BOOST_TEST( &a3D_finite[99][3][1] == &arr[3][1] );
 	}
 
-//  BOOST_REQUIRE( a3D_finite.size() == 5 );
-//  BOOST_REQUIRE( a3D_finite.begin() + 5 == a3D_finite.end() );
+	//  BOOST_REQUIRE( a3D_finite.size() == 5 );
+	//  BOOST_REQUIRE( a3D_finite.begin() + 5 == a3D_finite.end() );
 }
 
 BOOST_AUTO_TEST_CASE(broadcast_1D) {
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(broadcast_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(broadcast_0D) {
-	multi::array<int, 1> arr = {0, 1, 2, 3};
+	multi::array<int, 1>       arr = {0, 1, 2, 3};
 	multi::array<int, 0> const vv(2);
 
 	auto const& v1D = vv.broadcasted();
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(broadcast_0D) {
 
 	BOOST_TEST( r1D[3] == arr[3] + 2 );
 
-	std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) {return ve;});
+	std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) { return ve; });
 	BOOST_TEST( arr[3] == 2 );
 
 	// std::copy_n(v1D.begin(), arr.size(), arr.begin());

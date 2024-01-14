@@ -4,12 +4,12 @@
 #ifndef MULTI_MEMORY_MONOTONIC_HPP_
 #define MULTI_MEMORY_MONOTONIC_HPP_
 
-#include "../memory/block.hpp"
 #include "../memory/allocator.hpp"
+#include "../memory/block.hpp"
 
-#include<cstddef>     // for max_align_t
-#include<stdexcept>
-#include<string>
+#include <cstddef>  // for max_align_t
+#include <stdexcept>
+#include <string>
 
 namespace boost {
 namespace multi {
@@ -20,39 +20,38 @@ namespace memory {
 
 template<class T>
 T* align_up(T* ptr, std::size_t bytes = alignof(std::max_align_t)) {
-//  return
-//  	reinterpret_cast<T*>(
-//  		  (reinterpret_cast<std::uintptr_t>(ptr) + (bytes-1))
-//  		& ~(bytes-1)
-//  	)
-//  ;
+	//  return
+	//  	reinterpret_cast<T*>(
+	//  		  (reinterpret_cast<std::uintptr_t>(ptr) + (bytes-1))
+	//  		& ~(bytes-1)
+	//  	)
+	//  ;
 	using uintptr_t = std::uint64_t;
-	static_assert( sizeof(uintptr_t) == sizeof(T*), "this function works in 64 bit systems" );
-	return reinterpret_cast<T*>( bytes * ((reinterpret_cast<uintptr_t&>(ptr) + (bytes - 1)) / bytes) );
+	static_assert(sizeof(uintptr_t) == sizeof(T*), "this function works in 64 bit systems");
+	return reinterpret_cast<T*>(bytes * ((reinterpret_cast<uintptr_t&>(ptr) + (bytes - 1)) / bytes));
 }
 
 template<class Ptr>  // TODO(correaa) test with actual fancy ptr
-constexpr
-Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
+constexpr Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
 	using multi::to_address;
 	auto p_(to_address(ptr));
-//  using multi::raw_pointer_cast;
-//  auto p_{raw_pointer_cast(p)};
+	//  using multi::raw_pointer_cast;
+	//  auto p_{raw_pointer_cast(p)};
 
-	static_assert( sizeof(*p_)==1 , "!");  //  crash
-//  auto q_ = reinterpret_cast<decltype(p_)>(
-//  	(reinterpret_cast<std::uintptr_t>(p_) + (align-1))
-//  	& ~(align-1)
-//  );
+	static_assert(sizeof(*p_) == 1, "!");  //  crash
+	//  auto q_ = reinterpret_cast<decltype(p_)>(
+	//  	(reinterpret_cast<std::uintptr_t>(p_) + (align-1))
+	//  	& ~(align-1)
+	//  );
 	auto q_ = align_up(p_, bytes);
 	return ptr + std::distance(p_, q_);
-//  return reinterpret_cast<Ptr&>( bytes * ((reinterpret_cast<std::uintptr_t&>(ptr) + (bytes - 1)) / bytes) );  // maybe using uint64_t and static_assert sizeof(void*) == uint64_t
+	//  return reinterpret_cast<Ptr&>( bytes * ((reinterpret_cast<std::uintptr_t&>(ptr) + (bytes - 1)) / bytes) );  // maybe using uint64_t and static_assert sizeof(void*) == uint64_t
 }
 
 template<typename Ptr = byte*, std::size_t Align = alignof(std::max_align_t)>
 class null_t {
  public:
-	using pointer = Ptr;
+	using pointer   = Ptr;
 	using size_type = typename std::pointer_traits<pointer>::difference_type;
 
  private:
@@ -61,11 +60,15 @@ class null_t {
  public:
 	template<std::size_t AA = Align>
 	void_pointer allocate(size_type required_bytes, size_type = AA) {
-		if(required_bytes > 0) {throw std::bad_alloc{};}
+		if(required_bytes > 0) {
+			throw std::bad_alloc{};
+		}
 		return nullptr;
 	}
 	void deallocate(void_pointer p, size_type /*discarded_bytes*/) {
-		if(p != nullptr) {throw std::bad_alloc{};}
+		if(p != nullptr) {
+			throw std::bad_alloc{};
+		}
 	}
 };
 
@@ -79,16 +82,16 @@ class monotonic : protected block<Ptr> {
 	using block<Ptr>::size_;
 	using block<Ptr>::block;
 	typename monotonic::pointer position_ = start_;
-	void reset() {position_ = this->start_;}
+	void                        reset() { position_ = this->start_; }
 	template<std::size_t AA = Align>
 	typename monotonic::void_pointer allocate(
 		typename monotonic::size_type required_bytes,
 		typename monotonic::size_type align = AA  // alignof(std::max_align_t)
 	) {
-		auto ret = align_up(this->position_, align);
+		auto ret           = align_up(this->position_, align);
 		auto new_position_ = ret + required_bytes;
 		using std::distance;
-		if(not this->contains(new_position_-1)) {
+		if(not this->contains(new_position_ - 1)) {
 			throw overflow(required_bytes, this->size_ - distance(start_, position_));
 		}
 		this->position_ = new_position_;
@@ -101,18 +104,20 @@ class monotonic : protected block<Ptr> {
 		typename monotonic::void_pointer p,
 		typename monotonic::size_type /*discarded_bytes*/
 	) {
-		if(not owns(p)) {throw std::bad_alloc{};}
+		if(not owns(p)) {
+			throw std::bad_alloc{};
+		}
 	}
-	struct overflow : public std::bad_alloc{
+	struct overflow : public std::bad_alloc {
 		using size_type = typename monotonic::size_type;
 		size_type required;
 		size_type available;
-	//  constexpr auto to_string = [](auto a){return std::to_string(a);};
+		//  constexpr auto to_string = [](auto a){return std::to_string(a);};
 		std::string msg;
 		overflow(size_type required, size_type available)
 		: required{required}, available{available},
-			msg{"required "+std::to_string(required)+" while only "+std::to_string(available)+" bytes available"} {}
-		char const* what() const throw() override {return msg.c_str();}  // + std::to_string(required)).c_str();}
+		  msg{"required " + std::to_string(required) + " while only " + std::to_string(available) + " bytes available"} {}
+		char const* what() const throw() override { return msg.c_str(); }  // + std::to_string(required)).c_str();}
 	};
 };
 
@@ -127,39 +132,41 @@ using monotonic_allocator = multi::memory::allocator<T, monotonic<char*>>;
 
 #include "../../multi/array.hpp"
 
-#include<iostream>
-#include<vector>
-#include<cmath>
+#include <cmath>
+#include <iostream>
+#include <vector>
 
 namespace multi = boost::multi;
 using std::cout;
 
-int main(){
-{
-	multi::memory::null_t<char*> mr;
-	try {
-		mr.allocate(1*sizeof(double), alignof(double));
-	} catch(...) {}
-}
-{
-	alignas(double) std::array<char, 256*sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
-	multi::memory::monotonic<char*> m(buffer.data(), buffer.size());
-	auto p1 = m.allocate(1*sizeof(double), alignof(double));
-	auto p2 = m.allocate(255*sizeof(double), alignof(double));
-	m.deallocate(p2, 255*sizeof(double));
-	m.deallocate(p1, 1*sizeof(double));
-	try {
-		m.deallocate(reinterpret_cast<char*>(p1) + 10000, 1*sizeof(double));
-	} catch(...){}
-}
-{
-	alignas(double) std::array<char, 300*sizeof(double)> buffer;  // char buffer[300*sizeof(double)];
-	multi::memory::monotonic<char*> m(buffer.data(), buffer.size());
-	multi::memory::monotonic_allocator<double> alloc(&m);
-	multi::array<double, 2, multi::memory::monotonic_allocator<double>> A({10, 10}, &m);
-	multi::array<double, 2, multi::memory::monotonic_allocator<double>> B({10, 10}, &m);
-	multi::array<double, 2, multi::memory::monotonic_allocator<double>> C({10, 10}, &m);
-}
+int main() {
+	{
+		multi::memory::null_t<char*> mr;
+		try {
+			mr.allocate(1 * sizeof(double), alignof(double));
+		} catch(...) {
+		}
+	}
+	{
+		alignas(double) std::array<char, 256 * sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
+		multi::memory::monotonic<char*>                        m(buffer.data(), buffer.size());
+		auto                                                   p1 = m.allocate(1 * sizeof(double), alignof(double));
+		auto                                                   p2 = m.allocate(255 * sizeof(double), alignof(double));
+		m.deallocate(p2, 255 * sizeof(double));
+		m.deallocate(p1, 1 * sizeof(double));
+		try {
+			m.deallocate(reinterpret_cast<char*>(p1) + 10000, 1 * sizeof(double));
+		} catch(...) {
+		}
+	}
+	{
+		alignas(double) std::array<char, 300 * sizeof(double)>              buffer;  // char buffer[300*sizeof(double)];
+		multi::memory::monotonic<char*>                                     m(buffer.data(), buffer.size());
+		multi::memory::monotonic_allocator<double>                          alloc(&m);
+		multi::array<double, 2, multi::memory::monotonic_allocator<double>> A({10, 10}, &m);
+		multi::array<double, 2, multi::memory::monotonic_allocator<double>> B({10, 10}, &m);
+		multi::array<double, 2, multi::memory::monotonic_allocator<double>> C({10, 10}, &m);
+	}
 }
 #endif
 #endif  // MULTI_MEMORY_MONOTONIC_HPP_

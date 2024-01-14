@@ -13,8 +13,12 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(comparison_complex) {
 	using complex = std::complex<double>;
 	{
-		multi::array<double , 1> arr  = { 1.0,        2.0,        3.0      };
-		multi::array<complex, 1> arr2 = {{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}};
+		multi::array<double, 1>  arr  = {1.0, 2.0, 3.0};
+		multi::array<complex, 1> arr2 = {
+			{1.0, 0.0},
+			{2.0, 0.0},
+			{3.0, 0.0}
+		};
 
 		BOOST_REQUIRE( arr[1] == arr2[1] );
 		BOOST_REQUIRE( arr == arr2 );
@@ -63,7 +67,7 @@ BOOST_AUTO_TEST_CASE(comparisons_equality) {
 		{ {1.2, 1.1},  {2.4, 1.0}},
 	};
 
-	multi::array_ref<double, 3> ref(arr.data_elements(), extensions(arr));
+	multi::array_ref<double, 3>  ref(arr.data_elements(), extensions(arr));
 	multi::array_cref<double, 3> cref(data_elements(arr), extensions(arr));
 
 	BOOST_REQUIRE( arr ==  arr );
@@ -91,7 +95,7 @@ BOOST_AUTO_TEST_CASE(comparisons_ordering) {
 		{ {1.2, 1.1},  {2.4, 1.}},
 	};
 
-	multi::array_ref<double, 3> ref(arr.data_elements(), extensions(arr));
+	multi::array_ref<double, 3>  ref(arr.data_elements(), extensions(arr));
 	multi::array_cref<double, 3> cref(data_elements(arr), extensions(arr));
 
 	BOOST_REQUIRE(  arr[0]    <=  arr[1] );

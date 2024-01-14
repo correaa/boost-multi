@@ -1,6 +1,6 @@
 // Copyright 2018-2023 Alfredo A. Correa
 
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
 

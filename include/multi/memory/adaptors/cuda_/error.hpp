@@ -4,19 +4,19 @@
 #ifndef MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP_
 #define MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP_
 
-#include<driver_types.h>     // cudaError_t
-#include<cuda_runtime_api.h> // cudaGetErrorString
+#include <cuda_runtime_api.h>  // cudaGetErrorString
+#include <driver_types.h>  // cudaError_t
 
-#include<system_error>
-#include<type_traits>        // underlying_type
+#include <system_error>
+#include <type_traits>  // underlying_type
 
-namespace Cuda{
+namespace Cuda {
 
-enum /*class*/ error : std::underlying_type<cudaError_t>::type{
-	success                    = cudaSuccess,  // = 0 The API call returned with no errors. In the case of query calls, this also means that the operation being queried is complete (see cudaEventQuery() and cudaStreamQuery()).
-	missing_configuration      = cudaErrorMissingConfiguration,
+enum /*class*/ error : std::underlying_type<cudaError_t>::type {
+	success               = cudaSuccess,  // = 0 The API call returned with no errors. In the case of query calls, this also means that the operation being queried is complete (see cudaEventQuery() and cudaStreamQuery()).
+	missing_configuration = cudaErrorMissingConfiguration,
 	// invalid_value /*invalid_argument*/ = cudaErrorInvalidValue,  // = 1, This indicates that one or more of the parameters passed to the API call is not within an acceptable range of values.
-	memory_allocation          = cudaErrorMemoryAllocation,  // = 2  // The API call failed because it was unable to allocate enough memory to perform the requested operation. 
+	memory_allocation          = cudaErrorMemoryAllocation,  // = 2  // The API call failed because it was unable to allocate enough memory to perform the requested operation.
 	initialization_error       = cudaErrorInitializationError,
 	lauch_failure              = cudaErrorLaunchFailure,
 	lauch_timeout              = cudaErrorLaunchTimeout,
@@ -24,7 +24,7 @@ enum /*class*/ error : std::underlying_type<cudaError_t>::type{
 	invalid_device_function    = cudaErrorInvalidDeviceFunction,
 	invalid_configuration      = cudaErrorInvalidConfiguration,
 	invalid_device             = cudaErrorInvalidDevice,
-	invalid_value              = cudaErrorInvalidValue,  ///*invalid_argument*/ = cudaErrorInvalidValue, // = 1 This indicates that one or more of the parameters passed to the API call is not within an acceptable range of values. 
+	invalid_value              = cudaErrorInvalidValue,  ///*invalid_argument*/ = cudaErrorInvalidValue, // = 1 This indicates that one or more of the parameters passed to the API call is not within an acceptable range of values.
 	invalid_pitch_value        = cudaErrorInvalidPitchValue,
 	invalid_symbol             = cudaErrorInvalidSymbol,
 	unmap_buffer_object_failed = cudaErrorUnmapBufferObjectFailed,
@@ -46,12 +46,12 @@ enum /*class*/ error : std::underlying_type<cudaError_t>::type{
 	jit_compiler_not_found     = cudaErrorJitCompilerNotFound
 };
 
-inline std::string string(enum error e){return cudaGetErrorString(static_cast<cudaError_t>(e));}
+inline std::string string(enum error e) { return cudaGetErrorString(static_cast<cudaError_t>(e)); }
 
 struct error_category : std::error_category {
-	char const* name() const noexcept override { return "cuda wrapper"; }
-	std::string message(int e) const override {return string(static_cast<error>(e));}
-	static error_category& instance(){
+	char const*            name() const noexcept override { return "cuda wrapper"; }
+	std::string            message(int e) const override { return string(static_cast<error>(e)); }
+	static error_category& instance() {
 		static error_category instance;
 		return instance;
 	}
@@ -61,36 +61,37 @@ inline std::error_code make_error_code(error err) noexcept {
 	return {int(err), error_category::instance()};
 }
 
-}
+}  // namespace Cuda
 
-namespace std{template<> struct is_error_code_enum<Cuda::error> : true_type {};}
+namespace std {
+template<> struct is_error_code_enum<Cuda::error> : true_type {};
+}  // namespace std
 
 #if not __INCLUDE_LEVEL__
 
-#include<iostream>
+#include <iostream>
 
 using std::cout;
 
-int main(){
+int main() {
 
 	{
-		std::error_code ec = Cuda::error::memory_allocation; (void)ec;
+		std::error_code ec = Cuda::error::memory_allocation;
+		(void)ec;
 	}
 	try {
-		auto e = Cuda::error::memory_allocation; // return from a cudaFunction
+		auto e = Cuda::error::memory_allocation;  // return from a cudaFunction
 		throw std::system_error{e, "I cannot do allocation"};
 	} catch(std::system_error const& e) {
 		cout
-			<<"catched...\n"
-			<<"code: "   << e.code()           <<'\n'
-			<<"message: "<< e.code().message() <<'\n'
-			<<"what: "   << e.what()           <<'\n'
-		;
+			<< "catched...\n"
+			<< "code: " << e.code() << '\n'
+			<< "message: " << e.code().message() << '\n'
+			<< "what: " << e.what() << '\n';
 	}
 
-//	auto e = Cuda::error::memory_allocation; // return from a cudaFunction
-//	throw std::system_error{e, "because"};
-
+	//	auto e = Cuda::error::memory_allocation; // return from a cudaFunction
+	//	throw std::system_error{e, "because"};
 }
 #endif
 #endif  // MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP_

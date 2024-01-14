@@ -1,34 +1,37 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x$OXX `pkg-config --libs blas lapack` -lboost_unit_test_framework&&$0x$OXX -x 0&&rm $0x$OXX;exit
+#ifdef COMPILATION  // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXXX $CXXFLAGS $0 - o $0x$OXX `pkg - config-- libs blas lapack` - lboost_unit_test_framework&& $0x$OXX - x 0 && rm $0x$OXX;
+exit
 #endif
 // © Alfredo A. Correa 2020
 
 #ifndef MULTI_ADAPTORS_LAPACK_GEQRF_HPP
 #define MULTI_ADAPTORS_LAPACK_GEQRF_HPP
 
-#include "../lapack/core.hpp"
 #include "../blas/filling.hpp"
+#include "../lapack/core.hpp"
 
 #include "../../config/NODISCARD.hpp"
 
-#include<cassert>
+#include <cassert>
 
-namespace boost{namespace multi{namespace lapack{
+	namespace boost {
+	namespace multi {
+	namespace lapack {
 
-using blas::filling;
+	using blas::filling;
 
-template<class Context, class A, class TAU, class WORK>
-A&& geqrf(Context&& ctxt, A&& a, TAU&& tau, WORK&& work){
-//	assert( stride(~a) == 1);
-	assert( size(tau) == std::min(size(~a), size(a)) );
-	int info = -1;
-	geqrf_(std::forward<Context>(ctxt), size(~a), size(a), a.base(), stride(a), tau.base(), work.data(), work.size(), info);
-	assert(info == 0);
-	return std::forward<A>(a);
-}
+	template<class Context, class A, class TAU, class WORK>
+	A&& geqrf(Context&& ctxt, A&& a, TAU&& tau, WORK&& work) {
+		//	assert( stride(~a) == 1);
+		assert(size(tau) == std::min(size(~a), size(a)));
+		int info = -1;
+		geqrf_(std::forward<Context>(ctxt), size(~a), size(a), a.base(), stride(a), tau.base(), work.data(), work.size(), info);
+		assert(info == 0);
+		return std::forward<A>(a);
+	}
 
-//using ::core::syev;
-//using ::core::geqrf;
+	// using ::core::syev;
+	// using ::core::geqrf;
 
 #if 0
 template<class Array2D, class Array1D, class Array1DW>
@@ -82,7 +85,9 @@ auto syev(blas::filling uplo, Array2D const& a){
 }
 #endif
 
-}}}
+	}  // namespace lapack
+	}  // namespace multi
+}
 
 #if not __INCLUDE_LEVEL__
 
@@ -90,53 +95,53 @@ auto syev(blas::filling uplo, Array2D const& a){
 #if not __INTEL_COMPILER
 #define BOOST_TEST_DYN_LINK
 #endif
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "../../array.hpp"
 
-#include<cmath> // std::isnan
-#include<iostream>
-#include<algorithm> // std::max
+#include <algorithm>  // std::max
+#include <cmath>  // std::isnan
+#include <iostream>
 
-namespace multi = boost::multi;
+namespace multi  = boost::multi;
 namespace lapack = multi::lapack;
 
-template<class M> decltype(auto) print(M const& C){
-	using std::cout;
+template<class M> decltype(auto) print(M const& C) {
 	using multi::size;
-	for(int i = 0; i != size(C); ++i){
-		for(int j = 0; j != size(C[i]); ++j) cout << C[i][j] << ' ';
+	using std::cout;
+	for(int i = 0; i != size(C); ++i) {
+		for(int j = 0; j != size(C[i]); ++j)
+			cout << C[i][j] << ' ';
 		cout << std::endl;
 	}
 	return cout << std::endl;
 }
 
-template<class M> decltype(auto) print_1d(M const& C){
-	using std::cout;
+template<class M> decltype(auto) print_1d(M const& C) {
 	using multi::size;
-	for(int i = 0; i != size(C); ++i) cout<< C[i] <<' ';
+	using std::cout;
+	for(int i = 0; i != size(C); ++i)
+		cout << C[i] << ' ';
 	return cout << std::endl;
 }
 
-BOOST_AUTO_TEST_CASE(lapack_geqrf){
+BOOST_AUTO_TEST_CASE(lapack_geqrf) {
 
-	multi::array<double, 2> A = 
+	multi::array<double, 2> A =
 		{
 			{1., 2., 3.},
 			{4., 5., 6.},
 			{7., 8., 9.}
-		}
-	;
+                                                                                                   };
 	multi::lapack::context ctxt;
 
 	multi::array<double, 1> TAU(std::min(size(A), size(~A)));
-	multi::array<double, 1> WORK(std::max(1l, 3*size(A)-1));
+	multi::array<double, 1> WORK(std::max(1l, 3 * size(A) - 1));
 
 	multi::lapack::geqrf(ctxt, A, TAU, WORK);
 
 	print(A);
 	print(TAU);
-
 }
 
 #if 0
@@ -272,5 +277,3 @@ BOOST_AUTO_TEST_CASE(lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 #endif
 
 #endif
-
-

@@ -8,12 +8,12 @@
 #define __has_cpp_attribute(name) 0
 #endif
 
-#if __has_cpp_attribute(no_unique_address) >=201803 and not defined(__NVCC__) and not defined(__PGI)
-	// NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this macro will be needed until C++20
-	#define MULTI_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#if __has_cpp_attribute(no_unique_address) >= 201803 and not defined(__NVCC__) and not defined(__PGI)
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this macro will be needed until C++20
+#define MULTI_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #else
-	// NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this macro will be needed until C++20
-	#define MULTI_NO_UNIQUE_ADDRESS
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this macro will be needed until C++20
+#define MULTI_NO_UNIQUE_ADDRESS
 #endif
 
 #endif  // MULTI_CONFIG_NO_UNIQUE_ADDRESS_HPP_

@@ -2,11 +2,11 @@
 // Copyright 2019-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"  // NOLINT(cppcoreguidelines-macro-usage) title
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
 
-#include<complex>
+#include <complex>
 
 // workaround for libc++ and boost test
 // namespace boost::unit_test::ut_detail {
@@ -32,7 +32,7 @@ void resize_copy_3(std::vector<double> const& source, DynamicArray& darr) {
 	darr = std::decay_t<decltype(darr)>(source.begin(), source.end());  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 }
 
-template<class It, class DynamicArray>   // e.g. std::vector or multi::array
+template<class It, class DynamicArray>  // e.g. std::vector or multi::array
 void resize_copy_4(It first, It last, DynamicArray& darr) {
 	darr = DynamicArray(first, last);  // or std::decay_t<decltype(da)>(source.begin(), source.end())  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 }
@@ -171,19 +171,19 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_6) {
 BOOST_AUTO_TEST_CASE(assign_equality) {
 	{
 		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
-		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const     aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
 	{
 		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
-		std::vector<double> const aa(AA.begin(), AA.end());  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const     aa(AA.begin(), AA.end());  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
 	{
 		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
-		auto const aa(AA().operator std::vector<double>());
+		auto const                    aa(AA().operator std::vector<double>());
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
@@ -194,13 +194,13 @@ BOOST_AUTO_TEST_CASE(assign_equality) {
 	//  BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	// }
 	{
-		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const     aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 		multi::array<double, 1> const AA(aa.begin(), aa.end());
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
 	{
-		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const     aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 		multi::array<double, 1> const AA(aa);
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
@@ -209,38 +209,53 @@ BOOST_AUTO_TEST_CASE(assign_equality) {
 
 BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 	{
-		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0}
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<multi::array<double, 1>> const aa(AA.begin(), AA.end());  // NOLINT(fuchsia-default-arguments-calls)
 	}
 	{
-		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0}
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		auto const aa(AA().operator std::vector<std::vector<double>>());
 	}
 	{
-	#if not defined(__circle_build__)
-		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+#if not defined(__circle_build__)
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0}
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<std::vector<double>> const aa(AA);
 		BOOST_REQUIRE( aa.size() == 2 );
 		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
-	#endif
+#endif
 	}
 	{
-		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0}
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 	}
 	{
-	#if not defined(__circle_build__)
-		multi::array<double, 2> const              AA = {{1.0, 2.0}, {3.0, 4.0}};
+#if not defined(__circle_build__)
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0}
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<multi::array<double, 1>> const aa(AA);
 		BOOST_REQUIRE( aa.size() == 2 );
-	#endif
+#endif
 	}
 }

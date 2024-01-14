@@ -8,18 +8,19 @@ namespace boost::multi::blas {
 
 enum side : char {
 	left  = 'L',
-	right = 'R'//,
-//  pre_multiply = 'R',
-//  post_multiply = 'L'
+	right = 'R'  //,
+	//  pre_multiply = 'R',
+	//  post_multiply = 'L'
 };
 
 inline auto swap(side sid) -> side {
 	switch(sid) {
-		case side::left : return side::right;
-		case side::right: return side::left ;
-	} __builtin_unreachable();  // LCOV_EXCL_LINE
+	case side::left: return side::right;
+	case side::right: return side::left;
+	}
+	__builtin_unreachable();  // LCOV_EXCL_LINE
 }
 
-} // end namespace boost::multi::blas
+}  // end namespace boost::multi::blas
 
 #endif

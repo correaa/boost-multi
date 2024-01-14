@@ -1,19 +1,19 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-nvcc    -D_TEST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY -x cu                                    $0 -o $0x          -lboost_unit_test_framework -lboost_timer&&$0x&&
-clang++ -D_TEST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY -x cuda --cuda-gpu-arch=sm_61 -std=c++14 $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&
-rm $0x; exit
+#ifdef COMPILATION_INSTRUCTIONS  //-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+nvcc - D_TEST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY - x cu $0 - o $0x - lboost_unit_test_framework - lboost_timer&& $0x&& clang++ - D_TEST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY - x cuda-- cuda - gpu - arch = sm_61 - std = c++ 14 $0 - o $0x - lcudart - lboost_unit_test_framework - lboost_timer && $0x &&
+		                    rm            $0x;
+exit
 #endif
 
 #ifndef MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP
 #define MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP
 
-#include<cassert>
-//#include<iostream>
+#include <cassert>
+// #include<iostream>
 
 #include "../../../adaptors/cuda.hpp"
-//#include "../algorithms/for_each.hpp"
+// #include "../algorithms/for_each.hpp"
 
-//#include "/home/correaa/prj/alf/boost/iterator/zipper.hpp"
+// #include "/home/correaa/prj/alf/boost/iterator/zipper.hpp"
 
 #ifndef HD
 #if defined(__CUDACC__)
@@ -23,8 +23,9 @@ rm $0x; exit
 #endif
 #endif
 
-namespace boost{
-namespace multi{namespace cuda{
+	namespace boost {
+	namespace multi {
+	namespace cuda {
 
 #if 0
 template<typename From, typename To, typename = std::enable_if_t<std::is_trivially_assignable<To&, From>{}> >
@@ -64,64 +65,64 @@ array_iterator<To, 1, To*> copy(
 }
 #endif
 
-}}
+	}  // namespace cuda
+	}  // namespace multi
 }
-
 
 #ifdef _TEST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA copy"
 #define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "../../../adaptors/cuda.hpp"
 
-#include <thrust/for_each.h>
 #include <thrust/execution_policy.h>
+#include <thrust/for_each.h>
 
 #include <boost/timer/timer.hpp>
 
 #if __cpp_lib_parallel_algorithm >= 201603
-#include<execution>
+#include <execution>
 #endif
 
 namespace multi = boost::multi;
-namespace cuda = multi::memory::cuda;
+namespace cuda  = multi::memory::cuda;
 
 template<class T> __device__ void WHAT(T&&) = delete;
 template<class T> __device__ void WHAT(int) = delete;
 
 template<class T> T&& what(T&&) = delete;
 
-BOOST_AUTO_TEST_CASE(copy_by_iterator){
-	auto const A_cpu = []{
+BOOST_AUTO_TEST_CASE(copy_by_iterator) {
+	auto const A_cpu = [] {
 		multi::array<double, 2> r({198, 23});
-		std::generate(r.data_elements(), r.data_elements()+r.num_elements(), &std::rand);
+		std::generate(r.data_elements(), r.data_elements() + r.num_elements(), &std::rand);
 		return r;
 	}();
 	multi::cuda::array<double, 2> A = A_cpu;
 
 	multi::cuda::array<double, 2> B(extensions(A));
 	B() = A();
-//	BOOST_REQUIRE( A[13] == B[13] );
+	//	BOOST_REQUIRE( A[13] == B[13] );
 }
 
-BOOST_AUTO_TEST_CASE(copy_by_pointer){
-	auto const A_cpu = []{
+BOOST_AUTO_TEST_CASE(copy_by_pointer) {
+	auto const A_cpu = [] {
 		multi::array<double, 2> r({198, 23});
-		std::generate(r.data_elements(), r.data_elements()+r.num_elements(), &std::rand);
+		std::generate(r.data_elements(), r.data_elements() + r.num_elements(), &std::rand);
 		return r;
 	}();
 	multi::cuda::array<double, 2> A = A_cpu;
 
 	multi::cuda::array<double, 2> B(extensions(A));
 	B = A;
-//	BOOST_REQUIRE( A[13] == B[13] );
+	//	BOOST_REQUIRE( A[13] == B[13] );
 }
 
+BOOST_AUTO_TEST_CASE(cuda_copy) {
 
-BOOST_AUTO_TEST_CASE(cuda_copy){
-
-	multi::cuda::array<double, 1> A(1<<27); CUDA_SLOW( A[10] = 99. );
+	multi::cuda::array<double, 1> A(1 << 27);
+	CUDA_SLOW(A[10] = 99.);
 	multi::cuda::array<double, 1> B(size(A));
 
 	{
@@ -164,23 +165,23 @@ BOOST_AUTO_TEST_CASE(cuda_copy){
 	BOOST_REQUIRE( CUDA_SLOW( B[10] == 99. ) );
 #endif
 
-/*	multi::cuda::for_each_n(
-		boost::iterators::zip(begin(A), begin(B)), 
-		size(A), 
-		[]__device__(auto&& e){
-			std::get<1>(e) = std::get<0>(e);
-			printf( "**** %f %f\n", static_cast<double const&>(std::get<0>(e)), static_cast<double const&>(std::get<1>(e)) ); 
-		}
-	);*/
+	/*	multi::cuda::for_each_n(
+			boost::iterators::zip(begin(A), begin(B)),
+			size(A),
+			[]__device__(auto&& e){
+				std::get<1>(e) = std::get<0>(e);
+				printf( "**** %f %f\n", static_cast<double const&>(std::get<0>(e)), static_cast<double const&>(std::get<1>(e)) );
+			}
+		);*/
 
-//	auto l = 
-//	BOOST_REQUIRE( l == end(B) );
-//	std::cout << B[8] << std::endl;
-//	multi::cuda::array<double, 1> A(10, 99.);
-//	BOOST_REQUIRE( CUDA_SLOW( A[5] == 99. ) );
-//	int uno = 1.;
-//	for_each(begin(A), end(A), [uno]__device__(auto&& e){e = uno;});
-//	BOOST_REQUIRE( CUDA_SLOW( A[5] == 1. ) );
+	//	auto l =
+	//	BOOST_REQUIRE( l == end(B) );
+	//	std::cout << B[8] << std::endl;
+	//	multi::cuda::array<double, 1> A(10, 99.);
+	//	BOOST_REQUIRE( CUDA_SLOW( A[5] == 99. ) );
+	//	int uno = 1.;
+	//	for_each(begin(A), end(A), [uno]__device__(auto&& e){e = uno;});
+	//	BOOST_REQUIRE( CUDA_SLOW( A[5] == 1. ) );
 }
 
 #if 0
@@ -232,4 +233,3 @@ BOOST_AUTO_TEST_CASE(cuda_timing){
 
 #endif
 #endif
-

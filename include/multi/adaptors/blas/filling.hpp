@@ -18,13 +18,14 @@ enum class filling : char {
 
 inline auto flip(filling side) -> filling {
 	switch(side) {
-		case filling::lower: return filling::upper;
-		case filling::upper: return filling::lower;
-	} __builtin_unreachable();  // LCOV_EXCL_LINE
+	case filling::lower: return filling::upper;
+	case filling::upper: return filling::lower;
+	}
+	__builtin_unreachable();  // LCOV_EXCL_LINE
 }
 
-inline auto operator-(filling side) -> filling {return flip(side);}
-inline auto operator+(filling side) -> filling {return side;}
+inline auto operator-(filling side) -> filling { return flip(side); }
+inline auto operator+(filling side) -> filling { return side; }
 
 }  // end namespace boost::multi::blas
 

@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_asum_double_cuda) {
 	BOOST_REQUIRE(asum(A[1]) == 26.0 );
 }
 
-using complex = multi::complex<double>;
+using complex    = multi::complex<double>;
 constexpr auto I = complex{0, 1};
 
 BOOST_AUTO_TEST_CASE(multi_blas_asum_complex_cuda) {

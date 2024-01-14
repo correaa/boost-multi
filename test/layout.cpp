@@ -101,7 +101,10 @@ BOOST_AUTO_TEST_CASE(linearize) {
 
 BOOST_AUTO_TEST_CASE(layout_tuple_2d) {
 	multi::extensions_t<2> const x1({51, 52});
-	multi::extensions_t<2> const x2({multi::iextension{0, 51}, multi::iextension{0, 52}});
+	multi::extensions_t<2> const x2({
+		multi::iextension{0, 51},
+		multi::iextension{0, 52}
+	});
 	BOOST_REQUIRE( x1 == x2 );
 
 	multi::extensions_t<2> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}));
@@ -110,7 +113,10 @@ BOOST_AUTO_TEST_CASE(layout_tuple_2d) {
 	multi::extensions_t<2> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52});
 	BOOST_REQUIRE( x1 == x4 );
 
-	multi::extensions_t<2> const x5 = std::tuple{multi::iextension{0, 51}, multi::iextension{0, 52}};
+	multi::extensions_t<2> const x5 = std::tuple{
+		multi::iextension{0, 51},
+		multi::iextension{0, 52}
+	};
 	BOOST_REQUIRE( x1 == x5 );
 
 	multi::extensions_t<2> const x6 = std::tuple{51, 52};
@@ -131,7 +137,11 @@ BOOST_AUTO_TEST_CASE(layout_tuple_2d) {
 
 BOOST_AUTO_TEST_CASE(layout_tuple_3d) {
 	multi::extensions_t<3> const x1({51, 52, 53});
-	multi::extensions_t<3> const x2({multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}});
+	multi::extensions_t<3> const x2({
+		multi::iextension{0, 51},
+		multi::iextension{0, 52},
+		multi::iextension{0, 53}
+	});
 	BOOST_REQUIRE( x1 == x2 );
 
 	multi::extensions_t<3> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}));
@@ -140,7 +150,11 @@ BOOST_AUTO_TEST_CASE(layout_tuple_3d) {
 	multi::extensions_t<3> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53});
 	BOOST_REQUIRE( x1 == x4 );
 
-	multi::extensions_t<3> const x5 = std::tuple{multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}};
+	multi::extensions_t<3> const x5 = std::tuple{
+		multi::iextension{0, 51},
+		multi::iextension{0, 52},
+		multi::iextension{0, 53}
+	};
 	BOOST_REQUIRE( x1 == x5 );
 
 	multi::extensions_t<3> const x6 = std::tuple{51, 52, 53};
@@ -309,7 +323,8 @@ BOOST_AUTO_TEST_CASE(multi_layout_with_offset) {
 	{
 		boost::multi::layout_t<2>::extensions_type const exts{
 			multi::iextension(2, 5),
-			multi::iextension(0, 5)};
+			multi::iextension(0, 5)
+		};
 		multi::layout_t<2> const l2(exts);
 		BOOST_REQUIRE( l2.extension().first()  == std::get<0>(exts).first()  );
 		BOOST_REQUIRE( l2.extension().last () == std::get<0>(exts).last() );

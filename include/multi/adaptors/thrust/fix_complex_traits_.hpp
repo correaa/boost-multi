@@ -5,7 +5,7 @@
 
 #include <multi/array.hpp>
 
-#include<thrust/complex.h>
+#include <thrust/complex.h>
 
 namespace boost {
 namespace multi {
@@ -21,5 +21,5 @@ template<class T> struct is_trivially_default_constructible<::thrust::complex<T>
 
 static_assert(is_trivially_default_constructible<::thrust::complex<double>>::value);
 
-}
-}
+}  // namespace multi
+}  // namespace boost

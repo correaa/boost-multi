@@ -5,11 +5,11 @@
 
 // NOLINT(build/header_guard)
 #ifndef MULTI_MARK_SCOPE  // NOLINT(llvm-header-guard) this is a configuration header, can be included many times
-	#ifdef CALI_CXX_MARK_SCOPE
-		#define MULTI_MARK_SCOPE(MsG) CALI_CXX_MARK_SCOPE(MsG)
-	#else
-		#define MULTI_MARK_SCOPE(MsG) ((void)0)  // NOLINT(cppcoreguidelines-macro-usage) to mark scopes
-	#endif
+#ifdef CALI_CXX_MARK_SCOPE
+#define MULTI_MARK_SCOPE(MsG) CALI_CXX_MARK_SCOPE(MsG)
+#else
+#define MULTI_MARK_SCOPE(MsG) ((void)0)  // NOLINT(cppcoreguidelines-macro-usage) to mark scopes
+#endif
 #endif
 
 //  #endif

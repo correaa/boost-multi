@@ -6,30 +6,29 @@
 #include <hipfft/hipfft.h>
 #include <hipfft/hipfftXt.h>
 
-
 using cudaError_t = hipError_t;
 
-constexpr static auto const& cudaDeviceReset  = hipDeviceReset;
-constexpr static auto const& cudaDeviceSynchronize  = hipDeviceSynchronize;
-constexpr static auto const& cudaSuccess = hipSuccess;
+constexpr static auto const& cudaDeviceReset       = hipDeviceReset;
+constexpr static auto const& cudaDeviceSynchronize = hipDeviceSynchronize;
+constexpr static auto const& cudaSuccess           = hipSuccess;
 
-#define cu2hip_fft(TypeleafnamE) using cufft ## TypeleafnamE = hipfft ## TypeleafnamE
-    cu2hip_fft(Handle);
-    cu2hip_fft(DoubleComplex);
-    cu2hip_fft(Result);
+#define cu2hip_fft(TypeleafnamE) using cufft##TypeleafnamE = hipfft##TypeleafnamE
+cu2hip_fft(Handle);
+cu2hip_fft(DoubleComplex);
+cu2hip_fft(Result);
 #undef cu2hip_fft
 
-#define cu2hip_fft(FunctionleafnamE) constexpr static auto const& cufft ## FunctionleafnamE  = hipfft ## FunctionleafnamE
-    cu2hip_fft(Create);
-    cu2hip_fft(Destroy);
-    cu2hip_fft(GetSize);
-    cu2hip_fft(ExecZ2Z);
-    cu2hip_fft(SetAutoAllocation);
-    cu2hip_fft(SetWorkArea);
-    cu2hip_fft(PlanMany);
+#define cu2hip_fft(FunctionleafnamE) constexpr static auto const& cufft##FunctionleafnamE = hipfft##FunctionleafnamE
+cu2hip_fft(Create);
+cu2hip_fft(Destroy);
+cu2hip_fft(GetSize);
+cu2hip_fft(ExecZ2Z);
+cu2hip_fft(SetAutoAllocation);
+cu2hip_fft(SetWorkArea);
+cu2hip_fft(PlanMany);
 #undef cu2hip_fft
 
-#define CU2HIPFFT_(NamE) constexpr static auto const& CUFFT_ ## NamE  = HIPFFT_ ## NamE
+#define CU2HIPFFT_(NamE) constexpr static auto const& CUFFT_##NamE = HIPFFT_##NamE
 
 CU2HIPFFT_(ALLOC_FAILED);
 CU2HIPFFT_(BACKWARD);

@@ -5,10 +5,10 @@
 #pragma once
 
 #if defined(__NVCC__) || defined(__HIPCC__)  // defined(__HIP_PLATFORM_AMD__) || defined(__HIP_PLATFORM_NVIDIA__)
-#include<thrust/complex.h>
+#include <thrust/complex.h>
 #endif
 
-#include<complex>  // for std::complex
+#include <complex>  // for std::complex
 
 namespace boost::multi::blas {
 
@@ -31,7 +31,6 @@ struct complex_traits<::thrust::complex<T>> {
 	constexpr static auto imaginary_unit() { return std::complex<T>{0, 1}; }
 };
 #endif
-
 
 }  // end namespace boost::multi::blas
 

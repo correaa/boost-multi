@@ -180,7 +180,10 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[5][7][2] == &std::get<2>(arr[5][7]) );
 	}
 	{
-		multi::array<vector3, 2> const arr({4, 5}, vector3{{1.0, 2.0, 3.0}});
+		multi::array<vector3, 2> const arr({
+			                                   4, 5
+                                                                                                                                                                                                      },
+		                                   vector3{{1.0, 2.0, 3.0}});
 
 		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
 		BOOST_REQUIRE( decltype(arr.reinterpret_array_cast<double>(3))::dimensionality == 3 );

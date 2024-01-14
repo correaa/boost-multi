@@ -28,48 +28,54 @@ BOOST_AUTO_TEST_CASE(pmr_double) {
 #if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	{
-		std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  996.0, 997.0, 998.0, 999.0}};
-		std::pmr::monotonic_buffer_resource pool(static_cast<void*>(std::data(buffer)), 12*sizeof(double));
+		std::array<double, 12> buffer = {
+			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
+		};
+		std::pmr::monotonic_buffer_resource pool(static_cast<void*>(std::data(buffer)), 12 * sizeof(double));
 
 		multi::pmr::array<double, 2> Aarr({2, 2}, &pool);
 
 		BOOST_TEST( buffer[0] == 4.0 );
 		BOOST_TEST( buffer[1] == 5.0 );
 
-	#if defined(__GLIBCXX__)
+#if defined(__GLIBCXX__)
 		BOOST_TEST( &Aarr[0][0] == buffer.data() );
 		BOOST_TEST( Aarr[0][0] == 4.0);
-	#elif defined(_LIBCPP_VERSION)
+#elif defined(_LIBCPP_VERSION)
 		BOOST_TEST( &Aarr[0][0] == buffer.data() + (buffer.size() - 4) );
 		BOOST_TEST( Aarr[0][0] == 996.0);
-	#endif
+#endif
 	}
 	{
-		std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}};
-		std::pmr::monotonic_buffer_resource pool(static_cast<void*>(std::data(buffer)), 12*sizeof(double));
+		std::array<double, 12> buffer = {
+			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
+		};
+		std::pmr::monotonic_buffer_resource pool(static_cast<void*>(std::data(buffer)), 12 * sizeof(double));
 
 		multi::pmr::array<double, 2> Aarr({2, 2}, double{}, &pool);
 
-	#if defined(__GLIBCXX__)
+#if defined(__GLIBCXX__)
 		BOOST_TEST( buffer[0] == 0.0 );
 		BOOST_TEST( buffer[1] == 0.0 );
 		BOOST_TEST( &Aarr[0][0] == buffer.data() );
-	#elif defined(_LIBCPP_VERSION)
+#elif defined(_LIBCPP_VERSION)
 		BOOST_TEST( buffer[0] == 4.0 );
 		BOOST_TEST( buffer[1] == 5.0 );
 		BOOST_TEST( buffer[buffer.size()-4] ==  0.0 );
 		BOOST_TEST( buffer[buffer.size()-3] ==  0.0 );
 		BOOST_TEST( buffer[buffer.size()-5] == 11.0 );
 		BOOST_TEST( &Aarr[0][0] == buffer.data() + (buffer.size() - 4) );
-	#endif
+#endif
 
 		BOOST_TEST( Aarr[0][0] == 0.0);
 	}
 }
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized_2) {
-	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}};
-	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
+	std::array<double, 12> buffer = {
+		{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
+	};
+	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(double)};
 
 	multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
 
@@ -95,8 +101,10 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_2) {
 }
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
-	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 999.9, 999.9, 999.9, 999.9}};
-	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
+	std::array<double, 12> buffer = {
+		{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 999.9, 999.9, 999.9, 999.9}
+	};
+	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(double)};
 
 	multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
 
@@ -117,8 +125,10 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
 }
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized_3) {
-	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}};
-	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
+	std::array<double, 12> buffer = {
+		{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
+	};
+	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(double)};
 
 	multi::pmr::array<std::complex<double>, 2> const Aarr({2, 2}, std::complex<double>{40.0, 50.0}, &pool);
 
@@ -134,8 +144,10 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_3) {
 }
 
 BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
-	std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}};
-	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12*sizeof(double)};
+	std::array<double, 12> buffer = {
+		{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
+	};
+	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(double)};
 
 	multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
 
@@ -143,12 +155,12 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
 		BOOST_TEST( buffer[0] == 4.0 );
 		BOOST_TEST( buffer[1] == 5.0 );
 
-	#if defined(__GLIBCXX__)
+#if defined(__GLIBCXX__)
 		BOOST_REQUIRE(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
-	#elif defined(_LIBCPP_VERSION)
+#elif defined(_LIBCPP_VERSION)
 		BOOST_TEST(Aarr[0][0].real() == 8.0 );
 		BOOST_TEST(Aarr[0][0].imag() == 9.0 );
-	#endif
+#endif
 	} else {
 		BOOST_TEST( buffer[0] == 0.0 );
 		BOOST_TEST( buffer[1] == 0.0 );

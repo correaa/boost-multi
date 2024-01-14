@@ -1,5 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0.cu) && nvcc -I$HOME/prj/alf -D_TEST_MULTI_THRUST_ALGORITHMS $0.cu -o $0x && $0x && rm $0.cu $0x; exit
+(echo "#include\"" $0 "\"" > $0.cu) && nvcc - I$HOME / prj / alf - D_TEST_MULTI_THRUST_ALGORITHMS $0.cu - o $0x&& $0x&& rm $0.cu $0x;
+exit
 #endif
 
 #ifndef BOOST_MULTI_ADAPTORS_THRUST_ALGORITHMS_HPP
@@ -7,9 +8,9 @@
 
 #include "../thrust/algorithms/copy.hpp"
 
-//#include "../../array_ref.hpp"
-//#include<thrust/device_ptr.h>
-//#include <iostream>
+// #include "../../array_ref.hpp"
+// #include<thrust/device_ptr.h>
+// #include <iostream>
 #if 0
 namespace boost{
 namespace multi{
@@ -54,17 +55,18 @@ namespace multi{
 
 #ifdef _TEST_MULTI_THRUST_ALGORITHMS
 
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
 #include <thrust/device_allocator.h>
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 
 #include "../../array.hpp"
 
 #include "../../adaptors/thrust/allocator_traits.hpp"
 
-#include<numeric> // iota
+#include <numeric>  // iota
 
-int main(){
+	int
+	main() {
 #if 0
 	thrust::device_allocator<double> aaa;
 	auto p = aaa.allocate(10);
@@ -153,4 +155,3 @@ int main(){
 
 #endif
 #endif
-

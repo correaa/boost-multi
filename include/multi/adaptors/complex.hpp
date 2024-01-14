@@ -5,7 +5,7 @@
 #define MULTI_ADAPTORS_COMPLEX_HPP
 #pragma once
 
-#include<complex>  // to define its traits
+#include <complex>  // to define its traits
 
 namespace boost::multi {
 
@@ -74,7 +74,7 @@ template<class T>
 struct [[nodiscard]] complex {
 	using real_type = T;
 
-//  using value_type /*[[deprecated("reason")]]*/ = T;
+	//  using value_type /*[[deprecated("reason")]]*/ = T;
 
 	real_type _real;  // NOLINT(misc-non-private-member-variables-in-classes) complex should be an aggregate class
 	real_type _imag;  // NOLINT(misc-non-private-member-variables-in-classes) complex should be an aggregate class
@@ -93,20 +93,31 @@ struct [[nodiscard]] complex {
 
 	friend constexpr auto conj(complex self) { return complex{self._real, -self._imag}; }
 
-	constexpr auto operator==(complex const& other) const {return _real == other._real and _imag == other._imag;}
-	constexpr auto operator!=(complex const& other) const {return _real != other._real or  _imag != other._imag;}
+	constexpr auto operator==(complex const& other) const { return _real == other._real and _imag == other._imag; }
+	constexpr auto operator!=(complex const& other) const { return _real != other._real or _imag != other._imag; }
 
-//	auto operator=(complex const&) -> complex& = default;
-	constexpr auto operator=(real_type re) -> complex& {(*this) = complex{re, real_type{0.0}}; return *this;}
+	//	auto operator=(complex const&) -> complex& = default;
+	constexpr auto operator=(real_type re) -> complex& {
+		(*this) = complex{re, real_type{0.0}};
+		return *this;
+	}
 
-	friend constexpr auto operator-(complex self) {return complex{-self._real, -self._imag};}
-	friend constexpr auto operator+(complex self) {return complex{+self._real, +self._imag};}
+	friend constexpr auto operator-(complex self) { return complex{-self._real, -self._imag}; }
+	friend constexpr auto operator+(complex self) { return complex{+self._real, +self._imag}; }
 
-	friend constexpr auto operator+(complex z1, complex z2) {return complex{z1._real + z2._real, z1._imag + z2._imag};}
-	friend constexpr auto operator-(complex z1, complex z2) {return complex{z1._real - z2._real, z1._imag - z2._imag};}
+	friend constexpr auto operator+(complex z1, complex z2) { return complex{z1._real + z2._real, z1._imag + z2._imag}; }
+	friend constexpr auto operator-(complex z1, complex z2) { return complex{z1._real - z2._real, z1._imag - z2._imag}; }
 
-	constexpr auto operator+=(complex other) -> complex& {_real += other._real; _imag += other._imag; return *this;}
-	constexpr auto operator-=(complex other) -> complex& {_real -= other._real; _imag -= other._imag; return *this;}
+	constexpr auto operator+=(complex other) -> complex& {
+		_real += other._real;
+		_imag += other._imag;
+		return *this;
+	}
+	constexpr auto operator-=(complex other) -> complex& {
+		_real -= other._real;
+		_imag -= other._imag;
+		return *this;
+	}
 
 	friend constexpr auto operator*(complex z1, complex z2) {
 		return complex{z1._real * z2._real - z1._imag * z2._imag, z1._real * z2._imag + z1._imag * z2._real};
@@ -114,8 +125,8 @@ struct [[nodiscard]] complex {
 	friend constexpr auto operator/(complex z1, complex z2) {
 		auto const nrm = norm(z2);
 		return complex{
-			(z1._real * z2._real + z1._imag * z2._imag)/nrm,
-			(z1._imag * z2._real - z1._real * z2._imag)/nrm
+			(z1._real * z2._real + z1._imag * z2._imag) / nrm,
+			(z1._imag * z2._real - z1._real * z2._imag) / nrm
 		};
 
 		// typedef typename detail::promoted_numerical_type<T0, T1>::type T;
@@ -141,12 +152,12 @@ struct [[nodiscard]] complex {
 		// return quot;
 	}
 	friend constexpr auto norm(complex self) {
-		return self._real*self._real + self._imag*self._imag;  // TODO(correaa) revise this, use more exact formula
+		return self._real * self._real + self._imag * self._imag;  // TODO(correaa) revise this, use more exact formula
 	}
 	friend constexpr auto abs(complex self) {
-	//  return hypot(z.real(), z.imag());
+		//  return hypot(z.real(), z.imag());
 		using std::sqrt;
-		return sqrt(self._real*self._real + self._real*self._real);  // bad! according to NR
+		return sqrt(self._real * self._real + self._real * self._real);  // bad! according to NR
 		// using std::abs;
 		// return self._real > self._imag?
 		// 		 abs(self._real)*sqrt(real_type{1} + (self._imag/self._real)*(self._imag/self._real))

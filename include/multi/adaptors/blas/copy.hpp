@@ -1,4 +1,4 @@
- // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2020-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_COPY_HPP
@@ -8,7 +8,7 @@
 #include <multi/adaptors/blas/core.hpp>
 #include <multi/adaptors/blas/operations.hpp>
 
-#include<type_traits>
+#include <type_traits>
 
 namespace boost::multi::blas {
 
@@ -16,8 +16,9 @@ using core::copy;
 
 template<class It, typename Size, class OutIt>
 auto copy_n(It first, Size n, OutIt d_first)
-->decltype(blas::default_context_of(first.base())->copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
-	return blas::default_context_of(first.base())->copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n; }
+	-> decltype(blas::default_context_of(first.base())->copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
+	return blas::default_context_of(first.base())->copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n;
+}
 
 // template<class Context, class It, typename Size, class OutIt, class=std::enable_if_t<blas::is_context<Context>{}>>
 // auto copy_n(Context&& ctxt, It first, Size n, OutIt d_first)
@@ -36,9 +37,10 @@ auto copy_n(It first, Size n, OutIt d_first)
 
 template<class X1D, class Y1D>
 auto copy(X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(blas::copy_n(x.begin(), size(x), y.begin()), std::forward<Y1D>(y)) {
-	assert( (x.size() == y.size()) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : assert
-	return blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y); }
+	-> decltype(blas::copy_n(x.begin(), size(x), y.begin()), std::forward<Y1D>(y)) {
+	assert((x.size() == y.size()));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : assert
+	return blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y);
+}
 
 // template<class Context, class X1D, class Y1D>
 // auto copy(Context&& ctxt, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) BLAS naming
@@ -67,7 +69,7 @@ auto copy(X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) BLAS 
 //  friend constexpr auto copy_n(copy_iterator first, difference_type count, It1DOut result) -> It1DOut{
 //      return blas::copy_n(first.ctxt, first.base(), count, result);
 //  }
-//  template<class It1DOut> 
+//  template<class It1DOut>
 //  friend constexpr auto copy(copy_iterator first, copy_iterator last, It1DOut d_first) -> It1DOut{
 //      return copy_n(first, distance(first, last), d_first);
 //  }
@@ -123,15 +125,15 @@ template<class It>
 struct copy_it {
 	It it_;  // NOLINT(misc-non-private-member-variables-in-classes)
 
-	using difference_type = typename std::iterator_traits<It>::difference_type;
-	using value_type      = typename std::iterator_traits<It>::value_type;
-	using pointer         = void;
-	using reference       = void;
+	using difference_type   = typename std::iterator_traits<It>::difference_type;
+	using value_type        = typename std::iterator_traits<It>::value_type;
+	using pointer           = void;
+	using reference         = void;
 	using iterator_category = std::output_iterator_tag;
-	using iterator_type   = copy_it;
+	using iterator_type     = copy_it;
 
-//  using difference_type = typename It::difference_type;
-	friend auto operator-(copy_it const& c1, copy_it const& c2) {return c1.it_ - c2.it_;}
+	//  using difference_type = typename It::difference_type;
+	friend auto operator-(copy_it const& c1, copy_it const& c2) { return c1.it_ - c2.it_; }
 
 	// template<class ItOut, class Size2>
 	// friend auto copy_n(copy_it first, Size2 count, ItOut d_first)
@@ -144,36 +146,35 @@ struct copy_it {
 	//  return blas::copy_n(first.it_, count, d_first); }
 
 	template<class It1DOut>
-	friend constexpr auto copy_n(copy_it first, difference_type count, It1DOut result) -> It1DOut{
+	friend constexpr auto copy_n(copy_it first, difference_type count, It1DOut result) -> It1DOut {
 		return blas::copy_n(first.it_, count, result);
 	}
-	template<class It1DOut> 
-	friend constexpr auto copy(copy_it first, copy_it last, It1DOut d_first) -> It1DOut{
+	template<class It1DOut>
+	friend constexpr auto copy(copy_it first, copy_it last, It1DOut d_first) -> It1DOut {
 		return copy_n(first, distance(first, last), d_first);
 	}
 	template<class It1DOut>
-	friend constexpr auto uninitialized_copy(copy_it first, copy_it last, It1DOut d_first) -> It1DOut{
+	friend constexpr auto uninitialized_copy(copy_it first, copy_it last, It1DOut d_first) -> It1DOut {
 		return copy_n(first, distance(first, last), d_first);
 	}
 	friend constexpr auto distance(copy_it const& self, copy_it const& other) -> difference_type {
 		return other.it_ - self.it_;
 	}
-	constexpr auto operator*() const -> value_type {return *it_;}
+	constexpr auto operator*() const -> value_type { return *it_; }
 };
 
-template<class A1D> [[nodiscard]]
-auto copy(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
+template<class A1D> [[nodiscard]] auto copy(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 	struct ref {
 		A1D const& x_;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members)
 		using iterator = copy_it<typename A1D::const_iterator>;
-		auto begin() const {return iterator{x_.begin()};}
-		auto end()   const {return iterator{x_.end()  };}
-		auto size() const {return x_.size();}
-		auto extensions() const {return x_.extensions();}
-//      auto operator&() const& {return asum_ptr<A1D>{&x_};}  // NOLINT(google-runtime-operator) reference type
-//      using decay_type = decltype(abs(std::declval<typename A1D::value_type>()));
-//      operator decay_type() const {decay_type ret; blas::asum(x_, ret); return ret;}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-//      auto operator+() const -> decay_type {return operator decay_type();}
+		auto begin() const { return iterator{x_.begin()}; }
+		auto end() const { return iterator{x_.end()}; }
+		auto size() const { return x_.size(); }
+		auto extensions() const { return x_.extensions(); }
+		//      auto operator&() const& {return asum_ptr<A1D>{&x_};}  // NOLINT(google-runtime-operator) reference type
+		//      using decay_type = decltype(abs(std::declval<typename A1D::value_type>()));
+		//      operator decay_type() const {decay_type ret; blas::asum(x_, ret); return ret;}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		//      auto operator+() const -> decay_type {return operator decay_type();}
 	};
 	return ref{x};
 }
@@ -193,10 +194,10 @@ auto copy(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 //  return copy<typename A::decay_type, Context, typename A::const_iterator>(std::forward<Context>(ctxt), a.begin(), a.end());}
 
 namespace operators {
-	template<class A1D, class B1D>
-	auto operator<<(A1D&& lhs, B1D const& rhs) -> A1D&& {
-		return boost::multi::blas::copy(rhs, lhs);
-	}
+template<class A1D, class B1D>
+auto operator<<(A1D&& lhs, B1D const& rhs) -> A1D&& {
+	return boost::multi::blas::copy(rhs, lhs);
+}
 }  // end namespace operators
 
 }  // end namespace boost::multi::blas

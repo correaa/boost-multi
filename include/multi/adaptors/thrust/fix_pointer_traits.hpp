@@ -6,7 +6,7 @@
 
 #include <thrust/memory.h>
 
-#include <memory>   // for std::pointer_traits
+#include <memory>  // for std::pointer_traits
 
 // #include <thrust/detail/type_traits/pointer_traits.h>
 
@@ -27,7 +27,7 @@ struct std::pointer_traits<::thrust::pointer<As...>>
 	using rebind = typename ::thrust::detail::pointer_traits<::thrust::pointer<As...>>::template rebind<T>::other;
 };
 
-//}  
+//}
 
 // end namespace std
 // end of nvcc thrust 11.5 workaround

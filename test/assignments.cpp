@@ -63,22 +63,22 @@ BOOST_AUTO_TEST_CASE(multi_copy_move) {
 #if 1
 BOOST_AUTO_TEST_CASE(range_assignment) {
 	{
-		auto ext = multi::make_extension_t(10L);
+		auto                    ext = multi::make_extension_t(10L);
 		multi::array<double, 1> vec(ext.begin(), ext.end());
 		BOOST_REQUIRE( ext.size() == vec.size() );
 		BOOST_REQUIRE( vec[1] = 10 );
 	}
 	{
 		multi::array<double, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
-		auto ext = extension(vec);
+		auto                    ext = extension(vec);
 		vec.assign(ext.begin(), ext.end());
 		BOOST_REQUIRE( vec[1] == 1 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-	multi::array<int, 4> tmp({14, 14,  7, 4});
-	multi::array<int, 5> src({ 2, 14, 14, 7, 2});
+	multi::array<int, 4> tmp({14, 14, 7, 4});
+	multi::array<int, 5> src({2, 14, 14, 7, 2});
 	src[0][1][2][3][1] = 99.0;
 
 	BOOST_REQUIRE( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments) {
 	using complex = std::complex<double>;
 
 	std::vector<double> const vec1(200, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
-	std::vector<complex> vec2(200);  // NOLINT(fuchsia-default-arguments-calls)
+	std::vector<complex>      vec2(200);  // NOLINT(fuchsia-default-arguments-calls)
 
 	auto linear1 = [&] { return multi::array_cptr<double, 1>(vec1.data(), 200); };
 	auto linear2 = [&] { return multi::array_ptr<complex, 1>(vec2.data(), 200); };
@@ -106,8 +106,8 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments) {
 
 BOOST_AUTO_TEST_CASE(assignments) {
 	{
-		std::vector<double> vec(static_cast<std::size_t>(5 * 7), 99.0);  // NOLINT(fuchsia-default-arguments-calls)
-		constexpr double val = 33.0;
+		std::vector<double>           vec(static_cast<std::size_t>(5 * 7), 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+		constexpr double              val = 33.0;
 		multi::array<double, 2> const arr({5, 7}, val);
 		multi::array_ref<double, 2>(vec.data(), {5, 7}) = arr;
 		BOOST_REQUIRE( vec[9] == val );

@@ -1,16 +1,17 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX -DNDEBUG $0 -o $0x -lboost_timer&&$0x&&rm $0x;exit
+#ifdef COMPILATION  // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX - DNDEBUG $0 - o $0x - lboost_timer&& $0x&& rm $0x;
+exit
 #endif
 // Copyright 2019-2023 Alfredo A. Correa
 
 #include <multi/array.hpp>
 
-#include<iostream>
-#include<vector>
-#include<numeric> // iota
-#include<algorithm>
+#include <algorithm>
+#include <iostream>
+#include <numeric>  // iota
+#include <vector>
 
-namespace multi = boost::multi;
+	namespace multi = boost::multi;
 using std::cout;
 
 template<class Matrix, class Vector, class idx = typename std::decay_t<Vector>::difference_type>
@@ -65,7 +66,7 @@ auto gj_solve2(Matrix&& A, Vector&& y) -> decltype(y[0] /= A[0][0], y) {
 
 #include <boost/timer/timer.hpp>
 
-int main(){
+int main() {
 	{
 		multi::array<double, 2> A = {
 			{-3.0, 2.0, -4.0},
@@ -101,4 +102,3 @@ int main(){
 		cout << y[45] << std::endl;
 	}
 }
-

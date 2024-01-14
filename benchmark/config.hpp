@@ -4,4 +4,3 @@
 #define CUDA_FOUND 1
 
 #endif
-

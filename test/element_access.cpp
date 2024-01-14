@@ -20,13 +20,13 @@ template<class Array> auto paren(Array&& arr, bee const& /*unused*/) -> decltype
 
 BOOST_AUTO_TEST_CASE(overload_initlist) {
 	multi::array<double, 1> arr = {10.0};
-	test_bee::bee const zero;
+	test_bee::bee const     zero;
 	BOOST_REQUIRE( &arr(0) == &arr(zero) );
 }
 
 BOOST_AUTO_TEST_CASE(overload_paren) {
 	multi::array<double, 1> arr({10});
-	test_bee::bee const zero;
+	test_bee::bee const     zero;
 	BOOST_REQUIRE( &arr(0) == &arr(zero) );
 }
 
@@ -43,7 +43,9 @@ BOOST_AUTO_TEST_CASE(empty_intersection) {
 
 BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
 	multi::array<double, 2> arr({3, 3}, 44.0);
-	std::array<int, 2> point = {{1, 2}};
+	std::array<int, 2>      point = {
+                                                                                                                                                                                                      {1, 2}
+                                                                                                   };
 
 	BOOST_REQUIRE(  arr[point[0]][point[1]] ==  arr(1, 2) );
 	BOOST_REQUIRE( &arr(point[0], point[1]) == &arr[point[0]][point[1]] );
@@ -58,7 +60,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
 BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 	{
 		multi::array<double, 2>::extensions_type const ext = {3, 4};
-		multi::array<double, 2> const arr(ext, 44.0);
+		multi::array<double, 2> const                  arr(ext, 44.0);
 		BOOST_REQUIRE( size(arr) == 3 );
 	}
 	{
@@ -230,7 +232,7 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 
 	assign_elements_from_to(std::move(arr), q2);
 
-//  BOOST_REQUIRE( arr[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+	//  BOOST_REQUIRE( arr[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 	BOOST_REQUIRE( q1 == q2 );
 }

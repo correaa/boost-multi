@@ -1,16 +1,16 @@
 // Copyright 2018-2023 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi iterators"  // title NOLINT(cppcoreguidelines-macro-usage)
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
 
-#include<numeric>
-#include<vector>
+#include <numeric>
+#include <vector>
 
 namespace multi = boost::multi;
 
-template<class Array> auto take(Array&& array) -> decltype(array[0]) {return array[0];}
+template<class Array> auto take(Array&& array) -> decltype(array[0]) { return array[0]; }
 
 BOOST_AUTO_TEST_CASE(iterator_1d) {
 	{
@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 		BOOST_REQUIRE( end(arr) - begin(arr) == size(arr) );
 
 		multi::array<double, 1>::const_iterator const cbarr = cbegin(arr);
-		multi::array<double, 1>::iterator barr = begin(arr);
+		multi::array<double, 1>::iterator             barr  = begin(arr);
 
 		[[maybe_unused]] multi::array<double, 1>::const_iterator const cbarr3{barr};
 
@@ -39,8 +39,8 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 		BOOST_REQUIRE( size(arr) == 100 );
 		BOOST_REQUIRE( begin(arr) < end(arr) );
 
-		auto arr2 = arr.begin();
-		multi::array<double, 1>::const_iterator const cbb = arr2;
+		auto                                          arr2 = arr.begin();
+		multi::array<double, 1>::const_iterator const cbb  = arr2;
 		BOOST_REQUIRE( cbb == arr2 );
 		BOOST_REQUIRE( arr2 == cbb );
 	}
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 		BOOST_REQUIRE( size(arr) == 100 );
 		BOOST_REQUIRE( begin(arr) < end(arr) );
 
-		auto const arrend = arr.end();
+		auto const arrend  = arr.end();
 		auto const arrlast = arrend - 1;
 
 		BOOST_REQUIRE( arrlast + 1 == arrend );
@@ -66,41 +66,35 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 		BOOST_REQUIRE( arr.cend() - arr.cbegin() == arr.size() );
 
 		using iter = multi::array<double, 2>::iterator;
-		static_assert( std::is_same_v< iter::element   , double > );
-		static_assert( std::is_same_v< iter::value_type, multi::array<double, 1> > );
-		static_assert( std::is_same_v< iter::reference, multi::subarray<double, 1>> );
-		static_assert( std::is_same_v< iter::element_ptr, double*> );
+		static_assert(std::is_same_v<iter::element, double>);
+		static_assert(std::is_same_v<iter::value_type, multi::array<double, 1>>);
+		static_assert(std::is_same_v<iter::reference, multi::subarray<double, 1>>);
+		static_assert(std::is_same_v<iter::element_ptr, double*>);
 
 		using citer = multi::array<double, 2>::const_iterator;
-		static_assert( std::is_same_v< citer::element   , double > );
-		static_assert( std::is_same_v< citer::value_type, multi::array<double, 1> > );
-		static_assert( std::is_same_v< citer::reference, multi::subarray<double, 1, double const*>> );
-		static_assert( std::is_same_v< citer::element_ptr, double const* > );
+		static_assert(std::is_same_v<citer::element, double>);
+		static_assert(std::is_same_v<citer::value_type, multi::array<double, 1>>);
+		static_assert(std::is_same_v<citer::reference, multi::subarray<double, 1, double const*>>);
+		static_assert(std::is_same_v<citer::element_ptr, double const*>);
 
-		auto const arrend = arr.end();
+		auto const arrend  = arr.end();
 		auto const arrlast = arrend - 1;
 
 		BOOST_REQUIRE( arrlast + 1 == arrend );
 	}
 	{
-		std::vector<double> vec(10000);  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double>         vec(10000);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		multi::array_ref<double, 2> arr(vec.data(), {100, 100});
 		BOOST_REQUIRE(size(arr) == 100);
 		begin(arr)[4][3] = 2.0;
 	}
 }
 
-BOOST_AUTO_TEST_CASE(iterator_interface ) {
+BOOST_AUTO_TEST_CASE(iterator_interface) {
 	multi::array<double, 3> arr = {
-		{
-			{ 1.2,  1.1}, { 2.4, 1.0}
-		},
-		{
-			{11.2,  3.0}, {34.4, 4.0}
-		},
-		{
-			{ 1.2,  1.1}, { 2.4, 1.0}
-		}
+		{ {1.2, 1.1},  {2.4, 1.0}},
+		{{11.2, 3.0}, {34.4, 4.0}},
+		{ {1.2, 1.1},  {2.4, 1.0}}
 	};
 
 	BOOST_REQUIRE( size(arr)==3 and size(arr[0]) == 2 and size(arr[0][0]) == 2 );
@@ -111,12 +105,12 @@ BOOST_AUTO_TEST_CASE(iterator_interface ) {
 	BOOST_REQUIRE( begin(arr[0]) < end(arr[0]) );
 	BOOST_REQUIRE( begin(arr[0]) < end(arr[0]) );
 
-//  BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator {A.begin()} == rend(A) ));
+	//  BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator {A.begin()} == rend(A) ));
 
-//  BOOST_REQUIRE( rbegin(A) < rend(A) );
+	//  BOOST_REQUIRE( rbegin(A) < rend(A) );
 
 	BOOST_REQUIRE( end(arr) - begin(arr) == size(arr) );
-//  BOOST_REQUIRE( rend(A) - rbegin(A) == size(A) );
+	//  BOOST_REQUIRE( rend(A) - rbegin(A) == size(A) );
 
 	BOOST_REQUIRE( size(*begin(arr)) == 2 );
 	BOOST_REQUIRE( size(begin(arr)[1]) == 2 );
@@ -134,9 +128,9 @@ BOOST_AUTO_TEST_CASE(iterator_interface ) {
 
 BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	multi::array<double, 3> arr = {
-		{{ 1.2,  1.1}, { 2.4, 1.0}},
-		{{11.2,  3.0}, {34.4, 4.0}},
-		{{ 1.2,  1.1}, { 2.4, 1.0}}
+		{ {1.2, 1.1},  {2.4, 1.0}},
+		{{11.2, 3.0}, {34.4, 4.0}},
+		{ {1.2, 1.1},  {2.4, 1.0}}
 	};
 
 	multi::array<double, 3>::iterator it;
@@ -167,7 +161,7 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	BOOST_REQUIRE( it3 == it );
 
 	multi::array<double, 3>::const_iterator cit;
-	static_assert( std::is_same<multi::array<double, 3>::iterator::element_ptr, double*>{}, "!");
+	static_assert(std::is_same<multi::array<double, 3>::iterator::element_ptr, double*>{}, "!");
 
 	[[maybe_unused]] multi::array<double, 3>::const_iterator const cit3{it3};
 
@@ -178,8 +172,8 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 
 	[[maybe_unused]] multi::array<double, 3>::const_iterator const cit2 = it3;
 
-	static_assert( decltype(begin(arr))::rank_v  == 3 , "!" );
-	static_assert( decltype(begin(arr))::rank {} == 3 , "!" );
+	static_assert(decltype(begin(arr))::rank_v == 3, "!");
+	static_assert(decltype(begin(arr))::rank{} == 3, "!");
 
 	auto&& ref = multi::ref(begin(arr), end(arr));
 
@@ -199,9 +193,9 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 
 BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
 	multi::array<std::string, 2> arr = {
-		{"00", "01"},  // std::string NOLINT(fuchsia-default-arguments-calls) std::string has a default constructor
-		{"10", "11"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{"20", "21"}   // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"00", "01"}, // std::string NOLINT(fuchsia-default-arguments-calls) std::string has a default constructor
+		{"10", "11"}, // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"20", "21"}  // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
 
 	BOOST_REQUIRE( arr[1][0] == "10" );
@@ -224,7 +218,7 @@ BOOST_AUTO_TEST_CASE(index_range_iteration) {
 
 	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0) == irng.size()*(irng.size()-1)/2 );
 
-	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0, [](auto&& acc, auto const& elem) {return acc + elem*elem*elem;}) > 0 );  // sum of cubes
+	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0, [](auto&& acc, auto const& elem) { return acc + elem * elem * elem;}) > 0 );  // sum of cubes
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {

@@ -17,21 +17,21 @@ namespace detail {
 
 template<class Talpha, class MatrixA, class MatrixB, class Tbeta, class MatrixC, class BinarySum, class BinaryProd>
 inline auto naive_gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, Tbeta const& beta, MatrixC&& C, BinarySum sum2, BinaryProd prod2) -> MatrixC&& {
-	assert( C.size() == A.size() );
-	assert( (~C).size() == (~B).size() );
+	assert(C.size() == A.size());
+	assert((~C).size() == (~B).size());
 
 	std::transform(std::execution::par,  // intel (and others?) cannot simd this level
-		begin(A), end(A), begin(C), begin(C),
-		[&](auto const& arowi, auto&& crowi) {
-			std::transform(std::execution::unseq,
-				begin(crowi), end(crowi), begin(~B), begin(crowi),
-				[&](auto&& c, auto const& brow) {
-					// cppcheck-suppress cppcheckError  .. internal cppcheck error
-					return sum2(alpha*std::transform_reduce(std::execution::unseq, begin(arowi), end(arowi), begin(brow), decltype(+c){0.}, sum2, prod2), beta*std::forward<decltype(c)>(c));
-				}
-		);
-		return std::move(crowi);  // NOLINT(bugprone-move-forwarding-reference)
-	});
+	               begin(A), end(A), begin(C), begin(C),
+	               [&](auto const& arowi, auto&& crowi) {
+		               std::transform(std::execution::unseq,
+		                              begin(crowi), end(crowi), begin(~B), begin(crowi),
+		                              [&](auto&& c, auto const& brow) {
+			                              // cppcheck-suppress cppcheckError  .. internal cppcheck error
+			                              return sum2(alpha * std::transform_reduce(std::execution::unseq, begin(arowi), end(arowi), begin(brow), decltype(+c){0.}, sum2, prod2), beta * std::forward<decltype(c)>(c));
+		                              }
+		               );
+		               return std::move(crowi);  // NOLINT(bugprone-move-forwarding-reference)
+	               });
 	return std::forward<MatrixC>(C);
 }
 
@@ -44,34 +44,32 @@ inline auto naive_gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, 
 
 template<class Talpha, class MatrixA, class MatrixB, class Tbeta, class MatrixC, class BinarySum, class BinaryProd>
 auto gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, Tbeta const& beta, MatrixC&& C, BinarySum sum2, BinaryProd prod2) -> MatrixC&& {
-	assert(   C .size() ==   A .size() );
-	assert( (~C).size() == (~B).size() );
+	assert(C.size() == A.size());
+	assert((~C).size() == (~B).size());
 
 	constexpr auto N = 128;
 
-	assert(   A .size() % N == 0);
-	assert( (~A).size() % N == 0);
-	assert( (~B).size() % N == 0);
-	assert(   B .size() % N == 0);
+	assert(A.size() % N == 0);
+	assert((~A).size() % N == 0);
+	assert((~B).size() % N == 0);
+	assert(B.size() % N == 0);
 
 	std::transform(std::execution::par, begin(A.chunked(N)), end(A.chunked(N)), begin(C.chunked(N)), begin(C.chunked(N)), [&](auto const& Afatrow, auto&& Cfatrow) {
 		auto const& BfatcolsT = (~B).chunked(N);
-		auto const& AblocksT = (~Afatrow).chunked(N);
-		auto&& CblocksT = (~Cfatrow).chunked(N);
+		auto const& AblocksT  = (~Afatrow).chunked(N);
+		auto&&      CblocksT  = (~Cfatrow).chunked(N);
 		std::transform(std::execution::par, begin(BfatcolsT), end(BfatcolsT), begin(CblocksT), begin(CblocksT), [&](auto const& BfatcolT, auto&& CblockTR) {
 			auto const& Bblocks = (~BfatcolT).chunked(N);
-			auto Cblock = +~CblockTR;
-			std::transform(std::execution::unseq, begin(Cblock.elements()), end(Cblock.elements()), begin(Cblock.elements()), [&](auto&& c) {return beta*std::forward<decltype(c)>(c);});
-			return
-				+~std::inner_product(
-					begin(AblocksT), end(AblocksT), begin(Bblocks),
-					std::move(Cblock),
-					[&](auto&& ret, auto const& prod) {return prod(std::forward<decltype(ret)>(ret));},
-					[&](auto const& AblockT, auto const& Bblock) {
-						return [&, AbR = +~AblockT, BbTR = +~Bblock](auto&& into) {return detail::naive_gemm(alpha, AbR, ~BbTR, 1., std::forward<decltype(into)>(into), sum2, prod2);};
-					}
-				)
-			;
+			auto        Cblock  = +~CblockTR;
+			std::transform(std::execution::unseq, begin(Cblock.elements()), end(Cblock.elements()), begin(Cblock.elements()), [&](auto&& c) { return beta * std::forward<decltype(c)>(c); });
+			return +~std::inner_product(
+				begin(AblocksT), end(AblocksT), begin(Bblocks),
+				std::move(Cblock),
+				[&](auto&& ret, auto const& prod) { return prod(std::forward<decltype(ret)>(ret)); },
+				[&](auto const& AblockT, auto const& Bblock) {
+					return [&, AbR = +~AblockT, BbTR = +~Bblock](auto&& into) { return detail::naive_gemm(alpha, AbR, ~BbTR, 1., std::forward<decltype(into)>(into), sum2, prod2); };
+				}
+			);
 		});
 		return std::move(Cfatrow);  // NOLINT(bugprone-move-forwarding-reference)
 	});
@@ -82,7 +80,6 @@ template<class Talpha, class MatrixA, class MatrixB, class Tbeta, class MatrixC>
 auto gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, Tbeta const& beta, MatrixC&& C) -> MatrixC&& {
 	return gemm(alpha, A, B, beta, std::forward<MatrixC>(C), std::plus<>{}, std::multiplies<>{});
 }
-
 
 }  // end namespace multi
 }  // end namespace boost
