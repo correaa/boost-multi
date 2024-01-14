@@ -52,7 +52,7 @@ constexpr auto home(Array&& arr)
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
-struct array_types : private Layout {  // cppcheck-nosuppress syntaxError ; false positive in cppcheck
+struct const_subarray : private Layout {  // cppcheck-nosuppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 
@@ -109,21 +109,21 @@ struct array_types : private Layout {  // cppcheck-nosuppress syntaxError ; fals
 
 	using layout_t::is_compact;
 
-	friend constexpr auto size        (array_types const& self) noexcept -> size_type       {return self.size        ();}
-	friend constexpr auto extension   (array_types const& self) noexcept -> extension_type  {return self.extension   ();}
-	friend constexpr auto is_empty    (array_types const& self) noexcept -> bool            {return self.is_empty    ();}
-	friend constexpr auto num_elements(array_types const& self) noexcept -> size_type       {return self.num_elements();}
+	friend constexpr auto size        (const_subarray const& self) noexcept -> size_type       {return self.size        ();}
+	friend constexpr auto extension   (const_subarray const& self) noexcept -> extension_type  {return self.extension   ();}
+	friend constexpr auto is_empty    (const_subarray const& self) noexcept -> bool            {return self.is_empty    ();}
+	friend constexpr auto num_elements(const_subarray const& self) noexcept -> size_type       {return self.num_elements();}
 
-	friend constexpr auto extensions  (array_types const& self) noexcept -> extensions_type {return self.extensions  ();}
-	friend constexpr auto sizes       (array_types const& self) noexcept -> sizes_type      {return self.sizes       ();}
-
-	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
-	friend
-	constexpr auto stride     (array_types const& self) noexcept -> stride_type         {return self.stride     ();}
+	friend constexpr auto extensions  (const_subarray const& self) noexcept -> extensions_type {return self.extensions  ();}
+	friend constexpr auto sizes       (const_subarray const& self) noexcept -> sizes_type      {return self.sizes       ();}
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
 	friend
-	constexpr auto strides    (array_types const& self) noexcept -> strides_type         {return self.strides     ();}
+	constexpr auto stride     (const_subarray const& self) noexcept -> stride_type         {return self.stride     ();}
+
+	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
+	friend
+	constexpr auto strides    (const_subarray const& self) noexcept -> strides_type         {return self.strides     ();}
 
  protected:
 	constexpr auto layout_mutable() -> layout_t& {return static_cast<layout_t&>(*this);}
@@ -154,53 +154,53 @@ struct array_types : private Layout {  // cppcheck-nosuppress syntaxError ; fals
 	HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
-	friend /*constexpr*/ auto  base(array_types & self) -> element_ptr  {return self.base();}
-	friend /*constexpr*/ auto  base(array_types && self) -> element_ptr  {return std::move(self).base();}
-	friend /*constexpr*/ auto  base(array_types const& self) -> element_const_ptr  {return self.base();}
+	friend /*constexpr*/ auto  base(const_subarray & self) -> element_ptr  {return self.base();}
+	friend /*constexpr*/ auto  base(const_subarray && self) -> element_ptr  {return std::move(self).base();}
+	friend /*constexpr*/ auto  base(const_subarray const& self) -> element_const_ptr  {return self.base();}
 
 	    HD constexpr auto layout()           const        -> layout_t const& {return *this;}
-	friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
+	friend constexpr auto layout(const_subarray const& self) -> layout_t const& {return self.layout();}
 
 	       constexpr auto origin()           const&       -> decltype(auto) {return base_ + Layout::origin();}
-	friend constexpr auto origin(array_types const& self) -> decltype(auto) {return self.origin();}
+	friend constexpr auto origin(const_subarray const& self) -> decltype(auto) {return self.origin();}
 
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
  
  protected:
 	using derived = subarray<T, D, ElementPtr, Layout>;
-	HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
+	HD constexpr explicit const_subarray(std::nullptr_t) : Layout{}, base_(nullptr) {}
 
  public:
-	array_types() = default;
+	const_subarray() = default;
 
-	HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
+	HD constexpr const_subarray(layout_t const& lyt, element_ptr const& data)
 	: Layout{lyt}, base_{data} {}
 
  protected:
 	template<
 		class ArrayTypes,
-		typename = std::enable_if_t<! std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
+		typename = std::enable_if_t<! std::is_base_of<const_subarray, std::decay_t<ArrayTypes>>{}>
 		, decltype(multi::detail::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// underlying pointers are explicitly convertible
-	HD constexpr explicit array_types(ArrayTypes const& other)
+	HD constexpr explicit const_subarray(ArrayTypes const& other)
 	: Layout{other.layout()}, base_{other.base_} {}
 
 	template<
 		class ArrayTypes,
-		typename = std::enable_if_t<! std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
+		typename = std::enable_if_t<! std::is_base_of<const_subarray, std::decay_t<ArrayTypes>>{}>,
 		decltype(multi::detail::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
-	HD constexpr /*implt*/ array_types(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
+	HD constexpr /*implt*/ const_subarray(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
 	: Layout{other.layout()}, base_{other.base_} {}
 
 	template<
 		typename ElementPtr2,
-		typename = decltype(Layout{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().layout()}),
-		typename = decltype(element_ptr{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().base_})
+		typename = decltype(Layout{std::declval<const_subarray<T, D, ElementPtr2, Layout> const&>().layout()}),
+		typename = decltype(element_ptr{std::declval<const_subarray<T, D, ElementPtr2, Layout> const&>().base_})
 	>
-	HD constexpr explicit array_types(array_types<T, D, ElementPtr2, Layout> const& other)
+	HD constexpr explicit const_subarray(const_subarray<T, D, ElementPtr2, Layout> const& other)
 	: Layout{other.layout()}, base_{other.base_} {}
 
 	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
@@ -712,11 +712,11 @@ HD constexpr auto ref(It begin, It end)
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
-struct subarray : array_types<T, D, ElementPtr, Layout> {
-	using types = array_types<T, D, ElementPtr, Layout>;
+struct subarray : const_subarray<T, D, ElementPtr, Layout> {
+	using types = const_subarray<T, D, ElementPtr, Layout>;
 	using ref_ = subarray;
 
-	using array_types<T, D, ElementPtr, Layout>::rank_v;
+	using const_subarray<T, D, ElementPtr, Layout>::rank_v;
 
 	friend struct subarray<typename types::element, D + 1, typename types::element_ptr >;
 
@@ -725,14 +725,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using layout_type = Layout;
 
-	HD constexpr auto layout() const -> layout_type {return array_types<T, D, ElementPtr, Layout>::layout();}
+	HD constexpr auto layout() const -> layout_type {return const_subarray<T, D, ElementPtr, Layout>::layout();}
 
 	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
 	subarray() = default;
 
 	HD constexpr subarray(layout_type const& layout, ElementPtr const& base)
-	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
+	: const_subarray<T, D, ElementPtr, Layout>{layout, base} {}
 
 	auto operator=(subarray&& other) noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {  // allows assigment in temporaries //NOSONAR
 		operator=(other); return *this;
@@ -1717,8 +1717,8 @@ using iterator = array_iterator<Element, D, Ts...>;
 
 template<typename T, typename ElementPtr, class Layout>
 struct subarray<T, 0, ElementPtr, Layout>
-: array_types<T, 0, ElementPtr, Layout> {
-	using types = array_types<T, 0, ElementPtr, Layout>;
+: const_subarray<T, 0, ElementPtr, Layout> {
+	using types = const_subarray<T, 0, ElementPtr, Layout>;
 	using types::types;
 
 	using element      = typename types::element;
@@ -1783,7 +1783,7 @@ template<typename T, typename ElementPtr, class Layout>
 struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
 // : multi::partially_ordered2<subarray<T, 1, ElementPtr, Layout>, void>
 : multi::random_iterable    <subarray<T, 1, ElementPtr, Layout>>
-, array_types<T, 1, ElementPtr, Layout> {
+, const_subarray<T, 1, ElementPtr, Layout> {
 	~subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	void operator delete(void* ptr) noexcept = delete;
@@ -1792,7 +1792,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
+	using types = const_subarray<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
 	using layout_type = Layout;
 	using ref_ = subarray;
@@ -1822,8 +1822,8 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		Layout
 	>;
 
-	using const_reference = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
-	using       reference = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::      reference;
+	using const_reference = typename const_subarray<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
+	using       reference = typename const_subarray<T, dimensionality_type{1}, ElementPtr, Layout>::      reference;
 
  protected:
 	template<class A> constexpr void intersection_assign(A&& other)&& {intersection_assign(std::forward<A>(other));}
