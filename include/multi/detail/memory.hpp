@@ -27,24 +27,24 @@ struct allocator_traits : std::allocator_traits<Alloc> {
 // https://en.cppreference.com/w/cpp/memory/destroy
 template<class Alloc, class ForwardIt, std::enable_if_t<!has_rank<ForwardIt>::value, int> = 0>
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
-	for(; first != last; ++first) {
+	for(; first != last; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));
-	}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	}
 }
 
 template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value and ForwardIt::rank_v == 1, int> = 0>
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	//  using multi::to_address;
-	for(; first != last; ++first) {
+	for(; first != last; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		alloc.destroy(to_address(first));
-	}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	}
 }
 
 template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value and ForwardIt::rank_v != 1, int> = 0>
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
-	for(; first != last; ++first) {
+	for(; first != last; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		destroy(alloc, begin(*first), end(*first));
-	}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	}
 }
 
 template<class Alloc, class InputIt, class Size, class ForwardIt>

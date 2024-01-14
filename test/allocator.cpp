@@ -35,8 +35,8 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( va[1] [0][0] == 1 );
 	BOOST_REQUIRE( va[2] [0][0] == 2 );
 
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls,-warnings-as-errors)  testing std::vector of multi:array
 	std::vector<multi::array<double, 2>> const wa = {
-		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<double, 2>({0, 0}, 0.0),
 		multi::array<double, 2>({1, 1}, 1.0),
 		multi::array<double, 2>({2, 2}, 2.0),
