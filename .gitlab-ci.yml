@@ -42,8 +42,7 @@ coverage:
     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
     - pwd
     - ls -all
-    - curl deepsource.io/cli | sh
-    - ls -all
+    - curl https://deepsource.io/cli | sh
     - ls ./bin/ -all
     - chmod +x ./bin/deepsource
     - ./bin/deepsource report --analyzer test-coverage --key cxx --value-file build/coverage.xml
