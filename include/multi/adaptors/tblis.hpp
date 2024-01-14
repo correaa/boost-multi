@@ -197,7 +197,7 @@ public:
 	}
 //	template<class EE> matrix(matrix<EE> const& other) : ::tblis::tblis_matrix
 	matrix(matrix const&) = delete;
-	matrix(matrix&&) = default;
+	matrix(matrix&&) noexcept = default;
 };
 
 template<class A, class P = typename std::decay_t<A>::element_ptr> matrix(A&&)->matrix<typename std::pointer_traits<P>::element_type>;
