@@ -163,8 +163,9 @@ constexpr class adl_copy_t {
 
 namespace adl {
 namespace custom {
-template<class...> struct fill_t;
-}
+	template<class...> struct fill_t;
+}  // end namespace custom
+
 static constexpr class fill_t {
 	template<class... As> auto _(priority<1> /**/, As&&... args) const DECLRETURN(std::fill(std::forward<As>(args)...)) template<class... As> auto _(priority<2> /**/, As&&... args) const DECLRETURN(fill(std::forward<As>(args)...)) template<class T, class... As> auto _(priority<3> /**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).fill(std::forward<As>(args)...)) template<class... As> auto _(priority<4> /**/, As&&... args) const DECLRETURN(custom::fill_t<As&&...>::_(std::forward<As>(args)...))
 
