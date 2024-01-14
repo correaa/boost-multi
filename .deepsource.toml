@@ -4,3 +4,7 @@ test_patterns = ["test/**"]
 
 [[analyzers]]
 name = "cxx"
+
+[[analyzers]]
+name = "test-coverage"
+enabled = true

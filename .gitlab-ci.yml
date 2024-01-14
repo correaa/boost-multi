@@ -13,6 +13,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
   RT_VERSION: "0.1"
+  DEEPSOURCE_DSN: https://1ec4cfdbf5ea4a85b093e6d6f4bc0f9e@app.deepsource.com
 
 g++:  # debian-stable: default is gcc 12 as of Dec 2023
   stage: build
@@ -26,6 +27,7 @@ g++:  # debian-stable: default is gcc 12 as of Dec 2023
 
 coverage:
   stage: build
+  allow_failure: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
@@ -38,6 +40,12 @@ coverage:
     # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
     # - lcov --list coverage.info && genhtml coverage.info
     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
+    - pwd
+    - ls -all
+    - curl https://deepsource.io/cli | sh
+    - ls ./bin/ -all
+    - chmod +x ./bin/deepsource
+    - ./bin/deepsource report --analyzer test-coverage --key cxx --value-file ./coverage.xml
   coverage: /^\s*Percentage\s+Coverage:\s*\d+.\d+\%/
   # coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
