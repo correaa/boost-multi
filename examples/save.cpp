@@ -25,7 +25,7 @@ namespace bs11n = boost::serialization;
 #define UNSWITCH __builtin_unreachable();
 
 template<class Array>
-void save(Array const& a, std::string name, format f){
+void save(Array const& a, std::string const& name, format f){
 	std::ofstream ofs(name);
 	*[&]()->std::unique_ptr<barch::polymorphic_oarchive>{switch(f){
 		case xml: return std::make_unique<barch::polymorphic_xml_oarchive   >(ofs);
@@ -36,14 +36,14 @@ void save(Array const& a, std::string name, format f){
 }
 
 template<class Array>
-void save(Array const& a, std::experimental::filesystem::path p){
+void save(Array const& a, std::experimental::filesystem::path const& p){
 	     if(p.extension()==".xml") return save(a, p.string(), xml);
 	else if(p.extension()==".txt") return save(a, p.string(), txt);
 	else                           return save(a, p.string(), bin);
 }
 
 template<class Array>
-void load(Array& a, std::string name, format f){
+void load(Array& a, std::string const& name, format f){
 	std::ifstream ifs(name);
 	*[&]()->std::unique_ptr<barch::polymorphic_iarchive>{switch(f){
 		case xml: return std::make_unique<barch::polymorphic_xml_iarchive   >(ifs);
@@ -54,14 +54,14 @@ void load(Array& a, std::string name, format f){
 }
 
 template<class Array>
-void save_xml(Array const& a, std::string name){
+void save_xml(Array const& a, std::string const& name){
 	std::ofstream ofs(name);
 	barch::xml_oarchive(ofs) << bs11n::make_nvp("root", a);
 }
 
 namespace multi = boost::multi;
 
-int main(){
+int main() {
 	multi::array<double, 2> const arrD2d = {{1., 2., 3.}, {4.,5.,6.}, {7.,8.,9.}};
 	save(arrD2d, "arrD2d.xml");
 
