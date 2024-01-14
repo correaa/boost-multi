@@ -38,6 +38,7 @@ int main() {
 	};
 	{
 		multi::pmr::array<char, 2> D = A;
+		D[0][0] = 'c';
 		assert(D.get_allocator() != A.get_allocator() );
 		assert(D.get_allocator().resource() == std::pmr::get_default_resource() );
 	}
