@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
@@ -22,6 +22,12 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	BOOST_REQUIRE( &arr[2] == &arr[2] );
 	BOOST_REQUIRE( &arr[2] == &fwd_array(arr[2]) );
 	BOOST_REQUIRE( &fwd_array(arr[2]) == &arr[2] );
+
+	auto arr_ptr = &arr[2];
+	BOOST_REQUIRE( arr_ptr == arr_ptr );
+
+	auto arr_ptr2 = &std::as_const(arr)[2];
+	BOOST_REQUIRE( arr_ptr == arr_ptr2 );
 
 	auto const& carr2 = arr[2];
 	BOOST_REQUIRE( carr2[0] == arr[2][0] );
@@ -117,7 +123,7 @@ BOOST_AUTO_TEST_CASE(span_like) {
 	BOOST_REQUIRE(  aCRef.size() == 5 );
 
 	BOOST_REQUIRE( &aCRef[0] == &vec[2] );
-	BOOST_REQUIRE(  aCRef[0] == 2.    );
+	BOOST_REQUIRE(  aCRef[0] == 2.0     );
 
 	auto&& aRef = *aP;
 	aRef[0]     = 99.0;
