@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_MEMORY_BLOCK_HPP_
 #define MULTI_MEMORY_BLOCK_HPP_

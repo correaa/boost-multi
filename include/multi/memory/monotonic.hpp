@@ -1,8 +1,9 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_MEMORY_MONOTONIC_HPP_
 #define MULTI_MEMORY_MONOTONIC_HPP_
+
+#pragma message("Header 'multi/memory/monotonic.hpp' is deprecated")
 
 #include "../memory/block.hpp"
 #include "../memory/allocator.hpp"
