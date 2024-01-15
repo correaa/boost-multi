@@ -84,17 +84,20 @@ struct plan {
 	void* workArea_;
 
 	using complex_type = cufftDoubleComplex;
-	cufftHandle h_;
+	cufftHandle h_;  // TODO(correaa) put this in a unique_ptr
 	std::array<std::pair<bool, fftw_iodim64>, DD + 1> which_iodims_{};
 	int first_howmany_;
 
 public:
 	using allocator_type = Alloc;
 
-	plan(plan&& other) :
+	plan(plan&& other) noexcept :
 		h_{std::exchange(other.h_, {})},
-		which_iodims_{other.which_iodims_},
-		first_howmany_{other.first_howmany_}
+		which_iodims_{std::exchange(other.which_iodims_, {})},
+		first_howmany_{std::exchange(other.first_howmany_, {})},
+		workSize_{std::exchange(other.workSize_, {})},
+		workArea_{std::exchange(other.workArea_, {})},
+		alloc_{std::move(other.alloc_)}
 	{}
 
     template<

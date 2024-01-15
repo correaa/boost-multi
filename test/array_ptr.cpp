@@ -37,6 +37,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 
 	auto const& ac2 = carr2;  // fwd_array(A[2]);
 	BOOST_REQUIRE( &ac2 == &std::as_const(arr)[2] );
+	BOOST_REQUIRE( &std::as_const(arr)[2] == &ac2 );
 	BOOST_REQUIRE( &ac2 == &              arr [2] );
 }
 
