@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 $CXX $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer -ldl&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2019-2020
+// © Alfredo A. Correa 2019-2024
 
 #ifndef MULTI_ADAPTORS_CUDA_HPP
 #define MULTI_ADAPTORS_CUDA_HPP
@@ -83,14 +83,14 @@ __attribute__((always_inline)) inline void DoNotOptimize(const T &value) {
   asm volatile("" : "+m"(const_cast<T &>(value)));
 }
 
-struct watch : private std::chrono::high_resolution_clock{
-	std::string label_; time_point  start_;
-	watch(std::string label ="") : label_{label}, start_{now()}{}
-	~watch(){
-		std::cerr<< label_<<": "<< std::chrono::duration<double>(now() - start_).count() <<" sec"<<std::endl;
+struct watch : private std::chrono::high_resolution_clock {
+	std::string label_;
+	time_point  start_;
+	watch(std::string label = "") : label_{std::move(label)}, start_{now()} {}
+	~watch() {
+		std::cerr << label_ << ": " << std::chrono::duration<double>(now() - start_).count() << " sec" << std::endl;
 	}
 };
-
 
 namespace multi = boost::multi;
 namespace cuda = multi::cuda;
