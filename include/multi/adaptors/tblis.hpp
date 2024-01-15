@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 $CXX -std=c++17 -O0 -I/home/correaa/include/tblis -I/home/correaa/tblis/src/external/tci -L/home/correaa/lib -Wl,-rpath=/home/correaa/lib -ltblis $0 -o $0x&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2021
+// Copyright 2021-2024 Alfredo A. Correa
 
 #include "tblis/tblis.h"
 
@@ -130,7 +130,7 @@ struct tensor : ::tblis::tblis_tensor{
 		tblis::init_tensor<std::decay_t<Element>>(this, D, lens_.data(), const_cast<std::decay_t<Element>*>(base(a)), strides_.data());
 	}
 	tensor(tensor const&) = delete;
-	tensor(tensor&& other) : lens_{other.lens_}, strides_{other.strides_}{
+	tensor(tensor&& other) noexcept : lens_{other.lens_}, strides_{other.strides_}{
 		tblis::init_tensor<std::decay_t<Element>>(this, D, lens_.data(), const_cast<std::decay_t<Element>*>(other.data()), strides_.data());
 	}
 	using dimensionality_type = multi::dimensionality_type;
@@ -155,7 +155,7 @@ struct indexed_tensor{
 	tensor<Element, D> tensor_;
 	std::string indices_;
 	indexed_tensor(tensor<Element, D>&& t, std::string indices) : tensor_(std::move(t)), indices_{std::move(indices)}{}
-	indexed_tensor(indexed_tensor&& other) = default;
+	indexed_tensor(indexed_tensor&& other) noexcept = default;
 	tensor<Element, D>& tensor_part()&{return tensor_;}
 	std::string indices() const{return indices_;}
 };
