@@ -5,6 +5,8 @@
 #ifndef BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR_HPP
 #define BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR_HPP
 
+#pragma message("Header `multi/detail/cuda/ptr.h` is deprecated!")
+
 #include<cuda_runtime.h> // cudaError_t
 
 #include<cassert>
