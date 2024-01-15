@@ -253,9 +253,10 @@ public:
 	// }
 
 	HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
+			return *this;
+		}
 		this->ref_.base_ = other.ref_.base_;
-	//  static_cast<Layout&>(*this)
 		this->ref_.layout_mutable() = other.ref_.layout();
 		return *this;
 	}
