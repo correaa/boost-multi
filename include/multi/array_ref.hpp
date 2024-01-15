@@ -219,15 +219,6 @@ private:
 public:
 	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	HD constexpr auto operator=(subarray_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-	-> subarray_ptr& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
-		this->ref_.base_ = other.ref_.base_;
-	//  static_cast<Layout&>(*this)
-		this->ref_.layout_mutable() = other.ref_.layout();
-		return *this;
-	}
-
 	using pointer = Ref const*;
 	using element_type = typename Ref::decay_type;
 	using difference_type = typename Layout::difference_type;
@@ -253,12 +244,21 @@ public:
 	subarray_ptr(subarray_ptr const& )          = default;
 
 	HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
+			return *this;
+		}
 		this->ref_.base_ = other.ref_.base_;
-	//  static_cast<Layout&>(*this)
 		this->ref_.layout_mutable() = other.ref_.layout();
 		return *this;
 	}
+
+	HD constexpr auto operator=(subarray_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> subarray_ptr& {
+		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		operator=(other);
+		return *this;
+	}
+
 	HD constexpr explicit operator bool() const {return base();}
 
 	HD constexpr auto dereference() const -> Ref {return Ref{this->layout(), this->base_};}
