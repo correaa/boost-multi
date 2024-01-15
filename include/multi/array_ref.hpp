@@ -286,10 +286,14 @@ public:
 		return (this->ref_.base_ == other.ref_.base_) && (this->ref_.layout() == other.ref_.layout());
 	}
 
-	template<class RR, class LL, std::enable_if_t<! std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>  // TODO(correaa) improve this
-	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() && self->layout() == other->layout();}
-	template<class RR, class LL, std::enable_if_t<! std::is_base_of<subarray_ptr, subarray_ptr<RR, LL> >{}, int> =0>
-	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() && self->layout() == other->layout();}
+	template<class RR, class LL, std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<RR, LL>>, int> =0>  // TODO(correaa) improve this
+	friend HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {
+		return self.base() == other->base() && self->layout() == other->layout();
+	}
+	template<class RR, class LL, std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<RR, LL>>, int> =0>
+	friend HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {
+		return self.base() == other->base() && self->layout() == other->layout();
+	}
 
  protected:
 	HD constexpr void increment() {ref_.base_ += Ref::nelems();}
@@ -384,8 +388,11 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	}
 
 	HD constexpr auto operator< (array_iterator const& other) const -> bool {
+		assert(ptr_->layout() == other.ptr_->layout());
 		assert(stride_ != 0);
-		return (0 < stride_)?(ptr_.base() < other.ptr_.base()):(other.ptr_.base() < ptr_.base());
+		return
+			   ((0 < stride_) && (ptr_.base() - other.ptr_.base() < 0))
+			|| ((stride_ < 0) && (0 < ptr_.base() - other.ptr_.base()));  // TODO(correaa) consider the case where stride_ is negative
 	}
 
 	HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> lyt, index stride)
