@@ -84,7 +84,7 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 	{
 		local_cutout() = other.local_cutout();
 	}
-	array(array&& other) :
+	array(array&& other) noexcept :
 		comm_       {std::move(other.comm_)},
 		alloc_      {std::move(other.alloc_)},
 		local_count_{std::exchange(other.local_count_, 0)},
