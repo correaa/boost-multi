@@ -69,6 +69,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using          layout_t::rank_v;
 	using          layout_t::dimensionality;
 
+	// using          layout_t::num_dimensions;
+	[[deprecated("this is from BMA")]] static constexpr auto num_dimensions() {return dimensionality;}
+
 	using typename layout_t::stride_type;
 	using          layout_t::stride     ;
 
@@ -82,7 +85,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using typename layout_t::index_extension;
 
 	using typename layout_t::strides_type;
-	using          layout_t::strides     ;
+	// using          layout_t::strides     ;
+
+ public:
+	auto strides() const { return convertible_tuple<strides_type>(layout_t::strides()); }
+	[[deprecated("BMA backward compatible")]] auto index_bases() const {
+		return convertible_tuple(std::apply([](auto... e) noexcept {return std::make_tuple(e.front() ...);}, this->extensions().base()));
+	}
 
 	using typename layout_t::difference_type;
 
@@ -106,6 +115,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_t::sizes_type;
 	using          layout_t::sizes;
+
+	[[deprecated("from BMA")]] constexpr auto shape() const {return convertible_tuple(this->sizes());}
 
 	using layout_t::is_compact;
 
@@ -1235,8 +1246,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using const_iterator = array_iterator<element, D, element_const_ptr>;
 	using  move_iterator = array_iterator<element, D, element_move_ptr >;
 
-	using reverse_iterator [[deprecated]] = std::reverse_iterator<iterator>;
-	using const_reverse_iterator[[deprecated]] = std::reverse_iterator<const_iterator>;
+	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
+	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
 
  private:
 	HD constexpr explicit subarray(iterator begin, iterator end)
@@ -1816,6 +1827,11 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	using element_ref       = typename types::element_ref;
 	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
 
+	using const_pointer     = element_const_ptr;
+	using       pointer     = element_ptr;
+	using const_reference   = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
+	using       reference   = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::      reference;
+
 	using default_allocator_type = typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type;
 
 	constexpr auto get_allocator() const -> default_allocator_type {return default_allocator_of(subarray::base());}
@@ -1832,9 +1848,6 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		typename std::pointer_traits<ElementPtr>::template rebind<typename subarray::element_type const>,
 		Layout
 	>;
-
-	using const_reference = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
-	using       reference = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::      reference;
 
  protected:
 	template<class A> constexpr void intersection_assign(A&& other)&& {intersection_assign(std::forward<A>(other));}
@@ -1987,6 +2000,8 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value >  1), int> = 0> HD constexpr auto operator[](Tuple const& indices  ) const&
 	->decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
 		return operator[](std::get<0>(indices))[detail::tuple_tail(indices)]; }
+
+	[[deprecated("BMA compat, finish impl")]] HD constexpr auto operator[](std::tuple<irange> const& indices) const& { return (*this)({std::get<0>(indices).front(), std::get<0>(indices).back() + 1}); }
 
 	HD constexpr auto elements_at(size_type idx) const& -> decltype(auto) {assert(idx < this->num_elements()); return operator[](idx);}
 	HD constexpr auto elements_at(size_type idx)     && -> decltype(auto) {assert(idx < this->num_elements()); return operator[](idx);}
@@ -2205,6 +2220,18 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_const_ptr>;
 	using    move_iterator =                 array_iterator<element_type, 1,                 element_move_ptr >;
 
+	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
+	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
+
+	// using index_gen = std::array<irange, 1>;
+	struct [[deprecated]] index_gen {
+		auto operator[](irange const& r) const {
+			return std::make_tuple(r);
+		}
+	};
+	using extent_gen = std::array<irange, 1>;
+	using extent_range = irange;
+
 	template<
 		class Range,
 		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
@@ -2240,6 +2267,9 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	constexpr auto  end  () const& -> const_iterator {return end_aux();}
 	constexpr auto  end  ()      & ->       iterator {return end_aux();}
 	constexpr auto  end  ()     && ->       iterator {return end_aux();}
+
+	[[deprecated("implement as negative stride")]] constexpr auto rbegin() const& {return const_reverse_iterator(end  ());}  // TODO(correaa) implement as negative stride?
+	[[deprecated("implement as negative stride")]] constexpr auto rend  () const& {return const_reverse_iterator(begin());}  // TODO(correaa) implement as negative stride?
 
 	MULTI_FRIEND_CONSTEXPR auto begin(subarray const& self) -> const_iterator {return           self .begin();}
 	MULTI_FRIEND_CONSTEXPR auto begin(subarray      & self) ->       iterator {return           self .begin();}

@@ -199,12 +199,17 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
 
-	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
-	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc) = delete;
+	template<class ValueType, class = decltype(std::declval<ValueType>().extensions()), std::enable_if_t<std::is_convertible_v<ValueType, typename static_array::value_type>, int> =0>
+	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)  // fill constructor
+	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t(extension*value.extensions()).num_elements())), extension*value.extensions())
+	{
+		static_assert(std::is_trivially_default_constructible_v<typename static_array::element_type> || multi::force_element_trivial_default_construction<typename static_array::element_type> );  // TODO(correaa) not implemented for non-trivial types,
+		adl_fill_n(this->begin(), this->size(), value);  // TODO(correaa) implement via .elements()? substitute with uninitialized version of fill, uninitialized_fill_n?
+	}
 
-	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
-	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value)  // 3
-		= delete;
+	template<class ValueType, class = decltype(std::declval<ValueType>().extensions()), std::enable_if_t<std::is_convertible_v<ValueType, typename static_array::value_type>, int> =0>
+	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value)  // fill constructor
+	: static_array(extension, value, allocator_type{}) {}
 
 	explicit static_array(typename static_array::extensions_type extensions, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
@@ -329,6 +334,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto begin() & -> typename static_array::iterator { return ref::begin(); }
 	constexpr auto end() & -> typename static_array::iterator { return ref::end(); }
 
+	using ref::operator[];
 	HD constexpr auto operator[](index idx) const& -> typename static_array::const_reference { return ref::operator[](idx); }
 	HD constexpr auto operator[](index idx) && -> decltype(auto) {
 		if constexpr(D == 1) {

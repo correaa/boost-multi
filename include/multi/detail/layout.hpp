@@ -535,6 +535,8 @@ struct layout_t
 	static constexpr dimensionality_type rank_v = rank::value;
 	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa): consider deprecation
 
+	[[deprecated("this is from BMA")]] static constexpr auto num_dimensions() {return dimensionality;}
+
 	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
 
  private:
@@ -736,6 +738,59 @@ namespace std {
 	template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2> {};
 	template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3> {};
 	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
+}  // end namespace std
+
+namespace boost::multi {
+
+	template<class Tuple>
+	struct convertible_tuple : Tuple {
+		using Tuple::Tuple;
+		convertible_tuple(Tuple const& other) : Tuple(other) {}
+
+	 private:
+		auto to_array() const noexcept {
+			return std::apply([](auto... e) noexcept {
+				return std::array<std::common_type_t<decltype(e)...>, sizeof...(e)>{{static_cast<size_type>(e) ...}};
+			}, static_cast<Tuple const&>(*this));
+		}
+
+	 public:
+		explicit operator auto() const noexcept {return to_array();}
+
+		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {
+			#ifdef __clang__
+				#pragma clang diagnostic push
+				#pragma clang diagnostic ignored "-Wreturn-stack-address"
+			#endif
+			return to_array().data();
+			#ifdef __clang__
+				#pragma clang diagnostic pop
+			#endif
+		}
+
+		template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Tuple>), int> =0>
+		friend constexpr auto get(convertible_tuple const& self) -> typename std::tuple_element<Index, Tuple>::type {
+			return std::get<Index>(static_cast<Tuple const&>(self));
+		}
+	};
+
+	template<class Array>
+	struct convertible_array : Array {
+		using Array::Array;
+		convertible_array(Array const& other) : Array(other) {}
+
+		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {return Array::data();}
+
+		template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Array>), int> =0>
+		friend constexpr auto get(convertible_array const& self) -> typename std::tuple_element<Index, Array>::type {
+			return std::get<Index>(static_cast<Array const&>(self));
+		}
+	};
+}  // end namespace boost::multi
+
+namespace std {
+	template<class Tuple> struct tuple_size<boost::multi::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};
+	template<class Array> struct tuple_size<boost::multi::convertible_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};
 }  // end namespace std
 
 #endif

@@ -195,7 +195,8 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 		}
 	};
 
-	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.strides());
+	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());
+	// auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.strides());
 
 	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 
