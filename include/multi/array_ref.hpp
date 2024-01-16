@@ -90,7 +90,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  public:
 	auto strides() const { return convertible_tuple<strides_type>(layout_t::strides()); }
 	[[deprecated("BMA backward compatible")]] auto index_bases() const {
-		return convertible_tuple(std::apply([](auto... e) noexcept {return std::make_tuple(e.front() ...);}, this->extensions().base()));
+		return convertible_tuple(std::apply([](auto... exts) noexcept {return std::make_tuple(exts.front() ...);}, this->extensions().base()));
 	}
 
 	using typename layout_t::difference_type;
