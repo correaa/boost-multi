@@ -164,9 +164,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	       constexpr auto origin()           const&       -> decltype(auto) {return base_ + Layout::origin();}
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) {return self.origin();}
 
-	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
- 
  protected:
+	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
+	template<class, dimensionality_type, typename> friend struct array_iterator;
+
 	using derived = subarray<T, D, ElementPtr, Layout>;
 	HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
 
@@ -1251,6 +1252,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	using ptr = subarray_ptr<subarray, Layout>;
 	using const_ptr = subarray_ptr<basic_const_array, Layout>;
+
+	using pointer = ptr;
+	using const_pointer = const_ptr;
 
 	constexpr auto addressof() && {return ptr{this->base_, this->layout()};}
 
