@@ -339,7 +339,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 	HD constexpr auto operator[](index idx) & -> typename static_array::reference { return ref::operator[](idx); }
 
-	HD constexpr auto max_size() const noexcept { return static_cast<typename static_array::size_type>(alloc_traits::max_size(this->alloc())); }  // TODO(correaa)  divide by nelements in under dimensions?
+	constexpr auto max_size() const noexcept { return static_cast<typename static_array::size_type>(alloc_traits::max_size(this->alloc())); }  // TODO(correaa)  divide by nelements in under-dimensions?
 
  protected:
 	constexpr void deallocate() {
