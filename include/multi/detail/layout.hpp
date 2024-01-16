@@ -747,17 +747,16 @@ namespace boost::multi {
 		using Tuple::Tuple;
 		convertible_tuple(Tuple const& other) : Tuple(other) {}
 
-	 private:
+	 public:
 		auto to_array() const noexcept {
 			return std::apply([](auto... e) noexcept {
 				return std::array<std::common_type_t<decltype(e)...>, sizeof...(e)>{{static_cast<size_type>(e) ...}};
 			}, static_cast<Tuple const&>(*this));
 		}
 
-	 public:
-		explicit operator auto() const noexcept {return to_array();}
+		/*explicit*/ operator auto() const noexcept {return to_array();}
 
-		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {
+		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {  // 
 			#ifdef __clang__
 				#pragma clang diagnostic push
 				#pragma clang diagnostic ignored "-Wreturn-stack-address"
@@ -775,14 +774,15 @@ namespace boost::multi {
 	};
 
 	template<class Array>
-	struct convertible_array : Array {
+	struct decaying_array : Array {
 		using Array::Array;
-		convertible_array(Array const& other) : Array(other) {}
+		decaying_array(Array const& other) : Array(other) {}
 
-		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {return Array::data();}
+		[[deprecated("possible dangling conversion, use `std::array<T, D> p` instead of `auto* p`")]]
+		constexpr operator std::ptrdiff_t const*() const {return Array::data();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 		template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Array>), int> =0>
-		friend constexpr auto get(convertible_array const& self) -> typename std::tuple_element<Index, Array>::type {
+		friend constexpr auto get(decaying_array const& self) -> typename std::tuple_element<Index, Array>::type {
 			return std::get<Index>(static_cast<Array const&>(self));
 		}
 	};
@@ -790,7 +790,7 @@ namespace boost::multi {
 
 namespace std {
 	template<class Tuple> struct tuple_size<boost::multi::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};
-	template<class Array> struct tuple_size<boost::multi::convertible_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};
+	template<class Array> struct tuple_size<boost::multi::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};
 }  // end namespace std
 
 #endif
