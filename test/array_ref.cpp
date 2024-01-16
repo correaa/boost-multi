@@ -1021,3 +1021,17 @@ BOOST_AUTO_TEST_CASE(function_passing_4) {
 	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
 #endif
 }
+
+BOOST_AUTO_TEST_CASE(array_fill_constructor) {
+	multi::array<double, 2> arr(3, multi::array<double, 1>{1.0, 2.0, 3.0, 4.0});
+
+	BOOST_REQUIRE( arr[0][1] == 2.0 );
+	BOOST_REQUIRE( arr[1][1] == 2.0 );
+}
+
+BOOST_AUTO_TEST_CASE(array_fill_constructor_1D) {
+	multi::array<double, 1> arr(3, 1.0);
+
+	BOOST_REQUIRE( arr[0] == 1.0 );
+	BOOST_REQUIRE( arr[1] == 1.0 );
+}

@@ -20,6 +20,13 @@ BOOST_AUTO_TEST_CASE(concepts_boost_array) {
 	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<BMA, 2>));
 }
 
+BOOST_AUTO_TEST_CASE(concepts_boost_array_1D) {
+	using BMA = boost::multi_array<int, 1>;
+
+	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<BMA, 1>));
+	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<BMA, 1>));
+}
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(concepts_array) {
@@ -34,7 +41,9 @@ BOOST_AUTO_TEST_CASE(concepts_array) {
 	BOOST_CONCEPT_ASSERT((boost::CopyConstructible<MA>));
 	BOOST_CONCEPT_ASSERT((boost::EqualityComparable<MA>));
 	BOOST_CONCEPT_ASSERT((boost::LessThanComparable<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::Comparable<MA>));
 
+	// Function Object Concept Checking Classes
 	BOOST_CONCEPT_ASSERT((boost::Generator<MA, boost::multi::subarray<int, 2>>));
 	BOOST_CONCEPT_ASSERT((boost::UnaryFunction<MA, MA::reference, MA::index>));
 	BOOST_CONCEPT_ASSERT((boost::BinaryFunction<MA, typename MA::element_ref, typename MA::index, typename MA::index>));
@@ -43,7 +52,53 @@ BOOST_AUTO_TEST_CASE(concepts_array) {
 	// BOOST_CONCEPT_ASSERT((boost::AdaptableUnaryFunction<MA, MA::reference, MA::index>));
 	// BOOST_CONCEPT_ASSERT((boost::AdaptableBinaryFunction<MA, typename MA::element_ref, typename MA::index, typename MA::index>));
 
+	// Container Concept Checking Classes
 	BOOST_CONCEPT_ASSERT((boost::Container<MA>));
+	BOOST_CONCEPT_ASSERT((boost::Mutable_Container<MA>));
+	BOOST_CONCEPT_ASSERT((boost::ForwardContainer<MA>));
+	BOOST_CONCEPT_ASSERT((boost::Mutable_ForwardContainer<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::ReversibleContainer<MA>));  // TODO(correaa) make it reversible, `const_reverse_iterator _i = cc.rbegin();`
+	// BOOST_CONCEPT_ASSERT((boost::Mutable_ReversibleContainer<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::RandomAccessContainer<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessContainer<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::Sequence<MA>));  // TODO(correaa) needs insert and erase, which will not be provided
+	BOOST_CONCEPT_ASSERT((boost::Collection<MA>));
+}
+
+BOOST_AUTO_TEST_CASE(concepts_array_1D) {
+	using MA = multi::array<int, 1>;
+
+	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<MA, 1>));
+	// BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<MA, 2>));
+
+	BOOST_CONCEPT_ASSERT((boost::Assignable<MA>));
+	BOOST_CONCEPT_ASSERT((boost::SGIAssignable<MA>));
+	BOOST_CONCEPT_ASSERT((boost::DefaultConstructible<MA>));
+	BOOST_CONCEPT_ASSERT((boost::CopyConstructible<MA>));
+	BOOST_CONCEPT_ASSERT((boost::EqualityComparable<MA>));
+	BOOST_CONCEPT_ASSERT((boost::LessThanComparable<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::Comparable<MA>));
+
+	// Function Object Concept Checking Classes
+	BOOST_CONCEPT_ASSERT((boost::Generator<MA, boost::multi::subarray<int, 1>>));
+	BOOST_CONCEPT_ASSERT((boost::UnaryFunction<MA, MA::reference, MA::index>));
+	// BOOST_CONCEPT_ASSERT((boost::BinaryFunction<MA, typename MA::element_ref, typename MA::index, typename MA::index>));
+
+	// BOOST_CONCEPT_ASSERT((boost::AdaptableGenerator<MA, boost::multi::subarray<int, 2>>));  // needs result_type TODO(correaa) add to array?, should result_type be array<T, D-1>? or subarray?
+	// BOOST_CONCEPT_ASSERT((boost::AdaptableUnaryFunction<MA, MA::reference, MA::index>));
+	// BOOST_CONCEPT_ASSERT((boost::AdaptableBinaryFunction<MA, typename MA::element_ref, typename MA::index, typename MA::index>));
+
+	// Container Concept Checking Classes
+	BOOST_CONCEPT_ASSERT((boost::Container<MA>));
+	BOOST_CONCEPT_ASSERT((boost::Mutable_Container<MA>));
+	BOOST_CONCEPT_ASSERT((boost::ForwardContainer<MA>));
+	BOOST_CONCEPT_ASSERT((boost::Mutable_ForwardContainer<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::ReversibleContainer<MA>));  // TODO(correaa) make it reversible, `const_reverse_iterator _i = cc.rbegin();`
+	// BOOST_CONCEPT_ASSERT((boost::Mutable_ReversibleContainer<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::RandomAccessContainer<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessContainer<MA>));
+	// BOOST_CONCEPT_ASSERT((boost::Sequence<MA>));  // TODO(correaa) needs insert and erase, which will not be provided
+	BOOST_CONCEPT_ASSERT((boost::Collection<MA>));
 }
 
 BOOST_AUTO_TEST_CASE(concepts_iterator) {
@@ -60,6 +115,7 @@ BOOST_AUTO_TEST_CASE(concepts_iterator) {
 	BOOST_CONCEPT_ASSERT((boost::OutputIterator<MAIt, MAIt::reference>));
 		BOOST_CONCEPT_ASSERT((boost::OutputIterator<MAIt, MAIt::value_type>));
 
+	// Iterator Concept Checking Classes
 	BOOST_CONCEPT_ASSERT((boost::ForwardIterator<MAIt>));
 	BOOST_CONCEPT_ASSERT((boost::Mutable_ForwardIterator<MAIt>));
 	BOOST_CONCEPT_ASSERT((boost::BidirectionalIterator<MAIt>));
