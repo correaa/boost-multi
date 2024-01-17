@@ -745,7 +745,7 @@ namespace boost::multi {
 	template<class Tuple>
 	struct convertible_tuple : Tuple {
 		using Tuple::Tuple;
-		convertible_tuple(Tuple const& other) : Tuple(other) {}
+		explicit convertible_tuple(Tuple const& other) : Tuple(other) {}
 
 	 public:
 		auto to_array() const noexcept {
@@ -757,7 +757,7 @@ namespace boost::multi {
 		/*explicit*/ operator auto() const& noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		/*explicit*/ operator auto() && noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {  // 
+		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 			#ifdef __clang__
 				#pragma clang diagnostic push
 				#pragma clang diagnostic ignored "-Wreturn-stack-address"
