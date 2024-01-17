@@ -422,21 +422,20 @@ cuda-12.1.1:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-# cuda-12.2.0:  # last version: httpss://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
-#   stage: build
-#   image: nvcr.io/nvidia/cuda:12.2.0-devel-ubuntu22.04
-#   allow_failure: true  # 12.2 image not working at the moment
-#   tags:
-#     - nvidia-docker
-#   script:
-#     - nvidia-smi
-#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-#     - mkdir build && cd build
-#     - /usr/local/cuda/bin/nvcc --version
-#     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#   needs: ["cuda"]
+cuda-12.3.1:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+  stage: build
+  image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
+  tags:
+    - nvidia-docker
+  script:
+    - nvidia-smi
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda"]
 
 rocm:
   stage: build
