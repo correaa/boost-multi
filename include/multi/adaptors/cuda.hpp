@@ -86,7 +86,7 @@ __attribute__((always_inline)) inline void DoNotOptimize(const T &value) {
 struct watch : private std::chrono::high_resolution_clock {
 	std::string label_;
 	time_point  start_;
-	watch(std::string label = "") : label_{std::move(label)}, start_{now()} {}
+	watch(std::string const& label = "") : label_{label}, start_{now()} {}
 	~watch() {
 		std::cerr << label_ << ": " << std::chrono::duration<double>(now() - start_).count() << " sec" << std::endl;
 	}
