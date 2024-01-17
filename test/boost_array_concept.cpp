@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(backwards) {
 	{
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		std::vector<std::ptrdiff_t> ib(2); (void)ib; // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<std::ptrdiff_t> const ib(2); (void)ib; // NOLINT(fuchsia-default-arguments-calls)
 		// std::copy_n(static_cast<std::ptrdiff_t const*>(MA.index_bases()), 2, ib.begin());
 		// BOOST_REQUIRE(ib[0] == 0);  // dangles
 		// BOOST_REQUIRE(ib[1] == 0);
