@@ -288,8 +288,7 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 	using type = typename tuple_element<N - 1, boost::multi::detail::tuple<Ts...>>::type;
 };
 
-// NOLINTBEGIN(cert-dcl58-cpp) define stuff in STD  // TODO(correaa) this is bad
-namespace std {
+namespace std {  // NOLINT(cert-dcl58-cpp) define stuff in STD  // TODO(correaa) this is bad
 
 template<std::size_t N, class... Ts>
 constexpr auto get(boost::multi::detail::tuple<Ts...> const& t)  // NOLINT(readability-identifier-length) std naming
@@ -340,7 +339,6 @@ constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...>&& t) -> decltype(
 }
 
 }  // end namespace std
-// NOLINTEND(cert-dcl58-cpp) define stuff in STD
 
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
