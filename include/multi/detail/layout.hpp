@@ -749,12 +749,13 @@ namespace boost::multi {
 
 	 public:
 		auto to_array() const noexcept {
-			return std::apply([](auto... e) noexcept {
-				return std::array<std::common_type_t<decltype(e)...>, sizeof...(e)>{{static_cast<size_type>(e) ...}};
+			return std::apply([](auto... es) noexcept {
+				return std::array<std::common_type_t<decltype(es)...>, sizeof...(es)>{{static_cast<size_type>(es) ...}};
 			}, static_cast<Tuple const&>(*this));
 		}
 
-		/*explicit*/ operator auto() const noexcept {return to_array();}
+		/*explicit*/ operator auto() const& noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		/*explicit*/ operator auto() && noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {  // 
 			#ifdef __clang__
@@ -776,7 +777,7 @@ namespace boost::multi {
 	template<class Array>
 	struct decaying_array : Array {
 		using Array::Array;
-		decaying_array(Array const& other) : Array(other) {}
+		explicit decaying_array(Array const& other) : Array(other) {}
 
 		[[deprecated("possible dangling conversion, use `std::array<T, D> p` instead of `auto* p`")]]
 		constexpr operator std::ptrdiff_t const*() const {return Array::data();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
