@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(concepts_boost_array_1D) {
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(backwards) {
-	multi::array<int, 2> A({2, 2});
+	multi::array<int, 2> MA({2, 2});
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	// BOOST_REQUIRE(A.index_bases()[0] == 0);  // dangles?
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(backwards) {
 	{
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		auto ib = A.index_bases(); (void)ib;
+		auto ib = MA.index_bases(); (void)ib;
 		// BOOST_REQUIRE(ib[0] == 0);  // dangles?
 		// BOOST_REQUIRE(ib[1] == 0);
 		#pragma GCC diagnostic pop
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(backwards) {
 	{
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		std::array<std::ptrdiff_t, 2> ib = A.index_bases();
+		std::array<std::ptrdiff_t, 2> ib(MA.index_bases()); (void)ib;
 		BOOST_REQUIRE(ib[0] == 0);
 		BOOST_REQUIRE(ib[1] == 0);
 		#pragma GCC diagnostic pop
@@ -56,21 +56,21 @@ BOOST_AUTO_TEST_CASE(backwards) {
 	{
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(A.index_bases())[0] == 0);  // dangles
-		// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(A.index_bases())[1] == 0);
+		// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(MA.index_bases())[0] == 0);  // dangles
+		// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(MA.index_bases())[1] == 0);
 		#pragma GCC diagnostic pop
 	}
 	{
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		// BOOST_REQUIRE(A.index_bases()[0] == 0);  // dangles
-		// BOOST_REQUIRE(A.index_bases()[1] == 0);
+		// BOOST_REQUIRE(MA.index_bases()[0] == 0);  // dangles
+		// BOOST_REQUIRE(MA.index_bases()[1] == 0);
 		#pragma GCC diagnostic pop
 	}
 	{
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		std::ptrdiff_t const* ib = A.index_bases();
+		std::ptrdiff_t const* ib = MA.index_bases();
 		BOOST_REQUIRE(ib);
 		// BOOST_REQUIRE(ib[0] == 0);  // dangles
 		// BOOST_REQUIRE(ib[1] == 0);
@@ -79,8 +79,8 @@ BOOST_AUTO_TEST_CASE(backwards) {
 	{
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		std::vector<std::ptrdiff_t> ib(2);
-		std::copy_n(static_cast<std::ptrdiff_t const*>(A.index_bases()), 2, ib.begin());
+		std::vector<std::ptrdiff_t> ib(2); (void)ib; // NOLINT(fuchsia-default-arguments-calls)
+		// std::copy_n(static_cast<std::ptrdiff_t const*>(MA.index_bases()), 2, ib.begin());
 		// BOOST_REQUIRE(ib[0] == 0);  // dangles
 		// BOOST_REQUIRE(ib[1] == 0);
 		#pragma GCC diagnostic pop
@@ -88,8 +88,8 @@ BOOST_AUTO_TEST_CASE(backwards) {
 	{
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		std::vector<std::ptrdiff_t> ib(2);
-		std::copy_n(A.index_bases().to_array().data(), 2, ib.begin());
+		std::vector<std::ptrdiff_t> ib(2);  // NOLINT(fuchsia-default-arguments-calls)
+		std::copy_n(MA.index_bases().to_array().data(), 2, ib.begin());
 		BOOST_REQUIRE(ib[0] == 0);
 		BOOST_REQUIRE(ib[1] == 0);
 		#pragma GCC diagnostic pop

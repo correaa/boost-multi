@@ -748,14 +748,15 @@ namespace boost::multi {
 		explicit convertible_tuple(Tuple const& other) : Tuple(other) {}
 
 	 public:
+		using array_type = std::array<std::ptrdiff_t, std::tuple_size<Tuple>::value>;
 		auto to_array() const noexcept {
 			return std::apply([](auto... es) noexcept {
 				return std::array<std::common_type_t<decltype(es)...>, sizeof...(es)>{{static_cast<size_type>(es) ...}};
 			}, static_cast<Tuple const&>(*this));
 		}
 
-		/*explicit*/ operator auto() const& noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-		/*explicit*/ operator auto() && noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		/*explicit*/ operator array_type() const& noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		/*explicit*/ operator array_type() && noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 			#ifdef __clang__
