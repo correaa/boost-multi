@@ -2223,14 +2223,9 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
 
-	// using index_gen = std::array<irange, 1>;
-	struct [[deprecated]] index_gen {
-		auto operator[](irange const& r) const {
-			return std::make_tuple(r);
-		}
-	};
-	using extent_gen = std::array<irange, 1>;
-	using extent_range = irange;
+	struct [[deprecated("BMA compatibility")]] index_gen {auto operator[](irange const& rng) const {return std::make_tuple(rng);}};
+	using extent_gen [[deprecated("BMA compatibility")]] = std::array<irange, 1>;
+	using extent_range [[deprecated("BMA compatibility")]] = irange;
 
 	template<
 		class Range,
