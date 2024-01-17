@@ -790,7 +790,7 @@ namespace boost::multi {
 	};
 }  // end namespace boost::multi
 
-template<class Tuple> struct std::tuple_size<boost::multi::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};
-template<class Array> struct std::tuple_size<boost::multi::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};
+template<class Tuple> struct std::tuple_size<boost::multi::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NILINT(cert-dcl58-cpp) normal idiom to defined tuple size
+template<class Array> struct std::tuple_size<boost::multi::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
 
 #endif
