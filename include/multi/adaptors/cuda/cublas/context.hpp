@@ -96,11 +96,11 @@ using std::is_assignable;
 using std::is_assignable_v;
 using std::is_convertible_v;
 
-enum type {S, D, C, Z};
+enum class type {S, D, C, Z};
 
 template<class T>
 constexpr auto type_of(T const& = {}) -> cublas::type {
-	static_assert(is_s<T>{} or is_d<T>{} or is_c<T>{} or is_z<T>{});
+	static_assert(is_s<T>{} || is_d<T>{} || is_c<T>{} || is_z<T>{});
 	     if(is_s<T>{}) {return S;}
 	else if(is_d<T>{}) {return D;}
 	else if(is_c<T>{}) {return C;}
