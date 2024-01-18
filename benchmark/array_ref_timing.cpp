@@ -25,7 +25,7 @@ int main(){
 	std::iota(begin(data), end(data), 0.);
 	multi::array_cref<double, 2> data2D_cref({NX, NY}, data.data());
 
-	cout << "size " << data.size()*sizeof(double)/1e6 << "MB\n";
+	cout << "size " << static_cast<double>(data.size()*sizeof(double))/1.0e6 << "MB\n";
 
 	iota(begin(data), end(data), 1.2); iota(begin(data), end(data), 10.1); data[1234] = 929.1;
 	double sum_raw;
@@ -42,8 +42,6 @@ int main(){
 		boost::timer::auto_cpu_timer t{std::cerr, 3, "sum: 2D %t seconds\n"};
 		auto ext = extensions(data2D_cref);
 		for(auto i : std::get<0>(ext)){
-		//	auto const& data2D_crefi = data2D_cref[i]; // not necessary in any clang or gcc
-		//	for(auto j : std::get<1>(ext)) sum += data2D_crefi[j];
 			for(auto j : std::get<1>(ext)) sum += data2D_cref(i, j);
 		}
 		sum_2D = sum;
@@ -54,8 +52,8 @@ int main(){
 		double sum = 0.;
 		boost::timer::auto_cpu_timer t{cerr, 3, "sum: 2D acc %t seconds\n"};
 		sum = std::accumulate(
-			begin(data2D_cref), end(data2D_cref), 0.,
-			[](auto&& a, auto&& b){return a + std::accumulate(begin(b), end(b), 0.);}
+			begin(data2D_cref), end(data2D_cref), 0.0,
+			[](auto const& a, auto const& b){return a + std::accumulate(begin(b), end(b), 0.0);}
 		);
 		sum_2D_acc = sum;
 	}
@@ -64,8 +62,8 @@ int main(){
 	{
 		boost::timer::auto_cpu_timer t{cerr, 3, "sum: 2Dwrong acc %t seconds\n"};
 		sum_2Dwrong_acc = std::accumulate(
-			begin(rotated(data2D_cref)), end(rotated(data2D_cref)), 0.,
-			[](auto&& a, auto&& b){return a + std::accumulate(begin(b), end(b), 0.);}
+			begin(rotated(data2D_cref)), end(rotated(data2D_cref)), 0.0,
+			[](auto const& a, auto const& b){return a + std::accumulate(begin(b), end(b), 0.0);}
 		);
 	}
 	iota(begin(data), end(data), 1.2); iota(begin(data), end(data), 11.2); data[1234] = 199.1;
