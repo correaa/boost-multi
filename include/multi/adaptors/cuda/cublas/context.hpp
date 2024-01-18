@@ -117,33 +117,25 @@ using std::is_convertible_v;
 
 template<class T>
 constexpr auto data_cast(T* p) {
-	     if constexpr(is_s<T>{}) {return reinterpret_cast<float        *>(p);}
-	else if constexpr(is_d<T>{}) {return reinterpret_cast<double       *>(p);}
-	else if constexpr(is_c<T>{}) {return reinterpret_cast<Complex      *>(p);}
-	else if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex*>(p);}
+	if constexpr(is_s<T>{}) {return reinterpret_cast<float        *>(p);}
+	else
+	if constexpr(is_d<T>{}) {return reinterpret_cast<double       *>(p);}
+	else
+	if constexpr(is_c<T>{}) {return reinterpret_cast<Complex      *>(p);}
+	else
+	if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex*>(p);}
 }
 
 template<class T>
 constexpr auto data_cast(T const* p) {
-	     if constexpr(is_s<T>{}) {return reinterpret_cast<float         const*>(p);}
-	else if constexpr(is_d<T>{}) {return reinterpret_cast<double        const*>(p);}
-	else if constexpr(is_c<T>{}) {return reinterpret_cast<Complex       const*>(p);}
-	else if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex const*>(p);}
+	if constexpr(is_s<T>{}) {return reinterpret_cast<float         const*>(p);}
+	else
+	if constexpr(is_d<T>{}) {return reinterpret_cast<double        const*>(p);}
+	else
+	if constexpr(is_c<T>{}) {return reinterpret_cast<Complex       const*>(p);}
+	else
+	if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex const*>(p);}
 }
-
-// template<cublas::type T> auto const cublas_gemv = std::enable_if_t<T!=T>{};
-
-// template<> auto const cublas_gemv<S> = hicu(blasSgemv);
-// template<> auto const cublas_gemv<D> = hicu(blasDgemv);
-// template<> auto const cublas_gemv<C> = hicu(blasCgemv);
-// template<> auto const cublas_gemv<Z> = hicu(blasZgemv);
-
-#define DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
-#define JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
-
-// template<cublas::type T> struct cublas {
-//  static constexpr auto gemv = cublas_gemv<T>;
-// };
 
 class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHandle_t)>::element_type, decltype(&hicu(blasDestroy))> {
 	using pimpl_t = std::unique_ptr<typename std::pointer_traits<hicu(blasHandle_t)>::element_type, decltype(&hicu(blasDestroy))>;

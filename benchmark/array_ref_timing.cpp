@@ -6,7 +6,7 @@ clang++ -O3 -Ofast -std=c++14 -DNDEBUG -Wall -Wextra -Wpedantic -Werror $0 -o $0
 
 #include <boost/timer/timer.hpp>
 
-#include<iostream> 
+#include<iostream>
 #include<numeric>
 #include<vector>
 #include<numeric>
@@ -16,7 +16,7 @@ namespace multi = boost::multi;
 
 int main(){
 
-	assert(0); // check that NDEBUG is on
+	assert(0); // check that NDEBUG is off
 {
 	std::ptrdiff_t NX = 20000;
 	std::ptrdiff_t NY = 20000;
@@ -69,7 +69,7 @@ int main(){
 	iota(begin(data), end(data), 1.2); iota(begin(data), end(data), 11.2); data[1234] = 199.1;
 	double sum_2Dwrong;
 	{
-		double sum = 0.;
+		double sum = 0.0;
 		boost::timer::auto_cpu_timer t{std::cerr, 3, "sum: 2Dwrong sum %t seconds\n"};
 		auto ext = extensions(data2D_cref);
 		for(auto j : std::get<1>(ext)){
@@ -84,7 +84,7 @@ int main(){
 	iota(begin(data), end(data), 1.2); iota(begin(data), end(data), 10.112); data[1234] = 99.1;
 	double sum_raw2;
 	{
-		double sum = 0.;
+		double sum = 0.0;
 		boost::timer::auto_cpu_timer t{cerr, 3, "sum: raw %t seconds\n"};
 		for(auto const& e : data) sum += e;
 		sum_raw2 = sum;
@@ -97,9 +97,12 @@ int main(){
 	}
 	cout<< sum_2D + sum_2D_acc + sum_2Dwrong_acc + sum_2Dwrong + sum_raw + sum_raw2 + sum_raw_acc <<std::endl;
 }
-cout<<'\n';	
-{	
-	std::ptrdiff_t NX = 700, NY = 700, NZ = 700;
+cout<<'\n';
+{
+	std::ptrdiff_t NX = 700;
+	std::ptrdiff_t NY = 700;
+	std::ptrdiff_t NZ = 700;
+
 	std::vector<double> v(NX*NY*NZ);
 	cout<<"3D data "<< v.size()*sizeof(double)/1e6 <<"MB\n";
 	iota(begin(v), end(v), 0.1);
@@ -138,8 +141,12 @@ cout<<'\n';
 		cout << sum << '\n';
 	}
 }
-{	
-	std::ptrdiff_t NX = 150, NY = 150, NZ = 150, NA = 150;
+{
+	std::ptrdiff_t NX = 150;
+	std::ptrdiff_t NY = 150;
+	std::ptrdiff_t NZ = 150;
+	std::ptrdiff_t NA = 150;
+
 	std::vector<double> v(NX*NY*NZ*NA);
 	multi::array_cref<double, 4> v4D_cref({NX, NY, NZ, NA}, v.data());
 	assert( v4D_cref.num_elements() == std::ptrdiff_t(v.size()) );
@@ -170,5 +177,4 @@ cout<<'\n';
 		cout<< std::to_string(sum)[0] <<'\n';
 	}
 }
-	return 0;
 }
