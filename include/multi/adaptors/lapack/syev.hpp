@@ -31,7 +31,7 @@ auto syev(blas::filling uplo, Array2D&& a, Array1D&& w, Array1DW&& work)
 	int info = -1;
 	     if(stride(rotated(a))==1) syev('V', uplo==blas::filling::upper?'L':'U', size(a), base(a), stride(        a ), base(w), base(work), size(work), info);
 	else if(stride(        a )==1) syev('V', uplo==blas::filling::upper?'U':'L', size(a), base(a), stride(rotated(a)), base(w), base(work), size(work), info);
-	else                           assert(0); // case not contemplated by lapack
+	else assert(0); // case not contemplated by lapack
 	if(info < 0) assert(0); // bad argument
 	return std::forward<Array2D>(a)({0, size(a)-info}, {0, size(a)-info});
 }
