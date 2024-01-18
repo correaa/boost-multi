@@ -49,7 +49,7 @@ Matrix&& lu_fact2(Matrix&& A){
 template<class Matrix>
 Matrix&& lu_fact3(Matrix&& A){
 	using multi::size;
-	auto m = A.size(), n = std::get<1>(sizes(A));
+	auto const [m, n] = A.sizes();
 	for(auto k = 0*m; k != m - 1; ++k){
 		auto&& Ak = A[k];
 		std::for_each(std::execution::par, begin(A) + k + 1, end(A), [&](auto&& Ai){
