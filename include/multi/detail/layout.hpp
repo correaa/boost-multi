@@ -33,8 +33,8 @@ constexpr auto tuple_tail_impl(Tuple&& t, std::index_sequence<Ns...> /*012*/) { 
 
 template<class Tuple>
 constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) std naming
-->decltype(tuple_tail_impl(t, std::make_index_sequence<std::tuple_size_v<std::decay_t<Tuple>> - 1U>())) {
-	return tuple_tail_impl(t, std::make_index_sequence<std::tuple_size_v<std::decay_t<Tuple>> - 1U>()); }
+->decltype(tuple_tail_impl(std::forward<Tuple>(t), std::make_index_sequence<std::tuple_size_v<std::decay_t<Tuple>> - 1U>())) {
+	return tuple_tail_impl(std::forward<Tuple>(t), std::make_index_sequence<std::tuple_size_v<std::decay_t<Tuple>> - 1U>()); }
 
 }  // end namespace detail
 
@@ -54,27 +54,27 @@ struct extensions_t {
 	extensions_t() = default;
 	using nelems_type = multi::index;
 
-	template<class T = void, std::enable_if_t<sizeof(T*) and D == 1, int> = 0>
+	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(multi::size_t size) : extensions_t{index_extension{size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
 
-	template<class T = void, std::enable_if_t<sizeof(T*) and D == 1, int> = 0>
+	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(index_extension ext1) : impl_{ext1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
 
-	template<class T = void, std::enable_if_t<sizeof(T*) and D == 2, int> = 0>
+	template<class T = void, std::enable_if_t<sizeof(T*) && D == 2, int> = 0>
 	constexpr extensions_t(index_extension ext1, index_extension ext2) : impl_{ext1, ext2} {}
 
-	template<class T = void, std::enable_if_t<sizeof(T*) and D == 3, int> = 0>
+	template<class T = void, std::enable_if_t<sizeof(T*) && D == 3, int> = 0>
 	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3) : impl_{ext1, ext2, ext3} {}
 
-	template<class T = void, std::enable_if_t<sizeof(T*) and D == 4, int> = 0>
+	template<class T = void, std::enable_if_t<sizeof(T*) && D == 4, int> = 0>
 	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4) noexcept : impl_{ext1, ext2, ext3, ext4} {}
 
-	template<class T = void, std::enable_if_t<sizeof(T*) and D == 5, int> = 0>
+	template<class T = void, std::enable_if_t<sizeof(T*) && D == 5, int> = 0>
 	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4, index_extension ext5) : impl_{ext1, ext2, ext3, ext4, ext5} {}
 
-	template<class T = void, std::enable_if_t<sizeof(T*) and D == 6, int> = 0>
+	template<class T = void, std::enable_if_t<sizeof(T*) && D == 6, int> = 0>
 	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4, index_extension ext5, index_extension ext6) : impl_{ext1, ext2, ext3, ext4, ext5, ext6} {}
 
 	template<class T1, class T = void, class = decltype(base_{tuple<T1>{}}), std::enable_if_t<sizeof(T*) && D == 1, int> = 0>
@@ -125,7 +125,6 @@ struct extensions_t {
 	friend HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.impl_ == other.impl_;}
 	friend HD auto operator!=(extensions_t const& self, extensions_t const& other) {return self.impl_ != other.impl_;}
 
-//  using indices_type = decltype(tuple_cat(make_tuple(multi::index{}), typename extensions_t<D-1>::indices_type{}));
 	using indices_type = multi::detail::tuple_prepend_t<multi::index, typename extensions_t<D-1>::indices_type>;
 
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {
@@ -138,7 +137,7 @@ struct extensions_t {
 
 	friend constexpr auto operator%(nelems_type idx, extensions_t const& extensions) {return extensions.from_linear(idx);}
 
-	constexpr explicit operator bool() const {return not layout_t<D>{*this}.empty();}
+	constexpr explicit operator bool() const {return ! layout_t<D>{*this}.empty();}
 
 	template<class... Indices>
 	constexpr auto to_linear(index const& idx, Indices const&... rest) const {
@@ -189,9 +188,9 @@ struct extensions_t {
 	constexpr extensions_t(Array const& tup, std::index_sequence<I...> /*unused012*/) : impl_{boost::multi::detail::get<I>(tup)...} {}
 
 	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1);}
-	static constexpr auto multiply_fold(size_type const& size) -> size_type {return static_cast<size_type>(size);}
+	static constexpr auto multiply_fold(size_type const& size) -> size_type {return size;}
 	template<class...As>
-	static constexpr auto multiply_fold(size_type const& size, As const&... rest) -> size_type {return static_cast<size_type>(size)*static_cast<size_type>(multiply_fold(rest...));}  // TODO(correaa) revise casts
+	static constexpr auto multiply_fold(size_type const& size, As const&... rest) -> size_type {return size*static_cast<size_type>(multiply_fold(rest...));}
 
 	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*unused012*/) const -> size_type {
 		using boost::multi::detail::get;
@@ -239,7 +238,7 @@ template<> struct extensions_t<0> {
 
 	constexpr auto base() const -> base_ const& {return impl_;}
 
-	template<class Archive> void serialize(Archive&/*ar*/, unsigned /*version*/) {}
+	template<class Archive> static void serialize(Archive&/*ar*/, unsigned /*version*/) {/*noop*/}
 
 	static constexpr auto num_elements() /*const*/ -> size_type {return 1;}
 
@@ -307,9 +306,6 @@ template<> struct extensions_t<1> {
 	using indices_type = multi::detail::tuple<multi::index>;
 
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {  // NOLINT(readability-convert-member-functions-to-static) TODO(correaa)
-	//  assert(n <= num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-	//  return std::make_tuple(n);
-	//  return std::tuple<multi::index>{n};
 		return indices_type{n};
 	}
 
