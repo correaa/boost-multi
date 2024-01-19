@@ -37,8 +37,8 @@ Matrix&& lu_fact(Matrix&& A){
 template<class Matrix>
 Matrix&& lu_fact2(Matrix&& A){
 	using multi::size;
-	auto m = A.size(), n = std::get<1>(sizes(A));
-	
+	auto const [m, n] = A.sizes();
+
 	for(decltype(m) k = 0; k != m - 1; ++k){
 		for(auto i = k + 1; i != m; ++i){
 			auto const z = A[i][k]/A[k][k];
