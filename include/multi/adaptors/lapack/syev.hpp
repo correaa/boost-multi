@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXX $0 -o $0x `pkg-config --libs blas lapack` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2020
+// Copyright 2020-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_LAPACK_SYEV_HPP
 #define MULTI_ADAPTORS_LAPACK_SYEV_HPP
@@ -27,12 +27,18 @@ auto syev(blas::filling uplo, Array2D&& a, Array1D&& w, Array1DW&& work)
 	assert( size(a) == size(w) );
 	assert( stride(w)==1 );
 	assert( stride(work)==1 );
+
 	if(size(a)==0) return std::forward<Array2D>(a)();
+
 	int info = -1;
-	     if(stride(rotated(a))==1) syev('V', uplo==blas::filling::upper?'L':'U', size(a), base(a), stride(        a ), base(w), base(work), size(work), info);
-	else if(stride(        a )==1) syev('V', uplo==blas::filling::upper?'U':'L', size(a), base(a), stride(rotated(a)), base(w), base(work), size(work), info);
+
+	if(stride(rotated(a))==1) syev('V', uplo==blas::filling::upper?'L':'U', size(a), base(a), stride(        a ), base(w), base(work), size(work), info);
+	else
+	if(stride(        a )==1) syev('V', uplo==blas::filling::upper?'U':'L', size(a), base(a), stride(rotated(a)), base(w), base(work), size(work), info);
 	else assert(0); // case not contemplated by lapack
+
 	if(info < 0) assert(0); // bad argument
+
 	return std::forward<Array2D>(a)({0, size(a)-info}, {0, size(a)-info});
 }
 

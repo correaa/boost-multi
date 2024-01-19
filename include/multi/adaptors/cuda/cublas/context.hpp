@@ -1,4 +1,4 @@
-// Copyright 2020-2023 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
 #pragma once
 
 #include <multi/config/MARK.hpp>
