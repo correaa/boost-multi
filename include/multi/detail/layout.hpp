@@ -472,7 +472,7 @@ struct layout_t<0, SSize>
 	constexpr auto extension() const -> extension_type = delete;
 
 	constexpr auto is_empty()  const noexcept {return nelems_ == 0;}
-	[[nodiscard("empty checks for emptyness")]]
+	[[nodiscard/*for c++20 ("empty checks for emptyness")*/]]
 	constexpr auto empty()        const     noexcept {return nelems_ == 0;}
 	friend
 	constexpr auto empty(layout_t const& self) noexcept {return self.empty();}
