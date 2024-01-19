@@ -22,10 +22,10 @@ namespace memory {
 template<class T>
 T* align_up(T* ptr, std::size_t bytes = alignof(std::max_align_t)) {
 //  return
-//  	reinterpret_cast<T*>(
-//  		  (reinterpret_cast<std::uintptr_t>(ptr) + (bytes-1))
-//  		& ~(bytes-1)
-//  	)
+//      reinterpret_cast<T*>(
+//            (reinterpret_cast<std::uintptr_t>(ptr) + (bytes-1))
+//          & ~(bytes-1)
+//      )
 //  ;
 	using uintptr_t = std::uint64_t;
 	static_assert( sizeof(uintptr_t) == sizeof(T*), "this function works in 64 bit systems" );
@@ -42,8 +42,8 @@ Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
 
 	static_assert( sizeof(*p_)==1 , "!");  //  crash
 //  auto q_ = reinterpret_cast<decltype(p_)>(
-//  	(reinterpret_cast<std::uintptr_t>(p_) + (align-1))
-//  	& ~(align-1)
+//      (reinterpret_cast<std::uintptr_t>(p_) + (align-1))
+//      & ~(align-1)
 //  );
 	auto q_ = align_up(p_, bytes);
 	return ptr + std::distance(p_, q_);
@@ -149,9 +149,7 @@ int main(){
 	auto p2 = m.allocate(255*sizeof(double), alignof(double));
 	m.deallocate(p2, 255*sizeof(double));
 	m.deallocate(p1, 1*sizeof(double));
-	try {
-		m.deallocate(reinterpret_cast<char*>(p1) + 10000, 1*sizeof(double));
-	} catch(...){}
+	m.deallocate(reinterpret_cast<char*>(p1) + 10000, 1*sizeof(double));
 }
 {
 	alignas(double) std::array<char, 300*sizeof(double)> buffer;  // char buffer[300*sizeof(double)];
