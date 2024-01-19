@@ -42,7 +42,6 @@ template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t
 
 template<dimensionality_type D>
 struct extensions_t {
-//  using base_ = std::decay_t<decltype(tuple_cat(make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D-1>::base_>;
 
  private:
@@ -130,7 +129,7 @@ struct extensions_t {
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {
 		auto const sub_num_elements = extensions_t<D-1>{tail(this->base())}.num_elements();
 		#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
-		assert( sub_num_elements != 0 );  // TODO(correaa) clang hip doesn't allow assert in host device functions
+		assert( sub_num_elements != 0 );  // clang hip doesn't allow assert in host device functions
 		#endif
 		return multi::detail::ht_tuple(n/sub_num_elements, extensions_t<D-1>{tail(this->base())}.from_linear(n%sub_num_elements));
 	}
@@ -469,19 +468,20 @@ struct layout_t<0, SSize>
 	constexpr auto size()      const -> size_type      = delete;
 	constexpr auto extension() const -> extension_type = delete;
 
-	constexpr auto is_empty()  const noexcept -> bool = delete;  // or {return false;} or return nelems_ == 0;
-	[[nodiscard]]
+	constexpr auto is_empty()  const noexcept {return nelems_ == 0;}
+	[[nodiscard/*for c++20 ("empty checks for emptyness")*/]]
 	constexpr auto empty()        const     noexcept {return nelems_ == 0;}
 	friend
 	constexpr auto empty(layout_t const& self) noexcept {return self.empty();}
 
+	[[deprecated("is going to be removed")]]
 	constexpr auto is_compact() const -> bool = delete;
 
 	constexpr auto base_size() const -> size_type   {return 0;}
 	constexpr auto origin()    const -> offset_type {return 0;}
 
 	constexpr auto reverse()          -> layout_t& {return *this;}
-	[[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
+	// [[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
 	constexpr auto scale(size_type /*num*/, size_type /*den*/) const {return *this;}
 
 //  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
@@ -626,7 +626,7 @@ struct layout_t
 	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
 	       constexpr auto size()        const        noexcept -> size_type {
 	//  if(nelems_ == 0) {return 0;}
-	//  MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
 		// return nelems_ == 0?0:nelems_/stride_;
 		return nelems_/stride_;
@@ -715,13 +715,13 @@ struct layout_t
 	}
 };
 
-inline constexpr auto
+constexpr auto
 operator*(layout_t<0>::index_extension const& extensions_0d, layout_t<0>::extensions_type const& /*zero*/)
 -> typename layout_t<1>::extensions_type {
 	return typename layout_t<1>::extensions_type{tuple<layout_t<0>::index_extension>{extensions_0d}};
 }
 
-inline constexpr auto operator*(extensions_t<1> const& extensions_1d, extensions_t<1> const& self) {
+constexpr auto operator*(extensions_t<1> const& extensions_1d, extensions_t<1> const& self) {
 	using boost::multi::detail::get;
 	return extensions_t<2>({get<0>(extensions_1d.base()), get<0>(self.base())});
 }
@@ -754,7 +754,8 @@ namespace boost::multi {
 		/*explicit*/ operator array_type() const& noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		/*explicit*/ operator array_type() && noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-		[[deprecated("dangling conversion")]] operator std::ptrdiff_t const*() const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		[[deprecated("dangling conversion")]]
+		operator std::ptrdiff_t const*() const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 			#ifdef __clang__
 				#pragma clang diagnostic push
 				#pragma clang diagnostic ignored "-Wreturn-stack-address"
