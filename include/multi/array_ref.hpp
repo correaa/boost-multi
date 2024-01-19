@@ -1,10 +1,10 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #ifndef MULTI_ARRAY_REF_HPP_
 #define MULTI_ARRAY_REF_HPP_
 #pragma once
 
-#include "../multi/memory/pointer_traits.hpp"
+#include "../multi/detail/pointer_traits.hpp"
 #include "../multi/utility.hpp"
 
 #include "../multi/detail/adl.hpp"
@@ -91,7 +91,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	auto strides() const { return convertible_tuple<strides_type>(layout_t::strides()); }
 	[[deprecated("BMA backward compatible")]] auto index_bases() const -> std::ptrdiff_t const*;  // = delete;
 	// {
-	// 	return convertible_tuple(std::apply([](auto... exts) noexcept {return std::make_tuple(exts.front() ...);}, this->extensions().base()));
+	//  return convertible_tuple(std::apply([](auto... exts) noexcept {return std::make_tuple(exts.front() ...);}, this->extensions().base()));
 	// }
 
 	using typename layout_t::difference_type;
