@@ -100,11 +100,11 @@ using std::is_convertible_v;
 
 // template<class T>
 // constexpr auto type_of(T const& = {}) -> cublas::type {
-// 	static_assert(is_s<T>{} || is_d<T>{} || is_c<T>{} || is_z<T>{});
-// 	     if(is_s<T>{}) {return type::S;}
-// 	else if(is_d<T>{}) {return type::D;}
-// 	else if(is_c<T>{}) {return type::C;}
-// 	else if(is_z<T>{}) {return type::Z;}
+//  static_assert(is_s<T>{} || is_d<T>{} || is_c<T>{} || is_z<T>{});
+//       if(is_s<T>{}) {return type::S;}
+//  else if(is_d<T>{}) {return type::D;}
+//  else if(is_c<T>{}) {return type::C;}
+//  else if(is_z<T>{}) {return type::Z;}
 // }
 
 #ifdef __NVCC__
@@ -118,23 +118,21 @@ using std::is_convertible_v;
 template<class T>
 constexpr auto data_cast(T* p) {
 	if constexpr(is_s<T>{}) {return reinterpret_cast<float        *>(p);}
-	else
-	if constexpr(is_d<T>{}) {return reinterpret_cast<double       *>(p);}
-	else
-	if constexpr(is_c<T>{}) {return reinterpret_cast<Complex      *>(p);}
-	else
-	if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex*>(p);}
+	else if constexpr(is_d<T>{}) {return reinterpret_cast<double       *>(p);}
+	else if constexpr(is_c<T>{}) {return reinterpret_cast<Complex      *>(p);}
+	else if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex*>(p);}
+	assert(0);
+	return nullptr;
 }
 
 template<class T>
 constexpr auto data_cast(T const* p) {
 	if constexpr(is_s<T>{}) {return reinterpret_cast<float         const*>(p);}
-	else
-	if constexpr(is_d<T>{}) {return reinterpret_cast<double        const*>(p);}
-	else
-	if constexpr(is_c<T>{}) {return reinterpret_cast<Complex       const*>(p);}
-	else
-	if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex const*>(p);}
+	else if constexpr(is_d<T>{}) {return reinterpret_cast<double        const*>(p);}
+	else if constexpr(is_c<T>{}) {return reinterpret_cast<Complex       const*>(p);}
+	else if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex const*>(p);}
+	assert(0);
+	return nullptr;
 }
 
 class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHandle_t)>::element_type, decltype(&hicu(blasDestroy))> {
