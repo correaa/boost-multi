@@ -23,4 +23,4 @@ struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::poin
 };
 
 }  // end namespace boost::multi
-#endif  // MULTI_MEMORY_POINTER_TRAITS_HPP_
+#endif  // MULTI_MEMORY_POINTER_TRAITS_HPP
