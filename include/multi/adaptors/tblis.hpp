@@ -188,7 +188,7 @@ auto mult(ITensorA&& aijk, ITensorB&& bijk, ITensorC&& cijk)
 template<class Element>
 struct matrix : ::tblis::tblis_matrix{
 public:
-	template<class A, std::enable_if_t<not std::is_base_of<matrix<Element>, std::decay_t<A>>{}, int> =0>
+	template<class A, std::enable_if_t<! std::is_base_of_v<matrix, std::decay_t<A>>, int> =0>
 	matrix(A&& a){
 		init_matrix<Element>(this, 
 			std::get<0>(a.sizes()), std::get<1>(a.sizes()), const_cast<double*>(a.base()), 
