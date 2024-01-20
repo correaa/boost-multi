@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
@@ -57,7 +57,7 @@ class allocator2 {
  public:
 	using value_type = T;
 
-	allocator2() noexcept = delete;
+	allocator2() noexcept = default;
 	// NOLINTNEXTLINE(runtime/explicit)
 	allocator2(std::int64_t* heap) : heap_{heap} { assert(heap_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	template<class U> allocator2(allocator2<U> const& other) noexcept : heap_{other.heap_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
