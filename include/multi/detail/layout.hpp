@@ -237,7 +237,7 @@ template<> struct extensions_t<0> {
 
 	constexpr auto base() const -> base_ const& {return impl_;}
 
-	template<class Archive> static void serialize(Archive&/*ar*/, unsigned /*version*/) {/*no state necessary*/}
+	template<class Archive> static void serialize(Archive&/*ar*/, unsigned /*version*/) {/*noop*/}
 
 	static constexpr auto num_elements() /*const*/ -> size_type {return 1;}
 
@@ -305,9 +305,6 @@ template<> struct extensions_t<1> {
 	using indices_type = multi::detail::tuple<multi::index>;
 
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {  // NOLINT(readability-convert-member-functions-to-static) TODO(correaa)
-	//  assert(n <= num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-	//  return std::make_tuple(n);
-	//  return std::tuple<multi::index>{n};
 		return indices_type{n};
 	}
 
