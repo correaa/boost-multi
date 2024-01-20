@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 ${CXX:-c++} -std=c++17 $CXXFLAGS $0 -o $0x&&$0x&&rm $0x;exit
 #endif
-//  © Alfredo A. Correa 2020
+//  © Alfredo A. Correa 2020-2024
 
 #include "../../multi/array.hpp"
 
@@ -23,12 +23,12 @@ int main() {
 	multi::pmr::array<char, 2> B({3, 2}, 'b', &pool);
 
 	assert( A.get_allocator() == B.get_allocator() );
-	assert( buffer == std::string{"aaaabbbbbb__"} );
+	assert( std::data(buffer) == std::string{"aaaabbbbbb__"} );
 
 	try {
 		multi::pmr::array<char, 2> C({9, 9}, 'c', &pool); // there is no upstream resource so it throws
 	} catch(std::bad_alloc&) {
-		assert( buffer == std::string{"aaaabbbbbb__"} );
+		assert( std::data(buffer) == std::string{"aaaabbbbbb__"} );
 	}
 
 	std::array<char, 99> buffer2;
