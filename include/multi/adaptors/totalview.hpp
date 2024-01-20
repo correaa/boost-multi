@@ -39,7 +39,8 @@ TV_ttf_display_type(boost::multi::array<TT, 1> const* mad1P) {
 		snprintf(tname.data(), tname.size(), "%s[%ld]", pretty_name<TT>, (long)mad1P->size());  //, (long)mad1P->stride());
 		int result = TV_ttf_add_row("elements", tname.data(), mad1P->origin());
 		if(result != 0) {
-			fprintf(stderr, "TV_ttf_add_row returned error %d\n", result);
+			int res = fprintf(stderr, "TV_ttf_add_row returned error %d\n", result);
+			assert(res > -1);
 			return TV_ttf_format_failed;
 		}
 	}
