@@ -31,7 +31,8 @@ auto xbase(It const& it)
 template<class Context, class It2DA, class Size, class It2DB, class It2DC>
 auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first) // NOLINT(readability-function-cognitive-complexity) : 125
 //->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, c_first.base(), c_first->size()  ), It2DC{})
-try {
+// try 
+{
 	assert( b_first->size() == c_first->size() );          // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( a_first.stride()==1 or a_first->stride()==1 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( b_first.stride()==1 or b_first->stride()==1 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
@@ -97,16 +98,17 @@ try {
 		#undef CTXT
 	}
 	return c_first + a_count;
-} catch(std::logic_error& e) {
-	using std::to_string;
-	throw std::logic_error{
-		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_count="+std::to_string(a_count) // NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		+" a_strides="+ to_string(a_first.stride()) +","+ to_string(a_first->stride()) +" a->size="+ to_string(a_first->size())
-		+" b_strides="+ to_string(b_first.stride()) +","+ to_string(b_first->stride()) +" b->size="+ to_string(b_first->size())
-		+" c_strides="+ to_string(c_first.stride()) +","+ to_string(c_first->stride()) +" c->size="+ to_string(c_first->size())
-		+" because " + e.what()
-	};
-}
+} 
+// catch(std::logic_error& e) {
+//	using std::to_string;
+//	throw std::logic_error{
+//		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_count="+std::to_string(a_count) // NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+//		+" a_strides="+ to_string(a_first.stride()) +","+ to_string(a_first->stride()) +" a->size="+ to_string(a_first->size())
+//		+" b_strides="+ to_string(b_first.stride()) +","+ to_string(b_first->stride()) +" b->size="+ to_string(b_first->size())
+//		+" c_strides="+ to_string(c_first.stride()) +","+ to_string(c_first->stride()) +" c->size="+ to_string(c_first->size())
+//		+" because " + e.what()
+//	};
+//}
 
 template<class It2DA, class Size, class It2DB, class It2DC, class Context = blas::context*> // TODO(correaa) automatic deduction of context
 auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
