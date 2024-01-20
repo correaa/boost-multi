@@ -50,8 +50,8 @@ static char const* _cudaGetErrorEnum(cufftResult error) {
     return "<unknown>";
 }
 
-#define cufftSafeCall(err) __cufftSafeCall(err, __FILE__, __LINE__)
-inline void __cufftSafeCall(cufftResult err, const char *file, const int line) {
+#define cufftSafeCall(err) implcufftSafeCall(err, __FILE__, __LINE__)
+inline void implcufftSafeCall(cufftResult err, const char *file, const int line) {
 	if( CUFFT_SUCCESS != err) {
 		std::cerr <<"CUFFT error in file "<< __FILE__ <<", line "<< __LINE__ <<"\nerror "<< err <<": "<<_cudaGetErrorEnum(err)<<"\n";
 		//fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", __FILE__, __LINE__, err, 
