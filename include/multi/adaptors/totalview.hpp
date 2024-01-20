@@ -3,6 +3,7 @@
 #ifndef MULTI_ADAPTORS_TOTALVIEW_HPP
 #define MULTI_ADAPTORS_TOTALVIEW_HPP
 
+#include <cassert>
 #include <cstdarg>  // TODO remove
 #include <cstdio>
 
@@ -58,7 +59,8 @@ TV_ttf_display_type(boost::multi::array<TT, 2> const* mad2P) {
 		int result = TV_ttf_add_row("elements", tname.data(), mad2P->origin());
 
 		if(result != 0) {
-			fprintf(stderr, "TV_ttf_add_row returned error %d\n", result);
+			int res = fprintf(stderr, "TV_ttf_add_row returned error %d\n", result);
+			assert(res >= 0);
 			return TV_ttf_format_failed;
 		}
 	}
