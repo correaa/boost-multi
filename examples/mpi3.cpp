@@ -116,7 +116,7 @@ void test_2D_strides(mpi3::communicator& comm){
 			return;
 		}
 		case 1:{
-			multi::array<double, 2> w({4, 5}, 99.);
+			multi::array<double, 2> w({4, 5}, 99.0);
 			comm.receive(w({1, 3}, {2, 4}).begin(), w({1, 3}, {2, 4}).end(), 0);
 			assert( w({1, 3}, {2, 4}) == v({1, 3}, {2, 4}) );
 			return;
@@ -153,7 +153,8 @@ void test_3D(mpi3::communicator& comm){
 void test_vector_nonpod(mpi3::communicator& comm){
 
 	switch(comm.rank()){
-		case 0:{
+		std::vector<std::string> v(10);
+		case 0: {
 			std::vector<std::string> v(10);
 			v[2] = "hola";
 			comm.send_n(v.begin(), v.size(), 1);
@@ -165,7 +166,7 @@ void test_vector_nonpod(mpi3::communicator& comm){
 			assert( v[2] == "hola" );
 			break;
 		}
-		default:assert(0);
+		default: assert(0);
 	}
 	return;
 }
