@@ -153,17 +153,17 @@ void test_vector_nonpod(mpi3::communicator& comm){
 			std::vector<std::string> v(10);
 			v[2] = "hola";
 			comm.send_n(v.begin(), v.size(), 1);
-			return;
+			break;
 		}
 		case 1:{
 			std::vector<std::string> v(10);
 			comm.receive_n(v.begin(), v.size(), 0);
 			assert( v[2] == "hola" );
-			return;
+			break;
 		}
+		default:assert(0);
 	}
-	assert(0);
-
+	return;
 }
 
 #if 0
