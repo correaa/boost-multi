@@ -51,8 +51,8 @@ using marray = multi::array<T, D, mallocator<T>>;
 BOOST_AUTO_TEST_CASE(multi_test_bip) {
 
 	path const file = "bip_mapped_file.bin";
-	mremove(file);
 	{
+		mremove(file);
 		manager m{bip::create_only, file.c_str(), 1 << 25};  // objects with same name produce boost::interprocess_exception::library_error
 		auto&&  arr1d = *m.construct<marray<int, 1>>("arr1d")(std::tuple{10}, 99, get_allocator(m));
 		auto&&  arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{10, 10}, 0.0, get_allocator(m));
@@ -101,8 +101,8 @@ BOOST_AUTO_TEST_CASE(multi_test_bip) {
 		m.destroy<marray<int, 1>>("arr1d");
 		m.destroy<marray<double, 2>>("arr2d");
 		m.destroy<marray<unsigned, 3>>("arr3d");
+		mremove(file);
 	}
-	mremove(file);
 }
 
 template<class T> using alloc = bip::adaptive_pool<
