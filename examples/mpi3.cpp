@@ -67,13 +67,17 @@ void test_2D_complex(mpi3::communicator& comm){
 				v[i][j] = complex(i, j);
 
 	switch(comm.rank()){
-		case 0:
-			comm.send(begin(v), end(v), 1); break;
-		case 1:
+		case 0: {
+			comm.send(begin(v), end(v), 1);
+			break;
+		}
+		case 1: {
 			multi::array<complex, 2> w(extensions(v), 99.);
 			comm.receive(begin(w), end(w), 0); 
 			assert( w[2][3] == std::complex<double>(2., 3.) );
 			break;
+		}
+		default: assert(0);
 	}
 
 }
@@ -92,7 +96,7 @@ void test_3D(mpi3::communicator& comm){
 			comm.send(begin(vpart), end(vpart), 1);
 			return;
 		case 1:
-			multi::array<double, 3> w(extensions(vpart), 99.);
+			multi::array<double, 3> w(extensions(vpart), 99.0);
 			comm.receive(begin(w), end(w), 0); assert( w == vpart );
 			return;
 	}
