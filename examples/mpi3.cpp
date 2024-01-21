@@ -20,11 +20,13 @@ void test_1D(mpi3::communicator& comm){
 			std::iota(v.begin(), v.end(), 0.);
 			assert( v.strided(2).size() == 50 and v.strided(2)[9] == 18 );
 			comm.send(v.strided(2).begin(), v.strided(2).end(), 1);
+			break;
 		}
 		case 1:{
 			multi::array<double, 1> v(50);
 			comm.receive(v.begin(), v.end(), 0);
 			assert( v[9] == 18 );
+			break;
 		}
 		default: assert(0);
 	}
