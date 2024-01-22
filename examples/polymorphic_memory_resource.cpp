@@ -13,6 +13,7 @@ namespace multi = boost::multi;
 int main() {
 	static_assert( sizeof(multi::array<char, 2>) < sizeof(multi::pmr::array<char, 2>) , "!");
 
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) make a small buffer TODO(correaa) replace with a std::array<char, 13>
 	char buffer[13] = "____________";  // flawfinder: ignore , a small buffer on the stack or an allocation
 	std::pmr::monotonic_buffer_resource pool{
 		std::data(buffer), std::size(buffer), 
