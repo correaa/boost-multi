@@ -33,7 +33,8 @@ class monotonic_buffer : block<Ptr> {
 	size_type allocated_bytes_ = 0;
 	size_type deallocated_bytes_ = 0;
 //  size_type position_ = 0;
-	static std::size_t max_alignment = A;
+
+	static std::size_t const max_alignment = A;
 
 	static size_type align_up(size_type n) noexcept {
 		return (n + (max_alignment-1)) & ~(max_alignment-1);
