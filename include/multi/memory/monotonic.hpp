@@ -145,8 +145,8 @@ int main(){
 {
 	alignas(double) std::array<char, 256*sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
 	multi::memory::monotonic<char*> m(buffer.data(), buffer.size());
-	auto p1 = m.allocate(1*sizeof(double), alignof(double));
-	auto p2 = m.allocate(255*sizeof(double), alignof(double));
+	auto* p1 = m.allocate(1*sizeof(double), alignof(double));
+	auto* p2 = m.allocate(255*sizeof(double), alignof(double));
 	m.deallocate(p2, 255*sizeof(double));
 	m.deallocate(p1, 1*sizeof(double));
 	m.deallocate(reinterpret_cast<char*>(p1) + 10000, 1*sizeof(double));
