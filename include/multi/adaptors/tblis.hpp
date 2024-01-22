@@ -103,17 +103,17 @@ namespace μνσ{
 
 
 
-template<class T> auto init_matrix = std::enable_if_t<sizeof(T*)==0>{};
-template<> auto init_matrix<float               > = ::tblis::tblis_init_matrix_s;
-template<> auto init_matrix<double              > = ::tblis::tblis_init_matrix_d;
-template<> auto init_matrix<std::complex<float >> = ::tblis::tblis_init_matrix_c;
-template<> auto init_matrix<std::complex<double>> = ::tblis::tblis_init_matrix_z;
+template<class T> auto const init_matrix = std::enable_if_t<sizeof(T*)==0>{};
+template<> auto const init_matrix<float               > = ::tblis::tblis_init_matrix_s;
+template<> auto const init_matrix<double              > = ::tblis::tblis_init_matrix_d;
+template<> auto const init_matrix<std::complex<float >> = ::tblis::tblis_init_matrix_c;
+template<> auto const init_matrix<std::complex<double>> = ::tblis::tblis_init_matrix_z;
 
-template<class T> auto init_tensor = std::enable_if_t<sizeof(T*)==0>{};
-template<> auto init_tensor<float               > = ::tblis::tblis_init_tensor_s;
-template<> auto init_tensor<double              > = ::tblis::tblis_init_tensor_d;
-template<> auto init_tensor<std::complex<float >> = ::tblis::tblis_init_tensor_c;
-template<> auto init_tensor<std::complex<double>> = ::tblis::tblis_init_tensor_z;
+template<class T> auto const init_tensor = std::enable_if_t<sizeof(T*)==0>{};
+template<> auto const init_tensor<float               > = ::tblis::tblis_init_tensor_s;
+template<> auto const init_tensor<double              > = ::tblis::tblis_init_tensor_d;
+template<> auto const init_tensor<std::complex<float >> = ::tblis::tblis_init_tensor_c;
+template<> auto const init_tensor<std::complex<double>> = ::tblis::tblis_init_tensor_z;
 
 template<class Element, multi::dimensionality_type D>
 struct indexed_tensor;
