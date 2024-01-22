@@ -4,6 +4,7 @@
 #include <iostream>
 
 int main() {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays) test legacy types
     float matA[3][3] = {
         {1.1, 2.2, 3.3},
         {4.4, 5.5, 6.6},
