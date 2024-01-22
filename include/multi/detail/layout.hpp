@@ -1,4 +1,4 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_LAYOUT_HPP
 #define MULTI_DETAIL_LAYOUT_HPP
@@ -331,12 +331,12 @@ template<> struct extensions_t<1> {
 		return false;
 	}
 	constexpr auto prev_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
-		--idx;
 		using boost::multi::detail::get;
-		if(idx == get<0>(impl_).first() - 1) {
+		if(idx == get<0>(impl_).first()) {
 			idx = get<0>(impl_).back();
 			return true;
 		}
+		--idx;
 		return false;
 	}
 
