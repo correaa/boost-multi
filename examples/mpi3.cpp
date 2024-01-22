@@ -17,7 +17,7 @@ void test_1D(mpi3::communicator& comm){
 	switch(comm.rank()){
 		case 0:{
 			multi::array<double, 1> v(100);
-			std::iota(v.begin(), v.end(), 0.);
+			std::iota(v.begin(), v.end(), 0.0);
 			assert( v.strided(2).size() == 50 and v.strided(2)[9] == 18 );
 			comm.send(v.strided(2).begin(), v.strided(2).end(), 1);
 			break;
@@ -37,7 +37,7 @@ void test_2D(mpi3::communicator& comm){
 
 	auto const v = []{
 		multi::array<double, 2> v({4, 5});
-		std::iota(begin(v.elements()), end(v.elements()), 0.);
+		std::iota(begin(v.elements()), end(v.elements()), 0.0);
 		return v;
 	}();
 
@@ -47,8 +47,8 @@ void test_2D(mpi3::communicator& comm){
 			comm.send(begin(vpart), end(vpart), 1);
 			return;
 		case 1:
-			multi::array<double, 2> w(extensions(vpart), 99.);
-			comm.receive(begin(w), end(w), 0); 
+			multi::array<double, 2> w(extensions(vpart), 99.0);
+			comm.receive(begin(w), end(w), 0);
 			assert( w == vpart );
 			return;
 	}
@@ -61,10 +61,14 @@ void test_2D_complex(mpi3::communicator& comm){
 	using complex = std::complex<double>;
 	
 	multi::array<complex, 2> v({4, 5}); using std::get;
-	if(auto x = v.extensions())
-		for(auto i: get<0>(x))
-			for(auto j: get<1>(x))
+	if(auto x = v.extensions()) {
+		auto const [is, js] = x;
+		for(auto i: is) {
+			for(auto j: js) {
 				v[i][j] = complex(i, j);
+			}
+		}
+	}
 
 	switch(comm.rank()){
 		case 0: {
@@ -72,9 +76,9 @@ void test_2D_complex(mpi3::communicator& comm){
 			break;
 		}
 		case 1: {
-			multi::array<complex, 2> w(extensions(v), 99.);
+			multi::array<complex, 2> w(extensions(v), 99.0);
 			comm.receive(begin(w), end(w), 0); 
-			assert( w[2][3] == std::complex<double>(2., 3.) );
+			assert( w[2][3] == std::complex<double>(2.0, 3.0) );
 			break;
 		}
 		default: assert(0);
@@ -86,7 +90,7 @@ void test_3D(mpi3::communicator& comm){
 
 	auto const v = []{
 		multi::array<double, 3> v({4, 5, 7});
-		std::iota(begin(v.elements()), end(v.elements()), 0.);
+		std::iota(begin(v.elements()), end(v.elements()), 0.0);
 		return v;
 	}();
 
@@ -101,13 +105,12 @@ void test_3D(mpi3::communicator& comm){
 			return;
 	}
 	assert(0);
-
 }
 
 void test_2D_strides(mpi3::communicator& comm){
 
 	multi::array<double, 2> v({4, 5});
-	std::iota(v.elements().begin(), v.elements().end(), 0.);
+	std::iota(v.elements().begin(), v.elements().end(), 0.0);
 
 	std::cout << std::endl;
 	switch(comm.rank()){
@@ -123,7 +126,6 @@ void test_2D_strides(mpi3::communicator& comm){
 		}
 	}
 	assert(0);
-
 }
 
 /*
@@ -187,7 +189,6 @@ void test_1D_nonpod(mpi3::communicator& comm){
 		}
 	}
 	assert(0);
-
 }
 #endif
 
@@ -205,10 +206,10 @@ int mpi3::main(int, char*[], mpi3::environment& env){
 		auto self = env.get_self_instance();
 		auto const v = []{
 			multi::array<double, 2> v({4, 5});
-			std::iota(v.elements().begin(), v.elements().end(), 0.);
+			std::iota(v.elements().begin(), v.elements().end(), 0.0);
 			return v;
 		}();
-		multi::array<double, 2> w({4, 2}, 0.);
+		multi::array<double, 2> w({4, 2}, 0.0);
 
 		self.gather_n(v({0, 4}, {2, 4}).begin(), v({0, 4}, {2, 4}).size(), w.begin());
 
@@ -228,10 +229,10 @@ int mpi3::main(int, char*[], mpi3::environment& env){
 		auto self = env.get_self_instance();
 		auto const v = []{
 			multi::array<double, 2> v({4, 5});
-			std::iota(v.elements().begin(), v.elements().end(), 0.);
+			std::iota(v.elements().begin(), v.elements().end(), 0.0);
 			return v;
 		}();
-		multi::array<double, 2> w({5, 4}, 0.);
+		multi::array<double, 2> w({5, 4}, 0.0);
 		self.gather_n(v.rotated().begin(), v.rotated().size(), w.begin());
 		assert( v.rotated() == w );
 	}
@@ -248,11 +249,10 @@ int mpi3::main(int, char*[], mpi3::environment& env){
 		assert( t.size() == sizeof(double) );
 		assert( t.extent() == sizeof(double)*2 );
 	}
-	
 	{
 		auto self = env.get_self_instance();
 		multi::array<double, 1> v(10);
-		std::iota(v.elements().begin(), v.elements().end(), 0.);
+		std::iota(v.elements().begin(), v.elements().end(), 0.0);
 		multi::array<double, 1> w(10);
 		self.gather_n(v.begin(), v.size(), w.begin());
 		assert( w == v );
@@ -261,7 +261,7 @@ int mpi3::main(int, char*[], mpi3::environment& env){
 		auto self = env.get_self_instance();
 		auto const v = []{
 			multi::array<double, 1> v(60);
-			std::iota(v.elements().begin(), v.elements().end(), 0.);
+			std::iota(v.elements().begin(), v.elements().end(), 0.0);
 			return v;
 		}();
 		multi::array<double, 1> w(30);
@@ -274,7 +274,7 @@ int mpi3::main(int, char*[], mpi3::environment& env){
 		auto self = env.get_self_instance();
 		auto const v = []{
 			multi::array<double, 1> v(30);
-			std::iota(v.elements().begin(), v.elements().end(), 0.);
+			std::iota(v.elements().begin(), v.elements().end(), 0.0);
 			return v;
 		}();
 		multi::array<double, 1> w(10);
@@ -285,32 +285,30 @@ int mpi3::main(int, char*[], mpi3::environment& env){
 		auto self = env.get_self_instance();
 		auto const v = []{
 			multi::array<double, 2> v({4, 5});
-			std::iota(v.elements().begin(), v.elements().end(), 0.);
+			std::iota(v.elements().begin(), v.elements().end(), 0.0);
 			return v;
 		}();
-		multi::array<double, 2> w({2, 5}, 0.);
+		multi::array<double, 2> w({2, 5}, 0.0);
 
 		self.gather_n(v.strided(2).begin(), v.strided(2).size(), w.begin());
 
 		assert( v.strided(2) == w );		
 	}
-
 	{
 		auto self = env.get_self_instance();
 		auto const v = []{
 			multi::array<double, 3> v({6, 4, 5});
-			std::iota(v.elements().begin(), v.elements().end(), 0.);
+			std::iota(v.elements().begin(), v.elements().end(), 0.0);
 			return v;
 		}();
-		multi::array<double, 3> w({3, 4, 5}, 0.);
+		multi::array<double, 3> w({3, 4, 5}, 0.0);
 
 		for(auto const& e : v.elements()) std::cout<< e <<',';
 		std::cout << std::endl;
 
 		self.gather_n(v.strided(2).begin(), v.strided(2).size(), w.begin());
 
-		assert( v.strided(2) == w );		
+		assert( v.strided(2) == w );
 	}
 	return 0;
 }
-
