@@ -74,7 +74,7 @@ int main(){
 			{ 2.0, 4.0,  5.0},
 		};
 		multi::array<double, 1> y = {12.0, 5.0, 2.0};
-		double AA[3][3];  // NOLINT(modernize-avoid-c-arrays)
+		double AA[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 		using std::copy;
 		copy( begin(A), end(A), begin(*multi::array_ptr(&AA)) );
 
@@ -84,7 +84,7 @@ int main(){
 	}
 	{
 		multi::array<double, 2> A({6000, 7000}); std::iota(A.data(), A.data() + A.num_elements(), 0.1);
-		std::transform(A.data(), A.data() + A.num_elements(), A.data(), [](auto x){return x/=2.e6;});
+		std::transform(A.data(), A.data() + A.num_elements(), A.data(), [](auto x){return x/=2.0e6;});
 		{
 			boost::timer::auto_cpu_timer t;
 			lu_fact(A({3000, 6000}, {0, 4000}));
