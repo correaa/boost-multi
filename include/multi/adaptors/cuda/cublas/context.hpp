@@ -115,25 +115,15 @@ using std::is_convertible_v;
 	using DoubleComplex = hipblasDoubleComplex;
 #endif
 
-template<class T>
-constexpr auto data_cast(T* p) {
-	if constexpr(is_s<T>{}) {return reinterpret_cast<float        *>(p);}
-	else if constexpr(is_d<T>{}) {return reinterpret_cast<double       *>(p);}
-	else if constexpr(is_c<T>{}) {return reinterpret_cast<Complex      *>(p);}
-	else if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex*>(p);}
-	assert(0);
-	return nullptr;
-}
+template<class T, std::enable_if_t<is_s<T>{}, int> =0> constexpr auto data_cast(T      * p) {return reinterpret_cast<float        *>(p);}
+template<class T, std::enable_if_t<is_d<T>{}, int> =0> constexpr auto data_cast(T      * p) {return reinterpret_cast<double       *>(p);}
+template<class T, std::enable_if_t<is_c<T>{}, int> =0> constexpr auto data_cast(T      * p) {return reinterpret_cast<Complex      *>(p);}
+template<class T, std::enable_if_t<is_z<T>{}, int> =0> constexpr auto data_cast(T      * p) {return reinterpret_cast<DoubleComplex*>(p);}
 
-template<class T>
-constexpr auto data_cast(T const* p) {
-	if constexpr(is_s<T>{}) {return reinterpret_cast<float         const*>(p);}
-	else if constexpr(is_d<T>{}) {return reinterpret_cast<double        const*>(p);}
-	else if constexpr(is_c<T>{}) {return reinterpret_cast<Complex       const*>(p);}
-	else if constexpr(is_z<T>{}) {return reinterpret_cast<DoubleComplex const*>(p);}
-	assert(0);
-	return nullptr;
-}
+template<class T, std::enable_if_t<is_s<T>{}, int> =0> constexpr auto data_cast(T const* p) {return reinterpret_cast<float        const*>(p);}
+template<class T, std::enable_if_t<is_d<T>{}, int> =0> constexpr auto data_cast(T const* p) {return reinterpret_cast<double       const*>(p);}
+template<class T, std::enable_if_t<is_c<T>{}, int> =0> constexpr auto data_cast(T const* p) {return reinterpret_cast<Complex      const*>(p);}
+template<class T, std::enable_if_t<is_z<T>{}, int> =0> constexpr auto data_cast(T const* p) {return reinterpret_cast<DoubleComplex const*>(p);}
 
 class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHandle_t)>::element_type, decltype(&hicu(blasDestroy))> {
 	using pimpl_t = std::unique_ptr<typename std::pointer_traits<hicu(blasHandle_t)>::element_type, decltype(&hicu(blasDestroy))>;
