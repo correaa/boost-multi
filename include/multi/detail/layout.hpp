@@ -322,12 +322,12 @@ template<> struct extensions_t<1> {
 
 	template<class... Indices>
 	constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
-		++idx;
 		using boost::multi::detail::get;
-		if(idx == get<0>(impl_).last()) {
+		if(idx == get<0>(impl_).back()) {
 			idx = get<0>(impl_).first();
 			return true;
 		}
+		++idx;
 		return false;
 	}
 	constexpr auto prev_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
