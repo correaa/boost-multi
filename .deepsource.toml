@@ -5,6 +5,10 @@ test_patterns = ["test/**"]
 [[analyzers]]
 name = "cxx"
 
+[analyzers.meta]
+c_version = "c99"
+cpp_version = "c++17"
+
 [[analyzers]]
 name = "test-coverage"
 enabled = true
