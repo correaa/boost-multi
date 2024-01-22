@@ -128,9 +128,10 @@ using monotonic_allocator = multi::memory::allocator<T, monotonic<char*>>;
 
 #include "../../multi/array.hpp"
 
+#include<cassert>
+#include<cmath>
 #include<iostream>
 #include<vector>
-#include<cmath>
 
 namespace multi = boost::multi;
 using std::cout;
@@ -138,9 +139,13 @@ using std::cout;
 int main(){
 {
 	multi::memory::null_t<char*> mr;
+	bool flagged = false;
 	try {
 		mr.allocate(1*sizeof(double), alignof(double));
-	} catch(...) {}
+	} catch(...) {
+		flagged = true;
+	}
+	assert(flagged)
 }
 {
 	alignas(double) std::array<char, 256*sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
