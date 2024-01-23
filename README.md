@@ -384,7 +384,7 @@ A "moved" subview is simply another kind of view of the elements.
 multi::array<std::vector<double>, 2> A({10, 10});
 multi::array<std::vector<double>, 2> B({10, 10});
 ...
-B[1] = A[2].element_moved();  // 10 *elements* of the third row of A is moved into the second row of B.
+B[1] = A[2].element_moved();  // 10 *elements* of the third row of A is moved into the second row of B. A[2] still have 10 elements (in a moved-from state, e.g. empty vectors)
 ```
 
 ## Change sizes (extents)
