@@ -247,8 +247,8 @@ Since the sorted array is a reference to the original data, the original C-array
 (Note that `std::sort` cannot be applied directly to a multidimensional C-array or to Boost.MultiArray types, among other libraries.
 The arrays implemented by this library are, to the best of my knowledge, the only ones that support all STL algorithms directly.)
 
-If we want to order the matrix in a per-column basis, we need to "view" the matrix as range of columns.
-This is done in the bidimensional case, by accessing the matrix as a range of columns:
+If we want to order the matrix on a per-column basis, we need to "view" the matrix as range of columns.
+This is done in the 2-dimensional case by accessing the matrix as a range of columns:
 
 ```cpp
 		...
@@ -259,10 +259,10 @@ This is done in the bidimensional case, by accessing the matrix as a range of co
 Which will transform the matrix into:
 
 > ```
-> 1 2 3 4 30  
-> 6 7 8 9 50  
-> 11 12 13 14 100  
-> 16 17 18 19 150 
+> 1 2 3 4 30
+> 6 7 8 9 50
+> 11 12 13 14 100
+> 16 17 18 19 150
 > ```
 
 In other words, by combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
@@ -280,16 +280,15 @@ delete[] dp;
 ```
 Array references do not own memory and, just as language references, can not be rebinded (resized or "reseated") to refer to a different location.
 Since `array_ref` is an array reference, it can "dangle" if the the original memory is deallocated.
-
-Array objects (`multi::array`), in constrast, own the elements it contains and can be resized;
+In contrast, array objects (`multi::array`) own the elements they contain and can be resized;
 `array` is initialized by specifying the index extensions (and optionally a default value).
 
 ```cpp
-multi::array<double, 1> A1({3}      , 11.0);  // {11.0, 11.0, 11.0}
+multi::array<double, 1> A1({3}      , 11.0);  // A1 = {11.0, 11.0, 11.0}
 
-multi::array<double, 2> A2({2, 3}   , 22.0);  // { {22.0, 22.0, 22.}, {22.0, 22.0, 22.0} }
+multi::array<double, 2> A2({2, 3}   , 22.0);  // A2 = { {22.0, 22.0, 22.}, {22.0, 22.0, 22.0} }
 
-multi::array<double, 3> A3({3, 2, 2}, 33.0);  // { { { 33., ...}, { ... }, ... } }
+multi::array<double, 3> A3({3, 2, 2}, 33.0);  // A3 = { { { 33.0, 33.0, ...}, { ... }, ... } }
 ```
 ... or alternatively from a rectangular list.
 
@@ -298,8 +297,8 @@ multi::array<double, 1> A1 = {1.0, 2.0, 3.0};
 assert( num_elements(A1)==3 );
 
 multi::array<double, 2> A2 {
-	 { 1.0, 2.0, 3.0},
-	 { 4.0, 5.0, 6.0}
+	{ 1.0, 2.0, 3.0},
+	{ 4.0, 5.0, 6.0}
 };
 
 assert( num_elements(A2) == 2*3);
@@ -317,8 +316,8 @@ In all cases, constness (`const` declaration) is honored in the expected way.
 
 ## Copy and assigment
 
-The library offer value semantics for the `multi::array<T, D>` family of classes.
-Constructing or assigning from an existing array generates a copy of the original object, that is, and object that is independent but equal in value.
+The library offers value semantics for the `multi::array<T, D>` family of classes.
+Constructing or assigning from an existing array generates a copy of the original object, that is, an object that is independent but equal in value.
 
 ```cpp
 auto B2 = A2;  // same as multi::array<double, 2> B2 = A2;
@@ -336,7 +335,8 @@ B2 = A2;
 
 (The operation can fail if there is no enough memory to hold a copy.)
 
-Sometimes it is necessary to generate copies from views or subblocks.
+Sometimes, it is necessary to generate copies from views or subblocks.
+
 ```cpp
 multi::array<double, 3> C2 = A2( {0, 2}, {0, 2} );
 ```
@@ -344,11 +344,12 @@ or equivalently,:
 ```cpp
 auto C2 = + A2( {0, 2}, {0, 2} );
 ```
-Note the use of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
-Due to limitations of the language, omiting the `+` will create effectively another reference  non-indepdent view of the left-hand-side, which is generally undesired.
 
-Subviews can also assigned but only if the shape of the left-hand side (LHS) and right-hand side (RHS) match.
-Otherwise the behavior is undefined (in debug mode the program will fail an `assert`).
+Note that using of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
+Due to limitations of the language, omitting the `+`` will effectively make another reference (non-independent view) of the left-hand side, which is generally undesired.
+
+Subviews can also assigned, but only if the shapes of the left-hand side (LHS) and right-hand side (RHS) match.
+Otherwise, the behavior is undefined (in debug mode, the program will fail an `assert`).
 
 ```cpp
 C2( {0, 2}, {0, 2} ) = A2( {0, 2}, {0, 2} );  // both are 2x2 views of arrays, *elements* are copied
