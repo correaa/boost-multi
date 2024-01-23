@@ -10,9 +10,8 @@ _© Alfredo A. Correa, 2018-2024_
 _Multi_ is a modern C++ library that provides access and manipulation of data in multidimensional arrays, for both CPU and GPU memory.
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
-
-This library offers array containers and views in arbitrary dimensions with well-behaved value semantics, offering total compatibility with the Standard Algorithms (STL), special memory (including GPUs), and following modern C++ design principles.
-It requires at least C++17.
+This library offers array containers and views in arbitrary dimensions with well-behaved value semantics, offering total compatibility with the standard algorithms and ranges (STL) and special memory (including GPUs) and following modern C++ design principles.
+It requires, at least, C++17.
 
 Some features of this library:
 
@@ -23,9 +22,10 @@ Some features of this library:
 * Arbitrary pointer types (fancy pointers, memory spaces)
 * Simplified implementation (~4000 lines)
 
-Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html), or with the standard MDSpan proposal `std::mdspan`.
-`Multi` shares some of their goals but at a different level of generality.
-The code is completely independent and with important differences in the implementation and semantics.
+Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
+or with the standard MDSpan proposal `std::mdspan`.
+This library shares some of their goals but at a different level of generality.
+The code is completely independent and has important implementation and semantics differences.
 
 ## Contents
 [[_TOC_]]
@@ -34,8 +34,8 @@ The code is completely independent and with important differences in the impleme
 
 You can try the library [online](https://godbolt.org/z/dvacqK8jE) before using it.
 
-_Multi_ doesn't require installation, a single header `#include <multi/array.hpp>` is enough to use the full core library.
-_Multi_ has no dependencies (except for the standard C++ library) and can be used immediately after downloading it.
+_Multi_ doesn't require installation; a single header `#include <multi/array.hpp>` is enough to use the entire core library.
+_Multi_ has no dependencies (except for the standard C++ library) and can be used immediately after downloading.
 
 ```bash
 git clone https://gitlab.com/correaa/boost-multi.git
@@ -74,24 +74,23 @@ FetchContent_MakeAvailable(multi)
 target_link_libraries(my_target PUBLIC multi)
 ```
 
-The code requires compilers with standard C++17 support, for reference any of:
-LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`), 
-GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a), 
-Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) and `nvc++` (22.7+), 
-Intel's      `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
+The code requires compilers with standard C++17 support; for reference any of:
+LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
+GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
+Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) and `nvc++` (22.7+),
+Intel's      `icpc` (2021.2.0+) and `icpx` (2022.0.0+),
 Baxter's    [`circle`](https://www.circle-lang.org/) (build 187+),
 and 
 Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
 
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
-(which can be installed with `sudo apt install libboost-serializa
-tion-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or `sudo dnf install blas-devel fftw-devel`.)
+(which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or `sudo dnf install blas-devel fftw-devel`.)
 HIP support is experimental.
 
 ## Types
 
 * `multi::array<T, D, A = std::allocator<T>>`: 
-Array of integer positive dimension `D`, it has value semantics if element type `T` has value semantics. 
+Array of integer positive dimension `D`, it has value semantics if element type `T` has value semantics.
 Memory is requested by an allocator of type `A` (supports stateful and polymorphic allocators).
 * `multi::array_ref<T, D, P = T*>`: 
 Array interpretation of a random access range, usually a contiguous memory block. 
@@ -99,13 +98,13 @@ It has reference semantics.
 `P` does not need to be a language-pointer, it can be anything that behaves like a pointer (derreference and random access arithmetics).
 `array<T, D, A>` is implicitly an `array_ref<T, D, A::pointer>`, the reverse conversion is only explicit.
 * Other derived "unspecified types" fulfill a `MultiSubarray` concept, for example by taking partial indices or rotations (transpositions).
-These derived referencial types can be named by life-time extensions `auto&&` or `auto const&`,
+These derived referential types can be named by life-time extensions `auto&&` or `auto const&`,
 and they can decay to value types (copied elements).
-`array`s automatically fulfill the concept being a `MultiSubarray`.
+`array`s automatically fulfill the concept of being a `MultiSubarray``.
 * `MultiSubarray::(const_)iterator`:
 Iterator to subarrays of lower dimension.
 For `D == 1` this is an iterator to an element (or scalar, with zero dimension).
-This types are generated by `begin` and `end` (member) functions.
+These types are generated by `begin` and `end` (member) functions.
 * `MultiSubarray::(const_)reference`:
 Reference to subarrays of lower dimension.
 For `D > 1`, these references are not true language-references, but types that emulate them (with reference semantics).
@@ -122,11 +121,13 @@ multi::array<double, 2> A = {
     {4.0, 5.0, 6.0}
 };
 
-assert( A.size() == 2 );
-assert( A.num_elements() == 6 );
+auto const [n, m] = A.sizes();
 
-assert( std::get<0>(A.sizes()) == 2 );
-assert( std::get<1>(A.sizes()) == 3 );
+assert( n == 2 );  // or std::get<0>(A.sizes()) == 2
+assert( m == 3 );  // or std::get<1>(A.sizes()) == 3
+
+assert( A.size() == 2 );  // size in first dimension, or std::get<0>(A.sizes())
+assert( A.num_elements() == 6 );  // total number of elements
 ```
 
 The value of an array can be copied, (moved,) and compared;
