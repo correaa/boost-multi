@@ -165,7 +165,7 @@ auto element_1_1(ArrayDouble2D const& m) -> double const& {return m[1][1];}
 assert( &element_1_1(A) == &A[1][1] );
 ```
 
-The function expects any array or subarray of dimension 2 and return an element with type `double`. 
+The function expects any array or subarray of dimension 2 and return an element with type `double`.
 
 The generic function template arguments that are not intended to be modified are passed by `const&`; otherwise, they are passed by forward-reference `&&`.
 In this way, the functions can be applied on subblocks of larger matrices.
@@ -193,13 +193,11 @@ int main() {
 		100.0, 11.0, 12.0, 13.0, 14.0,
 		 50.0,  6.0,  7.0,  8.0,  9.0
 	};  // block of 20 elements ...
-	multi::array_ref<double, 2> d2D_ref{&d_data[0], {4, 5}};  // interpreted as a 4 by 5 array
+	multi::array_ref<double, 2> d2D_ref{&d_data[0], {4, 5}};  // .. interpreted as a 4 by 5 array
 	...
 ```
 
-Note that the syntax of creating a reference array involves passing the pointer to a memory block (20 elements here) and the logical dimensions of that memory block (4 by 5 here).
-
-Next we print the elements in a way that corresponds to the logical arrangement:
+Next, we print the elements in a way that corresponds to the logical arrangement:
 
 ```cpp
 	...
@@ -217,16 +215,16 @@ Next we print the elements in a way that corresponds to the logical arrangement:
 This will output:
 
 > ```
-> 150 16 17 18 19  
-> 30 1 2 3 4  
-> 100 11 12 13 14  
+> 150 16 17 18 19
+> 30 1 2 3 4
+> 100 11 12 13 14
 > 50 6 7 8 9
 > ```
 
 The arrays provide iterator-based access, which allows it to interface with algorithms and implement new ones.
 
-It is sometimes said (by Sean Parent) that the whole of STL algorithms can be seen as intermediate pieces to implement `std::stable_sort`. 
-Pressumably, if one can sort over a range, one can perform any other standard algorithm.
+It is sometimes said (by Sean Parent) that the whole of STL algorithms can be seen as intermediate pieces to implement `std::stable_sort`.
+Presumably, if one can sort over a range, one can perform any other standard algorithm.
 
 ```cpp
 		...
@@ -237,9 +235,9 @@ Pressumably, if one can sort over a range, one can perform any other standard al
 If we print the result, we will get:
 
 > ```
-> 30 1 2 3 4  
-> 50 6 7 8 9  
-> 100 11 12 13 14  
+> 30 1 2 3 4
+> 50 6 7 8 9
+> 100 11 12 13 14
 > 150 16 17 18 19
 > ```
 
@@ -249,7 +247,7 @@ Since the sorted array is a reference to the original data, the original C-array
 (Note that `std::sort` cannot be applied directly to a multidimensional C-array or to Boost.MultiArray types, among other libraries.
 The arrays implemented by this library are, to the best of my knowledge, the only ones that support all STL algorithms directly.)
 
-If we want to order the matrix in a per-column basis we need to "view" the matrix as range of columns.
+If we want to order the matrix in a per-column basis, we need to "view" the matrix as range of columns.
 This is done in the bidimensional case, by accessing the matrix as a range of columns:
 
 ```cpp
