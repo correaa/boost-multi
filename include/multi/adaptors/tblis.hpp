@@ -188,16 +188,17 @@ auto mult(ITensorA&& aijk, ITensorB&& bijk, ITensorC&& cijk)
 template<class Element>
 struct matrix : ::tblis::tblis_matrix{
 public:
-	template<class A, std::enable_if_t<! std::is_base_of_v<matrix, std::decay_t<A>>, int> =0>
+	matrix(matrix const&) = delete;
+	matrix(matrix&&) noexcept = default;
+
+//	template<class EE> matrix(matrix<EE> const& other) : ::tblis::tblis_matrix
+	template<class A, class = std::enable_if_t<!std::is_same_v<matrix, std::remove_cv_t<std::remove_reference_t<A>>>> >
 	matrix(A&& a){
 		init_matrix<Element>(this, 
 			std::get<0>(a.sizes()), std::get<1>(a.sizes()), const_cast<double*>(a.base()), 
 			std::get<0>(a.strides()), std::get<1>(a.strides())
 		);
 	}
-//	template<class EE> matrix(matrix<EE> const& other) : ::tblis::tblis_matrix
-	matrix(matrix const&) = delete;
-	matrix(matrix&&) noexcept = default;
 };
 
 template<class A, class P = typename std::decay_t<A>::element_ptr> matrix(A&&)->matrix<typename std::pointer_traits<P>::element_type>;
