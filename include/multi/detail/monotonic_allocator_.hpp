@@ -17,7 +17,7 @@ namespace multi {
 
 template<typename Ptr = char*>
 struct block : std::pointer_traits<Ptr>{
-	template<std::size_t N> block(char(&t)[N]) : start_{t}, lenght_{N} {}
+	template<std::size_t N> block(char(&t)[N]) : start_{t}, lenght_{N} {}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
 	typename block::pointer start_;
 	typename block::size_type lenght_;
 	bool contains(typename block::pointer p) const{
