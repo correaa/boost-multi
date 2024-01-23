@@ -448,15 +448,17 @@ constexpr
 auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, ForwardIt d_first) {
 // ->std::decay_t<decltype(a.construct(std::addressof(*d_first), *first), d_first)> // problematic in clang-11 + gcc-9
 	ForwardIt current = d_first;
+	using alloc_traits = std::allocator_traits<Alloc>;
 	try {
-		for(; first != last; ++first, (void)++current) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-			std::allocator_traits<std::decay_t<Alloc>>::construct(alloc, std::addressof(*current), *first);
-		}
+		std::for_each(first, last, [&](auto const& elem) {  // TODO(correaa) replace by adl_for_each
+			alloc_traits::construct(alloc, std::addressof(*current), elem);
+			++current;
+		});
 		return current;
 	} catch(...) {
-		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-			std::allocator_traits<std::decay_t<Alloc>>::destroy(alloc, std::addressof(*d_first));
-		}
+		std::for_each(d_first, current, [&](auto const& elem) {
+			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(elem));
+		});
 		throw;
 	}
 }
@@ -557,7 +559,7 @@ constexpr class adl_uninitialized_value_construct_n_t {
 
 [[maybe_unused]] constexpr class adl_alloc_uninitialized_value_construct_n_t {
 	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... args) const DECLRETURN(                       adl_uninitialized_value_construct_n(std::forward<As>(args)...))
-//	template<class... As>              constexpr auto _(priority<2>/**/,                    As&&... args) const DECLRETURN(              xtd::  alloc_uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
+//  template<class... As>              constexpr auto _(priority<2>/**/,                    As&&... args) const DECLRETURN(              xtd::  alloc_uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 	template<class... As>              constexpr auto _(priority<3>/**/,                    As&&... args) const DECLRETURN(                     alloc_uninitialized_value_construct_n(std::forward<As>(args)...))
 	template<class T, class... As>     constexpr auto _(priority<4>/**/, T&& arg,           As&&... args) const DECLRETURN(  std::decay_t<T>::  alloc_uninitialized_value_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class... As>     constexpr auto _(priority<5>/**/, T&& arg,           As&&... args) const DECLRETURN(std::forward<T>(arg).alloc_uninitialized_value_construct_n(std::forward<As>(args)...))
@@ -581,10 +583,10 @@ constexpr class adl_uninitialized_default_construct_n_t {
 
 [[maybe_unused]] constexpr class adl_alloc_uninitialized_default_construct_n_t {
 	template<class Alloc, class... As>          constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const JUSTRETURN(         adl_uninitialized_default_construct_n(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(              xtd::  alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
-	template<class Alloc, class It, class Size> constexpr auto _(priority<2>/**/, Alloc&& alloc, It first, Size n ) const DECLRETURN(          thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n))
+	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n ) const DECLRETURN(          thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n))
 #endif
-//	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(              xtd::  alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 	template<class... As>          constexpr auto _(priority<4>/**/,          As&&... args) const DECLRETURN(                     alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  alloc_uninitialized_default_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))
