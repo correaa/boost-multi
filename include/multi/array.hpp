@@ -506,11 +506,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
  public:
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() && -> static_array* = delete;  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
+	constexpr auto operator&() && -> static_array* = delete;  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() & -> static_array* { return this; }  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
+	constexpr auto operator&() & -> static_array* { return this; }  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() const& -> static_array const* { return this; }  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
+	constexpr auto operator&() const& -> static_array const* { return this; }  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
 
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
@@ -831,7 +831,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 	}
 
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	constexpr auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 	// auto operator&()      & -> array      *{return this;}
 	// auto operator&() const& -> array const*{return this;}
 };
@@ -845,11 +845,11 @@ struct array : static_array<T, D, Alloc> {
 	);
 
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	HD constexpr auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() & -> array* { return this; }  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	HD constexpr auto operator&() & -> array* { return this; }  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&() const& -> array const* { return this; }  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	HD constexpr auto operator&() const& -> array const* { return this; }  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 
 	friend auto sizes(array const& self) -> typename array::sizes_type { return self.sizes(); }
 
