@@ -755,7 +755,12 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		multi::static_array<int, 1> marr({10}, 99);
 		print_me1(*multi::array_ptr<int, 1>{marr.data_elements(), 10});
 
-		// print_me2(&marr);
+		auto& alias = marr;
+		marr = alias;
+		BOOST_REQUIRE(marr[5] = 99);
+
+		marr = alias();
+		BOOST_REQUIRE(marr[5] = 99);
 	}
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
