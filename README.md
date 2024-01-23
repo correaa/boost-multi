@@ -381,10 +381,10 @@ However, individual elements of a view can be moved; this is particularly useful
 A "moved" subview is simply another kind of view of the elements.
 
 ```cpp
-multi::array<std::vector<double>, 2> A({10, 10});
+multi::array<std::vector<double>, 2> A({10, 10}, std::vector<double>(1000));
 multi::array<std::vector<double>, 2> B({10, 10});
 ...
-B[1] = A[2].element_moved();  // 10 *elements* of the third row of A is moved into the second row of B. A[2] still have 10 elements (in a moved-from state, e.g. empty vectors)
+B[1] = A[2].element_moved();  // 10 *elements* of the third row of A is moved into the second row of B. A[2] still has 10 (moved-from) empty vectors
 ```
 
 ## Change sizes (extents)
