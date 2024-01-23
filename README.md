@@ -347,27 +347,28 @@ auto C2 = + A2( {0, 2}, {0, 2} );
 Note the use of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
 Due to limitations of the language, omiting the `+` will create effectively another reference  non-indepdent view of the left-hand-side, which is generally undesired.
 
-Subviews can also assigned but only if the shape of the left-hand side (LHS) and right-hand side (RHS) match.
-Otherwise the behavior is undefined (in debug mode the program will fail an `assert`).
+Subviews can also assigned, but only if the shape of the left-hand side (LHS) and right-hand side (RHS) match.
+Otherwise, the behavior is undefined (in debug mode, the program will fail an `assert`).
 
 ```cpp
 C2( {0, 2}, {0, 2} ) = A2( {0, 2}, {0, 2} );  // both are 2x2 views of arrays, *elements* are copied
 ```
 
 Introducing the same or overlapping arrays in the RHS and LHS produces undefined behavior in general (and the library doesn't check);
-Notably, this instruction does not transpose the array, but produces an undefined result:
+Notably, this instruction does not transpose the array but produces an undefined result:
 
 ```cpp
-A2 = A2.transposed();
+A2 =   A2.transposed();
 ```
 
-While this instead does produce a transposition, at the cost of making a copy (`+`) of the tranposed array first and assigning (or moving) it back to the original array.
+While this instead does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
 
 ```cpp
 A2 = + A2.transposed();
 ```
 
-In-place transposition is an active subject of research; _optimal_ in speed and memory transpositions might require specially designed libraries.
+In-place transposition is an active subject of research;
+_optimal_ speed and memory transpositions might require specially designed libraries.
 
 Finally, arrays can be efficiently moved by transferring ownership of the internal data.
 
@@ -376,8 +377,8 @@ auto B2 = std::move(A2);  // A2 is empty after this
 ```
 
 Subarrays do not own the data therefore they cannot be moved in the same sense.
-However, indivial elements of a view can be moved, this is particularly useful if the elements are expensive to copy.
-A "moved" subview is simply another kind view of the elements.
+However, individual elements of a view can be moved; this is particularly useful if the elements are expensive to copy.
+A "moved" subview is simply another kind of view of the elements.
 
 ```cpp
 multi::array<std::vector<double>, 2> A({10, 10});
