@@ -1617,7 +1617,7 @@ The library doesn't have a "pretty" printing facility to display arrays;
 fortunatelly it automatically works with the external library [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
 This example prints a 2-dimensional subblock of a larger array.
 
-```
+```cpp
 #include "fmt/ranges.h"
 ...
     multi::array<double, 2> A2 = {
@@ -1627,7 +1627,7 @@ This example prints a 2-dimensional subblock of a larger array.
         {6.0, 7.0, /**/ 8.0},
     };
 
-    fmt::print("A2 subblock = {}", A2({1, 3}, {0, 2})); // second and third row, first and second column
+    fmt::print("A2 subblock = {}", A2({1, 3}, {0, 2}));  // second and third row, first and second column
 ```
 with the "flat" output `A2 subblock = [[3, 4], [6, 7]]`
 
@@ -1635,15 +1635,16 @@ https://godbolt.org/z/EE5sqTdvf
 
 For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
 
-```
+```cpp
     fmt::print("{}\n", fmt::join(A2({1, 3}, {0, 2}), "\n"));  // first dimension rows are printer are in different lines
 ```
 with the output:
 
-```
-[3, 4]
-[6, 7]
-```
+> ```
+> [3, 4]
+> [6, 7]
+> ```
+
 
 When saving arrays to files, consider using serialization (see section) instead.
 
