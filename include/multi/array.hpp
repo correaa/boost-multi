@@ -1247,7 +1247,7 @@ namespace boost::serialization {
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version<boost::multi::array<T, D, A>> {
 	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>;
-	enum class value_t { value = type::value };  // NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
+	enum /*class value_t*/ { value = type::value };  // NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
 };
 
 }  // end namespace boost::serialization
