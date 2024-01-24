@@ -458,9 +458,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 			return *this;
 		}  // cert-oop54-cpp
 		assert(extensions(other) == static_array::extensions());
-		if(&other == this) {
-			return *this;
-		}  // lints (cert-oop54-cpp) : handle self-assignment properly
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
