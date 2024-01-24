@@ -126,12 +126,13 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 }
 
 BOOST_AUTO_TEST_CASE(empty_elements) {
-	multi::array<double, 2> arr;
+	multi::array<double, 2> arr1;
 	multi::array<double, 2> arr2;
 
-	BOOST_REQUIRE( arr.elements().size() == 0 );
+	BOOST_REQUIRE( arr1.elements().size() == 0 );
 	BOOST_REQUIRE( arr2.elements().size() == 0 );
-	BOOST_REQUIRE( arr.elements() == arr2.elements() );
+	BOOST_REQUIRE(   arr1.elements() == arr2.elements() );
+	BOOST_REQUIRE( !(arr1.elements() != arr2.elements()) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
