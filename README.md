@@ -1610,6 +1610,42 @@ Algorithms are expected to work with oneAPI execution policies as well (not test
     std::fill(policy, vec.begin(), vec.end(), 42);
 ```
 
+## Formatting
+
+The library doesn't have a "pretty" printing facility;
+fortunatelly it automatically works with the [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
+This example prints a 2-dimensional subblock of a larger array.
+
+```
+#include "fmt/ranges.h"
+...
+    multi::array<double, 2> A2 = {
+        {1.0, 2.0,      3.0}, 
+        /*-subblock-**/
+        {3.0, 4.0, /**/ 5.0},
+        {6.0, 7.0, /**/ 8.0},
+    };
+
+    fmt::print("A2 subblock = {}", A2({1, 3}, {0, 2})); // second and third row, first and second column
+```
+with the output `A2 subblock = [[3, 4], [6, 7]]`
+
+https://godbolt.org/z/EE5sqTdvf
+
+For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
+
+```
+    fmt::print("{}\n", fmt::join(A2({1, 3}, {0, 2}), "\n"));
+```
+with the output:
+
+```
+[3, 4]
+[6, 7]
+```
+
+When saving arrays to files, consider using serialization (see section) instead.
+
 ## TotalView
 
 TotalView visual debugger (commercial), popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
