@@ -1260,6 +1260,7 @@ However, note that the user must ensure that data is serialized and deserialized
 the underlying serialization libraries only do minimal consistency checks for efficiency reasons and don't try to second-guess file formats or contained types.
 Serialization is a relatively low-level feature for which efficiency and economy of bytes is a priority.
 Cryptic errors and crashes can occur if serialization libraries, file formats, or C++ types are mixed between writes and reads.
+Some formats are human-readable, but not particularly pretty for showing as output (see section on Formatting on how to print to the screen).
 
 References to subarrays (views) can also be serialized; however, size information is not saved in such cases.
 The reasoning is that references to subarrays cannot be resized in their number of elements if there is a size mismatch during deserialization.
@@ -1610,10 +1611,10 @@ Algorithms are expected to work with oneAPI execution policies as well (not test
     std::fill(policy, vec.begin(), vec.end(), 42);
 ```
 
-## Formatting
+## Formatting ({fmt} pretty printing)
 
-The library doesn't have a "pretty" printing facility;
-fortunatelly it automatically works with the [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
+The library doesn't have a "pretty" printing facility to display arrays;
+fortunatelly it automatically works with the external library [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
 This example prints a 2-dimensional subblock of a larger array.
 
 ```
@@ -1628,14 +1629,14 @@ This example prints a 2-dimensional subblock of a larger array.
 
     fmt::print("A2 subblock = {}", A2({1, 3}, {0, 2})); // second and third row, first and second column
 ```
-with the output `A2 subblock = [[3, 4], [6, 7]]`
+with the "flat" output `A2 subblock = [[3, 4], [6, 7]]`
 
 https://godbolt.org/z/EE5sqTdvf
 
 For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
 
 ```
-    fmt::print("{}\n", fmt::join(A2({1, 3}, {0, 2}), "\n"));
+    fmt::print("{}\n", fmt::join(A2({1, 3}, {0, 2}), "\n"));  // first dimension rows are printer are in different lines
 ```
 with the output:
 
