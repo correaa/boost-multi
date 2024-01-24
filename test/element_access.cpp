@@ -125,6 +125,15 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 	BOOST_REQUIRE( &arr({1, 3}, {2, 5}).elements().back()  == &arr(2, 4) );
 }
 
+BOOST_AUTO_TEST_CASE(empty_elements) {
+	multi::array<double, 2> arr;
+	multi::array<double, 2> arr2;
+
+	BOOST_REQUIRE( arr.elements().size() == 0 );
+	BOOST_REQUIRE( arr2.elements().size() == 0 );
+	BOOST_REQUIRE( arr.elements() == arr2.elements() );
+}
+
 BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
 	multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
 	BOOST_REQUIRE( arr.size() == 10 );
