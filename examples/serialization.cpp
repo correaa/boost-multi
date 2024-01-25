@@ -151,13 +151,13 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_static_small){
 			begin(d2D), end(d2D), 
 			[&](auto&& r){std::generate(begin(r), end(r), gen);}
 		);
-		auto name = "serialization-small-double2D.xml";
+		std::string const filename = "serialization-small-double2D.xml";
 		[&, _ = watch("xml write double")]{
-			std::ofstream ofs{"serialization-small-double2D.xml"}; assert(ofs);
+			std::ofstream ofs{filename}; assert(ofs);
 			boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
 		}();
-		std::cerr<<"size "<< double(fs::file_size(name))/1e6 <<"MB\n";
-		fs::remove("serialization-small-double2D.xml");
+		std::cerr<<"size "<< double(fs::file_size(filename))/1e6 <<"MB\n";
+		fs::remove(filename);
 	}
 	{
 		multi::array<double, 2> d2D = {
