@@ -64,9 +64,8 @@ struct archive_traits<Ar, typename std::enable_if_t<std::is_base_of_v<boost::arc
 	template<class T> using array_wrapper = boost::serialization::array_wrapper<T>;
 	template<class T> struct binary_object_t {using type = boost::serialization::binary_object;};
 
-	template<class T>        inline static auto make_nvp          (char const* name, T&  value) noexcept -> const nvp<T              > {return nvp<             T >{name, value };}  // NOLINT(readability-const-return-type) : match original boost declaration
-	template<class T>        inline static auto make_nvp          (char const* name, T&& value) noexcept -> const nvp<std::decay_t<T>> {return nvp<std::decay_t<T>>{name, value};}  // NOLINT(readability-const-return-type) : match original boost declaration
-//  template<class T>        inline static auto make_nvp          (char const* name, T const& value) noexcept -> const nvp<T const> {return nvp<T const>{name, value};}  // NOLINT(readability-const-return-type) : match original boost declaration
+	template<class T>        inline static auto make_nvp          (char const* name, T&  value) noexcept -> const nvp<T> {return nvp<T>{name, value};}  // NOLINT(readability-const-return-type) : match original boost declaration
+	template<class T>        inline static auto make_nvp          (char const* name, T&& value) noexcept -> const nvp<T> {return nvp<T>{name, value};}  // NOLINT(readability-const-return-type) : match original boost declaration
 
 	template<class T>        inline static auto make_array        (               T* first, std::size_t size) noexcept -> const array_wrapper<T> {return array_wrapper<T>{first, size};}  // NOLINT(readability-const-return-type) original boost declaration
 	template<class T = void> inline static auto make_binary_object(      const void* first, std::size_t size) noexcept -> const typename binary_object_t<T>::type {return typename binary_object_t<T>::type(first, size); }  // if you get an error here you need to eventually `#include<boost/serialization/binary_object.hpp>`// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) : original boost declaration
