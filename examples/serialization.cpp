@@ -114,22 +114,25 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_small_xml){
 
 
 BOOST_AUTO_TEST_CASE(const multi_serialization_static_large_xml){
-	watch w("static_large_xml");
+
 	multi::static_array<double, 2> d2D({1000, 1000});
-	auto gen = [e=std::mt19937{std::random_device{}()}]() mutable{return std::uniform_real_distribution<>{}(e);};
-	std::for_each(begin(d2D), end(d2D), [&](auto&& r){std::generate(begin(r), end(r), gen);});
-	auto const name = "serialization-static-large.xml";
+
+	auto gen = [e=std::mt19937{std::random_device{}()}]() mutable {return std::uniform_real_distribution<>{}(e);};
+	std::for_each(begin(d2D), end(d2D), [&](auto&& r) {std::generate(begin(r), end(r), gen);});
+
+	watch w("static_large_xml");
+	std::string const filename = "serialization-static-large.xml";
 	{
-		std::ofstream ofs{name}; assert(ofs);
+		std::ofstream ofs{filename}; assert(ofs);
 		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
 	}
 	{
-		std::ifstream ifs{name}; assert(ifs); decltype(d2D) d2D_copy(extensions(d2D));
+		std::ifstream ifs{filename}; assert(ifs); decltype(d2D) d2D_copy(extensions(d2D));
 		boost::archive::xml_iarchive{ifs} >> BOOST_SERIALIZATION_NVP(d2D_copy);
 		BOOST_REQUIRE( d2D_copy == d2D );
 	}
-	std::cout<< fs::file_size(name) <<'\n';
-	fs::remove(name);
+	std::cout<< fs::file_size(filename) <<'\n';
+	fs::remove(filename);
 }
 
 BOOST_AUTO_TEST_CASE(const multi_serialization_static_small){
