@@ -91,7 +91,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	auto strides() const { return convertible_tuple<strides_type>(layout_t::strides()); }
 	[[deprecated("BMA backward compatible")]] auto index_bases() const -> std::ptrdiff_t const*;  // = delete;
 	// {
-	// 	return convertible_tuple(std::apply([](auto... exts) noexcept {return std::make_tuple(exts.front() ...);}, this->extensions().base()));
+	//  return convertible_tuple(std::apply([](auto... exts) noexcept {return std::make_tuple(exts.front() ...);}, this->extensions().base()));
 	// }
 
 	using typename layout_t::difference_type;
@@ -1809,8 +1809,9 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 , array_types<T, 1, ElementPtr, Layout> {
 	~subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	void operator delete(void* ptr) noexcept = delete;
-	void operator delete(void* ptr, void* place ) noexcept = delete;  // NOLINT(bugprone-easily-swappable-parameters)
+	// boost serialization needs `delete`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::layout_t<1> >]’
+	// void operator delete(void* ptr) noexcept = delete;
+	// void operator delete(void* ptr, void* place ) noexcept = delete;  // NOLINT(bugprone-easily-swappable-parameters)
 
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
