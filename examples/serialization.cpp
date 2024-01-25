@@ -1,10 +1,11 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 $CXX $0 -o $0x -lboost_unit_test_framework -lstdc++fs -lboost_serialization -lboost_iostreams&&$0x&&rm $0x;exit
 #endif
-// © Alfredo Correa 2018-2020
+// Copyright 2018-2024 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi serialization"
 #define BOOST_TEST_DYN_LINK
+
 #include<boost/test/unit_test.hpp>
 
 //#include "../adaptors/serialization/xml_archive.hpp"
@@ -54,7 +55,7 @@ struct watch : private std::chrono::high_resolution_clock{
 	}
 };
 
-BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml){
+BOOST_AUTO_TEST_CASE(const multi_serialization_static_small_xml){
 	multi::static_array<double, 2> d2D({10, 10});
 	std::mt19937 eng{std::random_device{}()};
 	auto gen = [&](){return std::uniform_real_distribution<>{}(eng);};
@@ -85,7 +86,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_serialization_small_xml){
+BOOST_AUTO_TEST_CASE(const multi_serialization_small_xml){
 	multi::array<double, 2> d2D({10, 10});
 	std::mt19937 e{std::random_device{}()};
 //  auto g = std::bind(std::uniform_real_distribution<>{}, e);//
@@ -112,7 +113,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_small_xml){
 }
 
 
-BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml){
+BOOST_AUTO_TEST_CASE(const multi_serialization_static_large_xml){
 	watch w("static_large_xml");
 	multi::static_array<double, 2> d2D({1000, 1000});
 	auto gen = [e=std::mt19937{std::random_device{}()}]() mutable{return std::uniform_real_distribution<>{}(e);};
@@ -131,7 +132,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml){
 	fs::remove(name);
 }
 
-BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
+BOOST_AUTO_TEST_CASE(const multi_serialization_static_small){
 	{
 		multi::static_array<double, 0> d0D{12.0};
 		std::ofstream ofs{"serialization-static_0D.xml"}; assert(ofs);
@@ -304,11 +305,11 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(test_utility_serialization_2d){
+BOOST_AUTO_TEST_CASE(const test_utility_serialization_2d){
 	double carr[3][10] = {
-		{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
-		{10, 11, 12, 13, 14, 15, 16, 17, 18, 19},
-		{20, 21, 22, 23, 24, 25, 26, 27, 28, 29},
+		{ 0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0},
+		{10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0},
+		{20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0},
 	};
 	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
 	boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
@@ -336,4 +337,3 @@ BOOST_AUTO_TEST_CASE(test_utility_serialization_2d){
 //      arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(Marr);
 	}
 }
-
