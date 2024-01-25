@@ -850,11 +850,10 @@ struct array : static_array<T, D, Alloc> {
 
 	friend auto sizes(array const& self) -> typename array::sizes_type { return self.sizes(); }
 
-	template<class Archive>
+	template<class Archive, class ArTraits = multi::archive_traits<Archive>>
 	void serialize(Archive& arxiv, unsigned int const version) {
 		auto extensions_ = this->extensions();
-		using make_nvp   = typename multi::archive_traits<Archive>::make_nvp;  // can be boost::serialization::make_nvp or cereal::make_nvp(
-		arxiv& make_nvp("extensions", extensions_);
+		arxiv& ArTraits::make_nvp("extensions", extensions_); // don't try `using ArTraits::make_nvp`, make_nvp is a static member
 		if(this->extensions() != extensions_) {
 			clear();
 			this->reextent(extensions_);
