@@ -45,7 +45,7 @@ struct watch : private std::chrono::high_resolution_clock{
 	std::string name_;
 	time_point  start_;
 	mutable bool engaged = true;
-	watch(std::string name = "") : name_{name}, start_{now()}{}
+	watch(std::string name = "") : name_{name}, start_{now()} {}
 	auto operator*() const{engaged = false; return std::chrono::duration<double>(now() - start_).count();}
 	~watch(){
 		if(engaged){
@@ -60,18 +60,18 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_static_small_xml){
 	std::mt19937 eng{std::random_device{}()};
 	auto gen = [&](){return std::uniform_real_distribution<>{}(eng);};
 	std::for_each(begin(d2D), end(d2D), [&](auto&& r){std::generate(begin(r), end(r), gen);});
-	auto const name = "serialization-static-small.xml";
+	std::string const filename = "serialization-static-small.xml";
 	{
-		std::ofstream ofs{name}; assert(ofs);
+		std::ofstream ofs{filename}; assert(ofs);
 		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
 	}
 	{
-		std::ifstream ifs{name}; assert(ifs); decltype(d2D) d2D_copy(extensions(d2D), 99.);
+		std::ifstream ifs{filename}; assert(ifs); decltype(d2D) d2D_copy(extensions(d2D), 99.);
 		boost::archive::xml_iarchive{ifs} >> BOOST_SERIALIZATION_NVP(d2D_copy);
 		BOOST_REQUIRE( d2D_copy == d2D );
 	}
-	std::cout<< fs::file_size(name) <<'\n';
-	fs::remove(name);
+	std::cout<< fs::file_size(filename) <<'\n';
+	fs::remove(filename);
 
 	{
 		std::ostringstream oss;
@@ -90,15 +90,15 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_small_xml){
 	multi::array<double, 2> d2D({10, 10});
 	std::mt19937 e{std::random_device{}()};
 //  auto g = std::bind(std::uniform_real_distribution<>{}, e);//
-	auto g = [&](){return std::uniform_real_distribution<>{}(e);};
+	auto g = [&]() {return std::uniform_real_distribution<>{}(e);};
 	std::for_each(begin(d2D), end(d2D), [&](auto&& r){std::generate(begin(r), end(r), g);});
-	auto const name = "serialization-small.xml";
+	auto const filename = "serialization-small.xml";
 	{
-		std::ofstream ofs{name}; assert(ofs);
+		std::ofstream ofs{filename}; assert(ofs);
 		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
 	}
 	{
-		std::ifstream ifs{name}; assert(ifs); decltype(d2D) d2D_copy(extensions(d2D));
+		std::ifstream ifs{filename}; assert(ifs); decltype(d2D) d2D_copy(extensions(d2D));
 		boost::archive::xml_iarchive{ifs} >> BOOST_SERIALIZATION_NVP(d2D_copy);
 		BOOST_REQUIRE( d2D_copy == d2D );
 	}
@@ -108,8 +108,8 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_small_xml){
 		boost::archive::xml_oarchive{ofs} << boost::serialization::make_nvp("d2D_part", a);//BOOST_SERIALIZATION_NVP(d2D);
 		fs::remove("serialization-small-part.xml");
 	}
-	std::cout<< fs::file_size(name) <<'\n';
-	fs::remove(name);
+	std::cout<< fs::file_size(filename) <<'\n';
+	fs::remove(filename);
 }
 
 
