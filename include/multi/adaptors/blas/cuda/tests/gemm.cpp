@@ -18,7 +18,7 @@
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_cuda_gemm_complex_3x2_3x2){
+BOOST_AUTO_TEST_CASE(const multi_adaptors_blas_cuda_gemm_complex_3x2_3x2){
 	using complex = std::complex<double>; complex const I{0, 1};
 	namespace blas = multi::blas;
 	multi::array<complex, 2> const a = {
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_cuda_gemm_complex_3x2_3x2){
 //}
 
 #if 0
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_cuda_gemm_context_timing){
+BOOST_AUTO_TEST_CASE(const multi_adaptors_blas_cuda_gemm_context_timing){
 	using complex = std::complex<double>;//complex const I{0, 1};
 	
 	multi::array<complex, 2> A({1000, 1000});
