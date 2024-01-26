@@ -26,10 +26,15 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	auto arr_ptr = &arr[2];
 	BOOST_REQUIRE( arr_ptr == arr_ptr );
 
-	arr_ptr = std::move(arr_ptr);  // test self-move assignment TODO(correaa) remove move assignment for array_ptr
+	auto& arr_ptr_ref = arr_ptr;
+	arr_ptr = arr_ptr_ref;
+	arr_ptr = std::move(arr_ptr_ref);
+	BOOST_REQUIRE( arr_ptr == arr_ptr_ref );
 
 	auto arr_ptr2 = &std::as_const(arr)[2];
 	BOOST_REQUIRE( arr_ptr == arr_ptr2 );
+	BOOST_REQUIRE( arr_ptr2 == arr_ptr );
+	BOOST_REQUIRE( !(arr_ptr != arr_ptr) );
 
 	auto& arr_ptr2_ref = arr_ptr2;
 	arr_ptr2 = arr_ptr2_ref;

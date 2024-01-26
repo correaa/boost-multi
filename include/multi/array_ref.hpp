@@ -265,12 +265,14 @@ public:
 		return *this;
 	}
 
-	HD constexpr auto operator=(subarray_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-	-> subarray_ptr& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
-		operator=(other);
-		return *this;
-	}
+	// HD constexpr auto operator=(subarray_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	// -> subarray_ptr& {
+	//  if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
+	//      return *this;
+	//  }
+	//  operator=(other);
+	//  return *this;
+	// }
 
 	HD constexpr explicit operator bool() const {return base();}
 
@@ -2315,11 +2317,17 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
-		return self.extension() == other.extension() && self.elements() == other.elements();
+		return
+			self.extension() == other.extension()
+			&& self.elements() == other.elements()
+		;
 	}
 	template<class TT, class... As>
 	friend constexpr auto operator!=(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
-		return self.extension() != other.extension() || self.elements() != other.elements();
+		return
+	        self.extension() != other.extension()
+			|| self.elements() != other.elements()
+		;
 	}
 
 	friend constexpr auto operator<(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(self, other); }
