@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_small_xml){
 //  auto g = std::bind(std::uniform_real_distribution<>{}, e);//
 	auto g = [&]() {return std::uniform_real_distribution<>{}(e);};
 	std::for_each(begin(d2D), end(d2D), [&](auto&& r){std::generate(begin(r), end(r), g);});
-	auto const filename = "serialization-small.xml";
+	std::string const filename = "serialization-small.xml";
 	{
 		std::ofstream ofs{filename}; assert(ofs);
 		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
