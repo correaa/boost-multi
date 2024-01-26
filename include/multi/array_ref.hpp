@@ -253,8 +253,8 @@ public:
 	HD constexpr subarray_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: subarray_ptr{other->data_elements(), other->layout()} {}
 
-	subarray_ptr(subarray_ptr      &&) noexcept = default;
-	subarray_ptr(subarray_ptr const& )          = default;
+	subarray_ptr(subarray_ptr const& ) noexcept  = default;
+	subarray_ptr(subarray_ptr      && other) noexcept = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
 
 	HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
 		if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
@@ -265,9 +265,11 @@ public:
 		return *this;
 	}
 
-	HD constexpr auto operator=(subarray_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	HD constexpr auto operator=(subarray_ptr&& other) noexcept  // TODO(correaa) remove move constructor to remove this move assignment
 	-> subarray_ptr& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
+			return *this;
+		}
 		operator=(other);
 		return *this;
 	}
@@ -2315,11 +2317,17 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
-		return self.extension() == other.extension() && self.elements() == other.elements();
+		return
+			self.extension() == other.extension()
+			&& self.elements() == other.elements()
+		;
 	}
 	template<class TT, class... As>
 	friend constexpr auto operator!=(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
-		return self.extension() != other.extension() || self.elements() != other.elements();
+		return
+	        self.extension() != other.extension()
+			|| self.elements() != other.elements()
+		;
 	}
 
 	friend constexpr auto operator<(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(self, other); }
