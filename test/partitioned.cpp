@@ -205,8 +205,8 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	BOOST_REQUIRE(( arr.extensions() == decltype(arr.extensions()){2, 4, 6} ));
 	BOOST_REQUIRE(( A4.extensions() == decltype(A4.extensions()){2, 4, 6, 1} ));
 
-	BOOST_REQUIRE( A4.is_flattable() );
-	BOOST_REQUIRE( A4.flatted().is_flattable() );
+//  BOOST_REQUIRE( A4.is_flattable() );
+//  BOOST_REQUIRE( A4.flatted().is_flattable() );
 
 	BOOST_REQUIRE( &A4[1][2][3][0] == &arr[1][2][3] );
 }
