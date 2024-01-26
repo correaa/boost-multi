@@ -253,7 +253,7 @@ public:
 	HD constexpr subarray_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: subarray_ptr{other->data_elements(), other->layout()} {}
 
-	subarray_ptr(subarray_ptr      &&) noexcept = default;
+	// subarray_ptr(subarray_ptr      &&) noexcept = default;
 	subarray_ptr(subarray_ptr const& )          = default;
 
 	HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
