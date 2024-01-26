@@ -253,8 +253,8 @@ public:
 	HD constexpr subarray_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: subarray_ptr{other->data_elements(), other->layout()} {}
 
-	// subarray_ptr(subarray_ptr      &&) noexcept = default;
-	subarray_ptr(subarray_ptr const& )          = default;
+	subarray_ptr(subarray_ptr const& ) noexcept  = default;
+	subarray_ptr(subarray_ptr      && other) noexcept = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
 
 	HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
 		if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
@@ -265,14 +265,14 @@ public:
 		return *this;
 	}
 
-	// HD constexpr auto operator=(subarray_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-	// -> subarray_ptr& {
-	//  if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
-	//      return *this;
-	//  }
-	//  operator=(other);
-	//  return *this;
-	// }
+	HD constexpr auto operator=(subarray_ptr&& other) noexcept  // TODO(correaa) remove move constructor to remove this move assignment
+	-> subarray_ptr& {
+		if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
+			return *this;
+		}
+		operator=(other);
+		return *this;
+	}
 
 	HD constexpr explicit operator bool() const {return base();}
 
