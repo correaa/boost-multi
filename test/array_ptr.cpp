@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	BOOST_REQUIRE( arr_ptr2 == arr_ptr );
 	BOOST_REQUIRE( !(arr_ptr != arr_ptr) );
 
-	auto& arr_ptr2_ref = arr_ptr2;
+	auto const& arr_ptr2_ref = arr_ptr2;
 	arr_ptr2 = arr_ptr2_ref;
 
 	auto const& carr2 = arr[2];
