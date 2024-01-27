@@ -20,6 +20,8 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	};
 	BOOST_REQUIRE(  arr[2] ==  arr[2] );
 	BOOST_REQUIRE( &arr[2] == &arr[2] );
+	BOOST_REQUIRE( &arr[2] != &(arr[2]({0, 2})) );
+	BOOST_REQUIRE( !( &arr[2] == &std::as_const(arr)[2]({0, 2})) );
 	BOOST_REQUIRE( &arr[2] == &fwd_array(arr[2]) );
 	BOOST_REQUIRE( &fwd_array(arr[2]) == &arr[2] );
 
