@@ -132,3 +132,40 @@ BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort) {
 	std::stable_sort(begin(d2D_ref.rotated()), end(d2D_ref.rotated()));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
 }
+
+BOOST_AUTO_TEST_CASE(lexicographical_compare) {
+	multi::array<char, 1> name1 = {'a', 'b', 'c'};
+	multi::array<char, 1> name2 = {'a', 'c', 'c'};
+	BOOST_REQUIRE(name1 != name2 );
+	BOOST_REQUIRE(name1 < name2);
+	BOOST_REQUIRE(name1 <= name2);
+	BOOST_REQUIRE(!(name1 > name2));
+	BOOST_REQUIRE(!(name1 > name2));
+}
+
+BOOST_AUTO_TEST_CASE(lexicographical_compare_offset) {
+	multi::array<char, 1> name1 = {'a', 'b', 'c'};
+	multi::array<char, 1> name2({{1, 4}}, '\0');
+
+	BOOST_REQUIRE(  name2.size() == 3 );
+	BOOST_REQUIRE(( name2.extension() == multi::extension_t<multi::index>{1, 4} ));
+	BOOST_REQUIRE(( name2.extension() == multi::extension_t{multi::index{1}, multi::index{4}} ));
+	BOOST_REQUIRE(( name2.extension() == multi::extension_t{1L, 4L} ));
+	BOOST_REQUIRE(( name2.extension() == multi::extension_t<>{1, 4} ));
+	// BOOST_REQUIRE(( name2.extension() == multi::extension_t{1 , 4 } )); TODO(correaa) solve ambiguity
+
+	name2[1] = 'a';
+	name2[2] = 'b';
+	name2[3] = 'c';
+
+	BOOST_REQUIRE(name2 != name1 );
+
+	BOOST_REQUIRE(name2 <  name1);
+	BOOST_REQUIRE(name2 <= name1);
+
+	BOOST_REQUIRE(!(name2 <  name1));
+	BOOST_REQUIRE(!(name2 <= name1));
+
+	// BOOST_REQUIRE(!(name1 > name2));
+	// BOOST_REQUIRE(!(name1 > name2));
+}
