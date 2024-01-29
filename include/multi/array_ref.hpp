@@ -1015,6 +1015,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
 	constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
+	[[deprecated("is_flattable will be a property of the layout soon")]]
 	constexpr auto is_flattable() const -> bool{
 		return
 			   (this->size() <= 1)
@@ -1024,7 +1025,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	friend constexpr auto flatted(subarray const& self) {return self.flatted();}
 	       constexpr auto flatted()           const& {
-		assert(is_flattable() && "flatted doesn't work for all layouts!");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// assert(is_flattable() && "flatted doesn't work for all layouts!");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<D-1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return subarray<T, D-1, ElementPtr>{new_layout, types::base_};
