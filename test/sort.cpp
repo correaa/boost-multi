@@ -158,13 +158,13 @@ BOOST_AUTO_TEST_CASE(lexicographical_compare_offset) {
 	name2[2] = 'b';
 	name2[3] = 'c';
 
-	BOOST_REQUIRE(name2 != name1 );
+	BOOST_REQUIRE(name2 != name1);
 
 	BOOST_REQUIRE(name2 <  name1);
 	BOOST_REQUIRE(name2 <= name1);
 
-	BOOST_REQUIRE(!(name2 <  name1));
-	BOOST_REQUIRE(!(name2 <= name1));
+	BOOST_REQUIRE(!(name2 >  name1));
+	BOOST_REQUIRE(!(name2 >= name1));
 
 	// BOOST_REQUIRE(!(name1 > name2));
 	// BOOST_REQUIRE(!(name1 > name2));
