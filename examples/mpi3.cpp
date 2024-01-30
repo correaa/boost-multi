@@ -15,19 +15,17 @@ namespace multi = boost::multi;
 void test_1D(mpi3::communicator& comm){
 
 	switch(comm.rank()){
-		case 0:{
+		case 0:
 			multi::array<double, 1> v(100);
 			std::iota(v.begin(), v.end(), 0.0);
 			assert( v.strided(2).size() == 50 and v.strided(2)[9] == 18 );
 			comm.send(v.strided(2).begin(), v.strided(2).end(), 1);
 			break;
-		}
-		case 1:{
+		case 1:
 			multi::array<double, 1> w(50);
 			comm.receive(w.begin(), w.end(), 0);
 			assert( w[9] == 18 );
 			break;
-		}
 		default: assert(0);
 	}
 	return;
