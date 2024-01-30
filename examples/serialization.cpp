@@ -309,6 +309,7 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_static_small){
 }
 
 BOOST_AUTO_TEST_CASE(const test_utility_serialization_2d){
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 	double carr[3][10] = {
 		{ 0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0},
 		{10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0},
