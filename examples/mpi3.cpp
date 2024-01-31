@@ -146,19 +146,15 @@ void test_3D(mpi3::communicator& comm){
 */
 
 void test_vector_nonpod(mpi3::communicator& comm) {
+	std::vector<std::string> v(10);
 
-	switch(comm.rank()){
-		std::vector<std::string> v(10);
-		case 0:
-			v[2] = "hola";
-			comm.send_n(v.begin(), v.size(), 1);
-			break;
-		case 1:
-			comm.receive_n(v.begin(), v.size(), 0);
-			assert( v[2] == "hola" );
-			break;
-		default: assert(0);
-	}
+	if(comm.rank() == 0) {
+		v[2] = "hola";
+		comm.send_n(v.begin(), v.size(), 1);
+	} else if(comm.rank() == 1) {
+		comm.receive_n(v.begin(), v.size(), 0);
+		assert( v[2] == "hola" );
+	} else { assert(0); }
 
 	return;
 }
