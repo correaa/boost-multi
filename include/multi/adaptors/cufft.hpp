@@ -232,7 +232,7 @@ public:
 		std::sort(which_iodims_.begin() + first_howmany_, which_iodims_.begin() + D, [](auto const& a, auto const& b){return get<1>(a).n > get<1>(b).n;});
 
 		if(first_howmany_ <= D - 1) {
-			if constexpr(std::is_same_v<Alloc, void*>) {
+			if constexpr(std::is_same_v<Alloc, void*>) {  // NOLINT(bugprone-branch-clone) workaround bug in DeepSource
 				cufftSafeCall(::cufftPlanMany(
 					/*cufftHandle *plan*/ &h_,
 					/*int rank*/          dims_end - dims.begin(),
