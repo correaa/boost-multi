@@ -124,7 +124,7 @@ struct tensor : ::tblis::tblis_tensor{
 	std::array<::tblis::len_type   , D> lens_;
 	std::array<::tblis::stride_type, D> strides_;
 	template<class A, std::enable_if_t<not std::is_base_of<tensor, std::decay_t<A>>{}, int> =0>
-	explicit tensor(A&& a) :  // NOLINT(misc-forwarding-reference-overload) for DeepSource
+	explicit tensor(A&& a) :  // NOLINT(bugprone-forwarding-reference-overload) workaround for DeepSource
 		lens_   (std::apply([](auto... s){return std::array<::tblis::len_type   , D>{s...};}, sizes  (a))),
 		strides_(std::apply([](auto... s){return std::array<::tblis::stride_type, D>{s...};}, strides(a)))
 	{
@@ -194,7 +194,7 @@ public:
 
 //	template<class EE> matrix(matrix<EE> const& other) : ::tblis::tblis_matrix
 	template<class A, class = std::enable_if_t<!std::is_same_v<matrix, std::remove_cv_t<std::remove_reference_t<A>>>> >
-	matrix(A&& a) {  // NOLINT(misc-forwarding-reference-overload) for DeepSource
+	matrix(A&& a) {  // NOLINT(bugprone-forwarding-reference-overload) workaround for DeepSource
 		init_matrix<Element>(this, 
 			std::get<0>(a.sizes()), std::get<1>(a.sizes()), const_cast<double*>(a.base()), 
 			std::get<0>(a.strides()), std::get<1>(a.strides())
