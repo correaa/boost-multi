@@ -14,7 +14,8 @@ namespace multi = boost::multi;
 
 void test_1D(mpi3::communicator& comm){
 
-	switch(comm.rank()){
+	auto const rank = comm.rank();
+	switch(rank){
 		case 0:
 			multi::array<double, 1> v(100);
 			std::iota(v.begin(), v.end(), 0.0);
