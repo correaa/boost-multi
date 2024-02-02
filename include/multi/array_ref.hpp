@@ -1320,15 +1320,17 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	friend constexpr auto mbegin(subarray const& self) {return self.mbegin();}
 	friend constexpr auto mend  (subarray const& self) {return self.mend()  ;}
 
+	using       cursor = cursor_t<typename subarray::element_ptr      , D, typename subarray::strides_type>;
+
  private:
-	constexpr auto home_aux() const -> cursor_t<typename subarray::element_ptr, D, typename subarray::strides_type> {
-		return {this->base_, this->strides()};
-	}
+	constexpr auto home_aux() const {return cursor(this->base_, this->strides());}
 
  public:
-	constexpr auto home() const& -> cursor_t<typename subarray::element_const_ptr, D, typename subarray::strides_type> {return home_aux();}
-	constexpr auto home()     && -> cursor_t<typename subarray::element_ptr      , D, typename subarray::strides_type> {return home_aux();}
-	constexpr auto home()      & -> cursor_t<typename subarray::element_ptr      , D, typename subarray::strides_type> {return home_aux();}
+	using const_cursor = cursor_t<typename subarray::element_const_ptr, D, typename subarray::strides_type>;
+
+	constexpr auto home() const& -> const_cursor {return home_aux();}
+	constexpr auto home()     && ->       cursor {return home_aux();}
+	constexpr auto home()      & ->       cursor {return home_aux();}
 
 	template<class It> constexpr auto assign(It first) & -> It {adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
 	template<class It> constexpr auto assign(It first)&& -> It {return assign(first);}
