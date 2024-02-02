@@ -7,7 +7,7 @@
 #include "../adaptors/../array.hpp"
 #include "../adaptors/../config/NODISCARD.hpp"
 
-#include "../adaptors/cuda.hpp"
+// #include "../adaptors/cuda.hpp"
 
 #include<tuple>
 #include<array>
