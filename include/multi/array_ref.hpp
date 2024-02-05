@@ -1,10 +1,10 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #ifndef MULTI_ARRAY_REF_HPP_
 #define MULTI_ARRAY_REF_HPP_
 #pragma once
 
-#include "../multi/memory/pointer_traits.hpp"
+#include "../multi/detail/pointer_traits.hpp"
 #include "../multi/utility.hpp"
 
 #include "../multi/detail/adl.hpp"

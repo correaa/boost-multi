@@ -11,7 +11,7 @@
 
 #include "../blas/complex_traits.hpp"
 
-#include "../../memory/pointer_traits.hpp"
+#include "../../detail/pointer_traits.hpp"
 
 #include "numeric/is_complex.hpp"
 
