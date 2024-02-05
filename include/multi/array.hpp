@@ -1,4 +1,4 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #ifndef MULTI_ARRAY_HPP_
 #define MULTI_ARRAY_HPP_
