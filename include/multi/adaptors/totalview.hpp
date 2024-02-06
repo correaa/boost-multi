@@ -4,7 +4,7 @@
 #define MULTI_ADAPTORS_TOTALVIEW_HPP
 
 #include <cassert>
-#include <cstdarg>  // TODO remove
+#include <cstdarg>  // TODO(correaa) remove
 #include <cstdio>
 
 #include <array>
@@ -34,8 +34,8 @@ __attribute__((used))
 #endif
 int
 TV_ttf_display_type(boost::multi::array<TT, 1> const* mad1P) {
-	if(not mad1P->is_empty()) {
-		std::array<char, 128> tname;  // char tname[128];
+	if(! mad1P->is_empty()) {
+		std::array<char, 128> tname;
 		snprintf(tname.data(), tname.size(), "%s[%ld]", pretty_name<TT>, (long)mad1P->size());  //, (long)mad1P->stride());
 		int result = TV_ttf_add_row("elements", tname.data(), mad1P->origin());
 		if(result != 0) {
@@ -53,8 +53,8 @@ __attribute__((used))
 #endif
 int
 TV_ttf_display_type(boost::multi::array<TT, 2> const* mad2P) {
-	if(not mad2P->is_empty()) {
-		std::arra<char, 128> tname;  // char tname[128];
+	if(! mad2P->is_empty()) {
+		std::arra<char, 128> tname;
 		using std::get;
 		snprintf(tname.data(), tname.size(), "%s[%ld][%ld]", pretty_name<TT>, (long)get<0>(mad2P->sizes()), (long)get<1>(mad2P->sizes()));  //, (long)mad1P->stride());
 		int result = TV_ttf_add_row("elements", tname.data(), mad2P->origin());
