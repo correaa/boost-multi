@@ -87,12 +87,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using typename layout_t::strides_type;
 	// using          layout_t::strides     ;
 
- public:
 	auto strides() const { return convertible_tuple<strides_type>(layout_t::strides()); }
 	[[deprecated("BMA backward compatible")]] auto index_bases() const -> std::ptrdiff_t const*;  // = delete;
-	// {
-	//  return convertible_tuple(std::apply([](auto... exts) noexcept {return std::make_tuple(exts.front() ...);}, this->extensions().base()));
-	// }
 
 	using typename layout_t::difference_type;
 
@@ -794,7 +790,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
+	constexpr auto       elements() const&                         {return const_elements_range(this->base(), this->layout());}
 	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
@@ -1623,9 +1619,13 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
 	template<class Archive>
-	auto serialize(Archive& arxiv, unsigned int /*version*/) {
+	auto serialize(Archive& arxiv, unsigned int version) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
+		if(version == 0) {
+			std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
+		} else {
+			std::for_each(this->elements().begin(), this->elements().end(), [&](element& elem) {arxiv & AT    ::make_nvp("elem", elem);});
+		}
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
