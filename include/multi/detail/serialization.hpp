@@ -86,6 +86,8 @@ struct archive_traits<
 	>>;
 
 	template<class T>
+	inline static auto make_nvp  (char const* name, T const& value) noexcept {return cereal::NameValuePair<T const&>{name, value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // TODO(correaa) replace by cereal::make_nvp from cereal/cereal.hpp
+	template<class T>
 	inline static auto make_nvp  (char const* name, T&& value) noexcept {return cereal::NameValuePair<T&>{name, std::forward<T>(value)};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
 	template<class T>
 	inline static auto make_nvp  (char const* name, T&  value) noexcept {return cereal::NameValuePair<T&>{name,                 value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
