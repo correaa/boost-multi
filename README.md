@@ -1615,6 +1615,8 @@ Algorithms are expected to work with oneAPI execution policies as well (not test
 
 The library doesn't have a "pretty" printing facility to display arrays;
 fortunatelly it automatically works with the external library [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
+The fmt library is not a dependency of the Multi library; they simply work well together using the "ranges" part of the formatting library.
+
 This example prints a 2-dimensional subblock of a larger array.
 
 ```cpp
@@ -1644,7 +1646,6 @@ with the output:
 > [3, 4]
 > [6, 7]
 > ```
-
 
 When saving arrays to files, consider using serialization (see section) instead.
 
