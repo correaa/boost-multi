@@ -717,13 +717,13 @@ qmcpack-cuda-12:
 
 sonar:
   stage: build
-  cache:
-    policy: pull-push
-    key: "${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - build-wrapper/
-      - sonar-scanner/
-      - bw-output/
+  # cache:
+  #   policy: pull-push
+  #   key: "${CI_COMMIT_SHORT_SHA}"
+  #   paths:
+  #     - build-wrapper/
+  #     - sonar-scanner/
+  #     - bw-output/
   script:
     # Run the build inside the build wrapper
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl unzip g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
@@ -739,12 +739,11 @@ sonar:
     - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     - build-wrapper/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/ --verbose
     - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output
-  only:
-    - merge_requests
-    - master
-    - main
-    - develop
-  needs: ["g++"]
+  # only:
+  #   - merge_requests
+  #   - master
+  #   - main
+  #   - develop
 
 # sonarcloud-check:
 #   stage: .post
