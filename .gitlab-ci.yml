@@ -702,8 +702,8 @@ get-sonar-binaries:
       - build-wrapper/
       - sonar-scanner/
   script:
-    # Download sonar-scanner
     - apt-get -qq update && apt-get -qq install curl unzip
+    # Download sonar-scanner
     - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
     - unzip -o sonar-scanner.zip
     - mv sonar-scanner-5.0.1.3006-linux sonar-scanner
@@ -729,6 +729,10 @@ build:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl unzip g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build
+    # Download sonar-scanner
+    - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
+    - unzip -o sonar-scanner.zip
+    - mv sonar-scanner-5.0.1.3006-linux sonar-scanner
       # Download build-wrapper
     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
