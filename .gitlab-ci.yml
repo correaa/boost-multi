@@ -715,7 +715,7 @@ qmcpack-cuda-12:
 #     - master
 #     - develop
 
-build:
+sonar:
   stage: build
   cache:
     policy: pull-push
@@ -744,6 +744,7 @@ build:
     - master
     - main
     - develop
+  needs: ["g++"]
 
 # sonarcloud-check:
 #   stage: .post
