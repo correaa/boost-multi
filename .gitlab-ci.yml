@@ -733,7 +733,7 @@ build:
     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
-    - build-wrapper/build-wrapper --out-dir bw-output cmake --build . --verbose --config Release
+    - build-wrapper/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build . --verbose --config Release
   only:
     - merge_requests
     - master
