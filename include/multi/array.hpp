@@ -432,7 +432,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// constexpr auto rotated()     && {return std::move(*this).rotated_aux();}
 
 	// friend constexpr auto rotated(static_array&       self) -> decltype(auto) {return self.rotated();}
-	// friend /*constexpr*/ auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
+	// friend constexpr auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
 
 	// constexpr auto unrotated() const& -> subarray<T, D, typename static_array::element_ptr> const {
 	//  typename static_array::layout_t new_layout = this->layout();
