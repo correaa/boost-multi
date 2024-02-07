@@ -27,9 +27,11 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
 link_directories(${Boost_LIBRARY_DIRS})
 
+find_package(LAPACK REQUIRED)
+
 # find_package(BLAS REQUIRED)
 
-set(BLA_VENDOR OpenBLAS)
+# set(BLA_VENDOR OpenBLAS)
 # set(BLA_VENDOR Intel10_64lp) find_package(BLAS) if(BLAS_FOUND) # in some systems with MKL, regular BLAS headers need to be found for it to work message("Multi/BLAS: MKL environment detected") add_definitions(-DRETURN_BY_STACK) else()
 # message("Multi/BLAS: MKL environment not detected, looking for other BLAS") unset(BLA_VENDOR)
 find_package(BLAS REQUIRED)
@@ -43,10 +45,10 @@ find_path(
 	$ENV{BLAS_HOME}/include
 )
 
-include_directories(../../../..)
+include_directories(../../../../../include)
 
 link_libraries(${BLAS_LIBRARIES})
-link_libraries(-llapacke)
+#link_libraries(-llapacke)
 
 include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
 
@@ -67,3 +69,7 @@ include(CTest)
 
 add_executable(getrf.cpp.x getrf.cpp)
 add_test(NAME getrf.cpp.x COMMAND ./getrf.cpp.x)
+target_link_libraries(getrf.cpp.x LAPACK::LAPACK)
+
+# add_executable(syev.cpp.x syev.cpp)
+# add_test(NAME syev.cpp.x COMMAND ./syev.cpp.x)
