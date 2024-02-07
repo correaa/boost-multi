@@ -703,7 +703,7 @@ get-sonar-binaries:
       - sonar-scanner/
   script:
     # Download sonar-scanner
-    - apt-get -qq update && apt-get -qq install curl
+    - apt-get -qq update && apt-get -qq install curl unzip
     - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
     - unzip -o sonar-scanner.zip
     - mv sonar-scanner-5.0.1.3006-linux sonar-scanner
