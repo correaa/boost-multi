@@ -13,6 +13,8 @@ variables:
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
   RT_VERSION: "0.1"
   NVIDIA_DISABLE_REQUIRE: 1
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
 
 g++:  # debian-stable: default is gcc 12 as of Dec 2023
   stage: build
@@ -685,3 +687,76 @@ qmcpack-cuda-12:
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
   needs: ["qmcpack","cuda"]
+
+
+# sonar cloud
+# from instructions
+# another example here: https://github.com/sonarsource-cfamily-examples/linux-cmake-gitlab-ci-sc/blob/main/.gitlab-ci.yml
+
+# get-sonar-binaries:
+#   stage: .pre
+#   cache:
+#     policy: push
+#     key: "${CI_COMMIT_SHORT_SHA}"
+#     paths:
+#       - build-wrapper/
+#       - sonar-scanner/
+#   script:
+#     - apt-get -qq update && apt-get -qq install curl unzip
+#     # Download sonar-scanner
+#     - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
+#     - unzip -o sonar-scanner.zip
+#     - mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+#     # Download build-wrapper
+#     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
+#     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
+#   only:
+#     - merge_requests
+#     - master
+#     - develop
+
+sonar:
+  stage: build
+  # cache:
+  #   policy: pull-push
+  #   key: "${CI_COMMIT_SHORT_SHA}"
+  #   paths:
+  #     - build-wrapper/
+  #     - sonar-scanner/
+  #     - bw-output/
+  script:
+    # Run the build inside the build wrapper
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl unzip g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - g++ --version
+    - mkdir build
+    # Download sonar-scanner
+    - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
+    - unzip -o sonar-scanner.zip
+    - mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+      # Download build-wrapper
+    - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
+    - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    - build-wrapper/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/ --verbose
+    - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output
+  # only:
+  #   - merge_requests
+  #   - master
+  #   - main
+  #   - develop
+
+# sonarcloud-check:
+#   stage: .post
+#   cache:
+#     policy: pull
+#     key: "${CI_COMMIT_SHORT_SHA}"
+#     paths:
+#       - build-wrapper/
+#       - sonar-scanner/
+#       - bw-output/
+#   script:
+#     - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output
+#   only:
+#     - merge_requests
+#     - master
+#     - develop

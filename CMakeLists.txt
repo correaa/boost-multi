@@ -15,10 +15,6 @@ cmake_minimum_required(VERSION 3.16)
 # target_link_libraries(${PROJECT_NAME} boost-multi::boost-multi)
 # ~~~
 
-if(EXISTS "CMakeLists.txt")
-  message(FATAL_ERROR "You probably don't want to run CMake in a directory with CMakeLists.txt")
-endif()
-
 project(
   multi
   HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi"
