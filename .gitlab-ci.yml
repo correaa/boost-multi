@@ -693,27 +693,27 @@ qmcpack-cuda-12:
 # from instructions
 # another example here: https://github.com/sonarsource-cfamily-examples/linux-cmake-gitlab-ci-sc/blob/main/.gitlab-ci.yml
 
-get-sonar-binaries:
-  stage: .pre
-  cache:
-    policy: push
-    key: "${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - build-wrapper/
-      - sonar-scanner/
-  script:
-    - apt-get -qq update && apt-get -qq install curl unzip
-    # Download sonar-scanner
-    - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
-    - unzip -o sonar-scanner.zip
-    - mv sonar-scanner-5.0.1.3006-linux sonar-scanner
-    # Download build-wrapper
-    - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
-    - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
-  only:
-    - merge_requests
-    - master
-    - develop
+# get-sonar-binaries:
+#   stage: .pre
+#   cache:
+#     policy: push
+#     key: "${CI_COMMIT_SHORT_SHA}"
+#     paths:
+#       - build-wrapper/
+#       - sonar-scanner/
+#   script:
+#     - apt-get -qq update && apt-get -qq install curl unzip
+#     # Download sonar-scanner
+#     - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
+#     - unzip -o sonar-scanner.zip
+#     - mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+#     # Download build-wrapper
+#     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
+#     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
+#   only:
+#     - merge_requests
+#     - master
+#     - develop
 
 build:
   stage: build
@@ -742,20 +742,21 @@ build:
   only:
     - merge_requests
     - master
+    - main
     - develop
 
-sonarcloud-check:
-  stage: .post
-  cache:
-    policy: pull
-    key: "${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - build-wrapper/
-      - sonar-scanner/
-      - bw-output/
-  script:
-    - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output
-  only:
-    - merge_requests
-    - master
-    - develop
+# sonarcloud-check:
+#   stage: .post
+#   cache:
+#     policy: pull
+#     key: "${CI_COMMIT_SHORT_SHA}"
+#     paths:
+#       - build-wrapper/
+#       - sonar-scanner/
+#       - bw-output/
+#   script:
+#     - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output
+#   only:
+#     - merge_requests
+#     - master
+#     - develop
