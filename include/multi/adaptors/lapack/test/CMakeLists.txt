@@ -67,3 +67,6 @@ include(CTest)
 
 add_executable(getrf.cpp.x getrf.cpp)
 add_test(NAME getrf.cpp.x COMMAND ./getrf.cpp.x)
+
+add_executable(geqrf.cpp.x geqrf.cpp)
+add_test(NAME geqrf.cpp.x COMMAND ./geqrf.cpp.x)
