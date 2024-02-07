@@ -69,7 +69,6 @@ include(CTest)
 
 add_executable(getrf.cpp.x getrf.cpp)
 add_test(NAME getrf.cpp.x COMMAND ./getrf.cpp.x)
-target_link_libraries(getrf.cpp.x LAPACK::LAPACK)
 
-# add_executable(syev.cpp.x syev.cpp)
-# add_test(NAME syev.cpp.x COMMAND ./syev.cpp.x)
+add_executable(geqrf.cpp.x geqrf.cpp)
+add_test(NAME geqrf.cpp.x COMMAND ./geqrf.cpp.x)
