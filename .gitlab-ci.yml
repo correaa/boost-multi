@@ -726,9 +726,12 @@ build:
       - bw-output/
   script:
     # Run the build inside the build wrapper
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl unzip g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
+      # Download build-wrapper
+    - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
+    - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
     - build-wrapper/build-wrapper --out-dir bw-output cmake --build . --verbose --config Release
   only:
