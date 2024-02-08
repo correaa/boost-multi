@@ -18,7 +18,7 @@ using ::core::syev;
 
 template<class Array2D, class Array1D, class Array1DW>
 auto syev(blas::filling uplo, Array2D&& a, Array1D&& w, Array1DW&& work)
-->decltype(syev('V', uplo==blas::filling::upper?'L':'U', size(a), base(a), stride(a), base(w), base(work), size(work), std::declval<int&>()), a({0l, 1l}, {0l, 1l}))
+->decltype(syev('V', uplo==blas::filling::upper?'L':'U', size(a), base(a), stride(a), base(w), base(work), size(work), std::declval<int&>()), a({0L, 1L}, {0L, 1L}))
 {
 	assert( size(work) >= std::max(1L, 3*size(a)-1L) );
 	assert( size(a) == size(w) );
