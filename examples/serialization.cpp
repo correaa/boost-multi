@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework -lstdc++fs -lboost_serialization -lboost_iostreams&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -I../include -lboost_unit_test_framework -lstdc++fs -lboost_serialization -lboost_iostreams&&$0x&&rm $0x;exit
 #endif
 // Copyright 2018-2024 Alfredo A. Correa
 
@@ -55,7 +55,13 @@ struct watch : private std::chrono::high_resolution_clock{
 	}
 };
 
-BOOST_AUTO_TEST_CASE(const multi_serialization_static_small_xml){
+BOOST_AUTO_TEST_CASE(print_xml) {
+	multi::array<std::string, 2> A{{"w", "x"}, {"y", "z"}};
+    auto xoa = boost::archive::xml_oarchive(std::cout, boost::archive::no_header);
+	xoa << boost::make_nvp("A", A);
+}
+
+BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml) {
 	multi::static_array<double, 2> d2D({10, 10});
 	std::mt19937 eng{std::random_device{}()};
 	auto gen = [&](){return std::uniform_real_distribution<>{}(eng);};
@@ -86,7 +92,7 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_static_small_xml){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(const multi_serialization_small_xml){
+BOOST_AUTO_TEST_CASE(multi_serialization_small_xml) {
 	multi::array<double, 2> d2D({10, 10});
 	std::mt19937 e{std::random_device{}()};
 //  auto g = std::bind(std::uniform_real_distribution<>{}, e);//
@@ -113,7 +119,7 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_small_xml){
 }
 
 
-BOOST_AUTO_TEST_CASE(const multi_serialization_static_large_xml){
+BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml) {
 
 	multi::static_array<double, 2> d2D({1000, 1000});
 
@@ -135,7 +141,7 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_static_large_xml){
 	fs::remove(filename);
 }
 
-BOOST_AUTO_TEST_CASE(const multi_serialization_static_small){
+BOOST_AUTO_TEST_CASE(multi_serialization_static_small) {
 	{
 		multi::static_array<double, 0> d0D{12.0};
 		std::ofstream ofs{"serialization-static_0D.xml"}; assert(ofs);
@@ -308,7 +314,7 @@ BOOST_AUTO_TEST_CASE(const multi_serialization_static_small){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(const test_utility_serialization_2d){
+BOOST_AUTO_TEST_CASE(test_utility_serialization_2d) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 	double carr[3][10] = {
 		{ 0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0},

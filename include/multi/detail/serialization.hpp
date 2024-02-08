@@ -101,6 +101,8 @@ struct archive_traits<
 		std::size_t c_;
 		template<class Archive>
 		void serialize(Archive& arxiv, const unsigned int /*version*/) {
+			std::for_each_n(p_, c_, [&arxiv](auto& item) {arxiv & make_nvp("item"   , item   );} );
+			#if 0
 			for(std::size_t i = 0; i != c_; ++i) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 				auto& item = p_[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				arxiv &                                        make_nvp("item"   , item   );  // "item" is the name used by Boost.Serialization XML make_array
@@ -109,6 +111,7 @@ struct archive_traits<
 				// arxiv &                                      CEREAL_NVP(           element);
 				// arxiv &                                                            element ;
 			}
+			#endif
 		}
 	};
 
