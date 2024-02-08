@@ -1204,32 +1204,33 @@ Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://
 
 ## Serialization
 
-The capability of serializing arrays is important to save/load data to/from disk and also to communicate values via streams or networks (including MPI).
+The ability of serializing arrays is important to save/load data to/from disk and also to communicate values via streams or networks (including MPI).
 The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
 
 However there are a few libraries that offer a certain common protocol for serialization,
 such as [Boost.Serialization](https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html) and [Cereal](https://uscilab.github.io/cereal/).
-The Multi library is compatible with both of them, and yet it doesn't depend on any of them.
-The user can choose one or the other, or none if serialization is not needed.
+The Multi library is compatible with both of them (and yet it doesn't depend on any of them).
+The user can choose one or the other, or none, if serialization is not needed.
 The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have single code for both.
 Serialization can be binary (efficient) or text-based (human readable).
 
 Here it is a small implementation of save and load functions for array to JSON format with Cereal.
-The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
+The example can be easily adapted to other formats or libraries (XML with Boost.Serialization are commented on the right).
 
 ```cpp
-#include <multi/array.hpp>  // this library
+#include<multi/array.hpp>  // this library
 
-#include <cereal/archives/json.hpp>                // #include <boost/archive/xml_iarchive.hpp>
-                                                   // #include <boost/archive/xml_oarchive.hpp>
+#include<cereal/archives/json.hpp>  // or #include<cereal/archives/xml.hpp>   // #include <boost/archive/xml_iarchive.hpp>
+                                                                              // #include <boost/archive/xml_oarchive.hpp>
 // for serialization of array elements (in this case strings)
-#include <cereal/types/string.hpp>                 // #include <boost/serialization/string.hpp>
+#include<cereal/types/string.hpp>                                             // #include <boost/serialization/string.hpp>
 
 #include<fstream>  // saving to files in example
 
-using input_archive  = cereal::JSONInputArchive ;  // boost::archive::xml_iarchive;
-using output_archive = cereal::JSONOutputArchive;  // boost::archive::xml_oarchive;
-using cereal::make_nvp;                            // boost::serialization::make_nvp;
+using input_archive  = cereal::JSONInputArchive ;  // or ::XMLInputArchive ;  // or boost::archive::xml_iarchive;
+using output_archive = cereal::JSONOutputArchive;  // or ::XMLOutputArchive;  // or boost::archive::xml_oarchive;
+
+using cereal::make_nvp;                                                       // or boost::serialization::make_nvp;
 
 namespace multi = boost::multi;
 
@@ -1266,8 +1267,7 @@ References to subarrays (views) can also be serialized; however, size informatio
 The reasoning is that references to subarrays cannot be resized in their number of elements if there is a size mismatch during deserialization.
 Therefore, array views should be deserialized as other array views, with matching sizes.
 
-The output JSON file of the previous example looks like this.
-(The XML would have a similar structure.)
+The output JSON file created by Cereal in the previous example looks like this.
 
 ```json
 {
@@ -1295,6 +1295,7 @@ The output JSON file of the previous example looks like this.
     }
 }
 ```
+(The Boost XML output would have a similar structure.)
 
 Large datasets tend to be serialized slowly for archives with heavy formatting.
 Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array of with random `double`s.
