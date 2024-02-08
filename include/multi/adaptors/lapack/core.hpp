@@ -93,7 +93,7 @@ namespace core{
 
 using lapack_int = int;
 
-int getrf(lapack_int m, lapack_int n, double* A, lapack_int lda, int* ipiv){
+inline int getrf(lapack_int m, lapack_int n, double* A, lapack_int lda, int* ipiv) {  // TODO(correaa) make into a template, then remove inline
 	assert( m >= 0 );
 	assert( n >= 0 );
 	assert( lda >= std::max(lapack_int{1}, m) );
@@ -103,7 +103,7 @@ int getrf(lapack_int m, lapack_int n, double* A, lapack_int lda, int* ipiv){
 	return info;
 }
 
-void getrs(char trans, lapack_int const n, lapack_int const nrhs, double const* A, lapack_int const lda, int const* ipiv, double* B, lapack_int const ldb){
+inline void getrs(char trans, lapack_int const n, lapack_int const nrhs, double const* A, lapack_int const lda, int const* ipiv, double* B, lapack_int const ldb) {  // TODO(correaa) make into a template, then remove inline
 	assert( trans == 'T' or trans == 'N' or trans == 'C' );
 	assert( n >= 0 );
 	assert( nrhs >= 0 );
