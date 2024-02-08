@@ -5,6 +5,7 @@
 
 #include<algorithm>  // for std::for_each
 #include<cstdint>    // for std::uint32_t
+#include<string>
 
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace archive {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
