@@ -5,6 +5,7 @@
 
 #include<algorithm>  // for std::for_each
 #include<cstdint>    // for std::uint32_t
+// #include<string>
 
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace archive {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
@@ -85,12 +86,14 @@ struct archive_traits<
 		|| std::is_base_of_v<cereal:: InputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
 	>>;
 
-//	template<class T>
-//	inline static auto make_nvp  (char const* name, T const& value) noexcept {return cereal::NameValuePair<T const&>{name, value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // TODO(correaa) replace by cereal::make_nvp from cereal/cereal.hpp
+//  template<class T>
+//  inline static auto make_nvp  (char const* name, T const& value) noexcept {return cereal::NameValuePair<T const&>{name, value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // TODO(correaa) replace by cereal::make_nvp from cereal/cereal.hpp
+	// template<class T>
+	// inline static auto make_nvp  (std::string const& name, T&& value) noexcept {return cereal::NameValuePair<T>{name.c_str(), std::forward<T>(value)};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
 	template<class T>
 	inline static auto make_nvp  (char const* name, T&& value) noexcept {return cereal::NameValuePair<T>{name, std::forward<T>(value)};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
-//	template<class T>
-//	inline static auto make_nvp  (char const* name, T&  value) noexcept {return cereal::NameValuePair<T&>{name,                 value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
+//  template<class T>
+//  inline static auto make_nvp  (char const* name, T&  value) noexcept {return cereal::NameValuePair<T&>{name,                 value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
 
 	template<class T>
 	struct array_wrapper {
