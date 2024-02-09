@@ -57,8 +57,9 @@ struct watch : private std::chrono::high_resolution_clock{
 
 BOOST_AUTO_TEST_CASE(print_xml) {
 	multi::array<std::string, 2> A{{"w", "x"}, {"y", "z"}};
-    auto xoa = boost::archive::xml_oarchive(std::cout, boost::archive::no_header);
-	xoa << boost::make_nvp("A", A);
+	auto&& aa = A();
+	boost::archive::xml_oarchive(std::cout, boost::archive::no_header)
+		<< boost::make_nvp("A", A());
 }
 
 BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml) {
