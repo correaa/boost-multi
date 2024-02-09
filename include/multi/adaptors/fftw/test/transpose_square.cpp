@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
 
@@ -27,8 +26,7 @@ class watch : private std::chrono::high_resolution_clock {
 	time_point start = now();
 
  public:
-	template<class String>
-	explicit watch(String&& label) : label{std::forward<String>(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
+	explicit watch(std::string label) : label{std::move(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
 	watch(watch const&) = delete;
 	watch(watch&&) = delete;
 

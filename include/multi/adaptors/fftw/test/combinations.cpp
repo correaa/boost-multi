@@ -29,7 +29,7 @@ class watch : private std::chrono::high_resolution_clock {
 	time_point start_ = now();
 
  public:
-	explicit watch(std::string label) : label_{std::move(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
+	explicit watch(std::string label) : label_{std::move(label)} {}
 
 	watch(watch const&) = delete;
 	watch(watch&&) = delete;
