@@ -160,16 +160,15 @@ namespace serialization {
 // }
 
 template<class T> // , class = std::enable_if_t<std::is_same_v<T&&, T&>> >
-auto make_nvp(const char* name, T&& value) {
+inline auto make_nvp(const char* name, T&& value) {
 	return boost::serialization::make_nvp(name, value);
 }
 
 }  // end namespace serialization
 
 template<class T> // , class = std::enable_if_t<std::is_same_v<T&&, T&>> >
-inline const nvp<T>
-make_nvp(const char* name, T&& value) noexcept {
-	return nvp<T&>(name, value);
+inline auto make_nvp(const char* name, T&& value) noexcept {
+	return make_nvp(name, value);
 }
 
 }  // end namespace boost

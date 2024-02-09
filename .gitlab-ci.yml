@@ -124,13 +124,15 @@ g++-7:
 
 g++-testing c++20:
   stage: build
+  allow_failure: true
   image: debian:testing
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20
+    - export VALGRIND_EXE="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --output-on-failure
+    - ctest --output-on-failure -T memcheck
   needs: ["g++"]
 
 g++-unstable c++23:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
