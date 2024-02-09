@@ -166,10 +166,11 @@ inline auto make_nvp(const char* name, T&& value) {
 
 }  // end namespace serialization
 
-template<class T> // , class = std::enable_if_t<std::is_same_v<T&&, T&>> >
-inline auto make_nvp(const char* name, T&& value) noexcept {
-	return make_nvp(name, value);
-}
+using boost::serialization::make_nvp;
+// template<class T> // , class = std::enable_if_t<std::is_same_v<T&&, T&>> >
+// inline auto make_nvp(const char* name, T&& value) noexcept {
+//  return make_nvp(name, value);
+// }
 
 }  // end namespace boost
 
