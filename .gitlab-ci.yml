@@ -122,9 +122,8 @@ g++-7:
     - ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
 
-g++-testing c++20:
+g++-testing c++20 memcheck:
   stage: build
-  allow_failure: true
   image: debian:testing
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
