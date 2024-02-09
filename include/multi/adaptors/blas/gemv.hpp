@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_GEMV_HPP
 #define MULTI_ADAPTORS_BLAS_GEMV_HPP
@@ -148,7 +147,7 @@ class gemv_range {
 	: alpha_{alpha}
 	, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}
 	, v_first_{std::move(v_first)}
-	, ctxt_{std::forward<Context>(ctxt)} {
+	, ctxt_{std::move(ctxt)} {
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	using iterator = gemv_iterator<Scalar, It2D, It1D, Context>;
