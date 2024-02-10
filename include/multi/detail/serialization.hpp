@@ -6,6 +6,7 @@
 #include<algorithm>  // for std::for_each
 #include<cstdint>    // for std::uint32_t
 // #include<string>
+#include<type_traits>
 
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace archive {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
@@ -51,13 +52,18 @@ struct archive_traits {
 
 template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1) , int> =0>
 auto operator>>(Archive& arxiv, MA&& self)  // this is for compatibility with Archive type
-->decltype(arxiv>> self) {
-	return arxiv>> self; }
+->decltype(arxiv>> static_cast<MA&>(std::forward<MA>(self))) {
+	return arxiv>> static_cast<MA&>(std::forward<MA>(self)); }
+
+template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1) , int> =0>
+auto operator<<(Archive& arxiv, MA&& self)  // this is for compatibility with Archive type
+->decltype(arxiv<< static_cast<MA&>(std::forward<MA>(self))) {
+	return arxiv<< static_cast<MA&>(std::forward<MA>(self)); }
 
 template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1), int> =0>
 auto operator& (Archive& arxiv, MA&& self)  // this is for compatibility with Archive type
-->decltype(arxiv& self) {
-	return arxiv& self; }
+->decltype(arxiv & static_cast<MA&>(std::forward<MA>(self))) {
+	return arxiv & static_cast<MA&>(std::forward<MA>(self)); }
 
 template<class Ar>
 struct archive_traits<Ar, typename std::enable_if_t<std::is_base_of_v<boost::archive::detail::common_oarchive<Ar>, Ar> || std::is_base_of_v<boost::archive::detail::common_iarchive<Ar>, Ar>>> {
@@ -153,7 +159,19 @@ namespace serialization {
 //   ar & multi::archive_traits<Archive>::make_nvp("data_elements", multi::archive_traits<Archive>::make_array(boost::multi::data_elements(arr), static_cast<std::size_t>(boost::multi::num_elements(arr))));
 // }
 
+template<class T> // , class = std::enable_if_t<std::is_same_v<T&&, T&>> >
+inline auto make_nvp(const char* name, T&& value) {
+	return boost::serialization::make_nvp(name, value);
+}
+
 }  // end namespace serialization
+
+using boost::serialization::make_nvp;
+// template<class T> // , class = std::enable_if_t<std::is_same_v<T&&, T&>> >
+// inline auto make_nvp(const char* name, T&& value) noexcept {
+//  return make_nvp(name, value);
+// }
+
 }  // end namespace boost
 
 #endif  // MULTI_DETAIL_SERIALIZATION_HPP_
