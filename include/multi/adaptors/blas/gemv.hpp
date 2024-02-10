@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_GEMV_HPP
 #define MULTI_ADAPTORS_BLAS_GEMV_HPP
@@ -13,19 +12,23 @@ namespace boost::multi::blas {
 
 using core::gemv;
 
+struct gemv_stride_error : std::logic_error {
+	using std::logic_error::logic_error;
+};
+
 template<class Context, class MIt, class Size, class XIt, class YIt>
 auto gemv_n(Context ctxt, typename MIt::element a, MIt m_first, Size count, XIt x_first, typename MIt::element b, YIt y_first) {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(m_first->stride()==1 or m_first.stride()==1); // blas doesn't implement this case
 	assert( x_first.base() != y_first.base() );
 
-	if constexpr(not is_conjugated<MIt>::value) {
+	if constexpr(! is_conjugated<MIt>::value) {
 		if     (m_first .stride()==1) {ctxt->gemv('N', count, m_first->size(), &a, m_first.base()            , m_first->stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
 		else if(m_first->stride()==1) {ctxt->gemv('T', m_first->size(), count, &a, m_first.base()            , m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
-		else                          {throw std::logic_error{"not BLAS-implemented"};}  // LCOV_EXCL_LINE
+		else                          {throw gemv_stride_error{"not BLAS-implemented"};}  // LCOV_EXCL_LINE
 	} else {
 		if     (m_first->stride()==1) {ctxt->gemv('C', m_first->size(), count, &a, underlying(m_first.base()), m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
 	//  else if(m_first. stride()==1) {assert(0);} // not implemented in blas (use cblas?)
-		else                          {throw std::logic_error{"not BLAS-implemented"};}  // LCOV_EXCL_LINE
+		else                          {throw gemv_stride_error{"not BLAS-implemented"};}  // LCOV_EXCL_LINE
 	}
 
 	struct {
@@ -148,7 +151,7 @@ class gemv_range {
 	: alpha_{alpha}
 	, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}
 	, v_first_{std::move(v_first)}
-	, ctxt_{std::forward<Context>(ctxt)} {
+	, ctxt_{std::move(ctxt)} {
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	using iterator = gemv_iterator<Scalar, It2D, It1D, Context>;

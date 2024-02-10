@@ -2710,7 +2710,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	template<class TTN>
 	constexpr auto to_carray() const -> TTN& {
 		check_sizes<TTN>();
-		return reinterpret_cast<TTN&>(*array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return *reinterpret_cast<TTN*>(array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
  public:
