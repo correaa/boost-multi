@@ -18,7 +18,7 @@ using std::begin; using std::end;
 template<class X1D, class A0D>
 auto asum(X1D const& x, A0D&& res)  // NOLINT(readability-identifier-length) x conventional blas name
 //->decltype(asum_n(x.begin(), x.size(), &res)) {
-{   return asum_n(std::begin(x), std::size(x), &std::forward<A0D>(res)); }
+{   return asum_n(std::begin(x), x.size(), &std::forward<A0D>(res)); }
 
 template<class A1D>
 struct asum_ptr {
