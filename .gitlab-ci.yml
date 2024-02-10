@@ -73,14 +73,14 @@ coverage-lcov:
     - ./bin/deepsource report --analyzer test-coverage --key cxx --value-file ./coverage.info
   needs: ["g++"]
 
-g++ cppcheck cpplint:  # debian-stable: gcc 12 as of Dec 2023
+g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
   stage: build
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config valgrind
     - g++ --version
     - mkdir build && cd build
     - export VALGRIND_EXE="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T memcheck
   needs: ["g++"]
@@ -127,18 +127,18 @@ g++-testing c++20:
   stage: build
   image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --output-on-failure -T memcheck
+    - ctest --output-on-failure
   needs: ["g++"]
 
 g++-unstable c++23:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
   image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
