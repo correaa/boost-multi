@@ -25,12 +25,11 @@ using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 class watch : private std::chrono::high_resolution_clock {
-	std::string label;
-	time_point start = now();
+	std::string label_;
+	time_point start_ = now();
 
  public:
-	template<class String>
-	explicit watch(String&& label) : label{std::forward<String>(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
+	explicit watch(std::string label) : label_{std::move(label)} {}
 
 	watch(watch const&) = delete;
 	watch(watch&&) = delete;
@@ -38,8 +37,8 @@ class watch : private std::chrono::high_resolution_clock {
 	auto operator=(watch const&) = delete;
 	auto operator=(watch&&) = delete;
 
-	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
-	~watch() { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
+	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start_).count();}
+	~watch() { std::cerr<< label_ <<": "<< elapsed_sec() <<" sec"<<std::endl; }
 };
 
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
