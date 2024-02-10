@@ -57,7 +57,7 @@ class involuted {
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr explicit involuted(Ref ref, Involution fun) : r_{std::forward<Ref>(ref)}, f_{fun}{}
+	constexpr explicit involuted(Ref ref, Involution fun) : r_{std::move(ref)}, f_{fun} {}  // r_{std::forward<Ref>(ref)}, f_{fun} {}
 	constexpr explicit involuted(Ref ref) : r_{std::forward<Ref>(ref)}, f_{}{}
 
 	auto operator=(involuted const& other) -> involuted& = delete;
