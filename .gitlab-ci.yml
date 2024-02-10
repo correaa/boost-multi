@@ -79,9 +79,10 @@ g++ cppcheck cpplint:  # debian-stable: gcc 12 as of Dec 2023
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
+    - export VALGRIND_EXE="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure -T Test
+    - ctest -j 2 --output-on-failure -T memcheck
   needs: ["g++"]
 
 # g++ cpplint:
@@ -122,13 +123,12 @@ g++-7:
     - ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
 
-g++-testing c++20 memcheck:
+g++-testing c++20:
   stage: build
   image: debian:testing
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
     - mkdir build && cd build
-    - export VALGRIND_EXE="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure -T memcheck
