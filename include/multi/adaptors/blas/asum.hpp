@@ -43,7 +43,7 @@ template<class A1D>
 auto asum(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 	struct ref {
 		A1D const& x_;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members)
-		auto operator&() const& {return asum_ptr<A1D>{&x_};}  // NOLINT(google-runtime-operator) reference type
+		auto operator&() const& {return asum_ptr<A1D>{&x_};}  // NOLINT(google-runtime-operator) reference type //NOSONAR
 		using decay_type = decltype(abs(std::declval<typename A1D::value_type>()));
 		operator decay_type() const {decay_type ret; blas::asum(x_, ret); return ret;}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		auto operator+() const -> decay_type {return operator decay_type();}
