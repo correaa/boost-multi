@@ -43,9 +43,9 @@ template<class A1D>
 auto asum(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 	struct ref {
 		A1D const& x_;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members)
-		auto operator&() const& {return asum_ptr<A1D>{&x_};}  // NOLINT(google-runtime-operator) reference type
+		auto operator&() const& {return asum_ptr<A1D>{&x_};}  // NOLINT(google-runtime-operator) reference type //NOSONAR
 		using decay_type = decltype(abs(std::declval<typename A1D::value_type>()));
-		operator decay_type() const {decay_type ret; blas::asum(x_, ret); return ret;}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		operator decay_type() const {decay_type ret; blas::asum(x_, ret); return ret;}  //NOSONAR // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  allow terse syntax double a = asum(v);
 		auto operator+() const -> decay_type {return operator decay_type();}
 	};
 
@@ -55,14 +55,16 @@ auto asum(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 namespace operators {
 	static constexpr double threshold = 1.0e-12;
 
+	using zero_type = void*****;
+
 	template<class A1D>
-	auto operator==(A1D const& self, [[maybe_unused]] void***** zero) -> bool {
+	auto operator==(A1D const& self, [[maybe_unused]] zero_type zero) -> bool {
 		assert( zero == nullptr );
 		return blas::asum(self) < threshold;
 	}
 
 	template<class A1D>
-	auto operator!=(A1D const& self, [[maybe_unused]] void***** zero) -> bool {
+	auto operator!=(A1D const& self, [[maybe_unused]] zero_type zero) -> bool {
 		assert( zero == nullptr );
 		return blas::asum(self) > threshold;
 	}
