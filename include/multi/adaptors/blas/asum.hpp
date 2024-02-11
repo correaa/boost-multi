@@ -1,8 +1,8 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_ASUM_HPP
 #define MULTI_ADAPTORS_BLAS_ASUM_HPP
+#pragma once
 
 #include "../blas/core.hpp"
 
@@ -18,7 +18,7 @@ using std::begin; using std::end;
 template<class X1D, class A0D>
 auto asum(X1D const& x, A0D&& res)  // NOLINT(readability-identifier-length) x conventional blas name
 //->decltype(asum_n(x.begin(), x.size(), &res)) {
-{   return asum_n(x.begin(), x.size(), &res); }
+{   return asum_n(std::begin(x), x.size(), &std::forward<A0D>(res)); }
 
 template<class A1D>
 struct asum_ptr {
