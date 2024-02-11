@@ -27,7 +27,7 @@ class involuted {
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{std::forward<Ref>(ref)} {}
+	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{ref} {}
 	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return) simulate reference
 		r_ = Involution{}(other);
 		return *this;
