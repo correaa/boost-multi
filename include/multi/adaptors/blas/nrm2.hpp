@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_NRM2_HPP
 #define MULTI_ADAPTORS_BLAS_NRM2_HPP
@@ -25,7 +24,7 @@ auto nrm2_n(It const& x, Size n, A0D res)  // NOLINT(readability-identifier-leng
 template<class A1D, class A0D>
 auto nrm2(A1D const& x, A0D&& res)  // NOLINT(readability-identifier-length) conventional BLAS naming
 //->decltype(nrm2_n(x.begin(), x.size(), &res)) {
-{   return nrm2_n(x.begin(), x.size(), &res); }
+{   return nrm2_n(std::begin(x), x.size(), &res); }
 
 template<class ItX, class Size>
 class nrm2_ptr {
