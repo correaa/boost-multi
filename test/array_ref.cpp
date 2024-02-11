@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 
 	BOOST_REQUIRE_THROW(
 		([&] {
-			double(&other_darr4)[3][3](ref);  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+			double(&other_darr4)[3][3](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 			other_darr4[1][1] += 1.0;
 		}()),
 		std::bad_cast
