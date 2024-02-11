@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
@@ -123,7 +123,9 @@ BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub) {
 
 	{
 		multi::array_ref<double, 2> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-		auto const&                       diag = map.diagonal();
+
+		auto const& diag = map.diagonal();
+
 		BOOST_REQUIRE( diag.begin() != diag.end() );
 		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );  // is this UB?
 	}
@@ -303,8 +305,10 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_from_vector) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector) {
-	std::vector<double>         vec = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};  // std::string NOLINT(fuchsia-default-arguments-calls)
+	std::vector<double> vec = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};  // std::string NOLINT(fuchsia-default-arguments-calls)
+
 	multi::array_ref<double, 2> aref({2, 3}, vec.data());
+
 	BOOST_REQUIRE( &aref[1][0] == &vec[3] );
 }
 
@@ -475,12 +479,13 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 	BOOST_REQUIRE( &other_darr2[1][0] == &darr[1][0] );
 	BOOST_REQUIRE( &other_darr3[1][0] == &darr[1][0] );
 
-	try {
-		double(&other_darr4)[3][3](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-
-		BOOST_REQUIRE( &other_darr4[1][0] == &darr[1][0] );
-	} catch(...) {
-	}
+	BOOST_REQUIRE_THROW(
+		([&] {
+			double(&other_darr4)[3][3](ref);
+			other_darr4[1][1] += 1.0;
+		}()),
+		std::bad_cast
+	);
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
@@ -587,8 +592,9 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
 		{2.0, 3.0},
 	};
 	multi::array_ref<double, 2> d2R(&d2D[0][0], {4, 5});
-	auto&&                      d2B     = d2R();
-	auto&&                      d2B_ref = multi::ref(d2B.begin(), d2B.end());
+
+	auto&& d2B     = d2R();
+	auto&& d2B_ref = multi::ref(d2B.begin(), d2B.end());
 
 	BOOST_REQUIRE(  d2B[0][0]    ==  d2B_ref[0][0] );
 	BOOST_REQUIRE( &d2B[0][0]    == &d2B_ref[0][0] );
@@ -600,10 +606,12 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
-	double                      d1D[5] = {1.0, 2.0, 3.0, 4.0, 5.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	double d1D[5] = {1.0, 2.0, 3.0, 4.0, 5.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+
 	multi::array_ref<double, 1> d1R(&d1D[0], {5});
-	auto&&                      d1B     = d1R();
-	auto&&                      d1B_ref = multi::ref(d1B.begin(), d1B.end());
+
+	auto&& d1B     = d1R();
+	auto&& d1B_ref = multi::ref(d1B.begin(), d1B.end());
 
 	BOOST_REQUIRE( d1B.base()   == d1B_ref.base() );
 	BOOST_REQUIRE( d1B.layout() == d1B_ref.layout() );
@@ -756,6 +764,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		print_me1(*multi::array_ptr<int, 1>{marr.data_elements(), 10});
 
 		auto& alias = marr;
+
 		marr = alias;
 		BOOST_REQUIRE(marr[5] = 99);
 
