@@ -2708,9 +2708,15 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		}
 	}
 	template<class TTN>
-	constexpr auto to_carray() const -> TTN& {
+	constexpr auto to_carray()& -> TTN& {
 		check_sizes<TTN>();
 		return *reinterpret_cast<TTN*>(array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	}
+
+	template<class TTN>
+	constexpr auto to_carray() const -> TTN const& {
+		check_sizes<TTN>();
+		return *reinterpret_cast<TTN const*>(array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
  public:
