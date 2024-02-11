@@ -55,14 +55,16 @@ auto asum(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 namespace operators {
 	static constexpr double threshold = 1.0e-12;
 
+	using zero_type = void*****;
+
 	template<class A1D>
-	auto operator==(A1D const& self, [[maybe_unused]] void***** zero) -> bool {
+	auto operator==(A1D const& self, [[maybe_unused]] zero_type zero) -> bool {
 		assert( zero == nullptr );
 		return blas::asum(self) < threshold;
 	}
 
 	template<class A1D>
-	auto operator!=(A1D const& self, [[maybe_unused]] void***** zero) -> bool {
+	auto operator!=(A1D const& self, [[maybe_unused]] zero_type zero) -> bool {
 		assert( zero == nullptr );
 		return blas::asum(self) > threshold;
 	}
