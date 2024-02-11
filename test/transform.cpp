@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
@@ -27,7 +27,7 @@ class involuted {
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{std::forward<Ref>(ref)} {}
+	constexpr involuted(Involution /*stateless*/, Ref& ref) : r_{ref} {}
 	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return) simulate reference
 		r_ = Involution{}(other);
 		return *this;
@@ -192,9 +192,11 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	}
 
 	{
-		multi::array<double, 1> const arr      = {+0.0, +1.0, +2.0, +3.0, +4.0};
-		multi::array<double, 1>       neg      = {-0.0, -1.0, -2.0, -3.0, -4.0};
-		auto&&                        negd_arr = arr.static_array_cast<double, test::negater<double*>>();
+		multi::array<double, 1> const arr = {+0.0, +1.0, +2.0, +3.0, +4.0};
+		multi::array<double, 1>       neg = {-0.0, -1.0, -2.0, -3.0, -4.0};
+
+		auto&& negd_arr = arr.static_array_cast<double, test::negater<double*>>();
+
 		BOOST_REQUIRE( negd_arr[2] == neg[2] );
 	}
 	{
