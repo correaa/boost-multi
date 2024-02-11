@@ -1,7 +1,8 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_INDEX_RANGE_HPP
 #define MULTI_DETAIL_INDEX_RANGE_HPP
+#pragma once
 
 #include "../../multi/detail/implicit_cast.hpp"
 #include "../../multi/detail/serialization.hpp"
@@ -82,17 +83,26 @@ class range {
 
 	range() = default;
 
-	template<class Range, decltype(
-		detail::implicit_cast<IndexType    >(std::declval<Range&&>().first()),
-		detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
-	)* = nullptr>
+	range(range const&) = default;
+
+	template<class Range,
+		std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, int> =0,
+		decltype(
+			detail::implicit_cast<IndexType    >(std::declval<Range&&>().first()),
+			detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
+		)* = nullptr
+	>
 	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions)
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
-	template<class Range, decltype(
-		detail::explicit_cast<IndexType    >(std::declval<Range&&>().first()),
-		detail::explicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
-	)* = nullptr>
+	template<
+		class Range,
+		std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, int> =0,
+		decltype(
+			detail::explicit_cast<IndexType    >(std::declval<Range&&>().first()),
+			detail::explicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
+		)* =nullptr
+	>
 	constexpr explicit     range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload)
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
