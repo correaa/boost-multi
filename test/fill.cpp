@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 // #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
@@ -93,7 +92,7 @@ BOOST_AUTO_TEST_CASE(fill_member) {
 		{150.0, 16.0, 17.0, 18.0, 19.0},
 		{  5.0,  5.0,  5.0,  5.0,  5.0},
 		{100.0, 11.0, 12.0, 13.0, 14.0},
-		{ 50.0,  6.0,  7.0,  8.0,  9.0}
+		{ 50.0,  6.0,  7.0,  8.0,  9.0},
 	};
 
 	BOOST_REQUIRE(   d2D.elements().size()  == d2D.num_elements()  );
@@ -117,23 +116,23 @@ BOOST_AUTO_TEST_CASE(fill) {
 		{150.0, 16.0, 17.0, 18.0, 19.0},
 		{  5.0,  5.0,  5.0,  5.0,  5.0},
 		{100.0, 11.0, 12.0, 13.0, 14.0},
-		{ 50.0,  6.0,  7.0,  8.0,  9.0}
+		{ 50.0,  6.0,  7.0,  8.0,  9.0},
 	};
 	using std::all_of;
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 5.;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 5.0;}) );
 
 	using std::fill;
-	fill(d2D[1].begin(), d2D[1].end(), 8.);
+	fill(d2D[1].begin(), d2D[1].end(), 8.0);
 
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 8.;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 8.0;}) );
 
 	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 8.);
-	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& elem) {return elem == 8.;}) );
+	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& elem) {return elem == 8.0;}) );
 
 	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.);
-	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) {return elem == 8.;}) );
+	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) {return elem == 8.0;}) );
 
-	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{randdev()}]() mutable {return gauss(gen);};
+	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937_64{randdev()}]() mutable {return gauss(gen);};
 	multi::array<double, 2> r2D({5, 5});
 	std::for_each(begin(r2D), end(r2D), [&](auto&& elem) {std::generate(begin(elem), end(elem), rand);});
 }
