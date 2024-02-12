@@ -56,7 +56,7 @@ extern "C" {
 // cppcheck-suppress unusedStructMember
 using Complex_float  = struct { float  real; float imag; };
 // cppcheck-suppress unusedStructMember
-using Complex_double = struct { double real; float imag; };
+using Complex_double = struct { double real; double imag; };
 
 #define C Complex_float   // _Complex s
 #define Z Complex_double  // _Complex d
