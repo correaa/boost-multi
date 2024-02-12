@@ -64,7 +64,7 @@ template<class T> class randomizer {
 };
 
 template<class T> class randomizer<std::complex<T>> {
-	std::mt19937 gen_;
+	std::mt19937_64 gen_;
 
  public:
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
