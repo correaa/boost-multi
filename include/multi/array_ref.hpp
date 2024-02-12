@@ -22,10 +22,11 @@
 
 #include <algorithm>   // fpr copy_n
 #include <array>
-#include <cstring>     // for memset in reinterpret_cast
-#include <functional>  // for invoke
-#include <iterator>    // for next
-#include <memory>      // for pointer_traits
+#include <cstring>     // for std::memset in reinterpret_cast
+#include <functional>  // for std::invoke
+#include <iterator>    // for std::next
+#include <memory>      // for std::pointer_traits
+#include <new>         // for std::launder
 
 #if(__cplusplus >= 202002L)
 #include <span>
@@ -2710,13 +2711,13 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	template<class TTN>
 	constexpr auto to_carray()& -> TTN& {
 		check_sizes<TTN>();
-		return *reinterpret_cast<TTN*>(array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return *std::launder(reinterpret_cast<TTN*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
 	template<class TTN>
 	constexpr auto to_carray() const -> TTN const& {
 		check_sizes<TTN>();
-		return *reinterpret_cast<TTN const*>(array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return *std::launder(reinterpret_cast<TTN const*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
  public:
