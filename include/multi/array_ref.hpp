@@ -2711,11 +2711,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	template<class TTN>
 	constexpr auto to_carray()& -> TTN& {
 		check_sizes<TTN>();
-	#if(defined(__cpp_lib_launder) and ( __cpp_lib_launder >= 201606L))
+		#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20191114))
 		return *std::launder(reinterpret_cast<TTN*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-	#else
+		#else
 		return *             reinterpret_cast<TTN*>(array_ref::base_) ;  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-	#endif
+		#endif
 	}
 
 	template<class TTN>
