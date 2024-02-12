@@ -1,8 +1,8 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
+#pragma once
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
@@ -54,9 +54,9 @@ extern "C" {
 #define v void
 
 // cppcheck-suppress unusedStructMember
-using Complex_float  = struct { float  real, imag; };
+using Complex_float  = struct { float  real; float imag; };
 // cppcheck-suppress unusedStructMember
-using Complex_double = struct { double real, imag; };
+using Complex_double = struct { double real; float imag; };
 
 #define C Complex_float   // _Complex s
 #define Z Complex_double  // _Complex d
