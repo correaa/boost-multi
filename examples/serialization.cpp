@@ -61,16 +61,19 @@ struct watch : private std::chrono::high_resolution_clock {
 BOOST_AUTO_TEST_CASE(print_xml) {
 	multi::array<std::string, 2> A{
 		{"w", "x"},
-		{"y", "z"}
-                                                                                                   };
+		{"y", "z"},
+	};
 	boost::archive::xml_oarchive(std::cout, boost::archive::no_header)
 		<< boost::make_nvp("A", A());
 }
 
 BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml) {
 	multi::static_array<double, 2> d2D({10, 10});
-	std::mt19937                   eng{std::random_device{}()};
-	auto                           gen = [&]() { return std::uniform_real_distribution<>{}(eng); };
+
+	std::mt19937_64 eng(std::random_device{}());
+
+	auto gen = [&]() { return std::uniform_real_distribution<>{}(eng); };
+
 	std::for_each(begin(d2D), end(d2D), [&](auto&& r) { std::generate(begin(r), end(r), gen); });
 	std::string const filename = "serialization-static-small.xml";
 	{
@@ -103,9 +106,11 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml) {
 
 BOOST_AUTO_TEST_CASE(multi_serialization_small_xml) {
 	multi::array<double, 2> d2D({10, 10});
-	std::mt19937            e{std::random_device{}()};
+	std::mt19937_64         e(std::random_device{}());
+
 	//  auto g = std::bind(std::uniform_real_distribution<>{}, e);//
 	auto g = [&]() { return std::uniform_real_distribution<>{}(e); };
+
 	std::for_each(begin(d2D), end(d2D), [&](auto&& r) { std::generate(begin(r), end(r), g); });
 	std::string const filename = "serialization-small.xml";
 	{
@@ -135,10 +140,11 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml) {
 
 	multi::static_array<double, 2> d2D({1000, 1000});
 
-	auto gen = [e = std::mt19937{std::random_device{}()}]() mutable { return std::uniform_real_distribution<>{}(e); };
+	auto gen = [e = std::mt19937_64(std::random_device{}())]() mutable { return std::uniform_real_distribution<>{}(e); };
 	std::for_each(begin(d2D), end(d2D), [&](auto&& r) { std::generate(begin(r), end(r), gen); });
 
-	watch             w("static_large_xml");
+	watch w("static_large_xml");
+
 	std::string const filename = "serialization-static-large.xml";
 	{
 		std::ofstream ofs{filename};
@@ -159,8 +165,10 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml) {
 BOOST_AUTO_TEST_CASE(multi_serialization_static_small) {
 	{
 		multi::static_array<double, 0> d0D{12.0};
-		std::ofstream                  ofs{"serialization-static_0D.xml"};
+
+		std::ofstream ofs{"serialization-static_0D.xml"};
 		assert(ofs);
+
 		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d0D);
 		fs::remove("serialization-static_0D.xml");
 	}
