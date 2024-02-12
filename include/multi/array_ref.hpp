@@ -2709,7 +2709,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		}
 	}
 
-	template<class T> static auto launder(T* pointer) -> T* {
+	template<class TT> static auto launder(TT* pointer) -> TT* {
 		#if(defined(__cpp_lib_launder) and ( __cpp_lib_launder >= 201606L)) 
 		return std::launder(pointer);
 		#else
