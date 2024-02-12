@@ -1,5 +1,4 @@
- // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2023 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_COPY_HPP
 #define MULTI_ADAPTORS_BLAS_COPY_HPP
@@ -195,7 +194,7 @@ auto copy(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 namespace operators {
 	template<class A1D, class B1D>
 	auto operator<<(A1D&& lhs, B1D const& rhs) -> A1D&& {
-		return boost::multi::blas::copy(rhs, lhs);
+		return boost::multi::blas::copy(rhs, std::forward<A1D>(lhs));
 	}
 }  // end namespace operators
 
