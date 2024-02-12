@@ -49,7 +49,7 @@ class watch : private std::chrono::high_resolution_clock {
 };
 
 template<class T> class randomizer {
-	std::mt19937 gen_;
+	std::mt19937_64 gen_;
 
  public:
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
