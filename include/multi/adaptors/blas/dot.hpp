@@ -2,7 +2,7 @@
 
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
 #define MULTI_ADAPTORS_BLAS_DOT_HPP
-#pragme once
+#pragma once
 
 #include "../blas/core.hpp"
 #include "../blas/numeric.hpp"     // for is_complex
