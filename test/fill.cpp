@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(fill) {
 	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.);
 	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) {return elem == 8.0;}) );
 
-	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937_64{randdev()}]() mutable {return gauss(gen);};
+	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937_64{randdev()}]() mutable {return gauss(gen);};  //NOSONAR
 	multi::array<double, 2> r2D({5, 5});
 	std::for_each(begin(r2D), end(r2D), [&](auto&& elem) {std::generate(begin(elem), end(elem), rand);});
 }
