@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_AXPY_HPP
 #define MULTI_ADAPTORS_BLAS_AXPY_HPP
@@ -37,12 +37,9 @@ auto axpy(Context ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)  // 
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0 )>
 auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 -> decltype(auto)
-//->decltype(/*axpy_n(alpha, x.begin(), x.size(), y.begin()),*/ axpy_n(alpha, x.begin(), size(x), y.begin()), std::forward<Y1D>(y)) 
 {
 	auto ctxtp = blas::default_context_of(x.base());
 	return boost::multi::blas::axpy(ctxtp, alpha, x, std::forward<Y1D>(y));
-//  assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
-//  return axpy_n(ctxtp, alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y);
 }
 
 template<class X1D, class Y1D>
