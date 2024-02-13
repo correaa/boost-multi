@@ -38,9 +38,9 @@ class iterator_facade {
 
 	friend constexpr auto operator!=(self_type const& self, self_type const& other) {return not(self == other);}
 
-	friend constexpr auto operator<=(self_type const& self, self_type const& other) {return (self < other) or (self == other);}
-	friend constexpr auto operator> (self_type const& self, self_type const& other) {return not(self <= other);}
-	friend constexpr auto operator>=(self_type const& self, self_type const& other) {return not(self <  other);}
+	friend constexpr auto operator<=(self_type const& self, self_type const& other) {return (self < other) || (self == other);}
+	friend constexpr auto operator> (self_type const& self, self_type const& other) {return !(self <= other);}
+	friend constexpr auto operator>=(self_type const& self, self_type const& other) {return !(self <  other);}
 
 	       constexpr auto operator-(difference_type n) const {return self_type{self()} -= n;}
 	       constexpr auto operator+(difference_type n) const {return self_type{self()} += n;}
@@ -168,9 +168,9 @@ class range {
 	friend constexpr auto end  (range const& self) {return self.end()  ;}
 
 	friend constexpr auto operator==(range const& self, range const& other) {
-		return (self.empty() and other.empty()) or (self.first_ == other.first_ and self.last_ == other.last_);
+		return (self.empty() && other.empty()) || (self.first_ == other.first_ && self.last_ == other.last_);
 	}
-	friend constexpr auto operator!=(range const& self, range const& other) {return not(self == other);}
+	friend constexpr auto operator!=(range const& self, range const& other) {return !(self == other);}
 
 	[[nodiscard]] constexpr auto find(value_type const& value) const -> range::const_iterator {
 		if(value >= last_ or value < first_) {
@@ -188,7 +188,7 @@ class range {
 		new_first = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}
-	[[nodiscard]] constexpr auto contains(value_type const& value) const {return value >= first_ and value < last_;}
+	[[nodiscard]] constexpr auto contains(value_type const& value) const {return value >= first_ && value < last_;}
 };
 
 template<typename IndexType, typename IndexTypeLast = IndexType>  // , class Plus = std::plus<>, class Minus = std::minus<> >
@@ -330,7 +330,7 @@ template<dimensionality_type D, class Tuple>
 constexpr auto contains(index_extensions<D> const& iex, Tuple const& tup) {
 //  using detail::head;
 //  using detail::tail;
-	return contains(head(iex), head(tup)) and contains(tail(iex), tail(tup));
+	return contains(head(iex), head(tup)) && contains(tail(iex), tail(tup));
 }
 
 }  // end namespace boost::multi
