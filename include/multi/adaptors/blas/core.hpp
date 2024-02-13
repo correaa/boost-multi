@@ -63,17 +63,17 @@ using Complex_double = struct { double real; double imag; };
 
 #if defined(MULTI_BLAS_INT)
 	#if   MULTI_BLAS_INT==32
-		#define INT int32_t
+		using INT = std::int32_t;  // #define INT int32_t
 	#elif MULTI_BLAS_INT==64
-		#define INT int64_t
+		using INT = std::int64_t;  // #define INT int64_t
 	#else
-		#define INT int32_t  // 32bit safe? pesimistic?
+		using INT = std::int32_t;  // #define INT int32_t  // 32bit safe? pesimistic?
 	#endif
 #else
-	#define INT int32_t  // 32bit safe? pesimistic?
+	using INT = std::int32_t;  // #define INT int32_t  // 32bit safe? pesimistic?
 #endif
 
-namespace core{
+namespace core {
 	using size_t = INT;
 	using ssize_t = std::make_signed_t<size_t>;
 }  // end namespace core
