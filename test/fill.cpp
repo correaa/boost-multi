@@ -137,6 +137,7 @@ BOOST_AUTO_TEST_CASE(fill) {
 
 	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937_64(randdev())]() mutable { return gauss(gen); };  // NOSONAR
 
+	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937_64{randdev()}]() mutable {return gauss(gen);};  //NOSONAR
 	multi::array<double, 2> r2D({5, 5});
 	std::for_each(begin(r2D), end(r2D), [&](auto&& elem) { std::generate(begin(elem), end(elem), rand); });
 }
