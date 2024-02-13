@@ -22,7 +22,7 @@ auto dot_n(Context&& ctxt, XIt x_first, Size count, YIt y_first, RPtr rp) {
 		else if constexpr( is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {ctxt->dotc(count, underlying(base(x_first)), stride(x_first), base(y_first), stride(y_first), rp);}
 		else if constexpr( is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {static_assert(!sizeof(XIt*), "not implemented in blas");}
 	} else {
-                                                                            ctxt->dot (count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
+	                                                                       ctxt->dot (count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
 	}
 	struct{XIt x_last; YIt y_last;} ret{x_first + count, y_first + count};
 	return ret;
