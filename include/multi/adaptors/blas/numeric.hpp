@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
@@ -108,11 +107,11 @@ public:
 	friend constexpr auto operator!=(decay_type const& other, involuted const& self) -> bool {
 		return other != self.operator decay_type();}
 
-	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
+	template<class DecayType, std::enable_if_t<! std::is_base_of<involuted, DecayType>{}, int> =0>
 	friend constexpr auto operator==(DecayType const& other, involuted const& self) {
 		return other == self.operator decay_type();
 	}
-	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
+	template<class DecayType, std::enable_if_t<! std::is_base_of<involuted, DecayType>{}, int> =0>
 	friend constexpr auto operator!=(DecayType const& other, involuted const& self) {
 		return other != self.operator decay_type();\
 	}
@@ -270,7 +269,7 @@ template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std:
 };
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,
-	std::enable_if_t<not is_complex_array<A>{}, int> =0>
+	std::enable_if_t<! is_complex_array<A>{}, int> =0>
 auto conj(A&& array) -> A&& {
 	return std::forward<A>(array);
 }
@@ -279,7 +278,7 @@ template<
 	class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, 
 	// typename Ptr=typename D::element_ptr,
 	typename Ptr = std::decay_t<decltype(std::declval<A&&>().base())>,
-	std::enable_if_t<not is_conjugated<A>{} and is_complex_array<A>{}, int> =0
+	std::enable_if_t<! is_conjugated<A>{}  && is_complex_array<A>{}, int> =0
 >
 auto conj(A&& array) -> decltype(auto) {
 	return std::forward<A>(array).template static_array_cast<Elem, conjugater<Ptr>>();
