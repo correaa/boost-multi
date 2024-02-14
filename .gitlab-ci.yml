@@ -727,7 +727,7 @@ sonar:
   #     - bw-output/
   script:
     # Run the build inside the build wrapper
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl unzip g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl unzip g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config gcovr lcov
     - g++ --version
     - mkdir build
     # Download sonar-scanner
@@ -737,9 +737,14 @@ sonar:
       # Download build-wrapper
     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - build-wrapper/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/ --verbose
-    - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output
+    - cd build
+    - ctest -j 1 --output-on-failure -T Test
+    - ctest -j 1 --output-on-failure -T Coverage
+    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+    - cd ..
+    - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output -Dsonar.cfamily.gcov.reportsPath="build/"
   # only:
   #   - merge_requests
   #   - master
