@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #include<boost/test/unit_test.hpp>
 
@@ -27,7 +26,7 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 		class = decltype(boost::multi::detail::implicit_cast<pointer>(std::declval<typename Other::pointer>()))
 	>
 	constexpr          ptr(ptr<Other> const& /*other*/) noexcept {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	constexpr ptr(ptr const& /*other*/) noexcept {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default)
+	constexpr ptr(ptr const& /*other*/) = default;
 
 	// vvv it is important that these two functions are device or device host functions
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
