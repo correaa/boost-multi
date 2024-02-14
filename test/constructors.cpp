@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 
 	using D1 = multi::array<double, 1>;
 
-	void* buf = ::operator new(sizof(D1));
+	void* buf = ::operator new(sizeof(D1));
 	D1* p = new (buf) D1{AA[0]};
 	p->~D1();
 	::operator delete(p);
