@@ -199,9 +199,8 @@ BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 
 	using D1 = multi::array<double, 1>;
 
-	std::array<char, sizeof(D1)> buf{};
-
-	auto* A0P = static_cast<D1*>(static_cast<void*>(buf.data()));
-	new (A0P) D1{AA[0]};
-	A0P->~D1();
+	void* buf = ::operator new(sizof(D1));
+	D1* p = new (buf) D1{AA[0]};
+	p->~D1();
+	::operator delete p;
 }
