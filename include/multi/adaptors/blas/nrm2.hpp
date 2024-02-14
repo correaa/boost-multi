@@ -2,6 +2,7 @@
 
 #ifndef MULTI_ADAPTORS_BLAS_NRM2_HPP
 #define MULTI_ADAPTORS_BLAS_NRM2_HPP
+#pragma once
 
 #include <multi/adaptors/blas/core.hpp>
 
@@ -59,7 +60,7 @@ struct nrm2_ref : private Ptr {
 	using decay_type = decltype(norm(std::declval<typename X::value_type>()));
 	explicit nrm2_ref(X const& x) : Ptr{begin(x), size(x)} {}  // NOLINT(readability-identifier-length) BLAS naming
 
-	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type
+	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type  //NOSONAR
 
 	auto decay() const -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}  // NOLINT(fuchsia-default-arguments-calls) complex
 	operator decay_type()       const {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) to allow terse syntax

@@ -76,9 +76,9 @@ public:
 	constexpr /*plct*/ operator decay_type()     &&{return f_(r_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	constexpr auto operator*(decay_type const& other) const{return f_(r_)*other;}
-	constexpr auto operator&()&& -> decltype(auto){ // NOLINT(google-runtime-operator) : reference-like object
-		return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};
-	}
+	// constexpr auto operator&()&& -> decltype(auto){ // NOLINT(google-runtime-operator) : reference-like object
+	//  return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};
+	// }
 
 	template<class DecayType, class = decltype(std::declval<Ref&>() = (std::declval<Involution&>())(std::declval<DecayType&&>()))>
 	constexpr auto operator=(DecayType&& other)& -> involuted&{
