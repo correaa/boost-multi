@@ -202,5 +202,7 @@ BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 	void* buf = ::operator new(sizeof(D1));
 	D1* pd1 = new (buf) D1{AA[0]};
 	pd1->~D1();
-	::operator delete(p);
+	::operator delete(pd1);
 }
+
+
