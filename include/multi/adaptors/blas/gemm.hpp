@@ -156,7 +156,7 @@ auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_
 template<class Context, class A, class B, class C>
 auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert( size( a) == size( c) );
-	if(not a.is_empty()) {assert( size(~a) == size( b) );}
+	if(! a.is_empty()) {assert( size(~a) == size( b) );}
 	if constexpr(is_conjugated<C>{}) {blas::gemm  (std::forward<Context>(ctx), conj(alpha), conj(a),           conj(b) , conj(beta), conj(c) );}
 	else                             {blas::gemm_n(std::forward<Context>(ctx),      alpha , begin(a), size(a), begin(b),      beta , begin(c));}
 	return std::forward<C>(c);
