@@ -185,7 +185,7 @@ xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 #undef xDOT
 #undef xDOTU
 #undef xDOTC
-#undef xxDOT
+// #undef xxDOT
 #undef xNRM2
 #undef xASUM
 #undef IxAMAX
@@ -271,13 +271,13 @@ xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 #undef  xaxpy
 }  // end namespace core
 
-#undef xrotg
-#undef xrot
-#undef xswap
-#undef xscal
-#undef xcopy
-#undef xaxpy
-#undef xdot
+// #undef xrotg
+// #undef xrot
+// #undef xswap
+// #undef xscal
+// #undef xcopy
+// #undef xaxpy
+// #undef xdot
 
 #ifndef CBLAS_H
 
@@ -352,7 +352,7 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 	ixamax(s)      ixamax(d)       ixamax(c)       ixamax(z)
 } // end namespace core
 
-#undef xnrm2
+// #undef xnrm2
 #undef xasum
 #undef ixamax
 
@@ -413,9 +413,9 @@ namespace core {
 }  // end namespace core
 
 //#undef xgemv
-#undef xger
-#undef xgeru
-#undef xgerc
+// #undef xger
+// #undef xgeru
+// #undef xgerc
 
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
@@ -518,9 +518,9 @@ xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
 
 } // end namespace core
 
-#undef xsyrk
+// #undef xsyrk
 #undef xherk
-#undef xtrsm
+// #undef xtrsm
 
 #undef BC
 
@@ -531,12 +531,12 @@ struct context { // stateless (and thread safe)
 		return core::scal(args...); }
 
 	template<class... As>
-	static auto copy(As... args)
+	static auto copy(As... args) noexcept
 	->decltype(core::copy(args...)) {
 		return core::copy(args...); }
 
 	template<class... As>
-	static auto swap(As... args)
+	static auto swap(As... args) noexcept
 	->decltype(core::swap(args...)) {
 		return core::swap(args...); }
 
