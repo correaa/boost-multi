@@ -22,7 +22,7 @@ struct [[nodiscard]] imaginary {
 
 	using value_type = T;
 
-	//	constexpr explicit imaginary(T value) : value_{value} {}
+	//  constexpr explicit imaginary(T value) : value_{value} {}
 	template<class U>
 	friend constexpr auto operator+(U real, imaginary<U> imag) -> complex<U>;
 	//  constexpr static imaginary i{T{1}};  // NOLINT(clang-diagnostic-error) "constexpr variable cannot have non-literal type"?
@@ -52,11 +52,11 @@ constexpr imaginary<void> I{};  // NOLINT(readability-identifier-length) imagina
 
 namespace literals {
 // constexpr imaginary<double> operator""_i(unsigned long long d) {
-// 	return imaginary<double>{static_cast<double>(d)};
+//  return imaginary<double>{static_cast<double>(d)};
 // }
 
 constexpr auto operator"" _i(long double value) { return imaginary<double>{static_cast<double>(value)}; }
-//	constexpr auto operator""   i(long double value) {return imaginary<double>{static_cast<double>(value)};}
+//  constexpr auto operator""   i(long double value) {return imaginary<double>{static_cast<double>(value)};}
 constexpr auto operator"" _I(long double value) { return imaginary<double>{static_cast<double>(value)}; }
 
 //  constexpr auto operator"" f_i(long double value) {return imaginary<float >{static_cast<float >(value)};}
@@ -93,10 +93,10 @@ struct [[nodiscard]] complex {
 
 	friend constexpr auto conj(complex self) { return complex{self._real, -self._imag}; }
 
-	constexpr auto operator==(complex const& other) const {return _real == other._real and _imag == other._imag;}
-	constexpr auto operator!=(complex const& other) const {return _real != other._real or  _imag != other._imag;}
+	constexpr auto operator==(complex const& other) const {return _real == other._real && _imag == other._imag;}
+	constexpr auto operator!=(complex const& other) const {return _real != other._real || _imag != other._imag;}
 
-//	auto operator=(complex const&) -> complex& = default;
+//  auto operator=(complex const&) -> complex& = default;
 	constexpr auto operator=(real_type re) -> complex& {(*this) = complex{re, real_type{0.0}}; return *this;}
 
 	friend constexpr auto operator-(complex self) {return complex{-self._real, -self._imag};}
@@ -137,7 +137,7 @@ struct [[nodiscard]] complex {
 		// oos = T(1.0) / s;
 
 		// complex<T> quot( ((ars * brs) + (ais * bis)) * oos
-		// 				, ((ais * brs) - (ars * bis)) * oos);
+		//              , ((ais * brs) - (ars * bis)) * oos);
 		// return quot;
 	}
 	friend constexpr auto norm(complex self) {
@@ -149,8 +149,8 @@ struct [[nodiscard]] complex {
 		return sqrt(self._real*self._real + self._real*self._real);  // bad! according to NR
 		// using std::abs;
 		// return self._real > self._imag?
-		// 		 abs(self._real)*sqrt(real_type{1} + (self._imag/self._real)*(self._imag/self._real))
-		// 		:abs(self._imag)*sqrt(real_type{1} + (self._real/self._imag)*(self._real/self._imag))
+		//       abs(self._real)*sqrt(real_type{1} + (self._imag/self._real)*(self._imag/self._real))
+		//      :abs(self._imag)*sqrt(real_type{1} + (self._real/self._imag)*(self._real/self._imag))
 		// ;
 	}
 };

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
@@ -397,7 +397,7 @@ enum sign : decltype(FFTW_FORWARD) {
 	forward  = FFTW_FORWARD,
 };
 
-static_assert(forward != none and none != backward and backward != forward);
+static_assert(forward != none && none != backward && backward != forward);
 
 enum class direction : decltype(FFTW_FORWARD) {
 	backward = FFTW_BACKWARD,
