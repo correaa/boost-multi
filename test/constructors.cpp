@@ -199,9 +199,9 @@ BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 
 	using D1 = multi::array<double, 1>;
 
-	auto* A0P = static_cast<D1*>(std::malloc(sizeof(D1)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc) testing malloc
-	new (A0P) D1{AA[0]};
-	A0P->~D1();  // NOSONAR
-	std::free(A0P);  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc) testing free
+	std::array<char, sizeof(D1)> buf{};
 
+	auto* A0P = static_cast<D1*>(static_cast<void*>(buf.data()));
+	new (A0P) D1{AA[0]};
+	A0P->~D1();
 }
