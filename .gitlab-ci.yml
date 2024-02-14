@@ -740,8 +740,8 @@ sonar:
     - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - build-wrapper/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/ --verbose
     - cd build
-    - ctest --test-dir build/ -j 1 --output-on-failure -T Test
-    - ctest --test-dir build/ -j 1 --output-on-failure -T Coverage
+    - ctest -j 1 --output-on-failure -T Test
+    - ctest -j 1 --output-on-failure -T Coverage
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
     - cd ..
     - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output -Dsonar.cfamily.gcov.reportsPath="build/"
