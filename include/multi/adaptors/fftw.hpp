@@ -317,7 +317,7 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 		/*int                 howmany_rank */ howmany_dims_end - howmany_dims.begin(),
 		/*const fftw_iodim   *howmany_dims */ howmany_dims.data(),
 		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ (in_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) FFTW is taken as non-const while it is really not touched
-		/*fftw_complex       *out          */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double>       *>*/ (out_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast)
+		/*fftw_complex       *out          */                          (reinterpret_cast<fftw_complex      *>(/*static_cast<std::complex<double>       *>*/ (out_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast)
 		sign, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
 	);
 
