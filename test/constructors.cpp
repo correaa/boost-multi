@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(views_are_not_placeable) {
 BOOST_AUTO_TEST_CASE(views_cannot_be_elements) {
 	multi::array<double, 2> const AA = {
 		{1.0, 2.0},
-                                                                                                                                                                                                      {3.0, 4.0}
+                                                                                                                                                                                                      {3.0, 4.0},
                                                                                                    };
 	std::vector<decltype(AA[0])> vv;
 	vv.emplace_back(AA[0]);
@@ -199,9 +199,10 @@ BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 
 	using D1 = multi::array<double, 1>;
 
-	std::array<char, sizeof(D1)> buf{};
-
-	auto* A0P = static_cast<D1*>(static_cast<void*>(buf.data()));
-	new (A0P) D1{AA[0]};
-	A0P->~D1();
+	void* buf = ::operator new(sizeof(D1));
+	D1* pd1 = new (buf) D1{AA[0]};
+	pd1->~D1();
+	::operator delete(buf);
 }
+
+
