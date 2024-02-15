@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS numeric"
 #include<boost/test/unit_test.hpp>
@@ -49,7 +48,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
 
 //  static_assert(    multi::blas::is_complex_array<multi::array<thrust::complex<double>, 2>>{}, "!");
 	static_assert(    blas::is_complex_array<decltype(array)>{} );
-	static_assert(not blas::is_conjugated<decltype(array)>{} );
+	static_assert(! blas::is_conjugated<decltype(array)>{} );
 
 	auto&& conjd_array = blas::conj(array);
 	static_assert( blas::is_conjugated<decltype(conjd_array)>{} );
