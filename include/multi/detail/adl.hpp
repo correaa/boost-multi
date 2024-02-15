@@ -1,4 +1,5 @@
 // Copyright 2020-2024 Alfredo A. Correa
+
 #ifndef MULTI_DETAIL_ADL_HPP
 #define MULTI_DETAIL_ADL_HPP
 #pragma once
@@ -193,9 +194,9 @@ constexpr auto me_to_address(priority<1> /**/, T const& ptr) noexcept
 	return std::pointer_traits<T>::to_address(ptr);
 }
 
-template<class T, std::enable_if_t<std::is_pointer<T>{}, int> = 0>
+template<class T, std::enable_if_t<std::is_pointer<T>{}, int> =0>
 constexpr auto me_to_address(priority<2>/**/, T const& ptr) noexcept -> T {
-    static_assert(not std::is_function_v<T>, "!");
+    static_assert(! std::is_function_v<T>);
     return ptr;
 }
 
@@ -222,18 +223,6 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size c
 	}
 }
 
-// #if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-//  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-//      #pragma nv_diagnostic push
-//      #pragma nv_diag_suppress = code_is_unreachable
-//  #else
-//      #pragma    diagnostic push
-//      #pragma    diag_suppress = code_is_unreachable
-//  #endif
-// #elif defined __NVCOMPILER
-//  #pragma    diagnostic push
-//  #pragma    diag_suppress = code_is_unreachable
-// #endif
 template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
 auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size count)
 -> std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)> {
@@ -257,15 +246,6 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	// LCOV_EXCL_STOP
 	// return current;
 }
-// #if defined __NVCC__
-//  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-//      #pragma nv_diagnostic pop
-//  #else
-//      #pragma    diagnostic pop
-//  #endif
-// #elif defined __NVCOMPILER
-//  #pragma    diagnostic pop
-// #endif
 
 }  // end namespace xtd
 
@@ -325,45 +305,6 @@ constexpr class adl_uninitialized_copy_t {
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
 } adl_uninitialized_copy;
-
-namespace xtd {
-
-//template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
-//auto uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first)
-//->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(*first), d_first)> {
-//  ForwardIt current = d_first;
-//  try {
-//      for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
-//      }
-//  } catch(...) {
-//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          d_first->~Value();
-//      }
-//      throw;
-//  }
-//  return current;
-//}
-
-//template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
-//auto uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
-//->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(std::move(*first)), d_first)> {
-//  ForwardIt current = d_first;
-//  try {
-//      return std::for_each_n(first, count, [&](auto& elem) { ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));; ++current; });
-//      for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));
-//      }
-//  } catch(...) {
-//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          d_first->~Value();
-//      }
-//      throw;
-//  }
-//  return current;
-//}
-
-}  // end namespace xtd
 
 constexpr class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))

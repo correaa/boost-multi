@@ -126,8 +126,8 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D:
 #endif
 template<class A2D, class B2D>
 auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type alpha, A2D const& a, B2D&& b) -> decltype(auto) {  // NOLINT(readability-identifier-length) BLAS naming
-	if constexpr(not is_conjugated<A2D>{}) {return trsm(blas::default_context_of(           a.base() ), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
-	else                                   {return trsm(blas::default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
+	if constexpr(! is_conjugated<A2D>{}) {return trsm(blas::default_context_of(           a.base() ), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
+	else                                 {return trsm(blas::default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 }
 #if defined __NVCC__
 	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
