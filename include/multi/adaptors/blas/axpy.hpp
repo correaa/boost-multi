@@ -53,7 +53,7 @@ auto axpy(Context&& ctxt, X1D const& x, Y1D&& y) -> Y1D&& {  // NOLINT(readabili
 }
 
 template<class Context, class Scale, class ItX>
-struct axpy_iterator {
+class axpy_iterator {
 	Context ctxt_;
 	Scale alpha_;
 	ItX x_begin_;
