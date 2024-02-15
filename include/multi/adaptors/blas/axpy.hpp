@@ -53,12 +53,15 @@ auto axpy(Context&& ctxt, X1D const& x, Y1D&& y) -> Y1D&& {  // NOLINT(readabili
 }
 
 template<class Context, class Scale, class ItX>
-struct axpy_iterator {
+class axpy_iterator {
 	Context ctxt_;
 	Scale alpha_;
 	ItX x_begin_;
 
  public:
+	axpy_iterator(Context ctxt, Scale alpha, ItX x_begin)
+	: ctxt_{ctxt}, alpha_{alpha}, x_begin_{x_begin} {}
+
 	using difference_type = typename std::iterator_traits<ItX>::difference_type;
 	using value_type = typename std::iterator_traits<ItX>::value_type;
 	using pointer = void;
