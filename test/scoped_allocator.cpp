@@ -46,7 +46,7 @@ class allocator1 {
 };
 
 template<class T, class U>
-auto operator!=(allocator1<T> const& self, allocator1<U> const& other) noexcept { return not(self == other); }
+auto operator!=(allocator1<T> const& self, allocator1<U> const& other) noexcept { return ! (self == other); }
 
 template<class T = void>
 class allocator2 {
@@ -85,7 +85,9 @@ class allocator2 {
 };
 
 template<class T, class U>
-auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept { return not(self == other); }
+auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept {
+	return ! (self == other); 
+}
 
 BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 	std::int32_t heap1 = 0;
