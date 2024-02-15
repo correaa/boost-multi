@@ -23,13 +23,13 @@ namespace boost::multi::blas {
 
 	template<class T> struct is_d : decltype(is_d_aux(std::declval<T>())) {using archetype = double;};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
-	template<class C, class=std::enable_if_t<sizeof(C)==sizeof(std::complex<float>) && is_s<decltype(std::declval<C>().real())>{} and is_s<decltype(std::declval<C>().imag())>{}>>
+	template<class C, class=std::enable_if_t<sizeof(C)==sizeof(std::complex<float>) && is_s<decltype(std::declval<C>().real())>{} && is_s<decltype(std::declval<C>().imag())>{}>>
 	auto is_c_aux(C&&) -> std::true_type;
 	auto is_c_aux(...) -> std::false_type;
 
 	template<class C> struct is_c : decltype(is_c_aux(std::declval<C>())) {using archetype = std::complex<float>;};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
-	template<class Z, class=std::enable_if_t<sizeof(Z)==sizeof(std::complex<double>) && is_d<decltype(std::declval<Z>().real())>{} and is_d<decltype(std::declval<Z>().imag())>{}>>
+	template<class Z, class=std::enable_if_t<sizeof(Z)==sizeof(std::complex<double>) && is_d<decltype(std::declval<Z>().real())>{} && is_d<decltype(std::declval<Z>().imag())>{}>>
 	auto is_z_aux(Z&&) -> std::true_type ;
 	auto is_z_aux(...) -> std::false_type;
 
