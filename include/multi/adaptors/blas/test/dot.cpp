@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS dot"
 #include<boost/test/unit_test.hpp>
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(inq_case) {
 	auto d_arr = dot(blas::C(x), y);
 	BOOST_REQUIRE(d_arr == res);
 
-	static_assert( not std::is_same<decltype(d_arr), double>{} );
+	static_assert( ! std::is_same<decltype(d_arr), double>{} );
 
 	using blas::C;
 	double const d_doub = dot(C(x), y);
