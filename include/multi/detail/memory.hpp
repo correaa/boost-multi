@@ -2,6 +2,7 @@
 
 #ifndef MULTI_DETAIL_MEMORY_HPP
 #define MULTI_DETAIL_MEMORY_HPP
+#pragma once
 
 #include <memory>  // for std::allocator_traits
 #include <type_traits>  // for std::void_t
@@ -12,7 +13,10 @@ template<class Alloc>
 struct allocator_traits : std::allocator_traits<Alloc> {};
 
 // https://en.cppreference.com/w/cpp/memory/destroy
-template<class Alloc, class ForwardIt, std::enable_if_t<!has_rank<ForwardIt>::value, int> = 0>
+template<
+	class Alloc, class ForwardIt,
+	std::enable_if_t<!has_rank<ForwardIt>::value, int> =0
+>
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	for(; first != last; ++first) {allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
@@ -20,7 +24,8 @@ void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v == 1, int> = 0>
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	//  using multi::to_address;
-	for(; first != last; ++first) {alloc.destroy(to_address(first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	std::for_each(first, last, [&](auto& elem) {alloc.destroy(addressof(elem));});
+	// for(; first != last; ++first) {alloc.destroy(to_address(first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
 
 template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v != 1, int> = 0>
@@ -87,20 +92,6 @@ auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, MIt des
 
 }  // end namespace xtd
 
-// // https://en.cppreference.com/w/cpp/memory/destroy_at
-// template<class Alloc, class T, typename AT = std::allocator_traits<Alloc> >
-// void destroy_at(Alloc& a, T* p) {AT::destroy(a, p);}
-
-// // https://en.cppreference.com/w/cpp/memory/destroy_n
-// template<class Alloc, class ForwardIt, class Size>  // , typename AT = typename std::allocator_traits<Alloc> >
-// auto destroy_n(Alloc& a, ForwardIt first, Size n) -> ForwardIt {
-// //  using std::addressof;
-//  for(; n > 0; ++first, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//      allocator_traits<Alloc>::destroy(a, to_address(first));
-//  }
-//  return first;
-// }
-
 template<class, class = void>
 struct is_allocator : std::false_type {};
 
@@ -109,23 +100,6 @@ struct is_allocator<Alloc, std::void_t<decltype(
 	std::declval<Alloc const&>() == Alloc{std::declval<Alloc const&>()},
 	std::declval<Alloc&>().deallocate(typename Alloc::pointer{std::declval<Alloc&>().allocate(std::declval<typename Alloc::size_type>())}, std::declval<typename Alloc::size_type>())
 )>> : std::true_type {};
-
-//template<class AA> class is_allocator {
-//  template<
-//      class A,
-//      class P = typename A::pointer, class S = typename A::size_type,
-//      typename = decltype(
-//          std::declval<A const&>() == A{std::declval<A const&>()},
-//          std::declval<A&>().deallocate(P{std::declval<A&>().allocate(std::declval<S>())}, std::declval<S>())
-//      )
-//  >
-//  static auto  aux(A const&) -> std::true_type;
-//  static auto  aux(...     ) -> std::false_type;
-
-// public:
-//  constexpr static bool const value = decltype(aux(std::declval<AA>()))::value;
-//  constexpr explicit operator bool() const {return value;}
-//};
 
 template<class Alloc> constexpr bool is_allocator_v = is_allocator<Alloc>::value;
 
@@ -140,5 +114,4 @@ auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest) {
 }
 
 }  // end namespace boost::multi
-
 #endif
