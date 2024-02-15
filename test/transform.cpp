@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
@@ -34,11 +34,11 @@ class involuted {
 	}
 	constexpr explicit operator decay_type() const { return Involution{}(r_); }
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
-	constexpr auto operator&() && { return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_}; }  // NOLINT(runtime/operator)
+	// constexpr auto operator&() && { return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_}; }  // NOLINT(runtime/operator)
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
-	constexpr auto operator&() & { return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_}; }  // NOLINT(runtime/operator)
+	// constexpr auto operator&() & { return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_}; }  // NOLINT(runtime/operator)
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
-	constexpr auto operator&() const& { return involuter<Involution, decltype(&std::declval<decay_type const&>())>{Involution{}, &r_}; }  // NOLINT(runtime/operator)
+	// constexpr auto operator&() const& { return involuter<Involution, decltype(&std::declval<decay_type const&>())>{Involution{}, &r_}; }  // NOLINT(runtime/operator)
 
 	auto operator==(involuted const& other) const { return r_ == other.r_; }
 	auto operator!=(involuted const& other) const { return r_ == other.r_; }
