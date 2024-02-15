@@ -246,7 +246,7 @@ template<class T> auto has_imag_mem_aux(T const& value) -> decltype((void)value.
            inline auto has_imag_mem_aux(...           ) -> decltype(                    std::false_type{});
 template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
-template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};
+template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} || has_imag_mem<T>{})>{};
 
 template<class A = void>
 struct is_complex_array : has_imag<std::decay_t<typename std::pointer_traits<std::decay_t<decltype(std::declval<A>().base())>>::element_type>> {};
