@@ -14,8 +14,6 @@
 
 namespace multi = boost::multi;
 
-using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
-
 using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
@@ -38,6 +36,8 @@ class watch : private std::chrono::high_resolution_clock {
 };
 
 BOOST_AUTO_TEST_CASE(fftw_transpose) {
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
+
 	multi::fftw::initialize_threads();
 	{
 		auto const in = [] {
@@ -51,53 +51,6 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		//  std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 			return ret;
 		}();
-	//  multi::fftw::plan::with_nthreads(1);
-		// {
-		//  multi::array<complex, 2> out = in;
-		//  auto* data = out.data_elements();
-		//   {
-		//      watch const unnamed{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"s};
-		//      multi::fftw::transpose( out );
-		//      BOOST_REQUIRE( out.data_elements() == data );
-		//      BOOST_REQUIRE( out[35][79] == in[79][35] );
-		//  }
-		//  BOOST_REQUIRE( out == ~in );
-		// }
-//    {
-//      multi::array<complex, 2> out = in;
-//      auto p = out.data_elements();
-//      {
-//        boost::timer::auto_cpu_timer t{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"};
-//        out = multi::fftw::copy( transposed( move(out) ) );
-//        BOOST_REQUIRE( out.data_elements() == p );
-//        BOOST_REQUIRE( out[35][79] == in[79][35] );
-//      }
-//      BOOST_REQUIRE( out == ~in );
-//    }
-//    multi::fftw::plan::with_nthreads(2);
-//    {
-//      multi::array<complex, 2> out = in;
-//      auto p = out.data_elements();
-//      {
-//        boost::timer::auto_cpu_timer t{"fftw trans mve 2 thread  %ws wall, CPU (%p%)\n"};
-//        out = multi::fftw::copy( ~move(out) );
-//        BOOST_REQUIRE( out.data_elements() == p );
-//        BOOST_REQUIRE( out[35][79] == in[79][35] );
-//      }
-//      BOOST_REQUIRE( out == ~in );
-//    }
-//    multi::fftw::plan::with_nthreads(4);
-//    {
-//      multi::array<complex, 2> out = in;
-//      auto p = out.data_elements();
-//      {
-//        boost::timer::auto_cpu_timer t{"fftw trans mve 4 thread  %ws wall, CPU (%p%)\n"};
-//        out = multi::fftw::copy( ~move(out) );
-//        BOOST_REQUIRE( out.data_elements() == p );
-//        BOOST_REQUIRE( out[35][79] == in[79][35] );
-//      }
-//      BOOST_REQUIRE( out == ~in );
-//    }
 		{
 			multi::array<complex, 2> out = in;
 			multi::array<complex, 2> aux(extensions(out));
