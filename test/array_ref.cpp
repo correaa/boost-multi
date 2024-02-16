@@ -561,11 +561,11 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 	}
 	{
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes1; // NOLINT(google-runtime-int) test bad idiom
+		long sizes1; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes2; // NOLINT(google-runtime-int) test bad idiom
+		long sizes2; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes3; // NOLINT(google-runtime-int) test bad idiom
+		long sizes3; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -574,11 +574,11 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 	}
 	{
 		// NOLINTNEXTLINE(runtime/int)
-		long long sizes1;  // NOLINT(google-runtime-int) test bad idiom
+		long long sizes1;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
-		long long sizes2;  // NOLINT(google-runtime-int) test bad idiom
+		long long sizes2;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
-		long long sizes3;  // NOLINT(google-runtime-int) test bad idiom
+		long long sizes3;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -586,9 +586,9 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	{
-		int64_t sizes1;
-		int64_t sizes2;
-		int64_t sizes3;
+		int64_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
+		int64_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
+		int64_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );

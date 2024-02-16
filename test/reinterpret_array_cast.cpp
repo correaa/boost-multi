@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
 		double y;
 		double z;
 
-		[[maybe_unused]] auto operator==(vec3 const& other) const -> bool { return x == other.x && y == other.y && z == other.z; }
+		// [[maybe_unused]] auto operator==(vec3 const& other) const -> bool { return x == other.x && y == other.y && z == other.z; }
 	};
 
 	multi::array<double, 2> arr = {
