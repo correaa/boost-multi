@@ -251,7 +251,7 @@ constexpr auto data_elements(A const& arr)
 ->decltype(arr.data_elements()) {
 	return arr.data_elements(); }
 
-template<class T, std::enable_if_t<!std::is_array_v<std::decay_t<T>> and not has_data_elements<std::decay_t<T>>::value && !has_data<std::decay_t<T>>::value, int> =0>
+template<class T, std::enable_if_t<!std::is_array_v<std::decay_t<T>> && ! has_data_elements<std::decay_t<T>>::value && !has_data<std::decay_t<T>>::value, int> =0>
 constexpr auto data_elements(T& value) -> decltype(&value) {return &value;}
 
 template<class A> struct num_elements_t: std::integral_constant<std::ptrdiff_t, 1> {};
@@ -299,7 +299,7 @@ template<class T>
 inline auto has_dimensionaliy_member_aux(...               ) -> decltype(                                                                              std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
-template<class T, typename = std::enable_if_t<not has_dimensionality_member<T>{}>>
+template<class T, typename = std::enable_if_t<! has_dimensionality_member<T>{}>>
 constexpr auto dimensionality(T const&/*, void* = nullptr*/) {return 0;}
 
 template<class T, std::size_t N>
@@ -324,13 +324,13 @@ constexpr auto base(T(&array)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-
 template<class T, std::size_t N>
 constexpr auto base(T(*&array)[N]) noexcept {return base(*array);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
 
-template<class T, typename = std::enable_if_t<not std::is_array_v<T>>>
+template<class T, typename = std::enable_if_t<! std::is_array_v<T>>>
 constexpr auto base(T const* ptr) noexcept {return ptr;}
 
-template<class T, typename = std::enable_if_t<not std::is_array_v<T>>>
+template<class T, typename = std::enable_if_t<! std::is_array_v<T>>>
 constexpr auto base(T* ptr) noexcept {return ptr;}
 
-template<class T, std::enable_if_t<std::is_standard_layout_v<T> and std::is_trivial_v<T>, int> =0>
+template<class T, std::enable_if_t<std::is_standard_layout_v<T> && std::is_trivial_v<T>, int> =0>
 auto base(T& array) {return &array;}
 
 template<class T>
@@ -386,7 +386,7 @@ template<class Element, class T, std::enable_if_t<has_extensions<T>::value, int>
 
 // template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>::value && !has_extensions<BoostMultiArray>::value, int> =0>
 // constexpr auto extensions(BoostMultiArray const& array) {
-// 	return extensions_aux2(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
+//  return extensions_aux2(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
 // }
 
 template<class T, std::enable_if_t<!has_extensions<T>::value /*&& !has_shape<T>::value*/, int> =0>
@@ -438,7 +438,7 @@ auto layout(T const& array)
 ->decltype(array.layout()) {
 	return array.layout(); }
 
-template<class T, typename = std::enable_if_t<not has_layout_member<T const&>{}> >
+template<class T, typename = std::enable_if_t<! has_layout_member<T const&>{}> >
 auto layout(T const& /*unused*/) -> layout_t<0> {return {};}
 
 template<class T, std::size_t N>
