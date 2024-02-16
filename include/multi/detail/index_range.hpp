@@ -36,7 +36,7 @@ class iterator_facade {
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 
-	friend constexpr auto operator!=(self_type const& self, self_type const& other) {return not(self == other);}
+	friend constexpr auto operator!=(self_type const& self, self_type const& other) {return !(self == other);}
 
 	friend constexpr auto operator<=(self_type const& self, self_type const& other) {return (self < other) || (self == other);}
 	friend constexpr auto operator> (self_type const& self, self_type const& other) {return !(self <= other);}
@@ -173,7 +173,7 @@ class range {
 	friend constexpr auto operator!=(range const& self, range const& other) {return !(self == other);}
 
 	[[nodiscard]] constexpr auto find(value_type const& value) const -> range::const_iterator {
-		if(value >= last_ or value < first_) {
+		if(value >= last_ || value < first_) {
 			return end();
 		}
 		return begin() + (value - front());
