@@ -543,9 +543,9 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	{
-		multi::size_t sizes1;
-		multi::size_t sizes2;
-		multi::size_t sizes3;
+		multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables) example of bad idiom
+		multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables) example of bad idiom
+		multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables) example of bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
