@@ -7,7 +7,7 @@
   ctest -j --output-on-error [-T memcheck]
   exit
 #]=]
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.18)
 
 if((NOT
 	CMAKE_CXX_COMPILER_ID
@@ -23,7 +23,7 @@ if((NOT
 		DART_COMPILER_NAME
 		STREQUAL
 		"nvcc"
-	   )
+	)
    AND (NOT
 		DART_COMPILER_NAME
 		STREQUAL
@@ -51,11 +51,13 @@ else()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
-	add_definitions(-DRETURN_BY_STACK)
+#   add_definitions(-DRETURN_BY_STACK)
+	add_definitions(-DBLAS_DOT_RETURNS_VOID)
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
-	add_definitions(-DRETURN_BY_STACK)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")  # nvhpc will find its own blas version
+#   add_definitions(-DRETURN_BY_STACK)
+	add_definitions(-DBLAS_DOT_RETURNS_VOID)
 endif()
 
 
@@ -133,6 +135,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
     target_link_libraries(${TEST_EXE} PRIVATE multi)
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
+	target_link_libraries(${TEST_EXE} PRIVATE BLAS::BLAS)
 
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	if(NOT ENABLE_CIRCLE)

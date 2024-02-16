@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.18)
 
 #message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
-#set(BLA_VENDOR Intel10_64lp)
+#set(BLA_VENDOR NVHPC)
 find_package(BLAS)
 
 if(BLAS_FOUND)
@@ -26,7 +26,7 @@ if(BLAS_FOUND)
 			SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
 		endif()
 		if(${lib} MATCHES "hpc_sdk")
-			message("Some BLAS found matches hpc_sdk (nvhpc)")
+			message("Some BLAS found matches hpc_sdk (nvhpc)")  # nvhpc may still use a different version of BLAS
 			add_definitions(-DBLAS_DOT_RETURNS_VOID)
 		endif()
 		# TODO(correaa) add condition for Apple Accelerate
@@ -34,7 +34,7 @@ if(BLAS_FOUND)
 endif()
 
 # link_libraries(${BLAS_LIBRARIES})
-link_libraries(BLAS::BLAS) # needs cmake 3.18
+# link_libraries(BLAS::BLAS) # needs cmake 3.18
 
 # include_directories(${CMAKE_BINARY_DIR})
 
