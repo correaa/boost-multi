@@ -543,7 +543,9 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	{
-		multi::size_t sizes1, sizes2, sizes3;  // NOLINT(readability-isolate-declaration,cppcoreguidelines-init-variables) test a bad idiom
+		multi::size_t sizes1;
+		multi::size_t sizes2;
+		multi::size_t sizes3;
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -559,7 +561,11 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 	}
 	{
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
+		long sizes1; // NOLINT(google-runtime-int) test bad idiom
+		// NOLINTNEXTLINE(runtime/int)
+		long sizes2; // NOLINT(google-runtime-int) test bad idiom
+		// NOLINTNEXTLINE(runtime/int)
+		long sizes3; // NOLINT(google-runtime-int) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -568,7 +574,11 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 	}
 	{
 		// NOLINTNEXTLINE(runtime/int)
-		long long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
+		long long sizes1;  // NOLINT(google-runtime-int) test bad idiom
+		// NOLINTNEXTLINE(runtime/int)
+		long long sizes2;  // NOLINT(google-runtime-int) test bad idiom
+		// NOLINTNEXTLINE(runtime/int)
+		long long sizes3;  // NOLINT(google-runtime-int) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -576,7 +586,9 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	{
-		int64_t sizes1, sizes2, sizes3;  // NOLINT(readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
+		int64_t sizes1;
+		int64_t sizes2;
+		int64_t sizes3;
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -686,7 +698,6 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
 	{
 		double(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3] == &arr[3] );
-		//  f1d5((double(&)[5])(arr));  // this will warn with -Wold-style-cast  NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 }
 

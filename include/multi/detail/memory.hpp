@@ -60,7 +60,7 @@ auto uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size n) ->
 template<
 	class Alloc, class ForwardIt, class Size,
 	typename T = typename std::iterator_traits<ForwardIt>::value_type,
-	typename = std::enable_if_t<not std::is_trivially_default_constructible<T>{}>
+	typename = std::enable_if_t<! std::is_trivially_default_constructible<T>{}>
 >
 auto uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n) -> ForwardIt {
 	ForwardIt current = first;  // using std::addressof;
@@ -80,7 +80,7 @@ template<class... Args> auto std_copy(Args&&... args) {
 
 namespace xtd {
 
-template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<not has_rank<MIt>{}> >
+template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<! has_rank<MIt>{}> >
 auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, MIt dest) -> MIt {
 	MIt current = dest;
 //  using multi::to_address;
