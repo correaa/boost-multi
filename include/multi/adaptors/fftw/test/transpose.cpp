@@ -12,8 +12,6 @@
 
 namespace multi = boost::multi;
 
-using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
-
 class watch : private std::chrono::high_resolution_clock {
 	std::string label_;
 	time_point start_ = now();
@@ -34,6 +32,8 @@ using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 BOOST_AUTO_TEST_CASE(fftw_transpose) {
+	using namespace std::string_literals;  // for ""s
+
 	using complex = std::complex<double>;
 
 	 {
@@ -59,16 +59,5 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 		}
-		//  {
-		//  multi::array<complex, 2> out = in;
-		//  auto* out_data = out.data_elements();
-		//   {
-		//      watch const unnamed{"fftw transpose fun thread  %ws wall, CPU (%p%)\n"s};
-		//      multi::fftw::transpose( out );
-		//      BOOST_REQUIRE( out.data_elements() == out_data );
-		//      BOOST_REQUIRE( out[35][79] == in[79][35] );
-		//  }
-		//  BOOST_REQUIRE( out == ~in );
-		// }
 	}
 }
