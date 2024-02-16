@@ -674,8 +674,8 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 }
 
-auto f1d5(double (&carr)[5]) -> double;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-auto f1d5(double (&carr)[5]) -> double {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(double const(&carr)[5]) -> double;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(double const(&carr)[5]) -> double {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	return carr[1];
 }
 
