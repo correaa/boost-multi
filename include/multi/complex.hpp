@@ -4,6 +4,7 @@
 
 #ifndef MULTI_COMPLEX_HPP
 #define MULTI_COMPLEX_HPP
+#pragma once
 
 #include "array_ref.hpp"
 
