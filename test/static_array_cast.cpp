@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(static_array_cast_2) {
 
 BOOST_AUTO_TEST_CASE(static_array_cast_3) {
 	{
-		multi::static_array<double, 1> const arr  = {0.0, 1.0, 2.0, 3.0, 4.0};
+		multi::static_array<double, 1> const arr  = {+0.0, +1.0, +2.0, +3.0, +4.0};
 		multi::static_array<double, 1>       arr2 = {-0.0, -1.0, -2.0, -3.0, -4.0};
 
 		auto&& neg_arr = multi::static_array_cast<double, involuter<double*, std::negate<>>>(arr);
