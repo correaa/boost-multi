@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
 
 	BOOST_REQUIRE( carr({0, 3}, {0, 3})[1][1] == 99.0 );
 
-	static_assert(not std::is_assignable_v<decltype(carr(1, {0, 3})[1]), double>);
+	static_assert(! std::is_assignable_v<decltype(carr(1, {0, 3})[1]), double>);
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_stencil) {
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
 	BOOST_REQUIRE(  arr().elements().begin() <  arr().elements().end() );
 	BOOST_REQUIRE(  arr().elements().begin() == arr().elements().begin() );
 
-	BOOST_REQUIRE( arr().elements().begin() <  arr().elements().end() or arr().elements().begin() == arr().elements().end() );
+	BOOST_REQUIRE( arr().elements().begin() <  arr().elements().end() || arr().elements().begin() == arr().elements().end() );
 	BOOST_REQUIRE( arr().elements().begin() <= arr().elements().end() );
 
 	BOOST_REQUIRE(  arr().elements().end()  >  arr().elements().begin() );

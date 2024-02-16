@@ -19,8 +19,6 @@ inline constexpr bool multi::force_element_trivial_default_construction<std::com
 
 namespace utf = boost::unit_test::framework;
 
-using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
-
 using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
@@ -67,16 +65,15 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 	};
 
 	using std::cout;
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
+
+
 	for(auto which : which_cases) {  // NOLINT(altera-unroll-loops)
 		cout<<"case ";
 		copy(begin(which), end(which), std::ostream_iterator<bool>{cout, ", "});
 		cout<<"\n";
 
 		marray<complex, 4> out = in;
-		// {
-		//  watch const unnamed{"cpu_oplac %ws wall, CPU (%p%)\n"s};
-		//  multi::fftw::dft_forward(which, in, out);
-		// }
 		{
 			auto const pln = multi::fftw::plan::forward(which, in.base(), in.layout(), out.base(), out.layout());
 			watch const unnamed{"cpu_oplac planned %ws wall, CPU (%p%)\n"s};
@@ -99,21 +96,12 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 			watch const unnamed{"cpu_iplac planned measured %ws wall, CPU (%p%)\n"s};
 			pln.execute(in_rw.base(), in_rw.base());
 		}
-		// {
-		//  watch const unnamed{"cpu_alloc %ws wall, CPU (%p%)\n"s};
-		//  auto out_cpy = multi::fftw::dft_forward(which, in);
-		//  BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
-		// }
-		// {
-		//  auto in_rw = in;
-		//  watch const unnamed{"cpu_move %ws wall, CPU (%p%)\n"s};
-		//  auto out_cpy = multi::fftw::dft_forward(which, std::move(in_rw));
-		//  BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
-		// }
 	}
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
+
 	using complex = std::complex<double>;
 	namespace fftw = multi::fftw;
 
@@ -175,36 +163,4 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 
 	auto io = in; (void)io;
 	BOOST_REQUIRE( io.extensions() == in.extensions() );
-
-	// namespace fftw = multi::fftw;
-	// using clock = std::chrono::high_resolution_clock;
-	// {
-	//  auto const tick = clock::now();
-	//  marray<complex, 4> out(exts);
-	//  out = multi::fftw::ref(in)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
-	//  BOOST_REQUIRE( out.extensions() == in.extensions() );
-	//  auto time = std::chrono::duration<double>(clock::now() - tick);
-	//  std::cout<<"allocate and copy assign (out-of-place fft) : "<< time.count() <<std::endl;
-	// }
-	// {
-	//  auto const tick = clock::now();
-	//  auto const out = +multi::fftw::ref(in)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
-	//  BOOST_REQUIRE( out.extensions() == in.extensions() );
-	//  auto time = std::chrono::duration<double>(clock::now() - tick);
-	//  std::cout<<"copy construct (out-of-place fft) : "<< time.count() <<std::endl;
-	// }
-	// {
-	//  auto const tick = clock::now();
-	//  io = multi::fftw::ref(io)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
-	//  BOOST_REQUIRE( io.extensions() == in.extensions() );
-	//  auto time = std::chrono::duration<double>(clock::now() - tick);
-	//  std::cout<<"self copy assign (in-place fft) : "<< time.count() <<std::endl;
-	// }
-	// {
-	//  auto const tick = clock::now();
-	//  marray<complex, 4> const out = multi::fftw::move(io)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
-	//  BOOST_REQUIRE( io.is_empty() );
-	//  auto time = std::chrono::duration<double>(clock::now() - tick);
-	//  std::cout<<"move construct (in-place fft) : "<< time.count() <<std::endl;
-	// }
 }
