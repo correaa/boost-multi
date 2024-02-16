@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2023 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
 
 // TODO(correaa) move this header to blas/numeric
 
@@ -175,7 +174,7 @@ struct imag_t {
 // static_assert( boost::multi::is_trivial<std::complex<float >>::value );
 
 
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
+#if defined(__INCLUDE_LEVEL__) && ! __INCLUDE_LEVEL__
 
 #include<cassert>
 #include "array.hpp"
