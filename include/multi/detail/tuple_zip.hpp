@@ -62,8 +62,8 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		return *this;
 	}
 
-	constexpr auto operator==(tuple const& other) const -> bool { return head_ == other.head_ and tail() == other.tail(); }
-	constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ or tail() != other.tail(); }
+	constexpr auto operator==(tuple const& other) const -> bool { return head_ == other.head_ && tail() == other.tail(); }
+	constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ || tail() != other.tail(); }
 
 	constexpr auto operator<(tuple const& other) const {
 		if(head_ < other.head_) {
@@ -226,7 +226,7 @@ constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail()
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
-#if not defined(_MSC_VER)
+#if ! defined(_MSC_VER)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
@@ -265,7 +265,7 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-iden
 		return get<N - 1>(std::move(t.tail()));
 	}
 }
-#if not defined(_MSC_VER)
+#if ! defined(_MSC_VER)
 #pragma GCC diagnostic pop
 #endif
 
