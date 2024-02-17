@@ -222,7 +222,7 @@ struct extensions_t {
 		return get<Index>(this->base());
 	}
 
-	constexpr operator base_ const&() const { return impl_;}
+	constexpr operator base_ const&() const { return impl_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use inheritance from tuple to avoid this and implement get in std::
 };
 
 template<> struct extensions_t<0> {
