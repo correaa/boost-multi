@@ -335,6 +335,22 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 	}
 	{
+		auto const exts = aref.extensions();
+		BOOST_REQUIRE( exts.get<0>() == multi::iextension(1, 3) );
+		BOOST_REQUIRE( exts.get<1>().first()  == 1 );
+		BOOST_REQUIRE( exts.get<1>().last () == 4 );
+		BOOST_REQUIRE( exts.get<1>() == multi::iextension(1, 4) );
+		BOOST_REQUIRE(( exts == decltype(exts){multi::iextension(1, 3), multi::iextension(1, 4)} ));
+	}
+	{
+		auto const exts = aref.extensions();
+		BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
+		BOOST_REQUIRE( std::get<1>(exts).first()  == 1 );
+		BOOST_REQUIRE( std::get<1>(exts).last () == 4 );
+		BOOST_REQUIRE( std::get<1>(exts) == multi::iextension(1, 4) );
+		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	}
+	{
 		BOOST_REQUIRE( std::get<0>(aref.extensions()) == multi::iextension(1, 3) );
 		BOOST_REQUIRE( std::get<1>(aref.extensions()).first()  == 1 );
 		BOOST_REQUIRE( std::get<1>(aref.extensions()).last () == 4 );
