@@ -5,7 +5,7 @@
 
 #include "../adaptors/fftw.hpp"
 
-#if defined(__NVCC__)
+#if defined(__CUDA__) || defined(__NVCC__)
 #include "../adaptors/cufft.hpp"
 #elif defined(__HIPCC__)
 #include "../adaptors/hipfft.hpp"

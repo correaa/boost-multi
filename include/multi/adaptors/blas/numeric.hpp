@@ -213,7 +213,7 @@ struct conjugate {
 		return conj(zee);
 	//  return multi::adl_conj(std::forward<Complex>(zee));  // this is needed by icc
 	}
-	#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__)
+	#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__)
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::cuda_cub::tag> zee) const {
 		return conj(static_cast<Complex>(zee));
