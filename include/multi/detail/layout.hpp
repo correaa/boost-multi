@@ -370,25 +370,24 @@ constexpr auto array_size_impl(const boost::multi::extensions_t<D>&)
 
 }  // end namespace boost::multi
 
-// NOLINTBEGIN(cert-dcl58-cpp) to implement structured bindings
-namespace std {
+template<boost::multi::dimensionality_type D>
+struct std::tuple_size<boost::multi::extensions_t<D>> : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
 
-    template<boost::multi::dimensionality_type D>
-    struct tuple_size<boost::multi::extensions_t<D>> : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
+template<std::size_t Index, boost::multi::dimensionality_type D>
+struct std::tuple_element<Index, boost::multi::extensions_t<D>> {
+	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
+};
 
-    template<std::size_t Index, boost::multi::dimensionality_type D>
-    struct tuple_element<Index, boost::multi::extensions_t<D>> {
-		using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
-	};
+template<std::size_t Index, boost::multi::dimensionality_type D>
+constexpr auto std::get(boost::multi::extensions_t<D> const& self) -> typename std::tuple_element<Index, boost::multi::extensions_t<D>>::type {
+	using boost::multi::detail::get;
+	return get<Index>(self.base());
+}
 
-	template<std::size_t Index, boost::multi::dimensionality_type D>
-	constexpr auto get(boost::multi::extensions_t<D> const& self) -> typename std::tuple_element<Index, boost::multi::extensions_t<D>>::type {
-		using boost::multi::detail::get;
-		return get<Index>(self.base());
-	}
+// namespace std {
 
-}  // end namespace std
-// NOLINTEND(cert-dcl58-cpp) define stuff in STD
+
+// }  // end namespace std
 
 namespace boost::multi {
 
