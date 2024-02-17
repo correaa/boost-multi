@@ -44,7 +44,9 @@ cmake_dependent_option(MULTI_BUILD_TESTS "Enable multi tests" ON "BUILD_TESTING"
 cmake_dependent_option(MULTI_BUILD_PACKAGE_DEB "Create a DEB" ON "MULTI_BUILD_PACKAGE" OFF)
 
 add_library(multi INTERFACE)
+
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+target_compile_options(multi INTERFACE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>)
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_library(correaa::multi ALIAS multi)

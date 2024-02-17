@@ -34,7 +34,7 @@ link_libraries("-lboost_unit_test_framework")
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda")
+	# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda")
 	# find_package(CUDA QUIET)
 	find_package(CUDAToolkit REQUIRED COMPONENTS cuFFT)
 	if(CUDA_FOUND)
