@@ -43,27 +43,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
-
 	enable_language(CUDA)
-	# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-
-#   include(FindCUDA/select_compute_arch)
-#   cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
-#   string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-#   string(
-#       REPLACE " "
-#               ";"
-#               INSTALLED_GPU_CCS_3
-#               "${INSTALLED_GPU_CCS_2}"
-#   )
-#   string(
-#       REPLACE "."
-#               ""
-#               CUDA_ARCH_LIST
-#               "${INSTALLED_GPU_CCS_3}"
-#   )
-#   set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-
 endif()
 
 #find_package(CUDA QUIET)
@@ -76,10 +56,8 @@ endif()
 #endif()
 
 enable_testing()
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure") # needs cmake 3.17
-include(CTest)
 
-# configure_file("config.hpp.in" ${CMAKE_BINARY_DIR}/config.hpp)
+include(CTest)
 
 include_directories(${CMAKE_BINARY_DIR})
 
@@ -173,5 +151,5 @@ foreach(TEST_FILE ${TEST_SRCS})
         endif()
 	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
-    target_link_libraries(${TEST_EXE} PRIVATE PkgConfig::FFTW)
+    target_link_libraries(${TEST_EXE} PRIVATE multi PkgConfig::FFTW)
 endforeach()
