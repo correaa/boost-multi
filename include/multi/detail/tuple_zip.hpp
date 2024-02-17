@@ -288,7 +288,7 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 	using type = typename tuple_element<N - 1, boost::multi::detail::tuple<Ts...>>::type;
 };
 
-namespace std {  // NOLINT(cert-dcl58-cpp) define stuff in STD  // TODO(correaa) this is bad
+namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
 
 template<std::size_t N, class... Ts>
 constexpr auto get(boost::multi::detail::tuple<Ts...> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
