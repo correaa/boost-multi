@@ -213,7 +213,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wzero-as-null-pointer-constant
 # -Wzero-length-bounds # (gcc 12, not in 11)
 >
-$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra
+$<$<AND:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra
 -Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 -WCFString-literal
 -WCL4
@@ -867,7 +867,7 @@ else()
 		target_link_libraries(${TEST_EXE} PRIVATE multi)
 
 		target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
-		target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
+		# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
 		target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework   )
 		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
 		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_DYN_LINK=1)
