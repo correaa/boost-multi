@@ -295,7 +295,7 @@ template<> struct extensions_t<1> {
 	extensions_t() = default;
 	constexpr auto base() const -> base_ const& {return impl_;}
 
-	HD constexpr auto operator==(extensions_t const& other) const -> bool {return impl_ == other.impl_;}
+	HD constexpr auto operator==(extensions_t const& other) const -> bool {return impl_ == other.impl_;}  // when compiling as cuda code, this needs --expt-relaxed-constexpr
 	HD constexpr auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
 
 	constexpr auto num_elements() const -> size_type {

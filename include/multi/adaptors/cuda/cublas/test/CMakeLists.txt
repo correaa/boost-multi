@@ -30,7 +30,6 @@ endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--display_error_number\"")
 	find_package(CUDAToolkit REQUIRED COMPONENTS cuBLAS)  # requires cmake 3.17
 endif()
 
@@ -74,13 +73,16 @@ foreach(TEST_FILE ${TEST_SRCS})
 		target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 		target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 
-		target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
+		# target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 		target_include_directories(${TEST_EXE}        PRIVATE ${CUDA_INCLUDE_DIRS})
 	
+		#target_compile_options(${TEST_EXE} PRIVATE --expt-relaxed-constexpr)
+
 		target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework)
 	
 		target_link_libraries(${TEST_EXE} PRIVATE ${CUDA_LIBRARIES})
 		target_link_libraries(${TEST_EXE} PRIVATE CUDA::cublas)
+		target_link_libraries(${TEST_EXE} PRIVATE multi Boost::unit_test_framework)
 
 		# target_include_directories(${TEST_EXE} PRIVATE /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/math_libs/include)
 	
