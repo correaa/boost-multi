@@ -4,7 +4,7 @@
 #define MULTI_DETAIL_ADL_HPP
 #pragma once
 
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #include <thrust/copy.h>
 #include <thrust/detail/allocator/destroy_range.h>
 #include <thrust/detail/memory_algorithms.h>
@@ -294,7 +294,7 @@ constexpr class adl_uninitialized_copy_t {
 			return std::uninitialized_copy(first, last, d_first);
 		}
 	}
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(                  ::thrust::uninitialized_copy(                    std::forward<As>(args)...))
 #endif
 	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB   first, As&&... args       ) const DECLRETURN(                        uninitialized_copy(                 first , std::forward<As>(args)...))

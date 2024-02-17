@@ -45,7 +45,9 @@ static char const* _cudaGetErrorEnum(cufftResult error) {
 		case CUFFT_PARSE_ERROR:    return "CUFFT_PARSE_ERROR";
         case CUFFT_SETUP_FAILED:   return "CUFFT_SETUP_FAILED";
 		case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
-		// case CUFFT_LICENSE_ERROR:  return "CUFFT_LICENSE_ERROR";
+		#ifdef CUFFT_LICENSE_ERROR
+		case CUFFT_LICENSE_ERROR:  return "CUFFT_LICENSE_ERROR";
+		#endif
     }
     return "<unknown>";
 }

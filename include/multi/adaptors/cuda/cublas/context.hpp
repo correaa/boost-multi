@@ -107,12 +107,12 @@ using std::is_convertible_v;
 //  else if(is_z<T>{}) {return type::Z;}
 // }
 
-#ifdef __NVCC__
-	using Complex = cuComplex;
-	using DoubleComplex = cuDoubleComplex;
-#else
+#if defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	using Complex = hipblasComplex;
 	using DoubleComplex = hipblasDoubleComplex;
+#else  //  __CUDA__  __NVCC__  or clang cuda
+	using Complex = cuComplex;
+	using DoubleComplex = cuDoubleComplex;
 #endif
 
 template<class T, std::enable_if_t<is_s<T>{}, int> =0> constexpr auto data_cast(T      * p) {return reinterpret_cast<float        *>(p);}
@@ -362,10 +362,10 @@ namespace boost::multi::blas {
 
 	template<class T, class R>
 	boost::multi::cuda::cublas::context*
-	#if defined(__NVCC__)
-	default_context_of(::thrust::pointer<T, ::thrust::cuda_cub::tag, R> const&) {
-	#else
+	#if defined(__HIPCC__)
 	default_context_of(::thrust::pointer<T, ::thrust::hip::tag, R> const&) {
+	#else  //  __NVCC__
+	default_context_of(::thrust::pointer<T, ::thrust::cuda_cub::tag, R> const&) {
 	#endif
 		namespace multi = boost::multi;
 		return &multi::cuda::cublas::context::get_instance();
