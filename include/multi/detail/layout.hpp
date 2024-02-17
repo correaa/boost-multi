@@ -216,6 +216,13 @@ struct extensions_t {
 		return get<Index>(self.base());
 	}
 
+	template<std::size_t Index, std::enable_if_t<(Index < D), int> =0>
+	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(this->base());
+	}
+
+	constexpr operator base_ const&() const { return impl_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use inheritance from tuple to avoid this and implement get in std::
 };
 
 template<> struct extensions_t<0> {
@@ -267,6 +274,13 @@ template<> struct extensions_t<0> {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
+
+	template<std::size_t Index>  // TODO(correaa) = detele ?
+	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(this->base());
+	}
+
 };
 
 template<> struct extensions_t<1> {
@@ -356,6 +370,12 @@ template<> struct extensions_t<1> {
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
+	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(this->base());
+	}
+
+	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
 	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
@@ -381,13 +401,10 @@ struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cer
 };
 
 namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
-	// this function cannot be outside the namespace because clang complains "out-of-line definition of 'get' does not match any declaration in namespace 'std'"
 	template<std::size_t Index, boost::multi::dimensionality_type D>
 	constexpr auto get(::boost::multi::extensions_t<D> const& self)  // NOLINT(cert-dcl58-cpp) to implement structured bindings
-	-> typename std::tuple_element<Index, ::boost::multi::extensions_t<D>>::type {
-		using boost::multi::detail::get;
-		return get<Index>(self.base());
-	}
+	->decltype(self.template get<Index>()) {
+		return self.template get<Index>(); }
 }  // end namespace std
 
 namespace boost::multi {
