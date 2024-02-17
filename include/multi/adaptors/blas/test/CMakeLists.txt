@@ -63,8 +63,9 @@ endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-#   find_package(CUDA QUIET)
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+
+	#   find_package(CUDA QUIET)
 #   if(CUDA_FOUND)
 #       message("CUDA found")
 #       include_directories(${CUDA_INCLUDE_DIRS})
