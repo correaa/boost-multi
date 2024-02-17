@@ -383,7 +383,7 @@ struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cer
 namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
 	// this function cannot be outside the namespace because clang complains "out-of-line definition of 'get' does not match any declaration in namespace 'std'"
 	template<std::size_t Index, boost::multi::dimensionality_type D>
-	constexpr auto get(::boost::multi::extensions_t<D> const& self)
+	constexpr auto get(::boost::multi::extensions_t<D> const& self)  // NOLINT(cert-dcl58-cpp) to implement structured bindings
 	-> typename std::tuple_element<Index, ::boost::multi::extensions_t<D>>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
