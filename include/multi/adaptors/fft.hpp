@@ -15,9 +15,9 @@ namespace boost {
 namespace multi {
 namespace fft {
 
-	static constexpr int forward = fftw::forward;  // FFTW_FORWARD;
-	static constexpr int none = 0;
-	static constexpr int backward = fftw::backward;  // FFTW_BACKWARD;
+	static inline constexpr int forward = static_cast<int>(fftw::forward);
+	static inline constexpr int none = static_cast<int>(fftw::none);
+	static inline constexpr int backward = static_cast<int>(fftw::backward);
 
 	static_assert( forward != none and none != backward and backward != forward, "!");
 

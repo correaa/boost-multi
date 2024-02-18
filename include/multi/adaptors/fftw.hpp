@@ -343,11 +343,21 @@ inline void initialize_threads() {
 inline void initialize_threads() {}
 #endif
 
-enum sign : decltype(FFTW_FORWARD) {
+enum class sign : decltype(FFTW_FORWARD) {
 	backward = FFTW_BACKWARD,
 	none     = 0,
 	forward  = FFTW_FORWARD,
 };
+
+#if(__cplusplus >= 202002L)
+using sign::backward;
+using sign::none;
+using sign::forward;
+#else
+constexpr inline auto backward = sign::backward;
+constexpr inline auto none     = sign::none;
+constexpr inline auto forward  = sign::forward;
+#endif
 
 static_assert(forward != none && none != backward && backward != forward);
 
@@ -396,7 +406,7 @@ class plan {
 		std::array<bool, In::rank_v> which,
 		InPtr in_base, In in_layout,
 		OutPtr out_base, Out out_layout, sign ss
-	) : impl_{fftw_plan_dft(which, in_base, in_layout, out_base, out_layout, ss, fftw::estimate), &fftw_destroy_plan} {
+	) : impl_{fftw_plan_dft(which, in_base, in_layout, out_base, out_layout, static_cast<int>(ss), fftw::estimate), &fftw_destroy_plan} {
 		assert(impl_);
 	}
 
