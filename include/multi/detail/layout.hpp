@@ -11,6 +11,7 @@
 
 #include "../../multi/detail/operators.hpp"
 
+#include <tuple>
 #include <type_traits>  // for make_signed_t
 #include <utility>      // for swap
 
@@ -286,10 +287,6 @@ template<> struct extensions_t<0> : tuple<> {
 template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using base_ = tuple<multi::index_extension>;
 
- private:
-	// base_ impl_;
-
- public:
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
 	using nelems_type = index;
@@ -400,12 +397,14 @@ struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cer
 	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
 };
 
-// namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
-//  template<std::size_t Index, boost::multi::dimensionality_type D>
-//  constexpr auto get(::boost::multi::extensions_t<D> const& self)  // NOLINT(cert-dcl58-cpp) to implement structured bindings
-//  ->decltype(self.template get<Index>()) {
-//      return self.template get<Index>(); }
-// }  // end namespace std
+#if ! defined(__GLIBCXX__) || (__GLIBCXX__ < 20180101)
+namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
+ template<std::size_t Index, boost::multi::dimensionality_type D>
+ constexpr auto get(::boost::multi::extensions_t<D> const& self)  // NOLINT(cert-dcl58-cpp) to implement structured bindings
+ ->decltype(self.template get<Index>()) {
+     return self.template get<Index>(); }
+}  // end namespace std
+#endif
 
 namespace boost::multi {
 
