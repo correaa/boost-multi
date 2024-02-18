@@ -383,7 +383,7 @@ class environment {
 	// environment(environment&&)         = delete;
 
 	// auto operator=(environment const&) = delete;
-	environment& operator=(environment&&) = delete;
+	auto operator=(environment&&) -> environment& = delete;
 
 	template<class In, class Out>
 	auto make_plan_forward(std::array<bool, +In::rank_v> which, In const& in, Out&& out);
