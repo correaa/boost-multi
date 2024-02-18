@@ -397,14 +397,14 @@ struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cer
 	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
 };
 
-#if ! defined(__GLIBCXX__) || (__GLIBCXX__ < 20180101)
+// #if ! defined(__GLIBCXX__) || (__GLIBCXX__ < 20180101)
 namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
  template<std::size_t Index, boost::multi::dimensionality_type D>
  constexpr auto get(::boost::multi::extensions_t<D> const& self)  // NOLINT(cert-dcl58-cpp) to implement structured bindings
  ->decltype(self.template get<Index>()) {
      return self.template get<Index>(); }
 }  // end namespace std
-#endif
+// #endif
 
 namespace boost::multi {
 
