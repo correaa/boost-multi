@@ -379,11 +379,11 @@ class environment {
  public:
 	environment()                      = default;
 
-	// environment(environment const&)    = delete;
-	// environment(environment&&)         = delete;
+	environment(environment const&)    = delete;
+	environment(environment&&)         = delete;
 
-	// auto operator=(environment const&) = delete;
-	auto operator=(environment&&) -> environment& = delete;
+	auto operator=(environment const&) -> environment& = delete;
+	auto operator=(environment     &&) -> environment& = delete;
 
 	template<class In, class Out>
 	auto make_plan_forward(std::array<bool, +In::rank_v> which, In const& in, Out&& out);
@@ -431,8 +431,8 @@ class plan {
 
 		::fftw_execute_dft(
 			const_cast<fftw_plan>(impl_.get()),  // NOLINT(cppcoreguidelines-pro-type-const-cast) https://www.fftw.org/fftw3_doc/Thread-safety.html
-			const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(in)),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
-			reinterpret_cast<fftw_complex*>(out)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
+			const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(in)),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) //NOSONAR to interface with legacy fftw
+			                          reinterpret_cast<fftw_complex      *>(out)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
 		);
 	}
 
@@ -663,130 +663,8 @@ class fft_iterator {
 		return self.base_ - other.base_;
 	}
 
-	// template<class ItOut>
-	// friend auto copy(fft_iterator first, fft_iterator last, ItOut d_first) {
-	//  assert(first.which_ == last.which_);
-	//  fftw::dft(
-	//      first.which_,
-	//      multi::ref(first.base_, last.base_),
-	//      multi::ref(d_first, d_first + (last.base_ - first.base_))
-	//  );
-
-	//  return d_first + (last.base_ - first.base_);
-	// }
-	// template<class ItOut>
-	// friend auto uninitialized_copy(fft_iterator first, fft_iterator last, ItOut d_first) {
-	//  return copy(first, last, d_first);
-	// }
-
 	auto operator*() const { return reference{*base_}; }
 };
 
-// template<class Origin, class Array>
-// class fft_range {
-//  Origin origin_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-//  Array  ref_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-//  using which_type = std::array<fftw::sign, std::decay_t<Array>::rank::value>;
-//  which_type which_;
-
-//  public:
-//  using iterator_type = typename std::decay_t<Array>::const_iterator;
-
-//  using size_type = typename std::decay_t<Array>::size_type;
-//  using iterator  = fft_iterator<iterator_type>;
-
-//  using decay_type = typename std::decay_t<Array>::decay_type;
-
-//  explicit fft_range(Origin&& origin, Array&& in, which_type which)
-//  : origin_{std::forward<Origin>(origin)}, ref_{std::forward<Array>(in)}, which_{which} {}
-
-//  operator decay_type() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-//      if constexpr(std::is_same_v<Origin, decay_type&&>) {
-//          decay_type the_ret{std::forward<Origin>(origin_)};
-//          the_ret.reshape(this->extensions());
-
-//          fftw::dft(
-//              which_,
-//              ref_,
-//              the_ret
-//          );
-
-//          return the_ret;
-//      } else {
-//          return decay_type{this->begin(), this->end()};
-//      }
-//  }
-
-//  auto operator+() const& { return static_cast<decay_type>(*this); }
-//  auto operator+() && { return static_cast<decay_type>(std::move(*this)); }
-
-//  auto begin() const { return iterator{ref_.begin(), which_}; }
-//  auto end() const { return iterator{ref_.end(), which_}; }
-
-//  auto size() const { return ref_.size(); }
-//  auto extensions() const { return ref_.extensions(); }
-//  auto num_elements() const { return ref_.num_elements(); }
-
-//  auto base() const { return ref_.base(); }
-
-//  auto rotated() const {
-//      auto new_which = which_;
-//      std::rotate(new_which.begin(), new_which.begin() + 1, new_which.end());
-//      return fft_range<Origin, std::decay_t<decltype(ref_.rotated())>>{origin_, ref_.rotated(), new_which};
-//  }
-//  auto unrotated() const {
-//      auto new_which = which_;
-//      std::rotate(new_which.rbegin(), new_which.rbegin() + 1, new_which.rend());
-//      return fft_range<Origin, std::decay_t<decltype(ref_.unrotated())>>{origin_, ref_.unrotated(), new_which};
-//  }
-//  auto transposed() const {
-//      auto new_which = which_;
-//      std::swap(std::get<0>(new_which), std::get<1>(new_which));
-//      return fft_range<Origin, std::decay_t<decltype(ref_.transposed())>>{std::forward<Origin>(origin_), ref_.transposed(), new_which};
-//  }
-
-//  template<class... FBNs>
-//  auto operator()(FBNs... fbns) const {
-//      static_assert(sizeof...(fbns) <= std::decay_t<Array>::rank::value, "too many arguments");
-//      auto                                    new_which = which_;
-//      std::array<fftw::sign, sizeof...(fbns)> fbna{fbns...};
-//      std::transform(fbna.begin(), fbna.end(), new_which.begin(), new_which.begin(),
-//                     [](auto fbn, auto nw) {
-//                         if(fbn == fftw::none) {
-//                             return nw;
-//                         }
-//                         assert(nw == fftw::none);
-//                         return fbn;
-//                     }
-//      );
-//      return fft_range<Origin, std::decay_t<decltype(ref_())>>{std::forward<Origin>(origin_), ref_(), new_which};
-//  }
-// };
-
-// template<class Array>
-// auto ref(Array&& in) {
-//  return fft_range<Array&&, Array&&>{
-//      std::forward<Array>(in),
-//      std::forward<Array>(in),
-//      {}};
-// }
-
-// template<class Array> auto move(Array& in) { return fftw::ref(std::move(in)); }
-
-// template<dimensionality_type ND = 1, class Array>
-// auto fft(Array&& in) {
-//  std::array<fftw::sign, std::decay_t<Array>::rank::value> which{};
-//  std::fill_n(which.begin(), ND, fftw::forward);
-//  return fft_range<Array&&, Array&&>{std::forward<Array>(in), std::forward<Array>(in), which};
-// }
-
-// template<dimensionality_type ND = 1, class Array>
-// auto ifft(Array&& in) {
-//  std::array<fftw::sign, Array::rank::value> which{};
-//  std::fill_n(which.begin(), ND, fftw::backward);
-//  return fft_range{in, which};
-// }
-
 }  // end namespace boost::multi::fftw
-
 #endif
