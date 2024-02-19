@@ -40,8 +40,8 @@ class watch : private std::chrono::high_resolution_clock {
 	watch(watch const&) = delete;
 	watch(watch&&)      = default;
 
-	auto& operator=(watch const&) = delete;
-	auto& operator=(watch&&) = delete;
+	auto operator=(watch const&) = delete;
+	auto operator=(watch&&) = delete;
 
 	~watch() {
 		std::cerr << label << ": " << std::chrono::duration<double>(now() - start).count() << " sec" << std::endl;
