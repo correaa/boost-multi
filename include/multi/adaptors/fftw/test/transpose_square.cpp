@@ -19,17 +19,18 @@ BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 using complex = std::complex<double>;
 
-class watch : private std::chrono::high_resolution_clock {
+class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label;
 	time_point start = now();
 
  public:
-	explicit watch(std::string label) : label{std::move(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
+	explicit watch(std::string label) : label{std::move(label)} {}
+
 	watch(watch const&) = delete;
 	watch(watch&&) = delete;
 
-	auto operator=(watch const&) = delete;
-	auto operator=(watch&&) = delete;
+	auto& operator=(watch const&) = delete;
+	auto& operator=(watch&&) = delete;
 
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
 	~watch() { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
