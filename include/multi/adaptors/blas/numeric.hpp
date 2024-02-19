@@ -59,15 +59,17 @@ public:
 	constexpr explicit involuted(Ref& ref, Involution fun) : r_{ref}, f_{fun} {}  // r_{std::forward<Ref>(ref)}, f_{fun} {}
 	constexpr explicit involuted(Ref& ref) : r_{ref}, f_{} {}
 
-	auto operator=(involuted const& other) -> involuted& = delete;
-
 	~involuted() = default;
+
 	involuted(involuted const&) = delete;
-	involuted(involuted&&) noexcept = default; // for C++14
-	auto operator=(involuted&& other) noexcept -> involuted&{
-		r_ = std::move(other.r_);
-		return *this;
-	}
+	involuted(involuted&&) noexcept = default;
+
+	auto operator=(involuted const& other) -> involuted& = delete;
+	auto operator=(involuted&& other) noexcept -> involuted& = default;
+	// auto operator=(involuted&& other) noexcept -> involuted&{
+	//  r_ = std::move(other.r_);
+	//  return *this;
+	// }
 
 	constexpr auto decay() const& -> decay_type{return f_(r_);}
 
