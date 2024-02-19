@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2023 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
 
@@ -32,8 +31,8 @@ class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963)
 	watch(watch const&) = delete;
 	watch(watch&&) = delete;
 
-	auto& operator=(watch const&) = delete;
-	auto& operator=(watch&&) = delete;
+	auto operator=(watch const&) = delete;
+	auto operator=(watch&&) = delete;
 
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start_).count();}
 	~watch() { std::cerr<< label_ <<": "<< elapsed_sec() <<" sec"<<std::endl; }
