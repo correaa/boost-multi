@@ -745,11 +745,12 @@ sonar:
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
     - cd ..
     - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.cfamily.build-wrapper-output=bw-output -Dsonar.cfamily.gcov.reportsPath="build/"
-  # only:
-  #   - merge_requests
-  #   - master
-  #   - main
-  #   - develop
+  only:
+    - merge_requests
+    - master
+    - main
+    - develop
+  needs: ["g++"]
 
 # sonarcloud-check:
 #   stage: .post
