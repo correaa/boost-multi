@@ -80,7 +80,7 @@ template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_t
 #define DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 #define JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
-inline constexpr class /*adl_copy_n_t*/ {
+class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<0>/**/,          As&&... args) const DECLRETURN(std::                copy_n(                      std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(::thrust::           copy_n(                      std::forward<As>(args)...))
@@ -91,9 +91,10 @@ inline constexpr class /*adl_copy_n_t*/ {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_copy_n;
+};
+inline constexpr adl_copy_n_t adl_copy_n;
 
-inline constexpr class /*adl_move_t*/ {
+class adl_move_t {
 	template<class... As>           constexpr auto _(priority<0>/**/,                      As&&... args) const DECLRETURN(              std::    move(                      std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)  // there is no thrust::move algorithm
 	template<class It, class... As> constexpr auto _(priority<1>/**/, It first, It last, As&&... args) const DECLRETURN(           thrust::copy(std::make_move_iterator(first), std::make_move_iterator(last), std::forward<As>(args)...))
@@ -102,11 +103,12 @@ inline constexpr class /*adl_move_t*/ {
 	template<class T, class... As>  constexpr auto _(priority<3>/**/, T&& arg,             As&&... args) const DECLRETURN(std::decay_t<T>::    move(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class... As>  constexpr auto _(priority<4>/**/, T&& arg,             As&&... args) const DECLRETURN(std::forward<T>(arg).move(                      std::forward<As>(args)...))
 
-	public:
+ public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_move [[maybe_unused]];
+};
+inline constexpr adl_move_t adl_move;
 
-inline constexpr class /*adl_fill_n_t*/ {
+class adl_fill_n_t {
 	template<         class... As> constexpr auto _(priority<0>/**/,          As&&... args) const DECLRETURN(              std::  fill_n              (std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class... As> constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(           thrust::  fill_n              (std::forward<As>(args)...))
@@ -117,9 +119,10 @@ inline constexpr class /*adl_fill_n_t*/ {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_fill_n;
+};
+inline constexpr adl_fill_n_t adl_fill_n;
 
-inline constexpr class /*adl_equal_t*/ {
+class adl_equal_t {
 	template<         class...As> constexpr auto _(priority<1>/**/,          As&&...args) const DECLRETURN(               std::  equal(                      std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class...As> constexpr auto _(priority<2>/**/,          As&&...args) const DECLRETURN(          ::thrust::  equal(                      std::forward<As>(args)...))
@@ -131,7 +134,8 @@ inline constexpr class /*adl_equal_t*/ {
 
  public:
 	template<class...As>          constexpr auto operator()(As&&...args) const DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
-} adl_equal;
+};
+inline constexpr adl_equal_t adl_equal;
 
 template<class... Args> struct adl_custom_copy;
 
@@ -139,7 +143,7 @@ template<class... Args> struct adl_custom_copy;
 template<class... As, class = std::enable_if_t<sizeof...(As) == 0> > void copy(As...) = delete;
 #endif
 
-inline constexpr class /*adl_copy_t*/ {
+class adl_copy_t {
 	template<class InputIt, class OutputIt,
 		class=std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>
 	>
@@ -154,7 +158,8 @@ inline constexpr class /*adl_copy_t*/ {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN( _(priority<6>{}, std::forward<As>(args)...) ) \
-} adl_copy;
+};
+inline constexpr adl_copy_t adl_copy;
 
 namespace adl {
 	namespace custom {template<class...> struct fill_t;}
