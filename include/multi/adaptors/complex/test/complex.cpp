@@ -7,8 +7,9 @@
 #include <boost/mpl/list.hpp>
 
 #include "../../complex.hpp"
+#include <multi/array.hpp>
 
-#include<type_traits>
+#include <type_traits>
 
 namespace multi = boost::multi;
 
@@ -81,7 +82,7 @@ BOOST_AUTO_TEST_CASE(float_complex_assignment) {
 }
 
 BOOST_AUTO_TEST_CASE(float_complex_aggregate) {
-	static_assert( std::is_aggregate_v<multi::complex<float>> );
+	static_assert(std::is_aggregate_v<multi::complex<float>>);
 
 	// auto const c = multi::complex<float>{._real = 1.0, ._imag = 2.0};
 
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE(double_complex_abs) {
 
 BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {
 	using multi::literals::operator""_I;
-	multi::complex<double> zeta = 1.0 + 2.0_I;
+	multi::complex<double>       zeta = 1.0 + 2.0_I;
 	multi::complex<double> const yeta = 1.0 + 2.0_I;
 
 	zeta += yeta;
@@ -106,3 +107,25 @@ BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {
 	BOOST_REQUIRE( zeta == 2.0 * yeta );
 	BOOST_REQUIRE( zeta == yeta / 0.5 );
 }
+
+// BOOST_AUTO_TEST_CASE(complex_member_cast) {
+//  multi::array<multi::complex<double>, 2> A = {
+//      {  {1., 2.}, {3., 4.}},
+//      {{22., 33.}, {5., 9.}},
+//  };
+
+//  {
+//      auto&& Areal = A.member_cast<double>(&multi::complex<double>::re);
+//      auto&& Aimag = A.member_cast<double>(&multi::complex<double>::im);
+
+//      BOOST_REQUIRE(Areal[1][0] == 22.);
+//      BOOST_REQUIRE(Aimag[1][0] == 33.);
+//  }
+//  {
+//      auto&& Areal = A.member_cast<double>(&multi::complex<double>::re);
+//      auto&& Aimag = A.member_cast<double>(&multi::complex<double>::im);
+
+//      BOOST_REQUIRE(Areal[1][0] == 22.);
+//      BOOST_REQUIRE(Aimag[1][0] == 33.1);
+//  }
+// }
