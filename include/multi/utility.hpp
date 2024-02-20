@@ -235,7 +235,7 @@ inline auto has_data_aux(...     ) -> decltype(                          std::fa
 template<class T> struct has_data : decltype(detail::has_data_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>::value && !has_data_elements<std::decay_t<Array>>::value, int> =0>
-auto data_elements(Array& arr) {return arr.data();}
+auto data_elements(Array& arr) {return std::data(arr);}
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>::value && !has_data_elements<std::decay_t<Array>>::value, int> =0>
 auto data_elements(Array const& arr) {return std::data(arr);}  // .data();}
