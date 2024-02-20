@@ -341,7 +341,7 @@ class adl_uninitialized_move_n_t {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<4>{}, std::forward<As>(args)...);}
-} adl_uninitialized_move_n;
+};
 inline constexpr auto adl_uninitialized_move_n = adl_uninitialized_move_n_t{};
 
 namespace xtd {
