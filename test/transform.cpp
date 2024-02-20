@@ -8,10 +8,13 @@
 #include <complex>
 
 namespace test {
-constexpr struct neg_t {
+
+struct neg_t {
 	template<class T>
 	constexpr auto operator()(T const& value) const -> decltype(-value) { return -value; }
-} neg;
+};
+constexpr inline neg_t neg;
+
 }  // end namespace test
 
 namespace test {
