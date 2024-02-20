@@ -857,24 +857,28 @@ auto outer = [&]<typename T>(auto const& a, auto const& b, T&& C) {
 
 Note that the function `hadamard`, acting on 2D arrays, doesn't use the undefined (infinite) sizes (second dimension of `A` and first dimension of `B`).
 
-## Partially formed elements
+## Uninitialized vs. initialized elements
 
-The library can take advantage of types with [partially formed](https://marcmutz.wordpress.com/tag/partially-formed-state/) state when
-elements are trivial to construct (e.g., built-in types).
-In such cases, `multi::array` does not initialize individual elements unless specified.
-If trivial construction is unavailable, the library uses the default constructor.
+The library can take advantage of trivial initialization if it is available for specific element types.
+Such types can be primitive types or used defined with trivial default constructor.
+These types are characterized for having trivial default construction, i.e. a constructor that doesn't define or performs any operation, not even setting values.
 
-For example, after construction, the values of the six elements of this array are unspecified (partially formed).
+When used in the stack these types can be declared with no initialization (e.g. `double x;`, initial value is not well defined or partially-formed) or with initialization (e.g. `double x{};`, same as `double x = 0.0;`).
+Analogously, `multi::array` does not initialize individual elements of this kind of types, unless specified.
+
+For example, after this construction of the array, the values of the six elements of this array are unspecified (partially-formed).
 ```cpp
 multi::array<int, 2> A2({2, 3});
 ```
 
 No behavior of the program should depend on these values. 
 (Address sanitizers and memory checkers can detect this.)
-This design is a slight departure from the STL's design, which [immediatelly initializes elements in containers](https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/).
+This design is a slight departure from the STL's design, which [eagerly initializes elements in containers](https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/).
 
-For types that afford partially formed states, elements can be later specified via assignment or assigning algorithms (e.g., copy or transform destination).
-Initialization can be enforced by passing a value argument after the extensions.
+If trivial construction is unavailable, the library uses the default initialization.
+For types that afford this partially formed states, elements can be later specified via assignment or assigning algorithms (e.g., copy or transform destination).
+
+Initialization can be enforced by passing a single value argument after the extensions.
 ```cpp
 multi::array<int, 2> A2({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
 ```
@@ -886,9 +890,9 @@ Unfortunately, regarding the numeric types, STL's `std::complex<double>` was sta
 A workaround is possible by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
 ```cpp
 #include<multi/array.hpp>
-...
+
 template<> inline constexpr
-bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+bool multi::force_element_trivial_default_construction<std::complex<double>> = true;  // should be defined as early as possible
 ```
 
 With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
@@ -1135,6 +1139,10 @@ Both values are assignable, have the same element access patterns and iterator i
 They differ conceptually in their resizing operations: `multi::array<T, 1>` doesn't insert or push elements and resizing works differently.
 The difference is that the library doesn't implement *amortized* allocations; therefore, these operations would be of a higher complexity cost than the `std::vector`.
 For this reason, `resize(new_size)` is replaced with `reextent({new_size})` in `multi::array`, whose primary utility is for element preservation when necessary.
+
+In a depature from standard containers, elements are left initialized if they have trivial constructor.
+So, while `multi::array<T, 1> A({N}, T{})` is equivalent to `std::vector<T> V(N, T{})`, `multi::array<T, 1> A(N)` will leave elements `T` uninitialized if the type allows this (e.g. built-ins), unlike `std::vector<T> V(N)` which will initialize the values.
+RAII types (e.g. `std::string`) do not have trivial default constructor, therefore they are not affected by this rule.
 
 With the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`.
 
