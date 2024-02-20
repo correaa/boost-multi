@@ -431,7 +431,7 @@ auto alloc_uninitialized_fill_n(Alloc& alloc, ForwardIt first, Size n, T const& 
 }
 }  // end namespace xtd
 
-[[maybe_unused]] constexpr class adl_distance_t {
+class adl_distance_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const DECLRETURN(              std::    distance(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                       distance(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  distance(std::forward<T>(arg), std::forward<As>(args)...))
@@ -439,9 +439,10 @@ auto alloc_uninitialized_fill_n(Alloc& alloc, ForwardIt first, Size n, T const& 
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_distance;
+};
+inline constexpr adl_distance_t adl_distance;
 
-constexpr class adl_begin_t {
+class adl_begin_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(                std::begin(std::forward<As>(args)...))
 //  template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     begin(std::forward<As>(args)...))  // this is catching boost::range_iterator if Boost 1.53 is included
 // #if defined(__NVCC__)  // this is no thrust::begin
@@ -452,9 +453,10 @@ constexpr class adl_begin_t {
 
  public:
 	template<class... As> [[nodiscard]] constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_begin;
+};
+inline constexpr adl_begin_t adl_begin;
 
-constexpr class adl_end_t {
+class adl_end_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(              std::  end(std::forward<As>(args)...))
 	// template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     end(std::forward<As>(args)...))
 // #if defined(__NVCC__)  // this is no thrust::end
@@ -465,9 +467,10 @@ constexpr class adl_end_t {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_end;
+};
+inline constexpr adl_end_t adl_end;
 
-constexpr class adl_size_t {
+class adl_size_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(                std::size(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     size(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(    std::decay_t<T>::size(std::forward<T>(arg), std::forward<As>(args)...))
@@ -475,9 +478,10 @@ constexpr class adl_size_t {
 
  public:
 	template<class... As> [[nodiscard]] constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_size;
+};
+inline constexpr adl_size_t adl_size;
 
-constexpr class adl_swap_ranges_t {
+class adl_swap_ranges_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(              std::  swap_ranges(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     swap_ranges(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  swap_ranges(std::forward<T>(arg), std::forward<As>(args)...))
@@ -485,9 +489,10 @@ constexpr class adl_swap_ranges_t {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_swap_ranges;
+};
+inline constexpr adl_swap_ranges_t adl_swap_ranges;
 
-constexpr class adl_lexicographical_compare_t {
+class adl_lexicographical_compare_t {
 	template<class... As>          /*[[gnu::pure]]*/ constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(              std::  lexicographical_compare(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     lexicographical_compare(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::  lexicographical_compare(std::forward<T>(arg), std::forward<As>(args)...))
@@ -495,9 +500,10 @@ constexpr class adl_lexicographical_compare_t {
 
  public:
 	template<class... As> /*[[gnu::pure]]*/ constexpr   auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
-} adl_lexicographical_compare;
+};
+inline constexpr adl_lexicographical_compare_t adl_lexicographical_compare;
 
-constexpr class adl_uninitialized_value_construct_n_t {
+class adl_uninitialized_value_construct_n_t {
 	template<class... As>              constexpr auto _(priority<1>/**/,                      As&&... args) const DECLRETURN(              std::  uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 	template<class... As>              constexpr auto _(priority<2>/**/,                      As&&... args) const DECLRETURN(                     uninitialized_value_construct_n(std::forward<As>(args)...))
 	template<class T, class... As>     constexpr auto _(priority<3>/**/, T&& arg,             As&&... args) const DECLRETURN(  std::decay_t<T>::uninitialized_value_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
@@ -505,9 +511,10 @@ constexpr class adl_uninitialized_value_construct_n_t {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<4>{}, std::forward<As>(args)...));}
-} adl_uninitialized_value_construct_n;
+};
+inline constexpr adl_uninitialized_value_construct_n_t adl_uninitialized_value_construct_n;
 
-[[maybe_unused]] constexpr class adl_alloc_uninitialized_value_construct_n_t {
+class adl_alloc_uninitialized_value_construct_n_t {
 	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... args) const DECLRETURN(                       adl_uninitialized_value_construct_n(std::forward<As>(args)...))
 //  template<class... As>              constexpr auto _(priority<2>/**/,                    As&&... args) const DECLRETURN(              xtd::  alloc_uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 	template<class... As>              constexpr auto _(priority<3>/**/,                    As&&... args) const DECLRETURN(                     alloc_uninitialized_value_construct_n(std::forward<As>(args)...))
@@ -516,7 +523,8 @@ constexpr class adl_uninitialized_value_construct_n_t {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<5>{}, std::forward<As>(args)...));}
-} adl_alloc_uninitialized_value_construct_n;
+};
+inline constexpr adl_alloc_uninitialized_value_construct_n_t adl_alloc_uninitialized_value_construct_n;
 
 constexpr class adl_uninitialized_default_construct_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const {return                  std::  uninitialized_default_construct_n(                      std::forward<As>(args)...);}
