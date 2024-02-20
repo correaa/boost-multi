@@ -1,4 +1,4 @@
-// Copyright 2023 Alfredo A. Correa
+// Copyright 2023-2024 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 #define MULTI_DETAIL_STATIC_ALLOCATOR_HPP
@@ -11,7 +11,7 @@
 namespace boost::multi::detail {
 
 template<class T, std::size_t N>
-class static_allocator {
+class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semantics
 	bool dirty_ = false;
 	MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
 
