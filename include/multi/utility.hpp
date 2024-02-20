@@ -238,7 +238,7 @@ template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>::value && !
 auto data_elements(Array& arr) {return arr.data();}
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>::value && !has_data_elements<std::decay_t<Array>>::value, int> =0>
-auto data_elements(Array const& arr) {return arr.data();}
+auto data_elements(Array const& arr) {return std::data(arr);}  // .data();}
 
 template<class A, std::enable_if_t<!has_num_elements<A>::value && has_size<A>::value && has_data<A>::value, int> =0>
 constexpr auto num_elements(A const& arr) -> std::make_signed_t<decltype(arr.size())> {
