@@ -160,45 +160,4 @@ struct imag_t {
 }  // end namespace multi
 }  // end namespace boost
 
-// static_assert( boost::multi::is_trivially_default_constructible<std::complex<double>>::value );
-// static_assert( boost::multi::is_trivially_default_constructible<std::complex<float >>::value );
-
-// static_assert( boost::multi::is_trivial<std::complex<double>>::value );
-// static_assert( boost::multi::is_trivial<std::complex<float >>::value );
-
-#if defined(__INCLUDE_LEVEL__) && !__INCLUDE_LEVEL__
-
-#include "array.hpp"
-#include <cassert>
-
-namespace multi = boost::multi;
-
-template<class T> void what(T&&) = delete;
-
-int main() {
-
-	using complex = multi::complex<double>;
-
-	multi::array<complex, 2> A = {
-		{  {1., 2.}, {3., 4.}},
-		{{22., 33.}, {5., 9.}}
-                                                                                                   };
-
-	{
-		auto&& Areal = A.member_cast<double>(&multi::complex<double>::re);
-		auto&& Aimag = A.member_cast<double>(&multi::complex<double>::im);
-
-		assert(Areal[1][0] == 22.);
-		assert(Aimag[1][0] == 33.);
-	}
-	{
-		auto&& Areal = A.member_cast<double>(&multi::complex<double>::re);
-		auto&& Aimag = A.member_cast<double>(&multi::complex<double>::im);
-
-		assert(Areal[1][0] == 22.);
-		assert(Aimag[1][0] == 33.);
-	}
-}
-
-#endif
 #endif
