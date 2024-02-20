@@ -98,29 +98,11 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
 }
 
-BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub) {
+BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_list_init) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	auto* arrp = new double[4UL * 4UL];  // NOLINT(cppcoreguidelines-owning-memory)
+	auto* arrp = new double[4UL * 4UL]{0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0};
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	arrp[0]  = 0.0;
-	arrp[1]  = 1.0;
-	arrp[2]  = 2.0;
-	arrp[3]  = 3.0;
-	arrp[4]  = 5.0;
-	arrp[5]  = 6.0;
-	arrp[6]  = 7.0;
-	arrp[7]  = 8.0;
-	arrp[8]  = 10.0;
-	arrp[9]  = 11.0;
-	arrp[10] = 12.0;
-	arrp[11] = 13.0;
-	arrp[12] = 15.0;
-	arrp[13] = 16.0;
-	arrp[14] = 17.0;
-	arrp[15] = 18.0;
-	// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-
+	BOOST_REQUIRE( arrp[3] == 3.0 );
 	{
 		multi::array_ref<double, 2> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
@@ -577,11 +559,11 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 	}
 	{
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes1; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+		long sizes1;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes2; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+		long sizes2;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes3; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+		long sizes3;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -690,13 +672,13 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 }
 
-auto f1d5(double const(&carr)[5]) -> double;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-auto f1d5(double const(&carr)[5]) -> double {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(double const (&carr)[5]) -> double;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(double const (&carr)[5]) -> double {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	return carr[1];
 }
 
-void f2d54(double const(&carr)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-void f2d54(double const(&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void f2d54(double const (&carr)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void f2d54(double const (&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	BOOST_REQUIRE(carr[0][1] == 1.0);
 }
 
