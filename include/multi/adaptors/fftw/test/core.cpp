@@ -40,8 +40,8 @@ class watch : private std::chrono::high_resolution_clock {
 	watch(watch const&) = delete;
 	watch(watch&&)      = default;
 
-	auto operator=(watch const&)      = delete;
-	auto operator=(watch&&) -> watch& = default;  // NOLINT(fuchsia-trailing-return):
+	auto operator=(watch const&) = delete;
+	auto operator=(watch&&) = delete;
 
 	~watch() {
 		std::cerr << label << ": " << std::chrono::duration<double>(now() - start).count() << " sec" << std::endl;
@@ -49,13 +49,13 @@ class watch : private std::chrono::high_resolution_clock {
 };
 
 template<class T> class randomizer {
-	std::mt19937_64 gen_;  // NOSONAR
+	std::mt19937_64 gen_;  // NOSONAR rng good enough for the test
 
  public:
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
 
 	template<class M> void operator()(M&& arr) {
-		std::for_each(arr.begin(), arr.end(), [self = this](auto&& elem) { self->operator()(elem); });
+		std::for_each(std::begin(arr), std::end(arr), [self = this](auto&& elem) { self->operator()(elem); });
 	}
 	void operator()(T& elem) {  // NOLINT(runtime/references) passing by reference
 		std::normal_distribution<T> gauss;
@@ -64,13 +64,13 @@ template<class T> class randomizer {
 };
 
 template<class T> class randomizer<std::complex<T>> {
-	std::mt19937_64 gen_;  // NOSONAR
+	std::mt19937_64 gen_;  // NOSONAR rng good enough for the test
 
  public:
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
 
 	template<class M> void operator()(M&& arr) {
-		std::for_each(arr.begin(), arr.end(), [self = this](auto&& elem) { self->operator()(elem); });
+		std::for_each(std::begin(arr), std::end(arr), [self = this](auto&& elem) { self->operator()(elem); });
 	}
 	void operator()(std::complex<T>& zee) {  // NOLINT(runtime/references) : passing by reference
 		std::normal_distribution<T> gauss;

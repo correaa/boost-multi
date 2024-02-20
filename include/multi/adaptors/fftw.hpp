@@ -444,12 +444,12 @@ class plan {
 
 	[[nodiscard]] auto cost() const -> double { return fftw_cost(const_cast<fftw_plan>(impl_.get())); }  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 	[[nodiscard]] auto flops() const {
-		struct ret_t {
-			double add = 0.0;
-			double mul = 0.0;
-			double fma = 0.0;
+		struct /*ret_t&*/ {
+			double add = {};
+			double mul = {};
+			double fma = {};
 			//  explicit operator double() const{return add + mul + 2*fma;}
-		} ret{};
+		} ret;
 		fftw_flops(const_cast<fftw_plan>(impl_.get()), &ret.add, &ret.mul, &ret.fma);  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		return ret;
 	}
