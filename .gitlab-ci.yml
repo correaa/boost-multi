@@ -750,7 +750,7 @@ sonar:
   #   - master
   #   - main
   #   - develop
-  needs: ["g++"]
+  # needs: ["g++"]
 
 # sonarcloud-check:
 #   stage: .post
