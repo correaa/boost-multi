@@ -163,7 +163,7 @@ inline constexpr adl_copy_t adl_copy;
 
 namespace adl {
 	namespace custom {template<class...> struct fill_t;}
-	static constexpr class fill_t {
+	class fill_t {
 		template<class... As>          auto _(priority<1>/**/,          As&&... args) const DECLRETURN(              std::  fill              (std::forward<As>(args)...))
 		template<class... As>          auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     fill              (std::forward<As>(args)...))
 		template<class T, class... As> auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).fill              (std::forward<As>(args)...))
@@ -171,7 +171,8 @@ namespace adl {
 	
 	 public:
 		template<class... As> auto operator()(As&&... args) const DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
-	} fill [[maybe_unused]];
+	};
+	inline constexpr fill_t fill;
 }  // end namespace adl
 
 template<class Alloc>
@@ -281,7 +282,7 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 	return first;
 }
 
-constexpr class adl_uninitialized_copy_t {
+class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
 	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const
 	// DECLRETURN(       std::uninitialized_copy(first, last, d_first))
@@ -309,9 +310,10 @@ constexpr class adl_uninitialized_copy_t {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
-} adl_uninitialized_copy;
+};
+inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 
-constexpr class adl_uninitialized_copy_n_t {
+class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
@@ -328,9 +330,10 @@ constexpr class adl_uninitialized_copy_n_t {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<7>{}, std::forward<As>(args)...);}  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
-} adl_uninitialized_copy_n;
+};
+inline constexpr adl_uninitialized_copy_n_t adl_uninitialized_copy_n;
 
-constexpr class adl_uninitialized_move_n_t {
+class adl_uninitialized_move_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(              std::  uninitialized_move_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     uninitialized_move_n(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(std::decay_t<T>::    uninitialized_move_n(std::forward<T>(arg), std::forward<As>(args)...))
@@ -338,7 +341,8 @@ constexpr class adl_uninitialized_move_n_t {
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<4>{}, std::forward<As>(args)...);}
-} adl_uninitialized_move_n;
+};
+inline constexpr auto adl_uninitialized_move_n = adl_uninitialized_move_n_t{};
 
 namespace xtd {
 
