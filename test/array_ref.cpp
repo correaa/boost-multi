@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_unique_ptr) {
 
 	BOOST_REQUIRE( arrp[3] == 3.0 );
 	{
-		multi::array_ref<double, 2, double const*> const map(arrp.get(), {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		auto const& map = multi::array_cref<double, 2>(arrp.get(), {4, 4});
 
 		auto const& diag = map.diagonal();
 

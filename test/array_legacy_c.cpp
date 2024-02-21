@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		decltype(in)::dimensionality,
 		std::apply([](auto... sizes) { return std::array<int, 2>{{static_cast<int>(sizes)...}}; }, in.sizes()).data(),
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) testing legacy code
-		reinterpret_cast<fake::fftw_complex*>(const_cast<complex*>(in.data_elements())),
+		reinterpret_cast<fake::fftw_complex*>(const_cast<complex*>(in.data_elements())),  //NOSONAR
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): testing legacy code
 		reinterpret_cast<fake::fftw_complex*>(out.data_elements()),
 		1, 0
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 			{ 50.0,  6.0,  7.0,  8.0,  9.0},
 		};
 
-		//  #if __has_cpp_attribute(no_unique_address) >=201803L and not defined(__NVCC__) and not defined(__PGI)
+		//  #if __has_cpp_attribute(no_unique_address) >=201803L && ! defined(__NVCC__) && ! defined(__PGI)
 		//      BOOST_REQUIRE( sizeof(d2D)==sizeof(double*)+7*sizeof(std::size_t) );
 		//  #endif
 		BOOST_REQUIRE( d2D.is_compact() );
