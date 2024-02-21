@@ -221,16 +221,17 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing legacy types
 	double carr[5][3] = {
-  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing legacy types
 		{ 0.0,  1.0,  2.0},
 		{10.0, 11.0, 12.0},
 		{20.0, 21.0, 22.0},
 		{30.0, 31.0, 32.0},
-		{40.0, 41.0, 42.0}
-                                                                                                   };
+		{40.0, 41.0, 42.0},
+	};
 
-	using index_t                      = std::vector<double>::size_type;
+	using index_t = std::vector<double>::size_type;
+
 	multi::array<index_t, 1> const arr = {4, 3, 2, 1, 0};
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
