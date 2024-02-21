@@ -1021,16 +1021,6 @@ BOOST_AUTO_TEST_CASE(function_passing_4) {
 
 	BOOST_REQUIRE(  mut_trace_generic                              (arr) == 3  );
 	BOOST_REQUIRE(( mut_trace_generic<multi::array    <double, 2> >(arr) == 3 ));
-#if 0
-//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
-	BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2> >(arr) == 3 ));
-//  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2>&>(arr) == 3 ));  // can't generate element_type
-	BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr) == 3 ));
-//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr) == 3 ));  // can't generate element_type
-
-	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
-	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_fill_constructor) {
