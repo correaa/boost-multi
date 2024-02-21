@@ -988,8 +988,6 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 
 	auto deduce_element_sub = []<class T, class Ptr>(multi::subarray<T, 2, Ptr> const& a) { return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0}); };  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
-	// NOLINT cpplint 1.6.1 gets confused
-
 	BOOST_REQUIRE( deduce_element_sub(arr) == 3 );
 	BOOST_REQUIRE( deduce_element_sub(aref) == 3 );
 	BOOST_REQUIRE( deduce_element_sub(asub) == 3 );
@@ -998,7 +996,8 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 
 template<class T>
 auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
-	arr[0][1]        = 4.0;
+	arr[0][1] = 4.0;
+
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), T{0});
 }
