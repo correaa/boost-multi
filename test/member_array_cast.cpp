@@ -39,8 +39,8 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 			friend class particles_soa;
 
 		 public:  // NOLINT(whitespace/indent) nested class
-			reference(reference const&) = delete;
-			reference(reference&&) = delete;
+			// reference(reference const&) = delete;
+			// reference(reference&&) = delete;
 
 			auto operator=(reference const& other) -> reference& {  // NOLINT(cert-oop54-cpp)
 				std::tie(mass, position) = std::tie(other.mass, other.position);
