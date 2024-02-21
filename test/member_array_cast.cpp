@@ -17,6 +17,42 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
 	};
 
+	struct particle_reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		double& mass;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
+		v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
+
+		operator particle() const { return {mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
+		auto operator+() const { return operator particle(); }
+
+		particle_reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
+
+		private:  // NOLINT(whitespace/indent) nested class
+		friend class particles_soa;
+
+		public:  // NOLINT(whitespace/indent) nested class
+		// reference(reference const&) = delete;
+		// reference(reference&&) = delete;
+
+		auto operator=(particle other) -> auto& {
+			std::tie(mass, position) = std::forward_as_tuple(std::move(other.mass), std::move(other.position));
+			return *this;
+		}
+		auto operator=(particle_reference const& other) -> particle_reference& {
+			return operator=(static_cast<particle>(other));
+		}
+		// auto operator=(reference const& other) -> reference& {  // NOLINT(cert-oop54-cpp)
+		//  std::tie(mass, position) = std::tie(other.mass, other.position);
+		//  return *this;
+		// }
+		// auto operator=(reference&& other) noexcept -> reference& {
+		//  operator=(other);
+		//  return *this;
+		// }
+
+		auto operator==(particle_reference const& other) const { return std::tie(mass, position) == std::tie(other.mass, other.position); }
+		auto operator!=(particle_reference const& other) const { return std::tie(mass, position) != std::tie(other.mass, other.position); }
+	};
+
 	class particles_soa {
 		multi::array<double, 2> masses_;
 		multi::array<v3d, 2> positions_;
@@ -26,34 +62,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
 		: masses_{AoS.member_cast<double>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
 
-		struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-			double& mass;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
-			v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
-
-			operator particle() const { return {mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
-			auto operator+() const { return operator particle(); }
-
-			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
-
-		 private:  // NOLINT(whitespace/indent) nested class
-			friend class particles_soa;
-
-		 public:  // NOLINT(whitespace/indent) nested class
-			// reference(reference const&) = delete;
-			// reference(reference&&) = delete;
-
-			auto operator=(reference const& other) -> reference& {  // NOLINT(cert-oop54-cpp)
-				std::tie(mass, position) = std::tie(other.mass, other.position);
-				return *this;
-			}
-			auto operator=(reference&& other) noexcept -> reference& {
-				operator=(other);
-				return *this;
-			}
-
-			auto operator==(reference const& other) const { return std::tie(mass, position) == std::tie(other.mass, other.position); }
-			auto operator!=(reference const& other) const { return std::tie(mass, position) != std::tie(other.mass, other.position); }
-		};
+		using reference = particle_reference;
 
 		auto operator()(int eye, int jay) { return reference{masses_[eye][jay], positions_[eye][jay]}; }
 	};
