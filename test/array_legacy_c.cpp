@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		decltype(in)::dimensionality,
 		std::apply([](auto... sizes) { return std::array<int, 2>{{static_cast<int>(sizes)...}}; }, in.sizes()).data(),
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) testing legacy code
-		reinterpret_cast<fake::fftw_complex*>(const_cast<complex*>(in.data_elements())),
+		reinterpret_cast<fake::fftw_complex*>(const_cast<complex*>(in.data_elements())),  //NOSONAR
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): testing legacy code
 		reinterpret_cast<fake::fftw_complex*>(out.data_elements()),
 		1, 0
