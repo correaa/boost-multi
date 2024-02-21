@@ -30,18 +30,13 @@ struct sum_power {
 
 }  // end anonymous namespace
 
-class watch : private std::chrono::high_resolution_clock {
+class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+: private std::chrono::high_resolution_clock {
 	std::string label;
 	time_point  start = now();
 
  public:
 	explicit watch(std::string label) : label{std::move(label)} {}
-
-	// watch(watch const&) = delete;
-	// watch(watch&&)      = default;
-
-	// auto operator=(watch const&) = delete;
-	// auto operator=(watch&&) = delete;
 
 	~watch() {
 		std::cerr << label << ": " << std::chrono::duration<double>(now() - start).count() << " sec" << std::endl;
