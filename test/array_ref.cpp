@@ -99,10 +99,9 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_list_init) {
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	auto* arrp = new double[4UL * 4UL]{0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0};
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-owning-memory): test
+	auto* const arrp = new double[4UL * 4UL]{0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0};
 
-	BOOST_REQUIRE( arrp[3] == 3.0 );
 	{
 		multi::array_ref<double, 2> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
@@ -113,6 +112,22 @@ BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_list_init) {
 	}
 	delete[] arrp;  // NOLINT(cppcoreguidelines-owning-memory)
 }
+
+BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_unique_ptr) {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
+	std::unique_ptr<double[]> const arrp(new double[4UL * 4UL]{0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0});
+
+	BOOST_REQUIRE( arrp[3] == 3.0 );
+	{
+		multi::array_ref<double, 2> const map(arrp.get(), {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+
+		auto const& diag = map.diagonal();
+
+		BOOST_REQUIRE( diag.begin() != diag.end() );
+		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );  // is this UB?
+	}
+}
+
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
