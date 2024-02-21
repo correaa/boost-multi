@@ -32,14 +32,14 @@ struct sum_power {
 
 class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 : private std::chrono::high_resolution_clock {
-	std::string label;
-	time_point  start = now();
+	std::string label_;
+	time_point  start_ = now();
 
  public:
-	explicit watch(std::string label) : label{std::move(label)} {}
+	explicit watch(std::string label) : label_{std::move(label)} {}
 
 	~watch() {
-		std::cerr << label << ": " << std::chrono::duration<double>(now() - start).count() << " sec" << std::endl;
+		std::cerr << label_ << ": " << std::chrono::duration<double>(now() - start_).count() << " sec" << std::endl;
 	}
 };
 
@@ -75,28 +75,6 @@ template<class T> class randomizer<std::complex<T>> {
 
 using fftw_fixture = fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
-
-// BOOST_AUTO_TEST_CASE(fftw_3D) {
-//  using complex = std::complex<double>;  // TODO(correaa) make it work with thrust
-//  multi::array<complex, 3> in({10, 10, 10});
-//  in[2][3][4] = 99.0;
-//  multi::fftw::dft_forward(in);
-//  BOOST_REQUIRE(in[2][3][4] == 99.0);
-// }
-
-// BOOST_AUTO_TEST_CASE(fftw_1D_const) {
-//  using complex = std::complex<double>; [[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
-
-//  multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0 *I, 4.0 + 5.0*I, 5.0 + 6.0*I};
-
-//  auto fwd = multi::fftw::dft(in, fftw::forward);  // Fourier[in, FourierParameters -> {1, -1}]
-//  BOOST_REQUIRE( size(fwd) == size(in) );
-//  BOOST_REQUIRE( fwd[2] == -2.0 - 2.0*I  );
-//  BOOST_REQUIRE( in[1]  == +2.0 + 3.0*I  );
-
-//  auto bwd = multi::fftw::dft(in, fftw::forward);  // InverseFourier[in, FourierParameters -> {-1, -1}]
-//  BOOST_REQUIRE( bwd[2] == -2.0 - 2.0*I  );
-// }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
 	using complex = std::complex<double>;
@@ -238,7 +216,9 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
 	multi::array<complex, 3> io({4, 4, 4});
 	std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	auto const powerin = power(io);
+
 	//  fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
+
 	fftw::dft_forward(
 		{true, true, true},
 		multi::array_ref<complex, 3>(data_elements(io), extensions(io)),
@@ -248,7 +228,8 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
-	using complex                 = std::complex<double>;
+	using complex = std::complex<double>;
+
 	[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> const in = {
@@ -261,7 +242,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
-	using complex                 = std::complex<double>;
+	using complex = std::complex<double>;
+
 	[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> in = {
