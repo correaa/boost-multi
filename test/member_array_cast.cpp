@@ -34,6 +34,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 			auto operator+() const { return operator particle(); }
 
 			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
+			reference(particle& p) : mass{p.mass}, position{p.position} {}
 
 		 private:  // NOLINT(whitespace/indent) nested class
 			friend class particles_soa;
@@ -42,12 +43,12 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 			// reference(reference const&) = delete;
 			// reference(reference&&) = delete;
 
-			auto operator=(reference const& other) -> reference& {  // NOLINT(cert-oop54-cpp)
-				std::tie(mass, position) = std::tie(other.mass, other.position);
-				return *this;
-			}
+			// auto operator=(reference const& other) -> reference& {  // NOLINT(cert-oop54-cpp)
+			//  std::tie(mass, position) = std::tie(other.mass, other.position);
+			//  return *this;
+			// }
 			auto operator=(reference&& other) noexcept -> reference& {
-				operator=(other);
+				std::tie(mass, position) = std::tie(other.mass, other.position);
 				return *this;
 			}
 
