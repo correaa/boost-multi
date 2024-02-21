@@ -100,10 +100,10 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 
 BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_list_init) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-owning-memory): test
-	auto* const arrp = new double[4UL * 4UL]{0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0};
+	auto const* const arrp = new double const [4UL * 4UL] { 0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0 };
 
 	{
-		multi::array_ref<double, 2> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::array_ref<double, 2, double const*> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto const& diag = map.diagonal();
 
@@ -115,11 +115,11 @@ BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_list_init) {
 
 BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_unique_ptr) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	std::unique_ptr<double[]> const arrp(new double[4UL * 4UL]{0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0});
+	std::unique_ptr<double const[]> const arrp(new double const [4UL * 4UL] { 0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0 });
 
 	BOOST_REQUIRE( arrp[3] == 3.0 );
 	{
-		multi::array_ref<double, 2> const map(arrp.get(), {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::array_ref<double, 2, double const*> const map(arrp.get(), {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto const& diag = map.diagonal();
 
@@ -127,7 +127,6 @@ BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_unique_ptr) {
 		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );  // is this UB?
 	}
 }
-
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
@@ -897,35 +896,35 @@ template double trace_generic<multi::array<double, 2>>(multi::array<double, 2> c
 
 inline auto trace_separate_ref(multi::array_ref<double, 2> const& arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 inline auto trace_separate_sub(multi::subarray<double, 2> const& arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 inline auto trace_separate_ref2(multi::array_const_view<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 // unusable for arrays
 inline auto trace_separate_ref3(multi::array_view<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 // unusable for arrays
 inline auto trace_separate_ref4(multi::array_ref<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 // unusable for arrays
 inline auto trace_separate_sub4(multi::subarray<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 BOOST_AUTO_TEST_CASE(function_passing_3) {
@@ -994,33 +993,6 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 	BOOST_REQUIRE( deduce_element_sub(arr) == 3 );
 	BOOST_REQUIRE( deduce_element_sub(aref) == 3 );
 	BOOST_REQUIRE( deduce_element_sub(asub) == 3 );
-
-	//  BOOST_REQUIRE( trace_array_deduce        (arr) == 3 );
-	//  BOOST_REQUIRE( trace_array_deduce<double>(arr) == 3 );
-
-	//  BOOST_REQUIRE(  trace_generic                              (arr) == 3  );
-	//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr) == 3 ));
-	// //  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
-
-	//  BOOST_REQUIRE(  trace_generic                              (arr()) == 3  );
-	//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr()) == 3 ));  // this will make a copy
-	// //  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr()) == 3 ));  // can't generate element_type
-
-	//  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2> >(arr) == 3 ));
-	// //  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2>&>(arr) == 3 ));  // can't generate element_type
-	//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr) == 3 ));
-	// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr) == 3 ));  // can't generate element_type
-
-	// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr({0, 3}, {0, 3})) == 3 ));
-	// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr()) == 3 ));  // can't generate element_type
-
-	//  BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
-	//  BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
-
-	//  BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
-
-	//  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
-	//  BOOST_REQUIRE(( trace_separate_sub3                        (arr) == 3 ));  // not allowed
 }
 #endif
 
@@ -1035,7 +1007,8 @@ template double mut_trace_array_deduce(multi::array<double, 2>&);
 
 template<class Array, typename T = typename Array::element_type>
 auto mut_trace_generic(Array& arr) -> T {
-	arr[0][1]        = 4.0;
+	arr[0][1] = 4.0;
+
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), T{0});
 }
