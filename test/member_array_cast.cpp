@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		// reference(reference&&) = delete;
 
 		auto operator=(particle other) -> auto& {
-			std::tie(mass, position) = std::forward_as_tuple(std::move(other.mass), std::move(other.position));
+			std::tie(mass, position) = std::forward_as_tuple(std::move(other).mass, std::move(other).position);
 			return *this;
 		}
 		auto operator=(particle_reference const& other) -> particle_reference& {
