@@ -23,7 +23,8 @@ template<class Involution, class It> class involuter;
 
 template<class Involution, class Ref>
 class involuted {
-	Ref         r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+	Ref r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+
 	friend auto underlying(involuted& self) -> decltype(auto) { return self.r_; }
 	friend auto underlying(involuted&& self) -> decltype(auto) { return self.r_; }
 	friend auto underlying(involuted const& self) -> decltype(auto) { return self.r_; }
