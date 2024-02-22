@@ -134,9 +134,6 @@ class involuted {
 template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;
 #endif
 
-template<class It, class F, class Reference>
-class involuter;
-
 template<class It, class F>
 auto default_allocator_of(involuter<It, F> const& iv) {
 	return default_allocator_of(iv.it_);
@@ -212,7 +209,7 @@ template<class It> using negater  = involuter<It, std::negate<>>;
 struct conjugate {
 	template<class Complex>
 	constexpr auto operator()(Complex const& zee) const {
-		//  using std::conj;  /*for doubles?*/
+		//  using std::conj;  // for doubles?
 		return conj(zee);
 	}
 
