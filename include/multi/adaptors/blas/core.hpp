@@ -603,15 +603,6 @@ template<> struct is_context<context const&> : std::true_type  {};
 
 template<> struct is_context<void*&> : std::true_type {};
 
-namespace core {
-
-// template<class Context, class... As>
-// auto copy(Context&& /*unused*/, As... args)
-// ->decltype(core::copy(args...)) {
-//  return core::copy(args...); }
-
-}  // end namespace core
-
 template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0>
 auto default_context_of(TPtr const& /*unused*/) -> blas::context* {
 	static blas::context dc;
