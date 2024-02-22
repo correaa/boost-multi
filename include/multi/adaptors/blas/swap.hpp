@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_SWAP_HPP
 #define MULTI_ADAPTORS_BLAS_SWAP_HPP
@@ -26,8 +25,7 @@ auto swap(It1 first, It2 last, It2 first2) -> It2 {
 template<class X1D, class Y1D>
 auto swap(X1D&& x, Y1D&& y) -> Y1D&& {  // NOLINT(readability-identifier-length) x, y conventional blas names
 	assert( size(x) == size(y) );
-//  assert( offset(x) == 0 and offset(y) == 0 );
-	swap( begin(x), end(x), begin(y) );
+	swap( std::begin(x), std::end(std::forward<X1D>(x)), std::begin(y) );
 	return std::forward<Y1D>(y);
 }
 
@@ -37,7 +35,7 @@ auto swap(X1D const& x, Y1D const& y) = delete;  // NOLINT(readability-identifie
 template<class X1D, class Y1D>
 auto operator^(X1D&& x, Y1D&& y) {  // NOLINT(readability-identifier-length) BLAS naming
 	blas::swap(x, y);
-	return std::tie(x, y);
+	return std::tie(std::forward<X1D>(x), std::forward<Y1D>(y));  // or use std::forward_as_tuple ?
 }
 
 namespace operators {

@@ -1,12 +1,3 @@
-# -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-#[=[Multi Test suite can be run like this:
-  mkdir -p build
-  cd build
-  cmake .. [-DENABLE_CUDA=1]
-  make -j
-  ctest -j --output-on-error [-T memcheck]
-  exit
-#]=]
 cmake_minimum_required(VERSION 3.18)
 
 if((NOT
@@ -130,7 +121,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
-	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
+	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
+	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_MODULE="C++ Unit Tests for Multi BLAS")
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
 
