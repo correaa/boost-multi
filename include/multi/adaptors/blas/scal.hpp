@@ -1,8 +1,8 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_SCAL_HPP
 #define MULTI_ADAPTORS_BLAS_SCAL_HPP
+#pragma once
 
 #include "../blas/core.hpp"
 
@@ -37,8 +37,8 @@ class scal_range {
 	explicit scal_range(A const& alpha) : alpha_{alpha} {}
 	template<class X1D>
 	friend auto operator*=(X1D&& x, scal_range const& self)  // NOLINT(readability-identifier-length) conventional BLAS naming
-	->decltype(std::forward<X1D>(scal(std::declval<scalar_type const&>(), x))) {
-		return std::forward<X1D>(scal(self.alpha_, x));}
+	->decltype(std::forward<X1D>(scal(std::declval<scalar_type const&>(), std::forward<X1D>(x)))) {
+		return std::forward<X1D>(scal(self.alpha_, std::forward<X1D>(x)));}
 };
 
 template<class A> auto scal(A const& array) {return scal_range<A>{array};}

@@ -1,6 +1,6 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS numeric"
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS numeric"
 #include<boost/test/unit_test.hpp>
 
 #include <multi/adaptors/blas/numeric.hpp>
