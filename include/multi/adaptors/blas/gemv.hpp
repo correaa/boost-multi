@@ -105,8 +105,8 @@ class gemv_iterator {
 	}
 	template<class It1DOut>
 	friend auto copy_n(gemv_iterator first, difference_type count, It1DOut result){
-		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             first.alpha_, first.m_it_, count, first.v_first_, 0., result);}  // NOLINT(fuchsia-default-arguments-calls)
-		else                                        {blas::gemv_n(first.ctxt_, first.alpha_, first.m_it_, count, first.v_first_, 0., result);}  // NOLINT(fuchsia-default-arguments-calls)
+		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             first.alpha_, first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
+		else                                        {blas::gemv_n(first.ctxt_, first.alpha_, first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
 		return result + count;
 	}
 	template<class It1DOut>
@@ -130,7 +130,7 @@ class gemv_iterator {
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>
 class gemv_range {
-	Scalar alpha_ = 1.0;
+	Scalar alpha_{1.0};
 	It2D m_begin_;
 	It2D m_end_;
 	It1D v_first_;
