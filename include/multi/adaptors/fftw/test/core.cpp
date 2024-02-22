@@ -30,7 +30,7 @@ struct sum_power {
 
 }  // end anonymous namespace
 
-class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // NOSONAR
 : private std::chrono::high_resolution_clock {
 	std::string label_;
 	time_point  start_ = now();
