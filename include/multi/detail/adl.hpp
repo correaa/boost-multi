@@ -632,35 +632,37 @@ class uninitialized_fill_n_t {
 };
 inline constexpr uninitialized_fill_n_t adl_uninitialized_fill_n;
 
-[[maybe_unused]] constexpr class alloc_uninitialized_fill_n_t {
+class alloc_uninitialized_fill_n_t {
 	template<             class... As> constexpr auto _(priority<1>/**/,                   As&&... args) const DECLRETURN(                       xtd::alloc_uninitialized_fill_n(std::forward<As>(args)...))
 	template<class Alloc, class... As> constexpr auto _(priority<2>/**/, Alloc&&/*alloc*/, As&&... args) const DECLRETURN(                              adl_uninitialized_fill_n(std::forward<As>(args)...))
 	template<             class... As> constexpr auto _(priority<3>/**/,                   As&&... args) const DECLRETURN(                            alloc_uninitialized_fill_n(std::forward<As>(args)...))
 	template<class Alloc, class... As> constexpr auto _(priority<4>/**/, Alloc&&  alloc  , As&&... args) const DECLRETURN( std::forward<Alloc>(alloc).alloc_uninitialized_fill_n(std::forward<As>(args)...))
+
  public:
 	template<class T1, class... As> constexpr auto operator()(T1&& arg, As&&... args) const DECLRETURN(_(priority<4>{}, arg, std::forward<As>(args)...))
-} adl_alloc_uninitialized_fill_n;
-
-template<dimensionality_type N>
-struct recursive {
-	template<class Alloc, class InputIt, class ForwardIt>
-	static constexpr auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, ForwardIt dest){
-		using std::begin; using std::end;
-		while(first!=last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-			recursive<N-1>::alloc_uninitialized_copy(alloc, begin(*first), end(*first), begin(*dest));
-			++first;
-			++dest;
-		}
-		return dest;
-	}
 };
+inline constexpr alloc_uninitialized_fill_n_t adl_alloc_uninitialized_fill_n;
 
-template<> struct recursive<1> {
-	template<class Alloc, class InputIt, class ForwardIt>
-	static auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, ForwardIt dest){
-		return adl_alloc_uninitialized_copy(alloc, first, last, dest);
-	}
-};
+// template<dimensionality_type N>
+// struct recursive {
+//  template<class Alloc, class InputIt, class ForwardIt>
+//  static constexpr auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, ForwardIt dest){
+//      using std::begin; using std::end;
+//      while(first!=last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          recursive<N-1>::alloc_uninitialized_copy(alloc, begin(*first), end(*first), begin(*dest));
+//          ++first;
+//          ++dest;
+//      }
+//      return dest;
+//  }
+// };
+
+// template<> struct recursive<1> {
+//  template<class Alloc, class InputIt, class ForwardIt>
+//  static auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, ForwardIt dest){
+//      return adl_alloc_uninitialized_copy(alloc, first, last, dest);
+//  }
+// };
 
 }  // end namespace boost::multi
 #endif
