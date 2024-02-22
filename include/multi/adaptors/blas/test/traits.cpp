@@ -1,8 +1,6 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS traits"
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS traits"
 #include<boost/test/unit_test.hpp>
 
 #include "../../blas/traits.hpp"
