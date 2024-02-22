@@ -64,12 +64,13 @@ template<class T> class ref {
 
  public:
 //  explicit ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_} {}
-	~ref() = default;
-	auto operator=(ref const& other) -> ref& = delete;
-	constexpr ref(ref const& /*other*/) = delete;
-	constexpr ref(ref&& /*other*/) noexcept {}  // this is needed by nvcc, needs to be a device function for nvcc 11.2 and lower
+	// ~ref() = default;
+	// auto operator=(ref const& other) -> ref& = delete;
+	// constexpr ref(ref const& /*other*/) = delete;
+	// constexpr ref(ref&& /*other*/) noexcept {}  // this is needed by nvcc, needs to be a device function for nvcc 11.2 and lower
 
-	auto operator=(ref     && other) noexcept -> ref& = delete;  // {*p_ = std::move(*other.p_); return *this;}
+	// auto operator=(ref     && other) noexcept -> ref& = delete;  // {*p_ = std::move(*other.p_); return *this;}
+
 	constexpr operator T const&() const& {return ptr<T>::value;}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator): this class simulates a reference
 	auto operator==(ref const& /*other*/) const {return true;}

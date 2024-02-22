@@ -213,8 +213,8 @@ constexpr auto num_elements(A const& arr)
 }
 
 template<class T>
-       auto has_size_aux(T const& cont) -> decltype(cont.size(), std::true_type {});
-inline auto has_size_aux(...          ) -> decltype(             std::false_type{});
+       auto has_size_aux(T const& cont) -> decltype(std::size(cont), std::true_type {});
+inline auto has_size_aux(...          ) -> decltype(                 std::false_type{});
 template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class T>
