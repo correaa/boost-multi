@@ -39,7 +39,6 @@
 #define BLAS(NamE) cblas_##NamE
 #else
 #define BLAS(NamE) NamE##_
-extern "C" {
 
 #ifndef MULTI_BLAS_INT
 #if defined(__INTPTR_WIDTH__)
@@ -77,6 +76,8 @@ namespace core {
 	using size_t = INT;
 	using ssize_t = std::make_signed_t<size_t>;
 }  // end namespace core
+
+extern "C" {
 
 #define INTEGER INT const&
 #define N INTEGER n
