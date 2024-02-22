@@ -133,29 +133,25 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
 		{5.0,  6.0,  7.0,  8.0},
 		{9.0, 10.0, 11.0, 12.0},
 	};
-	{
-		double const res = blas::dot(cA[1], cA[2]);
-		BOOST_REQUIRE( res == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
-	}
-	{
-		double res = NAN;
-		blas::dot(cA[1], cA[2], res);
-		BOOST_REQUIRE( res == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
-	}
-	{
-		double res  = NAN;
-		auto   res2 = blas::dot(cA[1], cA[2], res);
-		BOOST_REQUIRE( res == res2 );
-	}
-	{
-		double const res = blas::dot(cA[1], cA[2]);
-		BOOST_REQUIRE( res == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
-		BOOST_REQUIRE( blas::dot(cA[1], cA[2]) == blas::dot(cA[2], cA[1]) );
-	}
+
+	double const res1 = blas::dot(cA[1], cA[2]);
+	BOOST_REQUIRE( res1 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
+
+	double res2 = NAN;
+	blas::dot(cA[1], cA[2], res2);
+	BOOST_REQUIRE( res2 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
+
+	double res_nan  = NAN;
+	auto const res3 = blas::dot(cA[1], cA[2], res_nan);
+	BOOST_REQUIRE( res3 == res2 );
+
+	double const res4 = blas::dot(cA[1], cA[2]);
+	BOOST_REQUIRE( res4 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
+	BOOST_REQUIRE( blas::dot(cA[1], cA[2]) == blas::dot(cA[2], cA[1]) );
 }
 
 BOOST_AUTO_TEST_CASE(inq_case) {
-	multi::array<double, 1>       x(multi::extensions_t<1>{multi::iextension{10}}, +1.0);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> const x(multi::extensions_t<1>{multi::iextension{10}}, +1.0);  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<double, 1> const y(multi::extensions_t<1>{multi::iextension{10}}, -1.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::conj;
@@ -194,35 +190,28 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 		{5.0 + 2.0 * I,  6.0 + 6.0 * I,  7.0 + 2.0 * I,  8.0 - 3.0 * I},
 		{9.0 + 1.0 * I, 10.0 + 9.0 * I, 11.0 + 1.0 * I, 12.0 + 2.0 * I},
 	};
-	{
-		auto c = complex{0.0, 0.0};  // NOLINT(readability-identifier-length) BLAS naming
-		blas::dot(A[1], A[2], c);
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
-	}
-	{
-		auto const c =+ blas::dot(A[1], A[2]);  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
-	}
-	{
-		complex const c = blas::dot(A[1], A[2]);  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
-	}
-	{
-		complex const c = blas::dot(A[1], blas::C(A[2]));  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * conj(omega);}) );
-	}
-	{
-		complex const c = blas::dot(blas::C(A[1]), A[2]);  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
-	}
-	{
-		complex const c = blas::dot(blas::conj(A[1]), A[2]);  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
-	}
-	{
-		complex const c = blas::dot(blas::C(A[1]), A[2]);  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
-	}
+
+	auto c1 = complex{0.0, 0.0};
+	blas::dot(A[1], A[2], c1);
+	BOOST_TEST_REQUIRE( c1 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
+
+	auto const c2 =+ blas::dot(A[1], A[2]);
+	BOOST_TEST_REQUIRE( c2 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
+
+	complex const c3 = blas::dot(A[1], A[2]);
+	BOOST_TEST_REQUIRE( c3 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
+
+	complex const c4 = blas::dot(A[1], blas::C(A[2]));
+	BOOST_TEST_REQUIRE( c4 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * conj(omega);}) );
+
+	complex const c5 = blas::dot(blas::C(A[1]), A[2]);
+	BOOST_TEST_REQUIRE( c5 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
+
+	complex const c6 = blas::dot(blas::conj(A[1]), A[2]);
+	BOOST_TEST_REQUIRE( c6 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
+
+	complex const c7 = blas::dot(blas::C(A[1]), A[2]);
+	BOOST_TEST_REQUIRE( c7 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
 }
 
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
@@ -243,40 +232,36 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
 		{3.0 - 4.0 * I, 19.0 - 1.0 * I},
 		{1.0 + 5.0 * I,  8.0 - 8.0 * I},
 	};
-	{
-		multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
 
-		auto CC = C;
+	multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
 
-		{
-			auto const [is, js] = C.extensions();
-			std::for_each(is.begin(), is.end(), [&, js = js](auto ii) {
-				std::for_each(js.begin(), js.end(), [&](auto jj) {
-					C[ii][jj] *= 0.0;
-					std::for_each(B.extension().begin(), B.extension().end(), [&](auto kk) {
-						C[ii][jj] += A[ii][kk] * conj(B[kk][jj]);
-					});
-				});
+	auto CC = C;
+
+	auto const [is, js] = C.extensions();
+	std::for_each(is.begin(), is.end(), [&, js = js](auto ii) {
+		std::for_each(js.begin(), js.end(), [&](auto jj) {
+			C[ii][jj] *= 0.0;
+			std::for_each(B.extension().begin(), B.extension().end(), [&](auto kk) {
+				C[ii][jj] += A[ii][kk] * conj(B[kk][jj]);
 			});
-		}
+		});
+	});
 
-		// TODO(correaa) MKL gives an error here
-		// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
-		{
-			std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
-				return std::transform(
-					       begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& Ce) {
-						       return 1.0 * blas::dot(Ar, blas::C(Bc)) + 0.0 * Ce;  // NOLINT(fuchsia-default-arguments-calls)
-					       }
-				       ),
-				       std::forward<decltype(Cr)>(Cr);
-			});
-		}
+	// TODO(correaa) MKL gives an error here
+	// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
+		return std::transform(
+					begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& Ce) {
+						return 1.0 * blas::dot(Ar, blas::C(Bc)) + 0.0 * Ce;  // NOLINT(fuchsia-default-arguments-calls)
+					}
+				),
+				std::forward<decltype(Cr)>(Cr);
+	});
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
-	}
+	BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+
+	BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 }
