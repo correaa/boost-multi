@@ -25,7 +25,7 @@ auto nrm2_n(It const& x, Size n, A0D res)  // NOLINT(readability-identifier-leng
 template<class A1D, class A0D>
 auto nrm2(A1D const& x, A0D&& res)  // NOLINT(readability-identifier-length) conventional BLAS naming
 //->decltype(nrm2_n(x.begin(), x.size(), &res)) {
-{   return nrm2_n(std::begin(x), x.size(), &res); }
+{   return nrm2_n(std::begin(x), x.size(), &std::forward<A0D>(res)); }
 
 template<class ItX, class Size>
 class nrm2_ptr {
@@ -63,23 +63,14 @@ struct nrm2_ref : private Ptr {
 	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type  //NOSONAR
 
 	auto decay() const -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}  // NOLINT(fuchsia-default-arguments-calls) complex
-	operator decay_type()       const {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) to allow terse syntax
-// #if not defined(__CUDACC__) or not defined(__INTEL_COMPILER)
+	operator decay_type()       const {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) //NOSONAR to allow terse syntax
+// #if ! defined(__CUDACC__) || ! defined(__INTEL_COMPILER)
 //  friend auto operator*(decay_type const& lhs, dot_ref const& self) {return lhs*self.decay();}
 // #endif
 	auto operator+() const -> decay_type {return decay();}
 
 	auto operator==(nrm2_ref const& other) const -> bool {return decay() == other.decay();}
 	auto operator!=(nrm2_ref const& other) const -> bool {return decay() != other.decay();}
-
-	// template<class Other>
-	// auto operator==(Other const& other) const
-	// ->decltype(decay()==other) {
-	//  return decay()==other; }
-	// template<class Other>
-	// auto operator!=(Other const& other) const
-	// ->decltype(decay()!=other) {
-	//  return decay()!=other; }
 };
 
 template<class X>

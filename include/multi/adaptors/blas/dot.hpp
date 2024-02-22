@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
 #define MULTI_ADAPTORS_BLAS_DOT_HPP
@@ -17,12 +16,12 @@ using core::dotc;
 template<class Context, class XIt, class Size, class YIt, class RPtr>
 auto dot_n(Context&& ctxt, XIt x_first, Size count, YIt y_first, RPtr rp) {
 	if constexpr(is_complex<typename XIt::value_type>{}) {
-		if      constexpr(!is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {ctxt->dotu(count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);}
-		else if constexpr(!is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {ctxt->dotc(count, underlying(base(y_first)), stride(y_first), base(x_first), stride(x_first), rp);}
-		else if constexpr( is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {ctxt->dotc(count, underlying(base(x_first)), stride(x_first), base(y_first), stride(y_first), rp);}
+		if      constexpr(!is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotu(count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);}
+		else if constexpr(!is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotc(count, underlying(base(y_first)), stride(y_first), base(x_first), stride(x_first), rp);}
+		else if constexpr( is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotc(count, underlying(base(x_first)), stride(x_first), base(y_first), stride(y_first), rp);}
 		else if constexpr( is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {static_assert(!sizeof(XIt*), "not implemented in blas");}
 	} else {
-                                                                           ctxt->dot (count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
+                                                                           std::forward<Context>(ctxt)->dot (count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
 	}
 	struct{XIt x_last; YIt y_last;} ret{x_first + count, y_first + count};
 	return ret;
@@ -100,8 +99,8 @@ struct dot_ref : private Ptr {
 	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type  //NOSONAR
 
 	auto decay() const -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}  // NOLINT(fuchsia-default-arguments-calls)
-	operator decay_type()       const {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) to allow terse syntax
-#if ! defined(__CUDACC__) or ! defined(__INTEL_COMPILER)
+	operator decay_type()       const {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) //NOSONAR to allow terse syntax
+#if ! defined(__CUDACC__) || ! defined(__INTEL_COMPILER)
 	friend auto operator*(decay_type const& lhs, dot_ref const& self) {return lhs*self.decay();}
 #endif
 	auto operator+() const -> decay_type {return decay();}
