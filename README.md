@@ -1506,7 +1506,7 @@ auto pool = thrust::mr::disjoint_unsynchronized_pool_resource(
 );
 
 // memory is handled by pool, not by the system allocator
-multi::array<int, 2, thrust::mr::allocator<int, decltype(pool)>> arr({1000 - i%10, 1000 + i%10}, &pool);  // or multi::mr::array<int, 2, decltype(pool)> for short
+multi::array<int, 2, thrust::mr::allocator<int, decltype(pool)>> arr({1000, 1000}, &pool);
 ```
 
 The associated pointer type for the array data is deduced from the _upstream_ resource; in this case, `thrust::universal_ptr<int>`.
