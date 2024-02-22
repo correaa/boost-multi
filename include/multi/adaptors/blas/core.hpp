@@ -407,12 +407,12 @@ template<> struct blas2<d> {template<class... As> static v    trsv(As... args)  
 template<> struct blas2<c> {template<class... As> static v    trsv(As... args)                                   {BLAS(ctrsv)(args...);}};
 template<> struct blas2<z> {template<class... As> static auto trsv(As... args) -> decltype(BLAS(ztrsv)(args...)) {BLAS(ztrsv)(args...);}};
 
-namespace core {
-	template<typename TconstP, typename TP, typename S=std::size_t, typename C=char>
-	v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx) {  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);
-	}
-}  // end namespace core
+// namespace core {
+//  template<typename TconstP, typename TP, typename S=std::size_t, typename C=char>
+//  v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx) {  // NOLINT(readability-identifier-length) conventional BLAS naming
+//      blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);
+//  }
+// }  // end namespace core
 
 //#undef xgemv
 // #undef xger
