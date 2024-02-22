@@ -49,8 +49,8 @@ template<class T> class randomizer {
  public:
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
 
-	template<class M> void operator()(M&& arr) {
-		std::for_each(std::begin(arr), std::end(arr), [self = this](auto&& elem) { self->operator()(elem); });
+	template<class M, class R = typename std::decay_t<M>::reference> void operator()(M&& arr) {
+		std::for_each(std::begin(arr), std::end(arr), [self = this](R elem) { self->operator()(elem); });
 	}
 	void operator()(T& elem) {  // NOLINT(runtime/references) passing by reference
 		std::normal_distribution<T> gauss;
@@ -64,8 +64,8 @@ template<class T> class randomizer<std::complex<T>> {
  public:
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
 
-	template<class M> void operator()(M&& arr) {
-		std::for_each(std::begin(arr), std::end(arr), [self = this](auto&& elem) { self->operator()(elem); });
+	template<class M, class R = typename std::decay_t<M>::reference> void operator()(M&& arr) {
+		std::for_each(std::begin(arr), std::end(arr), [self = this](R elem) { self->operator()(elem); });
 	}
 	void operator()(std::complex<T>& zee) {  // NOLINT(runtime/references) : passing by reference
 		std::normal_distribution<T> gauss;
