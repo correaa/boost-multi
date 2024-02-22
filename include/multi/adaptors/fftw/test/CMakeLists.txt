@@ -86,7 +86,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
-	
+	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_MODULE="C++ Unit Tests for Multi FFTW")
+
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 
@@ -146,8 +147,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					  $<$<CXX_COMPILER_ID:MSVC>:
 					  /W4>
 		  )
-        else()
-          target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
         endif()
 	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
