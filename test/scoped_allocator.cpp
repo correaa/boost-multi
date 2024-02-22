@@ -86,7 +86,7 @@ class allocator2 {
 
 template<class T, class U>
 auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept {
-	return ! (self == other); 
+	return ! (self == other);
 }
 
 BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {

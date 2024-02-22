@@ -21,7 +21,7 @@ namespace utf = boost::unit_test::framework;
 using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
-class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963) this class will report timing on destruction
+class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label_;
 	time_point start_ = now();
 
@@ -29,10 +29,6 @@ class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963)
 	explicit watch(std::string label) : label_{std::move(label)} {}
 
 	watch(watch const&) = delete;
-	watch(watch&&) = delete;
-
-	auto operator=(watch const&) = delete;
-	auto operator=(watch&&) = delete;
 
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start_).count();}
 	~watch() { std::cerr<< label_ <<": "<< elapsed_sec() <<" sec"<<std::endl; }

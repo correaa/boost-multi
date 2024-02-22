@@ -33,8 +33,9 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 			operator particle() const { return {mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
 			auto operator+() const { return operator particle(); }
 
+			// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+			reference(particle& other) : reference{other.mass, other.position} {} // NOLINT(runtime/explicit)
 			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
-			reference(particle& other) : reference{other.mass, other.position} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 		 private:  // NOLINT(whitespace/indent) nested class
 			friend class particles_soa;

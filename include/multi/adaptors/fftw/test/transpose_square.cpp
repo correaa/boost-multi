@@ -19,7 +19,8 @@ BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 using complex = std::complex<double>;
 
-class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963) this class will report timing on destruction
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+class watch : private std::chrono::high_resolution_clock {
 	std::string label;
 	time_point start = now();
 
@@ -27,13 +28,9 @@ class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963)
 	explicit watch(std::string label) : label{std::move(label)} {}
 
 	watch(watch const&) = delete;
-	watch(watch&&) = delete;
-
-	auto operator=(watch const&) = delete;
-	auto operator=(watch&&) = delete;
 
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
-	~watch() { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
+	~watch() noexcept(false) { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
 };
 
 BOOST_AUTO_TEST_CASE(fftw_transpose) {
