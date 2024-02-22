@@ -43,11 +43,16 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 			// reference(reference const&) = delete;
 			// reference(reference&&) = delete;
 
+			// auto operator=(reference const& other) -> reference& = delete;
 			// auto operator=(reference const& other) -> reference& {  // NOLINT(cert-oop54-cpp)
 			//  std::tie(mass, position) = std::tie(other.mass, other.position);
 			//  return *this;
 			// }
-			auto operator=(reference&& other) noexcept -> reference& {
+			auto operator=(reference const& other) && -> reference& {
+				operator=(static_cast<particle>(other));
+				return *this;
+			}
+			auto operator=(particle const& other) & -> reference& {
 				std::tie(mass, position) = std::tie(other.mass, other.position);
 				return *this;
 			}
