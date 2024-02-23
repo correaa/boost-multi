@@ -41,8 +41,8 @@ auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identi
 // #endif
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv, T, fp_types) {
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<T, 2> const a = {
-  // NOLINT(readability-identifier-length) BLAS naming
 		{ 9.0, 24.0, 30.0, 9.0},
 		{ 4.0, 10.0, 12.0, 7.0},
 		{14.0, 16.0, 36.0, 1.0},
@@ -63,9 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv, T, fp_types) {
 	}
 	{
 		multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
-
-		auto mv = blas::gemv(1.0, a, x);
-
+		auto               mv = blas::gemv(1.0, a, x);
 		copy_n(mv.begin(), mv.size(), y.begin());
 		BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
 
@@ -138,8 +136,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv_real_complex, T, fp_types) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<T>;
 	using std::abs;
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> const M = {
-  // NOLINT(readability-identifier-length) BLAS naming
 		{ {9.0, 0.0}, {24.0, 0.0}, {30.0, 0.0}, {9.0, 0.0}},
 		{ {4.0, 0.0}, {10.0, 0.0}, {12.0, 0.0}, {7.0, 0.0}},
 		{{14.0, 0.0}, {16.0, 0.0}, {36.0, 0.0}, {1.0, 0.0}},
