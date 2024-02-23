@@ -305,6 +305,8 @@ oneapi:
 oneapi-latest c++20:
   stage: build
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
+  tags:
+    - large-disk-space
   allow_failure: false
   script:
     - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
@@ -320,6 +322,8 @@ oneapi-latest c++20:
 oneapi-2022.2:
   stage: build
   image: intel/oneapi-hpckit:2022.2-devel-ubuntu20.04
+  tags:
+    - large-disk-space
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
