@@ -1493,7 +1493,7 @@ Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
 ### Thrust memory resources
 
-GPU memory is relative expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issue.
+GPU memory is relative expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issues.
 This is where special memory management is important, for example for avoiding real allocations when possible by caching and reusing memory blocks.
 
 Thrust implements both polymorphic and non-polymorphic memory resources via `thrust::mr::allocator<T, MemoryResource>`;
@@ -1511,7 +1511,7 @@ multi::array<int, 2, thrust::mr::allocator<int, decltype(pool)>> arr({1000, 1000
 
 The associated pointer type for the array data is deduced from the _upstream_ resource; in this case, `thrust::universal_ptr<int>`.
 
-As as quick recipe to improve performance in many cases, here it is a recipe for a `caching_allocator` which uses a global (one per thread) memory pool.
+As as quick way to improve performance in many cases, here it is a recipe for a `caching_allocator` which uses a global (one per thread) memory pool that can replace the default Thrust allocator.
 The requested memory resides in GPU (managed) memory (`thrust::cuda::universal_memory_resource`) while the cache _bookkeeping_ is held in CPU memory (`new_delete_resource`).
 
 ```cpp
@@ -1522,8 +1522,8 @@ struct caching_allocator : Base_ {
 			thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(),
 			thrust::mr::get_global_resource<thrust::mr::new_delete_resource>()
 		)} {}
-	caching_allocator(caching_allocator const&) : caching_allocator{} {}  // all caching allocator are equal
-	template<class U> struct rebind {using other = caching_allocator<U>;};
+	caching_allocator(caching_allocator const&) : caching_allocator{} {}  // all caching allocators are equal
+	template<class U> struct rebind { using other = caching_allocator<U>; };
 };
 ...
 int main() {
@@ -1535,13 +1535,13 @@ int main() {
 ```
 https://godbolt.org/z/rKG8PhsEh
 
-In the example, most of the memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
+In the example, most of the frequent memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
 
 ## CUDA C++
 
 CUDA is a dialect of C++ that allows writing pieces of code directly for GPU execution, known as "CUDA kernels".
-CUDA code is generally "low level" (less abstracted) but it can be used in combination with CUDA Thrust or the CUDA runtime library, specially to implement algorithm that are hard to implement otherwise.
+CUDA code is generally "low level" (less abstracted) but it can be used in combination with CUDA Thrust or the CUDA runtime library, specially to implement custom algorithms.
 Although code inside kernels has certain restrictions, most Multi expressions can be used. 
 (Most functions in Multi, except those involving memory allocations, are marked `__device__` to allow this.)
 
