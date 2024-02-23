@@ -201,8 +201,6 @@ BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 
 	void* buf = ::operator new(sizeof(D1));
 	D1* pd1 = new (buf) D1{AA[0]};
-	pd1->~D1();
+	pd1->~D1();  // NOSONAR(cpp:S3432) testing placement new
 	::operator delete(buf);
 }
-
-
