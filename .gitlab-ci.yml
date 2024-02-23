@@ -333,7 +333,7 @@ nvhpc:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
   tags:
-      - cpu  # needs tag "big-space"
+      - cpu  # needs tag "large-disk-space"
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
@@ -346,6 +346,8 @@ nvhpc:
 nvhpc-22.7:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.7-devel-cuda_multi-ubuntu22.04
+  tags:
+      - cpu  # needs tag "large-disk-space"
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
@@ -359,6 +361,8 @@ nvhpc-22.7:
 nvhpc-23.9 c++20:
   stage: build
   image: nvcr.io/nvidia/nvhpc:23.9-devel-cuda_multi-ubuntu22.04
+  tags:
+      - cpu  # needs tag "large-disk-space"
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
@@ -557,7 +561,7 @@ inq:
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
-    - ctest -j 2 --output-on-failure --timeout 600
+    - ctest -j 1 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
   needs: ["g++"]
 
