@@ -60,12 +60,8 @@ BOOST_AUTO_TEST_CASE(double_to_complex_conversion_documentation) {
 	// multi::array<double, 2> DEE2{ZEE};  // compilation error
 }
 
-void fun(multi::array<std::complex<float>, 2> /*unused*/);
-void fun(multi::array<std::complex<float>, 2> /*unused*/) {
-	/*no-op*/
-}
-
-  // NOLINT(performance-unnecessary-value-param)
+void fun(multi::array<std::complex<float>, 2> A);
+void fun(multi::array<std::complex<float>, 2> A) { A.clear(); }
 
 void gun(multi::array<std::complex<float>, 2> const& /*unused*/);
 void gun(multi::array<std::complex<float>, 2> const& /*unused*/) {
