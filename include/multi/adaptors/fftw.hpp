@@ -32,7 +32,7 @@ struct flags {
 
  public:
 	constexpr explicit flags(underlying_type underlying) : underlying_{underlying} {}
-	constexpr explicit    operator underlying_type() const { return underlying_; }
+	constexpr explicit operator underlying_type() const { return underlying_; }
 	friend constexpr auto operator|(flags f1, flags f2) { return flags{f1.underlying_ | f2.underlying_}; }
 };
 
@@ -279,7 +279,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign)
 #endif
 
 template<class InPtr, class In, class OutPtr, class Out, dimensionality_type D = In::rank_v>
-auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layout, OutPtr out_base, Out&& out_layout, int sign, fftw::flags /*flags*/) -> fftw_plan {
+auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layout, OutPtr out_base, Out const& out_layout, int sign, fftw::flags /*flags*/) -> fftw_plan {
 	assert(in_layout.extensions() == out_layout.extensions());
 
 	auto const sizes_tuple = in_layout.sizes();
@@ -290,11 +290,11 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 	using boost::multi::detail::get;
 	auto which_iodims = std::apply(
 		[](auto... elems) {
+			// clang-format off
 			return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems) + 1>{  // added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
-  // clang-format off
 				std::pair{get<0>(elems), fftw_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}}..., {},  // added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
-  // clang-format on
 			};
+			// clang-format on
 		},
 		boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple)
 	);
@@ -303,8 +303,8 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 	std::array<fftw_iodim64, D> dims{};
 	std::array<fftw_iodim64, D> howmany_dims{};
 
-	auto const                  dims_end = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
-	auto const                  howmany_dims_end = std::transform(part, which_iodims.end() - 1, howmany_dims.begin(), [](auto elem) { return elem.second; });
+	auto const dims_end         = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
+	auto const howmany_dims_end = std::transform(part, which_iodims.end() - 1, howmany_dims.begin(), [](auto elem) { return elem.second; });
 
 	assert(in_base);
 	assert(out_base);
@@ -317,7 +317,7 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 		/*int                 howmany_rank */ howmany_dims_end - howmany_dims.begin(),
 		/*const fftw_iodim   *howmany_dims */ howmany_dims.data(),
 		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ (in_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR FFTW is taken as non-const while it is really not touched
-		/*fftw_complex       *out          */                          (reinterpret_cast<fftw_complex      *>(/*static_cast<std::complex<double>       *>*/ (out_base))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		/*fftw_complex       *out          */ (reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>       *>*/ (out_base))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		sign, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
 	);
 
@@ -340,7 +340,7 @@ inline void initialize_threads() {
 	(void)good;
 }
 #else
-inline void initialize_threads() {}
+inline void           initialize_threads() {}
 #endif
 
 enum class sign : decltype(FFTW_FORWARD) {
@@ -351,8 +351,8 @@ enum class sign : decltype(FFTW_FORWARD) {
 
 #if(__cplusplus >= 202002L)
 using sign::backward;
-using sign::none;
 using sign::forward;
+using sign::none;
 #else
 constexpr inline auto backward = sign::backward;
 constexpr inline auto none     = sign::none;
@@ -377,13 +377,13 @@ class environment {
 	static void unset_timelimit() { ::fftw_set_timelimit(FFTW_NO_TIMELIMIT); }
 
  public:
-	environment()                      = default;
+	environment() = default;
 
-	environment(environment const&)    = delete;
-	environment(environment&&)         = delete;
+	environment(environment const&) = delete;
+	environment(environment&&)      = delete;
 
 	auto operator=(environment const&) -> environment& = delete;
-	auto operator=(environment     &&) -> environment& = delete;
+	auto operator=(environment&&) -> environment&      = delete;
 
 	template<class In, class Out>
 	auto make_plan_forward(std::array<bool, +In::rank_v> which, In const& in, Out&& out);
@@ -432,7 +432,7 @@ class plan {
 		::fftw_execute_dft(
 			const_cast<fftw_plan>(impl_.get()),  // NOLINT(cppcoreguidelines-pro-type-const-cast) https://www.fftw.org/fftw3_doc/Thread-safety.html
 			const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(in)),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) //NOSONAR to interface with legacy fftw
-			                          reinterpret_cast<fftw_complex      *>(out)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
+			reinterpret_cast<fftw_complex*>(out)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
 		);
 	}
 
@@ -477,9 +477,9 @@ class plan {
 	static int  nthreads_;
 	static bool initialized_threads_;
 #else
-	static constexpr auto is_thread_safe() -> bool { return false; }
-	static constexpr auto nthreads() -> bool { return true; }
-	static constexpr auto with_nthreads() -> int { return 1; }
+                                                                                                   static constexpr auto is_thread_safe() -> bool { return false; }
+                                                                                                   static constexpr auto nthreads() -> bool { return true; }
+                                                                                                   static constexpr auto with_nthreads() -> int { return 1; }
 #endif
 };
 
