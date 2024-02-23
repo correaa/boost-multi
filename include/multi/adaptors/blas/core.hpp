@@ -39,7 +39,6 @@
 #define BLAS(NamE) cblas_##NamE
 #else
 #define BLAS(NamE) NamE##_
-extern "C" {
 
 #ifndef MULTI_BLAS_INT
 #if defined(__INTPTR_WIDTH__)
@@ -77,6 +76,8 @@ namespace core {
 	using size_t = INT;
 	using ssize_t = std::make_signed_t<size_t>;
 }  // end namespace core
+
+extern "C" {
 
 #define INTEGER INT const&
 #define N INTEGER n
@@ -387,11 +388,11 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 
 #endif
 
-template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} && is_s<X>{} && is_s<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(sgemv)(trans, m, n, *a, reinterpret_cast<s const*>(ma), lda, reinterpret_cast<s const*>(x), incx, *b, reinterpret_cast<s*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR wrapped func has 11 params
-template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} && is_d<X>{} && is_d<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, *a, reinterpret_cast<d const*>(ma), lda, reinterpret_cast<d const*>(x), incx, *b, reinterpret_cast<d*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR wrapped func has 11 params
-template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} && is_c<X>{} && is_c<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(cgemv)(trans, m, n, *a, reinterpret_cast<c const*>(ma), lda, reinterpret_cast<c const*>(x), incx, *b, reinterpret_cast<c*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR wrapped func has 11 params
+template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} && is_s<X>{} && is_s<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(sgemv)(trans, m, n, *a, reinterpret_cast<s const*>(ma), lda, reinterpret_cast<s const*>(x), incx, *b, reinterpret_cast<s*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
+template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} && is_d<X>{} && is_d<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, *a, reinterpret_cast<d const*>(ma), lda, reinterpret_cast<d const*>(x), incx, *b, reinterpret_cast<d*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
+template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} && is_c<X>{} && is_c<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(cgemv)(trans, m, n, *a, reinterpret_cast<c const*>(ma), lda, reinterpret_cast<c const*>(x), incx, *b, reinterpret_cast<c*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
 template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} && is_z<X>{} && is_z<Y>{} && is_assignable<Y&, decltype(std::declval<A const&>()*std::declval<M const&>()*std::declval<X const&>()+std::declval<B const&>()*std::declval<Y const&>())>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)  //NOSONAR wrapped func has 11 params
-	BLAS(zgemv)(trans, m, n, *a, reinterpret_cast<z const*>(ma), lda, reinterpret_cast<z const*>(x), incx, *b, reinterpret_cast<z*>(y), incy);  // NOLINT(fuchsia-default-arguments-calls,google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
+	BLAS(zgemv)(trans, m, n, *a, reinterpret_cast<z const*>(ma), lda, reinterpret_cast<z const*>(x), incx, *b, reinterpret_cast<z*>(y), incy);  // NOLINT(fuchsia-default-arguments-calls,google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)  // NOSONAR
 }
 
 }  // end namespace core
@@ -601,15 +602,6 @@ template<> struct is_context<context&>       : std::true_type  {};
 template<> struct is_context<context const&> : std::true_type  {};
 
 template<> struct is_context<void*&> : std::true_type {};
-
-namespace core {
-
-// template<class Context, class... As>
-// auto copy(Context&& /*unused*/, As... args)
-// ->decltype(core::copy(args...)) {
-//  return core::copy(args...); }
-
-}  // end namespace core
 
 template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0>
 auto default_context_of(TPtr const& /*unused*/) -> blas::context* {
