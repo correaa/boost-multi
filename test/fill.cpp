@@ -103,6 +103,7 @@ BOOST_AUTO_TEST_CASE(fill_member) {
 	BOOST_REQUIRE(   d2D.elements()[3]      == 18.0                 );
 	BOOST_REQUIRE( &*d2D.elements().begin() == d2D.data_elements() );
 	BOOST_REQUIRE( &*d2D.elements().end()   == d2D.data_elements() + d2D.num_elements() );
+
 	//  std::fill( d2D.elements().begin(), d2D.elements().end() , 99. );
 	//  multi::adl_fill_n( d2D.elements().begin(), d2D.elements().size(), 99. );
 	d2D.elements().fill(99.0);
@@ -132,7 +133,7 @@ BOOST_AUTO_TEST_CASE(fill) {
 	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 8.0);
 	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& elem) { return elem == 8.0;}) );
 
-	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.);
+	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.0);
 	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) { return elem == 8.0;}) );
 
 	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937_64(randdev())]() mutable { return gauss(gen); };  //NOSONAR
