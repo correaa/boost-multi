@@ -336,8 +336,9 @@ namespace fftw {
 inline auto initialize_threads() -> bool {
 #if HAVE_FFTW3_THREADS
 	return fftw_init_threads();
-#endif
+#else
 	return false;
+#endif
 }
 
 enum class sign : decltype(FFTW_FORWARD) {
