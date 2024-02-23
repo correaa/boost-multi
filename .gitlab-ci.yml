@@ -570,7 +570,7 @@ inq cuda:
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
-    - nvidia-docker
+    - nvidia-docker  # needs tag "nvidia-gpu"
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
   script:
