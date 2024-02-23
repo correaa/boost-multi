@@ -175,13 +175,13 @@ namespace adl {
 	inline constexpr fill_t fill;
 }  // end namespace adl
 
-template<class Alloc>
-struct alloc_construct_elem_t {
-	Alloc* palloc_;
-	template<class T> auto operator()(T&& ptr) const
-	->decltype(std::allocator_traits<Alloc>::construct(*palloc_, std::addressof(ptr))) {
-		return std::allocator_traits<Alloc>::construct(*palloc_, std::addressof(ptr)); }
-};
+// template<class Alloc>
+// struct alloc_construct_elem_t {
+//  Alloc* palloc_;
+//  template<class T> auto operator()(T&& ptr) const
+//  ->decltype(std::allocator_traits<Alloc>::construct(*palloc_, std::addressof(ptr))) {
+//      return std::allocator_traits<Alloc>::construct(*palloc_, std::addressof(ptr)); }
+// };
 
 namespace xtd {
 
@@ -255,12 +255,12 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 
 }  // end namespace xtd
 
-template<class Alloc> struct alloc_destroy_elem_t {
-	Alloc* palloc_;
-	template<class T> constexpr auto operator()(T&& ptr) const {  // ->decltype(std::allocator_traits<Alloc>::construct(*palloc_, std::forward<T>(t)...)){
-		return std::allocator_traits<Alloc>::destroy(*palloc_, std::addressof(ptr));
-	}
-};
+// template<class Alloc> struct alloc_destroy_elem_t {
+//  Alloc* palloc_;
+//  template<class T> constexpr auto operator()(T&& ptr) const {  // ->decltype(std::allocator_traits<Alloc>::construct(*palloc_, std::forward<T>(t)...)){
+//      return std::allocator_traits<Alloc>::destroy(*palloc_, std::addressof(ptr));
+//  }
+// };
 
 template<class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
 constexpr auto destroy_n(BidirIt first, Size count)
@@ -628,7 +628,7 @@ class uninitialized_fill_n_t {
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN( std::forward<T>(arg).uninitialized_fill_n(std::forward<As>(args)...))
 
  public:
-	template<class T1, class... As> constexpr auto operator()(T1&& arg, As&&... args) const DECLRETURN(_(priority<4>{}, arg, std::forward<As>(args)...))
+	template<class T1, class... As> constexpr auto operator()(T1&& arg, As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<T1>(arg), std::forward<As>(args)...))
 };
 inline constexpr uninitialized_fill_n_t adl_uninitialized_fill_n;
 
@@ -639,7 +639,7 @@ class alloc_uninitialized_fill_n_t {
 	template<class Alloc, class... As> constexpr auto _(priority<4>/**/, Alloc&&  alloc  , As&&... args) const DECLRETURN( std::forward<Alloc>(alloc).alloc_uninitialized_fill_n(std::forward<As>(args)...))
 
  public:
-	template<class T1, class... As> constexpr auto operator()(T1&& arg, As&&... args) const DECLRETURN(_(priority<4>{}, arg, std::forward<As>(args)...))
+	template<class T1, class... As> constexpr auto operator()(T1&& arg, As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<T1>(arg), std::forward<As>(args)...))
 };
 inline constexpr alloc_uninitialized_fill_n_t adl_alloc_uninitialized_fill_n;
 
