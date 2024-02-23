@@ -107,13 +107,13 @@ BOOST_AUTO_TEST_CASE(layout_tuple_2d) {
 	multi::extensions_t<2> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}));
 	BOOST_REQUIRE( x1 == x3 );
 
-	multi::extensions_t<2> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52});
+	multi::extensions_t<2> const x4{std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52})};
 	BOOST_REQUIRE( x1 == x4 );
 
-	multi::extensions_t<2> const x5 = std::tuple{multi::iextension{0, 51}, multi::iextension{0, 52}};
+	multi::extensions_t<2> const x5{std::tuple{multi::iextension{0, 51}, multi::iextension{0, 52}}};
 	BOOST_REQUIRE( x1 == x5 );
 
-	multi::extensions_t<2> const x6 = std::tuple{51, 52};
+	multi::extensions_t<2> const x6{std::tuple{51, 52}};
 	BOOST_REQUIRE( x1 == x6 );
 
 	multi::extensions_t<2> const x7{51, 52};
@@ -137,13 +137,13 @@ BOOST_AUTO_TEST_CASE(layout_tuple_3d) {
 	multi::extensions_t<3> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}));
 	BOOST_REQUIRE( x1 == x3 );
 
-	multi::extensions_t<3> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53});
+	multi::extensions_t<3> const x4{std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53})};
 	BOOST_REQUIRE( x1 == x4 );
 
-	multi::extensions_t<3> const x5 = std::tuple{multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}};
+	multi::extensions_t<3> const x5{std::tuple{multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}}};
 	BOOST_REQUIRE( x1 == x5 );
 
-	multi::extensions_t<3> const x6 = std::tuple{51, 52, 53};
+	multi::extensions_t<3> const x6{std::tuple{51, 52, 53}};
 	BOOST_REQUIRE( x1 == x6 );
 
 	multi::extensions_t<3> const x7{51, 52, 53};

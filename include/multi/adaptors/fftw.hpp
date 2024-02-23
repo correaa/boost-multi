@@ -279,7 +279,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign)
 #endif
 
 template<class InPtr, class In, class OutPtr, class Out, dimensionality_type D = In::rank_v>
-auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layout, OutPtr out_base, Out&& out_layout, int sign, fftw::flags /*flags*/) -> fftw_plan {
+auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layout, OutPtr out_base, Out const& out_layout, int sign, fftw::flags /*flags*/) -> fftw_plan {
 	assert(in_layout.extensions() == out_layout.extensions());
 
 	auto const sizes_tuple = in_layout.sizes();
