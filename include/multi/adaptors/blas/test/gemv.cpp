@@ -19,7 +19,7 @@
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-using fp_types = boost::mpl::list<double, float>;
+using fp_types = boost::mpl::list<double, float>;  // old versions of Boost.Test need MPL Type lists explicitly
 
 template<class M, class VI, class VO>
 auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identifier-naming,readability-identifier-length) BLAS naming
