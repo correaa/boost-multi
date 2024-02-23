@@ -604,8 +604,8 @@ inq rocm:
   stage: test
   image: rocm/dev-ubuntu-22.04
   allow_failure: false
-  # tags:
-  #   - nvidia-docker
+  tags:
+    - large-disk-space
   script:
     - apt-get -qq update
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev rocm-device-libs wget
