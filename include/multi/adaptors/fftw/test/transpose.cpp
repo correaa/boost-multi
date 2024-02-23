@@ -11,7 +11,7 @@
 
 namespace multi = boost::multi;
 
-class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // NOSONAR
+class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 : private std::chrono::high_resolution_clock {
 	std::string label_;
 	time_point start_ = now();
@@ -20,7 +20,7 @@ class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-
 	explicit watch(std::string label) : label_{std::move(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
 
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start_).count();}
-	~watch() noexcept(false) {std::cerr<< label_ <<": "<< elapsed_sec() <<" sec"<<std::endl;}
+	~watch() {std::cerr<< label_ <<": "<< elapsed_sec() <<" sec"<<std::endl;}
 };
 
 using fftw_fixture = multi::fftw::environment;
