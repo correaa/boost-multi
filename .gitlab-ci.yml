@@ -291,6 +291,8 @@ clang++-oldoldstable:
 oneapi:
   stage: build
   image: intel/oneapi-hpckit:2023.0.0-devel-ubuntu22.04  # Intel(R) oneAPI DPC++/C++ Compiler 2023.0.0 (2023.0.0.20221201)
+  tags:
+    - cpu  # needs tag "big-space"
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -298,6 +300,7 @@ oneapi:
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
+
 
 oneapi-latest c++20:
   stage: build
@@ -329,6 +332,8 @@ oneapi-2022.2:
 nvhpc:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
+  tags:
+      - cpu  # needs tag "big-space"
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
