@@ -1,6 +1,5 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS dot"
 #include <boost/test/unit_test.hpp>
 
 #include <multi/adaptors/blas/dot.hpp>
@@ -216,9 +215,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
 	namespace blas = multi::blas;
+
 	using complex  = std::complex<double>;
-	// using T = complex;
 	using Alloc  = std::allocator<complex>;  // thrust::cuda::allocator<complex>;
+
 	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
