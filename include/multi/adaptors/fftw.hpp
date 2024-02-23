@@ -333,15 +333,12 @@ auto fftw_plan_dft(In const& in, Out&& out, int dir) {
 
 namespace fftw {
 
+inline auto initialize_threads() -> bool {
 #if HAVE_FFTW3_THREADS
-inline void initialize_threads() {
-	int good = fftw_init_threads();
-	assert(good);
-	(void)good;
-}
-#else
-inline void           initialize_threads() {}
+	return fftw_init_threads();
 #endif
+	return false;
+}
 
 enum class sign : decltype(FFTW_FORWARD) {
 	backward = FFTW_BACKWARD,
@@ -578,7 +575,8 @@ namespace boost::multi::fftw {
 
 template<class MDIterator>
 class fft_iterator {
-	MDIterator                                      base_;
+	MDIterator base_;
+
 	std::array<fftw::sign, MDIterator::rank::value> which_ = {};
 
  public:
@@ -586,7 +584,8 @@ class fft_iterator {
 
 	using difference_type = typename std::iterator_traits<MDIterator>::difference_type;
 	using value_type      = typename std::iterator_traits<MDIterator>::value_type;
-	using pointer         = void*;
+	using pointer         = std::nullptr_t;
+
 	class reference {
 		typename MDIterator::reference::extensions_type x_;
 		explicit reference(typename MDIterator::reference const& ref) : x_{ref.extensions()} {}

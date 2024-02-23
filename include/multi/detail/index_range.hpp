@@ -92,7 +92,7 @@ class range {
 			detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 		)* = nullptr
 	>
-	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) ranges are implicitly convertible if elements are implicitly convertible
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
 	template<
@@ -243,32 +243,15 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	: range<IndexType, IndexTypeLast>{first, last} {}
 
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extension_t(IndexType last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) because syntax convenience
+	constexpr extension_t(IndexType last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) allow terse syntax
 	: range<IndexType, IndexTypeLast>(0, last) {}
 
 	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
 	friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type {return self.size();}
 
-//  template<class OStream>
-//  friend auto operator<<(OStream& os, extension_t const& self) -> decltype(os<<"[]") {
-//      if(self.empty()) {
-//          return os << static_cast<range<IndexType> const&>(self);
-//      }
-//      if(self.first() == 0) {
-//          return os <<"["<< self.last() <<"]";
-//      }
-//      return os << static_cast<range<IndexType> const&>(self);
-//  }
-
-	// [[nodiscard]] constexpr auto start () const -> IndexType {return this->first();}
-	// [[nodiscard]] constexpr auto finish() const -> IndexType {return this->last ();}
-
 	constexpr auto operator==(extension_t const& other) const {return static_cast<range<IndexType> const&>(*this) == static_cast<range<IndexType> const&>(other);}
 	constexpr auto operator!=(extension_t const& other) const {return static_cast<range<IndexType> const&>(*this) != static_cast<range<IndexType> const&>(other);}
-
-	// friend constexpr auto operator==(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) == static_cast<range<IndexType> const&>(other);}
-	// friend constexpr auto operator!=(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) != static_cast<range<IndexType> const&>(other);}
 
 	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
 		using std::max; using std::min;

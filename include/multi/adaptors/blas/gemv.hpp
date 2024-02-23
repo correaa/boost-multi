@@ -169,7 +169,7 @@ class gemv_range {
 	friend auto operator+=(V&& v, gemv_range const& s) -> V&& {  // NOLINT(readability-identifier-length) BLAS naming
 		// if constexpr(std::is_same<Context, void*>{}) {blas::gemv_n(         s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1.0, v.begin());}
 		// else                                         
-		{blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());}
+		{blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, static_cast<Scalar>(1.0), v.begin());}
 		return std::forward<V>(v);
 	}
 };
