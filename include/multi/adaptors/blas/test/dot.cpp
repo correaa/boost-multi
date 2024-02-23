@@ -141,8 +141,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
 	blas::dot(cA[1], cA[2], res2);
 	BOOST_REQUIRE( res2 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
 
-	double res_nan  = NAN;
-	auto const res3 = blas::dot(cA[1], cA[2], res_nan);
+	double     res_nan = NAN;
+	auto const res3    = blas::dot(cA[1], cA[2], res_nan);
 	BOOST_REQUIRE( res3 == res2 );
 
 	double const res4 = blas::dot(cA[1], cA[2]);
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 	blas::dot(A[1], A[2], c1);
 	BOOST_TEST_REQUIRE( c1 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
 
-	auto const c2 =+ blas::dot(A[1], A[2]);
+	auto const c2 = +blas::dot(A[1], A[2]);
 	BOOST_TEST_REQUIRE( c2 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}) );
 
 	complex const c3 = blas::dot(A[1], A[2]);
@@ -252,11 +252,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
 
 	std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
 		return std::transform(
-					begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& Ce) {
-						return 1.0 * blas::dot(Ar, blas::C(Bc)) + 0.0 * Ce;  // NOLINT(fuchsia-default-arguments-calls)
-					}
-				),
-				std::forward<decltype(Cr)>(Cr);
+			       begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto const& Ce) {
+				       return std::complex<double>{1.0, 0.0} * blas::dot(Ar, blas::C(Bc)) + 0.0 * Ce;
+			       }
+		       ),
+		       std::forward<decltype(Cr)>(Cr);
 	});
 
 	BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
