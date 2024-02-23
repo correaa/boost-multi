@@ -23,14 +23,14 @@ auto swap(It1 first, It2 last, It2 first2) -> It2 {
 }
 
 template<class X1D, class Y1D>
-auto swap(X1D&& x, Y1D&& y) -> Y1D&& {  // NOLINT(readability-identifier-length) x, y conventional blas names
+auto swap(X1D&& x, Y1D&& y) noexcept(false) -> Y1D&& {  // NOLINT(readability-identifier-length) x, y conventional blas names, this swap can "fail" if sizes do not match
 	assert( size(x) == size(y) );
 	swap( std::begin(x), std::end(std::forward<X1D>(x)), std::begin(y) );
 	return std::forward<Y1D>(y);
 }
 
 template<class X1D, class Y1D>
-auto swap(X1D const& x, Y1D const& y) = delete;  // NOLINT(readability-identifier-length) x, y conventional blas names
+auto swap(X1D const& x, Y1D const& y) noexcept(false) = delete;  // NOLINT(readability-identifier-length) x, y conventional blas names
 
 template<class X1D, class Y1D>
 auto operator^(X1D&& x, Y1D&& y) {  // NOLINT(readability-identifier-length) BLAS naming

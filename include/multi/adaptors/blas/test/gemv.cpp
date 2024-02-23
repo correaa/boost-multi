@@ -1,6 +1,5 @@
 // Copyright 2020-2024 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS gemv"
 #include<boost/test/unit_test.hpp>
 
 #include<boost/mpl/list.hpp>
@@ -23,11 +22,12 @@ namespace blas = multi::blas;
 using fp_types = boost::mpl::list<double, float>;
 
 template<class M, class VI, class VO>
-void MV(M const& a, VI const& x, VO&& y) {  // NOLINT(readability-identifier-naming,readability-identifier-length) BLAS naming
+auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identifier-naming,readability-identifier-length) BLAS naming
 	std::transform(
 		begin(a), end(a), begin(y),
-		[&x](auto&& row){return std::inner_product(begin(row), end(row), begin(x), 0.);}
+		[&x](auto const& row){return std::inner_product(begin(row), end(row), begin(x), 0.0);}
 	);
+	return std::forward<VO>(y);
 }
 
 // #ifdef _MULTI_USING_BLAS_MKL
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv, T, fp_types) {
 	multi::array<T, 2> const a = {      // NOLINT(readability-identifier-length) BLAS naming
 		{ 9.0, 24.0, 30.0, 9.0},
 		{ 4.0, 10.0, 12.0, 7.0},
-		{14.0, 16.0, 36.0, 1.0}
+		{14.0, 16.0, 36.0, 1.0},
 	};
 	multi::array<T, 1> const x = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
 	{
