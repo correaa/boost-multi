@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return)
 template<typename ComplexRef> struct Conjd;
 
 struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
-	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const { return Conjd<decltype(zee)>{zee}; }
+	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }
 	template<class T> constexpr auto          operator()(Conjd<T> const&) const = delete;
 	template<class T> constexpr auto          operator()(Conjd<T>&&) const      = delete;
 	template<class T> constexpr auto          operator()(Conjd<T>&) const       = delete;
@@ -76,7 +76,7 @@ template<typename ComplexRef>
 struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 	using decay_type = decltype(+std::declval<ComplexRef>());
 
-	constexpr operator decay_type() const { return std::conj(c_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// explicit constexpr operator decay_type() const { return std::conj(c_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 
 	friend constexpr auto operator==(decay_type const& other, Conjd const& self) -> bool { return std::conj(self.c_) == other; }
 	friend constexpr auto operator!=(decay_type const& other, Conjd const& self) -> bool { return std::conj(self.c_) != other; }
