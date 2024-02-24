@@ -32,7 +32,7 @@ class iterator_facade {
  public:
 	using value_type        = ValueType;
 	using reference         = Reference;
-	using pointer           = Pointer;
+	using pointer           = Pointer;  // NOSONAR(cpp:S5008) false positive
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 
