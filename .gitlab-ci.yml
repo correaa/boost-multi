@@ -558,7 +558,7 @@ inq:
     - git checkout $CI_COMMIT_SHA  # check that multi repo is mirrored correctly
     - cd ../..
     - mkdir build && cd build
-    - cmake .. -G Ninja --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
+    - cmake .. -G Ninja --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON
     - cmake --build . || cmake --build . --parallel 1
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
