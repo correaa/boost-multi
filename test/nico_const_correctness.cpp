@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(const_views_2d) {
 template<class Array1D>
 auto fill_2d_99(Array1D&& col) -> Array1D&& {
 	// for(auto const& row : coll) {  // does not work because it would make it const
-	std::for_each(std::begin(col), std::end(col), [](typename std::decay_t<Array1D>::reference& row) {
+	std::for_each(std::begin(col), std::end(col), [](typename std::decay_t<Array1D>::reference row) {
 		std::fill(std::begin(row), std::end(row), 99);
 	});
 	// std::transform(coll.begin(), coll.end(), coll.begin(), [](auto&& row) {
