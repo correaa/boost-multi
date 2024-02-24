@@ -22,8 +22,8 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	ptr() = default;
 	constexpr explicit ptr(T* impl) : impl_{impl} {}
 	template<class U, class = std::enable_if_t<std::is_convertible<U*, T*>{}> >
-	// cppcheck-suppress [noExplicitConstructor,unmatchedSuppression]
-	ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions): ptr<T> -> ptr<T const>
+	// cppcheck-suppress [noExplicitConstructor]
+	ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) ptr<T> -> ptr<T const>
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
@@ -49,8 +49,8 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 	constexpr explicit ptr2(T* impl) : impl_{impl} {}
 	constexpr explicit ptr2(ptr<T> const& other) : impl_{other.impl_} {}
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>
-	// cppcheck-suppress [noExplicitConstructor, unmatchedSuppression]
-	ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): ptr<T> -> ptr<T const>
+	// cppcheck-suppress [noExplicitConstructor]
+	explicit ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): ptr<T> -> ptr<T const>
 
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;

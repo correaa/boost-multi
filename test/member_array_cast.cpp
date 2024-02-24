@@ -22,19 +22,18 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		multi::array<v3d, 2> positions_;
 
 	 public:  // NOLINT(whitespace/indent) nested class
-		// NOLINTNEXTLINE(runtime/explicit)
-		particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
+		explicit particles_soa(multi::array<particle, 2> const& AoS)
 		: masses_{AoS.member_cast<double>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
 
 		struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) // NOSONAR
 			double& mass;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 			v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
-			operator particle() const { return {mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
-			auto operator+() const { return operator particle(); }
+			operator auto() const { return particle{mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
+			auto operator+() const { return static_cast<particle>(*this); }
 
 			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
-			reference(particle& other) : reference{other.mass, other.position} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+			explicit reference(particle& other) : reference{other.mass, other.position} {}
 
 		 private:  // NOLINT(whitespace/indent) nested class
 			friend class particles_soa;
