@@ -291,6 +291,8 @@ clang++-oldoldstable:
 oneapi:
   stage: build
   image: intel/oneapi-hpckit:2023.0.0-devel-ubuntu22.04  # Intel(R) oneAPI DPC++/C++ Compiler 2023.0.0 (2023.0.0.20221201)
+  tags:
+    - large-disk-space
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -299,9 +301,12 @@ oneapi:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
 
+
 oneapi-latest c++20:
   stage: build
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
+  tags:
+    - large-disk-space
   allow_failure: false
   script:
     - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
@@ -317,6 +322,8 @@ oneapi-latest c++20:
 oneapi-2022.2:
   stage: build
   image: intel/oneapi-hpckit:2022.2-devel-ubuntu20.04
+  tags:
+    - large-disk-space
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -329,6 +336,8 @@ oneapi-2022.2:
 nvhpc:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
+  tags:
+      - large-disk-space
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
@@ -341,6 +350,8 @@ nvhpc:
 nvhpc-22.7:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.7-devel-cuda_multi-ubuntu22.04
+  tags:
+      - large-disk-space
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
@@ -354,6 +365,8 @@ nvhpc-22.7:
 nvhpc-23.9 c++20:
   stage: build
   image: nvcr.io/nvidia/nvhpc:23.9-devel-cuda_multi-ubuntu22.04
+  tags:
+      - large-disk-space
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
@@ -368,7 +381,7 @@ cuda:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
-    - nvidia-docker
+    - nvidia-gpu
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -388,7 +401,7 @@ cuda-11.8 mkl:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
-    - nvidia-docker
+    - nvidia-gpu
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -409,7 +422,7 @@ cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   tags:
-    - nvidia-docker
+    - nvidia-gpu
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -428,7 +441,7 @@ cuda-12.1.1:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
   tags:
-    - nvidia-docker
+    - nvidia-gpu
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -445,7 +458,7 @@ cuda-12.3.1:  # last version: https://catalog.ngc.nvidia.com/orgs/nvidia/contain
   allow_failure: false
   image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
   tags:
-    - nvidia-docker
+    - nvidia-gpu
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -462,8 +475,6 @@ rocm:
   stage: build
   image: rocm/dev-ubuntu-22.04
   allow_failure: false
-  tags:
-    - nvidia-docker
   script:
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
@@ -535,8 +546,10 @@ inq:
   allow_failure: false
   stage: test
   image: debian:stable
+  tags:
+    - large-memory-space
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
@@ -545,8 +558,8 @@ inq:
     - git checkout $CI_COMMIT_SHA  # check that multi repo is mirrored correctly
     - cd ../..
     - mkdir build && cd build
-    - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
-    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - cmake .. -G Ninja --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . || cmake --build . --parallel 1
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
@@ -561,7 +574,7 @@ inq cuda:
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
-    - nvidia-docker
+    - nvidia-gpu
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
   script:
@@ -592,7 +605,7 @@ inq rocm:
   image: rocm/dev-ubuntu-22.04
   allow_failure: false
   tags:
-    - nvidia-docker
+    - large-disk-space
   script:
     - apt-get -qq update
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev rocm-device-libs wget
@@ -647,7 +660,7 @@ qmcpack-cuda:
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
-    - nvidia-docker
+    - nvidia-gpu
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
@@ -670,7 +683,7 @@ qmcpack-cuda-12:
   stage: test
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04
   tags:
-    - nvidia-docker
+    - nvidia-gpu
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
