@@ -10,7 +10,7 @@
 
 namespace multi = boost::multi;
 
-template<class Array> auto take(Array&& array) -> decltype(array[0]) {return array[0];}
+template<class Array> auto take(Array&& array) -> auto& {return std::forward<Array>(array)[0];}
 
 BOOST_AUTO_TEST_CASE(iterator_1d) {
 	{
