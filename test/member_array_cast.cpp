@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 
 	 public:  // NOLINT(whitespace/indent) nested class
 		// NOLINTNEXTLINE(runtime/explicit)
-		particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
+		explicit particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
 		: masses_{AoS.member_cast<double>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
 
 		struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) // NOSONAR
