@@ -28,8 +28,9 @@ BOOST_AUTO_TEST_CASE(const_views) {
 }
 
 template<class Array1D>
-void fill_99(Array1D&& coll) {
-	std::fill(std::begin(coll), std::end(coll), 99);
+auto fill_99(Array1D&& col) -> Array1D&& {
+	std::fill(std::begin(col), std::end(col), 99);
+	return std::forward<Array1D>(col);
 }
 
 BOOST_AUTO_TEST_CASE(mutating_views) {
@@ -76,15 +77,16 @@ BOOST_AUTO_TEST_CASE(const_views_2d) {
 }
 
 template<class Array1D>
-void fill_2d_99(Array1D&& coll) {
+auto fill_2d_99(Array1D&& col) -> Array1D&& {
 	// for(auto const& row : coll) {  // does not work because it would make it const
-	std::for_each(std::begin(coll), std::end(coll), [](auto&& row) {
+	std::for_each(std::begin(col), std::end(col), [](typename std::decay_t<Array1D>::reference& row) {
 		std::fill(std::begin(row), std::end(row), 99);
 	});
 	// std::transform(coll.begin(), coll.end(), coll.begin(), [](auto&& row) {
 	//  std::fill(row.begin(), row.end(), 99);
 	//  return std::forward<decltype(row)>(row);
 	// });
+	return std::forward<Array1D>(col);
 }
 
 BOOST_AUTO_TEST_CASE(mutating_views_2d) {
