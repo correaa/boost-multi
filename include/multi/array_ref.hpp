@@ -703,7 +703,7 @@ struct elements_range_t {
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
-	auto operator=(elements_range_t     && other) -> elements_range_t& {  // cannot be =delete in NVCC?
+	auto operator=(elements_range_t     && other) noexcept -> elements_range_t& {  // cannot be =delete in NVCC?
 		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());} // TODO(correaa) use move?
 		return *this;
 	}
