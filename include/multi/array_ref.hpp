@@ -702,7 +702,11 @@ struct elements_range_t {
 	constexpr auto back ()      & ->       reference {return *std::prev(end(), 1);}
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
-	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
+
+	auto operator=(elements_range_t     && other) noexcept -> elements_range_t& {  // cannot be =delete in NVCC?
+		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());} // TODO(correaa) use move?
+		return *this;
+	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& other)  & -> elements_range_t& {assert(size() == other.size());
