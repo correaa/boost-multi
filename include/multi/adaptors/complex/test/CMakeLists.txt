@@ -67,13 +67,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 		#set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
 	endif()
-	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
+	# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
     target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
+	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_MODULE="C++ Unit Tests for Multi complex")
+
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 
     target_link_libraries(${TEST_EXE} PRIVATE multi)

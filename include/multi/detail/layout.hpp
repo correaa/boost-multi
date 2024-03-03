@@ -11,6 +11,7 @@
 
 #include "../../multi/detail/operators.hpp"
 
+#include <tuple>
 #include <type_traits>  // for make_signed_t
 #include <utility>      // for swap
 
@@ -41,7 +42,7 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
 template<dimensionality_type D>
-struct extensions_t {
+struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D-1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D-1>::base_>;
 
  private:
@@ -59,54 +60,54 @@ struct extensions_t {
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(index_extension ext1) : impl_{ext1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
+	constexpr extensions_t(index_extension ext1) : base_{ext1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 2, int> = 0>
-	constexpr extensions_t(index_extension ext1, index_extension ext2) : impl_{ext1, ext2} {}
+	constexpr extensions_t(index_extension ext1, index_extension ext2) : base_{ext1, ext2} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 3, int> = 0>
-	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3) : impl_{ext1, ext2, ext3} {}
+	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3) : base_{ext1, ext2, ext3} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 4, int> = 0>
-	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4) noexcept : impl_{ext1, ext2, ext3, ext4} {}
+	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4) noexcept : base_{ext1, ext2, ext3, ext4} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 5, int> = 0>
-	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4, index_extension ext5) : impl_{ext1, ext2, ext3, ext4, ext5} {}
+	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4, index_extension ext5) : base_{ext1, ext2, ext3, ext4, ext5} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 6, int> = 0>
-	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4, index_extension ext5, index_extension ext6) : impl_{ext1, ext2, ext3, ext4, ext5, ext6} {}
+	constexpr extensions_t(index_extension ext1, index_extension ext2, index_extension ext3, index_extension ext4, index_extension ext5, index_extension ext6) : base_{ext1, ext2, ext3, ext4, ext5, ext6} {}
 
 	template<class T1, class T = void, class = decltype(base_{tuple<T1>{}}), std::enable_if_t<sizeof(T*) && D == 1, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1> extensions) : impl_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(tuple<T1> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class T1, class T = void, class = decltype(base_{::std::tuple<T1>{}}), std::enable_if_t<sizeof(T*) && D == 1, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(::std::tuple<T1> extensions) : impl_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(::std::tuple<T1> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class T1, class T2, class T = void, class = decltype(base_{tuple<T1, T2>{}}), std::enable_if_t<sizeof(T*) && D == 2, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1, T2> extensions) : impl_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(tuple<T1, T2> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class T1, class T2, class T = void, class = decltype(base_{::std::tuple<T1, T2>{}}), std::enable_if_t<sizeof(T*) && D == 2, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(::std::tuple<T1, T2> extensions) : impl_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(::std::tuple<T1, T2> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class T1, class T2, class T3, class T = void, class = decltype(base_{tuple<T1, T2, T3>{}}), std::enable_if_t<sizeof(T*) && D == 3, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1, T2, T3> extensions) : impl_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(tuple<T1, T2, T3> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class T1, class T2, class T3, class T = void, class = decltype(base_{::std::tuple<T1, T2, T3>{}}), std::enable_if_t<sizeof(T*) && D == 3, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(::std::tuple<T1, T2, T3> extensions) : impl_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(::std::tuple<T1, T2, T3> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class T1, class T2, class T3, class T4, class T = void, class = decltype(base_{tuple<T1, T2, T3, T4>{}}), std::enable_if_t<sizeof(T*) && D == 4, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1, T2, T3, T4> extensions) : impl_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(tuple<T1, T2, T3, T4> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class T1, class T2, class T3, class T4, class T = void, class = decltype(base_{::std::tuple<T1, T2, T3, T4>{}}), std::enable_if_t<sizeof(T*) && D == 4, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(::std::tuple<T1, T2, T3, T4> extensions) : impl_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(::std::tuple<T1, T2, T3, T4> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class... Ts>
 	constexpr explicit extensions_t(tuple<Ts...> const& tup)
@@ -115,23 +116,23 @@ struct extensions_t {
 	constexpr extensions_t(index_extension const& extension, typename layout_t<D-1>::extensions_type const& other)
 	: extensions_t(tuple{extension, other.base()}) {}
 
-	constexpr auto base()            const&    -> base_ const& {return impl_;}
+	constexpr auto base()            const&    -> base_ const& {return *this;} // impl_;}
 
 	friend constexpr auto operator*(index_extension const& extension, extensions_t const& self) -> extensions_t<D + 1> {
 		return extensions_t<D + 1>{tuple{extension, self.base()}};
 	}
 
-	friend HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.impl_ == other.impl_;}
-	friend HD auto operator!=(extensions_t const& self, extensions_t const& other) {return self.impl_ != other.impl_;}
+	friend HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.base() == other.base();}
+	friend HD auto operator!=(extensions_t const& self, extensions_t const& other) {return self.base() != other.base();}
 
 	using indices_type = multi::detail::tuple_prepend_t<multi::index, typename extensions_t<D-1>::indices_type>;
 
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {
-		auto const sub_num_elements = extensions_t<D-1>{tail(this->base())}.num_elements();
+		auto const sub_num_elements = extensions_t<D-1>{static_cast<base_ const&>(*this).tail()}.num_elements();
 		#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
 		assert( sub_num_elements != 0 );  // clang hip doesn't allow assert in host device functions
 		#endif
-		return multi::detail::ht_tuple(n/sub_num_elements, extensions_t<D-1>{tail(this->base())}.from_linear(n%sub_num_elements));
+		return multi::detail::ht_tuple(n/sub_num_elements, extensions_t<D-1>{static_cast<base_ const&>(*this).tail()}.from_linear(n%sub_num_elements));
 	}
 
 	friend constexpr auto operator%(nelems_type idx, extensions_t const& extensions) {return extensions.from_linear(idx);}
@@ -140,7 +141,7 @@ struct extensions_t {
 
 	template<class... Indices>
 	constexpr auto to_linear(index const& idx, Indices const&... rest) const {
-		auto const sub_extensions = extensions_t<D-1>{tail(this->base())};
+		auto const sub_extensions = extensions_t<D-1>{this->base().tail()};
 		return idx*sub_extensions.num_elements() + sub_extensions.to_linear(rest...);
 	}
 	template<class... Indices>
@@ -148,22 +149,22 @@ struct extensions_t {
 
 	constexpr auto operator[](index idx) const 
 	->decltype(std::declval<base_ const&>()[idx]) {
-		return impl_                       [idx]; }
+		return static_cast<base_ const&>(*this)[idx]; }
 
 	template<class... Indices>
 	constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
-		if(extensions_t<D-1>{tail(this->base())}.next_canonical(rest...)) {++idx;}
-		if(idx == head(impl_).last()) {
-			idx = head(impl_).first();
+		if(extensions_t<D-1>{this->base().tail()}.next_canonical(rest...)) {++idx;}
+		if(idx == this->base().head().last()) {
+			idx = this->base().head().first();
 			return true;
 		}
 		return false;
 	}
 	template<class... Indices>
 	constexpr auto prev_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
-		if(extensions_t<D-1>{tail(this->base())}.prev_canonical(rest...)) {--idx;}
-		if(idx <  head(impl_).first()) {
-			idx = head(impl_).back();
+		if(extensions_t<D-1>{this->base().tail()}.prev_canonical(rest...)) {--idx;}
+		if(idx <  this->base().head().first()) {
+			idx = this->base().head().back();
 			return true;
 		}
 		return false;
@@ -173,7 +174,7 @@ struct extensions_t {
 	template<class Archive, std::size_t... I>
 	void serialize_impl(Archive& arxiv, std::index_sequence<I...> /*unused012*/) {
 		using boost::multi::detail::get;
-		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extension",      get<I>(impl_)) , 0U)...};
+		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extension",      get<I>(this->base())) , 0U)...};
 	}
 
  public:
@@ -184,7 +185,7 @@ struct extensions_t {
 
  private:
 	template<class Array, std::size_t... I, typename = decltype(base_{boost::multi::detail::get<I>(std::declval<Array const&>())...})>
-	constexpr extensions_t(Array const& tup, std::index_sequence<I...> /*unused012*/) : impl_{boost::multi::detail::get<I>(tup)...} {}
+	constexpr extensions_t(Array const& tup, std::index_sequence<I...> /*unused012*/) : base_{boost::multi::detail::get<I>(tup)...} {}
 
 	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1);}
 	static constexpr auto multiply_fold(size_type const& size) -> size_type {return size;}
@@ -193,7 +194,7 @@ struct extensions_t {
 
 	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*unused012*/) const -> size_type {
 		using boost::multi::detail::get;
-		return static_cast<size_type>(multiply_fold(static_cast<size_type>(get<I>(impl_).size())...));
+		return static_cast<size_type>(multiply_fold(static_cast<size_type>(get<I>(this->base()).size())...));
 	}
 
  public:
@@ -204,8 +205,8 @@ struct extensions_t {
 		using boost::multi::detail::get;
 		return extensions_t{
 			tuple{
-				index_extension{intersection(get<0>(self.impl_), get<0>(other.impl_))},
-				intersection( extensions_t<D-1>{tail(self.base())}, extensions_t<D-1>{tail(other.base())} ).base()
+				index_extension{intersection(get<0>(self.base()), get<0>(other.base()))},
+				intersection( extensions_t<D-1>{self.base().tail()}, extensions_t<D-1>{other.base().tail()} ).base()
 			}
 		};
 	}
@@ -216,13 +217,20 @@ struct extensions_t {
 		return get<Index>(self.base());
 	}
 
+	template<std::size_t Index, std::enable_if_t<(Index < D), int> =0>
+	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(this->base());
+	}
+
+	// constexpr operator base_ const&() const { return impl_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use inheritance from tuple to avoid this and implement get in std::
 };
 
-template<> struct extensions_t<0> {
+template<> struct extensions_t<0> : tuple<> {
 	using base_ = tuple<>;
 
  private:
-	base_ impl_;
+	// base_ impl_;
 
  public:
 	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
@@ -231,11 +239,11 @@ template<> struct extensions_t<0> {
 
 	using nelems_type = index;
 
-	explicit extensions_t(tuple<> const& tup) : impl_{tup} {}
+	explicit extensions_t(tuple<> const& tup) : base_{tup} {}
 
 	extensions_t() = default;
 
-	constexpr auto base() const -> base_ const& {return impl_;}
+	constexpr auto base() const -> base_ const& {return *this;}
 
 	template<class Archive> static void serialize(Archive&/*ar*/, unsigned /*version*/) {/*noop*/}
 
@@ -267,39 +275,42 @@ template<> struct extensions_t<0> {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
+
+	template<std::size_t Index>  // TODO(correaa) = detele ?
+	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(this->base());
+	}
+
 };
 
-template<> struct extensions_t<1> {
+template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using base_ = tuple<multi::index_extension>;
 
- private:
-	base_ impl_;
-
- public:
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
 	using nelems_type = index;
 
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
-	constexpr extensions_t(multi::size_t size) : impl_{multi::index_extension{0, size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(multi::size_t size) : base_{multi::index_extension{0, size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class T1>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int>  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1> extensions) : impl_{static_cast<multi::index_extension>(head(extensions))} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(tuple<T1> extensions) : base_{static_cast<multi::index_extension>(extensions.head())} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(multi::index_extension const& other) : impl_{other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
+	constexpr extensions_t(multi::index_extension const& other) : base_{other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
 
-	constexpr explicit extensions_t(base_ tup) : impl_{tup} {}
+	constexpr explicit extensions_t(base_ tup) : base_{tup} {}
 
 	extensions_t() = default;
-	constexpr auto base() const -> base_ const& {return impl_;}
+	constexpr auto base() const -> base_ const& {return *this;}
 
-	HD constexpr auto operator==(extensions_t const& other) const -> bool {return impl_ == other.impl_;}  // when compiling as cuda code, this needs --expt-relaxed-constexpr
-	HD constexpr auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
+	HD constexpr auto operator==(extensions_t const& other) const -> bool {return base() == other.base();}  // when compiling as cuda code, this needs --expt-relaxed-constexpr
+	HD constexpr auto operator!=(extensions_t const& other) const -> bool {return base() != other.base();}
 
 	constexpr auto num_elements() const -> size_type {
-		return head(impl_).size();
+		return this->base().head().size();
 	}
 
 	using indices_type = multi::detail::tuple<multi::index>;
@@ -317,14 +328,14 @@ template<> struct extensions_t<1> {
 	static constexpr auto to_linear(index const& idx) -> difference_type  /*const*/ {return idx;}
 	constexpr auto operator()(index const& idx) const -> difference_type {return to_linear(idx);}
 	constexpr auto operator[](index idx) const {
-		return multi::detail::tuple<multi::index>{std::get<0>(impl_)[idx]};
+		return multi::detail::tuple<multi::index>{std::get<0>(this->base())[idx]};
 	}
 
 	template<class... Indices>
 	constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		using boost::multi::detail::get;
-		if(idx == get<0>(impl_).back()) {
-			idx = get<0>(impl_).first();
+		if(idx == get<0>(this->base()).back()) {
+			idx = get<0>(this->base()).first();
 			return true;
 		}
 		++idx;
@@ -332,8 +343,8 @@ template<> struct extensions_t<1> {
 	}
 	constexpr auto prev_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		using boost::multi::detail::get;
-		if(idx == get<0>(impl_).first()) {
-			idx = get<0>(impl_).back();
+		if(idx == get<0>(this->base()).first()) {
+			idx = get<0>(this->base()).back();
 			return true;
 		}
 		--idx;
@@ -343,16 +354,22 @@ template<> struct extensions_t<1> {
 	friend auto intersection(extensions_t const& self, extensions_t const& other) {
 		return extensions_t{
 			intersection(
-				boost::multi::detail::get<0>(self .impl_),
-				boost::multi::detail::get<0>(other.impl_)
+				boost::multi::detail::get<0>(self .base()),
+				boost::multi::detail::get<0>(other.base())
 			)
 		};
 	}
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using boost::multi::detail::get;
-		auto& extension_ = get<0>(impl_);
+		auto& extension_ = get<0>(this->base());
 		arxiv & multi::archive_traits<Archive>::make_nvp("extension", extension_);
+	}
+
+	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
+	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(this->base());
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
@@ -380,15 +397,14 @@ struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cer
 	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
 };
 
+#if ! defined(__GLIBCXX__) || (__GLIBCXX__ <=  20220101)
 namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
-	// this function cannot be outside the namespace because clang complains "out-of-line definition of 'get' does not match any declaration in namespace 'std'"
-	template<std::size_t Index, boost::multi::dimensionality_type D>
-	constexpr auto get(::boost::multi::extensions_t<D> const& self)  // NOLINT(cert-dcl58-cpp) to implement structured bindings
-	-> typename std::tuple_element<Index, ::boost::multi::extensions_t<D>>::type {
-		using boost::multi::detail::get;
-		return get<Index>(self.base());
-	}
+ template<std::size_t Index, boost::multi::dimensionality_type D>
+ constexpr auto get(::boost::multi::extensions_t<D> const& self)  // NOLINT(cert-dcl58-cpp) to implement structured bindings
+ ->decltype(self.template get<Index>()) {
+     return self.template get<Index>(); }
 }  // end namespace std
+#endif
 
 namespace boost::multi {
 

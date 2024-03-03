@@ -29,9 +29,7 @@ class involuted {
 
 	~involuted() = default;
 
-	constexpr operator decay_type() const& noexcept { return f_(r_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions): simulates a reference
-	// NOLINTNEXTLINE(google-runtime-operator,fuchsia-overloaded-operator): simulates reference
-	// constexpr auto operator&() && -> decltype(auto) { return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_}; }  //  NOLINT(runtime/operator)
+	constexpr operator decay_type() const& noexcept { return f_(r_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) simulates a reference
 	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): trailing return helps reading
 	template<class DecayType> constexpr auto operator=(DecayType&& other) & -> involuted& {
 		r_ = f_(std::forward<DecayType>(other));
@@ -69,7 +67,7 @@ class involuter {
 	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
 	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
-	template<class Other> constexpr involuter(involuter<Other, F> const& other) : it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}
+	template<class Other> constexpr involuter(involuter<Other, F> const& other) : it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}  // NOSONAR(cpp:S1709)
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
 	constexpr auto operator->() const { return pointer{&*it_, f_}; }

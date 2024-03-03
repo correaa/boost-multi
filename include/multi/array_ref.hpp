@@ -702,7 +702,11 @@ struct elements_range_t {
 	constexpr auto back ()      & ->       reference {return *std::prev(end(), 1);}
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
-	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
+
+	auto operator=(elements_range_t     && other) noexcept -> elements_range_t& {  // cannot be =delete in NVCC?
+		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());} // TODO(correaa) use move?
+		return *this;
+	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& other)  & -> elements_range_t& {assert(size() == other.size());
@@ -2533,7 +2537,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) = delete;
 	#endif
 
-	#if defined(__cpp_lib_span) 
+	#if defined(__cpp_lib_span) && !defined(__NVCC__)
 	template<class Tconst = const typename array_ref::element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> and D == 1, int> = 0>
 	constexpr explicit operator std::span<Tconst>() const& {return std::span<Tconst>(this->data_elements(), this->size());}
 	#endif

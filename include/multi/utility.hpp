@@ -33,7 +33,7 @@ struct move_ptr : private std::move_iterator<Ptr> {
 
 	using std::move_iterator<Ptr>::move_iterator;
 
-	HD constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) decay to lvalue should be easy
+	HD constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) decay to lvalue should be easy
 	HD constexpr auto operator+=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) += n; return *this;}
 	HD constexpr auto operator-=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) -= n; return *this;}
 
@@ -83,7 +83,7 @@ struct transform_ptr {
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* =nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use conditional explicit idiom here
+	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709)
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* =nullptr>
 	constexpr explicit transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}
@@ -213,8 +213,8 @@ constexpr auto num_elements(A const& arr)
 }
 
 template<class T>
-       auto has_size_aux(T const& cont) -> decltype(cont.size(), std::true_type {});
-inline auto has_size_aux(...          ) -> decltype(             std::false_type{});
+       auto has_size_aux(T const& cont) -> decltype(std::size(cont), std::true_type {});
+inline auto has_size_aux(...          ) -> decltype(                 std::false_type{});
 template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class T>
@@ -235,15 +235,14 @@ inline auto has_data_aux(...     ) -> decltype(                          std::fa
 template<class T> struct has_data : decltype(detail::has_data_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>::value && !has_data_elements<std::decay_t<Array>>::value, int> =0>
-auto data_elements(Array& arr) {return arr.data();}
+auto data_elements(Array& arr) {return std::data(arr);}
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>::value && !has_data_elements<std::decay_t<Array>>::value, int> =0>
-auto data_elements(Array const& arr) {return arr.data();}
+auto data_elements(Array const& arr) {return std::data(arr);}  // .data();}
 
 template<class A, std::enable_if_t<!has_num_elements<A>::value && has_size<A>::value && has_data<A>::value, int> =0>
-constexpr auto num_elements(A const& arr) -> std::make_signed_t<decltype(arr.size())> {
-
-	return static_cast<std::make_signed_t<decltype(arr.size())>>(arr.size());
+constexpr auto num_elements(A const& arr) -> std::make_signed_t<decltype(std::size(arr))> {
+	return static_cast<std::make_signed_t<decltype(std::size(arr))>>(std::size(arr));  // (arr.size());
 }
 
 template<class A, std::enable_if_t<has_data_elements<A>{}, int> =0>

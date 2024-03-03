@@ -1,7 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2023 Alfredo A. Correa
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
+// Copyright 2020-2024 Alfredo A. Correa
 
 #include<boost/test/unit_test.hpp>
 
@@ -22,7 +19,7 @@ namespace utf = boost::unit_test::framework;
 using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
-class watch : private std::chrono::high_resolution_clock {
+class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label_;
 	time_point start_ = now();
 

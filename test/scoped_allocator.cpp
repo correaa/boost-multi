@@ -21,8 +21,8 @@ class allocator1 {
 
 	allocator1() noexcept = delete;
 	// NOLINTNEXTLINE(runtime/explicit)
-	allocator1(int* heap) : heap_{heap} { assert(heap_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class U> allocator1(allocator1<U> const& other) noexcept : heap_{other.heap_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	allocator1(int* heap) : heap_{heap} { assert(heap_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
+	template<class U> allocator1(allocator1<U> const& other) noexcept : heap_{other.heap_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) allocator conversions are not explicit
 
 	auto allocate(std::size_t n) {
 		if(n == 0) {
@@ -59,8 +59,8 @@ class allocator2 {
 
 	allocator2() noexcept = default;
 	// NOLINTNEXTLINE(runtime/explicit)
-	allocator2(std::int64_t* heap) : heap_{heap} { assert(heap_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class U> allocator2(allocator2<U> const& other) noexcept : heap_{other.heap_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	allocator2(std::int64_t* heap) : heap_{heap} { assert(heap_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
+	template<class U> allocator2(allocator2<U> const& other) noexcept : heap_{other.heap_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) allocator conversions are not explicit
 
 	auto allocate(std::size_t n) {
 		if(n == 0) {

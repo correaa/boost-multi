@@ -1,4 +1,4 @@
-// Copyright 2023 Alfredo A. Correa
+// Copyright 2023-2024 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 #define MULTI_DETAIL_STATIC_ALLOCATOR_HPP
@@ -11,7 +11,7 @@
 namespace boost::multi::detail {
 
 template<class T, std::size_t N>
-class static_allocator {
+class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semantics
 	bool dirty_ = false;
 	MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
 
@@ -83,7 +83,8 @@ auto operator!=(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> con
 // = delete
 
 template <class T, std::size_t N, class U>
-[[deprecated("don't swap dynamic container with static_allocator")]] void swap(static_allocator<T, N>& a1, static_allocator<U, N>& a2) = delete;
+[[deprecated("don't swap dynamic container with static_allocator")]]
+void swap(static_allocator<T, N>& a1, static_allocator<U, N>& a2) noexcept = delete;
 
 }  // end namespace boost::multi::detail
 #endif  // MULTI_DETAIL_STATIC_ALLOCATOR_HPP
