@@ -25,12 +25,12 @@ auto axpy_n(Context ctxt, typename It1::value_type alpha, It1 first, Size n, Out
 
 template<class Context, class X1DIt, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0, *X1DIt{} )>
 auto axpy(Context ctxt, typename X1DIt::element alpha, X1DIt x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
-->decltype(/*axpy_n(std::forward<Context>(ctxt), alpha, x.begin( ), x.size( ), y.begin( )),*/ std::forward<Y1D>(y)) {
-	return axpy_n(ctxt, alpha,   x,   size(y),   begin(y)), std::forward<Y1D>(y); }
+->decltype(axpy_n(ctxt, alpha, x, y.size( ), y.begin( )), std::forward<Y1D>(y)) {
+	return axpy_n(ctxt, alpha, x,   size(y),   begin(y)), std::forward<Y1D>(y); }
 
 template<class Context, class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0, size(std::declval<X1D const&>()) )>
 auto axpy(Context ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
-->decltype(/*axpy_n(std::forward<Context>(ctxt), alpha, x.begin( ), x.size( ), y.begin( )),*/ std::forward<Y1D>(y)) {
+->decltype(axpy_n(ctxt, alpha, x.begin( ), y.size( ), y.begin( )), std::forward<Y1D>(y)) {
 	assert(x.size() == y.size() );  // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
 	return axpy_n(ctxt, alpha,   begin(x),   size(y),   begin(y)), std::forward<Y1D>(y); }
 
@@ -93,6 +93,7 @@ class axpy_range {
 	axpy_range(axpy_range const&) = delete;
 	axpy_range(axpy_range&&) noexcept = delete;
 	~axpy_range() = default;
+
 	auto operator=(axpy_range const&) -> axpy_range& = delete;
 	auto operator=(axpy_range&&) noexcept -> axpy_range& = delete;
 
@@ -100,13 +101,11 @@ class axpy_range {
 	: ctxt_{ctxt}, alpha_{alpha}, x_begin_{x_first}, count_{x_last - x_first} {}
 
 	using iterator = axpy_iterator<Context, Scale, ItX>;
-//  using decay_type = DecayType;
 
 	auto begin() const -> iterator{ return {ctxt_, alpha_, x_begin_         }; }
 	auto end()   const -> iterator{ return {ctxt_, alpha_, x_begin_ + count_}; }
 
 	auto size() const -> size_type{return end() - begin();}
-//  auto extensions() const -> typename decay_type::extensions_type {return typename decay_type::extensions_type{{0, size()}};}
 
 	template<class Other>
 	friend auto operator+=(Other&& other, axpy_range const& self) -> Other&& {
@@ -130,9 +129,7 @@ auto axpy(Context&& ctxt, Scalar a, X1D const& x)  // NOLINT(readability-identif
 }
 
 template<class Scalar, class X1D>
-auto axpy(Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conventional BLAS naming
-//-> axpy_range<blas::context, Scalar, typename X1D::const_iterator> {
-{
+auto axpy(Scalar a, X1D const& x) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	auto ctxtp = blas::default_context_of(x.base());
 	return axpy_range<decltype(ctxtp), Scalar, typename X1D::const_iterator>{ctxtp, a, begin(x), end(x)};  // TODO(correaa) fix temporary
 }
