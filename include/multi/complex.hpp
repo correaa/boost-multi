@@ -16,7 +16,7 @@
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {
 
-constexpr class adl_conj_t {
+inline constexpr class /*adl_conj_t*/ {
 	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const JUSTRETURN(std::conj(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const DECLRETURN(conj(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).conj(std::forward<As>(args)...))
 
 		public : template<class... As>
@@ -24,7 +24,7 @@ constexpr class adl_conj_t {
 		         operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_conj;
 
-constexpr class adl_real_t {
+inline constexpr class /*adl_real_t*/ {
 	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const DECLRETURN(std::real(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const DECLRETURN(real(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).real(std::forward<As>(args)...))
 
 		public : template<class... As>
@@ -32,7 +32,7 @@ constexpr class adl_real_t {
 		         operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_real;
 
-constexpr class adl_imag_t {
+inline constexpr class /*adl_imag_t*/ {
 	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const DECLRETURN(std::imag(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const DECLRETURN(imag(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).imag(std::forward<As>(args)...))
 
 		public : template<class... As>
@@ -160,45 +160,4 @@ struct imag_t {
 }  // end namespace multi
 }  // end namespace boost
 
-// static_assert( boost::multi::is_trivially_default_constructible<std::complex<double>>::value );
-// static_assert( boost::multi::is_trivially_default_constructible<std::complex<float >>::value );
-
-// static_assert( boost::multi::is_trivial<std::complex<double>>::value );
-// static_assert( boost::multi::is_trivial<std::complex<float >>::value );
-
-#if defined(__INCLUDE_LEVEL__) && !__INCLUDE_LEVEL__
-
-#include "array.hpp"
-#include <cassert>
-
-namespace multi = boost::multi;
-
-template<class T> void what(T&&) = delete;
-
-int main() {
-
-	using complex = multi::complex<double>;
-
-	multi::array<complex, 2> A = {
-		{  {1., 2.}, {3., 4.}},
-		{{22., 33.}, {5., 9.}}
-                                                                                                   };
-
-	{
-		auto&& Areal = A.member_cast<double>(&multi::complex<double>::re);
-		auto&& Aimag = A.member_cast<double>(&multi::complex<double>::im);
-
-		assert(Areal[1][0] == 22.);
-		assert(Aimag[1][0] == 33.);
-	}
-	{
-		auto&& Areal = A.member_cast<double>(&multi::complex<double>::re);
-		auto&& Aimag = A.member_cast<double>(&multi::complex<double>::im);
-
-		assert(Areal[1][0] == 22.);
-		assert(Aimag[1][0] == 33.);
-	}
-}
-
-#endif
 #endif

@@ -98,38 +98,19 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
 }
 
-BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub) {
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	auto* arrp = new double[4UL * 4UL];  // NOLINT(cppcoreguidelines-owning-memory)
+BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_unique_ptr) {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for illustration
+	std::unique_ptr<double const[]> const arrp(new double const [4UL * 4UL] { 0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0 });
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	arrp[0]  = 0.0;
-	arrp[1]  = 1.0;
-	arrp[2]  = 2.0;
-	arrp[3]  = 3.0;
-	arrp[4]  = 5.0;
-	arrp[5]  = 6.0;
-	arrp[6]  = 7.0;
-	arrp[7]  = 8.0;
-	arrp[8]  = 10.0;
-	arrp[9]  = 11.0;
-	arrp[10] = 12.0;
-	arrp[11] = 13.0;
-	arrp[12] = 15.0;
-	arrp[13] = 16.0;
-	arrp[14] = 17.0;
-	arrp[15] = 18.0;
-	// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-
+	BOOST_REQUIRE( arrp[3] == 3.0 );
 	{
-		multi::array_ref<double, 2> const map(arrp, {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::array_ref<double, 2, double const*> const map(arrp.get(), {4, 4});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto const& diag = map.diagonal();
 
 		BOOST_REQUIRE( diag.begin() != diag.end() );
 		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );  // is this UB?
 	}
-	delete[] arrp;  // NOLINT(cppcoreguidelines-owning-memory)
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
@@ -325,6 +306,22 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 		BOOST_REQUIRE( std::get<1>(exts).last () == 4 );
 		BOOST_REQUIRE( std::get<1>(exts) == multi::iextension(1, 4) );
 		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	}
+	{
+		auto const exts = aref.extensions();
+		BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
+		BOOST_REQUIRE( std::get<1>(exts).first()  == 1 );
+		BOOST_REQUIRE( std::get<1>(exts).last () == 4 );
+		BOOST_REQUIRE( std::get<1>(exts) == multi::iextension(1, 4) );
+		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	}
+	{
+		auto const exts = aref.extensions();
+		BOOST_REQUIRE( exts.get<0>() == multi::iextension(1, 3) );
+		BOOST_REQUIRE( exts.get<1>().first()  == 1 );
+		BOOST_REQUIRE( exts.get<1>().last () == 4 );
+		BOOST_REQUIRE( exts.get<1>() == multi::iextension(1, 4) );
+		BOOST_REQUIRE(( exts == decltype(exts){multi::iextension(1, 3), multi::iextension(1, 4)} ));
 	}
 	{
 		auto const exts = aref.extensions();
@@ -561,11 +558,11 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 	}
 	{
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes1; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+		long sizes1;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes2; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+		long sizes2;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
-		long sizes3; // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+		long sizes3;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -674,13 +671,13 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 }
 
-auto f1d5(double const(&carr)[5]) -> double;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-auto f1d5(double const(&carr)[5]) -> double {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(double const (&carr)[5]) -> double;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(double const (&carr)[5]) -> double {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	return carr[1];
 }
 
-void f2d54(double const(&carr)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-void f2d54(double const(&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void f2d54(double const (&carr)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void f2d54(double const (&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	BOOST_REQUIRE(carr[0][1] == 1.0);
 }
 
@@ -884,35 +881,35 @@ template double trace_generic<multi::array<double, 2>>(multi::array<double, 2> c
 
 inline auto trace_separate_ref(multi::array_ref<double, 2> const& arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 inline auto trace_separate_sub(multi::subarray<double, 2> const& arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 inline auto trace_separate_ref2(multi::array_const_view<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 // unusable for arrays
 inline auto trace_separate_ref3(multi::array_view<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 // unusable for arrays
 inline auto trace_separate_ref4(multi::array_ref<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 // unusable for arrays
 inline auto trace_separate_sub4(multi::subarray<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0});
+	return std::accumulate(diag.begin(), diag.end(), double{0.0});
 }
 
 BOOST_AUTO_TEST_CASE(function_passing_3) {
@@ -976,44 +973,16 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 
 	auto deduce_element_sub = []<class T, class Ptr>(multi::subarray<T, 2, Ptr> const& a) { return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0}); };  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
-	// NOLINT cpplint 1.6.1 gets confused
-
 	BOOST_REQUIRE( deduce_element_sub(arr) == 3 );
 	BOOST_REQUIRE( deduce_element_sub(aref) == 3 );
 	BOOST_REQUIRE( deduce_element_sub(asub) == 3 );
-
-	//  BOOST_REQUIRE( trace_array_deduce        (arr) == 3 );
-	//  BOOST_REQUIRE( trace_array_deduce<double>(arr) == 3 );
-
-	//  BOOST_REQUIRE(  trace_generic                              (arr) == 3  );
-	//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr) == 3 ));
-	// //  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
-
-	//  BOOST_REQUIRE(  trace_generic                              (arr()) == 3  );
-	//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr()) == 3 ));  // this will make a copy
-	// //  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr()) == 3 ));  // can't generate element_type
-
-	//  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2> >(arr) == 3 ));
-	// //  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2>&>(arr) == 3 ));  // can't generate element_type
-	//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr) == 3 ));
-	// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr) == 3 ));  // can't generate element_type
-
-	// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr({0, 3}, {0, 3})) == 3 ));
-	// //  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr()) == 3 ));  // can't generate element_type
-
-	//  BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
-	//  BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
-
-	//  BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
-
-	//  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
-	//  BOOST_REQUIRE(( trace_separate_sub3                        (arr) == 3 ));  // not allowed
 }
 #endif
 
 template<class T>
 auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
-	arr[0][1]        = 4.0;
+	arr[0][1] = 4.0;
+
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), T{0});
 }
@@ -1022,7 +991,8 @@ template double mut_trace_array_deduce(multi::array<double, 2>&);
 
 template<class Array, typename T = typename Array::element_type>
 auto mut_trace_generic(Array& arr) -> T {
-	arr[0][1]        = 4.0;
+	arr[0][1] = 4.0;
+
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), T{0});
 }
@@ -1035,16 +1005,6 @@ BOOST_AUTO_TEST_CASE(function_passing_4) {
 
 	BOOST_REQUIRE(  mut_trace_generic                              (arr) == 3  );
 	BOOST_REQUIRE(( mut_trace_generic<multi::array    <double, 2> >(arr) == 3 ));
-#if 0
-//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
-	BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2> >(arr) == 3 ));
-//  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2>&>(arr) == 3 ));  // can't generate element_type
-	BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr) == 3 ));
-//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr) == 3 ));  // can't generate element_type
-
-	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
-	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_fill_constructor) {

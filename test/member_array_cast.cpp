@@ -1,4 +1,4 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #include <boost/test/unit_test.hpp>
 
@@ -14,38 +14,37 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	// some members might need explicit padding to work well with member_cast
 	struct particle {
 		double mass;
-		v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
+		v3d    position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
 	};
 
 	class particles_soa {
 		multi::array<double, 2> masses_;
-		multi::array<v3d, 2> positions_;
+		multi::array<v3d, 2>    positions_;
 
 	 public:  // NOLINT(whitespace/indent) nested class
 		// NOLINTNEXTLINE(runtime/explicit)
-		particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
+		explicit particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
 		: masses_{AoS.member_cast<double>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
 
-		struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) // NOSONAR
 			double& mass;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
-			v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
+			v3d&    position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
-			operator particle() const { return {mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
+			operator particle() const { return {mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) allow direct assignment
 			auto operator+() const { return operator particle(); }
 
 			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
+			explicit reference(particle& other) : reference{other.mass, other.position} {}
 
 		 private:  // NOLINT(whitespace/indent) nested class
 			friend class particles_soa;
-			reference(reference const&) = default;
 
 		 public:  // NOLINT(whitespace/indent) nested class
-			auto operator=(reference const& other) -> reference& {  // NOLINT(cert-oop54-cpp)
+			auto operator=(reference const& other) && -> reference& {
+				if(this == std::addressof(other)) {
+					return *this;
+				}
 				std::tie(mass, position) = std::tie(other.mass, other.position);
-				return *this;
-			}
-			auto operator=(reference&& other) noexcept -> reference& {
-				operator=(other);
 				return *this;
 			}
 
@@ -85,32 +84,30 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	BOOST_REQUIRE(not(SoA(1, 1) != SoA(0, 0)));
 }
 
-// #if not defined(__clang__) or not defined(__apple_build_version__)  // this test fail to compile in apple because of alignment/size isses TODO(correaa)
-
 struct employee_dummy {
 	std::string name;
 	// NOLINTNEXTLINE(runtime/int)
-	short salary;  // NOLINT(google-runtime-int)
+	short       salary;  // NOLINT(google-runtime-int)
 	std::size_t age;
 };
 
 struct employee {
 	std::string name;
 	// NOLINTNEXTLINE(runtime/int)
-	short salary;  // NOLINT(google-runtime-int)
+	short       salary;  // NOLINT(google-runtime-int)
 	std::size_t age;
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	char padding_ [(((offsetof(employee_dummy, age) + sizeof(age))/sizeof(std::string)+1)*sizeof(std::string) - (offsetof(employee_dummy, age) + sizeof(age)) )] = {};
+	char padding_[(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string) - (offsetof(employee_dummy, age) + sizeof(age)))] = {};
 };
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
-#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
+#if !(defined(__NVCC__) || defined(__HIPCC__))
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 	multi::array<employee, 1> d1D = {
-	    { "Al"s, 1430, 35},
-	    {"Bob"s, 3212, 34},
+		{ "Al"s, 1430, 35},
+		{"Bob"s, 3212, 34},
 	};
 
 	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
@@ -119,8 +116,8 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(&d1D_names[1] == &d1D[1].name);
 
 	multi::array<employee, 2> d2D = {
-	    {  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
-	    {{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
+		{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
+		{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
 	};
 	BOOST_REQUIRE(d2D[0][0].name == "Al");
 	BOOST_REQUIRE(d2D[0][0].salary == 1430);
@@ -144,17 +141,20 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 
 #if not defined(__circle_build__)
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
-    struct record {
-        int id;
-        double data;
-    };
+	struct record {
+		int    id;
+		double data;
+	};
 
-	multi::array<record, 2> const recs = { { {1, 1.1}, {2, 2.2} }, { {3, 3.3}, {4, 4.4} } };
+	multi::array<record, 2> const recs = {
+		{{1, 1.1}, {2, 2.2}},
+		{{3, 3.3}, {4, 4.4}},
+	};
 
-    // multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
-       multi::array<int, 2> ids = recs.element_transformed(            & record::id );
+	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
+	multi::array<int, 2> ids = recs.element_transformed(&record::id);
 
-    BOOST_REQUIRE( ids[1][1] == 4 );
+	BOOST_REQUIRE( ids[1][1] == 4 );
 	BOOST_REQUIRE( ids == recs.member_cast<int>(&record::id) );
 
 	// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
@@ -163,19 +163,17 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 #endif
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
-#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
+#if !(defined(__NVCC__) || defined(__HIPCC__))
 BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 	multi::array<employee, 2> d2D = {
-	    {  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
-	    {{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
+		{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
+		{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
 	};
 
-    // multi::array<std::size_t, 2> d2D_ages_copy =
+	// multi::array<std::size_t, 2> d2D_ages_copy =
 	d2D.element_transformed(std::mem_fn(&employee::age));
 	BOOST_REQUIRE( d2D.element_transformed(std::mem_fn(&employee::age)) == d2D.element_transformed(&employee::age) );
 }
 #endif
-
-// #endif

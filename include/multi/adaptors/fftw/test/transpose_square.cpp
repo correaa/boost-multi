@@ -1,7 +1,5 @@
 // Copyright 2020-2024 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
-
 #include<boost/test/unit_test.hpp>
 #include<boost/timer/timer.hpp>
 
@@ -19,12 +17,13 @@ BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 using complex = std::complex<double>;
 
-class watch : private std::chrono::high_resolution_clock {
+class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label;
 	time_point start = now();
 
  public:
-	explicit watch(std::string label) : label{std::move(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
+	explicit watch(std::string label) : label{std::move(label)} {}
+
 	watch(watch const&) = delete;
 	watch(watch&&) = delete;
 

@@ -21,4 +21,3 @@
 #include "../adaptors/blas/trsm.hpp"
 
 #endif
-
