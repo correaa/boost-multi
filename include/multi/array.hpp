@@ -150,7 +150,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		                      array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(layout_type{index_extension{adl_distance(first, last)} * multi::extensions(*first)}.num_elements())),
 		                      index_extension{adl_distance(first, last)} * multi::extensions(*first)} {
 		// adl_copy(first, last, ref::begin());
+	#if defined(__clang__) && defined(__CUDACC__)
+		::thrust::copy(first, last, ref::begin());
+	#else
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
+	#endif
+		// ::thrust::uninitialized_copy(first, last, ref::begin());
+		// adl_uninitialized_copy(first, last, ref::begin());
 	}
 
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
