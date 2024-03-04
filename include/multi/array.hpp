@@ -52,8 +52,8 @@ struct array_allocator {
 	template<typename It>
 	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
 		#if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(! std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> || ! multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type> ) {
-			adl_uninitialized_default_construct_n(d_first, count);
+		if constexpr(! std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && ! multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type> ) {
+			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
 		}
 		return adl_copy_n                    (        first, count, d_first);
 		#else
@@ -105,7 +105,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	auto uninitialized_default_construct() {
-		if constexpr(!(std::is_trivially_default_constructible_v<typename static_array::element> || multi::force_element_trivial_default_construction<typename static_array::element>)) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element> &&  ! multi::force_element_trivial_default_construction<typename static_array::element>) {
 			return adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
 		}
 	}
@@ -159,8 +159,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		if(adl_distance(first, last) == 0) {return;}
 	#if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
-		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> || ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
-			adl_uninitialized_default_construct_n(ref::data_elements(), ref::num_elements());
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), ref::data_elements(), ref::num_elements());
 		}
 		adl_copy_n(first, last - first, ref::begin());
 	#else
@@ -191,8 +191,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		                      array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())),
 		                      other.extensions()} {
 	#if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> || ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
-			adl_uninitialized_default_construct_n(this->data_elements(), this->num_elements());
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
 		}
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 	#else
@@ -247,12 +247,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr static_array(multi::subarray<TT, D, Args...> const& other, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())), other.extensions()) {
 	#if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> || ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
-			adl_uninitialized_default_construct_n(this->data_elements(), this->num_elements());
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
 		}
 		adl_copy              (other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
 	#else
-		adl_uninitialized_copy(other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
+		adl_uninitialized_copy(/*static_array::alloc()*/ other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
 	#endif
 	}
 
@@ -563,15 +563,15 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	using ref          = array_ref<T, 0, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
 	auto uninitialized_value_construct() {
-		if constexpr(!(std::is_trivially_default_constructible_v<typename static_array::element> || multi::force_element_trivial_default_construction<typename static_array::element>)) {
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element> && ! multi::force_element_trivial_default_construction<typename static_array::element>) {
 			return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 		}
 	}
 
 	template<typename It> auto uninitialized_copy(It first) {
 	#if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> || ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
-			adl_uninitialized_default_construct_n(this->data_elements(), this->num_elements());
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+			adl_alloc_uninitialized_default_construct_n(this->alloc(), this->data_elements(), this->num_elements());
 		}
 		return adl_copy                      (               first, this->num_elements(), this->data_elements());
 	#else
@@ -621,6 +621,9 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		assert(other.num_elements() <= 1);
 		if(other.num_elements()) {
 			#if defined(__clang__) && defined(__CUDACC__)
+			if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+				adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
+			}
 			adl_copy                    (                       other.base(), other.base() + other.num_elements(), this->base());
 			#else
 			adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + other.num_elements(), this->base());
@@ -631,13 +634,14 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	template<class TT, class... Args>
 	explicit static_array(multi::static_array<TT, 0, Args...> const& other, allocator_type const& alloc)  // TODO(correaa) : call other constructor (above)
 	: array_alloc{alloc}, ref(static_array::allocate(other.num_elements()), extensions(other)) {
-		// if(other.data_elements() && other.num_elements()) {
 		#if defined(__clang__) && defined(__CUDACC__)
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
+		}
 		adl_copy_n                    (                       other.data_elements(), other.num_elements(), this->data_elements());
 		#else
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
 		#endif
-		// }
 	}
 
 	template<class TT, class... Args>
@@ -678,6 +682,9 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	static_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: ref(static_array::allocate(1), typename static_array::extensions_type{}) {
 		#if defined(__clang__) && defined(__CUDACC__)
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
+		}
 		adl_copy_n                    (                       &single, 1, this->data_elements());
 		#else
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), &single, 1, this->data_elements());
