@@ -42,12 +42,15 @@ static char const* _cudaGetErrorEnum(cufftResult error) {
 		case CUFFT_NO_WORKSPACE:   return "CUFFT_NO_WORKSPACE";
 		case CUFFT_NOT_IMPLEMENTED:return "CUFFT_NOT_IMPLEMENTED";
 		case CUFFT_NOT_SUPPORTED : return "CUFFT_NOT_SUPPORTED";
-		case CUFFT_PARSE_ERROR:    return "CUFFT_PARSE_ERROR";
+		// #if !defined(__HIP_PLATFORM_NVIDIA__)
+		// case CUFFT_PARSE_ERROR:    return "CUFFT_PARSE_ERROR";
+		// #endif
         case CUFFT_SETUP_FAILED:   return "CUFFT_SETUP_FAILED";
 		case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
-		#ifndef __HIP_PLATFORM_NVIDIA__
-		case CUFFT_LICENSE_ERROR:  return "CUFFT_LICENSE_ERROR";
-		#endif
+		// #if !defined(__HIP_PLATFORM_NVIDIA__)
+		// case CUFFT_LICENSE_ERROR:  return "CUFFT_LICENSE_ERROR";
+		// #endif
+		default: assert(0);
     }
     return "<unknown>";
 }
