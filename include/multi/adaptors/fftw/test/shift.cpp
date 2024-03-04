@@ -32,7 +32,7 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 
 		auto operator-(iterator const& other) const {return n_ - other.n_;}
 
-		auto operator+(std::ptrdiff_t d) const {return iterator{ptr_, n_ + d};};  // mmm, needed by culang?
+		auto operator+(std::ptrdiff_t delta) const {return iterator{ptr_, n_ + delta};};  // mmm, needed by culang?
 	};
 
 	auto begin() const {return iterator{this, 0 };}
