@@ -213,14 +213,13 @@ struct conjugate {
 		return conj(zee);
 	}
 
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__)
+#if defined(__CUDACC__)
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::cuda_cub::tag> zee) const {
 		return conj(static_cast<Complex>(zee));
 	}
 #endif
-
-#if defined(__HIPCC__) || defined(__HIP_PLATFORM_AMD__)
+#if defined(__HIPCC__)
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::hip::tag> zee) const {
 		return conj(static_cast<Complex>(zee));

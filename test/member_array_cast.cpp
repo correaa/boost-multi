@@ -127,15 +127,17 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(size(d2D_names) == size(d2D));
 	BOOST_REQUIRE(d2D_names[1][1] == "David");
 
-#if not defined(__circle_build__)
+#if !defined(__circle_build__) && !(defined(__clang__) && defined(__CUDACC__))
 	multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(&employee::name);
 	BOOST_REQUIRE(d2D_names_copy_members[1][1] == "David");
 	BOOST_REQUIRE(d2D_names_copy_members       == d2D_names);
 #endif
 
+#if !(defined(__clang__) && defined(__CUDACC__))
 	multi::array<std::string, 2> d2D_names_copy{d2D_names};
 	BOOST_REQUIRE(d2D_names == d2D_names_copy);
 	BOOST_REQUIRE(base(d2D_names) != base(d2D_names_copy));
+#endif
 }
 #endif
 

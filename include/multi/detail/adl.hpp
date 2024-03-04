@@ -300,8 +300,9 @@ class adl_uninitialized_copy_t {
 			return std::uninitialized_copy(first, last, d_first);
 		}
 	}
-#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
-	template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(                  ::thrust::uninitialized_copy(                    std::forward<As>(args)...))
+// #if defined(__CUDACC__) || defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDACC__) || defined(__HIPCC__)
+	template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(                  ::thrust::uninitialized_copy(                    std::forward<As>(args)...))  // doesn't work with culang 17, cuda 12 ?
 #endif
 	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB   first, As&&... args       ) const DECLRETURN(                        uninitialized_copy(                 first , std::forward<As>(args)...))
 	template<class TB, class TE, class DB> constexpr auto _(priority<4>/**/, TB   first, TE last, DB d_first) const DECLRETURN(std::decay_t<DB>      ::uninitialized_copy(                 first , last, d_first            ))

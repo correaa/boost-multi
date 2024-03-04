@@ -11,7 +11,7 @@ template<class T>
 class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	std::size_t n_ = 0;
 	mutable std::mt19937 gen_{std::random_device{}()};  // NOLINT(whitespace/braces) cpplint 1.6 bug
-	mutable std::uniform_real_distribution<> dist_{-1., 1.};
+	mutable std::uniform_real_distribution<> dist_{-1.0, 1.0};
 
  public:
 	n_random_complex(n_random_complex const&) = delete;
@@ -31,7 +31,10 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 		friend auto operator!=(iterator const& self, iterator const& other) {return self.n_ != other.n_;}
 
 		auto operator-(iterator const& other) const {return n_ - other.n_;}
+
+		auto operator+(std::ptrdiff_t d) const {return iterator{ptr_, n_ + d};};  // mmm, needed by culang?
 	};
+
 	auto begin() const {return iterator{this, 0 };}
 	auto end  () const {return iterator{this, n_};}
 
