@@ -537,14 +537,14 @@ class adl_uninitialized_default_construct_n_t {
 	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).uninitialized_default_construct_n(                      std::forward<As>(args)...))
 
  public:
-		template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<5>{}, std::forward<As>(args)...));}
+	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<5>{}, std::forward<As>(args)...));}
 };
 inline constexpr adl_uninitialized_default_construct_n_t adl_uninitialized_default_construct_n;
 
 class adl_alloc_uninitialized_default_construct_n_t {
 	template<class Alloc, class... As>          constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const JUSTRETURN(                      adl_uninitialized_default_construct_n(                      std::forward<As>(args)...))
 	template<class... As>                       constexpr auto _(priority<2>/**/,                    As&&... args) const DECLRETURN(               xtd::alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
-#if defined(__NVCC__) || defined(__HIPCC__)
+#if defined(__CUDACC__) || defined(__HIPCC__)
 	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const DECLRETURN(         thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n))
 #endif
 	template<class... As>                       constexpr auto _(priority<4>/**/,          As&&... args          ) const DECLRETURN(                     alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))
