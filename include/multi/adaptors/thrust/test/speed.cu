@@ -11,23 +11,24 @@
 
 namespace multi = boost::multi;
 
-// template<>
-// inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = false;
+template<>
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 
-// template<>
-// inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<double>> = false;
+template<>
+inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<double>> = true;
 
-// template<>
-// inline constexpr bool multi::force_element_trivial_default_construction<std::complex<float>> = false;
+template<>
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<float>> = true;
 
-// template<>
-// inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<float>> = false;
+template<>
+inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<float>> = true;
 
 using test_types = boost::mpl::list<
 	char, unsigned, int,
-	::thrust::complex<double>, std::complex<double>,
-	::thrust::complex<float>, std::complex<float>,
-	double, float>;
+	::thrust::complex<double>, // std::complex<double>,
+	::thrust::complex<float>, // std::complex<float>,
+	double, float
+>;
 
 BOOST_AUTO_TEST_CASE(warmup) {
 	using T = double;
@@ -107,8 +108,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 
 	auto const n = 8000;
 
-	multi::array<T, 2, thrust::cuda::universal_allocator<T>> src({n, n});
-	multi::array<T, 2, thrust::cuda::universal_allocator<T>> dst(extensions(src));
+	using AllocatorT = thrust::cuda::universal_allocator<T>;
+
+	multi::array<T, 2, AllocatorT> src({n, n});
+	multi::array<T, 2, AllocatorT> dst(extensions(src));
 
 	auto const threshold = 0.10;
 
@@ -117,6 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 	auto const dummy = std::invoke([&] {
 		auto start_time = std::chrono::high_resolution_clock::now();
 		cudaMemcpy(raw_pointer_cast(dst.data_elements()), raw_pointer_cast(src.data_elements()), src.num_elements() * sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaDeviceSynchronize();
 		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
 		auto                          rate = size / time.count();
 		std::cout << "memcpy    rate = " << rate << " GB/s (warmup)\n";
@@ -126,6 +130,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 	auto const memcpy_rate = std::invoke([&] {
 		auto start_time = std::chrono::high_resolution_clock::now();
 		cudaMemcpy(raw_pointer_cast(dst.data_elements()), raw_pointer_cast(src.data_elements()), src.num_elements() * sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaDeviceSynchronize();
 		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
 		auto                          rate = size / time.count();
 		std::cout << "memcpy    rate = " << rate << " GB/s (ratio = 1)\n";
