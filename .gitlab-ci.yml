@@ -446,7 +446,7 @@ cuda114-clang++15:
   script:
     - nvidia-smi
     - apt-get -qq update
-    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     # - g++ --version
     # - /usr/local/cuda/bin/nvcc --version
