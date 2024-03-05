@@ -161,6 +161,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wchar-subscripts
 					-Wcomment
 					-Wenum-compare
+					-Wno-enum-constexpr-conversion  # for Boost.Test
 					-Wformat
 					-Wuninitialized
 					-Wmaybe-uninitialized
