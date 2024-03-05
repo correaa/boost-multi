@@ -132,6 +132,21 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	if(NOT ENABLE_CIRCLE)
+		if(ENABLE_CUDA)
+			target_compile_options(
+				${TEST_EXE}
+				PRIVATE
+				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+				-Wno-unknown-warning-option
+				#-Wextra
+				#-Wpedantic
+				#-Wmove
+				-Wno-enum-constexpr-conversion  # for Boost.Test
+				#-Wno-error=\#warnings
+				>
+			)
+		endif()
+
 		if(NOT ENABLE_CUDA
 		AND (NOT
 			DART_COMPILER_NAME

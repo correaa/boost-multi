@@ -109,10 +109,10 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	}
 
 	static auto get_device(const_void_pointer p) -> device_index {
-		#if defined(__NVCC__)
-		cudaPointerAttributes attr{};
-		#else
+		#if defined(__HIPCC__)
 		hipPointerAttribute_t attr{};
+		#else  // #if defined(__NVCC__)
+		cudaPointerAttributes attr{};
 		#endif
 		switch(HICUP_(PointerGetAttributes)(&attr, raw_pointer_cast(p))) {
 			case HICUP_(Success): break;

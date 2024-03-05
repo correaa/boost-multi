@@ -88,7 +88,7 @@ class managed_allocator {
 		// }
 		return ret;
 	}
-	[[deprecate]] void deallocate(pointer p, size_type) {
+	[[deprecated]] void deallocate(pointer p, size_type) {
 		// MULTI_MARK_SCOPE("thrust::managed_deallocate");
 	//  cuda::managed::free(static_cast<managed::ptr<void>>(p));
 		cudaFree(raw_pointer_cast(p));
