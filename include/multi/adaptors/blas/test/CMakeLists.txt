@@ -137,6 +137,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				${TEST_EXE}
 				PRIVATE
 				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+				-Wno-unknown-warning-option
 				#-Wextra
 				#-Wpedantic
 				#-Wmove
