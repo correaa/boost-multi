@@ -167,7 +167,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra
 					-Wpedantic
 					-Wmove
-					-Wno-enum-constexpr-conversion  # for Boost.Test
 					-Wno-error=\#warnings>
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
