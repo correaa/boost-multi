@@ -437,7 +437,7 @@ cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda-12.0.0:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+cuda-clang++:
   stage: build
   image: nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
   allow_failure: true
@@ -455,14 +455,14 @@ cuda-12.0.0:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 17
-    - clang++-17 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_CUDA_ARCHITECTURES=61
+    - ./llvm.sh 18
+    - clang++-18 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-18 -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-  needs: ["cuda"]
+  needs: ["cuda", "clang++"]
 
-cuda-12.1.1:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/container_tags.pdf
+cuda-12.1.1:
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04
   tags:
@@ -478,7 +478,7 @@ cuda-12.1.1:  # last version: https://gitlab.com/nvidia/container-images/cuda/-/
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda-12.3.1:  # last version: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+cuda-12.3.1:
   stage: build
   allow_failure: false
   image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
