@@ -132,6 +132,20 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	if(NOT ENABLE_CIRCLE)
+		if(ENABLE_CUDA)
+			target_compile_options(
+				${TEST_EXE}
+				PRIVATE
+				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+				#-Wextra
+				#-Wpedantic
+				#-Wmove
+				-Wno-enum-constexpr-conversion  # for Boost.Test
+				#-Wno-error=\#warnings
+				>
+			)
+		endif()
+
 		if(NOT ENABLE_CUDA
 		AND (NOT
 			DART_COMPILER_NAME
@@ -152,6 +166,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra
 					-Wpedantic
 					-Wmove
+					-Wno-enum-constexpr-conversion  # for Boost.Test
 					-Wno-error=\#warnings>
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
@@ -161,7 +176,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wchar-subscripts
 					-Wcomment
 					-Wenum-compare
-					-Wno-enum-constexpr-conversion  # for Boost.Test
 					-Wformat
 					-Wuninitialized
 					-Wmaybe-uninitialized
