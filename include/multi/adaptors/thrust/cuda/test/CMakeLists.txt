@@ -18,7 +18,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	add_executable(${TEST_EXE} ${TEST_FILE})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		target_compile_options(${TEST_EXE} PRIVATE -std=c++17 --expt-relaxed-constexpr)
+		# target_compile_options(${TEST_EXE} PRIVATE -std=c++17 --expt-relaxed-constexpr)
 	endif()
 	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
@@ -26,6 +26,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+	target_link_libraries(${TEST_EXE} PRIVATE multi)
+
 	# if(NOT ENABLE_CUDA) target_compile_options  (${TEST_EXE} PRIVATE -Werror -Wall -Wextra -fno-common $<$<CXX_COMPILER_ID:GNU>: -Wpedantic -Wformat-truncation -fstack-usage>#-Wconversion
 	# $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 	# -Wpedantic -Wmove> $<$<CXX_COMPILER_ID:Intel>: -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses
