@@ -463,10 +463,10 @@ cuda114-clang++15:
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-cuda118-clang++16:
+cuda118-clang++17:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
-  allow_failure: true
+  allow_failure: false
   tags:
     - nvidia-gpu
   script:
@@ -475,18 +475,18 @@ cuda118-clang++16:
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 16
+    - ./llvm.sh 17
     - mkdir build && cd build
-    - clang++-16 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16 -DCMAKE_CUDA_ARCHITECTURES=61
+    - clang++-17 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-cuda121-clang++18:
+cuda121-clang++19:
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
-  allow_failure: true
+  allow_failure: false
   tags:
     - nvidia-gpu
   script:
@@ -495,10 +495,10 @@ cuda121-clang++18:
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 18
+    - ./llvm.sh 19
     - mkdir build && cd build
-    - clang++-18 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-18 -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_CUDA_ARCHITECTURES=61
+    - clang++-19 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
