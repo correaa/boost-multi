@@ -19,7 +19,7 @@ namespace utf = boost::unit_test::framework;
 using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
-class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963) this class will report timing on destruction
+class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label_;
 	time_point start_ = now();
 
