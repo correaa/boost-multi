@@ -5,7 +5,7 @@
 #include <multi/adaptors/fftw.hpp>
 #include <multi/array.hpp>
 
-#include <chrono>
+#include <chrono>  // NOLINT(build/c++11) bug in cpplint
 #include <iostream>
 #include <random>
 
