@@ -437,7 +437,7 @@ cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda114-clang++16:
+cuclang++15-cuda-11.4:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   allow_failure: true
@@ -453,10 +453,10 @@ cuda114-clang++16:
     - cmake --version
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 16
+    - ./llvm.sh 15
     - mkdir build && cd build
-    - clang++-16 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16 -DCMAKE_CUDA_ARCHITECTURES=61
+    - clang++-15 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-15 -DCMAKE_CXX_COMPILER=clang++-15 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
