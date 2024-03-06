@@ -426,7 +426,7 @@ cuda-11.4.3:
   script:
     - nvidia-smi
     - apt-get -qq update
-    - DEBIAN_FRONTEND=noninteractive  apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - cmake --version
@@ -437,52 +437,63 @@ cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda118-clang++16:
+cuclang++16 cuda-11.4.3:  # clang++ 15 compilation crashed on cufft.cpp
   stage: build
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
-  allow_failure: true
+  image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   tags:
     - nvidia-gpu
   script:
     - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - mkdir build && cd build
-    # - g++ --version
-    # - /usr/local/cuda/bin/nvcc --version
-    # - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-    # - cmake --build . --parallel 2 || cmake --build . --verbose
-    # - ctest -j 2 --output-on-failure
+    - apt-get -qq update
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - cmake --version
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 16
+    - ./llvm.sh 15
+    - mkdir build && cd build
     - clang++-16 --version
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-cuda121-clang++18:
+cuclang++17 cuda-11.8:
   stage: build
-  image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
-  allow_failure: true
+  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
     - nvidia-gpu
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - mkdir build && cd build
-    # - g++ --version
-    # - /usr/local/cuda/bin/nvcc --version
-    # - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-    # - cmake --build . --parallel 2 || cmake --build . --verbose
-    # - ctest -j 2 --output-on-failure
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 18
-    - clang++-18 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-18 -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_CUDA_ARCHITECTURES=61
+    - ./llvm.sh 17
+    - mkdir build && cd build
+    - clang++-17 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda", "clang++"]
+
+cuclang-19 cuda 12.1:
+  stage: build
+  image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
+  tags:
+    - nvidia-gpu
+  script:
+    - nvidia-smi
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y lsb-release software-properties-common
+    - wget https://apt.llvm.org/llvm.sh
+    - chmod u+x llvm.sh
+    - ./llvm.sh 19
+    - mkdir build && cd build
+    - clang++-19 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
