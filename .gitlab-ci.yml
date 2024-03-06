@@ -460,7 +460,7 @@ cuclang++16 cuda-11.4.3:  # clang++ 15 compilation crashed on cufft.cpp
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-cuclang++17 cuda-11.8:
+cuclang++14 cuda-11.8:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
@@ -471,10 +471,10 @@ cuclang++17 cuda-11.8:
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 17
+    - ./llvm.sh 14
     - mkdir build && cd build
-    - clang++-17 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_CUDA_ARCHITECTURES=61
+    - clang++-14 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-14 -DCMAKE_CXX_COMPILER=clang++-14 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
