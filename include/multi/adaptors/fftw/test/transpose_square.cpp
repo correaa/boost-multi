@@ -17,7 +17,7 @@ BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 using complex = std::complex<double>;
 
-class watch : private std::chrono::high_resolution_clock {  //NOSONAR(cpp:S4963) this class will report timing on destruction
+class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label;
 	time_point start = now();
 

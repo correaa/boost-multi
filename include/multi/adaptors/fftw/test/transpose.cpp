@@ -30,7 +30,7 @@ using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 BOOST_AUTO_TEST_CASE(fftw_transpose) {
-	using namespace std::string_literals;  // for ""s
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 	using complex = std::complex<double>;
 
