@@ -256,12 +256,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	#endif
 	}
 
-	template<class TT, class... Args,
-	         std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> = 0,
-	         class                                                                                                                                          = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
-	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr /*mplct*/ static_array(multi::subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: static_array(other, allocator_type{}) {}
+//	template<class TT, class... Args,
+//	         std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> = 0,
+//	         class                                                                                                                                          = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
+//	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
+//	constexpr /*mplct*/ static_array(multi::subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709)
+//	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
 	         std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> = 0,
