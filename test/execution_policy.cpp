@@ -4,7 +4,7 @@
 
 #include <multi/array.hpp>
 
-#if defined(__INTEL_COMPILER) || defined(__NVCOMPILER)
+#if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #include <execution>
 #endif
 
@@ -17,8 +17,10 @@ BOOST_AUTO_TEST_CASE(multi_construct_1d) {
 	BOOST_REQUIRE( arr[1] == 1.0 );
 
 	// #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
-	#if defined(__INTEL_COMPILER) || defined(__NVCOMPILER)
+	// #if defined(__INTEL_COMPILER) || defined(__NVCOMPILER)
 	// multi::static_array<double, 1> arr2(arr);
+	#if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 	multi::static_array<double, 1> arr2(std::execution::par, arr);
 	#endif
+	// #endif
 }
