@@ -21,6 +21,8 @@ if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
 endif()
 
+find_package(TBB REQUIRED)
+
 enable_testing()
 include(CTest)
 
@@ -865,11 +867,13 @@ else()
 			set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 		endif()
 
-		target_link_libraries(${TEST_EXE} PRIVATE multi)
-
 		# target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 		# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
-		target_link_libraries     (${TEST_EXE}        PRIVATE multi Boost::unit_test_framework   )
+
+		target_link_libraries(${TEST_EXE} PRIVATE multi)
+		target_link_libraries     (${TEST_EXE} PRIVATE multi Boost::unit_test_framework   )
+		target_link_libraries     (${TEST_EXE} PRIVATE TBB::tbb)
+
 		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
 		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_DYN_LINK=1)
 		target_compile_definitions(${TEST_EXE} PUBLIC BOOST_NO_CXX98_FUNCTION_BASE=1)
