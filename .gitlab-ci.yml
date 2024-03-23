@@ -362,9 +362,9 @@ nvhpc-22.7:
     - ctest --output-on-failure
   needs: ["nvhpc"]
 
-nvhpc-23.9 c++20:
+nvhpc-24.3 c++20:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:23.9-devel-cuda_multi-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04
   tags:
       - large-disk-space
   script:
