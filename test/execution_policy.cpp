@@ -4,8 +4,10 @@
 
 #include <multi/array.hpp>
 
+#ifdef TBB_FOUND
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #include <execution>
+#endif
 #endif
 
 namespace multi = boost::multi;
@@ -19,8 +21,9 @@ BOOST_AUTO_TEST_CASE(multi_construct_1d) {
 	// #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
 	// #if defined(__INTEL_COMPILER) || defined(__NVCOMPILER)
 	// multi::static_array<double, 1> arr2(arr);
+	#ifdef TBB_FOUND
 	#if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 	multi::static_array<double, 1> arr2(std::execution::par, arr);
 	#endif
-	// #endif
+	#endif
 }
