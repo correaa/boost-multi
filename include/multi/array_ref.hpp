@@ -2603,6 +2603,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		array_ref::copy_elements(other.data_elements());
 		return *this;
 	}
+	#endif
 
 	constexpr auto operator=(array_ref const& other) & -> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
