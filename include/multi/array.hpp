@@ -10,6 +10,7 @@
 #include "./detail/memory.hpp"
 #include "./detail/type_traits.hpp"
 
+// #include <execution>  // for std::is_execution_policy_v
 #include <memory>  // for std::allocator_traits
 #include <tuple>  // needed by a deprecated function
 #include <type_traits>  // for std::common_reference
@@ -49,6 +50,7 @@ struct array_allocator {
 	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
 	}
+
 	template<typename It>
 	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
 		#if defined(__clang__) && defined(__CUDACC__)
@@ -60,6 +62,20 @@ struct array_allocator {
 		return adl_alloc_uninitialized_copy_n(alloc_, first, count, d_first);
 		#endif
 	}
+
+	template<class EP, typename It>
+	auto uninitialized_copy_n(EP&& ep, It first, size_type count, pointer_ d_first) {
+		// #if defined(__clang__) && defined(__CUDACC__)
+		// if constexpr(! std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && ! multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type> ) {
+		// 	adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
+		// }
+		// return adl_copy_n                    (std::forward<EP>(ep),        first, count, d_first);
+		// #else
+		// return adl_alloc_uninitialized_copy_n(std::forward<EP>(ep), alloc_, first, count, d_first);
+		return adl_uninitialized_copy_n(std::forward<EP>(ep), first, count, d_first);
+		// #endif
+	}
+
 	template<typename It>
 	auto destroy_n(It first, size_type n) { return adl_alloc_destroy_n(this->alloc(), first, n); }
 
@@ -112,6 +128,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	template<typename It> auto uninitialized_copy_elements(It first) {
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
+	}
+
+	template<class EP, typename It> auto uninitialized_copy_elements(EP&& ep, It first) {
+		return array_alloc::uninitialized_copy_n(std::forward<EP>(ep), first, this->num_elements(), this->data_elements());
 	}
 
 	constexpr void destroy() {
@@ -338,6 +358,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(static_array const& other)  // 5b
 	: array_alloc{allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		uninitialized_copy_elements(other.data_elements());
+	}
+
+	template<class ExecutionPolicy>  // , std::enable_if_t<std::is_execution_policy_v<std::decay_t<ExecutionPolicy>>, int> =0>
+	static_array(ExecutionPolicy&& policy, static_array const& other)  // 5b
+	: array_alloc{allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
+		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
 	}
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
