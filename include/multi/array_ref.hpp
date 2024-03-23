@@ -2596,7 +2596,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  public:
 	HD constexpr auto data_elements() const& -> typename array_ref::element_const_ptr {return array_ref::base_;}
 
-	#if !defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ > 22 || (__NVCOMPILER_MAJOR__ == 22 && __NVCOMPILER_MINOR__ > 5))
+	#if !defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ > 22 || (__NVCOMPILER_MAJOR__ == 22 && __NVCOMPILER_MINOR__ > 5))  // bug in nvcc 22.5: error: "operator=" has already been declared in the current scope
 	template<class TT, class... As, std::enable_if_t<! std::is_base_of_v<array_ref, array_ref<TT, D, As...>> ,int> =0>
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
 		assert(this->extensions() == other.extensions());
