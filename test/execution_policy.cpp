@@ -53,6 +53,7 @@ BOOST_AUTO_TEST_CASE(copy_par_1d) {
 #endif
 #endif
 #endif
+#endif
 }
 
 class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // NOSONAR
