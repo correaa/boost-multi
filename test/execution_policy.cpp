@@ -137,7 +137,6 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_1d) {
 
 BOOST_AUTO_TEST_CASE(timing_copy_par_2d_warm) {
 	T const val { 1.0};
-	T const val2{99.9};
 
 	multi::array<T, 2> const arr({8, nelem/8}, val);
 	BOOST_REQUIRE( arr.num_elements() == nelem );
