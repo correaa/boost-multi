@@ -9,7 +9,7 @@
 #include <iostream>
 #include <thread>
 
-#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
+#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
 #include <execution>
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(multi_par_construct_1d) {
 	BOOST_REQUIRE( size(arr) == 10 );
 	BOOST_REQUIRE( arr[1] == 1.0 );
 
-#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
+#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
 	multi::static_array<double, 1> const arr2(std::execution::par, arr);
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(copy_par_1d) {
 	BOOST_REQUIRE( size(arr) == 1000000 );
 	BOOST_REQUIRE( arr[1] == 1.0 );
 
-#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
+#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
 #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_1d) {
 	BOOST_REQUIRE( size(arr) == nelem );
 	BOOST_REQUIRE( arr[1] == val );
 
-#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
+#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
 #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d) {
 	BOOST_REQUIRE( arr.num_elements() == nelem );
 	BOOST_REQUIRE( arr[1][1] == val );
 
-#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
+#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
 #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_skinny) {
 	BOOST_REQUIRE( arr.num_elements() == nelem );
 	BOOST_REQUIRE( arr[1][1] == val );
 
-#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
+#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
 	{
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_ultra_skinny) {
 	BOOST_REQUIRE( arr.num_elements() == nelem );
 	BOOST_REQUIRE( arr[1][1] == val );
 
-#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
+#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
 #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
