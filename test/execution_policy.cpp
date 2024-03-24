@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_ultra_skinny) {
 			multi::array<T, 2> arr2(arr);  // same as  ...= arr;
 			BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
 			BOOST_REQUIRE( arr2 == arr );
-			arr2[1][1] = arr2[2][2];
+			arr2.clear();
 		}
 	}
 	{
