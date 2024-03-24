@@ -110,6 +110,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_1d) {
 #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
+#if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
 	{
 		multi::array<T, 1> arr2(arr.extensions(), val2);
 		BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
@@ -128,6 +129,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_1d) {
 		}
 		BOOST_REQUIRE( arr2 == arr );
 	}
+#endif
 #endif
 #endif
 #endif
@@ -147,7 +149,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d) {
 #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
-
+#if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
 	{
 		multi::array<T, 2> arr2(arr.extensions(), val2);
 		BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
@@ -166,7 +168,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d) {
 		}
 		BOOST_REQUIRE( arr2 == arr );
 	}
-
+#endif
 #endif
 #endif
 #endif
@@ -179,7 +181,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_skinny) {
 
 #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
-
+#if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
 	{
 		multi::array<T, 2> arr2(arr.extensions(), val2);
 		BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
@@ -198,7 +200,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_skinny) {
 		}
 		BOOST_REQUIRE( arr2 == arr );
 	}
-
+#endif
 #endif
 #endif
 }
@@ -211,6 +213,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_ultra_skinny) {
 #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
+#if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
 	{
 		multi::array<T, 2> arr2(arr.extensions(), val2);
 		BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
@@ -282,6 +285,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_ultra_skinny) {
 			BOOST_REQUIRE( arr2 == arr );
 		}
 	}
+#endif
 #endif
 #endif
 #endif
