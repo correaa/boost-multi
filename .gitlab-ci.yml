@@ -360,7 +360,7 @@ nvhpc-22.7:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["nvhpc"]
+#  needs: ["nvhpc"]
 
 nvhpc-23.9 c++20:
   stage: build
@@ -375,7 +375,7 @@ nvhpc-23.9 c++20:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["nvhpc"]
+#  needs: ["nvhpc"]
 
 cuda:
   stage: build
