@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE(multi_par_construct_1d) {
 	BOOST_REQUIRE( arr2 == arr );
 #endif
 #endif
-}
 #endif
+}
 
 BOOST_AUTO_TEST_CASE(copy_par_1d) {
 	multi::array<double, 1> const arr(1000000, 1.0);
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d) {
 		multi::array<T, 2> arr2(arr.extensions(), val2);
 		BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
 		{
-			watch w("normal copy");  // NOLINT(fuchsia-default-arguments-calls)
+			watch const _("normal copy");  // NOLINT(fuchsia-default-arguments-calls)
 			std::copy(arr.begin(), arr.end(), arr2.begin());
 		}
 		BOOST_REQUIRE( arr2 == arr );
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d) {
 		multi::array<T, 2> arr2(arr.extensions(), val2);
 		BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
 		{
-			watch w("par copy");  // NOLINT(fuchsia-default-arguments-calls)
+			watch const _("par copy");  // NOLINT(fuchsia-default-arguments-calls)
 			std::copy(std::execution::par, arr.begin(), arr.end(), arr2.begin());
 		}
 		BOOST_REQUIRE( arr2 == arr );
@@ -269,14 +269,15 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_ultra_skinny) {
 	{
 		{
 			watch const _("constructor");  // NOLINT(fuchsia-default-arguments-calls)
-			multi::array<T, 2> const arr2(arr);  // same as  ...= arr;
+			multi::array<T, 2> arr2(arr);  // same as  ...= arr;
 			BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
 			BOOST_REQUIRE( arr2 == arr );
+			arr2[1][1] = arr2[2][2];
 		}
 	}
 	{
 		{
-			watch const _("par constructor");
+			watch const _("par constructor");  // NOLINT(fuchsia-default-arguments-calls)
 			multi::array<T, 2> const arr2(std::execution::par, arr);
 			BOOST_REQUIRE( arr2.num_elements() == arr.num_elements() );
 			BOOST_REQUIRE( arr2 == arr );
