@@ -25,9 +25,6 @@ BOOST_AUTO_TEST_CASE(multi_par_construct_1d) {
 	BOOST_REQUIRE( size(arr) == 10 );
 	BOOST_REQUIRE( arr[1] == 1.0 );
 
-// #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
-// #if defined(__INTEL_COMPILER) || defined(__NVCOMPILER)
-// multi::static_array<double, 1> arr2(arr);
 #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
@@ -47,6 +44,7 @@ BOOST_AUTO_TEST_CASE(copy_par_1d) {
 #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
+#if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
 	multi::array<double, 1> arr2(arr.extensions());
 
 	std::copy(std::execution::par, arr.begin(), arr.end(), arr2.begin());
