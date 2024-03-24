@@ -10,7 +10,6 @@
 #include "./detail/memory.hpp"
 #include "./detail/type_traits.hpp"
 
-// #include <execution>  // for std::is_execution_policy_v
 #include <memory>  // for std::allocator_traits
 #include <tuple>  // needed by a deprecated function
 #include <type_traits>  // for std::common_reference
@@ -50,7 +49,6 @@ struct array_allocator {
 	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
 	}
-
 	template<typename It>
 	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
 		#if defined(__clang__) && defined(__CUDACC__)
@@ -69,10 +67,10 @@ struct array_allocator {
 		// if constexpr(! std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && ! multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type> ) {
 		// 	adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
 		// }
-		// return adl_copy_n                    (std::forward<EP>(ep),        first, count, d_first);
+		// return adl_copy_n                    (        first, count, d_first);
 		// #else
-		// return adl_alloc_uninitialized_copy_n(std::forward<EP>(ep), alloc_, first, count, d_first);
 		return adl_uninitialized_copy_n(std::forward<EP>(ep), first, count, d_first);
+		// return adl_alloc_uninitialized_copy_n(std::forward<EP>(ep), alloc_, first, count, d_first);
 		// #endif
 	}
 
@@ -360,8 +358,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		uninitialized_copy_elements(other.data_elements());
 	}
 
-	template<class ExecutionPolicy>  // , std::enable_if_t<std::is_execution_policy_v<std::decay_t<ExecutionPolicy>>, int> =0>
-	static_array(ExecutionPolicy&& policy, static_array const& other)  // 5b
+	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename static_array::extensions_type>, int> =0>
+	static_array(ExecutionPolicy&& policy, static_array const& other)
 	: array_alloc{allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
 	}
@@ -882,8 +880,10 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 	using static_ = static_array<T, 0, Alloc>;
 	using static_::static_;
 
+
 	using static_array<T, 0, Alloc>::operator=;
 
+	#if !defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ > 22 || (__NVCOMPILER_MAJOR__ == 22 && __NVCOMPILER_MINOR__ > 5))  // bug in nvcc 22.5: error: "operator=" has already been declared in the current scope
 	template<class TT, class... Args>
 	auto operator=(multi::array<TT, 0, Args...> const& other) & -> array& {
 		if(other.base()) {
@@ -899,7 +899,8 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 		}
 		return std::move(*this);
 	}
-
+	#endif
+	
 	template<class Other, std::enable_if_t<!std::is_base_of<array, std::decay_t<Other>>{}, int> /*dummy*/ = 0>
 	auto operator=(Other const& other) -> array& {
 		this->assign(&other);
