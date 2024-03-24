@@ -97,12 +97,12 @@ class slow_assign {
 
 using T = slow_assign;
 
-T const val { 1.0};
-T const val2{99.9};
-
 auto const nelem = 80;
 
 BOOST_AUTO_TEST_CASE(timing_copy_par_1d) {
+	T const val { 1.0};
+	T const val2{99.9};
+
 	multi::array<T, 1> const arr(nelem, val);
 	BOOST_REQUIRE( size(arr) == nelem );
 	BOOST_REQUIRE( arr[1] == val );
@@ -142,6 +142,9 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_warm) {
 }
 
 BOOST_AUTO_TEST_CASE(timing_copy_par_2d) {
+	T const val { 1.0};
+	T const val2{99.9};
+
 	multi::array<T, 2> const arr({8, nelem/8}, val);
 	BOOST_REQUIRE( arr.num_elements() == nelem );
 	BOOST_REQUIRE( arr[1][1] == val );
@@ -175,6 +178,9 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d) {
 }
 
 BOOST_AUTO_TEST_CASE(timing_copy_par_2d_skinny) {
+	T const val { 1.0};
+	T const val2{99.9};
+
 	multi::array<T, 2> const arr({4, nelem/4}, val);
 	BOOST_REQUIRE( arr.num_elements() == nelem );
 	BOOST_REQUIRE( arr[1][1] == val );
@@ -206,6 +212,9 @@ BOOST_AUTO_TEST_CASE(timing_copy_par_2d_skinny) {
 }
 
 BOOST_AUTO_TEST_CASE(timing_copy_par_2d_ultra_skinny) {
+	T const val { 1.0};
+	T const val2{99.9};
+
 	multi::array<T, 2> const arr({2, nelem/2}, val);
 	BOOST_REQUIRE( arr.num_elements() == nelem );
 	BOOST_REQUIRE( arr[1][1] == val );
