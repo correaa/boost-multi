@@ -21,7 +21,7 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_par_construct_1d) {
 	multi::static_array<double, 1> const arr(multi::extensions_t<1>{multi::iextension{10}}, 1.0);
-	//  multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.);
+	//  multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.0);
 	BOOST_REQUIRE( size(arr) == 10 );
 	BOOST_REQUIRE( arr[1] == 1.0 );
 
