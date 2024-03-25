@@ -334,7 +334,7 @@ oneapi-2022.2:
 
 nvhpc:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu20.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
       - large-disk-space
   script:
@@ -348,7 +348,7 @@ nvhpc:
 
 nvhpc-22.7:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:22.7-devel-cuda_multi-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:22.7-devel-cuda11.7-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
       - large-disk-space
   script:
@@ -363,7 +363,7 @@ nvhpc-22.7:
 
 nvhpc-24.3 c++20:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
       - large-disk-space
   script:
