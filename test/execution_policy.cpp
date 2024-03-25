@@ -95,14 +95,14 @@ class slow_assign {
 	auto operator!=(slow_assign const& other) const noexcept {return val_ != other.val_;}
 };
 
-using T = slow_assign;
-
-auto const nelem = 80;
 
 #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES==0)
 #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L)
+
+using T = slow_assign;
+auto const nelem = 80;
 
 BOOST_AUTO_TEST_CASE(timing_copy_par_1d) {
 	T const val { 1.0};
