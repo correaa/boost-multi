@@ -29,19 +29,6 @@ struct sum_power {
 
 }  // end anonymous namespace
 
-class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // NOSONAR
-: private std::chrono::high_resolution_clock {
-	std::string label_;
-	time_point  start_ = now();
-
- public:
-	explicit watch(std::string label) : label_{std::move(label)} {}
-
-	~watch() {
-		std::cerr << label_ << ": " << std::chrono::duration<double>(now() - start_).count() << " sec" << std::endl;
-	}
-};
-
 template<class T> class randomizer {
 	std::mt19937_64 gen_;  // NOSONAR rng good enough for the test
 

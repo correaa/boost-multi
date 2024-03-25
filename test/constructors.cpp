@@ -17,7 +17,7 @@ struct multiplies_bind1st {
 
 BOOST_AUTO_TEST_CASE(multi_construct_1d) {
 	multi::static_array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 1.0);
-	//  multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.);
+	//  multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.0);
 	BOOST_REQUIRE( size(arr) == 10 );
 	BOOST_REQUIRE( arr[1] == 1.0 );
 }
@@ -44,20 +44,16 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 		BOOST_REQUIRE( size(arr)==10 );
 		BOOST_REQUIRE( arr[5]== double{} );
 	}
-#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+#if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	{
-		multi::array arr(multi::extensions_t<1>{
-			                 {0, 10}
-                                                                                                                                                                                                      },
-		                 double{});
+		multi::array arr(multi::extensions_t<1>({0, 10}), double{});
 		BOOST_REQUIRE( size(arr)==10 );
 		BOOST_REQUIRE( arr[5]== double{} );
 	}
 	{
-		multi::array arr({
-			                 {0, 10}
-                                                                                                                                                                                                      },
-		                 double{});
+		// clang-format off
+		multi::array arr({{0, 10}}, double{});
+		// clang-format on
 		BOOST_REQUIRE( size(arr)==10 );
 		BOOST_REQUIRE( arr[5]== double{} );
 	}
@@ -75,7 +71,7 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors_2d_ctad) {
-#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+#if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	multi::array arr({10, 20}, double{});
 	BOOST_REQUIRE( size(arr)==10 );
 	BOOST_REQUIRE( arr[5][6] == double{} );
@@ -168,8 +164,8 @@ BOOST_AUTO_TEST_CASE(views_are_not_placeable) {
 BOOST_AUTO_TEST_CASE(views_cannot_be_elements) {
 	multi::array<double, 2> const AA = {
 		{1.0, 2.0},
-                                                                                                                                                                                                      {3.0, 4.0},
-                                                                                                   };
+		{3.0, 4.0},
+	};
 	std::vector<decltype(AA[0])> vv;
 	vv.emplace_back(AA[0]);
 	vv.push_back(AA[0]);
@@ -200,7 +196,7 @@ BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
 	using D1 = multi::array<double, 1>;
 
 	void* buf = ::operator new(sizeof(D1));
-	D1* pd1 = new (buf) D1{AA[0]};
+	D1*   pd1 = new (buf) D1{AA[0]};
 	pd1->~D1();  // NOSONAR(cpp:S3432) testing placement new
 	::operator delete(buf);
 }
