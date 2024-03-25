@@ -17,7 +17,7 @@ CheckOptions:
   - { key: readability-identifier-length.MinimumParameterNameLength  , value: 2          }
   - { key: readability-identifier-length.MinimumVariableNameLength   , value: 2          }
   - { key: readability-identifier-length.IgnoredLoopCounterNames     , value: "^[ijk_]$" }
-  - { key: readability-identifier-length.IgnoredVariableNames        , value: "^[ijk]$"  }
+  - { key: readability-identifier-length.IgnoredVariableNames        , value: "^[ijk_]$" }
   - { key: readability-identifier-naming.GlobalConstantCase          , value: aNy_CasE   }
   - { key: readability-identifier-naming.PrivateMemberSufix          , value: _          }
   - { key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp, value: expr-type}

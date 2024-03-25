@@ -134,11 +134,11 @@ g++-testing c++20:
     - ctest --output-on-failure
   needs: ["g++"]
 
-g++-unstable c++23:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
+g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
   image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
@@ -301,7 +301,6 @@ oneapi:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
 
-
 oneapi-latest c++20:
   stage: build
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
@@ -328,7 +327,7 @@ oneapi-2022.2:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
+    - CXX=icpx CXXFLAGS="-DPSTL_USE_PARALLEL_POLICIES=0" cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
   needs: ["oneapi"]
@@ -362,17 +361,17 @@ nvhpc-22.7:
     - ctest --output-on-failure
   needs: ["nvhpc"]
 
-nvhpc-23.9 c++20:
+nvhpc-24.3 c++20:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:23.9-devel-cuda_multi-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04
   tags:
       - large-disk-space
   script:
     - nvidia-smi
-    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ --version
+    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev libfftw3-dev
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["nvhpc"]
