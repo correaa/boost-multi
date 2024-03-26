@@ -5,7 +5,7 @@
   ctest -j --output-on-error [-T memcheck]
   exit
 #]=]
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.18)
 
 enable_testing()
 
