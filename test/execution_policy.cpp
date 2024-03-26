@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(reduce_row_random) {
 	std::random_device r;
 
 	std::seed_seq              seed2{r(), r(), r(), r(), r(), r(), r(), r()};
-	std::mt19937               e2(seed2);
+	std::mt19937               e2(seed2);  // NOLINT(cpp:S2245)
 	std::normal_distribution<> normal_dist{};
 
 	multi::array<double, 2> arr({10000, 10000});
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(sort_random) {
 	std::random_device r;
 
 	std::seed_seq              seed2{r(), r(), r(), r(), r(), r(), r(), r()};
-	std::mt19937               e2(seed2);
+	std::mt19937               e2(seed2);  // NOLINT(cpp:S2245)
 	std::normal_distribution<> normal_dist{};
 
 	multi::array<double, 2> arr({10000, 10000}, 0.0);
