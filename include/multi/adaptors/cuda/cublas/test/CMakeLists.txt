@@ -30,6 +30,9 @@ endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
+	if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+		set(CMAKE_CUDA_ARCHITECTURES native)
+	endif()
 	find_package(CUDAToolkit REQUIRED COMPONENTS cuBLAS)  # requires cmake 3.17
 endif()
 

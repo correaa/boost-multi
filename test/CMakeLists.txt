@@ -19,6 +19,9 @@ find_package(Boost COMPONENTS unit_test_framework)  # tests require Boost.Test `
 
 if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
+	if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+	  set(CMAKE_CUDA_ARCHITECTURES native)
+	endif()
 endif()
 
 find_package(TBB)

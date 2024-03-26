@@ -44,6 +44,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
+	if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+		set(CMAKE_CUDA_ARCHITECTURES native)
+	endif()
 endif()
 
 #find_package(CUDA QUIET)
