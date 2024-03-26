@@ -334,7 +334,7 @@ oneapi-2022.2:
 
 nvhpc:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
       - large-disk-space
   script:
@@ -348,7 +348,7 @@ nvhpc:
 
 nvhpc-22.7:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:22.7-devel-cuda_multi-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:22.7-devel-cuda11.7-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
       - large-disk-space
   script:
@@ -361,9 +361,9 @@ nvhpc-22.7:
     - ctest --output-on-failure
   needs: ["nvhpc"]
 
-nvhpc-24.3 c++20:
+nvhpc-24.3 c++20 stdpar:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
       - large-disk-space
   script:
@@ -371,7 +371,7 @@ nvhpc-24.3 c++20:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev libfftw3-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdpar=multicore"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["nvhpc"]
