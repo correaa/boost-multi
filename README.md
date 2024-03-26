@@ -1114,19 +1114,21 @@ This code takes every row of a two-dimensional array and sums its elements, putt
 The execution policy is selected as the first argument.
 
 ```cpp
-    multi::array<double, 2> A = ...;
+    multi::array<double, 2> const A = ...;
     multi::array<double, 1> v(size(A));
 
     std::transform(std::execution::par, arr.begin(), arr.end(), vec.begin(), [](auto const& row) {return std::reduce(row.begin(), row.end());} );
 ```
+[(live)](https://godbolt.org/z/63jEdY7zP)
 
-For an array of 10000x10000 elements, the execution time decreases from 0.0526 sec for the non-parallel version (without the `par` argument) to 0.0288 sec.
+For an array of 10000x10000 elements, the execution time decreases to 0.0288 sec, compared to 0.0526 sec for the non-parallel version (without the `par` argument).
 
-Note that parallelization is, in general, inherently one-dimensional.
-For example, parallelization happens for the transformation operation to the summation.
+Note that parallelization is, in this context, inherently one-dimensional.
+For example, parallelization happens for the transformation operation, but not to the summation.
 
 The optimal way to parallelize specific operations strongly depends on the array's size and shape.
-Generally, straightforward parallelization without exploiting the n-dimensional structure of the data does not pay off, and nesting parallelization policies usually lead to poorer runtimes.
+Generally, straightforward parallelization without exploiting the n-dimensional structure of the data has a limited pay-off;
+and nesting parallelization policies usually doesn't help either.
 
 Flattening the n-dimensional structure for certain algorithms might help, but such techniques are beyond the scope of this documentation.
 
