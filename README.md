@@ -1107,6 +1107,29 @@ Like in classic STL, standard range algorithms acting on sequences operate in th
 
 To operate on the second dimension (sort by columns), use `std::ranges::sort(~A)` (or ``std::ranges::sort(A.transposed())`).
 
+### Execution policies (parallel algorithms)
+
+Multi iterators can exploit parallel algorithms by specifying execution policies.
+This code takes every row of a two-dimensional array and sums its elements, putting the results in a one-dimensional array of compatible size.
+The execution policy is selected as the first argument.
+
+```cpp
+    multi::array<double, 2> A = ...;
+    multi::array<double, 1> v(size(A));
+
+    std::transform(std::execution::par, arr.begin(), arr.end(), vec.begin(), [](auto const& row) {return std::reduce(row.begin(), row.end());} );
+```
+
+For an array of 10000x10000 elements, the execution time decreases from 0.0526 sec for the non-parallel version (without the `par` argument) to 0.0288 sec.
+
+Note that parallelization is, in general, inherently one-dimensional.
+For example, parallelization happens for the transformation operation to the summation.
+
+The optimal way to parallelize specific operations strongly depends on the array's size and shape.
+Generally, straightforward parallelization without exploiting the n-dimensional structure of the data does not pay off, and nesting parallelization policies usually lead to poorer runtimes.
+
+Flattening the n-dimensional structure for certain algorithms might help, but such techniques are beyond the scope of this documentation.
+
 ### Polymorphic Memory Resources
 
 In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's [polymorphic memory resources (PMR)](https://en.cppreference.com/w/cpp/header/memory_resource) which allows using advanced allocation strategies, including preallocated buffers.
