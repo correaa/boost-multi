@@ -7,7 +7,7 @@
   ctest -j --output-on-error [-T memcheck]
   exit
 #]=]
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.18)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -46,7 +46,9 @@ endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+	if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+		set(CMAKE_CUDA_ARCHITECTURES native)
+	endif()
 endif()
 
 enable_testing()
