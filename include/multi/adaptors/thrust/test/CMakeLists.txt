@@ -1,9 +1,13 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.18)
 project(
 	boost-multi-adaptor-cuda-thrust-test
 	VERSION 0.1
 	LANGUAGES CXX CUDA
 )
+
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+	set(CMAKE_CUDA_ARCHITECTURES native)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
