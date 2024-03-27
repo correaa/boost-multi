@@ -430,7 +430,7 @@ cuda A30:
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
     - export CUDA_VISIBLE_DEVICES=0,1
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=80
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=86
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
@@ -452,7 +452,7 @@ cuda RTXA2000:
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
     - export CUDA_VISIBLE_DEVICES=2
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=80
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=86
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
