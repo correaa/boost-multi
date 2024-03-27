@@ -425,6 +425,7 @@ cuda A30:
     - nvidia-smi
     - __nvcc_device_query
     - export CUDA_VISIBLE_DEVICES=0,1
+    - nvidia-smi
     - __nvcc_device_query
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
@@ -448,6 +449,7 @@ cuda RTXA2000:
     - nvidia-smi
     - __nvcc_device_query
     - export CUDA_VISIBLE_DEVICES=2
+    - nvidia-smi
     - __nvcc_device_query
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
