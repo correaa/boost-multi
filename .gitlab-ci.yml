@@ -416,74 +416,29 @@ cuda:
     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["g++"]
 
-cuda A30:
-  stage: build
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-  tags:
-    - nvidia-gpu
-  script:
-    - nvidia-smi
-    - __nvcc_device_query
-    - export CUDA_VISIBLE_DEVICES=0,1
-    - nvidia-smi
-    - __nvcc_device_query
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - mkdir build && cd build
-    - ls /usr/local
-    - ls /usr/local/cuda-11/bin
-    - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["cuda"]
-
-cuda RTXA2000:
-  stage: build
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-  tags:
-    - nvidia-gpu
-  script:
-    - nvidia-smi
-    - __nvcc_device_query
-    - export CUDA_VISIBLE_DEVICES=2
-    - nvidia-smi
-    - __nvcc_device_query
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - mkdir build && cd build
-    - ls /usr/local
-    - ls /usr/local/cuda-11/bin
-    - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["cuda"]
-
-cuda-11.8 mkl:
-  stage: build
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-  tags:
-    - nvidia-gpu
-  script:
-    - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - DEBIAN_FRONTEND=interactive apt-get install --no-install-recommends --yes --force-yes -y libmkl-full-dev
-    - mkdir build && cd build
-    - ls /usr/local
-    - ls /usr/local/cuda-11/bin
-    - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["cuda"]
+# cuda-11.8 mkl:
+#   stage: build
+#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+#   tags:
+#     - nvidia-gpu
+#   script:
+#     - nvidia-smi
+#     - __nvcc_device_query
+#     - export CUDA_VISIBLE_DEVICES=2
+#     - __nvcc_device_query
+#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#     - DEBIAN_FRONTEND=interactive apt-get install --no-install-recommends --yes --force-yes -y libmkl-full-dev
+#     - mkdir build && cd build
+#     - ls /usr/local
+#     - ls /usr/local/cuda-11/bin
+#     - /usr/local/cuda-11/bin/nvcc --version
+#     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
+#     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
+#     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+#   needs: ["cuda"]
 
 cuda-11.4.3:
   stage: build
@@ -492,6 +447,9 @@ cuda-11.4.3:
     - nvidia-gpu
   script:
     - nvidia-smi
+    - __nvcc_device_query
+    - export CUDA_VISIBLE_DEVICES=2
+    - __nvcc_device_query
     - apt-get -qq update
     - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
@@ -504,14 +462,18 @@ cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda-12.3.1:
+cuda-12.3.1 mkl:
   stage: build
   image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
   tags:
     - nvidia-gpu
   script:
     - nvidia-smi
+    - __nvcc_device_query
+    - export CUDA_VISIBLE_DEVICES=0,1
+    - __nvcc_device_query
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - DEBIAN_FRONTEND=interactive apt-get install --no-install-recommends --yes --force-yes -y libmkl-full-dev
     - mkdir build && cd build
     - g++-12 --version
     - /usr/local/cuda/bin/nvcc --version
@@ -775,8 +737,7 @@ qmcpack-cuda-12:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
     - nvidia-smi
-    - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
-    # - git clone https://github.com/correaa/qmcpack.git --branch fix_afqmc_pointer_traits
+    - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git  # --branch fix_afqmc_pointer_traits
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
