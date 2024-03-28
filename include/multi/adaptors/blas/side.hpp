@@ -1,8 +1,8 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-#pragma once
 #ifndef MULTI_ADAPTORS_BLAS_SIDE_HPP
 #define MULTI_ADAPTORS_BLAS_SIDE_HPP
+#pragma once
 
 namespace boost::multi::blas {
 
