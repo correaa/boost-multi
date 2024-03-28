@@ -1138,7 +1138,7 @@ For example, this copy construction can initialize elements in parallel from the
 
 ```cpp
     multi::array<double, 2> const A = ...;
-    multi::array<double, 1> const B(std::execution::par, A);  // copies A into B, in parallel, same as multi::array<double, 1> const B(A); same as ...= A;
+    multi::array<double, 1> const B(std::execution::par, A);  // copies A into B, in parallel, same effect as multi::array<double, 1> const B(A); or ... B = A;
 ```
 
 Execution policies are not limited to STL, Thrust and oneAPI also offers execution policies that can be used with the corresponding algorithms.
