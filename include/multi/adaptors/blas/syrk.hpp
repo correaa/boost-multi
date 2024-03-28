@@ -1,8 +1,8 @@
 // Copyright 2019-2021 Alfredo A. Correa
 
-#pragma once
 #ifndef MULTI_ADAPTORS_BLAS_SYRK_HPP
 #define MULTI_ADAPTORS_BLAS_SYRK_HPP
+#pragma once
 
 #include "../blas/core.hpp"
 #include "../blas/filling.hpp"
