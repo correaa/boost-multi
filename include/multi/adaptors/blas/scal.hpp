@@ -1,5 +1,7 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
+#ifndef MULTI_ADAPTORS_BLAS_SCAL_HPP
+#define MULTI_ADAPTORS_BLAS_SCAL_HPP
 #pragma once
 
 #include "../blas/core.hpp"
@@ -47,3 +49,4 @@ namespace operators {
 }  // end namespace operators
 
 }  // end namespace boost::multi::blas
+#endif

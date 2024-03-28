@@ -47,8 +47,7 @@ auto syrk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-len
 template<typename AA, class A2D, class Ret = typename A2D::decay_type>
 [[nodiscard]]  // ("because input argument is const")
 // this decay in the return type is important
-// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-auto
+auto  // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 syrk(AA alpha, A2D const& a) -> std::decay_\
 t<decltype(syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))> {
 	return syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
