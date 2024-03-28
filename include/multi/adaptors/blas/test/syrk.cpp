@@ -24,86 +24,115 @@ namespace multi = boost::multi;
 //  return std::cout << std::endl;
 //}
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_real){
-//  multi::array<double, 2> const a = {
-//    { 1., 3., 4.},
-//    { 9., 7., 1.}
-//  };
-//  {
-//    multi::array<double, 2> c({3, 3}, 9999.);
-//    namespace blas = multi::blas;
-//    using blas::filling;
-//    using blas::transposed;
-//    syrk(filling::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//    BOOST_REQUIRE( c[2][1] == 19. ); 
-//    BOOST_REQUIRE( c[1][2] == 9999. );
-//  }
-//  {
-//    multi::array<double, 2> c({3, 3}, 9999.);
-//    namespace blas = multi::blas;
-//    using blas::filling;
-//    using blas::transposed;
-//    syrk(filling::upper, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//    BOOST_REQUIRE( c[1][2] == 19. );
-//    BOOST_REQUIRE( c[2][1] == 9999. );
-//  }
-//  {
-//    multi::array<double, 2> c({2, 2}, 9999.);
-//    namespace blas = multi::blas;
-//    using blas::filling;
-//    using blas::syrk;
-//    syrk(filling::lower, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//    BOOST_REQUIRE( c[1][0] == 34. ); 
-//    BOOST_REQUIRE( c[0][1] == 9999. );
-//  }
-//  {
-//    multi::array<double, 2> c({2, 2}, 9999.);
-//    namespace blas = multi::blas;
-//    using blas::filling;
-//    syrk(filling::upper, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
-//    BOOST_REQUIRE( c[0][1] == 34. ); 
-//    BOOST_REQUIRE( c[1][0] == 9999. );
-//  }
-//  {
-//    multi::array<double, 2> c({2, 2}, 9999.);
-//    namespace blas = multi::blas;
-//    using blas::filling;
-//    syrk(filling::upper, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
-//    BOOST_REQUIRE( c[0][1] == 34. ); 
-//    BOOST_REQUIRE( c[1][0] == 9999. );
-//  }
-//}
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_real){
+	// NOLINTNEXTLINE(readability-identifier-length)
+	multi::array<double, 2> const a = {
+		{ 1.0, 3.0, 4.0},
+		{ 9.0, 7.0, 1.0},
+	};
+	{
+		multi::array<double, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)
+		namespace blas = multi::blas;
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_real_special_case){
-//  multi::array<double, 2> const a = {
-//    { 1., 3., 4.},
-//  };
-//  {
-//    multi::array<double, 2> c({1, 1}, 9999.);
-//    namespace blas = multi::blas;
-//    using blas::filling;
-//    syrk(filling::lower, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//    //BOOST_REQUIRE( c[1][0] == 34. ); 
-//    //BOOST_REQUIRE( c[0][1] == 9999. );
-//  }
-//}
+		using blas::filling;
+		using blas::transposed;
 
-//BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex_real_case){
-//  using complex = std::complex<double>;
-//  multi::array<complex, 2> const a = {
-//    { 1., 3., 4.},
-//    { 9., 7., 1.}
-//  };
-//  {
-//    multi::array<complex, 2> c({3, 3}, 9999.);
-//    namespace blas = multi::blas;
-//    using blas::filling;
-//    using blas::transposed;
-//    syrk(filling::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-//    BOOST_REQUIRE( c[2][1] == 19. );
-//    BOOST_REQUIRE( c[1][2] == 9999. );
-//  }
-//}
+		syrk(filling::lower, 1.0, transposed(a), 0.0, c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+
+		BOOST_REQUIRE( c[2][1] ==   19.0 );
+		BOOST_REQUIRE( c[1][2] == 9999.0 );
+	}
+	{
+		multi::array<double, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)
+		namespace blas = multi::blas;
+
+		using blas::filling;
+		using blas::transposed;
+
+		syrk(filling::upper, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+
+		BOOST_REQUIRE( c[1][2] ==   19.0 );
+		BOOST_REQUIRE( c[2][1] == 9999.0 );
+	}
+	{
+		multi::array<double, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length)
+		namespace blas = multi::blas;
+
+		using blas::filling;
+		using blas::syrk;
+
+		syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+
+		BOOST_REQUIRE( c[1][0] ==   34.0 ); 
+		BOOST_REQUIRE( c[0][1] == 9999.0 );
+	}
+	{
+		multi::array<double, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length)
+
+		namespace blas = multi::blas;
+
+		using blas::filling;
+
+		syrk(filling::upper, 1.0, a, 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
+
+		BOOST_REQUIRE( c[0][1] ==   34.0 ); 
+		BOOST_REQUIRE( c[1][0] == 9999.0 );
+	}
+	{
+		multi::array<double, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length)
+
+		namespace blas = multi::blas;
+
+		using blas::filling;
+
+		syrk(filling::upper, 1.0, a, 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
+
+		BOOST_REQUIRE( c[0][1] ==   34.0 );
+		BOOST_REQUIRE( c[1][0] == 9999.0 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_real_special_case){
+	// NOLINTNEXTLINE(readability-identifier-length)
+	multi::array<double, 2> const a = {
+		{ 1.0, 3.0, 4.0},
+	};
+	{
+		multi::array<double, 2> c({1, 1}, 9999.0);  // NOLINT(readability-identifier-length)
+
+		namespace blas = multi::blas;
+		using blas::filling;
+
+		syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+
+		// BOOST_REQUIRE( c[1][0] ==   34.0 );
+		// BOOST_REQUIRE( c[0][1] == 9999.0 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex_real_case){
+	using complex = std::complex<double>;
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+	// NOLINTNEXTLINE(readability-identifier-length)
+	multi::array<complex, 2> const a = {
+		{ 1.0 + I*0.0, 3.0 + I*0.0, 4.0 + I*0.0},
+		{ 9.0 + I*0.0, 7.0 + I*0.0, 1.0 + I*0.0},
+	};
+	{
+		multi::array<complex, 2> c({3, 3}, 9999.0 + I*0.0);  // NOLINT(readability-identifier-length)
+
+		namespace blas = multi::blas;
+
+		using blas::filling;
+		using blas::transposed;
+
+		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+
+		// BOOST_REQUIRE( c[2][1] ==   19.0 );
+		// BOOST_REQUIRE( c[1][2] == 9999.0 );
+	}
+}
 
 //BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex){
 //  using complex = std::complex<double>;
