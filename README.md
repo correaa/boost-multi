@@ -1111,7 +1111,7 @@ To operate on the second dimension (sort by columns), use `std::ranges::sort(~A)
 
 Multi iterators can exploit parallel algorithms by specifying execution policies.
 This code takes every row of a two-dimensional array and sums its elements, putting the results in a one-dimensional array of compatible size.
-The execution policy is selected as the first argument.
+The execution policy (`par`) selected is passed as the first argument.
 
 ```cpp
     multi::array<double, 2> const A = ...;
@@ -1121,7 +1121,7 @@ The execution policy is selected as the first argument.
 ```
 [(live)](https://godbolt.org/z/63jEdY7zP)
 
-For an array of 10000x10000 elements, the execution time decreases to 0.0288 sec, compared to 0.0526 sec for the non-parallel version (without the `par` argument).
+For an array of 10000x10000 elements, the execution time decreases to 0.0288 sec, compared to 0.0526 sec for the non-parallel version (i.e. without the `par` argument).
 
 Note that parallelization is, in this context, inherently one-dimensional.
 For example, parallelization happens for the transformation operation, but not to the summation.
@@ -1131,6 +1131,17 @@ Generally, straightforward parallelization without exploiting the n-dimensional 
 and nesting parallelization policies usually doesn't help either.
 
 Flattening the n-dimensional structure for certain algorithms might help, but such techniques are beyond the scope of this documentation.
+
+There are some member functions that internally perform algorithms and that can benefit from execution policies.
+Some of these funcitons have the option to pass a policy.
+For example, this copy construction can initialize elements in parallel from the source:
+
+```cpp
+    multi::array<double, 2> const A = ...;
+    multi::array<double, 1> const B(std::execution::par, A);  // copies A into B, in parallel, same as multi::array<double, 1> const B(A); same as ...= A;
+```
+
+Execution policies are not limited to STL, Thrust and oneAPI also offers execution policies that can be used with the corresponding algorithms.
 
 ### Polymorphic Memory Resources
 
