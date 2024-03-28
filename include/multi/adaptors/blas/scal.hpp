@@ -1,7 +1,5 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-#ifndef MULTI_ADAPTORS_BLAS_SCAL_HPP
-#define MULTI_ADAPTORS_BLAS_SCAL_HPP
 #pragma once
 
 #include "../blas/core.hpp"
@@ -11,9 +9,7 @@ namespace boost::multi::blas {
 using core::scal;
 
 template<class It, class Size>
-auto scal_n(typename It::element a, It first, Size count)  // NOLINT(readability-identifier-length) conventional BLAS naming
-//->decltype(core::scal(count, &a, first.base(), first.stride()), void()) {
-{
+auto scal_n(typename It::element a, It first, Size count) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	auto ctxt = blas::default_context_of(first.base());
 	ctxt->scal(count, &a, first.base(), first.stride());
 }
@@ -51,5 +47,3 @@ namespace operators {
 }  // end namespace operators
 
 }  // end namespace boost::multi::blas
-
-#endif
