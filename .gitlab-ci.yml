@@ -368,7 +368,7 @@ nvhpc-24.3 c++20:
       - large-disk-space
   script:
     - nvidia-smi
-    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
     - cmake --version
     - wget https://github.com/Kitware/CMake/releases/download/v3.29.0/cmake-3.29.0-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.29.0-linux-x86_64.sh --skip-license --prefix=/usr
