@@ -7,11 +7,12 @@
 
 #include <multi/array.hpp>
 
-namespace multi = boost::multi;
-namespace blas  = multi::blas;
 
 BOOST_AUTO_TEST_CASE(dummy_test) {
 }
+
+namespace multi = boost::multi;
+// namespace blas  = multi::blas;
 
 //template<class M> decltype(auto) print(M const& C){
 //  using boost::multi::size;
