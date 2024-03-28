@@ -1,15 +1,12 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-#ifndef MULTI_ADAPTORS_BLAS_SIDE_HPP
-#define MULTI_ADAPTORS_BLAS_SIDE_HPP
+#pragma once
 
 namespace boost::multi::blas {
 
 enum class side : char {
 	left  = 'L',
-	right = 'R'//,
-//  pre_multiply = 'R',
-//  post_multiply = 'L'
+	right = 'R'
 };
 
 inline auto swap(side sid) -> side {
@@ -20,5 +17,3 @@ inline auto swap(side sid) -> side {
 }
 
 } // end namespace boost::multi::blas
-
-#endif
