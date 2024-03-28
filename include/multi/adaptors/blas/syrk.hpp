@@ -51,7 +51,6 @@ auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 
 } // end namespace boost::multi::blas
 
-//#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 //#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS syrk"
 //#include<boost/test/unit_test.hpp>
