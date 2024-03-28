@@ -17,8 +17,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Boost COMPONENTS unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
 
-if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
+if(ENABLE_CUDA)
 	enable_language(CUDA)
+	set(CMAKE_CUDA_EXTENSIONS OFF) 
 	if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 	  set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
@@ -866,7 +867,7 @@ else()
 		set(TEST_EXE "${TEST_FILE}.x")
 		add_executable(${TEST_EXE} ${TEST_FILE})
 
-		if(ENABLE_CUDA OR DEFINED CXXCUDA)
+		if(ENABLE_CUDA)
 			set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 		endif()
 
