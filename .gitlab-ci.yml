@@ -447,9 +447,7 @@ cuda-11.4.3:
     - nvidia-gpu
   script:
     - nvidia-smi
-    - __nvcc_device_query
     - export CUDA_VISIBLE_DEVICES=2
-    - __nvcc_device_query
     - apt-get -qq update
     - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
