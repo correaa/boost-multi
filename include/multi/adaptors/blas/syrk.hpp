@@ -1,5 +1,6 @@
 // Copyright 2019-2021 Alfredo A. Correa
 
+#pragma once
 #ifndef MULTI_ADAPTORS_BLAS_SYRK_HPP
 #define MULTI_ADAPTORS_BLAS_SYRK_HPP
 
@@ -46,8 +47,8 @@ t<decltype(syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))> {
 template<class A2D>
 [[nodiscard]]
 auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(syrk(1., A)) {
-	return syrk(1., A); }
+->decltype(syrk(1.0, A)) {
+	return syrk(1.0, A); }
 
 } // end namespace boost::multi::blas
 
