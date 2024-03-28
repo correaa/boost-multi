@@ -19,7 +19,8 @@ class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-
  public:
 	explicit watch(std::string label) : label_{std::move(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
 
-	watch(watch const&)                    = delete;
+	watch(watch const&) = delete;
+
 	auto operator=(watch const&) -> watch& = delete;
 
 	auto elapsed_sec() const { return std::chrono::duration<double>(now() - start_).count(); }
