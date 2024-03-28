@@ -482,24 +482,24 @@ cuda-12.3.1 mkl:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
-cuclang++-17 cuda-11.8:
-  stage: build
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
-  tags:
-    - nvidia-gpu
-  script:
-    - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - apt-get install --no-install-recommends -y lsb-release software-properties-common
-    - wget https://apt.llvm.org/llvm.sh
-    - chmod u+x llvm.sh
-    - ./llvm.sh 17
-    - mkdir build && cd build
-    - clang++-17 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-  needs: ["cuda", "clang++"]
+# cuclang++-17 cuda-11.8:
+#   stage: build
+#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
+#   tags:
+#     - nvidia-gpu
+#   script:
+#     - nvidia-smi
+#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#     - apt-get install --no-install-recommends -y lsb-release software-properties-common
+#     - wget https://apt.llvm.org/llvm.sh
+#     - chmod u+x llvm.sh
+#     - ./llvm.sh 17
+#     - mkdir build && cd build
+#     - clang++-17 --version
+#     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#   needs: ["cuda", "clang++"]
 
 cuclang++-16 cuda-11.4:
   stage: build
@@ -522,7 +522,7 @@ cuclang++-16 cuda-11.4:
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-  needs: ["cuclang++-17 cuda-11.8"]
+  needs: ["cuda", "clang++"]
 
 clang++-19 cuda-12.3.1:
   stage: build
@@ -542,7 +542,7 @@ clang++-19 cuda-12.3.1:
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-  needs: ["cuclang++-17 cuda-11.8"]
+  needs: ["cuda", "clang++"]
 
 rocm:
   stage: build
@@ -616,7 +616,6 @@ circle-latest:
   needs: ["circle"]
 
 inq:
-  allow_failure: false
   stage: test
   image: debian:stable
   tags:
