@@ -52,27 +52,6 @@ coverage:
         path: build/coverage.xml
   needs: ["g++"]
 
-# coverage-lcov:
-#   stage: build
-#   allow_failure: true
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-#     - mkdir build && cd build
-#     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -O0 -Wall -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="-fprofile-arcs -ftest-coverage"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     # - ctest -j 2 --output-on-failure -T Test
-#     - ctest -j 1 --output-on-failure -T Coverage
-#     - lcov --directory . --capture --output-file coverage.info
-#     # - lcov --directory . --capture --output-file coverage.info
-#     # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
-#     # - lcov --list coverage.info && genhtml coverage.info
-#     - export DEEPSOURCE_DSN=https://1ec4cfdbf5ea4a85b093e6d6f4bc0f9e@app.deepsource.com
-#     - curl https://deepsource.io/cli | sh
-#     - ls ./bin/ -all
-#     - chmod +x ./bin/deepsource
-#     - ./bin/deepsource report --analyzer test-coverage --key cxx --value-file ./coverage.info
-#   needs: ["g++"]
-
 g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
   stage: build
   script:
@@ -84,18 +63,6 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T memcheck
   needs: ["g++"]
-
-# g++ cpplint:
-#   stage: build
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ cmake cpplint libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev make pkg-config
-#     - mkdir build && cd build
-#     - g++ --version
-#     - cpplint --version
-#     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#   needs: ["g++"]
 
 g++-testing sanitizer:
   stage: build
@@ -173,24 +140,6 @@ deb:
       - build/multi_all.deb
   needs: ["g++", "clang++"]
 
-# clang++ libc++:
-#   stage: build
-#   image: debian:stable
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
-#     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
-#     - tar -xf boost_1_84_0.tar.gz 
-#     - cd boost_1_84_0
-#     - ./bootstrap.sh --with-toolset=clang
-#     - ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" --with-serialization --with-test --with-timer -j4 install  # libc++ only works with boost test compiled with libc++
-#     - cd ..
-#     - mkdir build && cd build
-#     - clang++ --version
-#     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
-#     - cmake --build .
-#     - ctest -j 2 --output-on-failure
-#   needs: ["clang++"]
-
 clang++-latest libc++:
   stage: build
   image: debian:latest
@@ -221,18 +170,27 @@ clang++-testing tidy:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-latest sanitizer c++20:
+g++-testing c++20:
   stage: build
-  image: debian:latest  # clang 14 as of March 2024
+  image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libclang-rt-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - export ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1"
     - ctest --output-on-failure
-  needs: ["clang++"]
+  needs: ["g++"]
+
+g++-testing sanitizer:
+  stage: build
+  image: debian:testing
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+  needs: ["g++"]
 
 clang++-17-unstable libc++ c++23 boost_1_84:
   stage: build
