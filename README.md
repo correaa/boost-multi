@@ -1143,6 +1143,20 @@ For example, this copy construction can initialize elements in parallel from the
 
 Execution policies are not limited to STL, Thrust and oneAPI also offers execution policies that can be used with the corresponding algorithms.
 
+Execution policies and ranges can be mixed (`x` and `y` can be 1D dimensional arrays, of any arithmetic element type)
+```cpp
+template <class X1D, class Y1D>
+auto dot_product(X1D const& x, Y1D const& y) {
+    assert(x.size() == y.size());
+    auto const& z = std::ranges::views::zip(x, y) |
+             std::ranges::views::transform([](auto const& ab) {auto const [a, b] = ab;
+                 return a * b;
+             });
+    return std::reduce(std::execution::par_unseq, z.begin(), z.end());
+}
+```
+https://godbolt.org/z/cMq87xPvb
+
 ### Polymorphic Memory Resources
 
 In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's [polymorphic memory resources (PMR)](https://en.cppreference.com/w/cpp/header/memory_resource) which allows using advanced allocation strategies, including preallocated buffers.
