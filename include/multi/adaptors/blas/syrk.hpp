@@ -38,6 +38,7 @@ auto syrk(filling c_side, AA alpha, A2D const& a, C2D&& c)  // NOLINT(readabilit
 	return syrk(c_side, alpha, a, 0.0, std::forward<C2D>(c));
 }
 
+#if 0
 template<typename AA, class A2D, class C2D>
 auto syrk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 	-> decltype(syrk(filling::upper, alpha, a, syrk(filling::lower, alpha, a, std::forward<C2D>(c)))) {
@@ -58,6 +59,7 @@ template<class A2D>
 	-> decltype(syrk(1.0, A)) {
 	return syrk(1.0, A);
 }
+#endif
 
 }  // end namespace boost::multi::blas
 #endif
