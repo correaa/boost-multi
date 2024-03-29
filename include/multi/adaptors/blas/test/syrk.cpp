@@ -1,6 +1,5 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS scal"
 #include <boost/test/unit_test.hpp>
 
 #include <multi/adaptors/blas/gemm.hpp>
@@ -8,21 +7,7 @@
 
 #include <multi/array.hpp>
 
-BOOST_AUTO_TEST_CASE(dummy_test) {
-}
-
 namespace multi = boost::multi;
-// namespace blas  = multi::blas;
-
-// template<class M> decltype(auto) print(M const& C){
-//   using boost::multi::size;
-//   for(int i = 0; i != size(C); ++i){
-//     for(int j = 0; j != size(C[i]); ++j)
-//       std::cout << C[i][j] << ' ';
-//     std::cout << std::endl;
-//   }
-//   return std::cout << std::endl;
-// }
 
 BOOST_AUTO_TEST_CASE(multi_blas_syrk_real) {
 	// NOLINTNEXTLINE(readability-identifier-length)
@@ -164,7 +149,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex) {
 		BOOST_TEST( imag(c[2][1]) == -34.0 );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, 9999.0);
+		multi::array<complex, 2> c({2, 2}, 9999.0 + I * 0.0);  // NOLINT(readability-identifier-length)
 
 		namespace blas = multi::blas;
 
@@ -174,7 +159,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex) {
 		BOOST_REQUIRE( c[0][1] == 9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, 9999.0);
+		multi::array<complex, 2> c({2, 2}, 9999.0 + I * 0.0);  // NOLINT(readability-identifier-length)
 
 		namespace blas = multi::blas;
 
@@ -188,7 +173,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex) {
 BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 	using complex = std::complex<double>;
 
-	constexpr auto const I = complex{0.0, 1.0};
+	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	// NOLINTNEXTLINE(readability-identifier-length)
 	multi::array<complex, 2> const a = {
@@ -197,37 +182,37 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 	};
 
 	{
-		multi::array<complex, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length)
+		multi::array<complex, 2> c({2, 2}, 9999.0 + I * 0.0);  // NOLINT(readability-identifier-length)
 
 		using multi::blas::filling;
 
-		syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
+		syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( c[1][0]==complex(18.0, -21.0) );
 		BOOST_REQUIRE( c[0][1]==9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)
+		multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)  // NOLINT(fuchsia-default-arguments-calls)
 
 		namespace blas = multi::blas;
 
 		using blas::filling;
 		using blas::transposed;
 
-		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
+		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_REQUIRE( c[2][1]==complex(-3.0,-34.0) );
-		BOOST_REQUIRE( c[1][2]==9999.0 );
+		BOOST_REQUIRE( c[2][1] == complex(-3.0,-34.0) );
+		BOOST_REQUIRE( c[1][2] == 9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({3, 3}, 9999.0);
+		multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)  // NOLINT(fuchsia-default-arguments-calls)
 
 		namespace blas = multi::blas;
 
 		using blas::filling;
 		using blas::transposed;
 
-		syrk(filling::lower, 1.0, rotated(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
+		syrk(filling::lower, 1.0, rotated(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( c[2][1] == complex(-3.0,-34.0) );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
@@ -291,7 +276,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real) {
 		BOOST_REQUIRE( c[2][1] == 9999.0 );
 	}
 	{
-		multi::array<double, 2> c({2, 2}, 9999.0);
+		multi::array<double, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length)
 
 		using multi::blas::filling;
 		using multi::blas::transposed;
@@ -304,12 +289,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_implicit_zero) {
+	// NOLINTNEXTLINE(readability-identifier-length)
 	multi::array<double, 2> const a = {
 		{1.0, 3.0, 4.0},
 		{9.0, 7.0, 1.0},
 	};
 	{
-		multi::array<double, 2> c({2, 2}, 9999.0);
+		multi::array<double, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length)
 
 		using multi::blas::filling;
 
