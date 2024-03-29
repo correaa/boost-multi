@@ -78,6 +78,7 @@ set(TEST_SRCS
 	numeric.cpp
 	nrm2.cpp
 	scal.cpp
+	syrk.cpp
 	traits.cpp
 	trsm.cpp
 )
