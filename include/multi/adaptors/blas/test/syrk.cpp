@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex_real_case) {
 BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex) {
 	using complex = std::complex<double>;
 
-	constexpr auto const I = complex{0.0, 1.0};
+	auto const I = complex{0.0, 1.0};
 
 	multi::array<complex, 2> const a = {
 		{1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I},
