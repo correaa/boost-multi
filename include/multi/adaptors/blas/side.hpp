@@ -1,5 +1,7 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
+#ifndef MULTI_ADAPTORS_BLAS_SIDE_HPP
+#define MULTI_ADAPTORS_BLAS_SIDE_HPP
 #pragma once
 
 namespace boost::multi::blas {
@@ -17,3 +19,4 @@ inline auto swap(side sid) -> side {
 }
 
 } // end namespace boost::multi::blas
+#endif
