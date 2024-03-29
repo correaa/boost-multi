@@ -227,15 +227,21 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real) {
 	};
 	{
 		multi::array<double, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length)
+
 		using multi::blas::filling;
+
 		syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
+
 		BOOST_REQUIRE( c[1][0] == 34.0 );
 		BOOST_REQUIRE( c[0][1] == 9999.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length)
+
 		using multi::blas::filling;
+
 		syrk(filling::upper, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
+
 		BOOST_REQUIRE( c[0][1] == 34.0 );
 		BOOST_REQUIRE( c[1][0] == 9999.0 );
 	}
