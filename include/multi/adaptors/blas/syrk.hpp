@@ -12,8 +12,8 @@ namespace boost::multi::blas {
 
 using core::syrk;
 
-template<typename AA, typename BB, class A2D, class C2D>
-auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) {  // NOLINT(readability-identifier-length) BLAS naming
+template<class A2D, class C2D>
+auto syrk(filling c_side, typename A2D::element alpha, A2D const& a, typename A2D::element beta, C2D&& c) {  // NOLINT(readability-identifier-length) BLAS naming
 	//->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
 	assert(size(c) == size(rotated(c)));
 	if(stride(a) == 1) {
@@ -38,6 +38,7 @@ auto syrk(filling c_side, AA alpha, A2D const& a, C2D&& c)  // NOLINT(readabilit
 	return syrk(c_side, alpha, a, 0.0, std::forward<C2D>(c));
 }
 
+#if 0
 template<typename AA, class A2D, class C2D>
 auto syrk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 	-> decltype(syrk(filling::upper, alpha, a, syrk(filling::lower, alpha, a, std::forward<C2D>(c)))) {
@@ -58,6 +59,7 @@ template<class A2D>
 	-> decltype(syrk(1.0, A)) {
 	return syrk(1.0, A);
 }
+#endif
 
 }  // end namespace boost::multi::blas
 #endif
