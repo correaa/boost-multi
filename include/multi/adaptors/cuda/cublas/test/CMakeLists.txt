@@ -4,23 +4,44 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
-find_package(BLAS)
-if(BLAS_FOUND)
-else()
-  message(ERROR "BLAS not found. Please try:"
-                "\n    sudo apt install libblas-dev"
-                "\n    sudo dnf install blas-devel  # in Fedora")
-endif()
-find_path(
-	BLAS_INCLUDE_DIRS
-	cblas.h
-	/usr/include
-	/usr/local/include
-	$ENV{BLAS_HOME}/include
+if((NOT
+	CMAKE_CXX_COMPILER_ID
+	STREQUAL
+	"PGI"
+   )
+   AND (NOT
+	   CMAKE_CXX_COMPILER_ID
+		STREQUAL
+        "NVHPC"
+	)
+   AND (NOT
+		DART_COMPILER_NAME
+		STREQUAL
+		"nvcc"
+	)
+   AND (NOT
+		DART_COMPILER_NAME
+		STREQUAL
+		"icpc"
+	   )
 )
+	# find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+	# link_libraries("-lboost_unit_test_framework")
+	find_package(BLAS REQUIRED)
+	find_path(
+		BLAS_INCLUDE_DIRS
+		cblas.h
+		/usr/include
+		/usr/local/include
+		$ENV{BLAS_HOME}/include
+	)
+#   include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
+	link_libraries(${BLAS_LIBRARIES})
+else()
+	link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
+endif()
 
-link_libraries(${BLAS_LIBRARIES})
-include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
+# include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
 
 if(ENABLE_HIP)
 	enable_language(HIP)
