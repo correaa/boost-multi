@@ -299,7 +299,7 @@ nvhpc-22.7:
       - large-disk-space
   script:
     - nvidia-smi
-    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
+    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
@@ -307,14 +307,14 @@ nvhpc-22.7:
     - ctest --output-on-failure
   needs: ["nvhpc"]
 
-nvhpc-24.3 c++20 stdpar:
+nvhpc-24.3 c++20 par:
   stage: build
   image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
       - large-disk-space
   script:
     - nvidia-smi
-    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ --version
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdpar=multicore"
@@ -390,6 +390,7 @@ cuda-11.4.3:
     - nvidia-gpu
   script:
     - nvidia-smi
+    - export CUDA_VISIBLE_DEVICES=2
     - apt-get -qq update
     - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
@@ -405,7 +406,6 @@ cuda-11.4.3:
 cuclang++-16 cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
-  allow_failure: true
   tags:
     - nvidia-gpu
   script:
@@ -554,7 +554,6 @@ circle-latest:
   needs: ["circle"]
 
 inq:
-  allow_failure: false
   stage: test
   image: debian:stable
   tags:
@@ -656,8 +655,7 @@ qmcpack:
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
-    - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git
-    # - git clone https://github.com/correaa/qmcpack.git --branch fix_afqmc_pointer_traits
+    - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git  # --branch fix_afqmc_pointer_traits
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"

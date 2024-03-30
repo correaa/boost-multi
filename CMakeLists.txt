@@ -47,7 +47,6 @@ add_library(multi INTERFACE)
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 target_compile_options(multi INTERFACE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>)
-#target_compile_options(multi INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:--expt-relaxed-constexpr>)
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_library(correaa::multi ALIAS multi)
