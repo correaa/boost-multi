@@ -565,8 +565,8 @@ auto copy(multi::subarray<T, D, multi::move_ptr<T, P>>&& array) -> R {
 template<class Array>
 auto transpose(Array& array)
 	-> decltype(fftw::copy(transposed(array), array.reshape(extensions(layout(array).transpose())))) {
-	multi::array_ref<typename Array::element, Array::rank::value, typename Array::element_ptr> const ref(array.base(), extensions(array));
-	return fftw::copy(ref.transposed(), array.reshape(layout(array).transpose().extensions()));
+	multi::array_ref<typename Array::element, Array::rank::value, typename Array::element_ptr> const ref_aux(array.base(), extensions(array));
+	return fftw::copy(ref_aux.transposed(), array.reshape(layout(array).transpose().extensions()));
 }
 
 }  // end namespace fftw
