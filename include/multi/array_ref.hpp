@@ -2805,6 +2805,7 @@ struct array_ptr
 	constexpr explicit array_ptr(std::nullptr_t nil) : array_ptr{nil, multi::extensions_t<D>{}} {}
 
 	template<typename CArray>
+	// cppcheck-suppress constParameterPointer ;  workaround cppcheck 2.11
 	constexpr explicit array_ptr(CArray* data) : array_ptr{data_elements(*data), extensions(*data)} {}
 
 	template<
