@@ -92,6 +92,7 @@ class range {
 			detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 		)* = nullptr
 	>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) ranges are implicitly convertible if elements are implicitly convertible
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
