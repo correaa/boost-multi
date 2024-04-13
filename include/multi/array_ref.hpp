@@ -2460,7 +2460,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
 		return subarray<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n},
+			layout_t<2>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n},
 			reinterpret_pointer_cast<P2>(this->base())
 		}.rotated();
 	}
