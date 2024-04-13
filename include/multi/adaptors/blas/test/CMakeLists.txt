@@ -60,7 +60,6 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 endif()
 
 enable_testing()
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure") # needs cmake 3.17
 include(CTest)
 
 configure_file("config.hpp.in" ${CMAKE_BINARY_DIR}/config.hpp)
@@ -113,7 +112,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 			target_compile_options(
 				${TEST_EXE}
 				PRIVATE
-				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:IntelLLVM>>:
 				-Wno-unknown-warning-option
 				#-Wextra
 				#-Wpedantic
@@ -140,10 +139,12 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wpedantic
 					-Wformat-truncation
 					-Wno-unknown-pragmas> # -Wconversion
-					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:IntelLLVM>>:
+					-Wno-unknown-warning-option
 					-Wextra
 					-Wpedantic
 					-Wmove
+					-Wno-enum-constexpr-conversion  # for Boost.Test
 					-Wno-error=\#warnings>
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra

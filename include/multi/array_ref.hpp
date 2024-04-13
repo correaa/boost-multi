@@ -2460,7 +2460,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
 		return subarray<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n},
+			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n},
 			reinterpret_pointer_cast<P2>(this->base())
 		}.rotated();
 	}
@@ -2714,21 +2714,21 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
 	template<class TT> static auto launder(TT* pointer) -> TT* {
-		#if(defined(__cpp_lib_launder) and ( __cpp_lib_launder >= 201606L)) 
+#if(defined(__cpp_lib_launder) and (__cpp_lib_launder >= 201606L))
 		return std::launder(pointer);
-		#else
-		return              pointer ;
-		#endif
+#else
+		return pointer;
+#endif
 	}
 
 	template<class TTN>
-	constexpr auto to_carray()& -> TTN& {
+	constexpr auto to_carray() & -> TTN& {
 		check_sizes<TTN>();
 		return *launder(reinterpret_cast<TTN*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
 	template<class TTN>
-	constexpr auto to_carray() const -> TTN const& {
+	constexpr auto to_carray() const& -> TTN const& {
 		check_sizes<TTN>();
 		return *launder(reinterpret_cast<TTN const*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
@@ -2805,15 +2805,14 @@ struct array_ptr
 	constexpr explicit array_ptr(std::nullptr_t nil) : array_ptr{nil, multi::extensions_t<D>{}} {}
 
 	template<typename CArray>
-	// cppcheck-suppress constParameterPointer ;  workaround cppcheck 2.11
 	constexpr explicit array_ptr(CArray* data) : array_ptr{data_elements(*data), extensions(*data)} {}
 
 	template<
 		class TT, std::size_t N,
 		std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), Ptr>,int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
 	>
-	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  // NOSONAR
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions) array_ptr is more general than pointer c-array
+	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays  // NOSONAR
 
 	constexpr auto operator*() const {
 		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};
