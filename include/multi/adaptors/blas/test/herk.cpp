@@ -11,20 +11,22 @@
 
 namespace multi = boost::multi;
 
-template<class M> decltype(auto) print(M const& C, std::string const msg = "") {
+template<class M> auto print(M const& mat, std::string const& msg = "") -> decltype(auto) {  // NOLINT(fuchsia-default-arguments-declarations,fuchsia-default-arguments-calls)
 	using multi::size;
 	using std::cout;
 	cout << msg << "\n" << '{';
-	for(int i = 0; i != size(C); ++i) {
+	for(int i = 0; i != size(mat); ++i) {
 		cout << '{';
-		for(int j = 0; j != size(C[i]); ++j) {
-			cout << C[i][j];
-			if(j + 1 != size(C[i]))
+		for(auto j : mat[i].extension()) {  // NOLINT(altera-unroll-loops)
+			cout << mat[i][j];
+			if(j + 1 != size(mat[i])) {
 				cout << ", ";
+			}
 		}
 		cout << '}' << std::endl;
-		if(i + 1 != size(C))
+		if(i + 1 != size(mat)) {
 			cout << ", ";
+		}
 	}
 	return cout << '}' << std::endl;
 }
@@ -276,12 +278,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_square) {
 	auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 	auto const nan = std::numeric_limits<double>::quiet_NaN();
 
+	// NOLINTNEXTLINE(readability-identifier-length) lapack conventional name
 	multi::array<complex, 2> const A = {
 		{12.9388 + I * 0.0, 9.80028 + I * -0.00011091, 9.66966 + I * -0.0114817},
 		{    nan + I * nan,         8.44604 + I * 0.0,  3.78646 + I * 0.0170734},
 		{    nan + I * nan,             nan + I * nan,        7.70655 + I * 0.0},
 	};
 
+	// NOLINTNEXTLINE(readability-identifier-length) lapack conventional name
 	multi::array<complex,2> C({3, 3}, complex{0.0, 0.0});
 
 	blas::herk(boost::multi::blas::filling::upper, complex{1.0, 0.0}, A, complex{0.0, 0.0}, C);

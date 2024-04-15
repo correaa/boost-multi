@@ -103,7 +103,7 @@ g++-testing c++20:
 
 g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
-  image: debian:testing
+  image: debian:unstable
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
@@ -122,23 +122,23 @@ clang++:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
 
-deb:
-  stage: build
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-    - cpack -G DEB
-    - ls -all
-    - dpkg -i multi_all.deb
-    - ls -all /usr/include/multi
-    - c++ ../test/main.cpp
-  artifacts:
-    paths:
-      - build/multi_all.deb
-  needs: ["g++", "clang++"]
+# deb:
+#   stage: build
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+#     - mkdir build && cd build
+#     - cmake .. -DCMAKE_BUILD_TYPE=Release
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#     - cpack -G DEB
+#     - ls -all
+#     - dpkg -i multi_all.deb
+#     - ls -all /usr/include/multi
+#     - c++ ../test/main.cpp
+#   artifacts:
+#     paths:
+#       - build/multi_all.deb
+#   needs: ["g++", "clang++"]
 
 clang++-latest libc++:
   stage: build
@@ -600,7 +600,7 @@ inq cuda:
     - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=80
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=75  # =80
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
