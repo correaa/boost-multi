@@ -76,9 +76,21 @@ void T##getrs_( \
 	T*           B,    /*On entry, the right hand side matrix B.                    */\
 	                   /*On exit, the solution matrix X.                            */\
 	integer      LDB,  /*The leading dimension of the array B.  LDB >= max(1,N).    */\
-	integer      INFO  /*= 0:  successful exit                                      */\
+	integer_out  INFO  /*= 0:  successful exit                                      */\
 	                   /*< 0:  if INFO = -i, the i-th argument had an illegal value */\
 )
+
+#if 0
+// https://netlib.org/lapack/explore-html/df/d36/group__getrs_ga286274ce80775ade22a565f87b0c6f4e.html
+#define xPOTRF(T) \
+void T##potrf_( \
+    character   UPLO, \
+ integer     N, \
+ T* A, \
+ integer     LDA, \
+ integer_out INFO \
+)
+#endif
 
 // TODO // http://www.netlib.org/lapack/explore-html/d7/d3b/group__double_g_esolve_ga5ee879032a8365897c3ba91e3dc8d512.html
 
@@ -108,7 +120,7 @@ inline void getrs(char trans, lapack_int const n, lapack_int const nrhs, double 
 	assert( n >= 0 );
 	assert( nrhs >= 0 );
 	assert( lda >= std::max(1, n) );
-	int info;
+	int info = 0;
 	dgetrs_(trans, n, nrhs, A, lda, ipiv, B, ldb, info);
 	switch(info){
 		case -1: throw std::logic_error{"transa ≠ 'N', 'T', or 'C'"};
@@ -135,13 +147,13 @@ struct context{
 
 }
 
-extern "C"{
-//xPOTRF(s)   ; xPOTRF(d)    ;
-//xPOTRF(c)   ; xPOTRF(z)    ;
+extern "C" {
+xPOTRF(s)   ; xPOTRF(d)    ;
+xPOTRF(c)   ; xPOTRF(z)    ;
 
 //xSYEV(s)    ; xSYEV(d)     ;
 //xSYEVD(s)   ; xSYEVD(d)    ;
-//                             xHEEV(c)    ; xHEEV(z)     ;
+//xHEEV(c)    ; xHEEV(z)     ;
 }
 
 #undef subroutine
