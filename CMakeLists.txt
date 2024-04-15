@@ -99,7 +99,12 @@ if(MULTI_BUILD_TESTS)
     add_subdirectory(include/multi/adaptors/complex)
     add_subdirectory(include/multi/adaptors/cuda)
     add_subdirectory(include/multi/adaptors/fftw)
-    add_subdirectory(include/multi/adaptors/lapack)
+
+    find_package(LAPACK)
+    if(LAPACK_FOUND)
+      add_subdirectory(include/multi/adaptors/lapack)
+    endif()
+
     add_subdirectory(include/multi/adaptors/thrust)
     if(ENABLE_CUDA)
       add_subdirectory(include/multi/adaptors/cufft)
