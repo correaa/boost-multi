@@ -17,38 +17,45 @@ namespace blas = multi::blas;
 
 using complex = std::complex<double>;
 
-std::ostream& operator<<(std::ostream& os, std::complex<double> const& c) {
-	return os << real(c) << " + I*" << imag(c);
+auto operator<<(std::ostream& os, std::complex<double> const& cx) -> std::ostream& {
+	return os << real(cx) << " + I*" << imag(cx);
 }
 
-template<class M> decltype(auto) print(M const& C, std::string const msg = "") {
+template<class M> auto print(M const& arr) -> decltype(auto) {return print(arr, "");}
+template<class M> auto print(M const& arr, std::string const& msg) -> decltype(auto) {
 	using multi::size;
 	using std::cout;
 	cout << msg << "\n"
 	     << '{';
-	for(int i = 0; i != size(C); ++i) {
+	for(int i = 0; i != size(arr); ++i) {
 		cout << '{';
-		for(int j = 0; j != size(C[i]); ++j) {
-			cout << C[i][j];
-			if(j + 1 != size(C[i]))
+		for(auto j : arr[i].extension()) {  // NOLINT(altera-unroll-loops)
+			cout << arr[i][j];
+			if(j + 1 != size(arr[i])) {
 				cout << ", ";
+			}
 		}
 		cout << '}' << std::endl;
-		if(i + 1 != size(C))
+		if(i + 1 != size(arr)) {
 			cout << ", ";
+		}
 	}
 	return cout << '}' << std::endl;
 }
+template<class M> auto print(M const& arr, char const* msg) -> decltype(auto) {return print(arr, std::string{msg});}  // NOLINT(fuchsia-default-arguments-calls)
 
 template<class M>
-M&& randomize(M&& A) {
-	std::mt19937 eng{123};
-	auto         gen = [&]() {
-                                                                                                                                                                                                      auto unif = std::uniform_real_distribution<>{-1, 1};
-                                                                                                                                                                                                      return std::complex<double>(unif(eng), unif(eng));
+auto randomize(M&& arr) -> M&& {
+	std::random_device dev;
+	std::mt19937 eng{dev()};
+
+	auto gen = [&]() {
+		auto unif = std::uniform_real_distribution<>{-1.0, 1.0};
+		return std::complex<double>(unif(eng), unif(eng));
 	};
-	std::for_each(begin(A), end(A), [&](auto&& r) { std::generate(begin(r), end(r), gen); });
-	return std::forward<M>(A);
+
+	std::for_each(begin(arr), end(arr), [&](auto&& row) { std::generate(begin(row), end(row), gen); });
+	return std::forward<M>(arr);
 }
 
 /*
@@ -60,8 +67,8 @@ BOOST_AUTO_TEST_CASE(orthogonalization_over_rows, *boost::unit_test::tolerance(0
 	using blas::hermitized;
 	using blas::filling;
 	auto id = herk(filling::upper, A);
-	BOOST_TEST( real(id[1][1]) == 1. ); BOOST_TEST( imag(id[1][1]) == 0. );
-	BOOST_TEST( real(id[1][2]) == 0. ); BOOST_TEST( imag(id[1][2]) == 0. );
+	BOOST_TEST( real(id[1][1]) == 1.0 ); BOOST_TEST( imag(id[1][1]) == 0.0 );
+	BOOST_TEST( real(id[1][2]) == 0.0 ); BOOST_TEST( imag(id[1][2]) == 0.0 );
 }
 */
 
@@ -77,10 +84,10 @@ BOOST_AUTO_TEST_CASE(orthogonalization_over_rows, *boost::unit_test::tolerance(0
 
 //  Acpu    = A;
 //  auto id = herk(filling::upper, Acpu);
-//  BOOST_TEST( real(id[1][1]) == 1. );
-//  BOOST_TEST( imag(id[1][1]) == 0. );
-//  BOOST_TEST( real(id[1][2]) == 0. );
-//  BOOST_TEST( imag(id[1][2]) == 0. );
+//  BOOST_TEST( real(id[1][1]) == 1.0 );
+//  BOOST_TEST( imag(id[1][1]) == 0.0 );
+//  BOOST_TEST( real(id[1][2]) == 0.0 );
+//  BOOST_TEST( imag(id[1][2]) == 0.0 );
 // }
 
 /*
@@ -99,7 +106,7 @@ BOOST_AUTO_TEST_CASE(orthogonalization_over_columns, *boost::unit_test::toleranc
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup, *boost::unit_test::tolerance(0.0000001)) {
 
 	double const nan = std::numeric_limits<double>::quiet_NaN();
-	auto const   I   = complex{0.0, 1.0};
+	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	multi::array<complex, 2> const A_gold = {
 		{3.23 + 0.00 * I,  1.51 - 1.92 * I,  1.90 + 0.84 * I,  0.42 + 2.50 * I},
@@ -108,22 +115,22 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup, *boost::unit_test::tolerance(0.00
 		{0.42 - 2.50 * I, -1.18 - 1.37 * I,  2.33 + 0.14 * I,  4.29 + 0.00 * I},
 	};
 
-	auto A = A_gold;
+	auto A = A_gold;  // NOLINT(readability-identifier-length) lapack conventional name
 
 	multi::lapack::potrf(multi::lapack::filling::upper, A);
 
 	auto AA = A;
 
 	for(auto i = 0; i != 4; ++i) {
-		for(auto j = 0; j != i; ++j) {
+		for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops)
 			AA[i][j] = 0.0;
 		}
 	}
 
-	auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);
+	auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
-	print(A_gold, "A gold");
-	print(C, "recover");
+	print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
+	print(C, "recover");  // NOLINT(fuchsia-default-arguments-calls)
 
 	for(auto i = 0; i != 4; ++i) {
 		for(auto j = 0; j != 4; ++j) {
@@ -136,13 +143,14 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup, *boost::unit_test::tolerance(0.00
 BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001)) {
 
 	double const nan = std::numeric_limits<double>::quiet_NaN();
-	auto const   I   = complex{0.0, 1.0};
+	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	{
+		// NOLINTNEXTLINE(readability-identifier-length)
 		multi::array<complex, 2> A = {
-			{      167.413, 126.804 - 0.00143505 * I, 125.114 - 0.1485590 * I},
-			{nan + nan * I,                  167.381, 126.746 + 0.0327519 * I},
-			{nan + nan * I,            nan + nan * I,                 167.231},
+			{      167.413+ 0.0 * I, 126.804 - 0.00143505 * I, 125.114 - 0.1485590 * I},
+			{nan + nan * I,                  167.381+ 0.0 * I, 126.746 + 0.0327519 * I},
+			{nan + nan * I,            nan + nan * I,                 167.231+ 0.0 * I},
 		};
 
 		print(A, "original A");
@@ -155,12 +163,13 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001)) {
 		//  BOOST_TEST( A[2][1] != A[2][1] );
 		print(A, "decomposition");
 
-		multi::array<complex, 2> C(A.extensions(), complex{0.0, 0.0});
+		multi::array<complex, 2> C(A.extensions(), complex{0.0, 0.0});  // NOLINT(readability-identifier-length) conventional lapack name
 
 		multi::array<complex, 2> AA = A;
-		auto const [is, js]         = AA.extensions();
+
+		auto const [is, js] = AA.extensions();
 		for(auto i : is) {
-			for(auto j = 0; j != i; ++j) {
+			for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				AA[i][j] = std::conj(A[j][i]);
 			}
 		}
