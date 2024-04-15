@@ -1,10 +1,8 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_MULTI_ADAPTORS_LAPACK_POTRF $0.cpp -o$0x `pkg-config --libs blas lapack` -lboost_unit_test_framework&&valgrind $0x&&rm $0x $0.cpp;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// Copyright 2019-2024 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_LAPACK_POTRF_HPP
 #define MULTI_ADAPTORS_LAPACK_POTRF_HPP
+#pragma once
 
 #include "../../array.hpp"
 #include "../../config/NODISCARD.hpp"
@@ -12,13 +10,13 @@
 #include "../lapack/core.hpp"
 #include "../blas/numeric.hpp"
 
-#include "../blas/filling.hpp"
+#include "../lapack/filling.hpp"
 
 #include<cassert>
 
 namespace boost{namespace multi{namespace lapack{
 
-using blas::filling;
+// using blas::filling;
 
 namespace{
 
@@ -31,10 +29,11 @@ auto potrf(filling t, Iterator first, Iterator last)
 	assert( stride(first) == stride(last) );
 	assert( first->stride() == 1 );
 	auto n = std::distance(first, last);
-//	auto lda = stride(first);
+//  auto lda = stride(first);
 	int info;
 	potrf(static_cast<char>(t), n, base(first), stride(first), info);
 	assert( info >= 0 );
+	if(info > 0) {std::cerr << "warning minor of order" << info << "is not possitive" << std::endl;}
 	return info==0?last:first + info;
 }
 }
@@ -43,13 +42,16 @@ template<class A2D>
 auto potrf(filling t, A2D&& A)
 ->decltype(potrf(t, begin(A), end(A)), A({0, 1}, {0, 1}))
 {
-	using blas::flip;
+	using lapack::flip;
+
 	if(stride(A)==1){
 		auto last = potrf(flip(t), begin(rotated(A)), end(rotated(A)));
 		using std::distance;
 		return A({0, distance(begin(rotated(A)), last)}, {0, distance(begin(rotated(A)), last)});
 	}
+
 	auto last = potrf(t, begin(A), end(A));
+
 	using std::distance;
 	return A({0, distance(begin(A), last)}, {0, distance(begin(A), last)});
 }
@@ -60,23 +62,23 @@ struct hermitic_t : private A{
 	underlying_type const& underlying()const &{return *this;}
 	underlying_type& underlying()&{return *this;}
 	underlying_type&& underlying()&&{return std::move(*this);}
-	blas::filling side;
-	hermitic_t(A const& a, blas::filling side) : A{a}, side{side}{}
+	lapack::filling side;
+	hermitic_t(A const& a, lapack::filling side) : A{a}, side{side}{}
 	using A::size;
 };
 
-template<class A> hermitic_t<std::decay_t<decltype(std::declval<A>()())>> hermitic(blas::filling side, A&& a){
+template<class A> hermitic_t<std::decay_t<decltype(std::declval<A>()())>> hermitic(lapack::filling side, A&& a){
 	return {a(), side};
 }
 
-template<class A2D>
-NODISCARD("result is returned because third argument is const")
-auto potrf(filling t, A2D const& A)
-->decltype(potrf(t, decay(A)), decay(A)){
-	auto ret = decay(A);
-	auto last = potrf(t, ret); assert( size(last) == size(ret) );
-	return ret;
-}
+// template<class A2D>
+// NODISCARD("result is returned because third argument is const")
+// auto potrf(filling t, A2D const& A) {
+// // ->decltype(potrf(t, decay(A)), decay(A)){
+//  auto ret = decay(A);
+//  auto last = potrf(t, ret); assert( size(last) == size(ret) );
+//  return ret;
+// }
 
 template<class HA>
 NODISCARD("result is returned because third argument is const")
@@ -87,7 +89,7 @@ decltype(auto) potrf(HA&& ha){
 // orthonormalize rows
 template<class A> auto onrm(A&& a, filling f = filling::upper)
 ->decltype(trsm(flip(f), hermitized(potrf(f, herk(f, a))), std::forward<A>(a))){assert(size(a) <= size(rotated(a)));
-	return trsm(flip(f), hermitized(potrf(f, herk(f, a))), std::forward<A>(a));		
+	return trsm(flip(f), hermitized(potrf(f, herk(f, a))), std::forward<A>(a));     
 }
 
 template<class A, class B> auto onrm(A&& a, B&& buffer, filling f = filling::upper)
@@ -134,7 +136,7 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	potrf(filling::upper, A); // A is hermitic in upper triangular (implicit below)
 	BOOST_TEST( real(A[1][2]) == 3.78646 );
 	BOOST_TEST( imag(A[1][2]) == 0.0170734 );
-//	BOOST_TEST( std::isnan(norm(A[2][1])) );
+//  BOOST_TEST( std::isnan(norm(A[2][1])) );
 }
 {
 	multi::array<complex, 2> A =
@@ -149,7 +151,7 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	potrf(filling::upper, Att); // A is hermitic in the upper triangular (implicit hermitic below)
 	BOOST_TEST( real(Att[1][2]) == 3.78646 );
 	BOOST_TEST( imag(Att[1][2]) == 0.0170734 );
-//	BOOST_TEST( std::isnan(norm(Att[2][1])) );
+//  BOOST_TEST( std::isnan(norm(Att[2][1])) );
 }
 {
 	multi::array<complex, 2> A =
@@ -162,7 +164,7 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	potrf(filling::upper, A); // A is hermitic in the upper triangular (implicit hermitic below)
 	BOOST_TEST( real(A[1][2]) == 3.78646 );
 	BOOST_TEST( imag(A[1][2]) == 0.0170734 );
-//	BOOST_TEST( std::isnan(A[2][1]) );
+//  BOOST_TEST( std::isnan(A[2][1]) );
 }
 {
 	multi::array<complex, 2> A =
@@ -174,7 +176,7 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	using lapack::potrf;
 	potrf(filling::upper, A); // A is the upper triangle (implicit hermitic/symmetric below), A becomes upper triangular with implicit zeros
 	BOOST_TEST( real(A[1][2]) == 1.22058 );
-//	BOOST_TEST( std::isnan(norm(A[2][1])) );
+//  BOOST_TEST( std::isnan(norm(A[2][1])) );
 }
 {
 	multi::array<double, 2> A =
@@ -186,7 +188,7 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	using lapack::potrf;
 	potrf(filling::upper, A); // A is the upper triangle (implicit hermitic/symmetric below), A becomes upper triangular with implicit zeros
 	BOOST_TEST( A[1][2] == 1.22058 );
-//	BOOST_TEST( std::isnan(norm(A[2][1])) );
+//  BOOST_TEST( std::isnan(norm(A[2][1])) );
 }
 {
 	multi::array<double, 2> A =
@@ -199,7 +201,7 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	potrf(filling::lower, rotated(A)); // A is the upper triangle (implicit hermitic/symmetric below), A becomes upper triangular with implicit symmetry
 	print(A);
 	BOOST_TEST( A[1][2] == 1.22058 );
-//	BOOST_TEST( std::isnan(norm(A[2][1])) );
+//  BOOST_TEST( std::isnan(norm(A[2][1])) );
 }
 {
 	multi::array<complex, 2> const A =
