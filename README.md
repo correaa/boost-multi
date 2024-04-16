@@ -1713,8 +1713,8 @@ When saving arrays to files, consider using serialization (see section) instead.
 
 ## Legacy functions (Lega-C-APIs)
 
-Multi dimensional array data structures in all languages, whether implicitly defined by its strided structure or at the language level.
-Functions written in C tend to received arrays by pointer arguments (e.g. to "first" element) and memory layout (sizes and strides).
+Multi dimensional array data structures exists in all languages, whether implicitly defined by its strided structure or at the language level.
+Functions written in C tend to receive arrays by pointer arguments (e.g. to "first" element) and memory layout (sizes and strides).
 
 A C-function taking a 2D array with a concrete type might look like this in the general case:
 
@@ -1736,18 +1736,18 @@ auto const [stride1, stride2] = arr.strides();
 
 f(arr.base(), size1, size2, stride1, stride2);
 ```
-
-Some arguments may need to permutted if the function expects arrays in column-major (Fortran) ordering.
 Although the recipe can be applied straightforward, different libraries have various assumptions about memory layouts (e.g. BLAS 2D-arrays assume that the second stride is 1) and some might take stride information (e.g. FFTW doesn't use strides but stride-products).
+Furthermore, some arguments may need to permutted if the function expects arrays in column-major (Fortran) ordering.
 For this reason the library is acompained with a series of adaptor libraries to popular C-based libraries, that can be found in the `include/multi/adaptors/` directory.
 
-### BLAS/Lapack/cuBLAS
+* BLAS
+* Lapack
+* FFTW/cuFFT
 
-### FFTW/cuFFT
+* cuBLAS
+* cuFFT
 
-### TotalView
-
-TotalView visual debugger (commercial), popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
+* TotalView: visual debugger (commercial), popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
 To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
 
 # Technical points
