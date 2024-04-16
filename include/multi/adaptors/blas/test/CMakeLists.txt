@@ -22,7 +22,7 @@ if((NOT
 	   )
 )
 	find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-	link_libraries("-lboost_unit_test_framework")
+#   link_libraries("-lboost_unit_test_framework")
 
 	find_package(BLAS REQUIRED)
 	find_path(
@@ -91,23 +91,28 @@ foreach(TEST_FILE ${TEST_SRCS})
 		#set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
 	endif()
-	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
+	target_link_libraries     (${TEST_EXE} PRIVATE Boost::unit_test_framework   )
+	# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
+
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
-	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
 	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_MODULE="C++ Unit Tests for Multi BLAS")
+	target_compile_options(
+	  ${TEST_EXE} PRIVATE
+	  $<$<CXX_COMPILER_ID:IntelLLVM>:
+	  -Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
+	  -Wno-enum-constexpr-conversion  # for Boost.Test
+	  >
+	)
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
 
     target_link_libraries(${TEST_EXE} PRIVATE multi)
-	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_libraries(${TEST_EXE} PRIVATE BLAS::BLAS)
 
-	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	if(NOT ENABLE_CIRCLE)
 		if(ENABLE_CUDA)
 			target_compile_options(
@@ -153,6 +158,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wchar-subscripts
 					-Wcomment
 					-Wenum-compare
+					-Wno-enum-constexpr-conversion  # for Boost.Test
 					-Wformat
 					-Wuninitialized
 					-Wmaybe-uninitialized
