@@ -21,6 +21,7 @@ namespace boost::multi::lapack {
 using ::core::potrf;
 
 template<class Iterator>
+NODISCARD("result has information of order of minor through .size() member")
 auto potrf(filling uplo, Iterator first, Iterator last)
 ->decltype(potrf(static_cast<char>(uplo), typename std::iterator_traits<Iterator>::difference_type{}, base(first), stride(first), std::declval<int&>()), Iterator{})
 {
@@ -32,13 +33,14 @@ auto potrf(filling uplo, Iterator first, Iterator last)
 	potrf(static_cast<char>(uplo), std::distance(first, last), base(first), stride(first), info);
 
 	assert( info >= 0 );
-	if(info > 0) {std::cerr << "warning minor of order" << info << "is not possitive" << std::endl;}
-	return info==0?last:first + info;
+	// if(info > 0) {std::cerr << "warning minor of order " << info << " is not possitive\n";}
+	return info==0?last:first + info - 1;
 }
 
 template<class A2D>
+NODISCARD("result has information of order of minor through .size() member")
 auto potrf(filling uplo, A2D&& A)  // NOLINT(readability-identifier-length) conventional lapack name
-->decltype(potrf(uplo, begin(A), end(A)), A({0, 1}, {0, 1}))
+->decltype(potrf(uplo, begin(A), end(A)), A({0, 1}))
 {
 	using lapack::flip;
 
@@ -51,7 +53,7 @@ auto potrf(filling uplo, A2D&& A)  // NOLINT(readability-identifier-length) conv
 	auto last = potrf(uplo, begin(A), end(A));
 
 	using std::distance;
-	return A({0, distance(begin(A), last)}, {0, distance(begin(A), last)});
+	return A({0, distance(begin(A), last)});  // , {0, distance(begin(A), last-1)});
 }
 
 template<class A>
