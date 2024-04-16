@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(orthogonalization_over_columns, *boost::unit_test::toleranc
 	BOOST_TEST( real(id[1][2]) == 0. ); BOOST_TEST( imag(id[1][2]) == 0. );
 }*/
 
-BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup, *boost::unit_test::tolerance(0.0000001)) {
+BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_both_sides, *boost::unit_test::tolerance(0.0000001)) {
 
 	double const nan = std::numeric_limits<double>::quiet_NaN();
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
@@ -129,11 +129,45 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup, *boost::unit_test::tolerance(0.00
 
 	auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
+	for(auto i = 0; i != 4; ++i) {
+		for(auto j = 0; j != 4; ++j) {
+			BOOST_TEST( real(A_gold[i][j]) == real(C[i][j]) );
+			BOOST_TEST( imag(A_gold[i][j]) == imag(C[i][j]) );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_upper, *boost::unit_test::tolerance(0.0000001)) {
+
+	double const nan = std::numeric_limits<double>::quiet_NaN();
+	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
+
+	multi::array<complex, 2> const A_gold = {
+		{3.23 + 0.00 * I,  1.51 - 1.92 * I,  1.90 + 0.84 * I,  0.42 + 2.50 * I},
+		{nan + nan * I,  3.58 + 0.00 * I, -0.23 + 1.11 * I, -1.18 + 1.37 * I},
+		{nan - nan * I, nan - nan * I,  4.09 + 0.00 * I,  2.33 - 0.14 * I},
+		{nan - nan * I, nan - nan * I,  nan + nan * I,  4.29 + 0.00 * I},
+	};
+
+	auto A = A_gold;  // NOLINT(readability-identifier-length) lapack conventional name
+
+	multi::lapack::potrf(multi::lapack::filling::upper, A);
+
+	auto AA = A;
+
+	for(auto i = 0; i != 4; ++i) {
+		for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops)
+			AA[i][j] = 0.0;
+		}
+	}
+
+	auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
+
 	print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
 	print(C, "recover");  // NOLINT(fuchsia-default-arguments-calls)
 
 	for(auto i = 0; i != 4; ++i) {
-		for(auto j = 0; j != 4; ++j) {
+		for(auto j = i; j != 4; ++j) {  // only compare upper part of the reference array (the other half is garbage)
 			BOOST_TEST( real(A_gold[i][j]) == real(C[i][j]) );
 			BOOST_TEST( imag(A_gold[i][j]) == imag(C[i][j]) );
 		}
