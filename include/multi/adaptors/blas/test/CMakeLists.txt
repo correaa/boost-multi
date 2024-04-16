@@ -103,6 +103,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_options(
 	  ${TEST_EXE} PRIVATE
 	  $<$<CXX_COMPILER_ID:IntelLLVM>:
+	  -Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
 	  -Wno-enum-constexpr-conversion  # for Boost.Test
 	  >
 	)
