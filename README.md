@@ -1225,6 +1225,10 @@ The ultimate reason is that arbitrary layouts do not compose well across subdime
 [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) is a very popular matrix linear algebra library, and as such, it only handles the special 2D (and 1D) array case.
 Instead, the Multi library is dimension-generic and doesn't make any algebraic assumptions for arrays or contained elements (but still can be used to _implement_ dense linear algebra algorithms.)
 
+[Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) is the original multidimensional array library shipped with Boost.
+This library can replace Boost.MultiArray in most contexts, it even fulfillis the concepts of `boost::multi_array_concepts::ConstMultiArrayConcept` and `...::MutableMultiArrayConcept`.
+Boost.MultiArray has technical and semantic limitations that are overcome in this library, regarding layouts and references.
+
 Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) and Eigen. 
 [(online)](https://godbolt.org/z/555893MqW).
 
@@ -1772,11 +1776,11 @@ As a result, these two loops lead to the [same machine code](https://godbolt.org
 ```
 
 Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so as part of a more general syntax to generate sub-blocks.
-In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are normal integer indices.
-For this reason, `A(i, j, k)`, `A(i, j)(k)`, `A(i)(j)(k)`, ``A[i](j)[k]` are examples of equivalent expressions.
+In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i`, `j`, `k` are normal integer indices.
+For this reason, `A(i, j, k)`, `A(i, j)(k)`, `A(i)(j)(k)`, `A[i](j)[k]` are examples of equivalent expressions.
 
 Sub-block notation, when at least one argument is an index ranges, e.g. `A({i0, i1}, j, k)` has no equivalent square-bracket notation.
-Note also that ``A({i0, i1}, j, k)` is not equivalent to `A({i0, i1})(j, k)`; their resulting sublocks have different dimensionality.
+Note also that `A({i0, i1}, j, k)` is not equivalent to `A({i0, i1})(j, k)`; their resulting sublocks have different dimensionality.
 
 Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
 
@@ -1785,6 +1789,7 @@ std::array p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
 
+<!--
 ### Customizing recursive operations: SCARY iterators
 
 A level of customization can be achieved by intercepting internal recursive algorithms.
@@ -1816,3 +1821,4 @@ void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
 
 For example, if your custom pointers refers a memory type in which 2D memory copying (strided copy) is faster than sequencial copying, that kind of instruction can be ejecuted when the library internally calls `copy`.
 This customization must be performed (unfortunately) in the `boost::multi` namespace (this is where the Multi iterators are defined) and the customization happens through matching the dimension and the pointer type.
+-->
