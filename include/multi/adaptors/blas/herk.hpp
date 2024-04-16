@@ -35,8 +35,8 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 		return std::forward<C2D>(c);
 	}
 
-	auto base_a = base_aux(a);
-	auto base_c = base_aux(c); //  static_assert( not is_conjugated<C2D>{}, "!" );
+	auto base_a = base_aux(a);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
+	auto base_c = base_aux(c);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
 	if constexpr(is_conjugated<A2D>{}) {
 	//  auto& ctxt = *blas::default_context_of(underlying(a.base()));
 		// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator

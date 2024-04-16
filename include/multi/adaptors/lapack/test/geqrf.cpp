@@ -10,16 +10,16 @@
 #include<multi/adaptors/blas/gemm.hpp>
 #include<multi/adaptors/blas/gemv.hpp>
 
-namespace multi = boost::multi;
+// namespace multi = boost::multi;
 
-#include "../../array.hpp"
+// #include "../../array.hpp"
 
 #include<cmath> // std::isnan
 #include<iostream>
 #include<algorithm> // std::max
 
-namespace multi = boost::multi;
-namespace lapack = multi::lapack;
+namespace multi = ::boost::multi;
+// namespace lapack = ::boost::multi::lapack;
 
 template<class M> decltype(auto) print(M const& C){
 	using std::cout;
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(lapack_geqrf){
 			{7.0, 8.0, 9.0}
 		}
 	;
-	multi::lapack::context ctxt;
+//  multi::lapack::context ctxt;
 
 	multi::array<double, 1> TAU(std::min(size(A), size(~A)));
 	multi::array<double, 1> WORK(std::max(1l, 3*size(A)-1));
@@ -185,3 +185,4 @@ BOOST_AUTO_TEST_CASE(lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	BOOST_TEST( eigenvals[1] == 42.2081 );
 }
 }
+#endif
