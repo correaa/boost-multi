@@ -21,7 +21,7 @@ auto operator<<(std::ostream& os, std::complex<double> const& cx) -> std::ostrea
 	return os << real(cx) << " + I*" << imag(cx);
 }
 
-template<class M> auto print(M const& arr) -> decltype(auto) {return print(arr, "");}
+template<class M> auto print(M const& arr) -> decltype(auto) { return print(arr, ""); }
 template<class M> auto print(M const& arr, std::string const& msg) -> decltype(auto) {
 	using multi::size;
 	using std::cout;
@@ -42,12 +42,12 @@ template<class M> auto print(M const& arr, std::string const& msg) -> decltype(a
 	}
 	return cout << '}' << std::endl;
 }
-template<class M> auto print(M const& arr, char const* msg) -> decltype(auto) {return print(arr, std::string{msg});}  // NOLINT(fuchsia-default-arguments-calls)
+template<class M> auto print(M const& arr, char const* msg) -> decltype(auto) { return print(arr, std::string{msg}); }  // NOLINT(fuchsia-default-arguments-calls)
 
 template<class M>
 auto randomize(M&& arr) -> M&& {
 	std::random_device dev;
-	std::mt19937 eng{dev()};
+	std::mt19937       eng{dev()};
 
 	auto gen = [&]() {
 		auto unif = std::uniform_real_distribution<>{-1.0, 1.0};
@@ -117,7 +117,8 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_both_sides, *boost::unit_te
 
 	auto A = A_gold;  // NOLINT(readability-identifier-length) lapack conventional name
 
-	multi::lapack::potrf(multi::lapack::filling::upper, A);
+	auto const As = multi::lapack::potrf(multi::lapack::filling::upper, A).size();
+	BOOST_REQUIRE( As == A.size() );
 
 	auto AA = A;
 
@@ -143,10 +144,10 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_upper, *boost::unit_test::t
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	multi::array<complex, 2> const A_gold = {
-		{3.23 + 0.00 * I,  1.51 - 1.92 * I,  1.90 + 0.84 * I,  0.42 + 2.50 * I},
-		{nan + nan * I,  3.58 + 0.00 * I, -0.23 + 1.11 * I, -1.18 + 1.37 * I},
-		{nan - nan * I, nan - nan * I,  4.09 + 0.00 * I,  2.33 - 0.14 * I},
-		{nan - nan * I, nan - nan * I,  nan + nan * I,  4.29 + 0.00 * I},
+		{3.23 + 0.00 * I, 1.51 - 1.92 * I,  1.90 + 0.84 * I,  0.42 + 2.50 * I},
+		{  nan + nan * I, 3.58 + 0.00 * I, -0.23 + 1.11 * I, -1.18 + 1.37 * I},
+		{  nan - nan * I,   nan - nan * I,  4.09 + 0.00 * I,  2.33 - 0.14 * I},
+		{  nan - nan * I,   nan - nan * I,    nan + nan * I,  4.29 + 0.00 * I},
 	};
 
 	auto A = A_gold;  // NOLINT(readability-identifier-length) lapack conventional name
@@ -169,23 +170,23 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_upper, *boost::unit_test::t
 	print(C, "recover");  // NOLINT(fuchsia-default-arguments-calls)
 
 	for(auto i = 0; i != 4; ++i) {
-		for(auto j = i; j != 4; ++j) {  // only compare upper part of the reference array (the other half is garbage)
+		for(auto j = i; j != 4; ++j) {  // NOLINT(altera-id-dependent-backward-branch)  // only compare upper part of the reference array (the other half is garbage)
 			BOOST_TEST( real(A_gold[i][j]) == real(C[i][j]) );
 			BOOST_TEST( imag(A_gold[i][j]) == imag(C[i][j]) );
 		}
 	}
 }
 
-BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_test::tolerance(0.0000001)) {
+BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_test::tolerance(0.0000001)) {  // NOLINT(fuchsia-default-arguments-calls)
 
 	double const nan = std::numeric_limits<double>::quiet_NaN();
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	multi::array<complex, 2> const A_gold = {
-		{3.23 + 0.00 * I,  1.51 - 1.92 * I,  1.90 + 0.84 * I,  0.42 + 2.50 * I},
-		{nan + nan * I,  3.58 + 0.00 * I, -0.23 + 1.11 * I, -1.18 + 1.37 * I},
-		{nan - nan * I, nan - nan * I,  -10000.00 + 0.00 * I,  0.00 - 0.00 * I},
-		{nan - nan * I, nan - nan * I,  nan + nan * I,  -1000.00 + 0.00 * I},
+		{3.23 + 0.00 * I, 1.51 - 1.92 * I,      1.90 + 0.84 * I,     0.42 + 2.50 * I},
+		{  nan + nan * I, 3.58 + 0.00 * I,     -0.23 + 1.11 * I,    -1.18 + 1.37 * I},
+		{  nan - nan * I,   nan - nan * I, -10000.00 + 0.00 * I,     0.00 - 0.00 * I},
+		{  nan - nan * I,   nan - nan * I,        nan + nan * I, -1000.00 + 0.00 * I},
 	};
 
 	auto A = A_gold;  // NOLINT(readability-identifier-length) lapack conventional name
@@ -195,10 +196,9 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_te
 	print(A, "A");
 	print(Adec, "A dec");
 
-	
 	auto AA = +Adec;
 
-	for(auto i = 0; i != AA.size(); ++i) {
+	for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
 		for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops)
 			AA[i][j] = 0.0;
 		}
@@ -209,24 +209,24 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_te
 	print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
 	print(C, "recover");  // NOLINT(fuchsia-default-arguments-calls)
 
-	for(auto i = 0; i != AA.size(); ++i) {
-		for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // only compare upper part of the reference array (the other half is garbage)
+	for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
+		for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // only compare upper part of the reference array (the other half is garbage)  // NOLINT(altera-id-dependent-backward-branch)
 			BOOST_TEST( real(A_gold[i][j]) == real(C[i][j]) );
 			BOOST_TEST( imag(A_gold[i][j]) == imag(C[i][j]) );
 		}
 	}
 }
 
-BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit_test::tolerance(0.0000001)) {
+BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit_test::tolerance(0.0000001)) {  // NOLINT(fuchsia-default-arguments-calls)
 
 	double const nan = std::numeric_limits<double>::quiet_NaN();
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	multi::array<complex, 2> const A_gold = {
-		{1.00 + 0.00 * I,  0.00 - 0.00 * I,  0.00 + 0.00 * I,  0.00 + 0.00 * I},
-		{nan + nan * I,  1.00 + 0.00 * I, 0.00 + 0.00 * I, 0.00 + 0.00 * I},
-		{nan - nan * I, nan - nan * I,  -1.00 + 0.00 * I,  0.00 - 0.00 * I},
-		{nan - nan * I, nan - nan * I,  nan + nan * I,  -1.00 + 0.00 * I},
+		{1.00 + 0.00 * I, 0.00 - 0.00 * I,  0.00 + 0.00 * I,  0.00 + 0.00 * I},
+		{  nan + nan * I, 1.00 + 0.00 * I,  0.00 + 0.00 * I,  0.00 + 0.00 * I},
+		{  nan - nan * I,   nan - nan * I, -1.00 + 0.00 * I,  0.00 - 0.00 * I},
+		{  nan - nan * I,   nan - nan * I,    nan + nan * I, -1.00 + 0.00 * I},
 	};
 
 	auto A = A_gold;  // NOLINT(readability-identifier-length) lapack conventional name
@@ -236,10 +236,9 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit
 	print(A, "A");
 	print(Adec, "A dec");
 
-	
 	auto AA = +Adec;
 
-	for(auto i = 0; i != AA.size(); ++i) {
+	for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
 		for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops)
 			AA[i][j] = 0.0;
 		}
@@ -250,8 +249,8 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit
 	print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
 	print(C, "recover");  // NOLINT(fuchsia-default-arguments-calls)
 
-	for(auto i = 0; i != AA.size(); ++i) {
-		for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // only compare upper part of the reference array (the other half is garbage)
+	for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
+		for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // only compare upper part of the reference array (the other half is garbage)  // NOLINT(altera-id-dependent-backward-branch)
 			BOOST_TEST( real(A_gold[i][j]) == real(C[i][j]) );
 			BOOST_TEST( imag(A_gold[i][j]) == imag(C[i][j]) );
 		}
@@ -266,16 +265,18 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001)) {
 	{
 		// NOLINTNEXTLINE(readability-identifier-length)
 		multi::array<complex, 2> A = {
-			{      167.413+ 0.0 * I, 126.804 - 0.00143505 * I, 125.114 - 0.1485590 * I},
-			{nan + nan * I,                  167.381+ 0.0 * I, 126.746 + 0.0327519 * I},
-			{nan + nan * I,            nan + nan * I,                 167.231+ 0.0 * I},
+			{167.413 + 0.0 * I, 126.804 - 0.00143505 * I, 125.114 - 0.1485590 * I},
+			{    nan + nan * I,        167.381 + 0.0 * I, 126.746 + 0.0327519 * I},
+			{    nan + nan * I,            nan + nan * I,       167.231 + 0.0 * I},
 		};
 
 		print(A, "original A");
 		using boost::multi::lapack::filling;
 		using boost::multi::lapack::potrf;
 
-		potrf(filling::upper, A);  // A is hermitic in upper triangular (implicit below)
+		auto const As = potrf(filling::upper, A).size();  // A is hermitic in upper triangular (implicit below)
+		BOOST_REQUIRE( As == A.size() );
+
 		BOOST_TEST( real(A[1][2]) == 3.78646 );
 		BOOST_TEST( imag(A[1][2]) == 0.0170734 );
 		//  BOOST_TEST( A[2][1] != A[2][1] );
