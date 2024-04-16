@@ -1711,14 +1711,48 @@ with the output:
 
 When saving arrays to files, consider using serialization (see section) instead.
 
-## TotalView
+## Legacy functions (Lega-C-APIs)
+
+Multi dimensional array data structures in all languages, whether implicitly defined by its strided structure or at the language level.
+Functions written in C tend to received arrays by pointer arguments (e.g. to "first" element) and memory layout (sizes and strides).
+
+A C-function taking a 2D array with a concrete type might look like this in the general case:
+
+```c
+void fun(double* data, int size1, int size2, int stride1, int stride2);
+```
+
+The function can be called from C++ using arguments derived from Multi arrays:
+
+```cpp
+fun(arr.base(), std::get<0>(arr.sizes()), std::get<1>(arr.sizes()), std::get<0>(arr.strides()), std::get<1>(arr.strides());
+```
+
+or
+
+```cpp
+auto const [size1, size2] = arr.sizes();
+auto const [stride1, stride2] = arr.strides();
+
+f(arr.base(), size1, size2, stride1, stride2);
+```
+
+Some arguments may need to permutted if the function expects arrays in column-major (Fortran) ordering.
+Although the recipe can be applied straightforward, different libraries have various assumptions about memory layouts (e.g. BLAS 2D-arrays assume that the second stride is 1) and some might take stride information (e.g. FFTW doesn't use strides but stride-products).
+For this reason the library is acompained with a series of adaptor libraries to popular C-based libraries, that can be found in the `include/multi/adaptors/` directory.
+
+### BLAS/Lapack/cuBLAS
+
+### FFTW/cuFFT
+
+### TotalView
 
 TotalView visual debugger (commercial), popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
 To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
 
 # Technical points
 
-### What's up with the multiple bracket notation? 
+### What's up with the multiple bracket (vs. parenthesis) notation? 
 
 The chained bracket notation (`A[i][j][k]`) allows to refer to elements and subarrays lower dimensional subarrays in a consistent and _generic_ manner and it is the recommended way to access the array objects.
 It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of a temporary object which in turn generates a partial copy of the layout.
@@ -1739,11 +1773,16 @@ As a result, these two loops lead to the [same machine code](https://godbolt.org
 
 Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so as part of a more general syntax to generate sub-blocks.
 In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are normal integer indices.
+For this reason, `A(i, j, k)`, `A(i, j)(k)`, `A(i)(j)(k)`, ``A[i](j)[k]` are examples of equivalent expressions.
+
+Sub-block notation, when at least one argument is an index ranges, e.g. `A({i0, i1}, j, k)` has no equivalent square-bracket notation.
+Note also that ``A({i0, i1}, j, k)` is not equivalent to `A({i0, i1})(j, k)`; their resulting sublocks have different dimensionality.
+
 Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
 
 ```cpp
 std::array p = {2, 3, 4};
-std::apply(A, p) = 234;  // same as A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
+std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
 
 ### Customizing recursive operations: SCARY iterators
