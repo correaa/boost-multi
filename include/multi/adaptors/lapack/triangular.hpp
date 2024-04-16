@@ -1,11 +1,16 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_LAPACK_TRIANGULAR -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
-#endif
+// Copyright 2019-2024 Alfredo A. Correa
+
 #ifndef MULTI_ADAPTORS_LAPACK_TRIANGULAR_HPP
 #define MULTI_ADAPTORS_LAPACK_TRIANGULAR_HPP
-// Alfredo A. Correa 2019 ©
 
 #include "../../../multi/array.hpp"
+
+namespace boost::multi::lapack {
+	enum class filling : char {
+		lower = 'U',
+		upper = 'L',
+	}
+}
 
 namespace boost{
 namespace multi{
@@ -13,7 +18,7 @@ namespace lapack{
 
 template<class T>
 struct uhermitian : public multi::array<T, 2>{
-//	using multi::array<T, 2>::array;
+//  using multi::array<T, 2>::array;
 	template<
 		class MultiArray, 
 		typename = decltype(multi::array<T, 2>{std::forward<MultiArray>(std::declval<MultiArray&>())}),

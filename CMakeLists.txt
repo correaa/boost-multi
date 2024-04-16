@@ -22,6 +22,8 @@ project(
   VERSION 0.80.1
   LANGUAGES CXX)
 
+message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
+
 include_directories(${PROJECT_SOURCE_DIR}/include)  # workaround for vscode to detect headers https://stackoverflow.com/a/68139743/225186
 
 include(CMakePackageConfigHelpers)
@@ -97,6 +99,12 @@ if(MULTI_BUILD_TESTS)
     add_subdirectory(include/multi/adaptors/complex)
     add_subdirectory(include/multi/adaptors/cuda)
     add_subdirectory(include/multi/adaptors/fftw)
+
+    find_package(LAPACK)
+    if(LAPACK_FOUND)
+      add_subdirectory(include/multi/adaptors/lapack)
+    endif()
+
     add_subdirectory(include/multi/adaptors/thrust)
     if(ENABLE_CUDA)
       add_subdirectory(include/multi/adaptors/cufft)
