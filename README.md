@@ -1715,7 +1715,7 @@ with the output:
 
 When saving arrays to files, consider using serialization (see section) instead.
 
-## Legacy functions (Lega-C-APIs)
+## Libraries (Lega-C)
 
 Multi dimensional array data structures exists in all languages, whether implicitly defined by its strided structure or at the language level.
 Functions written in C tend to receive arrays by pointer arguments (e.g. to "first" element) and memory layout (sizes and strides).
@@ -1738,10 +1738,10 @@ or
 auto const [size1, size2] = arr.sizes();
 auto const [stride1, stride2] = arr.strides();
 
-f(arr.base(), size1, size2, stride1, stride2);
+fun(arr.base(), size1, size2, stride1, stride2);
 ```
-Although the recipe can be applied straightforward, different libraries have various assumptions about memory layouts (e.g. BLAS 2D-arrays assume that the second stride is 1) and some might take stride information (e.g. FFTW doesn't use strides but stride-products).
-Furthermore, some arguments may need to permutted if the function expects arrays in column-major (Fortran) ordering.
+Although the recipe can be applied straightforward, different libraries have various assumptions about memory layouts (e.g. BLAS 2D-arrays assume that the second stride is 1) and some might take stride information in a different way (e.g. FFTW doesn't use strides but stride-products).
+Furthermore, some arguments may need to be permutted if the function expects arrays in column-major (Fortran) ordering.
 For this reason the library is acompained with a series of adaptor libraries to popular C-based libraries, that can be found in the `include/multi/adaptors/` directory.
 
 * BLAS
