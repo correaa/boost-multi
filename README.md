@@ -1380,7 +1380,7 @@ Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional ar
 
 ## Range-v3
 
-The library works out of the box with Eric Niebler's Range-v3 library.
+The library works out of the box with Eric Niebler's Range-v3 library, a precursor to the standard Ranges library (see above).
 The library helps removing explicit iterators (e.g. `begin`, `end`) from the code when possible.
 
 Every Multi array object can be regarded as range.
@@ -1715,7 +1715,7 @@ with the output:
 
 When saving arrays to files, consider using serialization (see section) instead.
 
-## Libraries (Lega-C)
+## Legacy libraries (C-APIs)
 
 Multi dimensional array data structures exists in all languages, whether implicitly defined by its strided structure or at the language level.
 Functions written in C tend to receive arrays by pointer arguments (e.g. to "first" element) and memory layout (sizes and strides).
