@@ -1084,7 +1084,7 @@ In this example, the expression will yield the maximum value of the rows sums: [
 
 Like in classic STL, standard range algorithms acting on sequences operate in the first dimension by default, for example lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
 
-```
+```cpp
 	auto A = multi::array<char, 2>{
 		{'S', 'e', 'a', 'n', ' ', ' '},
 		{'A', 'l', 'e', 'x', ' ', ' '},
