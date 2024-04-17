@@ -254,8 +254,8 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	// constexpr auto operator==(extension_t const& other) const {return static_cast<range<IndexType> const&>(*this) == static_cast<range<IndexType> const&>(other);}
 	// constexpr auto operator!=(extension_t const& other) const {return static_cast<range<IndexType> const&>(*this) != static_cast<range<IndexType> const&>(other);}
 
-	constexpr friend auto operator==(extension_t const& self, extension_t const& other) { return static_cast<range<IndexType> const&>(self) == static_cast<range<IndexType> const&>(other); }
-	constexpr friend auto operator!=(extension_t const& self, extension_t const& other) { return static_cast<range<IndexType> const&>(self) != static_cast<range<IndexType> const&>(other); }
+	// constexpr friend auto operator==(extension_t const& self, extension_t const& other) { return static_cast<range<IndexType> const&>(self) == static_cast<range<IndexType> const&>(other); }
+	// constexpr friend auto operator!=(extension_t const& self, extension_t const& other) { return static_cast<range<IndexType> const&>(self) != static_cast<range<IndexType> const&>(other); }
 
 	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
 		using std::max;
