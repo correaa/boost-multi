@@ -20,7 +20,7 @@ auto fnv1a(unsigned char const* first, std::ptrdiff_t len, std::size_t hash) noe
 }  // namespace
 
 class fnv1a_t {
-	std::size_t h = 14695981039346656037U;  // offset
+	long long unsigned int h = 14695981039346656037U;  // offset
 
  public:
 	using result_type = std::size_t;
