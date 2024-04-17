@@ -1,7 +1,5 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2023 Alfredo A. Correa
+// Copyright 2023-2024 Alfredo A. Correa
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi array diagonal"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
@@ -33,19 +31,14 @@ auto trace_with_accumulate(Array2D const& arr) {
 	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end(), 0);
 }
 
-// g++ 7 defect
-// template<class Array2D>
-// auto trace_with_reduce(Array2D const& arr) {
-//  return std::reduce(arr.diagonal().begin(), arr.diagonal().end(), 0);
-// }
-
 BOOST_AUTO_TEST_CASE(trace_test) {
-	multi::array<int, 2> arr({5, 5}, 0);
+	using int_element = multi::index;
+	multi::array<int_element, 2> arr({5, 5}, 0);
 
 	auto [is, js] = extensions(arr);
 	for(auto i : is) {  // NOLINT(altera-unroll-loops) testing loops
 		for(auto j : js) {  // NOLINT(altera-unroll-loops) testing loops
-			arr[i][j] = static_cast<int>(10 * i + j);
+			arr[i][j] = 10 * i + j;
 		}
 	}
 
