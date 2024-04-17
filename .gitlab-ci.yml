@@ -35,7 +35,6 @@ g++-m32:
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
     - ./bootstrap.sh
-    - cat bootstrap.log
     - ./b2 cxxflags=-m32 --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
