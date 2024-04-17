@@ -226,11 +226,11 @@ using v = void;
 // Boundary Checked value
 #define BC(value) [](auto checked) {assert(checked >= std::numeric_limits<INT>::min() && checked < std::numeric_limits<INT>::max()); return checked;}(value)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
 
-//xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
-//xrotmg(s)      xrotmg(d)
-//xrot(s, s, s)  xrot(d, d, d)  xrot(c, cs, s) xrot(z, zd, d)
-//xrotm(s)       xrotm(d)
-//xswap(s)       xswap(d)       xswap(c)       xswap(z)
+// xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
+// xrotmg(s)      xrotmg(d)
+// xrot(s, s, s)  xrot(d, d, d)  xrot(c, cs, s) xrot(z, zd, d)
+// xrotm(s)       xrotm(d)
+// xswap(s)       xswap(d)       xswap(c)       xswap(z)
 
 namespace core {
 
@@ -320,19 +320,12 @@ namespace core {
 
 namespace core {
 	template<class S> auto dot(S n, s const& b, s const* x, S incx, s const* y, S incy) -> s {return BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}  // NOLINT(readability-identifier-length) conventional BLAS name
-
-//template<class S> void dot(S n, s const& b, s const* x, S incx, s const* y, S incy, s* result){*result = BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
 } // end namespace core
-
-//#define xnrm2(R, T, TT) template<class S>    v nrm2 (S n, add_const_ptr_t<T> x, S incx, R* r){*r = BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
 
 #define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(BC(n), x, BC(incx))    ;}  // NOLINT(readability-identifier-length) conventional BLAS name
 #define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx)) - 1;}  // NOLINT(readability-identifier-length) conventional BLAS name
 
-//xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
-
 namespace core {
-//  xnrm2(s, s, s) xnrm2(d, d, d)  xnrm2(s, c, sc) xnrm2(d, z, dz)
 
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} && is_s<R>{} && std::is_assignable<R&, decltype(X{})>{}           , int> =0> void asum(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(sasum) (n, (s const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting,readability-identifier-length)
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_d<X>{} && is_d<R>{} && std::is_assignable<R&, decltype(X{})>{}           , int> =0> void asum(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(dasum) (n, (d const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));} // NOLINT(google-readability-casting,readability-identifier-length)
@@ -347,7 +340,6 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_s<R>{} && std::is_assignable<R&, decltype(norm(X{}))>{}, int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(scnrm2)(n, (c const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting,readability-identifier-length)
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_d<R>{} && std::is_assignable<R&, decltype(norm(X{}))>{}, int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(dznrm2)(n, (z const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));} // NOLINT(google-readability-casting,readability-identifier-length)
 
-//  template<class S>    v nrm2 (S n, typename add_const_ptr<std::complex<double>>::type x, S incx, d* r){*r = BLAS(dznrm2  )(BC(n), x, BC(incx));}
 	ixamax(s)      ixamax(d)       ixamax(c)       ixamax(z)
 } // end namespace core
 
@@ -366,23 +358,13 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 
 namespace core {
 
-//xgemv(s) xgemv(d) xgemv(c) xgemv(z)
-//xger(s)   xger(d)
+// xgemv(s) xgemv(d) xgemv(c) xgemv(z)
+// xger(s)   xger(d)
 //                  xgeru(c) xgeru(z)
 //                  xgerc(c) xgerc(z)
 
 using std::enable_if_t;
 using std::is_assignable;
-
-#if 0
-template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
-enable_if_t<                                                                                                                                                                                                                            \
-	is_##T<AA>{} && is_##T<BB>{} && is_##T<CC>{} && /*is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} && */                                                                                                                           \
-	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*> && is_convertible_v<CCP, CC*>                                                                                                                                            \
-, int> =0>                                                                                                                                                                                                                              \
-v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {  /*NOLINT(bugprone-easily-swappable-parameters)*/              \
-
-#endif
 
 template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} && is_s<X>{} && is_s<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(sgemv)(trans, m, n, *a, reinterpret_cast<s const*>(ma), lda, reinterpret_cast<s const*>(x), incx, *b, reinterpret_cast<s*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
 template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} && is_d<X>{} && is_d<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, *a, reinterpret_cast<d const*>(ma), lda, reinterpret_cast<d const*>(x), incx, *b, reinterpret_cast<d*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
@@ -394,27 +376,12 @@ template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} && i
 }  // end namespace core
 
 template<class T>
-struct blas2 {
-//  template<class S>
-//  static v trsv(char ulA, char transA, char di, S m, T const* A, S lda, T* X, S incx) = delete;
-};
+struct blas2 {};
 
 template<> struct blas2<s> {template<class... As> static v    trsv(As... args)                                   {BLAS(strsv)(args...);}};
 template<> struct blas2<d> {template<class... As> static v    trsv(As... args)                                   {BLAS(dtrsv)(args...);}};
 template<> struct blas2<c> {template<class... As> static v    trsv(As... args)                                   {BLAS(ctrsv)(args...);}};
 template<> struct blas2<z> {template<class... As> static auto trsv(As... args) -> decltype(BLAS(ztrsv)(args...)) {BLAS(ztrsv)(args...);}};
-
-// namespace core {
-//  template<typename TconstP, typename TP, typename S=std::size_t, typename C=char>
-//  v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx) {  // NOLINT(readability-identifier-length) conventional BLAS naming
-//      blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);
-//  }
-// }  // end namespace core
-
-//#undef xgemv
-// #undef xger
-// #undef xgeru
-// #undef xgerc
 
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
@@ -517,9 +484,7 @@ xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
 
 } // end namespace core
 
-// #undef xsyrk
 #undef xherk
-// #undef xtrsm
 
 #undef BC
 
