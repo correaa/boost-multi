@@ -6,8 +6,6 @@
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
-//#include <cblas/cblas.h> // consider being replaceable by cblas.h
-
 #include<cassert>
 #include<complex>
 #include<cstdint>      // int64_t
@@ -116,7 +114,7 @@ static_assert(sizeof(INT)==32/8 || sizeof(INT)==64/8, "please set MULTI_BLAS_INT
 #define xASUM(R, TT, T)   auto    TT##asum##_ (    N,               T const *x, INCX) -> R    // NOLINT(readability-identifier-length) conventional BLAS naming
 #define IxAMAX(T)         auto i##T ##amax##_ (    N,               T const* x, INCX) -> INT  // NOLINT(readability-identifier-length) conventional BLAS naming
 
-xROTG(s, s)   ; xROTG(d,d)    ;// MKL extension xROTG(c, s); xROTG(z, d);
+xROTG(s, s)   ; xROTG(d,d)    ;  // TODO(correaa) MKL extension for "(c, s)" and "(z, d)"?
 xROTMG(s)     ; xROTMG(d)     ;
 xROT(s, s, s) ; xROT(d, d, d) ;                 xROT(cs, c, s); xROT(zd, z, d);
 xROTM(s)      ; xROTM(d)      ;
@@ -124,12 +122,11 @@ xSWAP(s)      ; xSWAP(d)      ; xSWAP(c)      ; xSWAP(z);
 xSCAL(s, s, s); xSCAL(d, d, d); xSCAL(c, c, c); xSCAL(z, z, z); xSCAL(zd, d, z); xSCAL(cs, s, c);
 xCOPY(s)      ; xCOPY(d)      ; xCOPY(c)      ; xCOPY(z)      ;
 xAXPY(s)      ; xAXPY(d)      ; xAXPY(c)      ; xAXPY(z)      ;
-xDOT(s, s, s) ; xDOT(d, d, d) ;                                   xDOT(d, ds, s);
 
-xDOTU(C, c); xDOTU(Z, z);
-//xDOTU(c, c); xDOTU(z, z);
-xDOTC(C, c); xDOTC(Z, z);
-//xxDOT(sds, s);
+xDOT(s, s, s) ; xDOT(d, d, d) ;                                   xDOT(d, ds, s);
+xDOTU(C, c); xDOTU(Z, z);  // TODO(correaa) MKL extension for "(c, c)" and "(z, z)"?
+xDOTC(C, c); xDOTC(Z, z);  // TODO(correaa) MKL extension for "(sds, s)"
+
 xNRM2(s, s, s); xNRM2(d, d, d); xNRM2(s, sc, c); xNRM2(d, dz, z);
 xASUM(s, s, s); xASUM(d, d, d); xASUM(s, sc, c); xASUM(d, dz, z);
 IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
@@ -183,10 +180,11 @@ xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 #undef xSWAP
 #undef xCOPY
 #undef xAXPY
+
 #undef xDOT
 #undef xDOTU
 #undef xDOTC
-// #undef xxDOT
+
 #undef xNRM2
 #undef xASUM
 #undef IxAMAX
@@ -219,13 +217,11 @@ xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 
 namespace boost::multi::blas {
 
-//namespace t {
-	using s = float;
-	using d = double;
-	using c = std::complex<s>;  //using C = Complex_float ;
-	using z = std::complex<d>;  //using Z = Complex_double;
-	using v = void;
-//}  // end namespace types
+using s = float;
+using d = double;
+using c = std::complex<s>;
+using z = std::complex<d>;
+using v = void;
 
 // Boundary Checked value
 #define BC(value) [](auto checked) {assert(checked >= std::numeric_limits<INT>::min() && checked < std::numeric_limits<INT>::max()); return checked;}(value)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
