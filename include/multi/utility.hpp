@@ -1,4 +1,4 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 
 #ifndef MULTI_UTILITY_HPP
 #define MULTI_UTILITY_HPP
@@ -516,7 +516,7 @@ auto extensions(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto stride(std::array<T, N> const& /*arr*/) {
-	return static_cast<multi::size_type>(1);  // multi::stride_type?
+	return multi::size_type(1);  // useless cast in 32bit: static_cast<multi::size_type>(1);  // multi::stride_type?
 }
 
 template<class T, std::size_t N, std::size_t M>
