@@ -10,8 +10,11 @@
 #include <type_traits>  // enable_if_t
 
 namespace {
+
+using fnv1a_size = long long unsigned int;
+
 // from Howard Hinnart hash
-auto fnv1a(unsigned char const* first, std::ptrdiff_t len, std::size_t hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
+auto fnv1a(unsigned char const* first, std::ptrdiff_t len, fnv1a_size hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
 	return std::accumulate(
 		first, std::next(first, len), hash,
 		[prime = 1099511628211U](auto acc, auto elem) { return (acc ^ elem) * prime; }
@@ -20,7 +23,7 @@ auto fnv1a(unsigned char const* first, std::ptrdiff_t len, std::size_t hash) noe
 }  // namespace
 
 class fnv1a_t {
-	long long unsigned int h = 14695981039346656037U;  // offset
+	fnv1a_size h = 14695981039346656037U;  // offset
 
  public:
 	using result_type = std::size_t;

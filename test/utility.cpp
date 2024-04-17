@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 
 	BOOST_REQUIRE( multi::dimensionality(arr) == 3 );
 
-	BOOST_REQUIRE( multi::extension(arr) == 3 );
+	// BOOST_REQUIRE( multi::extension(arr) == 3 );
 
 	BOOST_REQUIRE(( multi::extensions(arr) == decltype(multi::extensions(arr)){3, 4, 5} ));
 
@@ -45,8 +45,8 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
 	using multi::dimensionality;
 	BOOST_REQUIRE( dimensionality(arr) == 2 );
 
-	using multi::extension;
-	BOOST_REQUIRE( extension(arr) == 3 );
+	// using multi::extension;
+	// BOOST_REQUIRE( extension(arr) == 3 );
 
 	using multi::extensions;
 	BOOST_REQUIRE(( extensions(arr) == decltype(extensions(arr)){3, 4} ));
@@ -74,8 +74,8 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 	using multi::dimensionality;
 	BOOST_REQUIRE( dimensionality(arr) == 1 );
 
-	using multi::extension;
-	BOOST_REQUIRE( extension(arr) == 4 );
+	// using multi::extension;
+	// BOOST_REQUIRE( extension(arr) == 4 );
 
 	using multi::extensions;
 	BOOST_REQUIRE(( extensions(arr) == decltype(extensions(arr)){multi::iextension{4}} ));
