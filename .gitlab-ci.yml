@@ -160,7 +160,9 @@ clang++-latest libc++:
 
 clang++-macos:
   stage: build
-  # image: debian:latest
+  image: macos-14-xcode-15
+  # variables:
+  #   HOMEBREW_NO_AUTO_UPDATE: 1
   tags:
     - saas-macos-medium-m1
   allow_failure: true
