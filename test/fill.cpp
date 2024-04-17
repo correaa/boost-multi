@@ -11,7 +11,7 @@
 
 namespace {
 
-using fnv1a_size = long long unsigned int;
+using fnv1a_size = std::uint64_t;
 
 // from Howard Hinnart hash
 auto fnv1a(unsigned char const* first, std::ptrdiff_t len, fnv1a_size hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
@@ -26,7 +26,7 @@ class fnv1a_t {
 	fnv1a_size h = 14695981039346656037U;  // offset
 
  public:
-	using result_type = std::size_t;
+	using result_type = fnv1a_size;
 	static constexpr auto min() { return std::numeric_limits<result_type>::min(); }
 	static constexpr auto max() { return std::numeric_limits<result_type>::max(); }
 	void                  operator()(unsigned char const* key, std::ptrdiff_t len) noexcept { h = fnv1a(key, len, h); }
