@@ -52,29 +52,11 @@ auto gemv(Ctxt ctxt, A const& a, M const& m, V const& v, B const& b, W&& w) -> W
 	// gemv_n(a, begin(m), size(m), begin(v), b, begin(w));
 	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));  // NOLINT(fuchsia-default-arguments-calls)
 	return std::forward<W>(w);
-
-
-	// assert(size( m) == size(w) );
-	// assert(size(~m) == size(v) );
-	// gemv_n(a, begin(m), size(m), begin(v), b, begin(w));
-	// return std::forward<W>(w);
-
-	// if constexpr(is_conjugated<M>{}) {
-	//  auto ctxtp = blas::default_context_of(underlying(m.base()));
-	//  return blas::gemv(ctxtp, a, m, v, b, w);
-	// } else {
-	//  auto ctxtp = blas::default_context_of(m.base());
-	//  return blas::gemv(ctxtp, a, m, v, b, w);
-	// }
 }
-
 
 template<class A, class M, class V, class B, class W>
 auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
-	// assert(size(~m) == size(v) );
-	// gemv_n(a, begin(m), size(m), begin(v), b, begin(w));
-	// return std::forward<W>(w);
 
 	if constexpr(is_conjugated<M>{}) {
 		auto ctxtp = blas::default_context_of(underlying(m.base()));
@@ -167,9 +149,7 @@ class gemv_range {
 	friend auto operator+(gemv_range const& self) {return self.decay();}
 	template<class V>
 	friend auto operator+=(V&& v, gemv_range const& s) -> V&& {  // NOLINT(readability-identifier-length) BLAS naming
-		// if constexpr(std::is_same<Context, void*>{}) {blas::gemv_n(         s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1.0, v.begin());}
-		// else                                         
-		{blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, static_cast<Scalar>(1.0), v.begin());}
+		blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, static_cast<Scalar>(1.0), v.begin());
 		return std::forward<V>(v);
 	}
 };
