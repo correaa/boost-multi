@@ -516,7 +516,7 @@ auto extensions(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto stride(std::array<T, N> const& /*arr*/) {
-	return multi::size_type(1);  // useless cast in 32bit: static_cast<multi::size_type>(1);  // multi::stride_type?
+	return static_cast<multi::size_type>(1U);  // multi::stride_type?
 }
 
 template<class T, std::size_t N, std::size_t M>
