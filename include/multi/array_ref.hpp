@@ -2705,7 +2705,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  private:
 	template<class TTN, std::size_t DD = 0>
 	void check_sizes() const {
-		if(static_cast<size_type>(std::get<DD>(this->sizes())) != static_cast<size_type>(std::extent<TTN, static_cast<unsigned>(DD)>::value)) {
+		if(size_type{std::get<DD>(this->sizes())} != static_cast<size_type>(std::extent<TTN, static_cast<unsigned>(DD)>::value)) {
 			throw std::bad_cast{};
 		}
 		if constexpr(DD + 1 != D) {
