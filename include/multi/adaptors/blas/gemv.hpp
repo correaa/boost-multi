@@ -42,15 +42,16 @@ auto gemv_n(Context ctxt, typename MIt::element a, MIt m_first, Size count, XIt 
 template<class A, class MIt, class Size, class XIt, class B, class YIt>
 auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {  // NOLINT(readability-identifier-length) BLAS naming
 	blas::context ctxt;
-	return gemv_n(&ctxt, a, m_first, count, x_first, b, y_first);
+	return gemv_n(&ctxt, static_cast<typename MIt::element>(a), m_first, count, x_first, b, y_first);
 }
 
 template<class Ctxt, class A, class M, class V, class B, class W>
 auto gemv(Ctxt ctxt, A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
 	assert(size(~m) == size(v) );
-	// gemv_n(a, begin(m), size(m), begin(v), b, begin(w));
+
 	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));  // NOLINT(fuchsia-default-arguments-calls)
+
 	return std::forward<W>(w);
 }
 
@@ -95,7 +96,6 @@ class gemv_iterator {
 	friend auto copy(gemv_iterator first, gemv_iterator last, It1DOut result){return copy_n(first, last - first, result);}
 	template<class It1DOut>
 	friend auto uninitialized_copy(gemv_iterator first, gemv_iterator last, It1DOut result) {
-		// static_assert(std::is_trivially_default_constructible_v<typename It1DOut::value_type>);
 		#if defined(__cpp_lib_start_lifetime_as)
 		auto count = last - first;
 		// or use start_lifetime_as_array<typename It1DOut::value_type>(std::addressof(*result), count); since this is always called on contiguos iterators
