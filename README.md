@@ -20,7 +20,6 @@ Some features of this library:
 * Interoperability with other libraries, STL, ranges, thrust (CUDA and AMD GPUs), Boost, and C-libraries
 * Fast access to elements and subarrays (views) types
 * Arbitrary pointer types (fancy pointers, memory spaces)
-* Simplified implementation (~4000 lines)
 
 Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
 or with the standard MDSpan proposal `std::mdspan`.
