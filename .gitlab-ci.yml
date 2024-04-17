@@ -176,6 +176,24 @@ clang++-latest libc++:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
+clang++-m32:
+  stage: build
+  image: debian:latest
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib cmake make libblas-dev libfftw3-dev pkg-config tar wget
+    - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
+    - tar -xf boost_1_84_0.tar.gz 
+    - cd boost_1_84_0
+    - ./bootstrap.sh --with-toolset=clang
+    - ./b2 toolset=clang cxxflags=-m32 --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+    - cd ..
+    - mkdir build && cd build
+    - c++ --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-m32"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
 clang++-testing tidy:
   stage: build
   image: debian:testing  # clang 16.0.6 as of Dec 2023
