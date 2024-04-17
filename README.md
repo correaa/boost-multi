@@ -1160,7 +1160,8 @@ https://godbolt.org/z/cMq87xPvb
 ### Polymorphic Memory Resources
 
 In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's [polymorphic memory resources (PMR)](https://en.cppreference.com/w/cpp/header/memory_resource) which allows using advanced allocation strategies, including preallocated buffers.
-For example, this code uses a buffer as memory for two arrays; this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
+This example code uses a buffer as memory for two arrays; 
+in it a predefined buffer ends up containing the data of the arrays, something like `"aaaabbbbbbXX"`.
 
 ```cpp
 #include <memory_resource>  // for polymorphic memory resource, monotonic buffer
