@@ -76,7 +76,6 @@ class dot_ptr {
  public:
 	constexpr explicit operator bool() const {return true;}
 
-//  dot_ptr(dot_ptr const&) = default;
 	template<class ItOut, class Size2>
 	friend constexpr auto copy_n(dot_ptr first, Size2 count, ItOut d_first)
 	->decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count) {

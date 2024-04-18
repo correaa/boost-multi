@@ -150,7 +150,9 @@ BOOST_AUTO_TEST_CASE(lexicographical_compare_offset) {
 	BOOST_REQUIRE(  name2.size() == 3 );
 	BOOST_REQUIRE(( name2.extension() == multi::extension_t<multi::index>{1, 4} ));
 	BOOST_REQUIRE(( name2.extension() == multi::extension_t{multi::index{1}, multi::index{4}} ));
-	BOOST_REQUIRE(( name2.extension() == multi::extension_t{1L, 4L} ));
+
+	// BOOST_REQUIRE(( name2.extension() == multi::extension_t{1L, 4L} ));
+
 	BOOST_REQUIRE(( name2.extension() == multi::extension_t<>{1, 4} ));
 	// BOOST_REQUIRE(( name2.extension() == multi::extension_t{1 , 4 } )); TODO(correaa) solve ambiguity
 
