@@ -14,7 +14,8 @@ namespace multi = boost::multi;
 template<class M> auto print(M const& mat, std::string const& msg = "") -> decltype(auto) {  // NOLINT(fuchsia-default-arguments-declarations,fuchsia-default-arguments-calls)
 	using multi::size;
 	using std::cout;
-	cout << msg << "\n" << '{';
+	cout << msg << "\n"
+	     << '{';
 	for(int i = 0; i != size(mat); ++i) {
 		cout << '{';
 		for(auto j : mat[i].extension()) {  // NOLINT(altera-unroll-loops)
@@ -288,7 +289,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_square) {
 	};
 
 	// NOLINTNEXTLINE(readability-identifier-length) lapack conventional name
-	multi::array<complex,2> C({3, 3}, complex{0.0, 0.0});
+	multi::array<complex, 2> C({3, 3}, complex{0.0, 0.0});
 
 	blas::herk(boost::multi::blas::filling::upper, complex{1.0, 0.0}, A, complex{0.0, 0.0}, C);
 }
