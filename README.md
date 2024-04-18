@@ -23,7 +23,7 @@ Some features of this library:
 
 Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
 or with the standard MDSpan proposal `std::mdspan`.
-This library shares some of their goals but at a different level of generality.
+This library shares some of their goals, it is compatible with them, but it is otherwise designed at different level of generality.
 The code is completely independent and has important implementation and semantics differences.
 
 ## Contents
