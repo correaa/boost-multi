@@ -1220,7 +1220,7 @@ While `mdspan` concentrates on _arbitrary layouts_ for non-owning memory of a si
 Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library. 
 Therefore, its compatibility with the rest of the STL is lacking.
 (The ultimate reason is that arbitrary layouts do not compose well across subdimensions, and, in turn, this imposes certain limitations in `mdspan`, such as ad-hoc slicing and subarray.)
-[Preliminarily](https://godbolt.org/z/K96bnMc77), Multi array can be converted (viewed as) `mdspan`.
+[Preliminarily](https://godbolt.org/z/aWW3vzfPj), Multi array can be converted (viewed as) `mdspan`.
 
 [Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) is the original multidimensional array library shipped with Boost.
 This library can replace Boost.MultiArray in most contexts, it even fulfillis the concepts of `boost::multi_array_concepts::ConstMultiArrayConcept` and `...::MutableMultiArrayConcept`.
