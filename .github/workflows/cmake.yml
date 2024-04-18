@@ -12,7 +12,7 @@ env:
   BUILD_TYPE: Debug
 
 jobs:
-  latest-c++:
+  latest-cpp:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,7 +33,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ctest -C ${{env.BUILD_TYPE}}
 
-  latest-clang++:
+  latest-clangpp:
     runs-on: ubuntu-latest
 
     steps:
