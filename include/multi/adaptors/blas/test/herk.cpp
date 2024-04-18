@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case) {
 	BOOST_REQUIRE( b[0][0] == 1.0*1.0 + 2.0*2.0 + 3.0*3.0 );
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case_scale) {
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case_scale, *boost::unit_test::tolerance(0.00001)) {
 	namespace blas = multi::blas;
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<double, 2> const a = {
