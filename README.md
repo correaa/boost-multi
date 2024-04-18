@@ -1220,11 +1220,12 @@ While `mdspan` concentrates on _arbitrary layouts_ for non-owning memory of a si
 Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library. 
 Therefore, its compatibility with the rest of the STL is lacking.
 (The ultimate reason is that arbitrary layouts do not compose well across subdimensions, and, in turn, this imposes certain limitations in `mdspan`, such as ad-hoc slicing and subarray.)
-[Preliminarily](https://godbolt.org/z/v66eKfbz4), Multi array can be converted (viewed as) `mdspan`.
+[Preliminarily](https://godbolt.org/z/K96bnMc77), Multi array can be converted (viewed as) `mdspan`.
 
 [Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) is the original multidimensional array library shipped with Boost.
 This library can replace Boost.MultiArray in most contexts, it even fulfillis the concepts of `boost::multi_array_concepts::ConstMultiArrayConcept` and `...::MutableMultiArrayConcept`.
-Boost.MultiArray has technical and semantic limitations that are overcome in this library, regarding layouts and references.
+Boost.MultiArray has technical and semantic limitations that are overcome in this library, regarding layouts and references;
+it doesn't support value-semantics, iterator support is limited and it has other technical problems.
 
 [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) is a very popular matrix linear algebra library, and as such, it only handles the special 2D (and 1D) array case.
 Instead, the Multi library is dimension-generic and doesn't make any algebraic assumptions for arrays or contained elements (but still can be used to _implement_ dense linear algebra algorithms.)
