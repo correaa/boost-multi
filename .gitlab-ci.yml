@@ -46,6 +46,8 @@ g++-m32:
 
 coverage:
   stage: build
+  tags:
+    - docker
   allow_failure: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
@@ -72,6 +74,8 @@ coverage:
 
 g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
   stage: build
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config valgrind
     - g++ --version
@@ -84,6 +88,8 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
 
 g++-testing sanitizer:
   stage: build
+  tags:
+    - docker
   image: debian:testing
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
@@ -96,6 +102,8 @@ g++-testing sanitizer:
 g++-7:
   stage: build
   image: debian:oldoldstable  # default is gcc 8 as of Dec 2023
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
@@ -111,6 +119,8 @@ g++-7:
 g++-testing c++20:
   stage: build
   image: debian:testing
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
@@ -122,6 +132,8 @@ g++-testing c++20:
 g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
   image: debian:unstable
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
@@ -161,6 +173,8 @@ clang++:
 clang++-latest libc++:
   stage: build
   image: debian:latest
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
     - wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose # 1.70 doesn't install boost timer well, there is no version 1.72 in sourceforge
@@ -172,6 +186,29 @@ clang++-latest libc++:
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++-macos:
+  stage: build
+  image: macos-14-xcode-15
+  # variables:
+  #   HOMEBREW_NO_AUTO_UPDATE: 1
+  tags:
+    - saas-macos-medium-m1
+  allow_failure: true
+  script:
+    #- apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
+    #- wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose # 1.70 doesn't install boost timer well, there is no version 1.72 in sourceforge
+    #- tar -xf boost_1_72_0.tar.gz 
+    #- cd boost_1_72_0
+    #- ./bootstrap.sh --with-toolset=clang
+    #- ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4 # libc++ only works with boost test compiled with libc++
+    #- cd ..
+    - mkdir build && cd build
+    - c++ --version
+    - CXX=c++ cmake .. -DCMAKE_BUILD_TYPE=Debug # -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -197,6 +234,8 @@ clang++-m32:
 clang++-testing tidy:
   stage: build
   image: debian:testing  # clang 16.0.6 as of Dec 2023
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -209,6 +248,8 @@ clang++-testing tidy:
 g++-testing c++20:
   stage: build
   image: debian:testing
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
@@ -220,6 +261,8 @@ g++-testing c++20:
 g++-testing sanitizer:
   stage: build
   image: debian:testing
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -231,6 +274,8 @@ g++-testing sanitizer:
 clang++-17-unstable libc++ c++23 boost_1_84:
   stage: build
   image: debian:unstable  # clang 17 as of March 2024
+  tags:
+    - docker
   script:  # clang 17 doesn't work with gcc 13 libstd
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang clang-17 cmake make libblas-dev libc++-17-dev libc++abi-17-dev libfftw3-dev pkg-config tar wget
     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
@@ -259,6 +304,8 @@ clang++-17-unstable libc++ c++23 boost_1_84:
 clang++-oldoldstable:
   stage: build
   image: debian:oldoldstable  # clang 7.0.1 as of Dec 2023
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
@@ -288,7 +335,6 @@ oneapi-latest c++20:
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
   tags:
     - large-disk-space
-  allow_failure: false
   script:
     - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
     - echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
@@ -522,6 +568,8 @@ rocm:
   stage: build
   image: rocm/dev-ubuntu-22.04
   allow_failure: false
+  tags:
+    - docker
   script:
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
@@ -544,6 +592,8 @@ rocm:
 
 circle:
   stage: build
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
@@ -559,6 +609,8 @@ circle:
 
 circle-187:
   stage: build
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
@@ -575,6 +627,8 @@ circle-187:
 
 circle-latest:
   stage: build
+  tags:
+    - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
@@ -688,6 +742,8 @@ inq rocm:
 qmcpack:
   stage: test
   image: debian:latest
+  tags:
+    - docker
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
@@ -778,6 +834,8 @@ qmcpack cuda-12.3.1:
 
 sonar:
   stage: build
+  tags:
+    - docker
   # cache:
   #   policy: pull-push
   #   key: "${CI_COMMIT_SHORT_SHA}"
