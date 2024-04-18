@@ -187,7 +187,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class Array, std::size_t... I, typename = decltype(base_{boost::multi::detail::get<I>(std::declval<Array const&>())...})>
 	constexpr extensions_t(Array const& tup, std::index_sequence<I...> /*unused012*/) : base_{boost::multi::detail::get<I>(tup)...} {}
 
-	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1);}
+	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1U);}
 	static constexpr auto multiply_fold(size_type const& size) -> size_type {return size;}
 	template<class...As>
 	static constexpr auto multiply_fold(size_type const& size, As const&... rest) -> size_type {return size*static_cast<size_type>(multiply_fold(rest...));}
