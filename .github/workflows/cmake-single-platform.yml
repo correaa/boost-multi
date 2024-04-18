@@ -23,7 +23,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - uses: correaa/cache-apt-pkgs-action@latest
       with:
         packages: cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
         version: 1.0
