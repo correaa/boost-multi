@@ -109,8 +109,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case_scale) {
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<double, 2> const a = {
 		{1.0, 2.0, 3.0},
-	};  // NOLINT(readability-identifier-length) BLAS naming
+	};
+
 	multi::array<double, 2> b = blas::herk(0.1, a);  // NOLINT(readability-identifier-length) BLAS naming
+
 	BOOST_REQUIRE( size(b) == 1 );
 	BOOST_TEST( b[0][0] == (1.0*1.0 + 2.0*2.0 + 3.0*3.0)*0.1 );
 }
