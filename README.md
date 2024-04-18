@@ -823,7 +823,7 @@ For illustration purposes only, `fill` here is replaced by `copy`; problematic u
 
 ```cpp
 multi::array<double, 2> B({10, 2});
-std::fill. (B.begin(), B.end(), b);                                       // canonical way
+std::fill  (B.begin(), B.end(), b);                                       // canonical way
 std::fill_n(B.begin(), B.size(), b);                                      // canonical way
 
 std::copy_n(b.broadcasted().begin(), B.size(), B.begin());                // equivalent, using broadcast
