@@ -560,12 +560,12 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	elements_iterator_t(elements_iterator_t const&) = default;
 
 	HD constexpr auto operator++() -> elements_iterator_t& {
-		std::apply( [&xs = this->xs_](auto&... idxs){return xs.next_canonical(idxs...);}, ns_ );
+		std::apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
 		++n_;
 		return *this;
 	}
 	HD constexpr auto operator--() -> elements_iterator_t& {
-		std::apply( [&xs = this->xs_](auto&... idxs) {return xs.prev_canonical(idxs...); }, ns_ );
+		std::apply([&xs = this->xs_](auto&... idxs) { return xs.prev_canonical(idxs...); }, ns_);
 		--n_;
 		return *this;
 	}
@@ -2705,7 +2705,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  private:
 	template<class TTN, std::size_t DD = 0>
 	void check_sizes() const {
-		if(static_cast<size_type>(std::get<DD>(this->sizes())) != static_cast<size_type>(std::extent<TTN, static_cast<unsigned>(DD)>::value)) {
+		if(size_type{std::get<DD>(this->sizes())} != size_type{std::extent<TTN, unsigned{DD}>::value}) {
 			throw std::bad_cast{};
 		}
 		if constexpr(DD + 1 != D) {

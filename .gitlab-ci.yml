@@ -26,6 +26,24 @@ g++:  # debian-stable: default is gcc 12 as of Dec 2023
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
 
+g++-m32:
+  stage: build
+  image: debian:latest
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake make tar wget
+    - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
+    - tar -xf boost_1_84_0.tar.gz 
+    - cd boost_1_84_0
+    - ./bootstrap.sh
+    - ./b2 cxxflags=-m32 --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+    - cd ..
+    - mkdir build && cd build
+    - c++ --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-m32"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["g++"]
+
 coverage:
   stage: build
   allow_failure: true
@@ -154,6 +172,24 @@ clang++-latest libc++:
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++-m32:
+  stage: build
+  image: debian:latest
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib cmake make tar wget
+    - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
+    - tar -xf boost_1_84_0.tar.gz 
+    - cd boost_1_84_0
+    - ./bootstrap.sh --with-toolset=clang
+    - ./b2 toolset=clang cxxflags=-m32 --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+    - cd ..
+    - mkdir build && cd build
+    - c++ --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-m32"
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
