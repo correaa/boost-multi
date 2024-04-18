@@ -14,6 +14,7 @@ find_package(BLAS)
 if(BLAS_FOUND)
 	message("Some BLAS found: linker flags: ${BLAS_LINKER_FLAGS}, libs: ${BLAS_LIBRARIES}, libs95: ${BLAS95_LIBRARIES}")
 	foreach(lib ${BLAS_LIBRARIES})
+		# https://cmake.org/cmake/help/latest/module/FindBLAS.html#blas-lapack-vendors
 		if(${lib} MATCHES "mkl")
 			message("Some BLAS found matches MKL")
 			add_definitions(-DBLAS_DOT_RETURNS_VOID)
@@ -29,7 +30,10 @@ if(BLAS_FOUND)
 			message("Some BLAS found matches hpc_sdk (nvhpc)")  # nvhpc may still use a different version of BLAS
 			add_definitions(-DBLAS_DOT_RETURNS_VOID)
 		endif()
-		# TODO(correaa) add condition for Apple Accelerate
+		if(${lib} MATCHES "Accelerate")
+			message("Some BLAS found matches Accelerate (Apple)")
+			add_definitions(-DBLAS_DOT_RETURNS_VOID)
+		endif()
 	endforeach()
 endif()
 
