@@ -3,7 +3,9 @@
 -->
 # Multi BLAS Adaptor
 
-_© Alfredo A. Correa, 2018-2023_
+_© Alfredo A. Correa, 2018-2024_
+
+(documentation in progress)
 
 The BLAS Adaptor provides an interface for BLAS and BLAS-like libraries (namely cuBLAS).
 
