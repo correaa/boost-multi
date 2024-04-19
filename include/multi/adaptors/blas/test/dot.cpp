@@ -19,17 +19,19 @@ BOOST_AUTO_TEST_CASE(blas_dot_context) {
 	blas::context const ctxt;
 
 	auto res1 = +blas::dot(&ctxt, x, y);
-	BOOST_REQUIRE( res1 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
+	BOOST_TEST( res1 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 
 	float res2 = +blas::dot(&ctxt, x, y);
-	BOOST_TEST_REQUIRE( res2 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
+	BOOST_TEST( res2 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context) {
-	multi::array<float, 1> const x   = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<float, 1> const y   = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
-	auto                         res = +blas::dot(x, y);
-	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
+	multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
+
+	auto res = +blas::dot(x, y);
+
+	BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param) {
@@ -37,7 +39,7 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param) {
 	multi::array<float, 1> const y   = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 	float                        res = NAN;
 	blas::dot(x, y, multi::array_ref<float, 0>(res));
-	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
+	BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex) {  // if you get a segfaut here, your system may require -DRETURN_BY_STACK
@@ -122,8 +124,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real) {
 	multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::dot;
-	BOOST_REQUIRE( 14.0 == dot(x, y) );
-	BOOST_REQUIRE( dot(x, y) == 14.0F );
+	BOOST_TEST( 14.0 == dot(x, y) );
+	BOOST_TEST( dot(x, y) == 14.0F );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
@@ -216,8 +218,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
 	namespace blas = multi::blas;
 
-	using complex  = std::complex<double>;
-	using Alloc  = std::allocator<complex>;  // thrust::cuda::allocator<complex>;
+	using complex = std::complex<double>;
+	using Alloc   = std::allocator<complex>;  // thrust::cuda::allocator<complex>;
 
 	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
