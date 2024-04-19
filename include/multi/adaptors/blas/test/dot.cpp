@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_double) {
 	BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0) );
 }
 
-// float uses of dot are disabled because of a bug in Apple Accelerate BLAS
+// float uses of dot are disabled because of a bug in Apple Accelerate BLAS, https://fortran-lang.discourse.group/t/how-many-blas-libraries-have-this-error/4454/23, https://forums.developer.apple.com/forums/thread/717757
 // BOOST_AUTO_TEST_CASE(blas_dot_context) {
 //  multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 //  multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
