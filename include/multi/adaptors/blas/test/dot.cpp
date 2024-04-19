@@ -25,6 +25,13 @@ BOOST_AUTO_TEST_CASE(blas_dot_context) {
 	BOOST_TEST( res2 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 }
 
+BOOST_AUTO_TEST_CASE(blas_dot_no_context_double) {
+	multi::array<double, 1> const x = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> const y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
+	auto res = +blas::dot(x, y);
+	BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0) );
+}
+
 BOOST_AUTO_TEST_CASE(blas_dot_no_context) {
 	multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
