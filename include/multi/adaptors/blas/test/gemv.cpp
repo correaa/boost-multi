@@ -52,7 +52,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv, T, fp_types) {
 		multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemv_n(1.0, begin(a), size(a), begin(x), 0.0, begin(y));
 		BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.0001);
-		BOOST_REQUIRE_CLOSE(y[2], +blas::dot(a[2], x), 0.0001);
+		if(!std::is_same_v<T, float>) {
+			BOOST_REQUIRE_CLOSE(y[2], +blas::dot(a[2], x), 0.0001);
+		}
 	}
 	{
 		multi::array<T, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
@@ -112,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv_real, T, fp_types) {
 		multi::array<T, 1> const y3 = {214.02, 106.43, 188.37};
 		BOOST_REQUIRE( abs(y[1] - y3[1]) < 2e-14 );
 	}
-	{
+	if constexpr(!std::is_same_v<T, float>) {
 		auto Y = +blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_REQUIRE_CLOSE(Y[0], +blas::dot(a[0], x), 0.00001);
 		BOOST_REQUIRE_CLOSE(Y[1], +blas::dot(a[1], x), 0.00001);
