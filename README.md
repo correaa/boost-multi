@@ -10,12 +10,12 @@ _© Alfredo A. Correa, 2018-2024_
 _Multi_ is a modern C++ library that provides access and manipulation of data in multidimensional arrays, for both CPU and GPU memory.
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
-This library offers array containers and views in arbitrary dimensions with well-behaved value semantics, offering total compatibility with the standard algorithms and ranges (STL) and special memory (including GPUs) and following modern C++ design principles.
+This library offers array containers and views in arbitrary dimensions with well-behaved value semantics. It is totally compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
 It requires, at least, C++17.
 
 Some features of this library:
 
-* Value semantics of multi-dimensional array containers
+* Value semantics of multidimensional array containers
 * Well-defined referential semantics of subarray (view) types
 * Interoperability with other libraries, STL, ranges, thrust (CUDA and AMD GPUs), Boost, and C-libraries
 * Fast access to elements and subarrays (views) types
@@ -23,8 +23,11 @@ Some features of this library:
 
 Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
 or with the standard MDSpan proposal `std::mdspan`.
-This library shares some of their goals, it is compatible with them, but it is otherwise designed at different level of generality.
-The code is completely independent and has important implementation and semantics differences.
+This library shares some of their goals and is compatible with them, but it is otherwise designed at a different level of generality.
+The code is entirely independent and has fundamental implementation and semantics differences.
+The library's primary concern is with the storage and logic structure of data; it doesn't make algebraic or geometric assumptions about the arrays and their elements.
+In this sense, it is instead a building block to implement algorithms to represent mathematical operations, specifically on numeric data. 
+Most of the examples use numeric elements for conciseness.
 
 ## Contents
 [[_TOC_]]
