@@ -1,5 +1,4 @@
-name: GitlabSync
-# https://dev.to/brunorobert/github-and-gitlab-sync-44mn
+name: GitlabSync  # https://dev.to/brunorobert/github-and-gitlab-sync-44mn
 
 on:
   - push
