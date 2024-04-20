@@ -27,7 +27,6 @@ auto gemv_n(Context ctxt, typename MIt::element a, MIt m_first, Size count, XIt 
 		else                          {throw gemv_stride_error{"not BLAS-implemented"};}  // LCOV_EXCL_LINE
 	} else {
 		if     (m_first->stride()==1) {ctxt->gemv('C', m_first->size(), count, &a, underlying(m_first.base()), m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
-	//  else if(m_first. stride()==1) {assert(0);} // not implemented in blas (use cblas?)
 		else                          {throw gemv_stride_error{"not BLAS-implemented"};}  // LCOV_EXCL_LINE
 	}
 
@@ -42,7 +41,7 @@ auto gemv_n(Context ctxt, typename MIt::element a, MIt m_first, Size count, XIt 
 template<class A, class MIt, class Size, class XIt, class B, class YIt>
 auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {  // NOLINT(readability-identifier-length) BLAS naming
 	blas::context ctxt;
-	return gemv_n(&ctxt, static_cast<typename MIt::element>(a), m_first, count, x_first, b, y_first);
+	return gemv_n(&ctxt, static_cast<typename MIt::element>(a), m_first, count, x_first, static_cast<typename MIt::element>(b), y_first);
 }
 
 template<class Ctxt, class A, class M, class V, class B, class W>
@@ -50,7 +49,7 @@ auto gemv(Ctxt ctxt, A const& a, M const& m, V const& v, B const& b, W&& w) -> W
 	assert(size( m) == size(w) );
 	assert(size(~m) == size(v) );
 
-	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));  // NOLINT(fuchsia-default-arguments-calls)
+	gemv_n(ctxt, static_cast<typename M::element>(a), begin(m), size(m), begin(v), static_cast<typename M::element>(b), begin(w));  // NOLINT(fuchsia-default-arguments-calls)
 
 	return std::forward<W>(w);
 }
@@ -88,8 +87,8 @@ class gemv_iterator {
 	}
 	template<class It1DOut>
 	friend auto copy_n(gemv_iterator first, difference_type count, It1DOut result){
-		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             first.alpha_, first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
-		else                                        {blas::gemv_n(first.ctxt_, first.alpha_, first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
+		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
+		else                                        {blas::gemv_n(first.ctxt_, static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
 		return result + count;
 	}
 	template<class It1DOut>
@@ -149,7 +148,7 @@ class gemv_range {
 	friend auto operator+(gemv_range const& self) {return self.decay();}
 	template<class V>
 	friend auto operator+=(V&& v, gemv_range const& s) -> V&& {  // NOLINT(readability-identifier-length) BLAS naming
-		blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, static_cast<Scalar>(1.0), v.begin());
+		blas::gemv_n(s.ctxt_, static_cast<Scalar>(s.alpha_), s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, static_cast<Scalar>(1.0), v.begin());
 		return std::forward<V>(v);
 	}
 };
