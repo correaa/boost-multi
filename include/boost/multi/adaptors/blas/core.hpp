@@ -226,16 +226,12 @@ using v = void;
 // Boundary Checked value
 #define BC(value) [](auto checked) {assert(checked >= std::numeric_limits<INT>::min() && checked < std::numeric_limits<INT>::max()); return checked;}(value)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
 
-// xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
-// xrotmg(s)      xrotmg(d)
-// xrot(s, s, s)  xrot(d, d, d)  xrot(c, cs, s) xrot(z, zd, d)
-// xrotm(s)       xrotm(d)
-// xswap(s)       xswap(d)       xswap(c)       xswap(z)
-
 namespace core {
 
 using std::enable_if_t;
 using std::is_assignable;
+
+// TODO(correaa) implement xrotg, xrotmg, xrot, xrotm
 
 template<class SX, class SY, enable_if_t<is_s<SX>{} && is_s<SY>{} && is_assignable<SY&, SX&>{},int> =0> void swap(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) {BLAS(sswap)(n, reinterpret_cast<             float  *>(x), incx, (             float  *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
 template<class DX, class DY, enable_if_t<is_d<DX>{} && is_d<DY>{} && is_assignable<DY&, DX&>{},int> =0> void swap(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) {BLAS(dswap)(n, reinterpret_cast<             double *>(x), incx, (             double *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
