@@ -344,7 +344,6 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 	ixamax(s)      ixamax(d)       ixamax(c)       ixamax(z)
 } // end namespace core
 
-// #undef xnrm2
 #undef xasum
 #undef ixamax
 
@@ -359,11 +358,6 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 
 namespace core {
 
-// xgemv(s) xgemv(d) xgemv(c) xgemv(z)
-// xger(s)   xger(d)
-//                  xgeru(c) xgeru(z)
-//                  xgerc(c) xgerc(z)
-
 using std::enable_if_t;
 using std::is_assignable;
 
@@ -373,6 +367,8 @@ template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} && i
 template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} && is_z<X>{} && is_z<Y>{} && is_assignable<Y&, decltype(std::declval<A const&>()*std::declval<M const&>()*std::declval<X const&>()+std::declval<B const&>()*std::declval<Y const&>())>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)  //NOSONAR wrapped func has 11 params
 	BLAS(zgemv)(trans, m, n, *a, reinterpret_cast<z const*>(ma), lda, reinterpret_cast<z const*>(x), incx, *b, reinterpret_cast<z*>(y), incy);  // NOLINT(fuchsia-default-arguments-calls,google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)  // NOSONAR
 }
+
+// TODO(correaa) implement get, geru, gerc
 
 }  // end namespace core
 
