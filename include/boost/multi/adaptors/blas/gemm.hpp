@@ -86,9 +86,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 	if(a_count == 0) { return c_first; }
 
 	if      (a_first->stride()==1 && b_first->stride()==1 && c_first->stride()==1){
-	// TODO(correaa) : check why these two branches are identical
-	/*  if(b_first->size()==1)*/{CTXT->gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
-	/*  else                    {CTXT->gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}*/
+	                            {CTXT->gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
 	}else if(a_first->stride()==1 && b_first. stride()==1 && c_first->stride()==1){
 		if  (a_count==1)        {CTXT->gemm('C', 'N', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
 		else                    {CTXT->gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}
@@ -98,7 +96,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 								{CTXT->gemm('C', 'T', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first->stride());}
 	}else if(a_first. stride()==1 && b_first. stride()==1 && c_first->stride()==1){
 								{CTXT->gemm('C', 'T', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
-	}else{assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+	}else{assert(0);}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 	return c_first + a_count;
 }
@@ -202,7 +200,7 @@ class gemm_iterator {
 	using value_type = typename std::iterator_traits<ItA>::value_type;
 	using pointer = std::nullptr_t;
 	using reference = gemm_reference<decltype(b_begin_->extensions())>;
-	using iterator_category = std::random_access_iterator_tag;  // using iterator_category = std::input_iterator_tag;
+	using iterator_category = std::random_access_iterator_tag;
 
 	static_assert( std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<gemm_iterator>::iterator_category>{} );
 
