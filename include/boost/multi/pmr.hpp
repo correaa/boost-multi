@@ -1,7 +1,7 @@
 // Copyright 2018-2024 Alfredo A. Correa
 
-#ifndef MULTI_ARRAY_PMR_HPP_
-#define MULTI_ARRAY_PMR_HPP_
+#ifndef MULTI_PMR_HPP_
+#define MULTI_PMR_HPP_
 
 #include <multi/array.hpp>
 
