@@ -3,8 +3,13 @@
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
+#include <multi/pmr.hpp>
 
 #include <numeric>
+
+#if(not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20210601)) and (not defined(_LIBCPP_VERSION) or (_LIBCPP_VERSION > 14000))
+#include <memory_resource>
+#endif
 
 namespace multi = boost::multi;
 
