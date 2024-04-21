@@ -427,7 +427,7 @@ v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 #define xgemm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
 enable_if_t<                                                                                                                                                                                                                            \
-	is_##T<AA>{} && is_##T<BB>{} && is_##T<CC>{} && /*is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} && */                                                                                                                           \
+	is_##T<AA>{} && is_##T<BB>{} && is_##T<CC>{} &&                                                                                                                           \
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*> && is_convertible_v<CCP, CC*>                                                                                                                                            \
 , int> =0>                                                                                                                                                                                                                              \
 v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {  /*NOLINT(bugprone-easily-swappable-parameters)*/              \
