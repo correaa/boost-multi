@@ -9,18 +9,16 @@
 #include <memory_resource>
 #endif
 
-#if(defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603))
 namespace boost::multi::pmr {
 
+#if(defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603))
 template<class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
-
-}  // end namespace boost::multi::pmr
 #else
-namespace boost::multi::pmr {
 template<class T, boost::multi::dimensionality_type D>
 struct [[deprecated("no PMR allocator")]] array;  // your version of C++ doesn't provide polymorphic_allocators
-}  // end namespace boost::multi::pmr
 #endif
+
+}  // end namespace boost::multi::pmr
 
 #endif
