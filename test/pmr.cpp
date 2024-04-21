@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 		exts.begin(), exts.end(), int64_t{0},
 		std::plus<>{},
 		[&resp](auto idx) {
-			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64>> arr({1000 - idx%10, 1000 + idx%10}, resp);
+			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr({1000 - idx%10, 1000 + idx%10}, resp);
 			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
 			return std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
 		}
