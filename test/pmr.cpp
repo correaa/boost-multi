@@ -64,8 +64,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
 		//  BOOST_TEST( buffer[13] != '3' );
 
-		BOOST_TEST( A[0][0] == 666.0 );
-		BOOST_TEST( A[1][2] == 666.0 );
+		BOOST_TEST( arr[0][0] == 666.0 );
+		BOOST_TEST( arr[1][2] == 666.0 );
 	}
 #endif
 }
