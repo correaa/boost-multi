@@ -1,13 +1,55 @@
 // Copyright 2024 Alfredo A. Correa
+// Copyright 2024 Matt Borland
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
+// Test explicitly calls deprecated function
+#if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnositc ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+#endif
+
+#include <boost/multi/array.hpp>
+
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#endif
+
+// Suppress warnings from other boost libraries
+#if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wold-style-cast"
+#  pragma clang diagnostic ignored "-Wundef"
+#  pragma clang diagnostic ignored "-Wconversion"
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+#  pragma clang diagnostic ignored "-Wfloat-equal"
+#  pragma clang diagnostic ignored "-Wunknown-pragmas"
+#  pragma clang diagnositc ignored "-Wdeprecated-declarations"
+#  pragma clang diagnostic ignored "-Wunused-variable"
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wold-style-cast"
+#  pragma GCC diagnostic ignored "-Wundef"
+#  pragma GCC diagnostic ignored "-Wconversion"
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+#  pragma GCC diagnostic ignored "-Wfloat-equal"
+#  pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+#  pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
+#ifndef BOOST_TEST_MODULE
+#  define BOOST_TEST_MAIN
+#endif
 
 #include <boost/multi_array.hpp>
-
 #include <boost/concept_check.hpp>
-
 #include <boost/test/unit_test.hpp>
-
-#include <multi/array.hpp>
 
 BOOST_AUTO_TEST_CASE(concepts_boost_array) {
 	using BMA = boost::multi_array<int, 2>;
