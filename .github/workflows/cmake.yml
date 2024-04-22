@@ -108,7 +108,9 @@ jobs:
 
     - name: Configure system
       run: |
-          brew install boost gcc
+          brew install boost gcc@13
+          cd /opt/homebrew/bin
+          ln -s g++-13 g++
 
     - name: Configure CMake
       run: |
