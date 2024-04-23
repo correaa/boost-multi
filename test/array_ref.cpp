@@ -82,7 +82,9 @@ BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
 	};
 
 	multi::array_ref<double, 2> const map{arr};  // multi::array_ref<double, 2> const map(&arr[0][0], {4, 4});
-	auto const&                       diag = map.diagonal();
+
+	auto const& diag = map.diagonal();
+
 	BOOST_REQUIRE( diag.begin() != diag.end() );
 	// -Werror=array-bounds
 	// BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
@@ -124,7 +126,7 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 
 BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_unique_ptr) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for illustration
-	std::unique_ptr<double const[]> const arrp(new double const [4UL * 4UL] { 0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0 });
+	std::unique_ptr<double const[]> const arrp(new double const[4UL * 4UL]{0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0});
 
 	BOOST_REQUIRE( arrp[3] == 3.0 );
 	{
