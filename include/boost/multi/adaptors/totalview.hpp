@@ -1,7 +1,9 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_TOTALVIEW_HPP
-#define MULTI_ADAPTORS_TOTALVIEW_HPP
+#ifndef BOOST_MULTI_ADAPTORS_TOTALVIEW_HPP
+#define BOOST_MULTI_ADAPTORS_TOTALVIEW_HPP
 
 #include <cassert>
 #include <cstdarg>  // TODO(correaa) remove
@@ -116,4 +118,4 @@ template int TV_ttf_display_type<std::complex<float>>(boost::multi::subarray<std
 template int TV_ttf_display_type<int>(boost::multi::subarray<int, 2> const*);
 template int TV_ttf_display_type<long>(boost::multi::subarray<long, 2> const*);
 
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_TOTALVIEW_HPP
