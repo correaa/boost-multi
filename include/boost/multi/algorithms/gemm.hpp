@@ -6,8 +6,8 @@
 // it is ~3 times slower than blas::gemm but it is more generic in the type and in the operations
 // when compiled using -DCMAKE_CXX_FLAGS_RELEASE="-Ofast -DNDEBUG -mfpmath=sse -march=native -funroll-loops -fargument-noalias"
 
-#ifndef MULTI_ALGORITHM_GEMM_HPP
-#define MULTI_ALGORITHM_GEMM_HPP
+#ifndef BOOST_MULTI_ALGORITHM_GEMM_HPP
+#define BOOST_MULTI_ALGORITHM_GEMM_HPP
 
 #include <execution>  // for par  // needs linking to TBB library
 #include <numeric>  // for inner_product and transform_reduce
@@ -88,4 +88,4 @@ auto gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, Tbeta const& 
 
 }  // end namespace multi
 }  // end namespace boost
-#endif
+#endif  // BOOST_MULTI_ALGORITHM_GEMM_HPP
