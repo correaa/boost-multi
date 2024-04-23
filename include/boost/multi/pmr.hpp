@@ -1,7 +1,9 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_PMR_HPP_
-#define MULTI_PMR_HPP_
+#ifndef BOOST_MULTI_PMR_HPP_
+#define BOOST_MULTI_PMR_HPP_
 
 #include <multi/array.hpp>
 
