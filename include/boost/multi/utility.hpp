@@ -1,11 +1,13 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_UTILITY_HPP
-#define MULTI_UTILITY_HPP
+#ifndef BOOST_MULTI_UTILITY_HPP
+#define BOOST_MULTI_UTILITY_HPP
 #pragma once
 
-#include "detail/implicit_cast.hpp"
-#include "detail/layout.hpp"
+#include <boost/multi/detail/implicit_cast.hpp>
+#include <boost/multi/detail/layout.hpp>
 
 #include <functional>    // for std::invoke
 #include <memory>       // for allocator<>
@@ -530,4 +532,4 @@ constexpr auto layout(std::array<T, N> const& arr) {
 }
 
 }  // end namespace boost::multi
-#endif
+#endif  // BOOST_MULTI_UTILITY_HPP
