@@ -1,7 +1,9 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_POINTER_TRAITS_HPP
-#define MULTI_DETAIL_POINTER_TRAITS_HPP
+#ifndef BOOST_MULTI_DETAIL_POINTER_TRAITS_HPP
+#define BOOST_MULTI_DETAIL_POINTER_TRAITS_HPP
 #pragma once
 
 #include <cstddef>      // for size_t
@@ -23,4 +25,4 @@ struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::poin
 };
 
 }  // end namespace boost::multi
-#endif  // MULTI_DETAIL_POINTER_TRAITS_HPP
+#endif  // BOOST_MULTI_DETAIL_POINTER_TRAITS_HPP

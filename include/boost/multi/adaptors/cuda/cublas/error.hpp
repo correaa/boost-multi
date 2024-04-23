@@ -1,9 +1,11 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
-#define MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
+#ifndef BOOST_MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
+#define BOOST_MULTI_ADAPTORS_CUDA_CUBLAS_ERROR_HPP
 
-#if not defined(MULTI_USE_HIP)
+#if !defined(MULTI_USE_HIP)
 #include<cublas_v2.h> // cublasStatus_t
 #else
 #include<hipblas/hipblas.h> // cublasStatus_t
@@ -13,7 +15,7 @@
 #include<system_error> // std::error_category
 #include<type_traits> // std::underlying_type
 
-#if not defined(MULTI_USE_HIP)
+#if !defined(MULTI_USE_HIP)
 #define hicup(name) cuda##name
 #define hicu(name) cu##name
 #define HICU(name) CU##name

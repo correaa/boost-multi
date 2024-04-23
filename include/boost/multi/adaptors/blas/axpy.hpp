@@ -1,7 +1,9 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_BLAS_AXPY_HPP
-#define MULTI_ADAPTORS_BLAS_AXPY_HPP
+#ifndef BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
+#define BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
 #pragma once
 
 #include <multi/array_ref.hpp>
@@ -165,4 +167,4 @@ template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std
 } // end namespace operators
 
 } // end namespace boost::multi::blas
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP

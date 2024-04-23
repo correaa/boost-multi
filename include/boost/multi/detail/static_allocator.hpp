@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_STATIC_ALLOCATOR_HPP
-#define MULTI_DETAIL_STATIC_ALLOCATOR_HPP
+#ifndef BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
+#define BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 
 #include "../config/NODISCARD.hpp"
 #include "../config/NO_UNIQUE_ADDRESS.hpp"
@@ -89,4 +89,4 @@ template <class T, std::size_t N, class U>
 void swap(static_allocator<T, N>& a1, static_allocator<U, N>& a2) noexcept = delete;
 
 }  // end namespace boost::multi::detail
-#endif  // MULTI_DETAIL_STATIC_ALLOCATOR_HPP
+#endif  // BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP

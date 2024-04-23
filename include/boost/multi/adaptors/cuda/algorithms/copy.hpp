@@ -4,8 +4,8 @@ clang++ -D_TEST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY -x cuda --cuda-gpu-arch=sm_6
 rm $0x; exit
 #endif
 
-#ifndef MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP
-#define MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP
+#ifndef BOOST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP
+#define BOOST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP
 
 #include<cassert>
 //#include<iostream>
@@ -231,5 +231,4 @@ BOOST_AUTO_TEST_CASE(cuda_timing){
 #endif
 
 #endif
-#endif
-
+#endif  // BOOST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP

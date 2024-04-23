@@ -36,10 +36,10 @@
 
 #include <utility>     // for forward
 
-#if not defined(__NVCC__) /*and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)*/
-	#define MULTI_FRIEND_CONSTEXPR friend   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
+#if not defined(__NVCC__)
+	#define BOOST_MULTI_FRIEND_CONSTEXPR friend   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
 #else
-	#define MULTI_FRIEND_CONSTEXPR friend /*constexpr*/
+	#define BOOST_MULTI_FRIEND_CONSTEXPR friend /*constexpr*/
 #endif
 
 namespace boost::multi {
@@ -806,8 +806,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	~subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	MULTI_FRIEND_CONSTEXPR auto sizes(subarray const& self) noexcept -> typename subarray::sizes_type {return self.sizes();}  // needed by nvcc
-	MULTI_FRIEND_CONSTEXPR auto size (subarray const& self) noexcept -> typename subarray::size_type  {return self.size ();}  // needed by nvcc
+	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(subarray const& self) noexcept -> typename subarray::sizes_type {return self.sizes();}  // needed by nvcc
+	BOOST_MULTI_FRIEND_CONSTEXPR auto size (subarray const& self) noexcept -> typename subarray::size_type  {return self.size ();}  // needed by nvcc
 
 	template<class T2> friend constexpr auto reinterpret_array_cast(subarray     && self) {return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>>();}
 	template<class T2> friend constexpr auto reinterpret_array_cast(subarray const& self) {return           self .template reinterpret_array_cast<T2, typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>>();}
@@ -823,7 +823,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return get_allocator(this->base());
 	}
 
-	MULTI_FRIEND_CONSTEXPR auto get_allocator(subarray const& self) -> default_allocator_type {return self.get_allocator();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(subarray const& self) -> default_allocator_type {return self.get_allocator();}
 
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type>;
 
@@ -937,11 +937,11 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
 		// TODO(correaa) remove first == last condition
-		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
-		MULTI_ACCESS_ASSERT(this->base_ || ((first*this->layout().stride() - this->layout().offset()) == 0) );  // it is UB to offset a nullptr
+		BOOST_MULTI_ACCESS_ASSERT(this->base_ || ((first*this->layout().stride() - this->layout().offset()) == 0) );  // it is UB to offset a nullptr
 		return subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
 
@@ -1135,11 +1135,11 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	friend HD /*constexpr*/ auto transposed(subarray      & self) -> subarray       {return self.transposed();}
 	friend HD /*constexpr*/ auto transposed(subarray     && self) -> subarray       {return std::move(self).transposed();}
 
-	MULTI_FRIEND_CONSTEXPR HD
+	BOOST_MULTI_FRIEND_CONSTEXPR HD
 	auto operator~ (subarray const& self) -> basic_const_array {return self.transposed();}
-	MULTI_FRIEND_CONSTEXPR HD
+	BOOST_MULTI_FRIEND_CONSTEXPR HD
 	auto operator~ (subarray& self) -> subarray {return self.transposed();}
-	MULTI_FRIEND_CONSTEXPR HD
+	BOOST_MULTI_FRIEND_CONSTEXPR HD
 	auto operator~ (subarray&& self) -> subarray {return std::move(self).transposed();}
 
  private:
@@ -1154,9 +1154,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	HD constexpr auto rotated()      & -> subarray       {return rotated_aux();}
 	HD constexpr auto rotated() const& -> basic_const_array {return rotated_aux();}
 
-	MULTI_FRIEND_CONSTEXPR auto rotated(subarray const& self) {return           self .rotated();}
-	MULTI_FRIEND_CONSTEXPR auto rotated(subarray      & self) {return           self .rotated();}
-	MULTI_FRIEND_CONSTEXPR auto rotated(subarray     && self) {return std::move(self).rotated();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray const& self) {return           self .rotated();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray      & self) {return           self .rotated();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray     && self) {return std::move(self).rotated();}
 
  private:
 	HD constexpr auto unrotated_aux() const {
@@ -1170,9 +1170,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	HD constexpr auto unrotated()     && -> subarray       {return unrotated_aux();}
 	HD constexpr auto unrotated() const& -> basic_const_array /*const*/ {return unrotated_aux();}  // NOLINT(readability-const-return-type)
 
-	MULTI_FRIEND_CONSTEXPR auto unrotated(subarray const& self) {return           self .unrotated();}
-	MULTI_FRIEND_CONSTEXPR auto unrotated(subarray      & self) {return           self .unrotated();}
-	MULTI_FRIEND_CONSTEXPR auto unrotated(subarray     && self) {return std::move(self).unrotated();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray const& self) {return           self .unrotated();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray      & self) {return           self .unrotated();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray     && self) {return std::move(self).unrotated();}
 
 	constexpr auto operator|(typename subarray::size_type n)      & -> decltype(auto) {return partitioned(n);}
 	constexpr auto operator|(typename subarray::size_type n)     && -> decltype(auto) {return std::move(*this).partitioned(n);}
@@ -1728,7 +1728,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	constexpr auto base()              const& -> element_ptr {return data_;}
 
-	MULTI_FRIEND_CONSTEXPR
+	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto base(array_iterator const& self) -> element_ptr {return self.base();}
 
 	       HD constexpr auto stride()              const        -> stride_type {return      stride_;}
@@ -1849,13 +1849,13 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	using default_allocator_type = typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type;
 
 	constexpr auto get_allocator() const -> default_allocator_type {return default_allocator_of(subarray::base());}
-	MULTI_FRIEND_CONSTEXPR
+	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto get_allocator(subarray const& self) -> default_allocator_type {return self.get_allocator();}
 
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type>;
 
 	       constexpr auto decay()           const        -> decay_type {return decay_type{*this};}
-	MULTI_FRIEND_CONSTEXPR auto decay(subarray const& self) -> decay_type {return self.decay();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto decay(subarray const& self) -> decay_type {return self.decay();}
 
 	using basic_const_array = subarray<
 		T, 1,
@@ -2280,19 +2280,19 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	[[deprecated("implement as negative stride")]] constexpr auto rbegin() const& {return const_reverse_iterator(end  ());}  // TODO(correaa) implement as negative stride?
 	[[deprecated("implement as negative stride")]] constexpr auto rend  () const& {return const_reverse_iterator(begin());}  // TODO(correaa) implement as negative stride?
 
-	MULTI_FRIEND_CONSTEXPR auto begin(subarray const& self) -> const_iterator {return           self .begin();}
-	MULTI_FRIEND_CONSTEXPR auto begin(subarray      & self) ->       iterator {return           self .begin();}
-	MULTI_FRIEND_CONSTEXPR auto begin(subarray     && self) ->       iterator {return std::move(self).begin();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(subarray const& self) -> const_iterator {return           self .begin();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(subarray      & self) ->       iterator {return           self .begin();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(subarray     && self) ->       iterator {return std::move(self).begin();}
 
-	MULTI_FRIEND_CONSTEXPR auto end  (subarray const& self) -> const_iterator {return           self .end()  ;}
-	MULTI_FRIEND_CONSTEXPR auto end  (subarray      & self) ->       iterator {return           self .end()  ;}
-	MULTI_FRIEND_CONSTEXPR auto end  (subarray     && self) ->       iterator {return std::move(self).end()  ;}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (subarray const& self) -> const_iterator {return           self .end()  ;}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (subarray      & self) ->       iterator {return           self .end()  ;}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (subarray     && self) ->       iterator {return std::move(self).end()  ;}
 
 	HD constexpr auto cbegin()           const& -> const_iterator {return begin();}
 	   constexpr auto cend  ()           const& -> const_iterator {return end()  ;}
 
 	friend HD /*constexpr*/ auto cbegin(subarray const& self) {return self.cbegin();}
-	MULTI_FRIEND_CONSTEXPR auto cend  (subarray const& self) {return self.cend()  ;}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto cend  (subarray const& self) {return self.cend()  ;}
 
 	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...> const& other) && -> subarray& {operator=(          other ); return *this;}
 	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...> const& other)  & -> subarray& {
@@ -2957,15 +2957,15 @@ using array_view = array_ref<T, D, TPtr>&;
 
 }  // end namespace boost::multi
 
-#ifndef MULTI_SERIALIZATION_ARRAY_VERSION
-#define MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
+#ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
+#define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
 // #define MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array
 // #define MULTI_SERIALIZATION_ARRAY_VERSION -1 // save data as structured nested labels array
 // #define MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
 
 namespace boost::multi {
-	constexpr inline int serialization_array_version = MULTI_SERIALIZATION_ARRAY_VERSION;
+	constexpr inline int serialization_array_version = BOOST_MULTI_SERIALIZATION_ARRAY_VERSION;
 }  // end namespace boost::multi
 #endif
 
-#endif  // MULTI_ARRAY_REF_HPP_
+#endif  // BOOST_MULTI_ARRAY_REF_HPP_
