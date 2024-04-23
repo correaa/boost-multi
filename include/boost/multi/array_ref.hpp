@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_ARRAY_REF_HPP_
-#define BOOST_MULTI_ARRAY_REF_HPP_
+#ifndef BOOST_MULTI_ARRAY_REF_HPP
+#define BOOST_MULTI_ARRAY_REF_HPP
 #pragma once
 
 #include <boost/multi/detail/pointer_traits.hpp>
@@ -2968,4 +2968,4 @@ namespace boost::multi {
 }  // end namespace boost::multi
 #endif
 
-#endif  // BOOST_MULTI_ARRAY_REF_HPP_
+#endif  // BOOST_MULTI_ARRAY_REF_HPP
