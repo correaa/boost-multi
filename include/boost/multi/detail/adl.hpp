@@ -1,7 +1,9 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_ADL_HPP
-#define MULTI_DETAIL_ADL_HPP
+#ifndef BOOST_MULTI_DETAIL_ADL_HPP
+#define BOOST_MULTI_DETAIL_ADL_HPP
 #pragma once
 
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)

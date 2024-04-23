@@ -15,7 +15,7 @@ namespace boost::multi::detail {
 template<class T, std::size_t N>
 class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semantics
 	bool dirty_ = false;
-	MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
 
  public:
 	using value_type = T;
