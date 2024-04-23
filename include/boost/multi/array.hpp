@@ -144,7 +144,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	using typename ref::difference_type;
 	using typename ref::size_type;
-	explicit static_array(allocator_type const& alloc) : array_alloc{alloc} {}
+	explicit static_array(allocator_type const& alloc) : array_alloc{alloc}, ref(nullptr, {}) {}
 
 	using ref::       operator();
 	HD constexpr auto operator()() && -> decltype(auto) { return ref::element_moved(); }
@@ -422,7 +422,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
  public:
-	static_array() = default;
+	constexpr static_array() noexcept  // decay_type&& other, allocator_type const& alloc) noexcept
+	: array_alloc{}, ref{nullptr, {}} {  // other.extensions()} {
+		// std::move(other).layout_mutable() = {};
+	}
+
+	// static_array() = default;
 #if __cplusplus >= 202002L
 	constexpr
 #endif
