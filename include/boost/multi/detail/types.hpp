@@ -16,6 +16,7 @@ using size_type = std::make_signed_t<std::size_t>;
 
 using index               = std::make_signed_t<size_type>;
 using difference_type     = std::make_signed_t<index>;
+
 using dimensionality_type = index;
 
 }  // end namespace boost::multi
