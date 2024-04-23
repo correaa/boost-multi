@@ -7,6 +7,9 @@
 #define __has_cpp_attribute(name) 0
 #endif
 
+
+stasassasa
+
 #define DEPRECATED(MsG) [[deprecated]]
 
 //  #ifdef __NVCC__
