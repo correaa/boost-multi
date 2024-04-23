@@ -1,7 +1,9 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_CUFFTW_HPP
-#define MULTI_ADAPTORS_CUFFTW_HPP
+#ifndef BOOST_MULTI_ADAPTORS_CUFFTW_HPP
+#define BOOST_MULTI_ADAPTORS_CUFFTW_HPP
 
 #include "../adaptors/../utility.hpp"
 #include "../adaptors/../array.hpp"
@@ -407,7 +409,7 @@ auto dft_backward(std::array<bool, +D> which, In const& i, Out&& o) -> Out&& {
 //  return cufft::cached_plan<D/*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/>{which, i.layout(), o.layout()/*, i.get_allocator()*/}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o); }
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
-NODISCARD("when first argument is const")
+BOOST_MULTI_NODISCARD("when first argument is const")
 R dft(In const& i, int s) {
 	static_assert(std::is_trivially_default_constructible<typename In::element_type>{});
 	R ret(extensions(i), get_allocator(i));
@@ -437,7 +439,7 @@ constexpr auto array_tail(Array const& t)
 //  return dft(which, i, std::forward<Out>(o), cufft::backward); }
 
 template<typename In,  std::size_t D = In::dimensionality>
-NODISCARD("when passing a const argument")
+BOOST_MULTI_NODISCARD("when passing a const argument")
 auto dft(std::array<bool, D> which, In const& i, int sign)->std::decay_t<decltype(
 dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign))>{return
 dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign);}
@@ -447,7 +449,7 @@ auto dft(std::array<bool, D> which, In&& i, int sign)
 ->decltype(dft(which, i, i, sign), std::forward<In>(i)){
 	return dft(which, i, i, sign), std::forward<In>(i);}
 
-template<typename Array, typename A> NODISCARD("when passing a const argument")
+template<typename Array, typename A> BOOST_MULTI_NODISCARD("when passing a const argument")
 auto dft_forward(Array arr, A const& a) 
 ->decltype(cufft::dft(arr, a, cufft::forward)){
 	return cufft::dft(arr, a, cufft::forward);}
@@ -457,7 +459,7 @@ auto dft_forward(Array arr, A const& a)
 // ->decltype(cufft::dft(arr, a, cufft::forward), multi::cuda::array<std::complex<double>, D>{}){//assert(0);
 //  return cufft::dft(arr, a, cufft::forward), std::move(a);}
 
-template<typename A> NODISCARD("when passing a const argument")
+template<typename A> BOOST_MULTI_NODISCARD("when passing a const argument")
 auto dft_forward(A const& a)
 ->decltype(cufft::dft(a, cufft::forward)){
 	return cufft::dft(a, cufft::forward);}
@@ -466,12 +468,12 @@ template<typename... A> auto            dft_backward(A&&... a)
 ->decltype(cufft::dft(std::forward<A>(a)..., cufft::backward)){
 	return cufft::dft(std::forward<A>(a)..., cufft::backward);}
 
-template<typename Array, typename A> NODISCARD("when passing a const argument")
+template<typename Array, typename A> BOOST_MULTI_NODISCARD("when passing a const argument")
 auto dft_backward(Array arr, A const& a) 
 ->decltype(cufft::dft(arr, a, cufft::backward)){
 	return cufft::dft(arr, a, cufft::backward);}
 
-template<typename A> NODISCARD("when passing a const argument")
+template<typename A> BOOST_MULTI_NODISCARD("when passing a const argument")
 auto dft_backward(A const& a)
 ->decltype(cufft::dft(a, cufft::backward)){
 	return cufft::dft(a, cufft::backward);}
