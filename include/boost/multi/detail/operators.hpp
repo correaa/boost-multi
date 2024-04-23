@@ -1,7 +1,9 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_OPERATORS_HPP
-#define MULTI_DETAIL_OPERATORS_HPP
+#ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
+#define BOOST_MULTI_DETAIL_OPERATORS_HPP
 #pragma once
 
 #include <type_traits>  // for enable_if
@@ -224,4 +226,4 @@ struct random_access_iterator : equality_comparable2<Self, Self> {
 };
 
 }  // end namespace boost::multi
-#endif
+#endif  // BOOST_MULTI_DETAIL_OPERATORS_HPP
