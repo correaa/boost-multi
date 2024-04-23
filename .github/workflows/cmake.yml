@@ -113,7 +113,7 @@ jobs:
     - name: Configure CMake
       run: |
         g++-13 --version
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_CXX_STANDARD=23
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-Wl,-ld_classic"  # https://developer.apple.com/forums/thread/737707?answerId=765203022#765203022
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --verbose
