@@ -1,8 +1,9 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2022 Alfredo A. Correa
+// Copyright 2022-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_TYPE_TRAITS_HPP
-#define MULTI_DETAIL_TYPE_TRAITS_HPP
+#ifndef BOOST_MULTI_DETAIL_TYPE_TRAITS_HPP
+#define BOOST_MULTI_DETAIL_TYPE_TRAITS_HPP
 
 #include<type_traits>
 
