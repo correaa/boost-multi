@@ -1,4 +1,6 @@
-// Copyright 2021 Alfredo A. Correa
+// Copyright 2021-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 // this header contains a generic gemm algorithm (not the blas one)
 // it is ~3 times slower than blas::gemm but it is more generic in the type and in the operations
