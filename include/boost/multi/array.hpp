@@ -1,14 +1,17 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ARRAY_HPP_
-#define MULTI_ARRAY_HPP_
+#ifndef BOOST_MULTI_ARRAY_HPP_
+#define BOOST_MULTI_ARRAY_HPP_
 
-#include "../multi/array_ref.hpp"
+#include <boost/multi/array_ref.hpp>
+
 #include "./config/NO_UNIQUE_ADDRESS.hpp"
 
-#include "./detail/adl.hpp"
-#include "./detail/memory.hpp"
-#include "./detail/type_traits.hpp"
+#include <boost/multi/detail/adl.hpp>
+#include <boost/multi/detail/memory.hpp>
+#include <boost/multi/detail/type_traits.hpp>
 
 #include <memory>  // for std::allocator_traits
 #include <tuple>  // needed by a deprecated function
@@ -23,7 +26,7 @@ struct array_allocator {
 	array_allocator()    = default;
 
  private:
-	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
 
 	using allocator_traits = typename multi::allocator_traits<allocator_type>;
 	using size_type_       = typename allocator_traits::size_type;
@@ -1327,4 +1330,4 @@ struct version<boost::multi::array<T, D, A>> {
 
 }  // end namespace boost::serialization
 
-#endif  // MULTI_ARRAY_HPP_
+#endif  // BOOST_MULTI_ARRAY_HPP_

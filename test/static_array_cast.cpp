@@ -1,4 +1,6 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
 
@@ -14,7 +16,7 @@ template<class It, class F> class involuter;
 template<class Ref, class Involution>
 class involuted {
 	Ref                                r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-	MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
@@ -51,7 +53,7 @@ class involuted {
 template<class It, class F>
 class involuter {
 	It                        it_;
-	MULTI_NO_UNIQUE_ADDRESS F f_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
 	template<class, class> friend class involuter;
 
  public:
