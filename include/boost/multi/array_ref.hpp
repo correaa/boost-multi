@@ -1,7 +1,7 @@
 // Copyright 2018-2024 Alfredo A. Correa
 
-#ifndef MULTI_ARRAY_REF_HPP_
-#define MULTI_ARRAY_REF_HPP_
+#ifndef BOOST_MULTI_ARRAY_REF_HPP_
+#define BOOST_MULTI_ARRAY_REF_HPP_
 #pragma once
 
 #include "../multi/detail/pointer_traits.hpp"
@@ -2515,12 +2515,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 	using layout_type = typename array_ref::types::layout_t;
 
- protected:
-	constexpr array_ref() noexcept : subarray<T, D, ElementPtr>{{}, nullptr} {}
-
 	using iterator = typename subarray<T, D, ElementPtr>::iterator;
 
- public:  // lints(hicpp-use-equals-delete,modernize-use-equals-delete)
+ public:
+	array_ref() = delete;  // because reference cannot be unbound
+
 	array_ref(iterator, iterator) = delete;
 
 	friend constexpr auto sizes(array_ref const& self) noexcept -> typename array_ref::sizes_type {return self.sizes();}  // needed by nvcc

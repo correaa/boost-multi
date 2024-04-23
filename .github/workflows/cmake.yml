@@ -109,13 +109,11 @@ jobs:
     - name: Configure system
       run: |
           brew install boost gcc@13
-          cd /opt/homebrew/bin
-          ln -s g++-13 g++
 
     - name: Configure CMake
       run: |
-        g++ --version
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_STANDARD=23
+        g++-13 --version
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-Wl,-ld_classic"  # https://developer.apple.com/forums/thread/737707?answerId=765203022#765203022
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --verbose

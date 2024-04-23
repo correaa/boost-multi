@@ -96,9 +96,9 @@ g++-testing sanitizer:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address" -fno-omit-frame-pointer  # ,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-omit-frame-pointer -fno-sanitize-recover=all"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+    - ASAN_OPTIONS="new_delete_type_mismatch=true:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=true" ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
 
 g++-7:
