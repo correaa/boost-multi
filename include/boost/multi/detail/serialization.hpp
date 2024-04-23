@@ -1,7 +1,9 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_SERIALIZATION_HPP_
-#define MULTI_DETAIL_SERIALIZATION_HPP_
+#ifndef BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
+#define BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
 
 #include <algorithm>  // for std::for_each
 #include <cstddef>  // for std::byte
@@ -155,4 +157,4 @@ using boost::serialization::make_nvp;
 
 }  // end namespace boost
 
-#endif  // MULTI_DETAIL_SERIALIZATION_HPP_
+#endif  // BOOST_MULTI_DETAIL_SERIALIZATION_HPP_

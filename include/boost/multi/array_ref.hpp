@@ -2968,4 +2968,4 @@ namespace boost::multi {
 }  // end namespace boost::multi
 #endif
 
-#endif  // MULTI_ARRAY_REF_HPP_
+#endif  // BOOST_MULTI_ARRAY_REF_HPP_
