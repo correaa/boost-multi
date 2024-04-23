@@ -1,13 +1,14 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2022-2023 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_CONFIG_VERSION_HPP_
-#define MULTI_CONFIG_VERSION_HPP_
+#ifndef BOOST_MULTI_CONFIG_VERSION_HPP_
+#define BOOST_MULTI_CONFIG_VERSION_HPP_
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage,modernize-macro-to-enum) indicate library version
-#define MULTI_VERSION_MAJOR  0
-#define MULTI_VERSION_MINOR 81
-#define MULTI_VERSION_MICRO  0
+#define BOOST_MULTI_VERSION_MAJOR  0
+#define BOOST_MULTI_VERSION_MINOR 81
+#define BOOST_MULTI_VERSION_MICRO  0
 // NOLINTEND(cppcoreguidelines-macro-usage,modernize-macro-to-enum)
 
-#endif  // MULTI_CONFIG_VERSION_HPP_
+#endif  // BOOST_MULTI_CONFIG_VERSION_HPP_

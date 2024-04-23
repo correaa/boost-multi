@@ -1,7 +1,10 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
 #pragma once
 
-#include <multi/config/MARK.hpp>
+// #include <multi/config/MARK.hpp>
 #include <multi/adaptors/cuda/cublas/call.hpp>
 
 #include <multi/adaptors/blas/traits.hpp>
@@ -216,7 +219,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		class = std::enable_if_t<std::is_convertible_v<AAP, ::thrust::hicup()::pointer<AA>> and std::is_convertible_v<BBP, ::thrust::hicup()::pointer<BB>> and std::is_convertible_v<CCP, ::thrust::hicup()::pointer<CC>>>
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
-		MULTI_MARK_SCOPE("cublasXgemm");
+		/*MULTI_MARK_SCOPE("cublasXgemm");*/
 		if(is_d<AA>{}) {sync_call<hicu(blasDgemm)>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (double        const*)alpha, (double        const*)::thrust::raw_pointer_cast(aa), lda, (double             const*)::thrust::raw_pointer_cast(bb), ldb, (double          const*)beta, (double         *)::thrust::raw_pointer_cast(cc), ldc);}
 		if(is_z<AA>{}) {sync_call<hicu(blasZgemm)>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (DoubleComplex const*)alpha, (DoubleComplex const*)::thrust::raw_pointer_cast(aa), lda, (DoubleComplex const*)::thrust::raw_pointer_cast(bb), ldb, (DoubleComplex const*)beta, (DoubleComplex*)::thrust::raw_pointer_cast(cc), ldc);}
 	}

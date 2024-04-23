@@ -1,6 +1,9 @@
-// Copyright 2020-2023 Alfredo A. Correa
-#ifndef MULTI_ADAPTORS_CUDA_CUBLAS_CALL_HPP
-#define MULTI_ADAPTORS_CUDA_CUBLAS_CALL_HPP
+// Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
+#ifndef BOOST_MULTI_ADAPTORS_CUDA_CUBLAS_CALL_HPP
+#define BOOST_MULTI_ADAPTORS_CUDA_CUBLAS_CALL_HPP
 #pragma once
 
 #include "../cublas/error.hpp"
@@ -33,4 +36,4 @@ void call(Args... args){
 
 #undef hicup
 #undef HICUP
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_CUDA_CUBLAS_CALL_HPP

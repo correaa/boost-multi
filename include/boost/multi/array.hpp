@@ -465,20 +465,22 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	HD constexpr auto           data_elements() const& -> element_const_ptr { return this->base_; }
 	HD constexpr auto           data_elements() & -> typename static_array::element_ptr { return this->base_; }
 	HD constexpr auto           data_elements() && -> typename static_array::element_move_ptr { return std::make_move_iterator(this->base_); }
-	MULTI_FRIEND_CONSTEXPR auto data_elements(static_array const& self) { return self.data_elements(); }
-	MULTI_FRIEND_CONSTEXPR auto data_elements(static_array& self) { return self.data_elements(); }
-	MULTI_FRIEND_CONSTEXPR auto data_elements(static_array&& self) { return std::move(self).data_elements(); }
+
+	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(static_array const& self) { return self.data_elements(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(static_array& self) { return self.data_elements(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(static_array&& self) { return std::move(self).data_elements(); }
 
 	constexpr auto base() & -> typename static_array::element_ptr { return ref::base(); }
 	constexpr auto base() const& -> typename static_array::element_const_ptr { return typename static_array::element_const_ptr{ref::base()}; }
 
-	MULTI_FRIEND_CONSTEXPR auto base(static_array& self) -> typename static_array::element_ptr { return self.base(); }
-	MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array& self) -> typename static_array::element_ptr { return self.base(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
 
 	constexpr auto              origin() & -> typename static_array::element_ptr { return ref::origin(); }
 	constexpr auto              origin() const& -> typename static_array::element_const_ptr { return ref::origin(); }
-	MULTI_FRIEND_CONSTEXPR auto origin(static_array& self) -> typename static_array::element_ptr { return self.origin(); }
-	MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr { return self.origin(); }
+
+	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array& self) -> typename static_array::element_ptr { return self.origin(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr { return self.origin(); }
 
 	//  private:
 	//  constexpr auto rotated_aux() const {
@@ -777,17 +779,17 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 
-	MULTI_FRIEND_CONSTEXPR auto get_allocator(static_array const& self) -> allocator_type { return self.get_allocator(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(static_array const& self) -> allocator_type { return self.get_allocator(); }
 
 	constexpr auto              base() & -> typename static_array::element_ptr { return ref::base(); }
 	constexpr auto              base() const& -> typename static_array::element_const_ptr { return ref::base(); }
-	MULTI_FRIEND_CONSTEXPR auto base(static_array& self) -> typename static_array::element_ptr { return self.base(); }
-	MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array& self) -> typename static_array::element_ptr { return self.base(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
 
 	constexpr auto              origin() & -> typename static_array::element_ptr { return ref::origin(); }
 	constexpr auto              origin() const& -> typename static_array::element_const_ptr { return ref::origin(); }
-	MULTI_FRIEND_CONSTEXPR auto origin(static_array& self) -> typename static_array::element_ptr { return self.origin(); }
-	MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr { return self.origin(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array& self) -> typename static_array::element_ptr { return self.origin(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr { return self.origin(); }
 
 	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return *(this->base_);
@@ -979,9 +981,9 @@ struct array : static_array<T, D, Alloc> {
 	}
 	friend auto clear(array& self) noexcept -> array& { return self.clear(); }
 
-	MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) { return self.data_elements(); }
-	MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
-	MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) { return self.data_elements(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
 
 	auto move() & -> subarray<typename array::element, D, multi::move_ptr<typename array::element>> {
 		subarray<typename array::element, D, multi::move_ptr<typename array::element>>
@@ -1277,7 +1279,7 @@ template<class T> array(IL<IL<IL<IL<IL<T>>>>>) -> array<T, 5>;
 template<class T> array(T[]) -> array<T, 1>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, 0>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, 0>;  // TODO(correaa) use some std::allocator_traits instead of is_allocator
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<1>, T) -> array<T, 1>;
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<2>, T) -> array<T, 2>;
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<3>, T) -> array<T, 3>;
@@ -1324,7 +1326,7 @@ namespace boost::serialization {
 
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version<boost::multi::array<T, D, A>> {
-	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>;
+	using type = std::integral_constant<int, BOOST_MULTI_SERIALIZATION_ARRAY_VERSION>;  // TODO(correaa) use constexpr variable here, not macro
 	enum /*class value_t*/ { value = type::value };  // NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
 };
 

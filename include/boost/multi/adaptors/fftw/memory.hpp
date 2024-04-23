@@ -1,7 +1,9 @@
-// Copyright 2020-2023 Alfredo A. Correa
+// Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_FFTW_MEMORY_HPP
-#define MULTI_ADAPTORS_FFTW_MEMORY_HPP
+#ifndef BOOST_MULTI_ADAPTORS_FFTW_MEMORY_HPP
+#define BOOST_MULTI_ADAPTORS_FFTW_MEMORY_HPP
 
 #include <fftw3.h>
 
@@ -47,24 +49,4 @@ template<class T, class U>
 constexpr auto operator!=(allocator<T> const& /*a*/, allocator<U> const& /*b*/) noexcept -> bool { return false; }
 
 }  // namespace boost::multi::fftw
-
-#if 0
-
-#include "../../array.hpp"
-
-#include <vector>
-
-namespace multi = boost::multi;
-
-int main() {
-	{
-		std::vector<double, multi::fftw::allocator<double>> v(100);
-		multi::array<double, 2>                             arr({10, 20});
-	}
-	{
-		std::vector<std::complex<double>, multi::fftw::allocator<std::complex<double>>> v(100);
-		multi::array<std::complex<double>, 2>                                           arr({10, 20});
-	}
-}
-#endif
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_FFTW_MEMORY_HPP

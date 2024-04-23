@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_LAPACK_CORE_HPP
-#define MULTI_ADAPTORS_LAPACK_CORE_HPP
+#ifndef BOOST_MULTI_ADAPTORS_LAPACK_CORE_HPP
+#define BOOST_MULTI_ADAPTORS_LAPACK_CORE_HPP
 
 //#include<iostream>
 #include<cassert>
@@ -214,41 +214,4 @@ xpotrf(c) xpotrf(z)
 
 #define TRANS const char& trans
 
-///////////////////////////////////////////////////////////////////////////////
-
-#if _TEST_MULTI_ADAPTORS_LAPACK_CORE
-
-#include "../../array.hpp"
-#include "../../utility.hpp"
-
-#include<iostream>
-#include<numeric>
-#include<vector>
-
-namespace multi = boost::multi;
-using std::cout; 
-
-int main(){
-	using core::potrf;
-
-	std::vector<double> v = {
-		2., 1.,
-		1., 2.
-	};
-	cout 
-		<< v[0] <<'\t'<< v[1] <<'\n'
-		<< v[2] <<'\t'<< v[3] <<'\n' << std::endl
-	;
-	int info;
-	potrf('U', 2, v.data(), 2, info);
-	cout << "error " << info << std::endl;
-	cout 
-		<< v[0] <<'\t'<< v[1] <<'\n'
-		<< v[2] <<'\t'<< v[3] <<'\n'
-	;
-	cout << std::endl;
-}
-
-#endif
-#endif
-
+#endif  // BOOST_MULTI_ADAPTORS_TOTALVIEW_HPP
