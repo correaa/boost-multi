@@ -1,7 +1,9 @@
 // Copyright 2023-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_IMPLICIT_CAST_HPP
-#define MULTI_DETAIL_IMPLICIT_CAST_HPP
+#ifndef BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
+#define BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
 #pragma once
 
 namespace boost::multi::detail {
