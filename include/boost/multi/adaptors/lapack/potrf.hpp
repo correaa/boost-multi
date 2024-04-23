@@ -1,4 +1,6 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef MULTI_ADAPTORS_LAPACK_POTRF_HPP
 #define MULTI_ADAPTORS_LAPACK_POTRF_HPP
@@ -21,7 +23,7 @@ namespace boost::multi::lapack {
 using ::core::potrf;
 
 template<class Iterator>
-NODISCARD("result has information of order of minor through .size() member")
+BOOST_MULTI_NODISCARD("result has information of order of minor through .size() member")
 auto potrf(filling uplo, Iterator first, Iterator last)
 ->decltype(potrf(static_cast<char>(uplo), typename std::iterator_traits<Iterator>::difference_type{}, base(first), stride(first), std::declval<int&>()), Iterator{})
 {
@@ -38,7 +40,7 @@ auto potrf(filling uplo, Iterator first, Iterator last)
 }
 
 template<class A2D>
-NODISCARD("result has information of order of minor through .size() member")
+BOOST_MULTI_NODISCARD("result has information of order of minor through .size() member")
 auto potrf(filling uplo, A2D&& A)  // NOLINT(readability-identifier-length) conventional lapack name
 ->decltype(potrf(uplo, begin(A), end(A)), A({0, 1}))
 {
@@ -79,17 +81,8 @@ template<class A> auto hermitic(lapack::filling side, A&& a)  // NOLINT(readabil
 	return {a(), side};
 }
 
-// template<class A2D>
-// NODISCARD("result is returned because third argument is const")
-// auto potrf(filling t, A2D const& A) {
-// // ->decltype(potrf(t, decay(A)), decay(A)){
-//  auto ret = decay(A);
-//  auto last = potrf(t, ret); assert( size(last) == size(ret) );
-//  return ret;
-// }
-
 template<class HA>
-NODISCARD("result is returned because third argument is const")
+BOOST_MULTI_NODISCARD("result is returned because third argument is const")
 auto potrf(HA&& ha) -> decltype(auto) {
 	return hermitic(ha.side, potrf(ha.side, std::forward<HA>(ha).underlying()));  // static_cast<typename HA::underlying_type&>(ha)));
 }
