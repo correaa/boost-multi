@@ -1,8 +1,9 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_BLAS_HPP
-#define MULTI_ADAPTORS_BLAS_HPP
+#ifndef BOOST_MULTI_ADAPTORS_BLAS_HPP
+#define BOOST_MULTI_ADAPTORS_BLAS_HPP
 #pragma once
 
 #include "../adaptors/blas/asum.hpp"
@@ -20,4 +21,4 @@
 #include "../adaptors/blas/syrk.hpp"
 #include "../adaptors/blas/trsm.hpp"
 
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_BLAS_HPP

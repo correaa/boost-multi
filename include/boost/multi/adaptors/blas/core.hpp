@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
-#define MULTI_ADAPTORS_BLAS_CORE_HPP
+#ifndef BOOST_MULTI_ADAPTORS_BLAS_CORE_HPP
+#define BOOST_MULTI_ADAPTORS_BLAS_CORE_HPP
 #pragma once
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
@@ -21,17 +21,17 @@
 #include "../blas/traits.hpp"
 
 #if 0
-	#define MULTI_ASSERT1(ExpR)              assert       (ExpR)
-	#define MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
+	#define BOOST_MULTI_ASSERT1(ExpR)              assert       (ExpR)
+	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
 #else
 	#if not defined(NDEBUG)
 		#include<stdexcept>
 		#include<string>
-		#define MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
-		#define MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
+		#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
+		#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
 	#else
-		#define MULTI_ASSERT1(ExpR)              assert(ExpR)
-		#define MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
+		#define BOOST_MULTI_ASSERT1(ExpR)              assert(ExpR)
+		#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
 	#endif
 #endif
 
@@ -403,9 +403,9 @@ enable_if_t<                                                                    
 v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/      \
 /*=delete;*/                                                                                                                                                                                      \
 {                                                                                                                                                                                                 \
-	if(transA == 'N' ||  transA == 'n') {MULTI_ASSERT1( lda >= max(1L, n) );}                                                                                                                     \
-	if(transA != 'N' && transA != 'n') {MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                     \
-	MULTI_ASSERT1( ldc >= max(1L, n) );                                                                                                                                                           \
+	if(transA == 'N' ||  transA == 'n') {BOOST_MULTI_ASSERT1( lda >= max(1L, n) );}                                                                                                                     \
+	if(transA != 'N' && transA != 'n') {BOOST_MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                     \
+	BOOST_MULTI_ASSERT1( ldc >= max(1L, n) );                                                                                                                                                           \
 	/*BOOST_MULTI_MARK_SCOPE("cpu_herk");*/                                                                                                                                                                 \
 	BLAS(T##syrk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<T const*>(alpha), aa, BC(lda),        *reinterpret_cast<T const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
 }                                                                                                                                                                                                 \
@@ -419,9 +419,9 @@ enable_if_t<                                                                    
 v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/                \
 /*=delete;*/                                                                                                                                                                                                                           \
 {                                                                                                                                                                                                                                      \
-	if(transA == 'N' ||  transA == 'n') {MULTI_ASSERT1( lda >= max(1L, n) );}  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                   \
-	if(transA != 'N' && transA != 'n') {MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                                                          \
-	MULTI_ASSERT1( ldc >= max(1L, n) );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                                                         \
+	if(transA == 'N' ||  transA == 'n') {BOOST_MULTI_ASSERT1( lda >= max(1L, n) );}  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                   \
+	if(transA != 'N' && transA != 'n') {BOOST_MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                                                          \
+	BOOST_MULTI_ASSERT1( ldc >= max(1L, n) );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                                                         \
 	/*BOOST_MULTI_MARK_SCOPE("cpu_herk");*/                                                                                                                                                                                                      \
 	BLAS(T##herk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<Real const*>(alpha), aa, BC(lda),        *reinterpret_cast<Real const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                                                            \
 }                                                                                                                                                                                                                                      \
@@ -435,14 +435,14 @@ enable_if_t<                                                                    
 v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {  /*NOLINT(bugprone-easily-swappable-parameters)*/              \
 	/*BOOST_MULTI_MARK_SCOPE("cpu_gemm");*/                                                                                                                                                                                                       \
 	using std::max;                                                                                                                                                                                                                     \
-	if(transA == 'N') {MULTI_ASSERT1(lda >= max(1L, m));}                                                                                                                                                                               \
-	if(transA != 'N') {MULTI_ASSERT1(lda >= max(1L, k));}                                                                                                                                                                               \
-	if(transB == 'N') {MULTI_ASSERT1(ldb >= max(1L, k));}                                                                                                                                                                               \
-	if(transB != 'N') {MULTI_ASSERT1(ldb >= max(1L, n));}                                                                                                                                                                               \
-	MULTI_ASSERT1( aa != cc );                                                                                                                                                                                                          \
-	MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
+	if(transA == 'N') {BOOST_MULTI_ASSERT1(lda >= max(1L, m));}                                                                                                                                                                               \
+	if(transA != 'N') {BOOST_MULTI_ASSERT1(lda >= max(1L, k));}                                                                                                                                                                               \
+	if(transB == 'N') {BOOST_MULTI_ASSERT1(ldb >= max(1L, k));}                                                                                                                                                                               \
+	if(transB != 'N') {BOOST_MULTI_ASSERT1(ldb >= max(1L, n));}                                                                                                                                                                               \
+	BOOST_MULTI_ASSERT1( aa != cc );                                                                                                                                                                                                          \
+	BOOST_MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
 	if(not( ldc >= max(1L, m) )) {throw std::logic_error("failed 'ldc >= max(1L, m)' with ldc = "+ std::to_string(ldc) +" and m = "+ std::to_string(m));}                                                                               \
-	if(*beta != 0.) {MULTI_ASSERT1((is_assignable<CC&, decltype(std::declval<ALPHA>()*std::declval<AA>()*std::declval<BB>() + std::declval<BETA>()*std::declval<CC>())> {}));}                                                          \
+	if(*beta != 0.) {BOOST_MULTI_ASSERT1((is_assignable<CC&, decltype(std::declval<ALPHA>()*std::declval<AA>()*std::declval<BB>() + std::declval<BETA>()*std::declval<CC>())> {}));}                                                          \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *reinterpret_cast<T const*>(alpha), reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T const*>(static_cast<BB*>(bb)), BC(ldb), *reinterpret_cast<T const*>(beta), (T*)(static_cast<CC*>(cc)) /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/ /*TODO(correaa) check constness*/, BC(ldc)); \
 }                                                                                                                                                                                                                        \
 
@@ -462,11 +462,11 @@ v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA
 	assert( uplo   == 'U' || uplo   == 'L' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( transA == 'N' || transA == 'T' || transA == 'C' );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( diag   == 'U' || diag   == 'N' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
-	MULTI_ASSERT1( m >= 0 && n >= 0 );                                                                                                                                                                           \
+	BOOST_MULTI_ASSERT1( m >= 0 && n >= 0 );                                                                                                                                                                           \
 	using std::max;                                                                                                                                                                                           \
-	if(side == 'L') {MULTI_ASSERT1( lda >= max(ssize_t{1}, m) );}   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                         \
-	if(side == 'R') {MULTI_ASSERT1( lda >= max(ssize_t{1}, n) );}                                                                                                                                                 \
-	MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) );                                                                                                                                                                   \
+	if(side == 'L') {BOOST_MULTI_ASSERT1( lda >= max(ssize_t{1}, m) );}   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                         \
+	if(side == 'R') {BOOST_MULTI_ASSERT1( lda >= max(ssize_t{1}, n) );}                                                                                                                                                 \
+	BOOST_MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) );                                                                                                                                                                   \
 	BLAS(T##trsm)(side, uplo, transA, diag, BC(m), BC(n), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T*>(static_cast<BB*>(bb)), BC(ldb));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
 }                                                                                                                                                                                                                 \
 
