@@ -47,4 +47,5 @@ run array_ref.cpp ;
 run array_vector_substitutability.cpp ;
 run assignments.cpp ;
 #run boost_array_concept.cpp ;
-
+run comparisons.cpp ;
+run concepts.cpp ;
