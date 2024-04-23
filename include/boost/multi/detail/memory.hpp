@@ -116,4 +116,4 @@ template<class Alloc> constexpr bool is_allocator_v = is_allocator<Alloc>::value
 // }
 
 }  // end namespace boost::multi
-#endif  // BOOST_MULTI_DETAIL_MEMORY
+#endif  // BOOST_MULTI_DETAIL_MEMORY_HPP

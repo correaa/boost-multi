@@ -7,8 +7,8 @@
 
 #include<cassert>
 
-#if defined(BOOST_MULTI_ACCESS_NDEBUG) or defined(__CUDACC__)
-	#define MULTI_ACCESS_ASSERT(Expr)  // NOLINT(cppcoreguidelines-macro-usage
+#if defined(BOOST_MULTI_ACCESS_NDEBUG) || defined(__CUDACC__)
+	#define BOOST_MULTI_ACCESS_ASSERT(Expr)  // NOLINT(cppcoreguidelines-macro-usage
 #else
 	// #include<stacktrace>
 	// // NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this is for very inefficient asserts
