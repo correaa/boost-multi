@@ -1,15 +1,15 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_LAYOUT_HPP
-#define MULTI_DETAIL_LAYOUT_HPP
+#ifndef BOOST_MULTI_DETAIL_LAYOUT_HPP
+#define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
-#include "index_range.hpp"
+#include <boost/multi/detail/index_range.hpp>
+#include <boost/multi/detail/operators.hpp>
+#include <boost/multi/detail/tuple_zip.hpp>
 
-#include "tuple_zip.hpp"
-
-#include "../../multi/config/ASSERT.hpp"
-
-#include "../../multi/detail/operators.hpp"
+#include <boost/multi/config/ASSERT.hpp>
 
 #include <tuple>
 #include <type_traits>  // for make_signed_t
@@ -806,4 +806,4 @@ namespace boost::multi {
 template<class Tuple> struct std::tuple_size<boost::multi::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
 template<class Array> struct std::tuple_size<boost::multi::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
 
-#endif
+#endif  // BOOST_MULTI_DETAIL_LAYOUT_HPP
