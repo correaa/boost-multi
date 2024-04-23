@@ -1,13 +1,11 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2021 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_TYPES_HPP
-#define MULTI_DETAIL_TYPES_HPP
-
-// #include "index_range.hpp"
+#ifndef BOOST_MULTI_DETAIL_TYPES_HPP
+#define BOOST_MULTI_DETAIL_TYPES_HPP
 
 #include<cstddef>      // for std::size_t
-// #include<tuple>        // for make_tuple
 #include<type_traits>  // for make_signed_t
 #include<utility>      // for forward
 
@@ -21,4 +19,4 @@ using difference_type     = std::make_signed_t<index>;
 using dimensionality_type = index;
 
 }  // end namespace boost::multi
-#endif
+#endif  // BOOST_MULTI_DETAIL_TYPES_HPP
