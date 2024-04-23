@@ -26,7 +26,7 @@ struct array_allocator {
 	array_allocator()    = default;
 
  private:
-	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
 
 	using allocator_traits = typename multi::allocator_traits<allocator_type>;
 	using size_type_       = typename allocator_traits::size_type;
