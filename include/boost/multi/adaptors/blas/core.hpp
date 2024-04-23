@@ -1,4 +1,6 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
@@ -14,7 +16,7 @@
 #include<limits>       // numeric_limits
 #include<type_traits>  // is_convertible
 
-#include "../../config/MARK.hpp"
+// #include "../../config/MARK.hpp"
 
 #include "../blas/traits.hpp"
 
@@ -382,7 +384,7 @@ template<> struct blas2<z> {template<class... As> static auto trsv(As... args) -
 #if 0
 #define xsyrk(T) \
 template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){ \
-	MULTI_MARK_SCOPE("cpu_syrk"); BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
+	/*BOOST_MULTI_MARK_SCOPE("cpu_syrk");*/ BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 #endif
 
 namespace core {
@@ -404,7 +406,7 @@ v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	if(transA == 'N' ||  transA == 'n') {MULTI_ASSERT1( lda >= max(1L, n) );}                                                                                                                     \
 	if(transA != 'N' && transA != 'n') {MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                     \
 	MULTI_ASSERT1( ldc >= max(1L, n) );                                                                                                                                                           \
-	MULTI_MARK_SCOPE("cpu_herk");                                                                                                                                                                 \
+	/*BOOST_MULTI_MARK_SCOPE("cpu_herk");*/                                                                                                                                                                 \
 	BLAS(T##syrk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<T const*>(alpha), aa, BC(lda),        *reinterpret_cast<T const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
 }                                                                                                                                                                                                 \
 
@@ -420,7 +422,7 @@ v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	if(transA == 'N' ||  transA == 'n') {MULTI_ASSERT1( lda >= max(1L, n) );}  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                   \
 	if(transA != 'N' && transA != 'n') {MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                                                          \
 	MULTI_ASSERT1( ldc >= max(1L, n) );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                                                         \
-	MULTI_MARK_SCOPE("cpu_herk");                                                                                                                                                                                                      \
+	/*BOOST_MULTI_MARK_SCOPE("cpu_herk");*/                                                                                                                                                                                                      \
 	BLAS(T##herk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<Real const*>(alpha), aa, BC(lda),        *reinterpret_cast<Real const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                                                            \
 }                                                                                                                                                                                                                                      \
 
@@ -431,7 +433,7 @@ enable_if_t<                                                                    
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*> && is_convertible_v<CCP, CC*>                                                                                                                                            \
 , int> =0>                                                                                                                                                                                                                              \
 v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {  /*NOLINT(bugprone-easily-swappable-parameters)*/              \
-	MULTI_MARK_SCOPE("cpu_gemm");                                                                                                                                                                                                       \
+	/*BOOST_MULTI_MARK_SCOPE("cpu_gemm");*/                                                                                                                                                                                                       \
 	using std::max;                                                                                                                                                                                                                     \
 	if(transA == 'N') {MULTI_ASSERT1(lda >= max(1L, m));}                                                                                                                                                                               \
 	if(transA != 'N') {MULTI_ASSERT1(lda >= max(1L, k));}                                                                                                                                                                               \
@@ -455,7 +457,7 @@ enable_if_t<                                                                    
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*>                                                                                                                                                     \
 ,int> =0>                                                                                                                                                                                                         \
 v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) { /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/  \
-	MULTI_MARK_SCOPE("cpu_trsm");                                                                                                                                                                                 \
+	/*BOOST_MULTI_MARK_SCOPE("cpu_trsm");*/                                                                                                                                                                                 \
 	assert( side   == 'L' || side   == 'R' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( uplo   == 'U' || uplo   == 'L' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( transA == 'N' || transA == 'T' || transA == 'C' );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
