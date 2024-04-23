@@ -1,8 +1,7 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
- // https://www.boost.org/LICENSE_1_0.txt
-
-#include <boost/test/unit_test.hpp>
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/pmr.hpp>
@@ -14,6 +13,29 @@
 #if(not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20210601)) and (not defined(_LIBCPP_VERSION) or (_LIBCPP_VERSION > 14000))
 #include <memory_resource>
 #endif
+
+// Suppress warnings from boost.test
+#if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wold-style-cast"
+#  pragma clang diagnostic ignored "-Wundef"
+#  pragma clang diagnostic ignored "-Wconversion"
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+#  pragma clang diagnostic ignored "-Wfloat-equal"
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wold-style-cast"
+#  pragma GCC diagnostic ignored "-Wundef"
+#  pragma GCC diagnostic ignored "-Wconversion"
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+#  pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+
+#ifndef BOOST_TEST_MODULE
+#  define BOOST_TEST_MAIN
+#endif
+
+#include <boost/test/unit_test.hpp>
 
 namespace multi = boost::multi;
 
