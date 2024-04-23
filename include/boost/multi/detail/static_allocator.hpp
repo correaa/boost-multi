@@ -1,4 +1,6 @@
 // Copyright 2023-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 #define MULTI_DETAIL_STATIC_ALLOCATOR_HPP
@@ -58,7 +60,7 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 
 	static constexpr auto capacity() { return N; }
 
-	NODISCARD("because otherwise it will generate a memory leak")
+	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
 	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
 		assert(n <= N);
 		assert(not dirty_);  // do not attempt to resize a vector with static_allocator
