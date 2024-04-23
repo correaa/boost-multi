@@ -1330,4 +1330,4 @@ struct version<boost::multi::array<T, D, A>> {
 
 }  // end namespace boost::serialization
 
-#endif  // MULTI_ARRAY_HPP_
+#endif  // BOOST_MULTI_ARRAY_HPP_
