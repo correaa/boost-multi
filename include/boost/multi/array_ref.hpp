@@ -1,18 +1,20 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
 #pragma once
 
-#include "../multi/detail/pointer_traits.hpp"
-#include "../multi/utility.hpp"
+#include <boost/multi/detail/pointer_traits.hpp>
+#include <boost/multi/utility.hpp>
 
-#include "../multi/detail/adl.hpp"
-#include "../multi/detail/layout.hpp"
-#include "../multi/detail/memory.hpp"         // for pointer_traits
-#include "../multi/detail/operators.hpp"      // for random_iterable
-#include "../multi/detail/serialization.hpp"
-#include "../multi/detail/types.hpp"          // for dimensionality_type
+#include <boost/multi/detail/adl.hpp>
+#include <boost/multi/detail/layout.hpp>
+#include <boost/multi/detail/memory.hpp>         // for pointer_traits
+#include <boost/multi/detail/operators.hpp>      // for random_iterable
+#include <boost/multi/detail/serialization.hpp>
+#include <boost/multi/detail/types.hpp>          // for dimensionality_type
 
 #if defined(__NVCC__)
 #define HD __host__ __device__
