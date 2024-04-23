@@ -2957,14 +2957,14 @@ using array_view = array_ref<T, D, TPtr>&;
 
 }  // end namespace boost::multi
 
-#ifndef MULTI_SERIALIZATION_ARRAY_VERSION
-#define MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
+#ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
+#define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
 // #define MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array
 // #define MULTI_SERIALIZATION_ARRAY_VERSION -1 // save data as structured nested labels array
 // #define MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
 
 namespace boost::multi {
-	constexpr inline int serialization_array_version = MULTI_SERIALIZATION_ARRAY_VERSION;
+	constexpr inline int serialization_array_version = BOOST_MULTI_SERIALIZATION_ARRAY_VERSION;
 }  // end namespace boost::multi
 #endif
 

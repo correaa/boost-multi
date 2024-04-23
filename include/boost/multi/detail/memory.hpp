@@ -1,7 +1,9 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_MEMORY_HPP
-#define MULTI_DETAIL_MEMORY_HPP
+#ifndef BOOST_MULTI_DETAIL_MEMORY_HPP
+#define BOOST_MULTI_DETAIL_MEMORY_HPP
 #pragma once
 
 #include <memory>  // for std::allocator_traits
@@ -103,15 +105,15 @@ struct is_allocator<Alloc, std::void_t<decltype(
 
 template<class Alloc> constexpr bool is_allocator_v = is_allocator<Alloc>::value;
 
-template<dimensionality_type N, class InputIt, class ForwardIt>
-auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest) {
-	while(first!=last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		uninitialized_copy<N-1>(begin(*first), end(*first), begin(*dest));
-		++first;
-		++dest;
-	}
-	return dest;
-}
+// template<dimensionality_type N, class InputIt, class ForwardIt>
+// auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest) {
+// 	while(first!=last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+// 		uninitialized_copy<N-1>(begin(*first), end(*first), begin(*dest));
+// 		++first;
+// 		++dest;
+// 	}
+// 	return dest;
+// }
 
 }  // end namespace boost::multi
-#endif
+#endif  // BOOST_MULTI_DETAIL_MEMORY

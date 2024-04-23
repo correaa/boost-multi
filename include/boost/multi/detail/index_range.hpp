@@ -1,13 +1,15 @@
 // Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_DETAIL_INDEX_RANGE_HPP
-#define MULTI_DETAIL_INDEX_RANGE_HPP
+#ifndef BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
+#define BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
 #pragma once
 
-#include "../../multi/detail/implicit_cast.hpp"
-#include "../../multi/detail/serialization.hpp"
-#include "../../multi/detail/tuple_zip.hpp"
-#include "../../multi/detail/types.hpp"
+#include <boost/multi/detail/implicit_cast.hpp>
+#include <boost/multi/detail/serialization.hpp>
+#include <boost/multi/detail/tuple_zip.hpp>
+#include <boost/multi/detail/types.hpp>
 
 #include <algorithm>  // for std::min
 #include <functional> // for std::plus<>
@@ -325,4 +327,4 @@ constexpr auto contains(index_extensions<D> const& iex, Tuple const& tup) {
 }
 
 }  // end namespace boost::multi
-#endif  // MULTI_DETAIL_INDEX_RANGE_HPP
+#endif  // BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
