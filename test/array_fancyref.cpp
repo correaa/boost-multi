@@ -121,7 +121,7 @@ template<class T> struct allocator {
 		/*no-op;*/
 	}
 	template<class... Args>
-	void construct(pointer /*location*/, Args&&... /*args*/) {
+	void construct(pointer /*location*/, Args&&... /*args*/) {  // NOLINT(cppcoreguidelines-missing-std-forward) TODO(correaa) or make it `Args const&...`
 		/*no-op;*/
 	}
 	void destroy(pointer /*location*/) {
