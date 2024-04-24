@@ -172,7 +172,7 @@ template<class T, typename = typename T::get_allocator>
 inline auto has_get_allocator_aux(...     ) -> std::false_type;
 
 template<class T, std::size_t N>
-constexpr auto get_allocator(T(&/*array*/)[N]) noexcept -> std::allocator<std::decay_t<typename std::remove_all_extents<T[N]>::type>> {return {};}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+constexpr auto get_allocator(T(&/*array*/)[N]) noexcept -> std::allocator<std::decay_t<std::remove_all_extents_t<T[N]>>> {return {};}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T>
 constexpr auto get_allocator(T* const& /*t*/)
@@ -481,7 +481,7 @@ template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std
 template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N>      && arr) noexcept {return std::move(arr).data();}
 
 template<class T, std::size_t M, std::size_t N>
-constexpr auto data_elements(std::array<std::array<T, M>, N>&& arr) noexcept {return data_elements(arr[0]);}
+constexpr auto data_elements(std::array<std::array<T, M>, N>&& arr) noexcept {return data_elements(std::move(arr)[0]);}
 
 template<class T, std::size_t N> constexpr auto num_elements(std::array<T, N> const& /*unused*/) noexcept
 -> std::ptrdiff_t{return N;}

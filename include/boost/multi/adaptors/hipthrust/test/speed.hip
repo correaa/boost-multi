@@ -8,7 +8,7 @@
 
 #include <boost/multi/adaptors/thrust.hpp>
 
-#include <boost/thrust/system/hip/memory.h>
+#include <thrust/system/hip/memory.h>
 
 #include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>
 
