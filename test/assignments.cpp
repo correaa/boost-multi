@@ -83,7 +83,6 @@ BOOST_AUTO_TEST_CASE(multi_copy_move) {
 	BOOST_REQUIRE( size(arr4) == 3 );
 }
 
-#if 1
 BOOST_AUTO_TEST_CASE(range_assignment) {
 	{
 		auto ext = multi::make_extension_t(10L);
@@ -173,5 +172,3 @@ BOOST_AUTO_TEST_CASE(assigment_temporary) {
 	BOOST_REQUIRE( Id[1][1] == 1.0 );
 	BOOST_REQUIRE( Id[1][0] == 0.0 );
 }
-
-#endif
