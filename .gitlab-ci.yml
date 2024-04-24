@@ -249,7 +249,7 @@ clang++-testing tidy:
     - mkdir build && cd build
     - clang++-18 --version
     - clang-tidy-18 --version
-    - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18
+    - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
