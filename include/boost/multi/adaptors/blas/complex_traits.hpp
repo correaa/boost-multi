@@ -1,7 +1,9 @@
 // Copyright 2023-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_BLAS_COMPLEX_TRAITS_HPP
-#define MULTI_ADAPTORS_BLAS_COMPLEX_TRAITS_HPP
+#ifndef BOOST_MULTI_ADAPTORS_BLAS_COMPLEX_TRAITS_HPP
+#define BOOST_MULTI_ADAPTORS_BLAS_COMPLEX_TRAITS_HPP
 #pragma once
 
 #if defined(__NVCC__) || defined(__HIPCC__)  // defined(__HIP_PLATFORM_AMD__) || defined(__HIP_PLATFORM_NVIDIA__)

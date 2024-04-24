@@ -1,9 +1,11 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 // TODO(correaa) move this header to blas/numeric
 
-#ifndef MULTI_COMPLEX_HPP
-#define MULTI_COMPLEX_HPP
+#ifndef BOOST_MULTI_COMPLEX_HPP
+#define BOOST_MULTI_COMPLEX_HPP
 #pragma once
 
 #include "array_ref.hpp"
