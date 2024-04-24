@@ -10,7 +10,7 @@ CheckOptions:
   - { key: readability-identifier-naming.GlobalConstantCase          , value: aNy_CasE   }
   - { key: readability-identifier-naming.NamespaceCase               , value: lower_case }
   - { key: readability-identifier-naming.PrivateMemberPrefix         , value: ''         }
-  - { key: readability-identifier-naming.PrivateMemberSufix          , value: _          }
+  - { key: readability-identifier-naming.PrivateMemberSuffix         , value: _          }
   - { key: readability-identifier-naming.StructCase                  , value: lower_case }
   - { key: readability-identifier-naming.TemplateParameterCase       , value: CamelCase  }
   - { key: readability-identifier-length.MinimumLoopCounterNameLength, value: 2          }

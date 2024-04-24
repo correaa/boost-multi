@@ -5,6 +5,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../../../adaptors/blas/gemm.hpp"
+#include "../../../adaptors/blas/operations.hpp"
 
 #include <boost/multi/array.hpp>
 

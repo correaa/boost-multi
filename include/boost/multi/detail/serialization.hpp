@@ -127,10 +127,10 @@ struct archive_traits<
 	};
 
 	template<class T>
-	inline static auto make_array(T* ptr, std::size_t count) -> array_wrapper<T> { return array_wrapper<T>{ptr, count}; }
+	/*inline*/ static auto make_array(T* ptr, std::size_t count) -> array_wrapper<T> { return array_wrapper<T>{ptr, count}; }
 
 	template<class T>
-	inline static auto make_nvp(char const* name, array_wrapper<T>&& value) noexcept { return make_nvp(name, value); }
+	/*inline*/ static auto make_nvp(char const* name, array_wrapper<T>&& value) noexcept { return make_nvp(name, static_cast<array_wrapper<T>&>(std::move(value))); }
 };
 
 }  // end namespace multi

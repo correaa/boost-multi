@@ -214,4 +214,4 @@ xpotrf(c) xpotrf(z)
 
 #define TRANS const char& trans
 
-#endif  // BOOST_MULTI_ADAPTORS_TOTALVIEW_HPP
+#endif
