@@ -241,21 +241,17 @@ clang++-m32:
 
 clang++-testing tidy:
   stage: build
-  image: debian:unstable  # clang 16.0.6 as of Dec 2023
+  image: debian:unstable  # clang 18 as of Apr 2024
   tags:
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
-    - apt search clang-tidy
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-18 clang-tidy-18 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - clang-tidy --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy
+    - clang++-18 --version
+    - clang-tidy-18 --version
+    - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - wget https://apt.llvm.org/llvm.sh
-    - chmod u+x llvm.sh
-    - ./llvm.sh 18
-    - clang-tidy-18
   needs: ["clang++"]
 
 g++-testing c++20:
