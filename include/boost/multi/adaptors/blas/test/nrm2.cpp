@@ -2,10 +2,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/blas.hpp>
-#include <multi/array.hpp>
+#include <boost/multi/adaptors/blas.hpp>
+#include <boost/multi/array.hpp>
 
-#include <multi/adaptors/complex.hpp>
+#include <boost/multi/adaptors/complex.hpp>
 
 #include <complex>
 

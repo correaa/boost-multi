@@ -1,9 +1,11 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 // TODO(correaa) move this header to blas/numeric
 
-#ifndef MULTI_COMPLEX_HPP
-#define MULTI_COMPLEX_HPP
+#ifndef BOOST_MULTI_COMPLEX_HPP
+#define BOOST_MULTI_COMPLEX_HPP
 #pragma once
 
 #include "array_ref.hpp"
@@ -44,21 +46,21 @@ struct real_t;
 struct imag_t;
 
 template<class ValueType = double>
-struct _complex {  // NOLINT(readability-identifier-naming) deprecating this
+struct [[deprecated]] _complex {  // NOLINT(readability-identifier-naming) deprecating this
 	using value_type = ValueType;
 
  private:
-	value_type re;
-	value_type im;
+	value_type re_;
+	value_type im_;
 
  public:
 	_complex() = default;
 
-	constexpr explicit _complex(value_type real) : re{real}, im{value_type{0}} {}
+	constexpr explicit _complex(value_type real) : re_{real}, im_{value_type{0}} {}
 	constexpr _complex(value_type real, value_type imag)  // NOLINT(bugprone-easily-swappable-parameters)
-	: re{real}, im{imag} {}
+	: re_{real}, im_{imag} {}
 
-	constexpr explicit _complex(std::complex<ValueType> const& other) : re{other.real()}, im{other.imag()} {}
+	constexpr explicit _complex(std::complex<ValueType> const& other) : re_{other.real()}, im_{other.imag()} {}
 
 	template<
 		class T,
@@ -89,19 +91,19 @@ struct _complex {  // NOLINT(readability-identifier-naming) deprecating this
 	friend constexpr auto operator-(_complex const& self, _complex const& other)
 		-> _complex { return self.std() - other.std(); }
 
-	constexpr auto real() & -> value_type& { return re; }
-	constexpr auto real() const& -> value_type const& { return re; }
+	constexpr auto real() & -> value_type& { return re_; }
+	constexpr auto real() const& -> value_type const& { return re_; }
 
-	constexpr auto imag() & -> value_type& { return im; }
-	constexpr auto imag() const& -> value_type const& { return im; }
+	constexpr auto imag() & -> value_type& { return im_; }
+	constexpr auto imag() const& -> value_type const& { return im_; }
 
-	template<class Real> constexpr auto operator+=(Real const& other) & -> decltype(re += other, *this) { return re += other, *this; }
-	template<class Real> constexpr auto operator-=(Real const& other) & -> decltype(re -= other, *this) { return re -= other, *this; }
-	template<class Real> constexpr auto operator*=(Real const& other) & -> decltype(re *= other, im *= other, *this) { return re *= other, im *= other, *this; }
-	template<class Real> constexpr auto operator/=(Real const& other) & -> decltype(re /= other, im /= other, *this) { return re /= other, im /= other, *this; }
+	template<class Real> constexpr auto operator+=(Real const& other) & -> decltype(re_ += other, *this) { return re_ += other, *this; }
+	template<class Real> constexpr auto operator-=(Real const& other) & -> decltype(re_ -= other, *this) { return re_ -= other, *this; }
+	template<class Real> constexpr auto operator*=(Real const& other) & -> decltype(re_ *= other, im_ *= other, *this) { return re_ *= other, im_ *= other, *this; }
+	template<class Real> constexpr auto operator/=(Real const& other) & -> decltype(re_ /= other, im_ /= other, *this) { return re_ /= other, im_ /= other, *this; }
 
-	template<class Complex> constexpr auto operator+=(Complex const& other) & -> decltype(re += other.re, im += other.im, *this) { return re += other.re, im += other.im, *this; }
-	template<class Complex> constexpr auto operator-=(Complex const& other) & -> decltype(re -= other.re, im -= other.im, *this) { return re -= other.re, im -= other.im, *this; }
+	template<class Complex> constexpr auto operator+=(Complex const& other) & -> decltype(re_ += other.re_, im_ += other.im_, *this) { return re_ += other.re_, im_ += other.im_, *this; }
+	template<class Complex> constexpr auto operator-=(Complex const& other) & -> decltype(re_ -= other.re_, im_ -= other.im_, *this) { return re_ -= other.re_, im_ -= other.im_, *this; }
 };
 
 struct real_t {

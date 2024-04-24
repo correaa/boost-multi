@@ -367,7 +367,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	static_array(std::initializer_list<typename static_array<T, D>::value_type> values)
+	static_array(std::initializer_list<typename static_array<T, D>::value_type> values)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow terse syntax
 	: static_array{array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	static_array(
@@ -564,6 +564,26 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	using array_alloc = array_allocator<Alloc>;
 
  public:
+	constexpr auto operator=(static_array const& other) -> static_array& {
+		assert(extensions(other) == static_array::extensions());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		if(this == &other) {  // lints (cert-oop54-cpp) : handle self-assignment properly
+			return *this;
+		}
+		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		return *this;
+	}
+
+	constexpr auto operator=(static_array&& other) noexcept -> static_array& {
+		assert(equal_extensions_if(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
+		return *this;
+	}
+
+	// auto operator=(multi::static_array<T, 0, Alloc>&& other) noexcept /*(condition?)*/ -> static_array& {
+	// 	adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
+	// 	return *this;
+	// }
+
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() && -> static_array* = delete;  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
@@ -621,10 +641,6 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
 	}
-	// auto destroy() {
-	//  return adl_alloc_destroy_n(this->alloc(), this->data_elements(), this->num_elements());
-	//  // array_alloc::destroy_n(this->data_elements(), this->num_elements());
-	// }
 
  public:
 	using typename ref::difference_type;
@@ -703,7 +719,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		uninitialized_fill(elem);
 	}
 
-	static_array() : static_array(multi::iextensions<0>{}) {}
+	static_array() = default;  // static_array(multi::iextensions<0>{}) {}
 
 	explicit static_array(typename static_array::element const& elem)
 	: static_array(multi::iextensions<0>{}, elem) {}
@@ -846,26 +862,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	//  constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
 	//  constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
 
-	constexpr auto operator=(static_array const& other) -> static_array& {
-		assert(extensions(other) == static_array::extensions());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
-		if(this == &other) {
-			return *this;
-		}  // lints (cert-oop54-cpp) : handle self-assignment properly
-		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
-		return *this;
-	}
-
  private:
 	constexpr auto equal_extensions_if(std::true_type /*true */, static_array const& other) { return this->extensions() == extensions(other); }
 	constexpr auto equal_extensions_if(std::false_type /*false*/, static_array const& /*other*/) { return true; }
 
  public:
-	constexpr auto operator=(static_array&& other) noexcept -> static_array& {
-		assert(equal_extensions_if(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
-		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
-		return *this;
-	}
-
 	template<class TT, class... As, class = std::enable_if_t<std::is_assignable<typename static_array::element_ref, TT>{}>>
 	auto operator=(static_array<TT, 0, As...> const& other) & -> static_array& {
 		assert(extensions(other) == static_array::extensions());
@@ -954,11 +955,12 @@ struct array : static_array<T, D, Alloc> {
 		static_::serialize(arxiv, version);
 	}
 
+	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) TODO(correaa) investigate: rvalue reference parameter '' is never moved from inside the function body
 	using static_::static_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_::value_type;
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
+	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow terse syntax
 	: static_{array<T, D>(ilv.begin(), ilv.end())} {}
 
 	template<class OtherT, class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> && (D == 1)>>
@@ -1202,34 +1204,31 @@ struct array : static_array<T, D, Alloc> {
 	constexpr auto operator+() const& { return array{*this}; }
 	constexpr auto operator+() && { return array{std::move(*this)}; }
 
-#if 0
-	auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array&& {
-		if(extensions == this->extensions()) {return std::move(*this);}
-		this->destroy();
-		this->deallocate();
-		this->layout_mutable() = typename array::layout_t{extensions};
-		this->base_ = this->static_::array_alloc::allocate(
-			static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
-				typename array::layout_t{extensions}.num_elements()
-			),
-			this->data_elements()  // used as hint
-		);
-		this->uninitialized_fill_n(this->base_, static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
+	// auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array&& {
+	// 	if(extensions == this->extensions()) {return std::move(*this);}
+	// 	this->destroy();
+	// 	this->deallocate();
+	// 	this->layout_mutable() = typename array::layout_t{extensions};
+	// 	this->base_ = this->static_::array_alloc::allocate(
+	// 		static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
+	// 			typename array::layout_t{extensions}.num_elements()
+	// 		),
+	// 		this->data_elements()  // used as hint
+	// 	);
+	// 	this->uninitialized_fill_n(this->base_, static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
 
-		return std::move(*this);
-	}
-#endif
+	// 	return std::move(*this);
+	// }
 
 	auto reextent(typename array::extensions_type const& exs, typename array::element const& elem) & -> array& {
 		if(exs == this->extensions()) {
 			return *this;
 		}
-#if 0
-		array tmp(x, e, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
-		auto const is = intersection(this->extensions(), x);
-		tmp.apply(is) = this->apply(is);
-		swap(tmp);
-#else  // implementation with hint
+		// array tmp(x, e, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
+		// auto const is = intersection(this->extensions(), x);
+		// tmp.apply(is) = this->apply(is);
+		// swap(tmp);
+		// implementation with hint  vvv
 		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(
 			                                 static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()),
 			                                 this->data_elements()  // use as hint
@@ -1243,7 +1242,7 @@ struct array : static_array<T, D, Alloc> {
 		this->base_            = tmp.base();  // TODO(correaa) : use (and implement) `.move();`
 		this->layout_mutable() = tmp.layout();
 		//  (*this).array::layout_t::operator=(tmp.layout());
-#endif
+
 		return *this;
 	}
 	template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {

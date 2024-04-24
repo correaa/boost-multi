@@ -1,20 +1,22 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
-#define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
+#ifndef BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
+#define BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #pragma once
 
-#include "../../adaptors/complex.hpp"
-#include "../../array_ref.hpp"
-#include "../../complex.hpp"
+// #include <boost/multi/adaptors/blas/complex.hpp>
+#include <boost/multi/array_ref.hpp>
+#include <boost/multi/complex.hpp>
 
-#include "../blas/complex_traits.hpp"
+#include <boost/multi/adaptors/blas/complex_traits.hpp>
 
-#include "../../detail/pointer_traits.hpp"
+#include <boost/multi/detail/pointer_traits.hpp>
 
-#include "numeric/is_complex.hpp"
+#include <boost/multi/adaptors/blas/numeric/is_complex.hpp>
 
-#include <multi/adaptors/complex.hpp>
+#include <boost/multi/adaptors/complex.hpp>
 
 namespace boost {
 namespace multi::blas {
@@ -257,7 +259,7 @@ auto        is_conjugated_aux(conjugater<It> const& /*self*/) -> std::true_type;
 inline auto is_conjugated_aux(...) -> std::false_type;
 
 template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std::declval<A>()).base())) {  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-	template<class AA> constexpr auto operator()(AA&& /*unused*/) { return is_conjugated_aux((std::declval<A>()).base()); }
+	template<class AA> constexpr auto operator()(AA&& /*unused*/) { return is_conjugated_aux((std::declval<A>()).base()); }  // NOLINT(cppcoreguidelines-missing-std-forward) TODO(correaa) find the way to forward unused parameter
 };
 
 template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type, typename Ptr = typename D::element_ptr,

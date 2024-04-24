@@ -193,18 +193,18 @@ template<class T0, class Tuple>
 using tuple_prepend_t = typename tuple_prepend<T0, Tuple>::type;
 
 template<class T0, class... Ts>
-constexpr auto head(tuple<T0, Ts...> const& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-	return t.head();
+constexpr auto head(tuple<T0, Ts...> const& tup) -> decltype(auto) {
+	return tup.head();
 }
 
 template<class T0, class... Ts>
-constexpr auto head(tuple<T0, Ts...>&& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-	return std::move(t.head());
+constexpr auto head(tuple<T0, Ts...>&& tup) -> decltype(auto) {
+	return std::move(tup).head();
 }
 
 template<class T0, class... Ts>
-constexpr auto head(tuple<T0, Ts...>& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-	return t.head();
+constexpr auto head(tuple<T0, Ts...>& tup) -> decltype(auto) {
+	return tup.head();
 }
 
 template<class T0, class... Ts>
@@ -385,7 +385,7 @@ template<class T1, class T2>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2),
-		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
+		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
 	);
 }
 
@@ -393,7 +393,7 @@ template<class T1, class T2, class T3>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3),
-		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
+		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
 	);
 }
 
@@ -401,7 +401,7 @@ template<class T1, class T2, class T3, class T4>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3), std::forward<T4>(tup4),
-		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
+		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
 	);
 }
 

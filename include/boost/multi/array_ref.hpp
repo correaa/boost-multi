@@ -712,13 +712,13 @@ struct elements_range_t {
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& other)  & -> elements_range_t& {assert(size() == other.size());
-		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
+		if(! is_empty()) {adl_copy(std::begin(std::forward<OtherElementRange>(other)), std::end(std::forward<OtherElementRange>(other)), begin());}
 		return *this;
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());
-		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
+		if(! is_empty()) {adl_copy(std::begin(std::forward<OtherElementRange>(other)), std::end(std::forward<OtherElementRange>(other)), begin());}
 		return *this;
 	}
 
@@ -1621,7 +1621,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		return {
 			layout_t<D+1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),
-			static_cast<P2>(static_cast<void*>(this->base_))
+			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) TODO(correaa) investigate if there is a way without casting to void, the problem is that reinterpret_cast may play in suprissing ways with synthetic pointers
 		};
 	}
 
@@ -2545,12 +2545,12 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
-	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
+	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
+	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
 
 	constexpr explicit array_ref(typename array_ref::element_ptr dat, typename array_ref::extensions_type extensions) noexcept  // TODO(correa) eliminate this ctor
 	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}

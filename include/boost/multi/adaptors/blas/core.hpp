@@ -18,21 +18,19 @@
 
 // #include "../../config/MARK.hpp"
 
-#include "../blas/traits.hpp"
+#include <boost/multi/adaptors/blas/traits.hpp>
 
-#if 0
-	#define BOOST_MULTI_ASSERT1(ExpR)              assert       (ExpR)
-	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
+// #define BOOST_MULTI_ASSERT1(ExpR)              assert       (ExpR)
+// #define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
+
+#if not defined(NDEBUG)
+	#include<stdexcept>
+	#include<string>
+	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
+	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
 #else
-	#if not defined(NDEBUG)
-		#include<stdexcept>
-		#include<string>
-		#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
-		#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
-	#else
-		#define BOOST_MULTI_ASSERT1(ExpR)              assert(ExpR)
-		#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
-	#endif
+	#define BOOST_MULTI_ASSERT1(ExpR)              assert(ExpR)
+	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
 #endif
 
 #ifdef CBLAS_H
@@ -381,11 +379,9 @@ template<> struct blas2<z> {template<class... As> static auto trsv(As... args) -
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
 
-#if 0
-#define xsyrk(T) \
-template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){ \
-	/*BOOST_MULTI_MARK_SCOPE("cpu_syrk");*/ BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
-#endif
+// #define xsyrk(T) \
+// template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){ \
+// 	/*BOOST_MULTI_MARK_SCOPE("cpu_syrk");*/ BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 
 namespace core {
 
@@ -567,4 +563,4 @@ auto default_context_of(TPtr const& /*unused*/) -> blas::context* {
 
 } // end namespace boost::multi::blas
 
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_BLAS_CORE_HPP

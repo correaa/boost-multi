@@ -1,4 +1,3 @@
-# -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 # Copyright 2018-2023 Alfredo A. Correa
 # Copyright 2023 Matt Borland
 # Distributed under the Boost Software License, Version 1.0.
@@ -59,12 +58,12 @@ else()
   include(CMakeDependentOption)
   include(GNUInstallDirs)
 
-  find_program(MEMORYCHECK_COMMAND valgrind)
-  set(VALGRIND_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
+  # find_program(MEMORYCHECK_COMMAND valgrind)
+  # set(VALGRIND_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
 
   # must go before `include(CTest)`
-  set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
-  set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")
+  # set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
+  # set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")
 
   include(CTest)
 
@@ -124,19 +123,19 @@ else()
     else()
       enable_testing()
 
-      add_subdirectory(include/multi/adaptors/blas)
-      add_subdirectory(include/multi/adaptors/complex)
-      add_subdirectory(include/multi/adaptors/cuda)
-      add_subdirectory(include/multi/adaptors/fftw)
+      add_subdirectory(include/boost/multi/adaptors/blas)
+      add_subdirectory(include/boost/multi/adaptors/complex)
+      add_subdirectory(include/boost/multi/adaptors/cuda)
+      add_subdirectory(include/boost/multi/adaptors/fftw)
 
       find_package(LAPACK)
       if(LAPACK_FOUND)
-        add_subdirectory(include/multi/adaptors/lapack)
+        add_subdirectory(include/boost/multi/adaptors/lapack)
       endif()
 
-      add_subdirectory(include/multi/adaptors/thrust)
+      add_subdirectory(include/boost/multi/adaptors/thrust)
       if(ENABLE_CUDA)
-        add_subdirectory(include/multi/adaptors/cufft)
+        add_subdirectory(include/boost/multi/adaptors/cufft)
       endif()
       if(ENABLE_HIP)
         add_subdirectory(include/multi/adaptors/hipfft)
