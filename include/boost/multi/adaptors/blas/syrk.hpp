@@ -50,8 +50,7 @@ auto syrk(filling c_side, AA alpha, A2D const& a, C2D&& c)  // NOLINT(readabilit
 // [[nodiscard]]  // ("because input argument is const")
 // // this decay in the return type is important
 // auto  // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-// syrk(AA alpha, A2D const& a) -> std::decay_\
-// t<decltype(syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))> {
+// syrk(AA alpha, A2D const& a) -> std::decay_t<decltype(syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))> {
 //  return syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
 // }
 
