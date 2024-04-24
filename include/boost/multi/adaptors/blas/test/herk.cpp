@@ -1,13 +1,14 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS herk"
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/blas/gemm.hpp>
-#include <multi/adaptors/blas/herk.hpp>
-#include <multi/adaptors/blas/nrm2.hpp>
+#include <boost/multi/adaptors/blas/gemm.hpp>
+#include <boost/multi/adaptors/blas/herk.hpp>
+#include <boost/multi/adaptors/blas/nrm2.hpp>
 
-#include <multi/array.hpp>
+#include <boost/multi/array.hpp>
 
 namespace multi = boost::multi;
 

@@ -1,9 +1,11 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include<boost/test/unit_test.hpp>
 #include<boost/timer/timer.hpp>
 
-#include <multi/adaptors/fftw.hpp>
+#include <boost/multi/adaptors/fftw.hpp>
 
 #include <chrono>  // NOLINT(build/c++11)
 #include <complex>

@@ -1,11 +1,12 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS scal"
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/blas/scal.hpp>
+#include <boost/multi/adaptors/blas/scal.hpp>
 
-#include <multi/array.hpp>
+#include <boost/multi/array.hpp>
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;

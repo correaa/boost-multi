@@ -1,5 +1,5 @@
-#include <multi/array.hpp>
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/array.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/complex.h>
 #include <thrust/system/cuda/memory.h>
@@ -72,7 +72,7 @@ int main() {
     }
 
     {
-    	multi::array<double, 2, thrust::cuda::allocator<double>> A({10000, 10000});
+        multi::array<double, 2, thrust::cuda::allocator<double>> A({10000, 10000});
         auto const size = A.num_elements()*sizeof(T)/1e9;
         std::cout<<"size is "<< size << "GB\n";
 
