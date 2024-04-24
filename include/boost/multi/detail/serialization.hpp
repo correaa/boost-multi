@@ -113,16 +113,14 @@ struct archive_traits<
 				p_, std::next(p_, c_),
 				[&arxiv](auto& item) { arxiv& make_nvp("item", item); }
 			);
-#if 0
-			for(std::size_t i = 0; i != c_; ++i) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-				auto& item = p_[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-				arxiv &                                        make_nvp("item"   , item   );  // "item" is the name used by Boost.Serialization XML make_array
-				// arxiv & boost::multi::archive_traits<Archive>::make_nvp("element", element);
-				// arxiv &                                cereal::make_nvp("element", element);
-				// arxiv &                                      CEREAL_NVP(           element);
-				// arxiv &                                                            element ;
-			}
-#endif
+			// for(std::size_t i = 0; i != c_; ++i) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+			//  auto& item = p_[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			//  arxiv &                                        make_nvp("item"   , item   );  // "item" is the name used by Boost.Serialization XML make_array
+			//  // arxiv & boost::multi::archive_traits<Archive>::make_nvp("element", element);
+			//  // arxiv &                                cereal::make_nvp("element", element);
+			//  // arxiv &                                      CEREAL_NVP(           element);
+			//  // arxiv &                                                            element ;
+			// }
 		}
 	};
 

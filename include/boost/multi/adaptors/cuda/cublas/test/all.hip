@@ -16,7 +16,7 @@
 #include <boost/multi/adaptors/blas/swap.hpp>
 #include <boost/multi/adaptors/blas/trsm.hpp>
 
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include<thrust/complex.h>
 

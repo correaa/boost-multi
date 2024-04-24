@@ -26,10 +26,10 @@ namespace boost::multi {
 namespace detail {
 
 template <class Tuple, std::size_t... Ns>
-constexpr auto tuple_tail_impl(Tuple&& t, std::index_sequence<Ns...> /*012*/) {  // NOLINT(readability-identifier-length) std naming
-	(void)t;  // workaround bug warning in nvcc
+constexpr auto tuple_tail_impl(Tuple&& tup, std::index_sequence<Ns...> /*012*/) {
+	(void)tup;  // workaround bug warning in nvcc
 	using boost::multi::detail::get;
-	return boost::multi::detail::tuple{std::forward<decltype(get<Ns + 1U>(t))>(get<Ns + 1U>(t))...};
+	return boost::multi::detail::tuple{std::forward<decltype(get<Ns + 1U>(std::forward<Tuple>(tup)))>(get<Ns + 1U>(std::forward<Tuple>(tup)))...};
 }
 
 template<class Tuple>
