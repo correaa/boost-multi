@@ -478,7 +478,7 @@ template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std
 template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N> const&  arr) noexcept {return arr.data();}
 template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std::array<std::array<T, M>, N> const& arr) noexcept {return data_elements(arr[0]);}
 
-template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N>      && arr) noexcept {return arr.data();}
+template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N>      && arr) noexcept {return std::move(arr).data();}
 
 template<class T, std::size_t M, std::size_t N>
 constexpr auto data_elements(std::array<std::array<T, M>, N>&& arr) noexcept {return data_elements(arr[0]);}
