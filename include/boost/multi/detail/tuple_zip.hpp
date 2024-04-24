@@ -260,11 +260,11 @@ constexpr auto get(tuple<T0, Ts...>& t) -> auto& {  // NOLINT(readability-identi
 }
 
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-identifier-length) std naming
+constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {  // NOLINT(readability-identifier-length) std naming
 	if constexpr(N == 0) {
-		return std::move(t).head();
+		return std::move(tup).head();
 	} else {
-		return get<N - 1>(std::move(t.tail()));
+		return get<N - 1>(std::move(std::move(tup).tail()));
 	}
 }
 #if ! defined(_MSC_VER)

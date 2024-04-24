@@ -1614,15 +1614,15 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reinterpret_array_cast(multi::size_type count)     && -> subarray<std::decay_t<T2>, D + 1, P2> {return reinterpret_array_cast<T2, P2>(count);}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2 const> >
-	constexpr auto reinterpret_array_cast(size_type count) const& -> subarray<std::decay_t<T2>, D + 1, P2> {
+	constexpr auto reinterpret_array_cast(size_type count) const& {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-		return {
+		return subarray<std::decay_t<T2>, D + 1, P2>(
 			layout_t<D+1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),
-			static_cast<P2>(static_cast<void*>(this->base_))
-		};
+			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void)  // TODO(correaa) separate the case for pure pointers with if constexpr
+		);
 	}
 
 	template<class Archive>
