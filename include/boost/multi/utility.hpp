@@ -69,11 +69,16 @@ struct transform_ptr {
 		transform_ptr<
 			std::remove_cv_t<U>,
 			UF, Ptr,
-			typename std::conditional<
+			std::conditional_t<
 				std::is_const_v<U>,
 				typename ref_add_const<Ref>::type,
 				Ref
-			>::type
+			>
+			// typename std::conditional<
+			//  std::is_const_v<U>,
+			//  typename ref_add_const<Ref>::type,
+			//  Ref
+			// >::type
 		>
 	;
 
