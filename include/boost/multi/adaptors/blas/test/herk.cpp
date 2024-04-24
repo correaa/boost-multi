@@ -25,12 +25,12 @@ template<class M> auto print(M const& mat, std::string const& msg = "") -> declt
 				cout << ", ";
 			}
 		}
-		cout << '}' << std::endl;
+		cout << "}\n";
 		if(i + 1 != size(mat)) {
 			cout << ", ";
 		}
 	}
-	return cout << '}' << std::endl;
+	return cout << "}\n";
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk) {
@@ -232,7 +232,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		BOOST_REQUIRE(( arr2[1][0] == complex{50.0, -49.0} ));
 		BOOST_REQUIRE( arr2[0][1] == 9999.0 );
 	}
-#if 1
 	{
 		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
 		static_assert(blas::is_conjugated<decltype(blas::H(c))>{});
@@ -272,7 +271,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		BOOST_REQUIRE(( c[1][0] == complex{52.0, 90.0} ));
 		BOOST_REQUIRE( c[0][1] == 9999.0 );
 	}
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_square) {

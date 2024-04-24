@@ -5,7 +5,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <boost/multi/adaptors/blas/axpy.hpp>
-#include <boost/multi/adaptors/blas/operations.hpp>
+#include <boost/multi/adaptors/blas/operations.hpp>  // for blas::real
 #include <boost/multi/adaptors/complex.hpp>
 
 #include <boost/multi/array.hpp>

@@ -158,7 +158,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::dropped;
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
-	static_array(static_array&& other) noexcept : static_array{other.element_moved()} {}
+	static_array(static_array&& other) noexcept : static_array{std::move(other).element_moved()} {}
 
 	constexpr static_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}, ref{std::exchange(other.base_, nullptr), other.extensions()} {
@@ -954,7 +954,7 @@ struct array : static_array<T, D, Alloc> {
 		static_::serialize(arxiv, version);
 	}
 
-	using static_::static_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
+	using static_::static_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved) TODO(correaa) find the problematic constructor in the base classes
 	using typename static_::value_type;
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
@@ -1202,34 +1202,33 @@ struct array : static_array<T, D, Alloc> {
 	constexpr auto operator+() const& { return array{*this}; }
 	constexpr auto operator+() && { return array{std::move(*this)}; }
 
-#if 0
-	auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array&& {
-		if(extensions == this->extensions()) {return std::move(*this);}
-		this->destroy();
-		this->deallocate();
-		this->layout_mutable() = typename array::layout_t{extensions};
-		this->base_ = this->static_::array_alloc::allocate(
-			static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
-				typename array::layout_t{extensions}.num_elements()
-			),
-			this->data_elements()  // used as hint
-		);
-		this->uninitialized_fill_n(this->base_, static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
+	// auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array&& {
+	//  if(extensions == this->extensions()) {return std::move(*this);}
+	//  this->destroy();
+	//  this->deallocate();
+	//  this->layout_mutable() = typename array::layout_t{extensions};
+	//  this->base_ = this->static_::array_alloc::allocate(
+	//      static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
+	//          typename array::layout_t{extensions}.num_elements()
+	//      ),
+	//      this->data_elements()  // used as hint
+	//  );
+	//  this->uninitialized_fill_n(this->base_, static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
 
-		return std::move(*this);
-	}
-#endif
+	//  return std::move(*this);
+	// }
 
 	auto reextent(typename array::extensions_type const& exs, typename array::element const& elem) & -> array& {
 		if(exs == this->extensions()) {
 			return *this;
 		}
-#if 0
-		array tmp(x, e, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
-		auto const is = intersection(this->extensions(), x);
-		tmp.apply(is) = this->apply(is);
-		swap(tmp);
-#else  // implementation with hint
+
+		// array tmp(x, e, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
+		// auto const is = intersection(this->extensions(), x);
+		// tmp.apply(is) = this->apply(is);
+		// swap(tmp);
+
+		// implementation with hint
 		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(
 			                                 static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()),
 			                                 this->data_elements()  // use as hint
@@ -1243,7 +1242,7 @@ struct array : static_array<T, D, Alloc> {
 		this->base_            = tmp.base();  // TODO(correaa) : use (and implement) `.move();`
 		this->layout_mutable() = tmp.layout();
 		//  (*this).array::layout_t::operator=(tmp.layout());
-#endif
+
 		return *this;
 	}
 	template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {

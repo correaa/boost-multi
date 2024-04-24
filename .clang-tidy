@@ -33,6 +33,7 @@ Checks: '*,
   -fuchsia-overloaded-operator,
   -fuchsia-trailing-return,
   -llvmlibc-*,
+  -misc-include-cleaner,
   -modernize-use-nodiscard,
   -readability-magic-numbers
 '
@@ -44,6 +45,7 @@ Checks: '*,
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -fuchsia-trailing-return,                              // to allow any '-> decltype(auto)', contradicts modernize trailing
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
+#  -misc-include-cleaner,                                 // Boost.Test headers
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // all tests use magic numbers
 
