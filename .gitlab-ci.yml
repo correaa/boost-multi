@@ -853,6 +853,9 @@ qmcpack cuda-12.3.1:
 sonar:
   stage: build
   allow_failure: true
+  only:
+    refs:
+      - master
   tags:
     - docker
   # cache:
