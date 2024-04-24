@@ -553,6 +553,7 @@ culang++-19 cuda-12.1.1:
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
     - ./llvm.sh 19
+    - apt install clang-tidy-19
     - mkdir build && cd build
     - clang++-19 --version
     - clang-tidy-19 --version
