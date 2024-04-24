@@ -1,14 +1,15 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2021-2023 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi hip thrust"
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/timer/timer.hpp>
 
-#include <multi/array.hpp>
-// #include <multi/adaptors/thrust.hpp>
-// #include <multi/adaptors/thrust/managed_allocator.hpp>
+#include <boost/multi/array.hpp>
+// #include <boost/multi/adaptors/thrust.hpp>
+// #include <boost/multi/adaptors/thrust/managed_allocator.hpp>
 
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
@@ -17,8 +18,8 @@
 
 #include <thrust/universal_allocator.h>
 
-#include <multi/adaptors/thrust/fix_pointer_traits.hpp>
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include <numeric>
 
