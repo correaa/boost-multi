@@ -27,11 +27,12 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
 #include <boost/mp11.hpp>
 
 namespace multi = boost::multi;
 
-using NDArrays = boost::mp11::mp_list<
+using NDArrays = boost::mp11::mp_list<  //TODO(correaa) may need boost::mpl::list when compiling standalone with some old versions of Boost
 	multi::array<double, 1>,
 	multi::array<double, 2>,
 	multi::array<double, 3>

@@ -49,23 +49,23 @@ BOOST_AUTO_TEST_CASE(dummy_test) {
 	BOOST_REQUIRE( arr[0] == 1.0 );
 }
 
-#if 0
-BOOST_AUTO_TEST_CASE(multi_par_construct_1d) {
-	multi::static_array<double, 1> const arr(multi::extensions_t<1>{multi::iextension{10}}, 1.0);
-	//  multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.0);
-	BOOST_REQUIRE( size(arr) == 10 );
-	BOOST_REQUIRE( arr[1] == 1.0 );
+// #if 0
+// BOOST_AUTO_TEST_CASE(multi_par_construct_1d) {
+//  multi::static_array<double, 1> const arr(multi::extensions_t<1>{multi::iextension{10}}, 1.0);
+//  //  multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.0);
+//  BOOST_REQUIRE( size(arr) == 10 );
+//  BOOST_REQUIRE( arr[1] == 1.0 );
 
-#if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
-#if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
-#if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES == 0)
-	multi::static_array<double, 1> const arr2(std::execution::par, arr);
+// #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
+// #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
+// #if !defined(PSTL_USE_PARALLEL_POLICIES) || !(PSTL_USE_PARALLEL_POLICIES == 0)
+//  multi::static_array<double, 1> const arr2(std::execution::par, arr);
 
-	BOOST_REQUIRE( arr2 == arr );
-#endif
-#endif
-#endif
-}
+//  BOOST_REQUIRE( arr2 == arr );
+// #endif
+// #endif
+// #endif
+//}
 
 // BOOST_AUTO_TEST_CASE(copy_par_1d) {
 //  multi::array<double, 1> const arr(1000000, 1.0);
@@ -93,7 +93,8 @@ class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-
 	time_point  start_ = now();
 
  public:
-	explicit watch(std::string label) : label_{std::move(label)} {}
+	// explicit watch(std::string label) : label_{std::move(label)} {}
+	explicit watch(std::string const& label) : label_{label} {}
 
 	~watch() {
 		std::cerr << label_ << ": " << std::chrono::duration<double>(now() - start_).count() << " sec" << std::endl;

@@ -159,7 +159,7 @@ class adl_copy_t {
 	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).copy(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN( _(priority<6>{}, std::forward<As>(args)...) ) \
+	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN( _(priority<6>{}, std::forward<As>(args)...) )
 };
 inline constexpr adl_copy_t adl_copy;
 

@@ -2301,7 +2301,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 		return *this;
 	}
 
-	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...>     && other) && -> subarray& {operator=(std::move(other)); return *this;}
+	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...>     && other) && -> subarray& {operator=(other); return *this;}  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved) TODO(correaa) or do the trick of moving and casting?
 	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...>     && other)  & -> subarray& {
 		assert(this->extensions() == other.extensions());
 		elements() = std::move(other).elements();

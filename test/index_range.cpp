@@ -30,12 +30,13 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
 #include <boost/iterator/transform_iterator.hpp>
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_range) {
-#if defined(__cpp_deduction_guides) and __cpp_deduction_guides and not defined(__NVCC__)
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides && ! defined(__NVCC__)
 	BOOST_REQUIRE(( multi::range{5, 5}.empty() ));
 #else
 	BOOST_REQUIRE(( multi::range<std::ptrdiff_t>{5, 5}.empty() ));
@@ -56,21 +57,6 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 		);
 		BOOST_REQUIRE( vec[1] == 7 );
 	}
-}
-
-BOOST_AUTO_TEST_CASE(crazy_range) {
-	// auto trng = multi::range(
-	//    multi::detail::tuple<int, int>{5, 3},
-	//    multi::detail::tuple<int, int>{5, 9},
-	//  [](auto t , int d) {return std::get<1>(t) + d;}
-	//  [](auto t1, auto t2) {return std::get<1>(t1) - std::get<1>(t2);}
-	// );
-
-	// BOOST_REQUIRE( trng[0] == (std::tuple{5, 3}) );
-	// BOOST_REQUIRE( trng[1] == (std::tuple{5, 4}) );
-
-	// BOOST_REQUIRE( *trng.begin() == (std::tuple{5, 3}) );
-	// BOOST_REQUIRE( *(trng.begin() + 1) == (std::tuple{5, 4}) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
@@ -112,7 +98,7 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 	BOOST_REQUIRE( xbeg[0] == iex[0] );
 	BOOST_REQUIRE( xbeg[1] == iex[1] );
 
-	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
+	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), static_cast<multi::index_extension::value_type>(0)) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
 	{
 		multi::iextensions<3> const ies({
