@@ -336,7 +336,7 @@ inline auto initialize_threads() -> bool {
 #endif
 }
 
-enum class sign : decltype(FFTW_FORWARD) {
+enum class sign : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size) or choose std::int8_t
 	backward = FFTW_BACKWARD,
 	none     = 0,
 	forward  = FFTW_FORWARD,
@@ -354,7 +354,7 @@ constexpr inline auto forward  = sign::forward;
 
 static_assert(forward != none && none != backward && backward != forward);
 
-enum class direction : decltype(FFTW_FORWARD) {
+enum class direction : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size) or choose std::int8_t
 	backward = FFTW_BACKWARD,
 	none     = 0,
 	forward  = FFTW_FORWARD,
