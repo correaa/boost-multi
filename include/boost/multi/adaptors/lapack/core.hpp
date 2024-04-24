@@ -135,8 +135,8 @@ inline void getrs(char trans, lapack_int const n, lapack_int const nrhs, double 
 namespace lapack {
 
 struct context{
-	template<class... Args> static auto getrf(Args&&... args)->decltype(core::getrf(args...)){return core::getrf(args...);}
-	template<class... Args> static auto getrs(Args&&... args)->decltype(core::getrs(args...)){return core::getrs(args...);}
+	template<class... Args> static auto getrf(Args&&... args)->decltype(core::getrf(args...)){return core::getrf(std::forward<Args>(args)...);}
+	template<class... Args> static auto getrs(Args&&... args)->decltype(core::getrs(args...)){return core::getrs(std::forward<Args>(args)...);}
 };
 
 }  // end namespace lapack

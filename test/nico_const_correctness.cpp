@@ -81,7 +81,7 @@ void print_2d(Array2D const& coll) {
 
 	std::for_each(std::begin(coll), std::end(coll), [](auto const& row) {
 		std::copy(std::begin(row), std::end(row), std::ostream_iterator<typename Array2D::element_type>(std::cout, ", "));
-		std::cout << std::endl;
+		std::cout << '\n';
 	});
 }
 
