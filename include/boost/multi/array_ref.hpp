@@ -1416,8 +1416,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
-	template<class Array> constexpr void swap(subarray const& self, Array&& other) {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
-	template<class Array> constexpr void swap(Array&& other, subarray const& self) {self.swap(std::forward<Array>(other));}
+	template<class Array> constexpr void swap(subarray const& self, Array&& other) noexcept {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
+	template<class Array> constexpr void swap(Array&& other, subarray const& self) noexcept {self.swap(std::forward<Array>(other));}
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, D, As...> const& other) -> bool {

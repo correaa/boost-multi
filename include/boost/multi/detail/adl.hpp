@@ -518,7 +518,7 @@ class adl_uninitialized_value_construct_n_t {
 inline constexpr adl_uninitialized_value_construct_n_t adl_uninitialized_value_construct_n;
 
 class adl_alloc_uninitialized_value_construct_n_t {
-	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... args) const DECLRETURN(                       adl_uninitialized_value_construct_n(std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... args) const DECLRETURN(                       adl_uninitialized_value_construct_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
 //  template<class... As>              constexpr auto _(priority<2>/**/,                    As&&... args) const DECLRETURN(              xtd::  alloc_uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 	template<class... As>              constexpr auto _(priority<3>/**/,                    As&&... args) const DECLRETURN(                     alloc_uninitialized_value_construct_n(std::forward<As>(args)...))
 	template<class T, class... As>     constexpr auto _(priority<4>/**/, T&& arg,           As&&... args) const DECLRETURN(  std::decay_t<T>::  alloc_uninitialized_value_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
@@ -544,7 +544,7 @@ class adl_uninitialized_default_construct_n_t {
 inline constexpr adl_uninitialized_default_construct_n_t adl_uninitialized_default_construct_n;
 
 class adl_alloc_uninitialized_default_construct_n_t {
-	template<class Alloc, class... As>          constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const JUSTRETURN(                      adl_uninitialized_default_construct_n(                      std::forward<As>(args)...))
+	template<class Alloc, class... As>          constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const JUSTRETURN(                      adl_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
 	template<class... As>                       constexpr auto _(priority<2>/**/,                    As&&... args) const DECLRETURN(               xtd::alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 #if defined(__CUDACC__) || defined(__HIPCC__)
 	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const DECLRETURN(         thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n))
