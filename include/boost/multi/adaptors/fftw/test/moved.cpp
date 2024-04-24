@@ -2,8 +2,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/fftw.hpp>
-#include <multi/array.hpp>
+#include <boost/multi/adaptors/fftw.hpp>
+#include <boost/multi/array.hpp>
 
 #include <numeric>  // for std::transform_reduce
 

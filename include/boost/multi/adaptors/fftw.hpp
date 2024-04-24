@@ -4,9 +4,9 @@
 #define MULTI_ADAPTORS_FFTW_HPP
 #pragma once
 
-#include <multi/array.hpp>
+#include <boost/multi/array.hpp>
 
-#include <multi/adaptors/fftw/memory.hpp>
+#include <boost/multi/adaptors/fftw/memory.hpp>
 
 #include <algorithm>  // sort
 #include <chrono>

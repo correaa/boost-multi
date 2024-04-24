@@ -1,9 +1,10 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2022 Alfredo A. Correa
+// Copyright 2022-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#include <multi/array.hpp>
+#include <boost/multi/array.hpp>
 
-#include <multi/adaptors/fftw.hpp>  // includes fftw3.hpp
+#include <boost/multi/adaptors/fftw.hpp>  // includes fftw3.hpp
 
 #include <algorithm>  // for std::rotate
 #include <complex>

@@ -1,7 +1,9 @@
-// Copyright 2021-2023 Alfredo A. Correa
+// Copyright 2021-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_THRUST_HPP_
-#define MULTI_ADAPTORS_THRUST_HPP_
+#ifndef BOOST_MULTI_ADAPTORS_THRUST_HPP_
+#define BOOST_MULTI_ADAPTORS_THRUST_HPP_
 #pragma once
 
 #include "../array.hpp"
@@ -24,8 +26,8 @@
 
 #include <utility>  // std::copy
 
-#include <multi/adaptors/thrust/fix_pointer_traits.hpp>
-#include <multi/adaptors/thrust/fix_copy.hpp>
+#include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>
+#include <boost/multi/adaptors/thrust/fix_copy.hpp>
 
 // // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
 // namespace thrust {

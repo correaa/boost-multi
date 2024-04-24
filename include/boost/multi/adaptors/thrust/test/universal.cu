@@ -4,9 +4,9 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust universal"
 #include<boost/test/unit_test.hpp>
 
-#include <multi/array.hpp>
+#include <boost/multi/array.hpp>
 
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/system/cuda/memory.h>
 
@@ -68,13 +68,13 @@ BOOST_AUTO_TEST_CASE(thrust_universal_ptr_initializer_list) {
 
 		BOOST_REQUIRE( Host[0] == 3.0 );
 	}
-//	what( thrust::cuda::universal_allocator<double>{} );
-//	{
-//		multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ = {3., 2., 1.};
+//  what( thrust::cuda::universal_allocator<double>{} );
+//  {
+//      multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ = {3., 2., 1.};
 
-//		Host() = Univ();
+//      Host() = Univ();
 
-//		BOOST_REQUIRE( Host[0] == 3. );
-//	}
+//      BOOST_REQUIRE( Host[0] == 3. );
+//  }
 }
 

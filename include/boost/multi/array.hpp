@@ -64,7 +64,7 @@ struct array_allocator {
 	auto uninitialized_copy_n(EP&& ep, It first, size_type count, pointer_ d_first) {
 		// #if defined(__clang__) && defined(__CUDACC__)
 		// if constexpr(! std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && ! multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type> ) {
-		// 	adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
+		//  adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
 		// }
 		// return adl_copy_n                    (        first, count, d_first);
 		// #else
