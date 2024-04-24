@@ -376,10 +376,10 @@ constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I
 
 template<class Element, class T, std::enable_if_t<has_extensions<T>::value, int> =0>
 [[nodiscard]] auto extensions_of(T const& array) {
-	if constexpr(std::is_convertible<T const&, Element>::value) {
+	if constexpr(std::is_convertible_v<T const&, Element>) {
 		return boost::multi::extensions_t<0>{};
 	}
-	if constexpr(std::is_convertible<typename T::reference, Element>::value) {
+	if constexpr(std::is_convertible_v<typename T::reference, Element>) {
 		return boost::multi::extensions_t<1>{array.extension()};
 	}
 }

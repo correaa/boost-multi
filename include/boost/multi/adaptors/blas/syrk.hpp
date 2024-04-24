@@ -1,7 +1,9 @@
-// Copyright 2019-2021 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_BLAS_SYRK_HPP
-#define MULTI_ADAPTORS_BLAS_SYRK_HPP
+#ifndef BOOST_MULTI_ADAPTORS_BLAS_SYRK_HPP
+#define BOOST_MULTI_ADAPTORS_BLAS_SYRK_HPP
 #pragma once
 
 #include "../blas/core.hpp"

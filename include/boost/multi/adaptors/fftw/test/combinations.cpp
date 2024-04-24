@@ -56,8 +56,8 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)) {
 		return ret;
 	}();
 
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 	std::vector<std::array<bool, 4>> const which_cases = {
-  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		{false,  true,  true,  true},
 		{false,  true,  true, false},
 		{ true, false, false, false},
@@ -142,8 +142,8 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls) use of std::vector
 	std::vector<std::array<bool, 4>> const which_cases = {
-  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		{false,  true,  true,  true},
 		{false,  true,  true, false},
 		{ true, false, false, false},
