@@ -1,11 +1,13 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/blas.hpp>
-#include <multi/array.hpp>
+#include <boost/multi/adaptors/blas.hpp>
+#include <boost/multi/array.hpp>
 
-#include <multi/adaptors/complex.hpp>
+#include <boost/multi/adaptors/complex.hpp>
 
 #include <complex>
 
