@@ -35,7 +35,7 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	auto operator=(watch&&)      = delete;
 
 	auto elapsed_sec() const { return std::chrono::duration<double>(now() - start_).count(); }
-	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << std::endl; }
+	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }
 };
 
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;

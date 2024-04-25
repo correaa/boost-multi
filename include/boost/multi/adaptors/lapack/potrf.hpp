@@ -55,7 +55,7 @@ auto potrf(filling uplo, A2D&& A)  // NOLINT(readability-identifier-length) conv
 	auto last = potrf(uplo, begin(A), end(A));
 
 	using std::distance;
-	return A({0, distance(begin(A), last)});  // , {0, distance(begin(A), last-1)});
+	return std::forward<A2D>(A)({0, distance(begin(A), last)});  // , {0, distance(begin(A), last-1)});
 }
 
 template<class A>
@@ -78,7 +78,7 @@ struct hermitic_t : private A {
 
 template<class A> auto hermitic(lapack::filling side, A&& a)  // NOLINT(readability-identifier-length) conventional lapack name
 -> hermitic_t<std::decay_t<decltype(std::declval<A>()())>> {
-	return {a(), side};
+	return {std::forward<A>(a)(), side};
 }
 
 template<class HA>
@@ -93,8 +93,8 @@ template<class A> auto onrm(A&& a, filling uplo /*= filling::upper*/)  // NOLINT
 	return trsm(flip(uplo), hermitized(potrf(uplo, herk(uplo, a))), std::forward<A>(a)); }
 
 template<class A, class B> auto onrm(A&& a, B&& buffer, filling uplo /* = filling::upper*/)  // NOLINT(readability-identifier-length) conventional lapack name
-->decltype(trsm(flip(uplo), hermitized(potrf(uplo, herk(uplo, a, buffer))), std::forward<A>(a))) { assert(size(a) <= size(rotated(a)));
-	return trsm(flip(uplo), hermitized(potrf(uplo, herk(uplo, a, buffer))), std::forward<A>(a)); }
+->decltype(trsm(flip(uplo), hermitized(potrf(uplo, herk(uplo, a, std::forward<B>(buffer)))), std::forward<A>(a))) { assert(size(a) <= size(rotated(a)));
+	return trsm(flip(uplo), hermitized(potrf(uplo, herk(uplo, a, std::forward<B>(buffer)))), std::forward<A>(a)); }
 
 }  // end namespace boost::multi::lapack
 #endif

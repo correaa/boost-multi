@@ -15,13 +15,13 @@ namespace boost::multi::blas {
 
 template<class A, std::enable_if_t<! is_conjugated<A>{}, int> =0> 
 auto base_aux(A&& array)
-->decltype(base(array)) {
-	return base(array); }
+->decltype(base(std::forward<A>(array))) {
+	return base(std::forward<A>(array)); }
 
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
 auto base_aux(A&& array)
-->decltype(underlying(base(array))) {
-	return underlying(base(array)); }
+->decltype(underlying(base(std::forward<A>(array)))) {
+	return underlying(base(std::forward<A>(array))); }
 
 using core::herk;
 

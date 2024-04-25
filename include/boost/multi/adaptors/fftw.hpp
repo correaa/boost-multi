@@ -322,7 +322,7 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 
 template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(detail::implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))>  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 auto fftw_plan_dft(In const& in, Out&& out, int dir) {
-	return fftw_plan_dft(in, out, dir, fftw::estimate);
+	return fftw_plan_dft(in, std::forward<Out>(out), dir, fftw::estimate);
 }
 
 namespace fftw {
@@ -522,21 +522,19 @@ template<typename... A> auto dft_backward(A&&... args)
 	return dft(std::forward<A>(args)..., fftw::backward);
 }
 
-#if 0
-template<typename In, class R=typename std::decay_t<In>::decay_type>
-auto move(In&& in) {
-	if(in.is_compact()) {
-		multi::array_ref<typename In::element, In::rank_v, typename In::element_ptr> Ref(
-			in.base(), extensions(in)
-		);
-		copy(in, Ref);
-		return R(
-			multi::array_ref<typename In::element, In::rank_v, std::move_iterator<typename In::element_ptr>>(std::make_move_iterator(in.mbase()), ((in.mbase()=0), extensions(Ref)))
-		);
-	}
-	return copy(std::forward<In>(in));
-}
-#endif
+// template<typename In, class R=typename std::decay_t<In>::decay_type>
+// auto move(In&& in) {
+//  if(in.is_compact()) {
+//      multi::array_ref<typename In::element, In::rank_v, typename In::element_ptr> Ref(
+//          in.base(), extensions(in)
+//      );
+//      copy(in, Ref);
+//      return R(
+//          multi::array_ref<typename In::element, In::rank_v, std::move_iterator<typename In::element_ptr>>(std::make_move_iterator(in.mbase()), ((in.mbase()=0), extensions(Ref)))
+//      );
+//  }
+//  return copy(std::forward<In>(in));
+// }
 
 template<class T, boost::multi::dimensionality_type D>
 using static_array = ::boost::multi::static_array<T, D, fftw::allocator<T>>;

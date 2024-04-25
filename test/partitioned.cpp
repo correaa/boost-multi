@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		internal_array_type slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)
 		propagate_const<double&> prop3;  // NOLINT(misc-non-private-member-variables-in-classes)
 
-		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{std::move(row)({2, 8}).partitioned(3)}, prop3{row[8]} {}
+		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{std::move(row)[8]} {}
 	};
 
 	auto&& wr = walker_ref(arr[5]);

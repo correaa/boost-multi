@@ -19,7 +19,7 @@ auto swap_n(It1 first, Size count, It2 first2) -> It2 {
 }
 
 template<class It1, class It2>
-auto swap(It1 first, It2 last, It2 first2) -> It2 {
+auto swap(It1 first, It2 last, It2 first2) noexcept -> It2 {
 	assert(stride(first) == stride(last));
 	return swap_n(first, last - first, first2);
 }
