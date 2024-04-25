@@ -2679,7 +2679,12 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
-		return ! operator==(self, other);
+		if(self.extensions() != other.extensions()) { return true; }
+		return !adl_equal(
+			other.data_elements(), other.data_elements() + other.num_elements(),
+			self .data_elements()
+		);
+		// return ! operator==(self, other);  // commented due to bug in nvcc 22.11
 	}
 
 	    HD constexpr auto data_elements() &      -> typename array_ref::element_ptr       {return array_ref::base_;}
