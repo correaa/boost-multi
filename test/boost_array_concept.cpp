@@ -54,8 +54,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(concepts_boost_array) {
-	[[maybe_unused]]  // bug in nvcc 11.8
-	using BMA = boost::multi_array<int, 2>;
+	using BMA [[maybe_unused]] = boost::multi_array<int, 2>;  // maybe_unused for bug in nvcc 11.8
 
 	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<BMA, 2>));
 	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<BMA, 2>));
@@ -236,8 +235,7 @@ BOOST_AUTO_TEST_CASE(concepts_iterator) {
 }
 
 BOOST_AUTO_TEST_CASE(concepts_const_iterator) {
-	[[maybe_unused]]  // bug in nvcc 11.8
-	using MAIt = multi::array<int, 2>::const_iterator;
+	using MAIt [[maybe_unused]] = multi::array<int, 2>::const_iterator;  // maybe_unused for bug in nvcc 11.8
 
 	BOOST_CONCEPT_ASSERT((boost::Assignable<MAIt>));
 	BOOST_CONCEPT_ASSERT((boost::SGIAssignable<MAIt>));
