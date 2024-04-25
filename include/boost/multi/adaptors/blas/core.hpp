@@ -20,19 +20,17 @@
 
 #include "../blas/traits.hpp"
 
-#if 0
-	#define BOOST_MULTI_ASSERT1(ExpR)              assert       (ExpR)
-	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
+// #define BOOST_MULTI_ASSERT1(ExpR)              assert       (ExpR)
+// #define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
+
+#if not defined(NDEBUG)
+	#include<stdexcept>
+	#include<string>
+	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
+	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
 #else
-	#if not defined(NDEBUG)
-		#include<stdexcept>
-		#include<string>
-		#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
-		#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
-	#else
-		#define BOOST_MULTI_ASSERT1(ExpR)              assert(ExpR)
-		#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
-	#endif
+	#define BOOST_MULTI_ASSERT1(ExpR)              assert(ExpR)
+	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
 #endif
 
 #ifdef CBLAS_H
@@ -235,10 +233,10 @@ using std::is_assignable;
 
 // TODO(correaa) implement xrotg, xrotmg, xrot, xrotm
 
-template<class SX, class SY, enable_if_t<is_s<SX>{} && is_s<SY>{} && is_assignable<SY&, SX&>{},int> =0> void swap(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) {BLAS(sswap)(n, reinterpret_cast<             float  *>(x), incx, (             float  *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
-template<class DX, class DY, enable_if_t<is_d<DX>{} && is_d<DY>{} && is_assignable<DY&, DX&>{},int> =0> void swap(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) {BLAS(dswap)(n, reinterpret_cast<             double *>(x), incx, (             double *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
-template<class CX, class CY, enable_if_t<is_c<CX>{} && is_c<CY>{} && is_assignable<CY&, CX&>{},int> =0> void swap(ssize_t n, CX* x, ptrdiff_t incx, CY* y, ptrdiff_t incy) {BLAS(cswap)(n, reinterpret_cast<std::complex<float >*>(x), incx, (std::complex<float >*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
-template<class ZX, class ZY, enable_if_t<is_z<ZX>{} && is_z<ZY>{} && is_assignable<ZY&, ZX&>{},int> =0> void swap(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) {BLAS(zswap)(n, reinterpret_cast<std::complex<double>*>(x), incx, (std::complex<double>*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
+template<class SX, class SY, enable_if_t<is_s<SX>{} && is_s<SY>{} && is_assignable<SY&, SX&>{},int> =0> void swap(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) noexcept {BLAS(sswap)(n, reinterpret_cast<             float  *>(x), incx, (             float  *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
+template<class DX, class DY, enable_if_t<is_d<DX>{} && is_d<DY>{} && is_assignable<DY&, DX&>{},int> =0> void swap(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) noexcept {BLAS(dswap)(n, reinterpret_cast<             double *>(x), incx, (             double *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
+template<class CX, class CY, enable_if_t<is_c<CX>{} && is_c<CY>{} && is_assignable<CY&, CX&>{},int> =0> void swap(ssize_t n, CX* x, ptrdiff_t incx, CY* y, ptrdiff_t incy) noexcept {BLAS(cswap)(n, reinterpret_cast<std::complex<float >*>(x), incx, (std::complex<float >*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
+template<class ZX, class ZY, enable_if_t<is_z<ZX>{} && is_z<ZY>{} && is_assignable<ZY&, ZX&>{},int> =0> void swap(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) noexcept {BLAS(zswap)(n, reinterpret_cast<std::complex<double>*>(x), incx, (std::complex<double>*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
 
 template<class SX, class SY, enable_if_t<is_s<SX>{} && is_s<SY>{} && is_assignable<SY&, SX&>{},int> =0> void copy(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) {BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 template<class DX, class DY, enable_if_t<is_d<DX>{} && is_d<DY>{} && is_assignable<DY&, DX&>{},int> =0> void copy(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) {BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
@@ -380,12 +378,6 @@ template<> struct blas2<z> {template<class... As> static auto trsv(As... args) -
 
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
-
-#if 0
-#define xsyrk(T) \
-template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){ \
-	/*BOOST_MULTI_MARK_SCOPE("cpu_syrk");*/ BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
-#endif
 
 namespace core {
 

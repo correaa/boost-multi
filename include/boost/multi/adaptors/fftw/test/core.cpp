@@ -1,9 +1,11 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/fftw.hpp>
-#include <multi/array.hpp>
+#include <boost/multi/adaptors/fftw.hpp>
+#include <boost/multi/array.hpp>
 
 #include <chrono>  // NOLINT(build/c++11) bug in cpplint
 #include <iostream>
@@ -36,7 +38,7 @@ template<class T> class randomizer {
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
 
 	template<class M, class R = typename std::decay_t<M>::reference> void operator()(M&& arr) {
-		std::for_each(std::begin(arr), std::end(arr), [self = this](R elem) { self->operator()(elem); });
+		std::for_each(std::begin(std::forward<M>(arr)), std::end(std::forward<M>(arr)), [self = this](R elem) { self->operator()(elem); });
 	}
 	void operator()(T& elem) {  // NOLINT(runtime/references) passing by reference
 		std::normal_distribution<T> gauss;
@@ -51,7 +53,7 @@ template<class T> class randomizer<std::complex<T>> {
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
 
 	template<class M, class R = typename std::decay_t<M>::reference> void operator()(M&& arr) {
-		std::for_each(std::begin(arr), std::end(arr), [self = this](R elem) { self->operator()(elem); });
+		std::for_each(std::begin(std::forward<M>(arr)), std::end(std::forward<M>(arr)), [self = this](R elem) { self->operator()(elem); });
 	}
 	void operator()(std::complex<T>& zee) {  // NOLINT(runtime/references) : passing by reference
 		std::normal_distribution<T> gauss;

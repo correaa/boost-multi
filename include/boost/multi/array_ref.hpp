@@ -706,19 +706,19 @@ struct elements_range_t {
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
 	auto operator=(elements_range_t     && other) noexcept -> elements_range_t& {  // cannot be =delete in NVCC?
-		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());} // TODO(correaa) use move?
+		if(! is_empty()) {adl_copy(std::begin(std::move(other)), std::end(std::move(other)), begin());}
 		return *this;
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
-	auto operator=(OtherElementRange&& other)  & -> elements_range_t& {assert(size() == other.size());
+	auto operator=(OtherElementRange&& other)  & -> elements_range_t& {assert(size() == other.size());  // NOLINT(cppcoreguidelines-missing-std-forward) std::forward<OtherElementRange>(other) creates a problem with move-only elements
 		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
 		return *this;
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
-	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());
-		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
+	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());  // NOLINT(cppcoreguidelines-missing-std-forward) std::forward<OtherElementRange>(other) creates a problem with move-only elements
+		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());} 
 		return *this;
 	}
 
@@ -759,7 +759,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	HD constexpr subarray(layout_type const& layout, ElementPtr const& base)
 	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
-	auto operator=(subarray&& other) noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {  // allows assigment in temporaries //NOSONAR
+	auto operator=(subarray&& other) noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {  // allows assigment in temporaries // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
 		operator=(other); return *this;
 	}
 
@@ -1416,8 +1416,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
-	template<class Array> constexpr void swap(subarray const& self, Array&& other) {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
-	template<class Array> constexpr void swap(Array&& other, subarray const& self) {self.swap(std::forward<Array>(other));}
+	template<class Array> constexpr void swap(subarray const& self, Array&& other) noexcept {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
+	template<class Array> constexpr void swap(Array&& other, subarray const& self) noexcept {self.swap(std::forward<Array>(other));}
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, D, As...> const& other) -> bool {
@@ -1621,7 +1621,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		return {
 			layout_t<D+1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),
-			static_cast<P2>(static_cast<void*>(this->base_))
+			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		};
 	}
 
@@ -1716,7 +1716,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	constexpr auto distance_to(array_iterator const& other) const -> difference_type {
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return (other.data_ - data_)/stride_;
+		return (other.data_ - data_)/stride_;  // with strict-overflow=3 error: assuming signed overflow does not occur when simplifying ‘X - Y > 0’ to ‘X > Y’ [-Werror=strict-overflow]
 	}
 
  public:
@@ -1865,7 +1865,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
  protected:
 	template<class A> constexpr void intersection_assign(A&& other)&& {intersection_assign(std::forward<A>(other));}
-	template<class A> constexpr void intersection_assign(A&& other)&  {
+	template<class A> constexpr void intersection_assign(A&& other)&  {  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved,cppcoreguidelines-missing-std-forward) false positive clang-tidy 17
 		std::for_each(
 			intersection(types::extension(), extension(other)).begin(),
 			intersection(types::extension(), extension(other)).end()  ,
@@ -1935,7 +1935,7 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	constexpr auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
+	constexpr auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations) //NOSONAR
 	-> subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		operator=(other);
 		return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -2545,12 +2545,12 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
-	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
+	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
+	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
 
 	constexpr explicit array_ref(typename array_ref::element_ptr dat, typename array_ref::extensions_type extensions) noexcept  // TODO(correa) eliminate this ctor
 	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
@@ -2582,10 +2582,10 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 //  this ctor makes memcheck complain about memmory used after scope
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>
 	// cppcheck-suppress noExplicitConstructor
-	array_ref(std::initializer_list<TT> const& il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
+	array_ref(std::initializer_list<TT> il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
 
-	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>
-	array_ref(std::initializer_list<TT>&& il) = delete;
+	// template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>
+	// array_ref(std::initializer_list<TT>&& il) = delete;
 
 	using subarray<T, D, ElementPtr>::operator=;
 
@@ -2618,13 +2618,13 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		return *this;
 	}
 
-	constexpr auto operator=(array_ref&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  //NOSONAR(cppS5018)
+	constexpr auto operator=(array_ref&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations)  //NOSONAR(cppS5018)
 	-> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(std::as_const(other));
 		return *this;
 	}
-	constexpr auto operator=(array_ref&& other) && noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	constexpr auto operator=(array_ref&& other) && noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations)
 	-> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(std::as_const(other));
@@ -2679,7 +2679,12 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
-		return ! operator==(self, other);
+		if(self.extensions() != other.extensions()) { return true; }
+		return !adl_equal(
+			other.data_elements(), other.data_elements() + other.num_elements(),
+			self .data_elements()
+		);
+		// return ! operator==(self, other);  // commented due to bug in nvcc 22.11
 	}
 
 	    HD constexpr auto data_elements() &      -> typename array_ref::element_ptr       {return array_ref::base_;}

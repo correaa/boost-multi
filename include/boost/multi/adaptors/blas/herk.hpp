@@ -1,7 +1,7 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-#ifndef MULTI_ADAPTORS_BLAS_HERK_HPP
-#define MULTI_ADAPTORS_BLAS_HERK_HPP
+#ifndef BOOST_MULTI_ADAPTORS_BLAS_HERK_HPP
+#define BOOST_MULTI_ADAPTORS_BLAS_HERK_HPP
 #pragma once
 
 #include "../blas/copy.hpp" 
@@ -15,13 +15,13 @@ namespace boost::multi::blas {
 
 template<class A, std::enable_if_t<! is_conjugated<A>{}, int> =0> 
 auto base_aux(A&& array)
-->decltype(base(array)) {
-	return base(array); }
+->decltype(base(std::forward<A>(array))) {
+	return base(std::forward<A>(array)); }
 
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
 auto base_aux(A&& array)
-->decltype(underlying(base(array))) {
-	return underlying(base(array)); }
+->decltype(underlying(base(std::forward<A>(array)))) {
+	return underlying(base(std::forward<A>(array))); }
 
 using core::herk;
 

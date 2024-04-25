@@ -4,21 +4,21 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 // Test explicitly calls deprecated function
-#if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnositc ignored "-Wdeprecated-declarations"
-#elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
-#endif
+// #if defined(__clang__)
+// #  pragma clang diagnostic push
+// #  pragma clang diagnositc ignored "-Wdeprecated-declarations"
+// #elif defined(__GNUC__)
+// #  pragma GCC diagnostic push
+// #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+// #endif
 
 #include <boost/multi/array.hpp>
 
-#if defined(__clang__)
-#  pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#  pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+// #  pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+// #  pragma GCC diagnostic pop
+// #endif
 
 // Suppress warnings from other boost libraries
 #if defined(__clang__)
@@ -29,7 +29,7 @@
 #  pragma clang diagnostic ignored "-Wsign-conversion"
 #  pragma clang diagnostic ignored "-Wfloat-equal"
 #  pragma clang diagnostic ignored "-Wunknown-pragmas"
-#  pragma clang diagnositc ignored "-Wdeprecated-declarations"
+// #  pragma clang diagnositc ignored "-Wdeprecated-declarations"
 #  pragma clang diagnostic ignored "-Wunused-variable"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
@@ -39,7 +39,7 @@
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
 #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #  pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+// #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
 #  pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
@@ -48,11 +48,13 @@
 #endif
 
 #include <boost/multi_array.hpp>
+
 #include <boost/concept_check.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(concepts_boost_array) {
-	using BMA = boost::multi_array<int, 2>;
+	using BMA [[maybe_unused]] = boost::multi_array<int, 2>;  // maybe_unused for bug in nvcc 11.8
 
 	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<BMA, 2>));
 	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<BMA, 2>));
@@ -87,12 +89,12 @@ BOOST_AUTO_TEST_CASE(backwards) {
 		#pragma nv_diagnostic pop
 	}
 	// {
-	// 	#pragma GCC diagnostic push
-	// 	#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-	// 	std::array<std::ptrdiff_t, 2> ib(MA.index_bases()); (void)ib;
-	// 	BOOST_REQUIRE(ib[0] == 0);
-	// 	BOOST_REQUIRE(ib[1] == 0);
-	// 	#pragma GCC diagnostic pop
+	//  #pragma GCC diagnostic push
+	//  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	//  std::array<std::ptrdiff_t, 2> ib(MA.index_bases()); (void)ib;
+	//  BOOST_REQUIRE(ib[0] == 0);
+	//  BOOST_REQUIRE(ib[1] == 0);
+	//  #pragma GCC diagnostic pop
 	// }
 	{
 		#pragma GCC diagnostic push
@@ -127,13 +129,13 @@ BOOST_AUTO_TEST_CASE(backwards) {
 		#pragma GCC diagnostic pop
 	}
 	// {
-	// 	#pragma GCC diagnostic push
-	// 	#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-	// 	std::vector<std::ptrdiff_t> ib(2);  // NOLINT(fuchsia-default-arguments-calls)
-	// 	std::copy_n(MA.index_bases().to_array().data(), 2, ib.begin());
-	// 	BOOST_REQUIRE(ib[0] == 0);
-	// 	BOOST_REQUIRE(ib[1] == 0);
-	// 	#pragma GCC diagnostic pop
+	//  #pragma GCC diagnostic push
+	//  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	//  std::vector<std::ptrdiff_t> ib(2);  // NOLINT(fuchsia-default-arguments-calls)
+	//  std::copy_n(MA.index_bases().to_array().data(), 2, ib.begin());
+	//  BOOST_REQUIRE(ib[0] == 0);
+	//  BOOST_REQUIRE(ib[1] == 0);
+	//  #pragma GCC diagnostic pop
 	// }
 }
 
@@ -233,7 +235,7 @@ BOOST_AUTO_TEST_CASE(concepts_iterator) {
 }
 
 BOOST_AUTO_TEST_CASE(concepts_const_iterator) {
-	using MAIt = multi::array<int, 2>::const_iterator;
+	using MAIt [[maybe_unused]] = multi::array<int, 2>::const_iterator;  // maybe_unused for bug in nvcc 11.8
 
 	BOOST_CONCEPT_ASSERT((boost::Assignable<MAIt>));
 	BOOST_CONCEPT_ASSERT((boost::SGIAssignable<MAIt>));
@@ -247,9 +249,9 @@ BOOST_AUTO_TEST_CASE(concepts_const_iterator) {
 	//   BOOST_CONCEPT_ASSERT((boost::OutputIterator<MAIt, MAIt::value_type>));
 
 	BOOST_CONCEPT_ASSERT((boost::ForwardIterator<MAIt>));
-// 	BOOST_CONCEPT_ASSERT((boost::Mutable_ForwardIterator<MAIt>));
+//  BOOST_CONCEPT_ASSERT((boost::Mutable_ForwardIterator<MAIt>));
 	BOOST_CONCEPT_ASSERT((boost::BidirectionalIterator<MAIt>));
-// 	BOOST_CONCEPT_ASSERT((boost::Mutable_BidirectionalIterator<MAIt>));
+//  BOOST_CONCEPT_ASSERT((boost::Mutable_BidirectionalIterator<MAIt>));
 	BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<MAIt>));
-// 	BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<MAIt>));
+//  BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<MAIt>));
 }

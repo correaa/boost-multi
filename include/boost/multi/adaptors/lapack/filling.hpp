@@ -1,7 +1,9 @@
 // Copyright 2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_LAPACK_FILLING_HPP
-#define MULTI_ADAPTORS_LAPACK_FILLING_HPP
+#ifndef BOOST_MULTI_ADAPTORS_LAPACK_FILLING_HPP
+#define BOOST_MULTI_ADAPTORS_LAPACK_FILLING_HPP
 #pragma once
 
 // TODO(correaa)  #include "multi/blas/filling.hpp"

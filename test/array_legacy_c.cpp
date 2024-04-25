@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	}
 }
 
-inline constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& { return array[2]; }
+constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& { return std::move(array)[2]; }
 
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
 	double arr[5] = {150.0, 16.0, 17.0, 18.0, 19.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)

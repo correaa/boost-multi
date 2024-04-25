@@ -1,10 +1,12 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_BLAS_SWAP_HPP
-#define MULTI_ADAPTORS_BLAS_SWAP_HPP
+#ifndef BOOST_MULTI_ADAPTORS_BLAS_SWAP_HPP
+#define BOOST_MULTI_ADAPTORS_BLAS_SWAP_HPP
 #pragma once
 
-#include <multi/adaptors/blas/core.hpp>
+#include <boost/multi/adaptors/blas/core.hpp>
 
 namespace boost::multi::blas {
 
@@ -17,7 +19,7 @@ auto swap_n(It1 first, Size count, It2 first2) -> It2 {
 }
 
 template<class It1, class It2>
-auto swap(It1 first, It2 last, It2 first2) -> It2 {
+auto swap(It1 first, It2 last, It2 first2) noexcept -> It2 {
 	assert(stride(first) == stride(last));
 	return swap_n(first, last - first, first2);
 }

@@ -37,7 +37,7 @@ void print(Array1D const& coll) {
 	// *coll.begin() = 99;  // doesn't compile "assignment of read-only location"
 
 	std::copy(std::begin(coll), std::end(coll), std::ostream_iterator<typename Array1D::value_type>(std::cout, ", "));
-	std::cout << std::endl;
+	std::cout << '\n';
 }
 
 BOOST_AUTO_TEST_CASE(const_views) {
@@ -81,7 +81,7 @@ void print_2d(Array2D const& coll) {
 
 	std::for_each(std::begin(coll), std::end(coll), [](auto const& row) {
 		std::copy(std::begin(row), std::end(row), std::ostream_iterator<typename Array2D::element_type>(std::cout, ", "));
-		std::cout << std::endl;
+		std::cout << '\n';
 	});
 }
 

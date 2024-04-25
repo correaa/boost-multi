@@ -69,11 +69,16 @@ struct transform_ptr {
 		transform_ptr<
 			std::remove_cv_t<U>,
 			UF, Ptr,
-			typename std::conditional<
+			std::conditional_t<
 				std::is_const_v<U>,
 				typename ref_add_const<Ref>::type,
 				Ref
-			>::type
+			>
+			// typename std::conditional<
+			//  std::is_const_v<U>,
+			//  typename ref_add_const<Ref>::type,
+			//  Ref
+			// >::type
 		>
 	;
 
@@ -172,7 +177,7 @@ template<class T, typename = typename T::get_allocator>
 inline auto has_get_allocator_aux(...     ) -> std::false_type;
 
 template<class T, std::size_t N>
-constexpr auto get_allocator(T(&/*array*/)[N]) noexcept -> std::allocator<std::decay_t<typename std::remove_all_extents<T[N]>::type>> {return {};}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+constexpr auto get_allocator(T(&/*array*/)[N]) noexcept -> std::allocator<std::decay_t<std::remove_all_extents_t<T[N]>>> {return {};}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T>
 constexpr auto get_allocator(T* const& /*t*/)
@@ -307,7 +312,7 @@ template<class T, std::size_t N>
 constexpr auto dimensionality(T const(&array)[N]) {return 1 + dimensionality(array[0]);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T>
-inline constexpr auto sizes(T const& /*unused*/) noexcept -> tuple<> {return {};}
+constexpr auto sizes(T const& /*unused*/) noexcept -> tuple<> {return {};}
 
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&array)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
@@ -376,10 +381,10 @@ constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I
 
 template<class Element, class T, std::enable_if_t<has_extensions<T>::value, int> =0>
 [[nodiscard]] auto extensions_of(T const& array) {
-	if constexpr(std::is_convertible<T const&, Element>::value) {
+	if constexpr(std::is_convertible_v<T const&, Element>) {
 		return boost::multi::extensions_t<0>{};
 	}
-	if constexpr(std::is_convertible<typename T::reference, Element>::value) {
+	if constexpr(std::is_convertible_v<typename T::reference, Element>) {
 		return boost::multi::extensions_t<1>{array.extension()};
 	}
 }
@@ -478,10 +483,10 @@ template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std
 template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N> const&  arr) noexcept {return arr.data();}
 template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std::array<std::array<T, M>, N> const& arr) noexcept {return data_elements(arr[0]);}
 
-template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N>      && arr) noexcept {return arr.data();}
+template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N>      && arr) noexcept {return std::move(arr).data();}
 
 template<class T, std::size_t M, std::size_t N>
-constexpr auto data_elements(std::array<std::array<T, M>, N>&& arr) noexcept {return data_elements(arr[0]);}
+constexpr auto data_elements(std::array<std::array<T, M>, N>&& arr) noexcept {return data_elements(std::move(arr)[0]);}
 
 template<class T, std::size_t N> constexpr auto num_elements(std::array<T, N> const& /*unused*/) noexcept
 -> std::ptrdiff_t{return N;}

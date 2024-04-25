@@ -5,10 +5,10 @@
 #pragma once
 
 // #include <multi/config/MARK.hpp>
-#include <multi/adaptors/cuda/cublas/call.hpp>
+#include <boost/multi/adaptors/cuda/cublas/call.hpp>
 
-#include <multi/adaptors/blas/traits.hpp>
-#include <multi/adaptors/blas/core.hpp>
+#include <boost/multi/adaptors/blas/traits.hpp>
+#include <boost/multi/adaptors/blas/core.hpp>
 
 #if not defined(MULTI_USE_HIP)
 #include <thrust/system/cuda/memory.h>  // for thrust::cuda::pointer

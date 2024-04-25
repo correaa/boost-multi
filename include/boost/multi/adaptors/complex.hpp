@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2023 Alfredo A. Correa
 
-#ifndef MULTI_ADAPTORS_COMPLEX_HPP
-#define MULTI_ADAPTORS_COMPLEX_HPP
+#ifndef BOOST_MULTI_ADAPTORS_COMPLEX_HPP
+#define BOOST_MULTI_ADAPTORS_COMPLEX_HPP
 #pragma once
 
 #include<complex>  // to define its traits

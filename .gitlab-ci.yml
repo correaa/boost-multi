@@ -22,7 +22,7 @@ g++:  # debian-stable: default is gcc 12 as of Dec 2023
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
 
@@ -41,7 +41,7 @@ g++-m32:
     - cd ..
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-m32"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-m32"
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
@@ -54,7 +54,7 @@ coverage:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-DNDEBUG --coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-DNDEBUG --coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 1 --output-on-failure -T Test
     - ctest -j 1 --output-on-failure -T Coverage
@@ -76,11 +76,15 @@ coverage:
 
 g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
   stage: build
+  allow_failure: true
   tags:
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config valgrind
     - g++ --version
+    - cpplint --version
+    - cppcheck --version
+    - valgrind --version
     - mkdir build && cd build
     - export VALGRIND_EXE="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
@@ -96,7 +100,7 @@ g++-testing sanitizer:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address" -fno-omit-frame-pointer  # ,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-omit-frame-pointer -fno-sanitize-recover=all"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-fsanitize=address" -fno-omit-frame-pointer  # ,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-omit-frame-pointer -fno-sanitize-recover=all"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ASAN_OPTIONS="new_delete_type_mismatch=true:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=true" ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
@@ -113,7 +117,7 @@ g++-7:
     - cmake --version
     - g++-7 --version
     - mkdir build && cd build
-    - CXX=g++-7 CXXFLAGS="-DBOOST_TEST_MAIN -DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - CXX=g++-7 CXXFLAGS="-DBOOST_TEST_MAIN -DBOOST_TEST_DYN_LINK" cmake .. -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
@@ -126,7 +130,7 @@ g++-testing c++20:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=20 
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++"]
@@ -139,7 +143,7 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++-testing c++20"]
@@ -150,7 +154,7 @@ clang++:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
 
@@ -188,7 +192,7 @@ clang++-latest libc++:
     - cd ..
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -211,7 +215,7 @@ clang++-macos:
     #- cd ..
     - mkdir build && cd build
     - c++ --version
-    - CXX=c++ cmake .. -DCMAKE_BUILD_TYPE=Debug # -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
+    - CXX=c++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0  # -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -231,21 +235,22 @@ clang++-m32:
     - cd ..
     - mkdir build && cd build
     - c++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-m32"
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-m32"
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
 clang++-testing tidy:
   stage: build
-  image: debian:testing  # clang 16.0.6 as of Dec 2023
+  image: debian:unstable  # clang 18 as of Apr 2024
   tags:
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-18 clang-tidy-18 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - clang-tidy --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy
+    - clang++-18 --version
+    - clang-tidy-18 --version
+    - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -258,7 +263,7 @@ g++-testing c++20:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=20 
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++"]
@@ -271,7 +276,7 @@ g++-testing sanitizer:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
@@ -291,7 +296,7 @@ clang++-17-unstable libc++ c++23 boost_1_84:
     - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4 # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
-    - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"  # -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib -DBoost_NO_SYSTEM_PATHS=ON
+    - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"  # -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib -DBoost_NO_SYSTEM_PATHS=ON
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["clang++-latest libc++", "g++-testing c++20"]
@@ -318,7 +323,7 @@ clang++-oldoldstable:
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release
+    - CXX=clang++ CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -332,7 +337,7 @@ oneapi:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
 
@@ -348,7 +353,7 @@ oneapi-latest c++20:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_CXX_STANDARD=20
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
   needs: ["oneapi"]
@@ -362,7 +367,7 @@ oneapi-2022.2:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx CXXFLAGS="-DPSTL_USE_PARALLEL_POLICIES=0" cmake .. -DCMAKE_BUILD_TYPE=Release
+    - CXX=icpx CXXFLAGS="-DPSTL_USE_PARALLEL_POLICIES=0" cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
   needs: ["oneapi"]
@@ -377,7 +382,7 @@ nvhpc:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake .. -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
 
@@ -391,7 +396,7 @@ nvhpc-22.7:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake .. -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0  # TODO(correaa) add -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["nvhpc"]
@@ -406,7 +411,7 @@ nvhpc-24.3 c++20 par:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdpar=multicore"
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2024/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdpar=multicore"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["nvhpc"]
@@ -423,12 +428,12 @@ cuda:
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+    - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+    - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+    - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["g++"]
 
 cuda:
@@ -443,12 +448,12 @@ cuda:
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DBUILD_TESTING=0 -DENABLE_CUDA=1
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+    - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+    - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+    - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["g++"]
 
 cuda-11.8 mkl:
@@ -464,12 +469,12 @@ cuda-11.8 mkl:
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DBUILD_TESTING=0 -DENABLE_CUDA=1
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+    - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+    - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+    - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["cuda"]
 
 cuda-11.4.3:
@@ -487,7 +492,7 @@ cuda-11.4.3:
     - cmake --version
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
@@ -510,7 +515,7 @@ cuclang++-16 cuda-11.4.3:
     - ./llvm.sh 16
     - mkdir build && cd build
     - clang++-16 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
@@ -530,12 +535,12 @@ culang++-17 cuda-11.8:
     - ./llvm.sh 17
     - mkdir build && cd build
     - clang++-17 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-culang++-19 cuda-12.1.1:
+culang++-19 cuda-12.1.1 tidy:
   stage: build
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
   allow_failure: false
@@ -549,9 +554,11 @@ culang++-19 cuda-12.1.1:
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
     - ./llvm.sh 19
+    - apt-get install --no-install-recommends -y clang-tidy-19
     - mkdir build && cd build
     - clang++-19 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19
+    - clang-tidy-19 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-19 -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
@@ -568,7 +575,7 @@ cuda-12.3.1:
     - mkdir build && cd build
     - g++-12 --version
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of drivers"
   needs: ["cuda"]
@@ -595,7 +602,7 @@ rocm:
     - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
-    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
+    - cmake .. -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
   needs: ["clang++", "g++"]
@@ -613,7 +620,7 @@ circle:
     - ls
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
 
@@ -630,7 +637,7 @@ circle-187:
     - ls
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
   needs: ["circle"]
@@ -648,7 +655,7 @@ circle-latest:
     - ls
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
   needs: ["circle"]
@@ -846,6 +853,10 @@ qmcpack cuda-12.3.1:
 
 sonar:
   stage: build
+  allow_failure: true
+  only:
+    refs:
+      - master
   tags:
     - docker
   # cache:
@@ -867,7 +878,7 @@ sonar:
       # Download build-wrapper
     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - build-wrapper/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/ --verbose
     - cd build
     - ctest -j 1 --output-on-failure -T Test

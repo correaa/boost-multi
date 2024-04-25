@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return)
 	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 }
 
-template<typename ComplexRef> struct Conjd;
+template<typename ComplexRef> struct Conjd;  // NOLINT(readability-identifier-naming) for testing
 
 struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
 	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }

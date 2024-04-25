@@ -27,11 +27,14 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mp11.hpp>
+
+// #include <boost/mp11.hpp>
+#include <boost/mpl/list.hpp>
 
 namespace multi = boost::multi;
 
-using NDArrays = boost::mp11::mp_list<
+// using NDArrays = boost::mp11::mp_list<  // fails with Boost.Test 1.67
+using NDArrays = boost::mpl::list<
 	multi::array<double, 1>,
 	multi::array<double, 2>,
 	multi::array<double, 3>

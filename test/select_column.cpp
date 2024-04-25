@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2021 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -59,17 +58,27 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part1) {
 	BOOST_REQUIRE( size( arr(      multi::ALL     , 2) ) == 4 );
 	BOOST_REQUIRE( size( arr(      multi::ALL < 2 , 2) ) == 2 );
 	BOOST_REQUIRE( size( arr( 1 <= multi::ALL     , 2) ) == 3 );
-	BOOST_REQUIRE( size( arr( 1 <= multi::ALL < 3 , 2) ) == 2 );
+	BOOST_REQUIRE( size( arr( 1 <= multi::ALL < 3 , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 
 	BOOST_REQUIRE( size( arr(      multi::_       , 2) ) == 4 );
 	BOOST_REQUIRE( size( arr(      multi::_   < 2 , 2) ) == 2 );
 	BOOST_REQUIRE( size( arr( 1 <= multi::_       , 2) ) == 3 );
-	BOOST_REQUIRE( size( arr( 1 <= multi::_   < 3 , 2) ) == 2 );
+	BOOST_REQUIRE( size( arr( 1 <= multi::_   < 3 , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 
 	BOOST_REQUIRE( size( arr(             _       , 2) ) == 4 );
 	BOOST_REQUIRE( size( arr(             _ < 2   , 2) ) == 2 );
 	BOOST_REQUIRE( size( arr( 1 <=        _       , 2) ) == 3 );
-	BOOST_REQUIRE( size( arr( 1 <=        _ < 3   , 2) ) == 2 );
+	BOOST_REQUIRE( size( arr( 1 <=        _ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
+
+	// BOOST_REQUIRE( size( arr(             _._       , 2) ) == 4 );
+	// BOOST_REQUIRE( size( arr(             _._ < 2   , 2) ) == 2 );
+	// BOOST_REQUIRE( size( arr( 1 <=        _._       , 2) ) == 3 );
+	// BOOST_REQUIRE( size( arr( 1 <=        _._ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
+
+	// BOOST_REQUIRE( size( arr(           _._._       , 2) ) == 4 );
+	// BOOST_REQUIRE( size( arr(           _._._ < 2   , 2) ) == 2 );
+	// BOOST_REQUIRE( size( arr( 1 <=      _._._       , 2) ) == 3 );
+	// BOOST_REQUIRE( size( arr( 1 <=      _._._ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
@@ -140,9 +149,9 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_syntax) {
 	BOOST_REQUIRE( size( arr( 1 <= *_       , 2) ) == 3 );
 	BOOST_REQUIRE( size( arr( 1 <=  U       , 2) ) == 3 );
 
-	BOOST_REQUIRE( size( arr( 1 <=  _ < 3   , 2) ) == 2 );
-	BOOST_REQUIRE( size( arr( 1 <= *_ < 3   , 2) ) == 2 );
-	BOOST_REQUIRE( size( arr( 1 <=  U < 3   , 2) ) == 2 );
+	BOOST_REQUIRE( size( arr( 1 <=  _ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
+	BOOST_REQUIRE( size( arr( 1 <= *_ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
+	BOOST_REQUIRE( size( arr( 1 <=  U < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 
 	BOOST_REQUIRE( size( arr(      *_ < 2   , 2) ) == 2 );
 	BOOST_REQUIRE( size( arr(       U < 2   , 2) ) == 2 );

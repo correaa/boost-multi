@@ -1,13 +1,14 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2023 Alfredo A. Correa
+// Copyright 2023-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS trsm"
 #include<boost/test/unit_test.hpp>
 
-#include <multi/adaptors/cuda/cublas.hpp>
-#include <multi/adaptors/blas/trsm.hpp>
+#include <boost/multi/adaptors/cuda/cublas.hpp>
+#include <boost/multi/adaptors/blas/trsm.hpp>
 
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include<thrust/complex.h>
 

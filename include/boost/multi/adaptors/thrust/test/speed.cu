@@ -1,9 +1,13 @@
+// Copyright 2023-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust universal copy and assignment"
 #include <boost/test/unit_test.hpp>
 
-#include <multi/array.hpp>
+#include <boost/multi/array.hpp>
 
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/complex.h>
 
