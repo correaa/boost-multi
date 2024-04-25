@@ -13,7 +13,7 @@ enum class side : char {
 	right = 'R'
 };
 
-inline auto swap(side sid) -> side {
+inline auto swap(side sid) noexcept -> side {
 	switch(sid) {
 		case side::left : return side::right;
 		case side::right: return side::left ;

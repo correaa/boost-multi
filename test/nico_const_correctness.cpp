@@ -37,7 +37,7 @@ void print(Array1D const& coll) {
 	// *coll.begin() = 99;  // doesn't compile "assignment of read-only location"
 
 	std::copy(std::begin(coll), std::end(coll), std::ostream_iterator<typename Array1D::value_type>(std::cout, ", "));
-	std::cout << std::endl;
+	std::cout << '\n';
 }
 
 BOOST_AUTO_TEST_CASE(const_views) {

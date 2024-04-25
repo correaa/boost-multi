@@ -76,7 +76,6 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1_T) {
 	BOOST_REQUIRE( C[99][0] == 1.0 );
 }
 
-#if 1
 BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1_H) {
 	using complex = std::complex<double>;  // complex const I{0, 1};
 	multi::array<complex, 2> const A({100, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1838,7 +1837,6 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case) {  // https://gitlab.com/correaa/boost-
 		BOOST_REQUIRE( (+blas::gemm(1., blas::H(mat2), vec))[0][0] == (+blas::gemm(1., blas::H(mat({0, 3}, {0, 1})), vec))[0][0] );
 	}
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_part2) {
 	multi::array<double, 2> const A({3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
