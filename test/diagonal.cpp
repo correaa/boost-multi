@@ -52,7 +52,7 @@ auto trace_with_diagonal(Array2D const& arr) {
 
 template<class Array2D>
 auto trace_with_accumulate(Array2D const& arr) {
-	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end(), 0);
+	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end(), static_cast<typename Array2D::element_type>(0));
 }
 
 BOOST_AUTO_TEST_CASE(trace_test) {

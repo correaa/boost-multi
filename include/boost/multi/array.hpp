@@ -756,7 +756,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
 	static_array(static_array&& other) noexcept  // it is private because it is a valid operation for derived classes //5b
 	: array_alloc{other.get_allocator()}, ref{static_array::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()} {
-		uninitialized_move(other.data_elements());
+		uninitialized_move(std::move(other).data_elements());
 	}
 	//  template<class It> static auto distance(It a, It b) {using std::distance; return distance(a, b);}
 
@@ -954,6 +954,7 @@ struct array : static_array<T, D, Alloc> {
 		static_::serialize(arxiv, version);
 	}
 
+	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17 ?
 	using static_::static_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_::value_type;
 

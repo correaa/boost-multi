@@ -48,7 +48,9 @@
 #endif
 
 #include <boost/multi_array.hpp>
+
 #include <boost/concept_check.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(concepts_boost_array) {
@@ -87,12 +89,12 @@ BOOST_AUTO_TEST_CASE(backwards) {
 		#pragma nv_diagnostic pop
 	}
 	// {
-	// 	#pragma GCC diagnostic push
-	// 	#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-	// 	std::array<std::ptrdiff_t, 2> ib(MA.index_bases()); (void)ib;
-	// 	BOOST_REQUIRE(ib[0] == 0);
-	// 	BOOST_REQUIRE(ib[1] == 0);
-	// 	#pragma GCC diagnostic pop
+	//  #pragma GCC diagnostic push
+	//  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	//  std::array<std::ptrdiff_t, 2> ib(MA.index_bases()); (void)ib;
+	//  BOOST_REQUIRE(ib[0] == 0);
+	//  BOOST_REQUIRE(ib[1] == 0);
+	//  #pragma GCC diagnostic pop
 	// }
 	{
 		#pragma GCC diagnostic push
@@ -127,13 +129,13 @@ BOOST_AUTO_TEST_CASE(backwards) {
 		#pragma GCC diagnostic pop
 	}
 	// {
-	// 	#pragma GCC diagnostic push
-	// 	#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-	// 	std::vector<std::ptrdiff_t> ib(2);  // NOLINT(fuchsia-default-arguments-calls)
-	// 	std::copy_n(MA.index_bases().to_array().data(), 2, ib.begin());
-	// 	BOOST_REQUIRE(ib[0] == 0);
-	// 	BOOST_REQUIRE(ib[1] == 0);
-	// 	#pragma GCC diagnostic pop
+	//  #pragma GCC diagnostic push
+	//  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	//  std::vector<std::ptrdiff_t> ib(2);  // NOLINT(fuchsia-default-arguments-calls)
+	//  std::copy_n(MA.index_bases().to_array().data(), 2, ib.begin());
+	//  BOOST_REQUIRE(ib[0] == 0);
+	//  BOOST_REQUIRE(ib[1] == 0);
+	//  #pragma GCC diagnostic pop
 	// }
 }
 
@@ -247,9 +249,9 @@ BOOST_AUTO_TEST_CASE(concepts_const_iterator) {
 	//   BOOST_CONCEPT_ASSERT((boost::OutputIterator<MAIt, MAIt::value_type>));
 
 	BOOST_CONCEPT_ASSERT((boost::ForwardIterator<MAIt>));
-// 	BOOST_CONCEPT_ASSERT((boost::Mutable_ForwardIterator<MAIt>));
+//  BOOST_CONCEPT_ASSERT((boost::Mutable_ForwardIterator<MAIt>));
 	BOOST_CONCEPT_ASSERT((boost::BidirectionalIterator<MAIt>));
-// 	BOOST_CONCEPT_ASSERT((boost::Mutable_BidirectionalIterator<MAIt>));
+//  BOOST_CONCEPT_ASSERT((boost::Mutable_BidirectionalIterator<MAIt>));
 	BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<MAIt>));
-// 	BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<MAIt>));
+//  BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<MAIt>));
 }
