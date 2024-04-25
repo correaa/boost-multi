@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
 
 BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
-	double(&&arr)[4][5] = {
+	double arr[4][5] = {
 		{ 0.0,  1.0,  2.0,  3.0,  4.0},
 		{ 5.0,  6.0,  7.0,  8.0,  9.0},
 		{10.0, 11.0, 12.0, 13.0, 14.0},
@@ -907,35 +907,35 @@ template double trace_generic<multi::array<double, 2>>(multi::array<double, 2> c
 
 inline auto trace_separate_ref(multi::array_ref<double, 2> const& arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0.0});
+	return std::accumulate(diag.begin(), diag.end(), 0.0);
 }
 
 inline auto trace_separate_sub(multi::subarray<double, 2> const& arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0.0});
+	return std::accumulate(diag.begin(), diag.end(), 0.0);
 }
 
 inline auto trace_separate_ref2(multi::array_const_view<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0.0});
+	return std::accumulate(diag.begin(), diag.end(), 0.0);
 }
 
 // unusable for arrays
 inline auto trace_separate_ref3(multi::array_view<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0.0});
+	return std::accumulate(diag.begin(), diag.end(), 0.0);
 }
 
 // unusable for arrays
 inline auto trace_separate_ref4(multi::array_ref<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0.0});
+	return std::accumulate(diag.begin(), diag.end(), 0.0);
 }
 
 // unusable for arrays
 inline auto trace_separate_sub4(multi::subarray<double, 2> arr) -> double {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), double{0.0});
+	return std::accumulate(diag.begin(), diag.end(), 0.0);
 }
 
 BOOST_AUTO_TEST_CASE(function_passing_3) {
