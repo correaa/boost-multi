@@ -1793,36 +1793,19 @@ std::array p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
 
-<!--
-### Customizing recursive operations: SCARY iterators
+### Iteration past-end in the abstract machine
 
-A level of customization can be achieved by intercepting internal recursive algorithms.
-Multi iterators are [SCARY](http://www.open-std.org/jtc1/sc22/WG21/docs/papers/2009/n2980.pdf). 
-SCARY means that they are independent of any container and can be accessed generically through their dimension and underlying pointer types:
+It's crucial to grasp that pointers are limited to referencing valid memory in the strict C abstract machine, such as allocated memory. This understanding is key to avoiding undefined behavior in your code.
+Since the library iteration is pointer-based, the iterators replicate these restrictions.
 
-For example, `boost::multi::array_iterator<double, 2, double*> it` is a row (or column) iterator of an array of dimension 2 or higher, whose underlying pointer type is `double*`.
-This row (or column) and subsequent ones can be accessed by the normal iterator(pointer) notation `*it` and `it[n]` respectively.
-Indirection `it->...` is supported (even for iterators if high dimension). 
-The base pointer, the strides and the size of the arrow can be accessed by `base(it)`, `stride(it)`, `it->size()`.
+There are three cases to consider; the first two can be illustrated with one-dimensional arrays, and one is intrinsic to multiple dimensions.
 
-The template arguments of the iterator can be used to customize operations that are recursive (and possibly inefficient in certain context) in the library:
+The first case is that of strided views (e.g. `A.strided(n)`) whose stride value are not divisors of original array size.
+The second case is that or negative strides in general.
+The third case is that of iterators of transposed array.
 
-```cpp
-namespace boost{namespace multi{
-template<class It, class T>  // custom copy 1D (aka strided copy)
-void copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T> > dest){
-	assert( stride(first) == stride(last) );
-	std::cerr<<"1D copy(it1D, it1D, it1D) with strides "<< stride(first) <<" "<< stride(dest) <<std::endl;
-}
+In all these cases, the `.end()` iterator may point to invalid memory. 
+It's important to note that the act of constructing certain iterators, even if the element is never dereferenced, is undefined in the abstract machine.
+This underscores the need for caution when using such operations in your code.
 
-template<class It, class T> // custom copy 2D (aka double strided copy)
-void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
-	assert( stride(first) == stride(last) );
-	std::cerr<<"2D copy(It, It, it2D) with strides "<< stride(first) <<" "<< stride(dest) <<std::endl;
-}
-}}
-```
-
-For example, if your custom pointers refers a memory type in which 2D memory copying (strided copy) is faster than sequencial copying, that kind of instruction can be ejecuted when the library internally calls `copy`.
-This customization must be performed (unfortunately) in the `boost::multi` namespace (this is where the Multi iterators are defined) and the customization happens through matching the dimension and the pointer type.
--->
+A through description of the cases and workaround is beyond the scope of this section.
