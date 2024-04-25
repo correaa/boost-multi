@@ -14,11 +14,11 @@
 
 #include <boost/multi/array.hpp>
 
-#if defined(__clang__)
-#  pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#  pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+// #  pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+// #  pragma GCC diagnostic pop
+// #endif
 
 // Suppress warnings from other boost libraries
 #if defined(__clang__)
@@ -54,6 +54,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(concepts_boost_array) {
+	[[maybe_unused]]  // bug in nvcc 11.8
 	using BMA = boost::multi_array<int, 2>;
 
 	BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<BMA, 2>));
@@ -235,6 +236,7 @@ BOOST_AUTO_TEST_CASE(concepts_iterator) {
 }
 
 BOOST_AUTO_TEST_CASE(concepts_const_iterator) {
+	[[maybe_unused]]  // bug in nvcc 11.8
 	using MAIt = multi::array<int, 2>::const_iterator;
 
 	BOOST_CONCEPT_ASSERT((boost::Assignable<MAIt>));
