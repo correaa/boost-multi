@@ -46,7 +46,9 @@ jobs:
         git submodule update --init
         ./bootstrap.sh
         cd libs
-        git clone https://github.com/correaa/boost-multi/
+        cd ../..
+        ln . boost/libs/boost-multi
+        cd boost/libs
         cd boost-multi/test
         ../../../b2
 
