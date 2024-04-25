@@ -5,11 +5,11 @@
 
 #include <boost/multi/array.hpp>
 
-#include <chrono>
+#include <chrono>  // NOLINT(build/c++11)
 #include <complex>
 #include <iostream>
 #include <random>
-#include <thread>
+#include <thread>  // NOLINT(build/c++11)
 
 #if defined(TBB_FOUND) || (defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && (__GLIBCXX__ >= 20190502))
 #if !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
@@ -109,7 +109,7 @@ class slow_assign {
 	slow_assign(slow_assign&& other) noexcept = default;
 
 	slow_assign(slow_assign const& other) : val_{other.val_} {
-		using namespace std::chrono_literals;
+		using namespace std::chrono_literals;  // NOLINT(build/namespaces)
 		std::this_thread::sleep_for(10ms);
 	}
 	auto operator=(slow_assign const& other) -> slow_assign& {
@@ -117,7 +117,7 @@ class slow_assign {
 			return *this;
 		}
 		val_ = other.val_;
-		using namespace std::chrono_literals;
+		using namespace std::chrono_literals;  // NOLINT(build/namespaces)
 		std::this_thread::sleep_for(10ms);
 		return *this;
 	}

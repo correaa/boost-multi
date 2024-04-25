@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 
 		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_REQUIRE( c[2][1] == complex(-3.0,-34.0) );
+		BOOST_REQUIRE( c[2][1] == complex(-3.0, -34.0) );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
 	}
 	{
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 
 		syrk(filling::lower, 1.0, rotated(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_REQUIRE( c[2][1] == complex(-3.0,-34.0) );
+		BOOST_REQUIRE( c[2][1] == complex(-3.0, -34.0) );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
 	}
 }
