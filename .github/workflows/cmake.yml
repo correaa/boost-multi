@@ -47,7 +47,7 @@ jobs:
         ./bootstrap.sh
         cd libs
         cd ../..
-        ln . boost/libs/boost-multi
+        ln -sf . boost/libs/boost-multi
         cd boost/libs
         cd boost-multi/test
         ../../../b2
