@@ -33,6 +33,23 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
 
+  latest-boost:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download Boost
+      run: |
+        git clone https://github.com/boostorg/boost
+        cd boost
+        git submodule update --init
+        ./bootstrap.sh
+        cd libs
+        git clone https://github.com/correaa/boost-multi/
+        cd boost-multi/test
+        ../../../b2
+
   latest-cpp32:
     runs-on: ubuntu-latest
 
