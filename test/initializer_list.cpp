@@ -370,7 +370,7 @@ BOOST_AUTO_TEST_CASE(partially_formed) {
 }
 
 BOOST_AUTO_TEST_CASE(partially_formed_int_1) {
-	multi::array<int, 2> arr1({10, 10}, int{1});
+	multi::array<int, 2> arr1({10, 10}, static_cast<int>(1U));
 	multi::array<int, 2> arr2({10, 10}, {1});
 	multi::array<int, 2> arr3({10, 10}, 1);
 
