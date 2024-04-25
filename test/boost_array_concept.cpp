@@ -20,6 +20,9 @@
 // #  pragma GCC diagnostic pop
 // #endif
 
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = deprecated_entity_with_custom_message  // nvcc #?
+
 // Suppress warnings from other boost libraries
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -42,6 +45,8 @@
 #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
 #  pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
+
+#pragma nv_diagnostic pop
 
 #ifndef BOOST_TEST_MODULE
 #  define BOOST_TEST_MAIN
