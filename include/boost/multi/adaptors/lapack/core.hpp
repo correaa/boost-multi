@@ -31,6 +31,7 @@
 #define LIWORK INTEGER liwork
 #define IWORK int*
 
+// cppcheck-suppress [preprocessorErrorDirective] bug in cppcheck 2.11
 #define xPOTRF(T)     v LAPACK(T##potrf)(UPLO, int const& N, T*, int const& LDA, int& INFO)  // NOLINT(bugprone-macro-parentheses,readability-identifier-length)
 #define xSYEV(T)      v LAPACK(T##syev) (JOBZ, UPLO, int const& N, T*, int const& LDA, T*, T*, LWORK, int& INFO)  // NOLINT(bugprone-macro-parentheses)
 #define xSYEVD(T)     v LAPACK(T##syevd)(JOBZ, UPLO, int const& N, T*, int const& LDA, T*, T*, LWORK, IWORK, LIWORK, int& INFO)  // NOLINT(bugprone-macro-parentheses)

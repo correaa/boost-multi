@@ -104,7 +104,6 @@ BOOST_AUTO_TEST_CASE(orthogonalization_over_columns, *boost::unit_test::toleranc
 }*/
 
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_both_sides, *boost::unit_test::tolerance(0.0000001)) {
-
 	double const nan = std::numeric_limits<double>::quiet_NaN();
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
@@ -139,7 +138,6 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_both_sides, *boost::unit_te
 }
 
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_upper, *boost::unit_test::tolerance(0.0000001)) {
-
 	double const nan = std::numeric_limits<double>::quiet_NaN();
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
@@ -178,7 +176,6 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_upper, *boost::unit_test::t
 }
 
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_test::tolerance(0.0000001)) {  // NOLINT(fuchsia-default-arguments-calls)
-
 	double const nan = std::numeric_limits<double>::quiet_NaN();
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
@@ -218,7 +215,6 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_te
 }
 
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit_test::tolerance(0.0000001)) {  // NOLINT(fuchsia-default-arguments-calls)
-
 	double const nan = std::numeric_limits<double>::quiet_NaN();
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
@@ -258,7 +254,6 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit
 }
 
 BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001)) {
-
 	double const nan = std::numeric_limits<double>::quiet_NaN();
 	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
