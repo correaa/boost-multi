@@ -33,7 +33,7 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	auto operator=(watch&&)      = delete;
 
 	auto elapsed_sec() const { return std::chrono::duration<double>(now() - start_).count(); }
-	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << std::endl; }
+	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }
 };
 
 BOOST_AUTO_TEST_CASE(fftw_transpose) {

@@ -38,7 +38,7 @@ template<class T> class randomizer {
 	explicit randomizer(unsigned int seed) : gen_(seed) {}
 
 	template<class M, class R = typename std::decay_t<M>::reference> void operator()(M&& arr) {
-		std::for_each(std::begin(arr), std::end(arr), [self = this](R elem) { self->operator()(elem); });
+		std::for_each(std::begin(std::forward<M>(arr)), std::end(std::forward<M>(arr)), [self = this](R elem) { self->operator()(elem); });
 	}
 	void operator()(T& elem) {  // NOLINT(runtime/references) passing by reference
 		std::normal_distribution<T> gauss;

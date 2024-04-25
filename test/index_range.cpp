@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 	BOOST_REQUIRE( xbeg[0] == iex[0] );
 	BOOST_REQUIRE( xbeg[1] == iex[1] );
 
-	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), static_cast<multi::index_extension::value_type>(0)) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
+	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), static_cast<multi::index_extension::value_type>(0U)) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
 	{
 		multi::iextensions<3> const ies({

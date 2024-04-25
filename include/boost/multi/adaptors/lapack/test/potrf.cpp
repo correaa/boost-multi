@@ -35,12 +35,12 @@ template<class M> auto print(M const& arr, std::string const& msg) -> decltype(a
 				cout << ", ";
 			}
 		}
-		cout << '}' << std::endl;
+		cout << '}' << '\n';
 		if(i + 1 != size(arr)) {
 			cout << ", ";
 		}
 	}
-	return cout << '}' << std::endl;
+	return cout << '}' << '\n';
 }
 template<class M> auto print(M const& arr, char const* msg) -> decltype(auto) { return print(arr, std::string{msg}); }  // NOLINT(fuchsia-default-arguments-calls)
 
