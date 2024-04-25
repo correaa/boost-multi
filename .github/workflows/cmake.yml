@@ -45,10 +45,12 @@ jobs:
         cd boost
         git submodule update --init
         ./bootstrap.sh
+        ls -all
         cd ..
         ln -s . boost/libs/boost-multi
         cd boost/libs
         cd boost-multi/test
+        ls ../../../
         ../../../b2
 
   latest-cpp32:
