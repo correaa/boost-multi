@@ -48,8 +48,8 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 // template<typename Size>
 // auto fftw_plan_dft_1d(
-//  Size N, 
-//  std::complex<double> const* in, std::complex<double>* out, int sign, 
+//  Size N,
+//  std::complex<double> const* in, std::complex<double>* out, int sign,
 //  unsigned flags = FFTW_ESTIMATE
 // ){
 // #ifndef NDEBUG
@@ -63,8 +63,8 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 // template<typename Size>
 // auto fftw_plan_dft_1d(
-//  Size N, 
-//  std::complex<double>* in, std::complex<double>* out, int sign, 
+//  Size N,
+//  std::complex<double>* in, std::complex<double>* out, int sign,
 //  unsigned flags = FFTW_ESTIMATE
 // ){
 //  assert( fftw::alignment_of(in) == fftw::alignment_of(out) );
@@ -73,8 +73,8 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 // template<typename Size>
 // auto fftw_plan_dft_2d(
-//  Size N1, Size N2, 
-//  std::complex<double> const* in, std::complex<double>* out, int sign, 
+//  Size N1, Size N2,
+//  std::complex<double> const* in, std::complex<double>* out, int sign,
 //  unsigned flags = FFTW_ESTIMATE
 // ){
 //  assert( fftw::alignment_of(in) == fftw::alignment_of(out) );
@@ -88,8 +88,8 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 // template<typename Size>
 // auto fftw_plan_dft_2d(
-//  Size N1, Size N2, 
-//  std::complex<double>* in, std::complex<double>* out, int sign, 
+//  Size N1, Size N2,
+//  std::complex<double>* in, std::complex<double>* out, int sign,
 //  unsigned flags = FFTW_ESTIMATE
 // ){
 //  assert(fftw_alignment_of((double*)in) == fftw_alignment_of((double*)out));
@@ -98,8 +98,8 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 // template<typename Size>
 // auto fftw_plan_dft_3d(
-//  Size N1, Size N2, Size N3, 
-//  std::complex<double>* in, std::complex<double>* out, int sign, 
+//  Size N1, Size N2, Size N3,
+//  std::complex<double>* in, std::complex<double>* out, int sign,
 //  unsigned flags = FFTW_ESTIMATE
 // ){
 //  assert(fftw_alignment_of((double*)in) == fftw_alignment_of((double*)out));
@@ -107,8 +107,8 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 // }
 // template<typename Size>
 // auto fftw_plan_dft_3d(
-//  Size N1, Size N2, Size N3, 
-//  std::complex<double> const* in, std::complex<double>* out, int sign, 
+//  Size N1, Size N2, Size N3,
+//  std::complex<double> const* in, std::complex<double>* out, int sign,
 //  unsigned flags = FFTW_ESTIMATE
 // ){
 //  assert( flags & FFTW_PRESERVE_INPUT );
@@ -118,8 +118,8 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 // template<typename Rank>
 // auto fftw_plan_dft(
-//  Rank r, int* ns, 
-//  std::complex<double>* in, std::complex<double>* out, 
+//  Rank r, int* ns,
+//  std::complex<double>* in, std::complex<double>* out,
 //  int sign, unsigned flags = FFTW_ESTIMATE
 // ){
 //  assert(fftw_alignment_of((double*)in) == fftw_alignment_of((double*)out));
@@ -127,8 +127,8 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 // }
 // template<typename RankType>
 // auto fftw_plan_dft(
-//  RankType r, int* ns, 
-//  std::complex<double> const* in, std::complex<double>* out, 
+//  RankType r, int* ns,
+//  std::complex<double> const* in, std::complex<double>* out,
 //  int sign, unsigned flags = FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
 // ){
 //  assert( flags & FFTW_PRESERVE_INPUT );
@@ -158,7 +158,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 //  static_assert(in.dimensionality == 2, "!"); assert(in.sizes() == out.sizes());
 //  assert( in.is_compact() ); assert( out.is_compact() );
 //  return multi::fftw_plan_dft_2d(
-//      sizes(in)[0], sizes(in)[1], 
+//      sizes(in)[0], sizes(in)[1],
 //      data_elements(in), data_elements(out), sign, flags
 //  );
 // }
@@ -335,7 +335,7 @@ inline auto initialize_threads() -> bool {
 #endif
 }
 
-enum class sign : decltype(FFTW_FORWARD) {
+enum class sign : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size)
 	backward = FFTW_BACKWARD,
 	none     = 0,
 	forward  = FFTW_FORWARD,
@@ -353,7 +353,7 @@ constexpr inline auto forward  = sign::forward;
 
 static_assert(forward != none && none != backward && backward != forward);
 
-enum class direction : decltype(FFTW_FORWARD) {
+enum class direction : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size)
 	backward = FFTW_BACKWARD,
 	none     = 0,
 	forward  = FFTW_FORWARD,
@@ -469,9 +469,9 @@ class plan {
 	static int  nthreads_;
 	static bool initialized_threads_;
 #else
-                                                                                                   static constexpr auto is_thread_safe() -> bool { return false; }
-                                                                                                   static constexpr auto nthreads() -> bool { return true; }
-                                                                                                   static constexpr auto with_nthreads() -> int { return 1; }
+	static constexpr auto is_thread_safe() -> bool { return false; }
+	static constexpr auto nthreads() -> bool { return true; }
+	static constexpr auto with_nthreads() -> int { return 1; }
 #endif
 };
 
