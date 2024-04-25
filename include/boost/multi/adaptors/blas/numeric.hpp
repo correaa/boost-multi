@@ -259,7 +259,7 @@ auto        is_conjugated_aux(conjugater<It> const& /*self*/) -> std::true_type;
 inline auto is_conjugated_aux(...) -> std::false_type;
 
 template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std::declval<A>()).base())) {  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-	template<class AA> constexpr auto operator()(AA&& /*unused*/) { return is_conjugated_aux((std::declval<A>()).base()); }
+	template<class AA> constexpr auto operator()(AA&& /*unused*/) { return is_conjugated_aux((std::declval<A>()).base()); }  // NOLINT(cppcoreguidelines-missing-std-forward)
 };
 
 template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type, typename Ptr = typename D::element_ptr,

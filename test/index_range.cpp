@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2021-2023 Alfredo A. Correa
+// Copyright 2021-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -30,6 +29,7 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
 #include <boost/iterator/transform_iterator.hpp>
 
 namespace multi = boost::multi;
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 	BOOST_REQUIRE( xbeg[0] == iex[0] );
 	BOOST_REQUIRE( xbeg[1] == iex[1] );
 
-	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
+	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), static_cast<multi::index_extension::value_type>(0)) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
 	{
 		multi::iextensions<3> const ies({

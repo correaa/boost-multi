@@ -25,12 +25,12 @@ template<class M> auto print(M const& mat, std::string const& msg = "") -> declt
 				cout << ", ";
 			}
 		}
-		cout << '}' << std::endl;
+		cout << '}' << '\n';
 		if(i + 1 != size(mat)) {
 			cout << ", ";
 		}
 	}
-	return cout << '}' << std::endl;
+	return cout << '}' << '\n';
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk) {

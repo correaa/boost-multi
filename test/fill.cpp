@@ -47,22 +47,22 @@ auto fnv1a(unsigned char const* first, std::ptrdiff_t len, fnv1a_size hash) noex
 }  // namespace
 
 class fnv1a_t {
-	fnv1a_size h = 14695981039346656037U;  // offset
+	fnv1a_size h_ = 14695981039346656037U;  // offset
 
  public:
 	using result_type = fnv1a_size;
 	static constexpr auto min() { return std::numeric_limits<result_type>::min(); }
 	static constexpr auto max() { return std::numeric_limits<result_type>::max(); }
-	void                  operator()(unsigned char const* key, std::ptrdiff_t len) noexcept { h = fnv1a(key, len, h); }
+	void                  operator()(unsigned char const* key, std::ptrdiff_t len) noexcept { h_ = fnv1a(key, len, h_); }
 	template<class T, std::enable_if_t<std::is_fundamental_v<T>, int> = 0>
 	auto operator()(T const& value) noexcept -> decltype(auto) {
 		operator()(&value, sizeof(value));
 		return *this;
 	}
 	//  result_type operator()() && noexcept{return h;}
-	auto operator()() const& noexcept { return h; }
+	auto operator()() const& noexcept { return h_; }
 	//  explicit operator result_type() && noexcept {return h;}
-	explicit operator result_type() const& noexcept { return h; }
+	explicit operator result_type() const& noexcept { return h_; }
 };
 
 BOOST_AUTO_TEST_CASE(fill_1d_a) {

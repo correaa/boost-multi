@@ -246,9 +246,9 @@ BOOST_AUTO_TEST_CASE(index_range_iteration) {
 	std::copy(begin(irng), end(irng), std::ostream_iterator<int>{out, ","});
 	BOOST_REQUIRE( out.str() == "0,1,2,3,4," );
 
-	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0)) == irng.size()*(irng.size()-1)/2 );
+	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)) == irng.size()*(irng.size()-1)/2 );
 
-	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0), [](auto&& acc, auto const& elem) {return acc + elem*elem*elem;}) > 0 );  // sum of cubes
+	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U), [](auto&& acc, auto const& elem) {return acc + elem*elem*elem;}) > 0 );  // sum of cubes
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {
