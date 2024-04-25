@@ -114,6 +114,6 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	);
 
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
-	std::cout<< time.count() / count <<"          "<< acc <<std::endl;
+	std::cout<< time.count() / count <<"          "<< acc << '\n';
 #endif
 }

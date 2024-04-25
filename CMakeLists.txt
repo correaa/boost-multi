@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.16)
 # target_link_libraries(${PROJECT_NAME} boost-multi::boost-multi)
 # ~~~
 
-if (BOOST_SUPERPROJECT_VERSION OR NOT BOOST_MULTI_STANDALONE)
+if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE)
 
   project(boost_multi VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 
@@ -117,33 +117,33 @@ else()
 
   add_subdirectory(test)
 
-  if(MULTI_BUILD_TESTS)
+  # if(MULTI_BUILD_TESTS)
     find_package(Boost 1.65 COMPONENTS unit_test_framework)  # 1.65 needed for BOOST_TEST_GLOBAL_FIXTURE, you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
     if(NOT Boost_FOUND)
       message(WARNING "Cannot find Boost 1.65+, Multi library will not be fully tested.")
     else()
       enable_testing()
 
-      add_subdirectory(include/multi/adaptors/blas)
-      add_subdirectory(include/multi/adaptors/complex)
-      add_subdirectory(include/multi/adaptors/cuda)
-      add_subdirectory(include/multi/adaptors/fftw)
+      add_subdirectory(include/boost/multi/adaptors/blas)
+      add_subdirectory(include/boost/multi/adaptors/complex)
+      add_subdirectory(include/boost/multi/adaptors/cuda)
+      add_subdirectory(include/boost/multi/adaptors/fftw)
 
       find_package(LAPACK)
       if(LAPACK_FOUND)
-        add_subdirectory(include/multi/adaptors/lapack)
+        add_subdirectory(include/boost/multi/adaptors/lapack)
       endif()
 
-      add_subdirectory(include/multi/adaptors/thrust)
+      add_subdirectory(include/boost/multi/adaptors/thrust)
       if(ENABLE_CUDA)
-        add_subdirectory(include/multi/adaptors/cufft)
+        add_subdirectory(include/boost/multi/adaptors/cufft)
       endif()
       if(ENABLE_HIP)
-        add_subdirectory(include/multi/adaptors/hipfft)
-        add_subdirectory(include/multi/adaptors/hipthrust/test)
+        add_subdirectory(include/boost/multi/adaptors/hipfft)
+        add_subdirectory(include/boost/multi/adaptors/hipthrust/test)
       endif()
     endif()
-  endif()
+  # endif()
 
   if(MULTI_BUILD_PACKAGE)
     list(APPEND source-generators TBZ2 TGZ TXZ ZIP)

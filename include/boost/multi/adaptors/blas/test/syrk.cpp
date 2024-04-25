@@ -1,11 +1,13 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/blas/gemm.hpp>
-#include <multi/adaptors/blas/syrk.hpp>
+#include <boost/multi/adaptors/blas/gemm.hpp>
+#include <boost/multi/adaptors/blas/syrk.hpp>
 
-#include <multi/array.hpp>
+#include <boost/multi/array.hpp>
 
 namespace multi = boost::multi;
 
@@ -201,7 +203,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 
 		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_REQUIRE( c[2][1] == complex(-3.0,-34.0) );
+		BOOST_REQUIRE( c[2][1] == complex(-3.0, -34.0) );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
 	}
 	{
@@ -214,7 +216,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 
 		syrk(filling::lower, 1.0, rotated(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_REQUIRE( c[2][1] == complex(-3.0,-34.0) );
+		BOOST_REQUIRE( c[2][1] == complex(-3.0, -34.0) );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
 	}
 }

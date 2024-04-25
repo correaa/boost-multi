@@ -1,12 +1,16 @@
+// Copyright 2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
 #include <boost/test/unit_test.hpp>
 
-#include <multi/array.hpp>
+#include <boost/multi/array.hpp>
 
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/system/hip/memory.h>
 
-#include <multi/adaptors/thrust/fix_pointer_traits.hpp>
+#include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>
 
 #include <thrust/complex.h>
 
@@ -54,7 +58,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(allocation_speed, T, test_types) {
 		char* Buffer;
 		if(auto r = hipMalloc((void**)&Buffer , n*n * sizeof(T)); r != hipSuccess) {throw std::runtime_error{""};}
 		DoNotOptimize(Buffer);
-    	if(auto r = hipFree(Buffer ); r != hipSuccess) {throw std::runtime_error{""};}
+        if(auto r = hipFree(Buffer ); r != hipSuccess) {throw std::runtime_error{""};}
 		DoNotOptimize(Buffer);
 	});
 
@@ -62,7 +66,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(allocation_speed, T, test_types) {
 		char* Buffer;
 		if(hipMalloc((void**)&Buffer , n*n * sizeof(T)) != hipSuccess) {throw std::runtime_error{""};}
 		DoNotOptimize(Buffer);
-    	if(auto r = hipFree(Buffer ); r != hipSuccess) {throw std::runtime_error{""};}
+        if(auto r = hipFree(Buffer ); r != hipSuccess) {throw std::runtime_error{""};}
 		DoNotOptimize(Buffer);
 	});
 
@@ -70,7 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(allocation_speed, T, test_types) {
 		char* Buffer;
 		if(auto r = hipMalloc((void**)&Buffer , n*n * sizeof(T)); r != hipSuccess) {throw std::runtime_error{""};}
 		DoNotOptimize(Buffer);
-    	if(auto r = hipFree(Buffer ); r != hipSuccess) {throw std::runtime_error{""};}
+        if(auto r = hipFree(Buffer ); r != hipSuccess) {throw std::runtime_error{""};}
 		DoNotOptimize(Buffer);
 	});
 

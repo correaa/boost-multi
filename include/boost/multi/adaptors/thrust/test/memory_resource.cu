@@ -1,8 +1,12 @@
+// Copyright 2022-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust memory resource"
 #include<boost/test/unit_test.hpp>
 
-#include <multi/array.hpp>
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/array.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/system/cuda/memory.h>  // for cuda_pointer
 
@@ -79,7 +83,7 @@ BOOST_AUTO_TEST_CASE(thrust_device_memory_resource) {
         using Alloc = thrust::mr::polymorphic_allocator<int, thrust::device_ptr<void>>;
         Alloc alloc(&adaptor);
 
-    	do_stuff_with_array<multi::array<int, 2, Alloc>>(alloc);
+        do_stuff_with_array<multi::array<int, 2, Alloc>>(alloc);
 
 		multi::array<int, 2, Alloc> arr({10, 10}, &adaptor);
     }
@@ -118,7 +122,7 @@ BOOST_AUTO_TEST_CASE(thrust_universal_memory_resource) {
         using Alloc = thrust::mr::polymorphic_allocator<int, thrust::cuda::universal_pointer<void>>;
         Alloc alloc(&adaptor);
 
-    	do_stuff_with_array<multi::array<int, 2, Alloc>>(alloc);
+        do_stuff_with_array<multi::array<int, 2, Alloc>>(alloc);
 
 		multi::array<int, 2, Alloc> arr({10, 10}, &adaptor);
     }
@@ -289,12 +293,12 @@ auto& tls_pool(std::pmr::memory_resource* upstream) {
 template<
 	class T,
 	class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>
-//	= std::pmr::polymorphic_allocator<T>
+//  = std::pmr::polymorphic_allocator<T>
 >
 struct caching_allocator : Base_ {
 	caching_allocator() : Base_{
 		&thrust::mr::tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
-	// 	&            tls_pool         (std::pmr::new_delete_resource())
+	//  &            tls_pool         (std::pmr::new_delete_resource())
 	} {}
 	caching_allocator(caching_allocator const&) : caching_allocator{} {}
 	template<class U> struct rebind {using other = caching_allocator<U>;};
@@ -309,10 +313,10 @@ BOOST_AUTO_TEST_CASE(thrust_benchmark_contd) {
 
 		for(int64_t i = 0; i != count; ++i) {
 			multi::array<int, 2, caching_allocator<int>> arr({1000 - i%10, 1000 + i%10});
-		//	auto arr2 = arr;
-		//	arr2 = arr;
-		//	arr2 = std::move(arr);
-		//	DoNotOptimize(arr2);
+		//  auto arr2 = arr;
+		//  arr2 = arr;
+		//  arr2 = std::move(arr);
+		//  DoNotOptimize(arr2);
 			DoNotOptimize(arr);
 		}
 

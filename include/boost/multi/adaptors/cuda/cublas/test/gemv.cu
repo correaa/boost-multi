@@ -4,12 +4,12 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS gemv"
 #include<boost/test/unit_test.hpp>
 
-#include <multi/adaptors/cuda/cublas.hpp>
+#include <boost/multi/adaptors/cuda/cublas.hpp>
 
-#include <multi/adaptors/blas/gemm.hpp>
-#include <multi/adaptors/blas/axpy.hpp>
-#include <multi/adaptors/blas/nrm2.hpp>
-#include <multi/adaptors/thrust.hpp>
+#include <boost/multi/adaptors/blas/gemm.hpp>
+#include <boost/multi/adaptors/blas/axpy.hpp>
+#include <boost/multi/adaptors/blas/nrm2.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 
 #include<thrust/complex.h>
 

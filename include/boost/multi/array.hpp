@@ -64,7 +64,7 @@ struct array_allocator {
 	auto uninitialized_copy_n(EP&& ep, It first, size_type count, pointer_ d_first) {
 		// #if defined(__clang__) && defined(__CUDACC__)
 		// if constexpr(! std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && ! multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type> ) {
-		// 	adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
+		//  adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
 		// }
 		// return adl_copy_n                    (        first, count, d_first);
 		// #else
@@ -756,7 +756,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
 	static_array(static_array&& other) noexcept  // it is private because it is a valid operation for derived classes //5b
 	: array_alloc{other.get_allocator()}, ref{static_array::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()} {
-		uninitialized_move(other.data_elements());
+		uninitialized_move(std::move(other).data_elements());
 	}
 	//  template<class It> static auto distance(It a, It b) {using std::distance; return distance(a, b);}
 
@@ -954,6 +954,7 @@ struct array : static_array<T, D, Alloc> {
 		static_::serialize(arxiv, version);
 	}
 
+	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17 ?
 	using static_::static_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_::value_type;
 
@@ -1202,39 +1203,40 @@ struct array : static_array<T, D, Alloc> {
 	constexpr auto operator+() const& { return array{*this}; }
 	constexpr auto operator+() && { return array{std::move(*this)}; }
 
-#if 0
-	auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array&& {
-		if(extensions == this->extensions()) {return std::move(*this);}
-		this->destroy();
-		this->deallocate();
-		this->layout_mutable() = typename array::layout_t{extensions};
-		this->base_ = this->static_::array_alloc::allocate(
-			static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
-				typename array::layout_t{extensions}.num_elements()
-			),
-			this->data_elements()  // used as hint
-		);
-		this->uninitialized_fill_n(this->base_, static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
+	// auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array&& {
+	//  if(extensions == this->extensions()) {return std::move(*this);}
+	//  this->destroy();
+	//  this->deallocate();
+	//  this->layout_mutable() = typename array::layout_t{extensions};
+	//  this->base_ = this->static_::array_alloc::allocate(
+	//      static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
+	//          typename array::layout_t{extensions}.num_elements()
+	//      ),
+	//      this->data_elements()  // used as hint
+	//  );
+	//  this->uninitialized_fill_n(this->base_, static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
 
-		return std::move(*this);
-	}
-#endif
+	//  return std::move(*this);
+	// }
 
 	auto reextent(typename array::extensions_type const& exs, typename array::element const& elem) & -> array& {
 		if(exs == this->extensions()) {
 			return *this;
 		}
-#if 0
-		array tmp(x, e, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
-		auto const is = intersection(this->extensions(), x);
-		tmp.apply(is) = this->apply(is);
-		swap(tmp);
-#else  // implementation with hint
-		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(
-			                                 static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()),
-			                                 this->data_elements()  // use as hint
-		                                 ),
-		                                 exs};
+
+		// array tmp(x, e, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
+		// auto const is = intersection(this->extensions(), x);
+		// tmp.apply(is) = this->apply(is);
+		// swap(tmp);
+
+		// implementation with hint
+		auto&& tmp = typename array::ref(
+			this->static_::array_alloc::allocate(
+				static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()),
+				this->data_elements()  // use as hint
+			),
+			exs
+		);
 		this->uninitialized_fill_n(tmp.data_elements(), static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()), elem);
 		auto const is = intersection(this->extensions(), exs);
 		tmp.apply(is) = this->apply(is);
@@ -1243,7 +1245,7 @@ struct array : static_array<T, D, Alloc> {
 		this->base_            = tmp.base();  // TODO(correaa) : use (and implement) `.move();`
 		this->layout_mutable() = tmp.layout();
 		//  (*this).array::layout_t::operator=(tmp.layout());
-#endif
+
 		return *this;
 	}
 	template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {

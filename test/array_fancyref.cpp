@@ -121,7 +121,7 @@ template<class T> struct allocator {
 		/*no-op;*/
 	}
 	template<class... Args>
-	void construct(pointer /*location*/, Args&&... /*args*/) {
+	void construct(pointer /*location*/, Args const&... /*args*/) {
 		/*no-op;*/
 	}
 	void destroy(pointer /*location*/) {

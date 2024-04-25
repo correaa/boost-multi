@@ -199,7 +199,7 @@ constexpr auto head(tuple<T0, Ts...> const& t) -> decltype(auto) {  // NOLINT(re
 
 template<class T0, class... Ts>
 constexpr auto head(tuple<T0, Ts...>&& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
-	return std::move(t.head());
+	return std::move(t).head();
 }
 
 template<class T0, class... Ts>
@@ -251,20 +251,20 @@ constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readab
 #endif
 
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...>& t) -> auto& {  // NOLINT(readability-identifier-length) std naming
+constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
 	if constexpr(N == 0) {
-		return t.head();
+		return tup.head();
 	} else {
-		return get<N - 1>(t.tail());
+		return get<N - 1>(tup.tail());
 	}
 }
 
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-identifier-length) std naming
+constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 	if constexpr(N == 0) {
-		return std::move(t).head();
+		return std::move(std::move(tup)).head();
 	} else {
-		return get<N - 1>(std::move(t.tail()));
+		return get<N - 1>(std::move(std::move(tup).tail()));
 	}
 }
 #if ! defined(_MSC_VER)
@@ -385,7 +385,7 @@ template<class T1, class T2>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2),
-		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
+		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
 	);
 }
 
@@ -393,7 +393,7 @@ template<class T1, class T2, class T3>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3),
-		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
+		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
 	);
 }
 
@@ -401,7 +401,7 @@ template<class T1, class T2, class T3, class T4>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3), std::forward<T4>(tup4),
-		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
+		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
 	);
 }
 

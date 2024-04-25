@@ -193,9 +193,12 @@ else()
 	# -Wsizeof-array-div # (gcc 11, not in 10)
 	-Wsizeof-pointer-memaccess
 	-Wstack-protector  # -Wstack-usage=<byte-size>
-	-Wstrict-aliasing  #=3  -Wstrict-aliasing=<0,3>
+	-Wstrict-aliasing #=3 # -Wstrict-aliasing=<0,3>
 	-Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
-	-Wstrict-overflow  #=1  -Wstrict-overflow=<0,5>
+	-Wstrict-overflow=2
+	# -Wstrict-overflow=3  # not compatible with Boost.Test
+	# -Wstrict-overflow=4  # not compatible with stl heap
+	# -Wstrict-overflow=5  # not compatible with Boost.Test
 	# -Wstring-compare # (gcc 11, not in 9)
 	-Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
 	# -Wstringop-overread # (gcc 11, not in 10)
@@ -695,7 +698,13 @@ else()
 	-Wstatic-float-init -Wstatic-in-inline -Wstatic-inline-explicit-instantiation -Wstatic-local-in-inline -Wstatic-self-init
 	-Wstdlibcxx-not-found
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
-	-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5
+	# -Wstrict-overflow 
+	# -Wstrict-overflow=0
+	# -Wstrict-overflow=1
+	# -Wstrict-overflow=2
+	# -Wstrict-overflow=3
+	# -Wstrict-overflow=4
+	-Wstrict-overflow=5
 	# -Wstrict-potentially-direct-selector (clang 11, not in clang 9)
 	-Wstrict-prototypes -Wstrict-selector-match
 	-Wstring-compare
@@ -832,14 +841,6 @@ else()
 	-Wwrite-strings
 	>
 	# $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
-	# -Werror -Wall
-	# -Wcast-qual
-	# -Wformat=2
-	# -Wshadow
-	# -Wsign-compare
-	# -Wuninitialized
-	# -Wunused -Wunused-parameter
-	# >
 	$<$<CXX_COMPILER_ID:NVHPC>:
 	-Werror -Wall
 	-Wcast-qual

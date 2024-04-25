@@ -6,10 +6,10 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
 #pragma once
 
-#include <multi/array_ref.hpp>
+#include <boost/multi/array_ref.hpp>
 
-#include <multi/adaptors/blas/core.hpp>
-#include <multi/adaptors/complex.hpp>
+#include <boost/multi/adaptors/blas/core.hpp>
+#include <boost/multi/adaptors/complex.hpp>
 
 namespace boost::multi::blas {
 

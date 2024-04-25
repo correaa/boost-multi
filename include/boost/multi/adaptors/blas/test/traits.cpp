@@ -17,13 +17,3 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_traits) {
 	static_assert( blas::is_c<std::complex<float>>{} );
 	static_assert( blas::is_z<std::complex<double>>{} );
 }
-
-#if 0
-#if CUDA_FOUND  // TODO(correaa) move test to thrust adaptor
-#include<thrust/complex.h>
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_traits_thrust) {
-	static_assert( blas::is_c<thrust::complex<float>>{} );
-	static_assert( blas::is_z<thrust::complex<double>>{} );
-}
-#endif
-#endif

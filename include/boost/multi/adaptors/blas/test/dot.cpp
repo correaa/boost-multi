@@ -1,9 +1,11 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/blas/dot.hpp>
-#include <multi/array.hpp>
+#include <boost/multi/adaptors/blas/dot.hpp>
+#include <boost/multi/array.hpp>
 
 #include <complex>
 #include <numeric>
@@ -26,9 +28,11 @@ BOOST_AUTO_TEST_CASE(blas_dot_context_double) {
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_double) {
-	multi::array<double, 1> const x   = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 1> const y   = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
-	auto                          res = +blas::dot(x, y);
+	multi::array<double, 1> const x = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> const y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
+
+	auto res = +blas::dot(x, y);
+
 	BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0) );
 }
 

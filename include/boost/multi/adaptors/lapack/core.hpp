@@ -31,6 +31,7 @@
 #define LIWORK INTEGER liwork
 #define IWORK int*
 
+// cppcheck-suppress [preprocessorErrorDirective] bug in cppcheck 2.11
 #define xPOTRF(T)     v LAPACK(T##potrf)(UPLO, int const& N, T*, int const& LDA, int& INFO)  // NOLINT(bugprone-macro-parentheses,readability-identifier-length)
 #define xSYEV(T)      v LAPACK(T##syev) (JOBZ, UPLO, int const& N, T*, int const& LDA, T*, T*, LWORK, int& INFO)  // NOLINT(bugprone-macro-parentheses)
 #define xSYEVD(T)     v LAPACK(T##syevd)(JOBZ, UPLO, int const& N, T*, int const& LDA, T*, T*, LWORK, IWORK, LIWORK, int& INFO)  // NOLINT(bugprone-macro-parentheses)
@@ -85,18 +86,6 @@ void T##getrs_( \
 // NOLINTEND(readability-identifier-length)
 // NOLINTEND(bugprone-macro-parentheses)
 
-#if 0
-// https://netlib.org/lapack/explore-html/df/d36/group__getrs_ga286274ce80775ade22a565f87b0c6f4e.html
-#define xPOTRF(T) \
-void T##potrf_( \
-    character   UPLO, \
- integer     N, \
- T* A, \
- integer     LDA, \
- integer_out INFO \
-)
-#endif
-
 // TODO(correaa) // http://www.netlib.org/lapack/explore-html/d7/d3b/group__double_g_esolve_ga5ee879032a8365897c3ba91e3dc8d512.html
 
 extern "C"{
@@ -147,8 +136,8 @@ inline void getrs(char trans, lapack_int const n, lapack_int const nrhs, double 
 namespace lapack {
 
 struct context{
-	template<class... Args> static auto getrf(Args&&... args)->decltype(core::getrf(args...)){return core::getrf(args...);}
-	template<class... Args> static auto getrs(Args&&... args)->decltype(core::getrs(args...)){return core::getrs(args...);}
+	template<class... Args> static auto getrf(Args&&... args)->decltype(core::getrf(args...)){return core::getrf(std::forward<Args>(args)...);}
+	template<class... Args> static auto getrs(Args&&... args)->decltype(core::getrs(args...)){return core::getrs(std::forward<Args>(args)...);}
 };
 
 }  // end namespace lapack
@@ -214,4 +203,4 @@ xpotrf(c) xpotrf(z)
 
 #define TRANS const char& trans
 
-#endif  // BOOST_MULTI_ADAPTORS_TOTALVIEW_HPP
+#endif

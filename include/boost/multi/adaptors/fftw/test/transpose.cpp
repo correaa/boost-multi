@@ -1,8 +1,10 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
 
-#include <multi/adaptors/fftw.hpp>
+#include <boost/multi/adaptors/fftw.hpp>
 
 #include <chrono>  // NOLINT(build/c++11)
 #include <complex>
@@ -24,7 +26,7 @@ class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-
 	auto operator=(watch const&) -> watch& = delete;
 
 	auto elapsed_sec() const { return std::chrono::duration<double>(now() - start_).count(); }
-	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << std::endl; }  // NOLINT(cpp:S4963)
+	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }  // NOLINT(cpp:S4963)
 };
 
 using fftw_fixture = multi::fftw::environment;

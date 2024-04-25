@@ -46,7 +46,7 @@ inline constexpr bool multi::force_element_trivial_default_construction<std::com
 #else
 // vvv nvcc (12.1?) doesn't tolerate this kind of customization: "error: expected initializer before ‘<’"
 template<class T>
-inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible<T>::value;
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
 #endif
 
 BOOST_AUTO_TEST_CASE(pmr_double) {

@@ -1,13 +1,14 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2021-2022 Alfredo A. Correa
+// Copyright 2021-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef MULTI_ADAPTORS_THRUST_HPP_
-#define MULTI_ADAPTORS_THRUST_HPP_
+#ifndef BOOST_MULTI_ADAPTORS_THRUST_FIX_COPY_HPP_
+#define BOOST_MULTI_ADAPTORS_THRUST_FIX_COPY_HPP_
 #pragma once
 
 namespace boost::multi {
 
-#if 1
+#if 0
 template<class Q1, class L1, class Size, class Q2, class R2, class L2>
 auto copy_n(
 	boost::multi::elements_iterator_t<                  Q1*                                                , L1>   first, Size count,
