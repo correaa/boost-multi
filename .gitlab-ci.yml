@@ -84,6 +84,7 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
     - g++ --version
     - cpplint --version
     - cppcheck --version
+    - valgrind --version
     - mkdir build && cd build
     - export VALGRIND_EXE="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"

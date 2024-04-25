@@ -706,13 +706,13 @@ struct elements_range_t {
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
 	auto operator=(elements_range_t     && other) noexcept -> elements_range_t& {  // cannot be =delete in NVCC?
-		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());} // TODO(correaa) use move?
+		if(! is_empty()) {adl_copy(std::begin(std::move(other)), std::end(std::move(other)), begin());}
 		return *this;
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& other)  & -> elements_range_t& {assert(size() == other.size());
-		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
+		if(! is_empty()) {adl_copy(std::begin(std::forward<OtherElementRange>(other)), std::end(std::forward<OtherElementRange>(other)), begin());}
 		return *this;
 	}
 
@@ -2582,10 +2582,10 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 //  this ctor makes memcheck complain about memmory used after scope
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>
 	// cppcheck-suppress noExplicitConstructor
-	array_ref(std::initializer_list<TT> const& il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
+	array_ref(std::initializer_list<TT> il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
 
-	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>
-	array_ref(std::initializer_list<TT>&& il) = delete;
+	// template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>
+	// array_ref(std::initializer_list<TT>&& il) = delete;
 
 	using subarray<T, D, ElementPtr>::operator=;
 
@@ -2618,13 +2618,13 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		return *this;
 	}
 
-	constexpr auto operator=(array_ref&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)  //NOSONAR(cppS5018)
+	constexpr auto operator=(array_ref&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations)  //NOSONAR(cppS5018)
 	-> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(std::as_const(other));
 		return *this;
 	}
-	constexpr auto operator=(array_ref&& other) && noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	constexpr auto operator=(array_ref&& other) && noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations)
 	-> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(std::as_const(other));
