@@ -760,7 +760,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
 	auto operator=(subarray&& other) noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {  // allows assigment in temporaries // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
-		operator=(static_cast<subarray&>(other)); return *this;
+		operator=(other); return *this;
 	}
 
  protected:
