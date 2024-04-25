@@ -49,7 +49,9 @@ jobs:
         cd ..
         ln -s . boost/libs/boost-multi
         cd boost/libs
+        pwd
         cd boost-multi/test
+        pwd
         ls ../../../
         ../../../b2
 
