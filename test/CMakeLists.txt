@@ -841,14 +841,6 @@ else()
 	-Wwrite-strings
 	>
 	# $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
-	# -Werror -Wall
-	# -Wcast-qual
-	# -Wformat=2
-	# -Wshadow
-	# -Wsign-compare
-	# -Wuninitialized
-	# -Wunused -Wunused-parameter
-	# >
 	$<$<CXX_COMPILER_ID:NVHPC>:
 	-Werror -Wall
 	-Wcast-qual
