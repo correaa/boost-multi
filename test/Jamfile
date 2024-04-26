@@ -31,6 +31,12 @@ project : requirements
   <toolset>clang:<cxxflags>-Wold-style-cast
   <toolset>clang:<cxxflags>-Wfloat-equal
 
+  # Clang-Cl likes to blow up builds with these compatibility checks
+  <toolset>clang:<cxxflags>-Wno-c++98-compat
+  <toolset>clang:<cxxflags>-Wno-c++98-compat-pedantic
+  <toolset>clang:<cxxflags>-Wno-c++17-compat
+  <toolset>clang:<cxxflags>-Wno-c++14-compat
+
   <toolset>msvc:<warnings-as-errors>on
   <toolset>clang:<warnings-as-errors>on
   <toolset>gcc:<warnings-as-errors>on
