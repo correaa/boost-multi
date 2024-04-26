@@ -66,7 +66,7 @@ g++-10-m32:
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
-  clang++-9:
+clang++-9:
   stage: build
   image: ubuntu:20.04
   tags:
