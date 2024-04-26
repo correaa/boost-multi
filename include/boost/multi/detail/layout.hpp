@@ -387,6 +387,12 @@ constexpr auto array_size_impl(boost::multi::extensions_t<D> const&)
 
 }  // end namespace boost::multi
 
+// Some versions of Clang throw warnings that stl uses class std::tuple_size instead
+// of struct std::tuple_size like it should be
+#ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wmismatched-tags"
+#endif
 
 template<boost::multi::dimensionality_type D>
 struct std::tuple_size<boost::multi::extensions_t<D>>  // NOLINT(cert-dcl58-cpp) to implement structured binding
