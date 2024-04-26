@@ -36,6 +36,7 @@ project : requirements
   <toolset>clang:<cxxflags>-Wno-c++98-compat-pedantic
   <toolset>clang:<cxxflags>-Wno-c++17-compat
   <toolset>clang:<cxxflags>-Wno-c++14-compat
+  <toolset>clang:<define>"_CRT_SECURE_NO_WARNINGS"
 
   <toolset>msvc:<warnings-as-errors>on
   <toolset>clang:<warnings-as-errors>on

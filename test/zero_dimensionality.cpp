@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		multi::array_ptr<double, 0> const ap0dd{&dd};
 		BOOST_REQUIRE( ap0dd != ap0 );
 		BOOST_REQUIRE( *ap0 == *ap0dd );
-		constexpr double d3 = 3.14159265358979323846;
+		double d3 = 3.14159265358979323846;
 		BOOST_REQUIRE(( *multi::array_ptr<double, 0>(&d3, {}) == 3.14159265358979323846 ));
 	}
 }
