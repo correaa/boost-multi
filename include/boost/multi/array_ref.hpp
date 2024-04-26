@@ -30,13 +30,13 @@
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
 
-#if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) >= 202002L)
+#if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #include <span>
 #endif
 
 #include <utility>     // for forward
 
-#if not defined(__NVCC__)
+#if !defined(__NVCC__)
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
 #else
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend /*constexpr*/
