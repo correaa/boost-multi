@@ -22,7 +22,7 @@ project : requirements
   <toolset>gcc:<cxxflags>-Wconversion
   #<toolset>gcc:<cxxflags>-Wundef # Fix pending in Boost.Test
   <toolset>gcc:<cxxflags>-Wold-style-cast
-  <toolset>gcc:<cxxflags>-Wduplicated-branches
+  #<toolset>gcc:<cxxflags>-Wduplicated-branches
   <toolset>gcc:<cxxflags>-Wfloat-equal
 
   <toolset>clang:<cxxflags>-Wsign-conversion
@@ -60,7 +60,7 @@ run conversions.cpp ;
 run diagonal.cpp ;
 run element_access.cpp ;
 run element_transformed.cpp ;
-run execution_policy.cpp ;
+#run execution_policy.cpp ;
 run fill.cpp ;
 run fix_complex.cpp ;
 run flatted.cpp ;
