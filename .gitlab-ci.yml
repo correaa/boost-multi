@@ -53,6 +53,10 @@ g++-10:
     - high-bandwidth
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++-10-multilib cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
+    - cmake --version
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - cmake --version
     - mkdir build && cd build
     - g++-10 --version
     - CXX=g++-10 cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-m32"
