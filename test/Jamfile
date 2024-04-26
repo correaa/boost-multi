@@ -20,7 +20,7 @@ project : requirements
   # Additional flags by request
   <toolset>gcc:<cxxflags>-Wsign-conversion
   <toolset>gcc:<cxxflags>-Wconversion
-  <toolset>gcc:<cxxflags>-Wundef
+  #<toolset>gcc:<cxxflags>-Wundef # Fix pending in Boost.Test
   <toolset>gcc:<cxxflags>-Wold-style-cast
   <toolset>gcc:<cxxflags>-Wduplicated-branches
   <toolset>gcc:<cxxflags>-Wfloat-equal
