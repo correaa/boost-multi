@@ -66,6 +66,20 @@ g++-10-m32:
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
+  clang++-9:
+  stage: build
+  image: ubuntu:20.04
+  tags:
+    - high-bandwidth
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-9 cmake make
+    - mkdir build && cd build
+    - clang++-9 --version
+    - CXX=clang++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
 coverage:
   stage: build
   tags:
