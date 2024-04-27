@@ -1189,7 +1189,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator|(typename subarray::size_type n) const& -> decltype(auto) {return partitioned(n);}
 
  private:
-	template<typename, dimensionality_type, typename, class> friend struct subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct subarray;
 
 	// HD constexpr auto paren_aux()      & -> subarray       {return *this;}
 	// HD constexpr auto paren_aux()     && -> subarray       {return this->operator()();}
@@ -1268,13 +1268,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 	HD constexpr explicit subarray(iterator begin, iterator end)
-	: subarray{
-		layout_type{begin->layout(), begin.stride(), 0, begin.stride()*(end - begin)},
+	: subarray(
+		layout_type{begin->layout(), begin.stride(), 0, begin.stride() * (end - begin)},
 		begin.base()
-	} {
-		assert(begin.stride()  == end.stride() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	) {
+		assert(begin.stride() == end.stride());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	}
+
 	friend HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
  public:
