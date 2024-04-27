@@ -71,7 +71,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using          layout_t::rank_v;
 
-	using typename layout_t::dimensionality_type;  // needed by MSVC
+	// using typename layout_t::dimensionality_type;  // needed by MSVC
+	typedef typename layout_t::dimensionality_type dimensionality_type;  // needed by MSVC
 
 // #if ! defined(_MSC_VER)
 //  using                                  layout_t::dimensionality;
@@ -223,7 +224,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	HD constexpr explicit array_types(array_types<T, D, ElementPtr2, Layout> const& other)
 	: Layout{other.layout()}, base_{other.base_} {}
 
-	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
+	template<class T2, ::boost::multi::dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
 
 template<class Ref, class Layout>
@@ -744,7 +745,7 @@ HD constexpr auto ref(It begin, It end)
 	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
 
-template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
+template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
 struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = subarray;
