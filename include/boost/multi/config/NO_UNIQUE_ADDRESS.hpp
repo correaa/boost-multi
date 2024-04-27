@@ -5,16 +5,18 @@
 #ifndef BOOST_MULTI_CONFIG_NO_UNIQUE_ADDRESS_HPP_
 #define BOOST_MULTI_CONFIG_NO_UNIQUE_ADDRESS_HPP_
 
+// clang-format off
 #ifndef __has_cpp_attribute
-#define __has_cpp_attribute(name) 0
+	#define __has_cpp_attribute(name) 0
 #endif
 
-#if __has_cpp_attribute(no_unique_address) >=201803 and not defined(__NVCC__) and not defined(__PGI)
+#if __has_cpp_attribute(no_unique_address) >=201803 && ! defined(__NVCC__) && ! defined(__PGI)
 	// NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this macro will be needed until C++20
-	#define BOOST_MULTI_NO_UNIQUE_ADDRESS [[no_unique_address]]
+	#define BOOST_MULTI_NO_UNIQUE_ADDRESS   [[no_unique_address]]
 #else
 	// NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this macro will be needed until C++20
-	#define BOOST_MULTI_NO_UNIQUE_ADDRESS
+	#define BOOST_MULTI_NO_UNIQUE_ADDRESS /*[[no_unique_address]]*/
 #endif
+// clang-format on
 
 #endif  // BOOST_MULTI_CONFIG_NO_UNIQUE_ADDRESS_HPP_
