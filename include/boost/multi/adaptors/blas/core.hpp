@@ -20,10 +20,7 @@
 
 #include "../blas/traits.hpp"
 
-// #define BOOST_MULTI_ASSERT1(ExpR)              assert       (ExpR)
-// #define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
-
-#if not defined(NDEBUG)
+#if ! defined(NDEBUG)
 	#include<stdexcept>
 	#include<string>
 	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
