@@ -2529,12 +2529,14 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	using iterator = typename subarray<T, D, ElementPtr>::iterator;
 
  public:
+	constexpr  // attempt for MSVC
 	array_ref() = delete;  // because reference cannot be unbound
 
 	array_ref(iterator, iterator) = delete;
 
-	friend constexpr auto sizes(array_ref const& self) noexcept -> typename array_ref::sizes_type {return self.sizes();}  // needed by nvcc
-	friend constexpr auto size (array_ref const& self) noexcept -> typename array_ref::size_type  {return self.size ();}  // needed by nvcc
+	// return type removed for MSVC
+	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ {return self.sizes();}  // needed by nvcc
+	friend constexpr auto size (array_ref const& self) noexcept /*-> typename array_ref::size_type*/  {return self.size ();}  // needed by nvcc
 
  protected:
 	[[deprecated("references are not copyable, use auto&&")]]

@@ -1264,11 +1264,11 @@ struct array : static_array<T, D, Alloc> {
 
 #define IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing TODO(correaa) remove
 
-template<class T> static_array(IL<T>) -> static_array<T, 1>;
-template<class T> static_array(IL<IL<T>>) -> static_array<T, 2>;
-template<class T> static_array(IL<IL<IL<T>>>) -> static_array<T, 3>;
-template<class T> static_array(IL<IL<IL<IL<T>>>>) -> static_array<T, 4>;
-template<class T> static_array(IL<IL<IL<IL<IL<T>>>>>) -> static_array<T, 5>;
+template<class T> static_array(IL<T>) -> static_array<T, 1, std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::static_array': use of class template requires template argument list
+template<class T> static_array(IL<IL<T>>) -> static_array<T, 2, std::allocator<T>>;
+template<class T> static_array(IL<IL<IL<T>>>) -> static_array<T, 3, std::allocator<T>>;
+template<class T> static_array(IL<IL<IL<IL<T>>>>) -> static_array<T, 4, std::allocator<T>>;
+template<class T> static_array(IL<IL<IL<IL<IL<T>>>>>) -> static_array<T, 5, std::allocator<T>>;
 
 template<class T> array(IL<T>) -> array<T, 1>;
 template<class T> array(IL<IL<T>>) -> array<T, 2>;
