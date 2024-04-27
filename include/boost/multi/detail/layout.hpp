@@ -750,6 +750,21 @@ namespace std {
 	template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2> {};
 	template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3> {};
 	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
+
+	template<std::size_t N, boost::multi::dimensionality_type D>
+	constexpr auto get(boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+	-> decltype(boost::multi::detail::get<N>(tp.base())) {
+		static_assert( N < D );
+		return boost::multi::detail::get<N>(tp.base());
+	}
+
+	template<std::size_t N, boost::multi::dimensionality_type D>
+	constexpr auto get(boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+	-> decltype(boost::multi::detail::get<N>(tp.base())) {
+		static_assert( N < D );
+		return boost::multi::detail::get<N>(tp.base());
+	}
+
 }  // end namespace std
 
 namespace boost::multi {
