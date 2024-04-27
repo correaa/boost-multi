@@ -558,6 +558,7 @@ struct layout_t
 
 	using index_extension = multi::index_extension;
 	using index_range = multi::range<index>;
+
 	using stride_type = index;
 	using offset_type = index;
 	using nelems_type = index;
@@ -574,7 +575,8 @@ struct layout_t
 	static constexpr dimensionality_type rank_v = rank::value;
 	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa): consider deprecation
 
-	[[deprecated("this is from BMA")]] static constexpr auto num_dimensions() {return dimensionality;}
+	[[deprecated("for compatibility with Boost.MultiArray, use static `dimensionality` instead")]]
+	static constexpr auto num_dimensions() {return dimensionality;}  // NOSONAR(cpp:S1133)
 
 	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
 
