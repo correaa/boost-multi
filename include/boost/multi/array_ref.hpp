@@ -185,7 +185,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
  protected:
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
-	template<class, dimensionality_type, typename> friend struct array_iterator;
+	template<class, ::boost::multi::dimensionality_type, typename> friend struct array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
 	HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
@@ -336,7 +336,7 @@ public:
 template<class Element, dimensionality_type D, typename ElementPtr>
 struct array_iterator;
 
-template<class Element, dimensionality_type D, typename ElementPtr>
+template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr>
 struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 : boost::multi::iterator_facade<
 	array_iterator<Element, D, ElementPtr>, void, std::random_access_iterator_tag,
