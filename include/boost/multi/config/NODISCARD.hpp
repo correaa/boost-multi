@@ -5,15 +5,16 @@
 #ifndef BOOST_MULTI_CONFIG_NODISCARD_HPP_
 #define BOOST_MULTI_CONFIG_NODISCARD_HPP_
 
+// clang-format off
 #ifndef __has_cpp_attribute
-#define __has_cpp_attribute(name) 0
+	#define __has_cpp_attribute(name) 0
 #endif
 
 #ifndef BOOST_MULTI_NODISCARD
 #if defined(__NVCC__)
 	#define BOOST_MULTI_NODISCARD(MsG)
-#elif (__has_cpp_attribute(nodiscard) and (__cplusplus>=201703L))
-	#if (__has_cpp_attribute(nodiscard)>=201907) and (__cplusplus>201703L)
+#elif __has_cpp_attribute(nodiscard) && (__cplusplus>=201703L)
+	#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>201703L)
 		#define BOOST_MULTI_NODISCARD(MsG) [[nodiscard]]  // [[nodiscard(MsG)]] in c++20 empty message is not allowed with paren
 	#else
 		#define BOOST_MULTI_NODISCARD(MsG) [[nodiscard]]  // NOLINT(cppcoreguidelines-macro-usage) TODO(correaa) check if this is needed in C++17
@@ -26,7 +27,7 @@
 #endif
 
 #ifndef BOOST_MULTI_NODISCARD_CLASS
-	#if(__has_cpp_attribute(nodiscard) and not defined(__NVCC__) and (not defined(__clang__) or (defined(__clang__) and (__cplusplus >= 202002L))))
+	#if(__has_cpp_attribute(nodiscard) && ! defined(__NVCC__) && (! defined(__clang__) || (defined(__clang__) && (__cplusplus >= 202002L))))
 		#if (__has_cpp_attribute(nodiscard)>=201907)
 			#define BOOST_MULTI_NODISCARD_CLASS(MsG) [[nodiscard_(MsG)]]
 		#else
@@ -36,5 +37,6 @@
 		#define BOOST_MULTI_NODISCARD_CLASS(MsG)
 	#endif
 #endif
+// clang-format on
 
 #endif  // BOOST_MULTI_CONFIG_NODISCARD_HPP_

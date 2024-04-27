@@ -67,12 +67,20 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t = Layout;
 
-	using rank = typename layout_t::rank  ;
+	using rank = typename layout_t::rank;
 
 	using          layout_t::rank_v;
-	using          layout_t::dimensionality;
+
+	using typename layout_t::dimensionality_type;  // needed by MSVC
+
+// #if ! defined(_MSC_VER)
+//  using                                  layout_t::dimensionality;
+// #else
+	static constexpr auto dimensionality = layout_t::dimensionality;
+// #endif
 
 	// using          layout_t::num_dimensions;
+
 	[[deprecated("this is from BMA")]] static constexpr auto num_dimensions() {return dimensionality;}
 
 	using typename layout_t::stride_type;
