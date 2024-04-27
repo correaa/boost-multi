@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#if(not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20210601)) and (not defined(_LIBCPP_VERSION) or (_LIBCPP_VERSION > 14000))
+#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210601)) && (! defined(_LIBCPP_VERSION) || (_LIBCPP_VERSION > 14000))
 #include <memory_resource>
 #endif
 
