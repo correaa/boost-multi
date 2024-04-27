@@ -3,16 +3,9 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt
 
-#[=[Multi Test suite can be run like this: -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-  mkdir -p build && cd build
-  cmake .. [-DENABLE_CUDA=1]
-  make -j
-  ctest -j --output-on-error [-T memcheck]
-  exit
-#]=]
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 
-if(BUILD_TESTING)
+if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE AND BUILD_TESTING)
 
 	include(BoostTestJamfile OPTIONAL RESULT_VARIABLE HAVE_BOOST_TEST)
 
@@ -26,9 +19,6 @@ else()
 
 	enable_testing()
 
-	if (NOT DEFINED CMAKE_CXX_STANDARD)
-		set(CMAKE_CXX_STANDARD 17)
-	endif()
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -863,10 +853,10 @@ else()
 		message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
-		# target_link_libraries(main PRIVATE multi)
-		# add_test(NAME main COMMAND ./main)
 
-		target_include_directories(main       PRIVATE ${PROJECT_SOURCE_DIR}/include)
+		# target_link_libraries(main PRIVATE multi)
+		target_compile_features   (main INTERFACE cxx_std_17)
+		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
 		target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi main")
 
 		target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")

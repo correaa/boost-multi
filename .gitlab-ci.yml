@@ -16,7 +16,7 @@ variables:
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
 
-g++:  # debian-stable: default is gcc 12 as of Dec 2023
+g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
@@ -45,6 +45,34 @@ g++-m32:
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
+
+g++-10:
+  stage: build
+  image: ubuntu:20.04
+  tags:
+    - high-bandwidth
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++-10 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget  # linux-libc-dev:i386
+    - mkdir build && cd build
+    - g++-10 --version
+    - CXX=g++-10 cmake .. -DCMAKE_BUILD_TYPE=Debug # -DCMAKE_CXX_FLAGS="-m32"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["g++"]
+
+clang++-9:
+  stage: build
+  image: ubuntu:20.04
+  tags:
+    - high-bandwidth
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-9 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
+    - mkdir build && cd build
+    - clang++-9 --version
+    - CXX=clang++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
 
 coverage:
   stage: build
@@ -428,7 +456,7 @@ cuda:
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=65 
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
     - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
