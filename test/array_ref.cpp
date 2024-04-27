@@ -327,6 +327,18 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 
 	{
 		auto exts = aref.extensions();
+		auto const [exts0, exts1] = exts;
+		BOOST_REQUIRE( exts0 == multi::iextension(1, 3) );
+
+		BOOST_REQUIRE( exts1.first()  == 1 );
+		BOOST_REQUIRE( exts1.last () == 4 );
+
+		BOOST_REQUIRE( exts1 == multi::iextension(1, 4) );
+
+		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	}
+	{
+		auto exts = aref.extensions();
 		BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
 		BOOST_REQUIRE( std::get<1>(exts).first()  == 1 );
 		BOOST_REQUIRE( std::get<1>(exts).last () == 4 );
