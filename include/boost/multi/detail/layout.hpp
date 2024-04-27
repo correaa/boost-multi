@@ -179,7 +179,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
  public:
 	template<class Archive>
-	void serialize(Archive& arxiv, const unsigned int /*version*/) {
+	void serialize(Archive& arxiv, unsigned int const /*version*/) {
 		serialize_impl(arxiv, std::make_index_sequence<static_cast<std::size_t>(D)>());
 	}
 
@@ -382,7 +382,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
 template<boost::multi::dimensionality_type D>
-constexpr auto array_size_impl(const boost::multi::extensions_t<D>&)
+constexpr auto array_size_impl(boost::multi::extensions_t<D> const&)
 	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
 
 }  // end namespace boost::multi
@@ -399,22 +399,35 @@ struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cer
 
 namespace std {
 	// clang wants tuple_size to be a class, not a struct with -Wmismatched-tags
-	template<> class tuple_size<boost::multi::extensions_t<0>> : public std::integral_constant<boost::multi::dimensionality_type, 0> {};
-	template<> class tuple_size<boost::multi::extensions_t<1>> : public std::integral_constant<boost::multi::dimensionality_type, 1> {};
-	template<> class tuple_size<boost::multi::extensions_t<2>> : public std::integral_constant<boost::multi::dimensionality_type, 2> {};
-	template<> class tuple_size<boost::multi::extensions_t<3>> : public std::integral_constant<boost::multi::dimensionality_type, 3> {};
-	template<> class tuple_size<boost::multi::extensions_t<4>> : public std::integral_constant<boost::multi::dimensionality_type, 4> {};
+#if !defined(__GLIBCXX__) || (__GLIBCXX__ <= 20190406)
+template<> class tuple_size<boost::multi::extensions_t<0>> : public std::integral_constant<boost::multi::dimensionality_type, 0> {};
+template<> class tuple_size<boost::multi::extensions_t<1>> : public std::integral_constant<boost::multi::dimensionality_type, 1> {};
+template<> class tuple_size<boost::multi::extensions_t<2>> : public std::integral_constant<boost::multi::dimensionality_type, 2> {};
+template<> class tuple_size<boost::multi::extensions_t<3>> : public std::integral_constant<boost::multi::dimensionality_type, 3> {};
+template<> class tuple_size<boost::multi::extensions_t<4>> : public std::integral_constant<boost::multi::dimensionality_type, 4> {};
+#else
+template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0> {};
+template<> struct tuple_size<boost::multi::extensions_t<1>> : std::integral_constant<boost::multi::dimensionality_type, 1> {};
+template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2> {};
+template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3> {};
+template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
+#endif
 
-#if ! defined(__GLIBCXX__) || (__GLIBCXX__ <=  20230707)
-	template<std::size_t N, boost::multi::dimensionality_type D>
-	constexpr auto get(boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
-	->decltype(tp.template get<N>()) {
-		return tp.template get<N>(); }
+#if !defined(__GLIBCXX__) || (__GLIBCXX__ <= 20230707)
+template<std::size_t N, boost::multi::dimensionality_type D>
+constexpr auto get(boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+->decltype(tp.template get<N>()) {
+	return tp.template get<N>(); }
 
-	template<std::size_t N, boost::multi::dimensionality_type D>
-	constexpr auto get(boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
-	->decltype(tp.template get<N>()) {
-		return tp.template get<N>(); }
+template<std::size_t N, boost::multi::dimensionality_type D>
+constexpr auto get(boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+->decltype(tp.template get<N>()) {
+	return tp.template get<N>(); }
+
+template<std::size_t N, boost::multi::dimensionality_type D>
+constexpr auto get(boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+->decltype(std::move(tp).template get<N>()) {
+	return std::move(tp).template get<N>(); }
 #endif
 
 }  // end namespace std
