@@ -1,17 +1,5 @@
-# -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-#[=[Multi Test suite can be run like this:
-  mkdir -p build
-  cd build
-  cmake .. [-DENABLE_CUDA=1]
-  make -j
-  ctest -j --output-on-error [-T memcheck]
-  exit
-#]=]
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -72,17 +60,18 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
+	target_link_libraries(${TEST_EXE} PRIVATE multi)
+
+	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
+	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+
 	# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-    target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
+	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_MODULE="C++ Unit Tests for Multi complex")
 
-	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 
-    target_link_libraries(${TEST_EXE} PRIVATE multi)
-	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
-
-	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	if(NOT ENABLE_CUDA
 	   AND (NOT
 			DART_COMPILER_NAME

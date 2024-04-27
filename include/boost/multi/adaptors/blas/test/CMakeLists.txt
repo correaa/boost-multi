@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.18)  # required by BLAS::BLAS
 
 if((NOT
 	CMAKE_CXX_COMPILER_ID
