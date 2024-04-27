@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 
 #project(
 # boost-multi-adaptors-blas
@@ -6,9 +6,6 @@ cmake_minimum_required(VERSION 3.18)
 # LANGUAGES CXX
 #)
 
-#message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
-
-#set(BLA_VENDOR NVHPC)
 find_package(BLAS)
 
 if(BLAS_FOUND)
@@ -37,11 +34,6 @@ if(BLAS_FOUND)
 		endif()
 	endforeach()
 endif()
-
-# link_libraries(${BLAS_LIBRARIES})
-# link_libraries(BLAS::BLAS) # needs cmake 3.18
-
-# include_directories(${CMAKE_BINARY_DIR})
 
 if(BLAS_FOUND)
   add_subdirectory(test)
