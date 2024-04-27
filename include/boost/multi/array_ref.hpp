@@ -72,8 +72,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using          layout_t::rank_v;
 
 	// using typename layout_t::dimensionality_type;  // needed by MSVC
-	using dimensionality_type = ::boost::multi::dimensionality_type;
-	// typedef typename layout_t::dimensionality_type dimensionality_type;  // needed by MSVC
+	using dimensionality_type = typename layout_t::dimensionality_type;  // needed by MSVC
 
 // #if ! defined(_MSC_VER)
 //  using                                  layout_t::dimensionality;
