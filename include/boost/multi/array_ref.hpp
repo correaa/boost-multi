@@ -550,8 +550,8 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	using indices_type = typename extensions_t<layout_type::dimensionality>::indices_type;
 	indices_type ns_ = {};
 
-	template<class, class> friend struct elements_iterator_t;
-	template<class, class> friend struct elements_range_t;
+	template<typename, class> friend struct elements_iterator_t;
+	template<typename, class> friend struct elements_range_t;
 
 	constexpr elements_iterator_t(pointer base, layout_type lyt, difference_type n)
 	: base_{base}, l_{lyt}, n_{n}, xs_{l_.extensions()}, ns_{lyt.is_empty()?indices_type{}:xs_.from_linear(n)} {}
@@ -878,15 +878,15 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using typename types::index;
 
-	constexpr auto reindexed(index first) const& -> basic_const_array {
+	constexpr auto reindexed(index first) const& {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
-		return {new_layout, types::base_};
+		return basic_const_array(new_layout, types::base_);
 	}
-	constexpr auto reindexed(index first)& -> subarray {
+	constexpr auto reindexed(index first)& {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
-		return {new_layout, types::base_};
+		return subarray(new_layout, types::base_);
 	}
 	constexpr auto reindexed(index first)&& -> subarray {
 		typename types::layout_t new_layout = this->layout();
@@ -1824,10 +1824,10 @@ struct subarray<T, 0, ElementPtr, Layout>
 };
 
 template<typename T, typename ElementPtr, class Layout>
-struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
+struct subarray<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
 // : multi::partially_ordered2<subarray<T, 1, ElementPtr, Layout>, void>
-: multi::random_iterable    <subarray<T, 1, ElementPtr, Layout>>
-, array_types<T, 1, ElementPtr, Layout> {
+: multi::random_iterable<subarray<T, dimensionality_type{1}, ElementPtr, Layout>>
+, array_types<T, dimensionality_type{1}, ElementPtr, Layout> {
 	~subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	// boost serialization needs `delete`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::layout_t<1> >]’
