@@ -53,14 +53,14 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 
 		multi::static_array<double, 1> const arr(il);
 		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == il.begin()[2] );
+		BOOST_REQUIRE( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
 		auto const il = {1.2, 3.4, 5.6};
 
 		multi::static_array<double, 1> const arr(begin(il), end(il));
 		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == il.begin()[2] );
+		BOOST_REQUIRE( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
 		multi::static_array<double, 1> const arr = {1.2, 3.4, 5.6};
