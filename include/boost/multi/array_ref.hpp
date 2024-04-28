@@ -1885,8 +1885,8 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	subarray(subarray const&) = default;
 
-	template<class TT, dimensionality_type DD, typename EP, class LLayout> friend struct subarray;
-	template<class TT, dimensionality_type DD, class Alloc>                friend struct static_array;
+	template<class TT, ::boost::multi::dimensionality_type DD, typename EP, class LLayout> friend struct subarray;
+	template<class TT, ::boost::multi::dimensionality_type DD, class Alloc>                friend struct static_array;
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
