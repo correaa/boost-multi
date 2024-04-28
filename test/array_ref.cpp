@@ -20,6 +20,7 @@
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wsign-conversion"
 #pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic ignored "-Wuseless-cast"
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
@@ -27,6 +28,7 @@
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -601,11 +603,12 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		long sizes2;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 		// NOLINTNEXTLINE(runtime/int)
 		long sizes3;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
-		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
-		BOOST_REQUIRE( sizes1 == 4 );
-		BOOST_REQUIRE( sizes2 == 2 );
-		BOOST_REQUIRE( sizes3 == 3 );
+		multi::tie(sizes1, sizes2, sizes3) = static_cast<multi::tuple<long, long, long>>(cref.sizes());
+
+		BOOST_REQUIRE( sizes1 == 4L );
+		BOOST_REQUIRE( sizes2 == 2L );
+		BOOST_REQUIRE( sizes3 == 3L );
 	}
 	{
 		// NOLINTNEXTLINE(runtime/int)
