@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 		BOOST_TEST( &Aarr[0][0] == buffer.data() );
 		BOOST_TEST( Aarr[0][0] == 4.0);
 	#elif defined(_LIBCPP_VERSION)
-		BOOST_TEST( &Aarr[0][0] == buffer.data() + (buffer.size() - 4) );
+		BOOST_TEST( &Aarr[0][0] == &buffer.data()[buffer.size() - 4] );
 		BOOST_TEST( Aarr[0][0] == 996.0);
 	#endif
 	}
