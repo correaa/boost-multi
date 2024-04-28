@@ -886,8 +886,8 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 
 template<typename T, class Alloc>
 struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
-	using static_ = static_array<T, 0, Alloc>;
-	using static_::static_;
+	// using static_ = static_array<T, 0, Alloc>;
+	using static_array<T, 0, Alloc>::static_array;
 
 
 	using static_array<T, 0, Alloc>::operator=;
