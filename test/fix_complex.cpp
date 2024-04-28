@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 		BOOST_TEST( &Aarr[0][0] == buffer.data() );
 		BOOST_TEST( Aarr[0][0] == 4.0);
 	#elif defined(_LIBCPP_VERSION)
-		BOOST_TEST( &Aarr[0][0] == &buffer.data()[buffer.size() - 4] );
+		BOOST_TEST( &Aarr[0][0] == buffer.data() + (buffer.size() - 4) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		BOOST_TEST( Aarr[0][0] == 996.0);
 	#endif
 	}
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 		BOOST_TEST( buffer[buffer.size()-4] ==  0.0 );
 		BOOST_TEST( buffer[buffer.size()-3] ==  0.0 );
 		BOOST_TEST( buffer[buffer.size()-5] == 11.0 );
-		BOOST_TEST( &Aarr[0][0] == buffer.data() + (buffer.size() - 4) );
+		BOOST_TEST( &Aarr[0][0] == buffer.data() + (buffer.size() - 4) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	#endif
 
 		BOOST_TEST( Aarr[0][0] == 0.0);
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
 #if defined(__GLIBCXX__)
 	BOOST_TEST( static_cast<void*>(buffer.data()) == static_cast<void*>(&Aarr[0][0]) );
 #elif defined(_LIBCPP_VERSION)
-	BOOST_TEST( static_cast<void*>(buffer.data() + 4) == static_cast<void*>(&Aarr[0][0]) );
+	BOOST_TEST( static_cast<void*>(buffer.data() + 4) == static_cast<void*>(&Aarr[0][0]) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 #endif
 }
 
