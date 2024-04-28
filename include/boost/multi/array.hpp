@@ -554,7 +554,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 };
 
 template<class T, class Alloc>
-struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
+struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
 : protected array_allocator<Alloc>
 , public array_ref<T, 0, typename allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer> {
 	static_assert(std::is_same_v<typename allocator_traits<Alloc>::value_type, typename static_array::element>,
@@ -926,7 +926,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 	// auto operator&() const& -> array const*{return this;}
 };
 
-template<class T, dimensionality_type D, class Alloc>
+template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc> {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
@@ -955,8 +955,8 @@ struct array : static_array<T, D, Alloc> {
 	}
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17 ?
-	using static_::static_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
-	using typename static_::value_type;
+	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
+	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
