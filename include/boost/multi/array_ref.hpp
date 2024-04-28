@@ -74,10 +74,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// using typename layout_t::dimensionality_type;  // needed by MSVC
 	using dimensionality_type = typename layout_t::dimensionality_type;  // needed by MSVC
 
-// #if ! defined(_MSC_VER)
-//  using                                  layout_t::dimensionality;
+	using                                Layout::dimensionality;
 // #else
-	static constexpr auto dimensionality = layout_t::dimensionality;
+//  static constexpr auto dimensionality = layout_t::dimensionality;
 // #endif
 
 	// using          layout_t::num_dimensions;
