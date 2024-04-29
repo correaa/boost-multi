@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_nonuniversal_speed, T, test_types) {
 
 	auto const size = src.num_elements() * sizeof(T) / 1e9;
 
-	auto const dummy = std::invoke([&] {
+	auto const dummy = std::invoke([&] __host__ {
 		auto start_time = std::chrono::high_resolution_clock::now();
 		cudaMemcpy(raw_pointer_cast(dst.data_elements()), raw_pointer_cast(src.data_elements()), src.num_elements() * sizeof(T), cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_nonuniversal_speed, T, test_types) {
 		return rate;
 	});
 
-	auto const memcpy_rate = std::invoke([&] {
+	auto const memcpy_rate = std::invoke([&] __host__ {
 		auto start_time = std::chrono::high_resolution_clock::now();
 		cudaMemcpy(raw_pointer_cast(dst.data_elements()), raw_pointer_cast(src.data_elements()), src.num_elements() * sizeof(T), cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 
 	auto const size = src.num_elements() * sizeof(T) / 1e9;
 
-	auto const dummy = std::invoke([&] {
+	auto const dummy = std::invoke([&] __host__ {
 		auto start_time = std::chrono::high_resolution_clock::now();
 		cudaMemcpy(raw_pointer_cast(dst.data_elements()), raw_pointer_cast(src.data_elements()), src.num_elements() * sizeof(T), cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 		return rate;
 	});
 
-	auto const memcpy_rate = std::invoke([&] {
+	auto const memcpy_rate = std::invoke([&] __host__ {
 		auto start_time = std::chrono::high_resolution_clock::now();
 		cudaMemcpy(raw_pointer_cast(dst.data_elements()), raw_pointer_cast(src.data_elements()), src.num_elements() * sizeof(T), cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
