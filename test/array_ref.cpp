@@ -8,7 +8,8 @@
 #include <array>
 #include <iostream>  // for std::cout
 #include <numeric>  // for std::iota
-#if defined(__cpp_lib_span) and (__cpp_lib_span >= 202002L)
+
+#if !defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210601)
 #include <span>
 #endif
 
@@ -755,7 +756,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(as_span) {
-#if defined(__cpp_lib_span) and (__cpp_lib_span >= 202002L)
+#if defined(__cpp_lib_span) && (__cpp_lib_span >= 202002L)
 	auto print_me0 = [](std::span<int> rng) {
 		std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
 		std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });
