@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210601)) && (! defined(_LIBCPP_VERSION) || (_LIBCPP_VERSION > 15000))
+#if __has_include(<memory_resource>)
 #include <memory_resource>
 #endif
 
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 //  BOOST_REQUIRE( arr[1][2] == 99.0 );
 }
 
-#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
+#if defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)
 BOOST_AUTO_TEST_CASE(pmr) {
 	std::array<char, 13> buffer = {{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
@@ -151,8 +151,7 @@ BOOST_AUTO_TEST_CASE(pmr) {
 
 #if defined(__GLIBCXX__)
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'x', 'y', 'z', '&', 'o', 'o', 'o', 'o', 'o', 'o', 'A', 'B', 'C'}} ));
-#endif
-#if defined(_LIBCPP_VERSION)
+#elif defined(_LIBCPP_VERSION)
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'0', '1', '2', 'o', 'o', 'o', 'o', 'o', 'o', 'x', 'y', 'z', '&'}} ));
 #endif
 
