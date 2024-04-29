@@ -320,8 +320,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		static_array::uninitialized_copy_elements(other.data_elements());
 	}
 
-	template<class TT, class... Args>
-	explicit static_array(array_ref<TT, D, Args...>& other, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/ = nullptr)  // NOLINT(fuchsia-default-arguments-declarations)
+	template<class TT, class... Args
+		, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0
+	>
+	explicit static_array(array_ref<TT, D, Args...>& other
+		// , std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*other.base()), T>>* /*unused*/ = nullptr  // NOLINT(fuchsia-default-arguments-declarations)
+	)
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		static_array::uninitialized_copy_elements(other.data_elements());
 	}
