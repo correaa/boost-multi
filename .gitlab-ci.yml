@@ -101,6 +101,7 @@ clang++-11 libc++:
     - tar -xf boost_1_72_0.tar.gz 
     - cd boost_1_72_0
     - ./bootstrap.sh
+    - cat bootstrap.log
     - ./b2 headers
     - 'echo -n "using clang : : clang++-11" > ~/user-config.jam'
     - echo " ;" >> ~/user-config.jam
