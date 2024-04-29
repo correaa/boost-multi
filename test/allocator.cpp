@@ -196,14 +196,14 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 }
 
 // error with gcc 13 in 32 bit https://github.com/correaa/boost-multi/actions/runs/8876053503/job/24366806203#step:7:447
-// BOOST_AUTO_TEST_CASE(static_allocator) {
-// 	multi::detail::static_allocator<double, 32> sa{};
-// 	auto* pp = sa.allocate(10);
-// 	new(std::next(pp, 8)) double{4.2};
-// 	BOOST_REQUIRE( *std::next(pp, 8) == 4.2 );
-// 	// (pp + 8)->~double();
-// 	sa.deallocate(pp, 10);
-// }
+BOOST_AUTO_TEST_CASE(static_allocator) {
+	multi::detail::static_allocator<int, 32> sa{};
+	auto* pp = sa.allocate(10);
+	new(std::next(pp, 8)) double{42};
+	BOOST_REQUIRE( *std::next(pp, 8) == 42 );
+	// (pp + 8)->~double();
+	sa.deallocate(pp, 10);
+}
 
 #if defined( __cpp_constexpr) &&  (__cpp_constexpr  > 202306L)
 constexpr auto f() {
