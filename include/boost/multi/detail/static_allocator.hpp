@@ -25,7 +25,7 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 		using other = static_allocator<TT, N>;
 	};
 
-	static constexpr auto max_size() noexcept -> std::size_t { return N; };
+	static constexpr auto max_size() noexcept -> std::size_t { return N; }
 
 	static_allocator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) buffer_ is not initialized
 
