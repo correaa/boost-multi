@@ -1012,4 +1012,11 @@ BOOST_AUTO_TEST_CASE(layout_2D_iteration) {
 	//  BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 }
 
+#else
+
+int main()
+{
+    return 0;
+}
+
 #endif
