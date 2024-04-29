@@ -9,7 +9,7 @@
 #include <iostream>  // for std::cout
 #include <numeric>  // for std::iota
 
-#if !defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210601)
+#if __has_include(<span>)
 #include <span>
 #endif
 
