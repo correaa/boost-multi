@@ -89,7 +89,7 @@ clang++-17:
   stage: build
   image: ubuntu:22.04
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget lsb-release wget software-properties-common gnupg
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
     - ./llvm.sh 17
