@@ -100,7 +100,11 @@ clang++-11 libc++:
     - wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.72 in sourceforge
     - tar -xf boost_1_72_0.tar.gz 
     - cd boost_1_72_0
-    - ./bootstrap.sh --with-toolset=clang
+    - ./bootstrap.sh
+    - ./b2 headers
+    - echo -n "using clang : : clang++-11" > ~/user-config.jam
+    - echo " ;" >> ~/user-config.jam
+    # - ./b2 "${B2_ARGS[@]}" cxxflags="-Wall -Wextra -Werror"
     - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
