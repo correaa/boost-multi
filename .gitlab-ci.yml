@@ -75,6 +75,20 @@ clang++-9:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
+clang++-11:
+  stage: build
+  image: ubuntu:22.04
+  tags:
+    - high-bandwidth
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-11 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
+    - mkdir build && cd build
+    - clang++-11 --version
+    - CXX=clang++-11 cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
 coverage:
   stage: build
   tags:
