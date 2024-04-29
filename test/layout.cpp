@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+// See: https://github.com/llvm/llvm-project/issues/61415
+// Should be fixed in 18, but we know 16 and 17 are broken
+#if !(defined(__clang__) && (__clang_major__ == 16 || __clang_major__ == 17) && __cplusplus > 202002L)
+
 #include <boost/multi/array.hpp>
 #include <boost/multi/utility.hpp>
 
@@ -1007,3 +1011,5 @@ BOOST_AUTO_TEST_CASE(layout_2D_iteration) {
 	//  BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 	//  BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 }
+
+#endif
