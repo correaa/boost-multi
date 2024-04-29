@@ -780,8 +780,10 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy arrays
 		print_me0(arr);
 
+	#if !defined(__GNUC__) || (__GNUC__ == 13)  // known bug un gcc 13 https://github.com/microsoft/vscode-cpptools/issues/11026
 		std::vector vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
 		print_me0(vec);
+	#endif
 
 		// clang-format off
 		std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
