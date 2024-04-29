@@ -105,7 +105,7 @@ clang++-11 libc++:
     - echo -n "using clang : : clang++-11" > ~/user-config.jam
     - echo " ;" >> ~/user-config.jam
     # - ./b2 "${B2_ARGS[@]}" cxxflags="-Wall -Wextra -Werror"
-    - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+    - ./b2 cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
     - clang++-11 --version
