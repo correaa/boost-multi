@@ -2255,7 +2255,10 @@ struct subarray<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuchsi
 		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
 		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))
 	>
-	constexpr explicit operator Range() const & {return Range(begin(), end());}  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
+	constexpr explicit operator Range() const & {
+		// vvv Range{...} needed by Windows GCC?
+		return Range{begin(), end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
+	}
 
  private:
 	HD constexpr explicit subarray(iterator begin, iterator end)
