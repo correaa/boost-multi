@@ -191,7 +191,6 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 #endif
 }
 
-// error with gcc 13 in 32 bit https://github.com/correaa/boost-multi/actions/runs/8876053503/job/24366806203#step:7:447
 BOOST_AUTO_TEST_CASE(static_allocator) {
 	using T = int;
 	multi::detail::static_allocator<T, 32> sa{};
