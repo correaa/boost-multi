@@ -64,8 +64,6 @@ g++-10:
 clang++-9:
   stage: build
   image: ubuntu:20.04
-  tags:
-    - high-bandwidth
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-9 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
     - mkdir build && cd build
@@ -78,13 +76,23 @@ clang++-9:
 clang++-11:
   stage: build
   image: ubuntu:22.04
-  tags:
-    - high-bandwidth
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-11 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
     - mkdir build && cd build
     - clang++-11 --version
     - CXX=clang++-11 cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++-17:
+  stage: build
+  image: ubuntu:22.04
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-17 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
+    - mkdir build && cd build
+    - clang++-17 --version
+    - CXX=clang++-17 cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
