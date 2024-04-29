@@ -9,11 +9,15 @@
 
 #if __has_include(<memory_resource>)
 #  include <memory_resource>
+// Apple clang provides the header but not the compiled library prior to version 16
+#  if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) && !(defined(__APPLE_CC__) && __APPLE_CC__ <= 15)
+#    define BOOST_MULTI_HAS_MEMORY_RESOURCE
+#  endif
 #endif
 
 namespace boost::multi::pmr {
 
-#if(defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603))
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 template<class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
 #else

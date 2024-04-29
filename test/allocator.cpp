@@ -10,10 +10,6 @@
 
 #include <vector>
 
-#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210601)) && (! defined(_LIBCPP_VERSION) || (_LIBCPP_VERSION > 14000))
-#include <memory_resource>
-#endif
-
 // Suppress warnings from boost.test
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -136,7 +132,7 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 //  BOOST_REQUIRE( arr[1][2] == 99.0 );
 }
 
-#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 BOOST_AUTO_TEST_CASE(pmr) {
 	std::array<char, 13> buffer = {{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};

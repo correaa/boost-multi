@@ -4,12 +4,9 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
+#include <boost/multi/pmr.hpp>
 
 #include <numeric>
-
-#if(not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20210601)) and (not defined(_LIBCPP_VERSION) or (_LIBCPP_VERSION > 15000))
-#include <memory_resource>
-#endif
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
@@ -37,7 +34,7 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
-#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
@@ -95,7 +92,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 }
 
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
-#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 
