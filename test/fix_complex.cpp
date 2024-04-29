@@ -9,10 +9,6 @@
 #include <complex>
 #include <vector>
 
-#if(not defined(__GLIBCXX__) or (__GLIBCXX__ >= 20210601)) and (not defined(_LIBCPP_VERSION) or (_LIBCPP_VERSION > 14000))
-#include <memory_resource>
-#endif
-
 // Suppress warnings from boost.test
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -54,7 +50,7 @@ BOOST_AUTO_TEST_CASE(pmr_double) {
 	BOOST_REQUIRE(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
 }
 
-#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource >= 201603)
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	{
 		std::array<double, 12> buffer = {{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0,  996.0, 997.0, 998.0, 999.0}};
