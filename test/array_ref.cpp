@@ -417,7 +417,7 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 		BOOST_REQUIRE( get<1>(aref.sizes()) == 3 );
 		BOOST_REQUIRE( aref.sizes() == decltype(aref.sizes())(2, 3) );
 	}
-#if __cplusplus >= 202002L  // GCC: use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)  // GCC: use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension
 	{
 		auto const ss = aref.sizes();
 		BOOST_REQUIRE( get<0>(ss) == 2 );
@@ -784,7 +784,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		std::cout << "\n\n";
 	};
 
-#if defined(__cpp_lib_span) and (__cpp_lib_span >= 202002L)
+#ifdef BOOST_MULTI_TEST_SPAN
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy arrays
 		print_me0(arr);
@@ -993,7 +993,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	//  BOOST_REQUIRE(( trace_separate_sub4                        (arr) == 3 ));  // not allowed
 }
 
-#if __cplusplus >= 202003L
+#if __cplusplus > 202002L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 	auto buffer = std::make_unique<double[]>(9);
 	std::fill_n(buffer.get(), 9, 1.0);
