@@ -168,8 +168,7 @@ BOOST_AUTO_TEST_CASE(pmr2) {
 
 #if defined(__GLIBCXX__)
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
-#endif
-#if defined(_LIBCPP_VERSION)
+#elif defined(_LIBCPP_VERSION)
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'X', 'X', 'X', 'b', 'b', 'b', 'b', 'b', 'b', 'a', 'a', 'a', 'a'}} ));
 #endif
 
