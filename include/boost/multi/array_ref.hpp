@@ -30,7 +30,7 @@
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
 
-#if(__cplusplus >= 202002L)
+#if __has_include(<span>)
 #include <span>
 #endif
 
