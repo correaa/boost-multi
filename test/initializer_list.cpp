@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE( arr[2] == 56 );
 	}
 	{
-		multi::static_array<double, 1> const arr = {1.2, 3.4, 5.6};
+		multi::static_array<int, 1> const arr = {12, 34, 56};
 		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 5.6 );
+		BOOST_REQUIRE( arr[2] == 56 );
 	}
 	{
 		auto const il = {1.2, 3.4, 5.6};
@@ -78,16 +78,18 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 	}
 	{
 		multi::array<double, 1> const arr = {1.2, 3.4, 5.6};
+
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == 5.6 );
+
 		BOOST_REQUIRE(( arr == multi::array<double, 1>{1.2, 3.4, 5.6} ));
 		BOOST_REQUIRE(( arr == decltype(arr){1.2, 3.4, 5.6} ));
 		BOOST_REQUIRE(( arr == decltype(arr)::decay_type({1.2, 3.4, 5.6}) ));
 	}
 	{
 		std::array<double, 3> const stdarr = {
-			{1.1, 2.2, 3.3}
-                                                                                                                                                                                                      };
+			{1.1, 2.2, 3.3},
+		};
 		using multi::num_elements;
 		BOOST_REQUIRE( num_elements(stdarr) == 3 );
 
@@ -101,7 +103,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 	{
-#if not defined(__circle_build__)  // crashes circle 198
+#if ! defined(__circle_build__)  // crashes circle 198
 		multi::static_array const arr = {12, 34, 56};
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == 56 );
@@ -109,10 +111,10 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 #endif
 	}
 	{
-		multi::array arr({1.2, 3.4, 5.6});
+		multi::array arr({12, 34, 56});
 		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 5.6 );
-		BOOST_REQUIRE(( arr == multi::array({1.2, 3.4, 5.6}) ));
+		BOOST_REQUIRE( arr[2] == 56 );
+		BOOST_REQUIRE(( arr == multi::array({12, 34, 56}) ));
 	}
 #endif
 }
