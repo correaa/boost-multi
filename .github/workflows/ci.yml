@@ -547,4 +547,4 @@ jobs:
         shell: cmd
         run: |
           cd ../boost-root
-          b2 -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release link=static,shared embed-manifest-via=linker define=_CRT_SECURE_NO_WARNINGS cxxflags="-Wno-reserved-macro-identifier"
+          b2 -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release link=static,shared embed-manifest-via=linker define=_CRT_SECURE_NO_WARNINGS cxxflags="-Wno-reserved-macro-identifier -Wno-microsoft-cpp-macro -Wno-documentation -Wno-inconsistent-missing-destructor-override -Wno-global-constructors -Wno-zero-as-null-pointer-constant"
