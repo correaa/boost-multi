@@ -10,23 +10,23 @@
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wundef"
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wundef"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
@@ -101,9 +101,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
-#if defined(__cpp_deduction_guides) && ! defined(__NVCC__)
+#if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	{
-#if ! defined(__circle_build__)  // crashes circle 198
+#if !defined(__circle_build__)  // crashes circle 198
 		multi::static_array const arr = {12, 34, 56};
 		BOOST_TEST_REQUIRE( size(arr) == 3 );
 		BOOST_TEST_REQUIRE( arr[2] == 56 );
@@ -150,7 +150,9 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 #endif
 	}
 	{
-		std::array<double, 3> stdarr = {{1.1, 2.2, 3.3}};
+		std::array<double, 3> stdarr = {
+			{1.1, 2.2, 3.3}
+		};
 		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
 		BOOST_REQUIRE(( arr == decltype(arr){1.1, 2.2, 3.3} ));
 	}
@@ -177,80 +179,92 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 			{112, 344, 56},
 			{152, 324, 56},
 		};
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( size(arr[0]) == 3 );
-		BOOST_REQUIRE( arr[1][1] == 344 );
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( size(arr[0]) == 3 );
+		BOOST_TEST( arr[1][1] == 344 );
 	}
 	{
-		multi::array<double, 2> arr = {
-			{ 1.2,  2.4, 3.6},
-			{11.2, 34.4, 5.6},
-			{15.2, 32.4, 5.6},
+		multi::array<int, 2> arr = {
+			{ 12,  24, 36},
+			{112, 344, 56},
+			{152, 324, 56},
 		};
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( size(arr) == 3 and size(arr[0]) == 3 );
-		BOOST_REQUIRE( arr[1][1] == 34.4 );
+
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( size(arr[0]) == 3 );
+		BOOST_TEST( arr[1][1] == 344 );
+
 		arr = {
-			{ 0.0,  1.0, 02.0},
-			{10.0, 11.0, 12.0},
-			{20.0, 21.0, 22.0},
+			{100,  10,  20},
+			{100, 110, 120},
+			{200, 210, 220},
 		};
-		BOOST_REQUIRE( arr[1][2] == 12.0 );
+		BOOST_TEST( arr[1][2] == 120 );
 	}
 	{
-		multi::array<double, 1> vec;
-		vec = {4.0, 5.5};
-		BOOST_REQUIRE( size(vec) == 2 );
-		BOOST_REQUIRE( vec[1] == 5.5 );
+		multi::array<int, 1> vec;
+		vec = {40, 55};
+		BOOST_TEST( size(vec) == 2 );
+		BOOST_TEST( vec[1] == 55 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const nested = {{{{1.2, 2.4}}, {{11.2, 34.4}}, {{15.2, 32.4}}}};
+		std::array<std::array<int, 2>, 3> const nested = {
+			{{{12, 24}}, {{112, 344}}, {{152, 324}}}
+		};
 
 		using std::begin;
 		using std::end;
+
 		multi::static_array<double, 2> arr(begin(nested), end(nested));
 
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( size(arr[0]) == 2 );
-		BOOST_REQUIRE( arr[1][0] == 11.2 );
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( size(arr[0]) == 2 );
+		BOOST_TEST( arr[1][0] == 112 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const nested = {{{{1.2, 2.4}}, {{11.2, 34.4}}, {{15.2, 32.4}}}};
-		multi::static_array<double, 2> const arr(std::begin(nested), std::end(nested));
+		std::array<std::array<int, 2>, 3> const nested = {
+			{{{12, 24}}, {{112, 344}}, {{152, 324}}}
+		};
+		multi::static_array<int, 2> const arr(std::begin(nested), std::end(nested));
 
-		BOOST_REQUIRE((
-			arr == multi::array<double, 2> {{
-				{{ 1.2,  2.4}},
-				{{11.2, 34.4}},
-				{{15.2, 32.4}}
+		BOOST_TEST((
+			arr == multi::array<int, 2> {{
+				{{ 12,  24}},
+				{{112, 344}},
+				{{152, 324}}
 			}}
 		));
-		BOOST_REQUIRE(not( arr != multi::array<double, 2>{
-				{ 1.2,  2.4},
-				{11.2, 34.4},
-				{15.2, 32.4}
+
+		BOOST_TEST(!( arr != multi::array<int, 2>{
+				{ 12,  24},
+				{112, 344},
+				{152, 324},
 			}
 		));
-		BOOST_REQUIRE((
+		BOOST_TEST((
 			arr == decltype(arr){
-				{ 1.2,  2.4},
-				{11.2, 34.4},
-				{15.2, 32.4}
+				{ 12,  24},
+				{112, 344},
+				{152, 324},
 			}
 		));
 	}
 	{
-		std::array<std::array<double, 2>, 3> nested = {
-			{{{1.0, 2.0}},
-			 {{2.0, 4.0}},
-			 {{3.0, 6.0}}},
+		std::array<std::array<int, 2>, 3> nested = {
+			{{{10, 20}},
+			 {{20, 40}},
+			 {{30, 60}}},
 		};
-		multi::array<double, 2> arr(begin(nested), end(nested));
-		BOOST_REQUIRE( num_elements(arr) == 6 and arr[2][1] == 6.0 );
+		multi::array<int, 2> arr(begin(nested), end(nested));
+		BOOST_TEST( num_elements(arr) == 6 );
+		BOOST_TEST( arr[2][1] == 60 );
 	}
 	{
 		using complex = std::complex<double>;
-		complex const            I{0., 1.};  // NOLINT(readability-identifier-length) imaginary unit
+
+		complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
+
 		multi::array<complex, 2> arr = {
 			{2.0 + 1.0 * I, 1.0 + 3.0 * I, 1.0 + 7.0 * I},
 			{3.0 + 4.0 * I, 4.0 + 2.0 * I, 0.0 + 0.0 * I},
@@ -269,9 +283,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_static_array_initializer_list) {
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
 	multi::array<int, 3> const arr = {
-		{ { 12, 100},  {24, 10}},
-		{ {112,  30}, {344, 40}},
-		{ {152, 990}, {324, 20}},
+		{ {12, 100},  {24, 10}},
+		{ {112, 30}, {344, 40}},
+		{{152, 990}, {324, 20}},
 	};
 	BOOST_REQUIRE( arr[1][1][0] == 344 );
 	BOOST_REQUIRE( arr[1][1][1] ==  40 );
@@ -281,8 +295,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 	{
 		using std::string;
 		multi::array<string, 3> B3 = {
-			{{"000", "001", "002"}, {"010", "011", "012"}},  // NOLINT(fuchsia-default-arguments-calls)
-			{{"100", "101", "102"}, {"110", "111", "112"}},  // NOLINT(fuchsia-default-arguments-calls)
+			{{"000", "001", "002"}, {"010", "011", "012"}}, // NOLINT(fuchsia-default-arguments-calls)
+			{{"100", "101", "102"}, {"110", "111", "112"}}, // NOLINT(fuchsia-default-arguments-calls)
 		};
 		BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
 	}
@@ -291,13 +305,13 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 	{
-	#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
 		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
-	#endif
+#endif
 	}
 }
 
@@ -340,24 +354,24 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 
 BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 	{
-	#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::static_array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
-	#endif
+#endif
 	}
 	{
-	#if not defined(__circle_build__)
+#if not defined(__circle_build__)
 		multi::array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
-	#endif
+#endif
 	}
 }
 #endif
