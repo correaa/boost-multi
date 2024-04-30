@@ -3,7 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-
 #include <boost/multi/array.hpp>
 
 #include <numeric>
@@ -115,20 +114,22 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 }
 
 BOOST_AUTO_TEST_CASE(iterator_interface ) {
-	multi::array<double, 3> arr = {
+	multi::array<int, 3> arr = {
 		{
-			{ 1.2,  1.1}, { 2.4, 1.0}
+			{ 12,  11}, { 24, 10}
 		},
 		{
-			{11.2,  3.0}, {34.4, 4.0}
+			{112,  30}, {344, 40}
 		},
 		{
-			{ 1.2,  1.1}, { 2.4, 1.0}
+			{ 12,  11}, { 24, 10}
 		}
 	};
 
-	BOOST_REQUIRE( size(arr)==3 and size(arr[0]) == 2 and size(arr[0][0]) == 2 );
-	BOOST_REQUIRE( arr[0][0][1] == 1.1 );
+	BOOST_REQUIRE( size(arr) == 3 );
+	BOOST_REQUIRE( size(arr[0]) == 2 );
+	BOOST_REQUIRE( size(arr[0][0]) == 2 );
+	BOOST_REQUIRE( arr[0][0][1] == 11 );
 
 	BOOST_REQUIRE( begin(arr) < end(arr) );
 	BOOST_REQUIRE( cbegin(arr) < cend(arr) );
@@ -142,8 +143,8 @@ BOOST_AUTO_TEST_CASE(iterator_interface ) {
 	BOOST_REQUIRE( end(arr) - begin(arr) == size(arr) );
 //  BOOST_REQUIRE( rend(A) - rbegin(A) == size(A) );
 
-	BOOST_REQUIRE( size(*begin(arr)) == 2 );
-	BOOST_REQUIRE( size(begin(arr)[1]) == 2 );
+	BOOST_REQUIRE( size(*begin(arr)   ) == 2 );
+	BOOST_REQUIRE( size( begin(arr)[1]) == 2 );
 
 	BOOST_REQUIRE( &(arr[1][1].begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
 	BOOST_REQUIRE( &arr[0][1][0] == &arr[0][1][0] );

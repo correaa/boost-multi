@@ -39,9 +39,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE( vec[1] == 2. );
 	}
 	{
-		multi::static_array<double, 1> arr = {1.2, 3.4, 5.6};
+		multi::static_array<int, 1> arr = {12, 34, 56};
 		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 5.6 );
+		BOOST_REQUIRE( arr[2] == 56 );
 	}
 	{
 		multi::static_array<double, 1> const arr = {1.2, 3.4, 5.6};
@@ -102,10 +102,10 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 	{
 #if not defined(__circle_build__)  // crashes circle 198
-		multi::static_array const arr = {1.2, 3.4, 5.6};
+		multi::static_array const arr = {12, 34, 56};
 		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 5.6 );
-		BOOST_REQUIRE(( arr == multi::static_array{1.2, 3.4, 5.6} ));
+		BOOST_REQUIRE( arr[2] == 56 );
+		BOOST_REQUIRE(( arr == multi::static_array{12, 34, 56} ));
 #endif
 	}
 	{
@@ -136,9 +136,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
 
 BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 	{
-		multi::static_array<double, 1> const arr = {1.1, 2.2, 3.3};
+		multi::static_array<int, 1> const arr = {11, 22, 33};
 		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[1] == 2.2 );
+		BOOST_REQUIRE( arr[1] == 22 );
 	}
 	{
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
@@ -170,14 +170,14 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		}));
 	}
 	{
-		multi::array<double, 2> const arr = {
-			{ 1.2,  2.4, 3.6},
-			{11.2, 34.4, 5.6},
-			{15.2, 32.4, 5.6},
+		multi::array<int, 2> const arr = {
+			{ 12,  24, 36},
+			{112, 344, 56},
+			{152, 324, 56},
 		};
 		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( size(arr) == 3 and size(arr[0]) == 3 );
-		BOOST_REQUIRE( arr[1][1] == 34.4 );
+		BOOST_REQUIRE( size(arr[0]) == 3 );
+		BOOST_REQUIRE( arr[1][1] == 344 );
 	}
 	{
 		multi::array<double, 2> arr = {
@@ -266,12 +266,13 @@ BOOST_AUTO_TEST_CASE(multi_tests_static_array_initializer_list) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
-	multi::array<double, 3> const arr = {
-		{  {1.2, 0.0},  {2.4, 1.0}},
-		{ {11.2, 3.0}, {34.4, 4.0}},
-		{{15.2, 99.0}, {32.4, 2.0}},
+	multi::array<int, 3> const arr = {
+		{ { 12, 100},  {24, 10}},
+		{ {112,  30}, {344, 40}},
+		{ {152, 990}, {324, 20}},
 	};
-	BOOST_REQUIRE( arr[1][1][0] == 34.4 and arr[1][1][1] == 4.0   );
+	BOOST_REQUIRE( arr[1][1][0] == 344 );
+	BOOST_REQUIRE( arr[1][1][1] ==  40 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
