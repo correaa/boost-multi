@@ -30,13 +30,13 @@
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
 
-#if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+#if(__cplusplus >= 202002L)
 #include <span>
 #endif
 
 #include <utility>     // for forward
 
-#if !defined(__NVCC__)
+#if not defined(__NVCC__)
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
 #else
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend /*constexpr*/
@@ -1884,8 +1884,8 @@ struct subarray<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuchsi
 
 	subarray(subarray const&) = default;
 
-	template<class TT, ::boost::multi::dimensionality_type DD, typename EP, class LLayout> friend struct subarray;
-	template<class TT, ::boost::multi::dimensionality_type DD, class Alloc>                friend struct static_array;
+	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct subarray;
+	template<typename, ::boost::multi::dimensionality_type, class Alloc>                friend struct static_array;
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
@@ -2552,8 +2552,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) = delete;
 	#endif
 
-    // Only need the bits of span from C++20
-	#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L && !defined(__NVCC__)
+	#if defined(__cpp_lib_span) && !defined(__NVCC__)
 	template<class Tconst = const typename array_ref::element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> and D == 1, int> = 0>
 	constexpr explicit operator std::span<Tconst>() const& {return std::span<Tconst>(this->data_elements(), this->size());}
 	#endif
@@ -2735,7 +2734,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
 	template<class TT> static auto launder(TT* pointer) -> TT* {
-		#if(defined(__cpp_lib_launder) && ( __cpp_lib_launder >= 201606L))
+		#if(defined(__cpp_lib_launder) and ( __cpp_lib_launder >= 201606L)) 
 		return std::launder(pointer);
 		#else
 		return              pointer ;
@@ -2882,7 +2881,7 @@ template<class P> auto make_array_ref(P data, extensions_t<3> exts) {return make
 template<class P> auto make_array_ref(P data, extensions_t<4> exts) {return make_array_ref<4>(data, exts);}
 template<class P> auto make_array_ref(P data, extensions_t<5> exts) {return make_array_ref<5>(data, exts);}
 
-#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703L
+#if defined(__cpp_deduction_guides)
 
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
 array_ptr(It)->array_ptr<V, 0, It>;
