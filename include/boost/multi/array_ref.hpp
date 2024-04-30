@@ -30,13 +30,13 @@
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
 
-#if(__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #include <span>
 #endif
 
 #include <utility>     // for forward
 
-#if not defined(__NVCC__)
+#if !defined(__NVCC__)
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
 #else
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend /*constexpr*/
@@ -2552,7 +2552,8 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) = delete;
 	#endif
 
-	#if defined(__cpp_lib_span) && !defined(__NVCC__)
+    // Only need the bits of span from C++20
+	#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L && !defined(__NVCC__)
 	template<class Tconst = const typename array_ref::element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> and D == 1, int> = 0>
 	constexpr explicit operator std::span<Tconst>() const& {return std::span<Tconst>(this->data_elements(), this->size());}
 	#endif
@@ -2734,7 +2735,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
 	template<class TT> static auto launder(TT* pointer) -> TT* {
-		#if(defined(__cpp_lib_launder) and ( __cpp_lib_launder >= 201606L)) 
+		#if(defined(__cpp_lib_launder) && ( __cpp_lib_launder >= 201606L))
 		return std::launder(pointer);
 		#else
 		return              pointer ;
@@ -2881,7 +2882,7 @@ template<class P> auto make_array_ref(P data, extensions_t<3> exts) {return make
 template<class P> auto make_array_ref(P data, extensions_t<4> exts) {return make_array_ref<4>(data, exts);}
 template<class P> auto make_array_ref(P data, extensions_t<5> exts) {return make_array_ref<5>(data, exts);}
 
-#if defined(__cpp_deduction_guides)
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703L
 
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
 array_ptr(It)->array_ptr<V, 0, It>;

@@ -274,6 +274,13 @@ constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 }  // end namespace detail
 }  // end namespace boost::multi
 
+// Some versions of Clang throw warnings that stl uses class std::tuple_size instead
+// of struct std::tuple_size like it should be
+#ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wmismatched-tags"
+#endif
+
 template<class... Ts>
 struct std::tuple_size<boost::multi::detail::tuple<Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
 	// cppcheck-suppress unusedStructMember
@@ -341,6 +348,10 @@ constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>&& tp) -> decltyp
 }
 
 }  // end namespace std
+
+#ifdef __clang__
+#  pragma clang diagnostic pop
+#endif
 
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
