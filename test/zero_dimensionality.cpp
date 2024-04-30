@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 		m0 = 51;
 		BOOST_REQUIRE( v1[0] == 51 );
 
-		double const& doub = std::move(m0);
+		int const& doub = std::move(m0);
 		BOOST_REQUIRE( doub == 51 );
 	}
 	{
