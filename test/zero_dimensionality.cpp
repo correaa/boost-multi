@@ -35,23 +35,23 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 	{
-		std::vector<double> v1 = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> v1 = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
 
-		multi::array_ref<double, 1> m1(v1.data(), multi::extensions_t<1>{multi::iextension{3}});
+		multi::array_ref<int, 1> m1(v1.data(), multi::extensions_t<1>{multi::iextension{3}});
 		BOOST_REQUIRE( size(m1) == 3 );
 		BOOST_REQUIRE( &m1[1] == &v1[1] );
 		BOOST_REQUIRE( num_elements(m1) == 3 );
 
-		multi::array_ref<double, 0> m0(v1.data(), {});
+		multi::array_ref<int, 0> m0(v1.data(), {});
 //      BOOST_REQUIRE(( &m0 == multi::array_ptr<double, 0>(v1.data(), {}) ));
 		BOOST_REQUIRE( data_elements(m0) == v1.data() );
 		BOOST_REQUIRE( num_elements(m0) == 1 );
 
-		m0 = 5.1;
-		BOOST_REQUIRE( v1[0] == 5.1 );
+		m0 = 51;
+		BOOST_REQUIRE( v1[0] == 51 );
 
 		double const& doub = std::move(m0);
-		BOOST_REQUIRE( doub == 5.1 );
+		BOOST_REQUIRE( doub == 51 );
 	}
 	{
 		multi::static_array<double, 0> a0 = multi::static_array<double, 0>{45.0};  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
