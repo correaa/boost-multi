@@ -30,7 +30,7 @@
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
 
-#if __has_include(<span>)
+#if __has_include(<span>) && (!defined(_MSVC_LANG) || (_MSVC_LANG >= 202002L))
 #include <span>
 #endif
 
@@ -2734,7 +2734,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
 	template<class TT> static auto launder(TT* pointer) -> TT* {
-		#if(defined(__cpp_lib_launder) and ( __cpp_lib_launder >= 201606L)) 
+		#if(defined(__cpp_lib_launder) && ( __cpp_lib_launder >= 201606L)) 
 		return std::launder(pointer);
 		#else
 		return              pointer ;
