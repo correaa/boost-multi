@@ -63,64 +63,64 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
-		multi::static_array<double, 1> const arr = {1.2, 3.4, 5.6};
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 5.6 );
-		BOOST_REQUIRE(( arr == multi::static_array<double, 1>{1.2, 3.4, 5.6} ));
-		BOOST_REQUIRE(( arr == decltype(arr){1.2, 3.4, 5.6} ));
+		multi::static_array<int, 1> const arr = {12, 34, 56};
+		BOOST_TEST_REQUIRE( size(arr) == 3 );
+		BOOST_TEST_REQUIRE( arr[2] == 56 );
+		BOOST_TEST_REQUIRE(( arr == multi::static_array<int, 1>{12, 34, 56} ));
+		BOOST_TEST_REQUIRE(( arr == decltype(arr){12, 34, 56} ));
 	}
 	{
-		auto const values = {1.2, 3.4, 5.6};
+		auto const values = {12, 34, 56};
 
-		multi::array<double, 1> const arr(values.begin(), values.end());
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 5.6 );
+		multi::array<int, 1> const arr(values.begin(), values.end());
+		BOOST_TEST_REQUIRE( size(arr) == 3 );
+		BOOST_TEST_REQUIRE( arr[2] == 56 );
 	}
 	{
-		multi::array<double, 1> const arr = {1.2, 3.4, 5.6};
+		multi::array<int, 1> const arr = {12, 34, 56};
 
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 5.6 );
+		BOOST_TEST_REQUIRE( size(arr) == 3 );
+		BOOST_TEST_REQUIRE( arr[2] == 56 );
 
-		BOOST_REQUIRE(( arr == multi::array<double, 1>{1.2, 3.4, 5.6} ));
-		BOOST_REQUIRE(( arr == decltype(arr){1.2, 3.4, 5.6} ));
-		BOOST_REQUIRE(( arr == decltype(arr)::decay_type({1.2, 3.4, 5.6}) ));
+		BOOST_TEST_REQUIRE(( arr == multi::array<int, 1>{12, 34, 56} ));
+		BOOST_TEST_REQUIRE(( arr == decltype(arr){12, 34, 56} ));
+		BOOST_TEST_REQUIRE(( arr == decltype(arr)::decay_type({12, 34, 56}) ));
 	}
 	{
-		std::array<double, 3> const stdarr = {
-			{1.1, 2.2, 3.3},
+		std::array<int, 3> const stdarr = {
+			{11, 22, 33},
 		};
 		using multi::num_elements;
-		BOOST_REQUIRE( num_elements(stdarr) == 3 );
+		BOOST_TEST_REQUIRE( num_elements(stdarr) == 3 );
 
 		using std::begin;
 		using std::end;
 		multi::static_array<double, 1> const arr(begin(stdarr), end(stdarr));
-		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_TEST_REQUIRE( size(arr) == 3 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
-#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+#if defined(__cpp_deduction_guides) && ! defined(__NVCC__)
 	{
 #if ! defined(__circle_build__)  // crashes circle 198
 		multi::static_array const arr = {12, 34, 56};
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 56 );
-		BOOST_REQUIRE(( arr == multi::static_array{12, 34, 56} ));
+		BOOST_TEST_REQUIRE( size(arr) == 3 );
+		BOOST_TEST_REQUIRE( arr[2] == 56 );
+		BOOST_TEST_REQUIRE(( arr == multi::static_array{12, 34, 56} ));
 #endif
 	}
 	{
 		multi::array arr({12, 34, 56});
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 56 );
-		BOOST_REQUIRE(( arr == multi::array({12, 34, 56}) ));
+		BOOST_TEST_REQUIRE( size(arr) == 3 );
+		BOOST_TEST_REQUIRE( arr[2] == 56 );
+		BOOST_TEST_REQUIRE(( arr == multi::array({12, 34, 56}) ));
 	}
 #endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
-#if defined(__INTEL_COMPILER) or (defined(__clang__) and (__clang_major__ >= 10))  // doesn't work on gcc
+#if defined(__INTEL_COMPILER) || (defined(__clang__) && (__clang_major__ >= 10))  // doesn't work on gcc
 	{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc99-designator"
