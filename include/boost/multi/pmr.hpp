@@ -7,7 +7,7 @@
 
 #include <boost/multi/array.hpp>
 
-#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210601)) && (!defined(_LIBCPP_VERSION) || (_LIBCPP_VERSION > 14000))
+#if __has_include(<memory_resource>)
 #include <memory_resource>
 #endif
 
