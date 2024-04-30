@@ -82,7 +82,7 @@ struct transform_ptr {
 		>
 	;
 
-	#if defined(__GNUC__) and (__GNUC__ < 9)
+	#if defined(__GNUC__) && (__GNUC__ < 9)
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
 	#endif
 
@@ -150,14 +150,6 @@ template<typename T, typename = std::enable_if_t<!has_rank<T>::value> >
 constexpr auto rank_aux(T const&) -> std::integral_constant<size_t, std::rank_v<T>>;
 
 template<typename T> struct rank : decltype(rank_aux(std::declval<T>())) {};
-
-#if not defined(__cpp_lib_nonmember_container_access) or __cpp_lib_nonmember_container_access < 201411
-template<class Container>
-constexpr auto size(Container const& con)
--> std::make_signed_t<decltype(con.size())> {
-	return static_cast<std::make_signed_t<decltype(con.size())>>(con.size());}
-#else
-#endif
 
 template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> = 0>  // special sfinae trick
 constexpr auto stride(Pointer /*ptr*/) -> std::ptrdiff_t {return 1;}
