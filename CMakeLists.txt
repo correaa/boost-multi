@@ -30,11 +30,7 @@ if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE)
 
   target_compile_features(boost_multi INTERFACE cxx_std_14)
 
-  include(CMakeDependentOption)
-
-  cmake_dependent_option(BOOST_MULTI_STANDALONE "Use Boost.Multi in standalone mode" ON "NOT BOOST_SUPERPROJECT_VERSION" OFF)
-
-  message(STATUS "Boost.Multi: standalone mode ${BOOST_MULTI_STANDALONE}")
+  message(STATUS "Boost.Multi: standalone mode OFF")
 
   if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
 
@@ -50,6 +46,8 @@ else()
     DESCRIPTION "A header-only modern C++ library that provides access and manipulation of data in multidimensional arrays."
     VERSION 0.80.1
     LANGUAGES CXX)
+
+  message(STATUS "Boost.Multi: standalone mode ON")
 
   message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
