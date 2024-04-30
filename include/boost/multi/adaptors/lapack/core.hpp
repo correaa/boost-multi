@@ -119,7 +119,7 @@ inline void getrs(char trans, lapack_int const n, lapack_int const nrhs, double 
 	dgetrs_(trans, n, nrhs, A, lda, ipiv, B, ldb, info);
 
 	switch(info){
-		case -1: throw std::logic_error{"transa ≠ 'N', 'T', or 'C'"};
+		case -1: throw std::logic_error{"transa != 'N', 'T', or 'C'"};
 		case -2: throw std::logic_error{"n < 0"                    };
 		case -3: throw std::logic_error{"nrhs < 0"                 };
 		case -4: throw std::logic_error{"n > lda"                  };

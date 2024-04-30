@@ -15,8 +15,9 @@ variables:
   NVIDIA_DISABLE_REQUIRE: 1
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
 
-g++:  # debian-stable: default is gcc 12 as of Dec 2023
+g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
@@ -45,6 +46,48 @@ g++-m32:
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
+
+g++-10:
+  stage: build
+  image: ubuntu:20.04
+  tags:
+    - high-bandwidth
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++-10 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget  # linux-libc-dev:i386
+    - mkdir build && cd build
+    - g++-10 --version
+    - CXX=g++-10 cmake .. -DCMAKE_BUILD_TYPE=Debug # -DCMAKE_CXX_FLAGS="-m32"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["g++"]
+
+clang++-9:
+  stage: build
+  image: ubuntu:20.04
+  tags:
+    - high-bandwidth
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-9 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
+    - mkdir build && cd build
+    - clang++-9 --version
+    - CXX=clang++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++-11:
+  stage: build
+  image: ubuntu:22.04
+  tags:
+    - high-bandwidth
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-11 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
+    - mkdir build && cd build
+    - clang++-11 --version
+    - CXX=clang++-11 cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
 
 coverage:
   stage: build
@@ -143,7 +186,7 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=23
+    - CXXFLAGS="-fexcess-precision=standard" cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++-testing c++20"]
@@ -196,6 +239,16 @@ clang++-latest libc++:
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
+
+build_windows:
+  stage: build
+  allow_failure: true
+  script:
+    - '& "$msbuild" -help'
+  tags:
+    - shared-windows
+    - windows
+    - windows-1809
 
 clang++-macos:
   stage: build
@@ -314,14 +367,14 @@ clang++-17-unstable libc++ c++23 boost_1_84:
 
 clang++-oldoldstable:
   stage: build
-  image: debian:oldoldstable  # clang 7.0.1 as of Dec 2023
+  image: debian:oldoldstable  # clang 7.0.1 as of April 2024
   tags:
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
-    - mkdir build && cd build
+    - mkdir build && cd build 
     - clang++ --version
     - CXX=clang++ CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
     - cmake --build . --parallel 2 || cmake --build . --verbose
@@ -428,27 +481,7 @@ cuda:
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-    - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["g++"]
-
-cuda:
-  stage: build
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-  tags:
-    - nvidia-gpu
-  script:
-    - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - mkdir build && cd build
-    - ls /usr/local
-    - ls /usr/local/cuda-11/bin
-    - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DBUILD_TESTING=0 -DENABLE_CUDA=1
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
     - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
@@ -469,7 +502,7 @@ cuda-11.8 mkl:
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DBUILD_TESTING=0 -DENABLE_CUDA=1
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
     - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
@@ -492,7 +525,7 @@ cuda-11.4.3:
     - cmake --version
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
@@ -515,7 +548,7 @@ cuclang++-16 cuda-11.4.3:
     - ./llvm.sh 16
     - mkdir build && cd build
     - clang++-16 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
@@ -558,7 +591,7 @@ culang++-19 cuda-12.1.1 tidy:
     - mkdir build && cd build
     - clang++-19 --version
     - clang-tidy-19 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-19 -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-19 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
@@ -575,7 +608,7 @@ cuda-12.3.1:
     - mkdir build && cd build
     - g++-12 --version
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of drivers"
   needs: ["cuda"]

@@ -30,13 +30,13 @@
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
 
-#if(__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #include <span>
 #endif
 
 #include <utility>     // for forward
 
-#if not defined(__NVCC__)
+#if !defined(__NVCC__)
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
 #else
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend /*constexpr*/
@@ -67,12 +67,20 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t = Layout;
 
-	using rank = typename layout_t::rank  ;
+	using rank = typename layout_t::rank;
 
 	using          layout_t::rank_v;
-	using          layout_t::dimensionality;
+
+	// using typename layout_t::dimensionality_type;  // needed by MSVC
+	using dimensionality_type = typename layout_t::dimensionality_type;  // needed by MSVC
+
+	using                                Layout::dimensionality;
+// #else
+//  static constexpr auto dimensionality = layout_t::dimensionality;
+// #endif
 
 	// using          layout_t::num_dimensions;
+
 	[[deprecated("this is from BMA")]] static constexpr auto num_dimensions() {return dimensionality;}
 
 	using typename layout_t::stride_type;
@@ -177,7 +185,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
  protected:
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
-	template<class, dimensionality_type, typename> friend struct array_iterator;
+	template<class, ::boost::multi::dimensionality_type, typename> friend struct array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
 	HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
@@ -215,7 +223,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	HD constexpr explicit array_types(array_types<T, D, ElementPtr2, Layout> const& other)
 	: Layout{other.layout()}, base_{other.base_} {}
 
-	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
+	template<class T2, ::boost::multi::dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
 
 template<class Ref, class Layout>
@@ -328,7 +336,7 @@ public:
 template<class Element, dimensionality_type D, typename ElementPtr>
 struct array_iterator;
 
-template<class Element, dimensionality_type D, typename ElementPtr>
+template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr>
 struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 : boost::multi::iterator_facade<
 	array_iterator<Element, D, ElementPtr>, void, std::random_access_iterator_tag,
@@ -542,8 +550,8 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	using indices_type = typename extensions_t<layout_type::dimensionality>::indices_type;
 	indices_type ns_ = {};
 
-	template<class, class> friend struct elements_iterator_t;
-	template<class, class> friend struct elements_range_t;
+	template<typename, class> friend struct elements_iterator_t;
+	template<typename, class> friend struct elements_range_t;
 
 	constexpr elements_iterator_t(pointer base, layout_type lyt, difference_type n)
 	: base_{base}, l_{lyt}, n_{n}, xs_{l_.extensions()}, ns_{lyt.is_empty()?indices_type{}:xs_.from_linear(n)} {}
@@ -736,7 +744,7 @@ HD constexpr auto ref(It begin, It end)
 	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
 
-template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
+template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
 struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = subarray;
@@ -870,15 +878,15 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using typename types::index;
 
-	constexpr auto reindexed(index first) const& -> basic_const_array {
+	constexpr auto reindexed(index first) const& {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
-		return {new_layout, types::base_};
+		return basic_const_array(new_layout, types::base_);
 	}
-	constexpr auto reindexed(index first)& -> subarray {
+	constexpr auto reindexed(index first)& {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
-		return {new_layout, types::base_};
+		return subarray(new_layout, types::base_);
 	}
 	constexpr auto reindexed(index first)&& -> subarray {
 		typename types::layout_t new_layout = this->layout();
@@ -1179,7 +1187,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator|(typename subarray::size_type n) const& -> decltype(auto) {return partitioned(n);}
 
  private:
-	template<typename, dimensionality_type, typename, class> friend struct subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct subarray;
 
 	// HD constexpr auto paren_aux()      & -> subarray       {return *this;}
 	// HD constexpr auto paren_aux()     && -> subarray       {return this->operator()();}
@@ -1258,13 +1266,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 	HD constexpr explicit subarray(iterator begin, iterator end)
-	: subarray{
-		layout_type{begin->layout(), begin.stride(), 0, begin.stride()*(end - begin)},
+	: subarray(
+		layout_type{begin->layout(), begin.stride(), 0, begin.stride() * (end - begin)},
 		begin.base()
-	} {
-		assert(begin.stride()  == end.stride() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	) {
+		assert(begin.stride() == end.stride());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	}
+
 	friend HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
  public:
@@ -1716,7 +1725,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	constexpr auto distance_to(array_iterator const& other) const -> difference_type {
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return (other.data_ - data_)/stride_;  // with strict-overflow=3 error: assuming signed overflow does not occur when simplifying ‘X - Y > 0’ to ‘X > Y’ [-Werror=strict-overflow]
+		return (other.data_ - data_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
 	}
 
  public:
@@ -1815,10 +1824,10 @@ struct subarray<T, 0, ElementPtr, Layout>
 };
 
 template<typename T, typename ElementPtr, class Layout>
-struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
+struct subarray<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
 // : multi::partially_ordered2<subarray<T, 1, ElementPtr, Layout>, void>
-: multi::random_iterable    <subarray<T, 1, ElementPtr, Layout>>
-, array_types<T, 1, ElementPtr, Layout> {
+: multi::random_iterable<subarray<T, dimensionality_type{1}, ElementPtr, Layout>>
+, array_types<T, dimensionality_type{1}, ElementPtr, Layout> {
 	~subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	// boost serialization needs `delete`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::layout_t<1> >]’
@@ -1875,8 +1884,8 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 
 	subarray(subarray const&) = default;
 
-	template<class TT, dimensionality_type DD, typename EP, class LLayout> friend struct subarray;
-	template<class TT, dimensionality_type DD, class Alloc>                friend struct static_array;
+	template<class TT, ::boost::multi::dimensionality_type DD, typename EP, class LLayout> friend struct subarray;
+	template<class TT, ::boost::multi::dimensionality_type DD, class Alloc>                friend struct static_array;
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
@@ -2244,9 +2253,12 @@ struct subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritanc
 	template<
 		class Range,
 		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
-		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))
+		class = decltype(Range{std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()})
 	>
-	constexpr explicit operator Range() const & {return Range(begin(), end());}  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
+	constexpr explicit operator Range() const & {
+		// vvv Range{...} needed by Windows GCC?
+		return Range{begin(), end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
+	}
 
  private:
 	HD constexpr explicit subarray(iterator begin, iterator end)
@@ -2520,12 +2532,14 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	using iterator = typename subarray<T, D, ElementPtr>::iterator;
 
  public:
+	constexpr  // attempt for MSVC
 	array_ref() = delete;  // because reference cannot be unbound
 
 	array_ref(iterator, iterator) = delete;
 
-	friend constexpr auto sizes(array_ref const& self) noexcept -> typename array_ref::sizes_type {return self.sizes();}  // needed by nvcc
-	friend constexpr auto size (array_ref const& self) noexcept -> typename array_ref::size_type  {return self.size ();}  // needed by nvcc
+	// return type removed for MSVC
+	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ {return self.sizes();}  // needed by nvcc
+	friend constexpr auto size (array_ref const& self) noexcept /*-> typename array_ref::size_type*/  {return self.size ();}  // needed by nvcc
 
  protected:
 	[[deprecated("references are not copyable, use auto&&")]]
@@ -2538,7 +2552,8 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) = delete;
 	#endif
 
-	#if defined(__cpp_lib_span) && !defined(__NVCC__)
+    // Only need the bits of span from C++20
+	#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L && !defined(__NVCC__)
 	template<class Tconst = const typename array_ref::element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> and D == 1, int> = 0>
 	constexpr explicit operator std::span<Tconst>() const& {return std::span<Tconst>(this->data_elements(), this->size());}
 	#endif
@@ -2720,7 +2735,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
 	template<class TT> static auto launder(TT* pointer) -> TT* {
-		#if(defined(__cpp_lib_launder) and ( __cpp_lib_launder >= 201606L)) 
+		#if(defined(__cpp_lib_launder) && ( __cpp_lib_launder >= 201606L))
 		return std::launder(pointer);
 		#else
 		return              pointer ;
@@ -2867,7 +2882,7 @@ template<class P> auto make_array_ref(P data, extensions_t<3> exts) {return make
 template<class P> auto make_array_ref(P data, extensions_t<4> exts) {return make_array_ref<4>(data, exts);}
 template<class P> auto make_array_ref(P data, extensions_t<5> exts) {return make_array_ref<5>(data, exts);}
 
-#if defined(__cpp_deduction_guides)
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703L
 
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
 array_ptr(It)->array_ptr<V, 0, It>;

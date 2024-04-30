@@ -179,7 +179,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
  public:
 	template<class Archive>
-	void serialize(Archive& arxiv, const unsigned int /*version*/) {
+	void serialize(Archive& arxiv, unsigned int const /*version*/) {
 		serialize_impl(arxiv, std::make_index_sequence<static_cast<std::size_t>(D)>());
 	}
 
@@ -382,11 +382,17 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
 template<boost::multi::dimensionality_type D>
-constexpr auto array_size_impl(const boost::multi::extensions_t<D>&)
+constexpr auto array_size_impl(boost::multi::extensions_t<D> const&)
 	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
 
 }  // end namespace boost::multi
 
+// Some versions of Clang throw warnings that stl uses class std::tuple_size instead
+// of struct std::tuple_size like it should be
+#ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wmismatched-tags"
+#endif
 
 template<boost::multi::dimensionality_type D>
 struct std::tuple_size<boost::multi::extensions_t<D>>  // NOLINT(cert-dcl58-cpp) to implement structured binding
@@ -397,14 +403,41 @@ struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cer
 	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
 };
 
-#if ! defined(__GLIBCXX__) || (__GLIBCXX__ <=  20220101)
-namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
- template<std::size_t Index, boost::multi::dimensionality_type D>
- constexpr auto get(::boost::multi::extensions_t<D> const& self)  // NOLINT(cert-dcl58-cpp) to implement structured bindings
- ->decltype(self.template get<Index>()) {
-     return self.template get<Index>(); }
-}  // end namespace std
+namespace std {
+
+// clang wants tuple_size to be a class, not a struct with -Wmismatched-tags
+#if !defined(__GLIBCXX__) || (__GLIBCXX__ <= 20190406)
+template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0> {};
+template<> struct tuple_size<boost::multi::extensions_t<1>> : std::integral_constant<boost::multi::dimensionality_type, 1> {};
+template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2> {};
+template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3> {};
+template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
+#else
+template<> class tuple_size<boost::multi::extensions_t<0>> : public std::integral_constant<boost::multi::dimensionality_type, 0> {};
+template<> class tuple_size<boost::multi::extensions_t<1>> : public std::integral_constant<boost::multi::dimensionality_type, 1> {};
+template<> class tuple_size<boost::multi::extensions_t<2>> : public std::integral_constant<boost::multi::dimensionality_type, 2> {};
+template<> class tuple_size<boost::multi::extensions_t<3>> : public std::integral_constant<boost::multi::dimensionality_type, 3> {};
+template<> class tuple_size<boost::multi::extensions_t<4>> : public std::integral_constant<boost::multi::dimensionality_type, 4> {};
 #endif
+
+#if !defined(__GLIBCXX__) || (__GLIBCXX__ <= 20240707)
+template<std::size_t N, boost::multi::dimensionality_type D>
+constexpr auto get(boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+->decltype(tp.template get<N>()) {
+	return tp.template get<N>(); }
+
+template<std::size_t N, boost::multi::dimensionality_type D>
+constexpr auto get(boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+->decltype(tp.template get<N>()) {
+	return tp.template get<N>(); }
+
+template<std::size_t N, boost::multi::dimensionality_type D>
+constexpr auto get(boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+->decltype(std::move(tp).template get<N>()) {
+	return std::move(tp).template get<N>(); }
+#endif
+
+}  // end namespace std
 
 namespace boost::multi {
 
@@ -531,6 +564,7 @@ struct layout_t
 
 	using index_extension = multi::index_extension;
 	using index_range = multi::range<index>;
+
 	using stride_type = index;
 	using offset_type = index;
 	using nelems_type = index;
@@ -547,7 +581,8 @@ struct layout_t
 	static constexpr dimensionality_type rank_v = rank::value;
 	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa): consider deprecation
 
-	[[deprecated("this is from BMA")]] static constexpr auto num_dimensions() {return dimensionality;}
+	[[deprecated("for compatibility with Boost.MultiArray, use static `dimensionality` instead")]]
+	static constexpr auto num_dimensions() {return dimensionality;}  // NOSONAR(cpp:S1133)
 
 	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
 
@@ -744,14 +779,6 @@ constexpr auto operator*(extensions_t<1> const& extensions_1d, extensions_t<1> c
 
 }  // end namespace boost::multi
 
-namespace std {
-	template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0> {};
-	template<> struct tuple_size<boost::multi::extensions_t<1>> : std::integral_constant<boost::multi::dimensionality_type, 1> {};
-	template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2> {};
-	template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3> {};
-	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
-}  // end namespace std
-
 namespace boost::multi {
 
 	template<class Tuple>
@@ -805,5 +832,9 @@ namespace boost::multi {
 
 template<class Tuple> struct std::tuple_size<boost::multi::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
 template<class Array> struct std::tuple_size<boost::multi::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
+
+#ifdef __clang__
+#  pragma clang diagnostic pop
+#endif
 
 #endif  // BOOST_MULTI_DETAIL_LAYOUT_HPP

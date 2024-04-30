@@ -20,10 +20,7 @@
 
 #include "../blas/traits.hpp"
 
-// #define BOOST_MULTI_ASSERT1(ExpR)              assert       (ExpR)
-// #define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
-
-#if not defined(NDEBUG)
+#if ! defined(NDEBUG)
 	#include<stdexcept>
 	#include<string>
 	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
@@ -398,7 +395,6 @@ v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	if(transA == 'N' ||  transA == 'n') {BOOST_MULTI_ASSERT1( lda >= max(1L, n) );}                                                                                                                     \
 	if(transA != 'N' && transA != 'n') {BOOST_MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                     \
 	BOOST_MULTI_ASSERT1( ldc >= max(1L, n) );                                                                                                                                                           \
-	/*BOOST_MULTI_MARK_SCOPE("cpu_herk");*/                                                                                                                                                                 \
 	BLAS(T##syrk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<T const*>(alpha), aa, BC(lda),        *reinterpret_cast<T const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
 }                                                                                                                                                                                                 \
 
@@ -425,7 +421,6 @@ enable_if_t<                                                                    
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*> && is_convertible_v<CCP, CC*>                                                                                                                                            \
 , int> =0>                                                                                                                                                                                                                              \
 v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {  /*NOLINT(bugprone-easily-swappable-parameters)*/              \
-	/*BOOST_MULTI_MARK_SCOPE("cpu_gemm");*/                                                                                                                                                                                                       \
 	using std::max;                                                                                                                                                                                                                     \
 	if(transA == 'N') {BOOST_MULTI_ASSERT1(lda >= max(1L, m));}                                                                                                                                                                               \
 	if(transA != 'N') {BOOST_MULTI_ASSERT1(lda >= max(1L, k));}                                                                                                                                                                               \
@@ -449,7 +444,6 @@ enable_if_t<                                                                    
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*>                                                                                                                                                     \
 ,int> =0>                                                                                                                                                                                                         \
 v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) { /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/  \
-	/*BOOST_MULTI_MARK_SCOPE("cpu_trsm");*/                                                                                                                                                                                 \
 	assert( side   == 'L' || side   == 'R' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( uplo   == 'U' || uplo   == 'L' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( transA == 'N' || transA == 'T' || transA == 'C' );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \

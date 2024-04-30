@@ -8,8 +8,14 @@
 #include <array>
 #include <iostream>  // for std::cout
 #include <numeric>  // for std::iota
-#if defined(__cpp_lib_span) and (__cpp_lib_span >= 202002L)
-#include <span>
+
+#if __has_include(<span>)
+
+#  include <span>
+#  if defined(__cpp_lib_span) && (__cpp_lib_span >= 202002L)
+#    define BOOST_MULTI_TEST_SPAN
+#  endif
+
 #endif
 
 // Suppress warnings from boost.test
@@ -327,6 +333,18 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 
 	{
 		auto exts = aref.extensions();
+		auto const [exts0, exts1] = exts;
+		BOOST_REQUIRE( exts0 == multi::iextension(1, 3) );
+
+		BOOST_REQUIRE( exts1.first()  == 1 );
+		BOOST_REQUIRE( exts1.last () == 4 );
+
+		BOOST_REQUIRE( exts1 == multi::iextension(1, 4) );
+
+		BOOST_REQUIRE( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+	}
+	{
+		auto exts = aref.extensions();
 		BOOST_REQUIRE( std::get<0>(exts) == multi::iextension(1, 3) );
 		BOOST_REQUIRE( std::get<1>(exts).first()  == 1 );
 		BOOST_REQUIRE( std::get<1>(exts).last () == 4 );
@@ -399,7 +417,7 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 		BOOST_REQUIRE( get<1>(aref.sizes()) == 3 );
 		BOOST_REQUIRE( aref.sizes() == decltype(aref.sizes())(2, 3) );
 	}
-#if __cplusplus >= 202002L  // GCC: use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)  // GCC: use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension
 	{
 		auto const ss = aref.sizes();
 		BOOST_REQUIRE( get<0>(ss) == 2 );
@@ -502,6 +520,8 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 	BOOST_REQUIRE( &other_darr2[1][0] == &darr[1][0] );
 	BOOST_REQUIRE( &other_darr3[1][0] == &darr[1][0] );
 
+    // Homebrew GCC-13 terminates rather than having the expected exception caught.
+    #if !(defined(__GNUC__) && __GNUC__ >= 5 && defined(__APPLE__))
 	BOOST_REQUIRE_THROW(
 		([&] {
 			double(&other_darr4)[3][3](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
@@ -509,6 +529,7 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 		}()),
 		std::bad_cast
 	);
+    #endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
@@ -566,9 +587,9 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	{
-		multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables) example of bad idiom
-		multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables) example of bad idiom
-		multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables) example of bad idiom
+		multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
+		multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
+		multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -582,19 +603,20 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_REQUIRE( sizes2 == 2 );
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
-	{
-		// NOLINTNEXTLINE(runtime/int)
-		long sizes1;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
-		// NOLINTNEXTLINE(runtime/int)
-		long sizes2;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
-		// NOLINTNEXTLINE(runtime/int)
-		long sizes3;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
-		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
+	// {
+	//  // NOLINTNEXTLINE(runtime/int)
+	//  long sizes1;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+	//  // NOLINTNEXTLINE(runtime/int)
+	//  long sizes2;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+	//  // NOLINTNEXTLINE(runtime/int)
+	//  long sizes3;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 
-		BOOST_REQUIRE( sizes1 == 4 );
-		BOOST_REQUIRE( sizes2 == 2 );
-		BOOST_REQUIRE( sizes3 == 3 );
-	}
+	//  multi::tie(sizes1, sizes2, sizes3) = static_cast<multi::tuple<long, long, long>>(cref.sizes());
+
+	//  BOOST_REQUIRE( sizes1 == 4L );
+	//  BOOST_REQUIRE( sizes2 == 2L );
+	//  BOOST_REQUIRE( sizes3 == 3L );
+	// }
 	{
 		// NOLINTNEXTLINE(runtime/int)
 		long long sizes1;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
@@ -742,7 +764,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(as_span) {
-#if defined(__cpp_lib_span) and (__cpp_lib_span >= 202002L)
+#ifdef BOOST_MULTI_TEST_SPAN
 	auto print_me0 = [](std::span<int> rng) {
 		std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
 		std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });
@@ -762,13 +784,14 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		std::cout << "\n\n";
 	};
 
-#if defined(__cpp_lib_span) and (__cpp_lib_span >= 202002L)
+#ifdef BOOST_MULTI_TEST_SPAN
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy arrays
 		print_me0(arr);
 
-		std::vector vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
-		print_me0(vec);
+		// vvv this fails in certain versions of clang (14?ss)
+		// std::vector vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
+		// print_me0(vec);
 
 		// clang-format off
 		std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
@@ -970,7 +993,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	//  BOOST_REQUIRE(( trace_separate_sub4                        (arr) == 3 ));  // not allowed
 }
 
-#if __cplusplus >= 202003L
+#if __cplusplus > 202002L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 	auto buffer = std::make_unique<double[]>(9);
 	std::fill_n(buffer.get(), 9, 1.0);
