@@ -36,7 +36,7 @@
 
 #include <utility>     // for forward
 
-#if not defined(__NVCC__)
+#if !defined(__NVCC__)
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
 #else
 	#define BOOST_MULTI_FRIEND_CONSTEXPR friend /*constexpr*/
