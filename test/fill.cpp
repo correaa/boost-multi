@@ -10,7 +10,6 @@
 #include <numeric>  // for std::accumulate
 #include <random>
 #include <type_traits>  // for std::enable_if_t
-#include <numeric>
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
