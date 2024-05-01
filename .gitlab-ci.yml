@@ -245,6 +245,10 @@ build_windows:
   allow_failure: true
   script:
     - '& "$msbuild" -help'
+    - '& "$msbuild" -version'
+    - choco install -y cmake
+    - $env:Path += ';C:\Program Files\CMake\bin'
+    - cmake --version
   tags:
     - shared-windows
     - windows
