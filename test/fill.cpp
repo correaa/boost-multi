@@ -5,10 +5,11 @@
 
 #include <boost/multi/array.hpp>
 
-#include <algorithm>  // for transform
+#include <algorithm>  // for std::transform
 #include <limits>
+#include <numeric>  // for std::accumulate
 #include <random>
-#include <type_traits>  // enable_if_t
+#include <type_traits>  // for std::enable_if_t
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
@@ -25,6 +26,9 @@
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
 #  pragma GCC diagnostic ignored "-Wfloat-equal"
+#elif defined(_MSC_VER)
+#  pragma warning(push)
+#  pragma warning(disable : 4244)
 #endif
 
 #ifndef BOOST_TEST_MODULE
