@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <array>
 #include <cassert>
+#include <cstddef>
 
 namespace boost::multi::detail {
 
