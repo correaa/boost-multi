@@ -7,7 +7,8 @@
 
 #include <boost/multi/config/NODISCARD.hpp>
 #include <boost/multi/config/NO_UNIQUE_ADDRESS.hpp>
-
+#include <type_traits>
+#include <array>
 #include <cassert>
 
 namespace boost::multi::detail {
@@ -15,7 +16,17 @@ namespace boost::multi::detail {
 template<class T, std::size_t N>
 class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semantics
 	bool dirty_ = false;
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4324) // Warning that the structure is padded due to the below
+#endif 
+	
 	BOOST_MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
  public:
 	using value_type = T;
