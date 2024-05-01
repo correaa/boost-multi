@@ -137,7 +137,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		}
 	}
 
-	void allocate() { this->base_ = array_alloc::allocate(static_cast<typename allocator_traits<typename static_array::allocator_type>::size_type>(static_array::num_elements())); }
+	void allocate() {
+		this->base_ = array_alloc::allocate(static_cast<typename allocator_traits<typename static_array::allocator_type>::size_type>(this->static_array::num_elements()));
+	}
 
  public:
 	using value_type = typename std::conditional_t<
@@ -431,7 +433,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	// static_array() = default;
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 	constexpr
 #endif
 		~static_array() /*noexcept*/ {
@@ -1130,7 +1132,7 @@ struct array : static_array<T, D, Alloc> {
 	auto assign(It first, It last) -> array& {
 		using std::all_of;
 		using std::next;
-		if(adl_distance(first, last) == array::size()) {
+		if(adl_distance(first, last) == this->size()) {
 			static_::ref::assign(first);
 		} else {
 			this->operator=(array(first, last));
