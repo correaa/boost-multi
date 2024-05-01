@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(assignments) {
 		std::vector<double>           vec(static_cast<std::size_t>(5 * 7), 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 		constexpr double              val = 33.0;
 		multi::array<double, 2> const arr({5, 7}, val);
-		multi::array_ref<double, 2>(vec.data(), {5, 7}) = arr;
+		multi::array_ref<double, 2>(vec.data(), {5, 7}) = arr();  // arr() is a subarray
 		BOOST_REQUIRE( vec[9] == val );
 		BOOST_REQUIRE( not vec.empty() );
 		BOOST_REQUIRE( not is_empty(arr) );
