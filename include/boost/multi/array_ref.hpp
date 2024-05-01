@@ -30,8 +30,11 @@
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
 
-#if __has_include(<span>) && (!defined(_MSVC_LANG) || (_MSVC_LANG >= 202002L))
-#include <span>
+#if __has_include(<span>)
+#  include <span>
+#  if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
+#    define BOOST_MULTI_HAS_SPAN
+#  endif
 #endif
 
 #include <utility>     // for forward
@@ -2552,7 +2555,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) = delete;
 	#endif
 
-	#if defined(__cpp_lib_span) && !defined(__NVCC__)
+	#if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
 	template<class Tconst = const typename array_ref::element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> and D == 1, int> = 0>
 	constexpr explicit operator std::span<Tconst>() const& {return std::span<Tconst>(this->data_elements(), this->size());}
 	#endif
