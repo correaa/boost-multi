@@ -256,8 +256,7 @@ clang++-macos:
   # variables:
   #   HOMEBREW_NO_AUTO_UPDATE: 1
   tags:
-    - shared-macos
-    - macos  # saas-macos-medium-m1
+    - saas-macos-medium-m1
   allow_failure: true
   script:
     #- apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
