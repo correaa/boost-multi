@@ -20,6 +20,9 @@
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
 #  pragma GCC diagnostic ignored "-Wfloat-equal"
+#elif defined(_MSC_VER)
+#  pragma warning(push)
+#  pragma warning(disable : 4244)
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -239,7 +242,7 @@ constexpr auto comp_equal(T left, U right) noexcept -> bool {
 	} else {
 		return right < 0 ? false : left == UU(right);
 	}
-#if not defined(__INTEL_COMPILER) and not defined(__NVCOMPILER)
+#if !defined(__INTEL_COMPILER) && !defined(__NVCOMPILER) && !defined(_MSC_VER)
 	__builtin_unreachable();
 #endif
 }
