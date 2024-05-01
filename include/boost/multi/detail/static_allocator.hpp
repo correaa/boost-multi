@@ -7,10 +7,11 @@
 
 #include <boost/multi/config/NODISCARD.hpp>
 #include <boost/multi/config/NO_UNIQUE_ADDRESS.hpp>
-#include <type_traits>
+
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <type_traits>
 
 namespace boost::multi::detail {
 
