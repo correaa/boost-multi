@@ -137,7 +137,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		}
 	}
 
-	void allocate() { this->base_ = array_alloc::allocate(static_cast<typename allocator_traits<typename static_array::allocator_type>::size_type>(static_array::num_elements())); }
+	void allocate() {
+		this->base_ = array_alloc::allocate(static_cast<typename allocator_traits<typename static_array::allocator_type>::size_type>(this->static_array::num_elements()));
+	}
 
  public:
 	using value_type = typename std::conditional_t<
