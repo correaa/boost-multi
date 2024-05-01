@@ -2605,7 +2605,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
  private:
 	template<class It> constexpr auto copy_elements(It first) {
-		return adl_copy_n(first, array_ref::num_elements(), array_ref::data_elements());
+		return adl_copy_n(first, this->num_elements(), this->data_elements());
 	}
 
  public:

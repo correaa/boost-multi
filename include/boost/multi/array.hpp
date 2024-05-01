@@ -1132,7 +1132,7 @@ struct array : static_array<T, D, Alloc> {
 	auto assign(It first, It last) -> array& {
 		using std::all_of;
 		using std::next;
-		if(adl_distance(first, last) == array::size()) {
+		if(adl_distance(first, last) == this->size()) {
 			static_::ref::assign(first);
 		} else {
 			this->operator=(array(first, last));
