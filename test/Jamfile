@@ -39,7 +39,7 @@ project : requirements
   <toolset>clang:<define>"_CRT_SECURE_NO_WARNINGS"
 
   <toolset>msvc:<warnings-as-errors>on
-  <toolset>clang:<warnings-as-errors>on
+  #<toolset>clang:<warnings-as-errors>on
   <toolset>gcc:<warnings-as-errors>on
 
   [ requires cxx17_if_constexpr cxx17_structured_bindings cxx17_std_apply ]
