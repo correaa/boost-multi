@@ -42,9 +42,16 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 
 	static_allocator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) buffer_ is not initialized
 
+	template<class TT, std::size_t NN>
+	static_allocator(static_allocator<TT, NN> const& /*other*/) {  // NOLINT(google-explicit-constructor) follow std::allocator
+		static_assert(sizeof(double) == sizeof(TT));
+		static_assert(NN == N);
+	}
+
 	static_allocator(static_allocator const& /*other*/) // std::vector makes a copy right away
 	// = default;  // this copies the internal buffer
 	{}
+
 	[[deprecated("don't move dynamic container with static_allocator")]]
 	static_allocator(static_allocator&& /*other*/)  // this is called *by the elements* during move construction of a vector
 	// = delete;
