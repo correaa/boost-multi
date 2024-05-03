@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -261,6 +261,7 @@ BOOST_AUTO_TEST_CASE(static_allocator_on_vector_int) {
 	}
 }
 
+#if !defined(_MSC_VER)  // static allocator does not work with the vector implementation of MSVC
 BOOST_AUTO_TEST_CASE(static_allocator_on_vector_string) {
 	std::string const cat = "catcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcat";  // NOLINT(fuchsia-default-arguments-calls)
 	std::string const dog = "dogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdog";  // NOLINT(fuchsia-default-arguments-calls)
@@ -297,6 +298,7 @@ BOOST_AUTO_TEST_CASE(static_allocator_on_vector_string) {
 		// BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
 	}
 }
+#endif
 
 template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL*4UL>
 using small_array = multi::static_array<T, D, multi::detail::static_allocator<T, Capacity>>;
