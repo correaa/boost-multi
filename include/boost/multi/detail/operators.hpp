@@ -9,11 +9,11 @@
 #include <type_traits>  // for enable_if
 #include <utility>  // for forward
 
-#ifndef HD
+#ifndef BOOST_MULTI_HD
 #if defined(__NVCC__)
-#define HD __host__ __device__
+#define BOOST_MULTI_HD __host__ __device__
 #else
-#define HD
+#define BOOST_MULTI_HD
 #endif
 #endif
 
@@ -171,7 +171,7 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
 
-	HD constexpr auto operator[](difference_type idx) const -> reference { return *(self() + idx); }
+	BOOST_MULTI_HD constexpr auto operator[](difference_type idx) const -> reference { return *(self() + idx); }
 };
 
 // template<class T, class Reference>
@@ -226,4 +226,7 @@ struct random_access_iterator : equality_comparable2<Self, Self> {
 };
 
 }  // end namespace boost::multi
+
+#undef BOOST_MULTI_HD
+
 #endif  // BOOST_MULTI_DETAIL_OPERATORS_HPP
