@@ -234,7 +234,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class Element>
 	explicit static_array(
 		Element const& elem, allocator_type const& alloc,
-		std::enable_if_t<(D == 0) && std::is_convertible_v<Element, typename static_array::element>, int> /*dummy*/ = 0  // NOLINT(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
+		std::enable_if_t<std::is_convertible_v<Element, typename static_array::element> && (D == 0), int> /*dummy*/ = 0  // NOLINT(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
 	)
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
