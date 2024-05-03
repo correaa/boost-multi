@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -62,8 +62,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
 		//  BOOST_TEST( buffer[13] != '3' );
 
-		BOOST_TEST( A[0][0] == 0. );
-		BOOST_TEST( A[1][2] == 0. );
+		BOOST_TEST( A[0][0] == 0.0 );
+		BOOST_TEST( A[1][2] == 0.0 );
 	}
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		std::pmr::monotonic_buffer_resource mbr{std::data(buffer), std::size(buffer)};
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
-		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({2, 3}, 666., &mbr);
+		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({2, 3}, 666.0, &mbr);
 		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
 		//  BOOST_TEST( buffer[13] != '3' );
 
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 		exts.begin(), exts.end(), int64_t{0},
 		std::plus<>{},
 		[&resp](auto idx) {
-			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr({1000 - idx%10, 1000 + idx%10}, resp);
+			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(multi::extension_t<2>{1000 - idx%10, 1000 + idx%10}, resp);
 			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
 			return std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
 		}
