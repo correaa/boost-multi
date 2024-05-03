@@ -229,6 +229,7 @@ BOOST_AUTO_TEST_CASE(constexpr_allocator) {
 }
 #endif
 
+#if !defined(_MSC_VER)  // static allocator does not work with MSVC implementation pf vector
 BOOST_AUTO_TEST_CASE(static_allocator_on_vector_int) {
 	std::vector<int, multi::detail::static_allocator<int, 32>> vv(10, 42);  // NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( vv[3] == 42 );
@@ -261,7 +262,6 @@ BOOST_AUTO_TEST_CASE(static_allocator_on_vector_int) {
 	}
 }
 
-#if !defined(_MSC_VER)  // static allocator does not work with the vector implementation of MSVC
 BOOST_AUTO_TEST_CASE(static_allocator_on_vector_string) {
 	std::string const cat = "catcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcat";  // NOLINT(fuchsia-default-arguments-calls)
 	std::string const dog = "dogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdog";  // NOLINT(fuchsia-default-arguments-calls)
