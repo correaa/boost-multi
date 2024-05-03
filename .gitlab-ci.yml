@@ -705,7 +705,7 @@ inq:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
     - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules --shallow-submodules --depth 1 https://gitlab.com/npneq/inq.git
+    - git clone --recurse-submodules --depth 1 https://gitlab.com/npneq/inq.git
     - cd inq
     - git submodule update
     - cd external_libs/multi
@@ -736,7 +736,7 @@ inq cuda:
     # - export CUDA_VISIBLE_DEVICES=0,1
     - __nvcc_device_query
     - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules --shallow-submodules --depth 1 https://gitlab.com/npneq/inq.git
+    - git clone --recurse-submodules --depth 1 https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
     - git checkout $CI_COMMIT_SHA
@@ -772,7 +772,7 @@ inq rocm:
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - cmake --version
     - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules --shallow-submodules --depth 1 https://gitlab.com/npneq/inq.git
+    - git clone --recurse-submodules --depth 1 https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
     - git checkout $CI_COMMIT_SHA
