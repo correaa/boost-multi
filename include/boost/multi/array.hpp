@@ -238,8 +238,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	//  std::forward<Ts>(args)...
 	// } {}
 
-	template<class Element, std::enable_if_t<(D == 0) && std::is_convertible_v<Element, typename static_array::element>, int> = 0>
-	explicit static_array(Element const& elem, allocator_type const& alloc)
+	template<class Element>
+	explicit static_array(
+		Element const& elem, allocator_type const& alloc,
+		std::enable_if_t<std::is_convertible_v<Element, typename static_array::element> && (D == 0), int> /*dummy*/ = 0  // NOLINT(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
+	)
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
 	constexpr static_array(typename static_array::extensions_type extensions, typename static_array::element const& elem)
