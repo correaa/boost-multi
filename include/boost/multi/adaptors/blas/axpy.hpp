@@ -11,6 +11,10 @@
 #include <boost/multi/adaptors/blas/core.hpp>
 #include <boost/multi/adaptors/complex.hpp>
 
+#define BOOST_MULTI_DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+#define JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+// TODO(correaa) ^^^ fix macro name
+
 namespace boost::multi::blas {
 
 using core::axpy;
@@ -155,8 +159,8 @@ template<class T> struct algebraic_traits {static auto one() {return T{1.0};}};
 template<class T> struct algebraic_traits<std  ::complex<T>> {static auto one() {return std  ::complex<T>{T{1}, T{0}};}};
 template<class T> struct algebraic_traits<multi::complex<T>> {static auto one() {return multi::complex<T>{T{1}, T{0}};}};
 
-template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
-template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 
 template<class X, std::enable_if_t<X::dimensionality == 1, int> =0>
 auto operator*(typename X::element_type a, X const& x) {return scaled{a, x};}  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -167,4 +171,8 @@ template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std
 } // end namespace operators
 
 } // end namespace boost::multi::blas
+
+#undef BOOST_MULTI_DECLRETURN
+#undef JUSTRETURN
+
 #endif  // BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
