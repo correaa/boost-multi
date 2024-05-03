@@ -537,4 +537,5 @@ constexpr auto layout(std::array<T, N> const& arr) {
 }  // end namespace boost::multi
 
 #undef BOOST_MULTI_HD
+
 #endif  // BOOST_MULTI_UTILITY_HPP
