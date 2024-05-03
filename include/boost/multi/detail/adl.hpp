@@ -77,7 +77,6 @@ template<> inline constexpr bool force_element_trivial_destruction         <std:
 
 #define BOOST_MULTI_DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 #define BOOST_MULTI_JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
-// TODO(correaa) ^^^ fix macro name
 
 namespace boost::multi {
 
