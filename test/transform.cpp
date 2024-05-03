@@ -10,26 +10,29 @@
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wundef"
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wundef"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#define DECLRETURN(ExpR) \
+	->decltype(ExpR) { return ExpR; }  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
 namespace test {
 
@@ -294,9 +297,10 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	}
 }
 
-#if not defined(__NVCC__) and (__GNUC_MINOR__ > 7)
+#if !defined(__NVCC__) && (__GNUC_MINOR__ > 7)
 BOOST_AUTO_TEST_CASE(transformed_to_string) {
-	namespace multi               = boost::multi;
+	namespace multi = boost::multi;
+
 	multi::array<int, 2> const AA = {
 		{1, 2},
 		{3, 4},
@@ -306,3 +310,5 @@ BOOST_AUTO_TEST_CASE(transformed_to_string) {
 	BOOST_REQUIRE( BB[1][1] == "4" );
 }
 #endif
+
+#undef DECLRETURN
