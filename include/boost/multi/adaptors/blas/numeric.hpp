@@ -18,6 +18,12 @@
 
 #include <boost/multi/adaptors/complex.hpp>
 
+#if defined(__NVCC__)
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
 namespace boost {
 namespace multi::blas {
 
@@ -158,14 +164,14 @@ class involuter {
 
 	involuter() = default;
 
-	HD constexpr explicit involuter(It it) : it_{std::move(it)}, f_{} {}
-	HD constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
+	BOOST_MULTI_HD constexpr explicit involuter(It it) : it_{std::move(it)}, f_{} {}
+	BOOST_MULTI_HD constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
 	template<class Other, decltype(detail::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	HD constexpr /*implct*/ involuter(Other const& other) : it_{other.it_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR inherit implicit conversion of underlying type
+	BOOST_MULTI_HD constexpr /*implct*/ involuter(Other const& other) : it_{other.it_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR inherit implicit conversion of underlying type
 	template<class Other, decltype(detail::explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
-	HD constexpr explicit involuter(Other const& other) : it_{other.it_}, f_{other.f_} {}
+	BOOST_MULTI_HD constexpr explicit involuter(Other const& other) : it_{other.it_}, f_{other.f_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
 	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }
@@ -290,4 +296,7 @@ auto default_allocator_of(multi::blas::involuter<It, F, Reference> it) {
 }
 
 }  // end namespace boost
+
+#undef BOOST_MULTI_HD
+
 #endif

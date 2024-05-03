@@ -9,12 +9,10 @@
 #include <type_traits>  // for enable_if
 #include <utility>  // for forward
 
-#ifndef BOOST_MULTI_HD
 #if defined(__NVCC__)
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
-#endif
 #endif
 
 namespace boost::multi {
