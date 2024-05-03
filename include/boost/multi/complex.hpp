@@ -15,31 +15,34 @@
 #include <complex>
 #include <utility>  // for forward
 
+#define BOOST_MULTI_DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+#define BOOST_MULTI_JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {
 
 inline constexpr class /*adl_conj_t*/ {
-	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const JUSTRETURN(std::conj(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const DECLRETURN(conj(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).conj(std::forward<As>(args)...))
+	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const BOOST_MULTI_JUSTRETURN(std::conj(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const BOOST_MULTI_DECLRETURN(conj(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).conj(std::forward<As>(args)...))
 
 		public : template<class... As>
 		         constexpr auto
-		         operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
+		         operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_conj;
 
 inline constexpr class /*adl_real_t*/ {
-	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const DECLRETURN(std::real(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const DECLRETURN(real(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).real(std::forward<As>(args)...))
+	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const BOOST_MULTI_DECLRETURN(std::real(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const BOOST_MULTI_DECLRETURN(real(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).real(std::forward<As>(args)...))
 
 		public : template<class... As>
 		         constexpr auto
-		         operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
+		         operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_real;
 
 inline constexpr class /*adl_imag_t*/ {
-	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const DECLRETURN(std::imag(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const DECLRETURN(imag(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).imag(std::forward<As>(args)...))
+	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const BOOST_MULTI_DECLRETURN(std::imag(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const BOOST_MULTI_DECLRETURN(imag(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<3> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).imag(std::forward<As>(args)...))
 
 		public : template<class... As>
 		         constexpr auto
-		         operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
+		         operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_imag;
 
 struct real_t;
@@ -161,5 +164,8 @@ struct imag_t {
 
 }  // end namespace multi
 }  // end namespace boost
+
+#undef BOOST_MULTI_DECLRETURN
+#undef BOOST_MULTI_JUSTRETURN
 
 #endif

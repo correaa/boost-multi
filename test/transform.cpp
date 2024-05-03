@@ -31,6 +31,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#define DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+#define JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+
 namespace test {
 
 struct neg_t {
@@ -305,4 +308,8 @@ BOOST_AUTO_TEST_CASE(transformed_to_string) {
 
 	BOOST_REQUIRE( BB[1][1] == "4" );
 }
+
+#undef DECLRETURN
+#undef JUSTRETURN
+
 #endif
