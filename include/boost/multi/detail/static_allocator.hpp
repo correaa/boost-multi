@@ -44,7 +44,7 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 
 	template<class TT, std::size_t NN>
 	static_allocator(static_allocator<TT, NN> const& /*other*/) {  // NOLINT(hicpp-explicit-conversions,google-explicit-constructor) follow std::allocator
-		static_assert(sizeof(T) == sizeof(TT));
+		// static_assert(sizeof(T) == sizeof(TT));
 		static_assert(NN == N);
 	}
 
