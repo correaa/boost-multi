@@ -25,10 +25,12 @@
 #include <new>         // for std::launder
 
 #if __has_include(<span>)
-#  include <span>
-#  if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
-#    define BOOST_MULTI_HAS_SPAN
-#  endif
+#if !defined(_MSVC_LANG) || (_MSVC_LANG >= 202002L)
+#include <span>
+#endif
+#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
+#define BOOST_MULTI_HAS_SPAN
+#endif
 #endif
 
 #include <utility>     // for forward
@@ -44,7 +46,6 @@
 #else
 	#define BOOST_MULTI_HD
 #endif
-
 
 namespace boost::multi {
 
