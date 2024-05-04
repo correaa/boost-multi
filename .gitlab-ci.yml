@@ -677,16 +677,15 @@ rocm:
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
   needs: ["clang++", "g++"]
 
-zig:
+zig-latest:
   stage: build
-  image: ubuntu:22.04
+  image: esolang/zig:latest
   allow_failure: true
   tags:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config snap snapd
-    - snap install zig --classic --beta
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config
     - mkdir build && cd build
     - c++ --version
     - zig c++ --version
