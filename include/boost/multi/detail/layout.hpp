@@ -16,9 +16,9 @@
 #include <utility>      // for swap
 
 #if defined(__NVCC__)
-#define HD __host__ __device__
+#define BOOST_MULTI_HD __host__ __device__
 #else
-#define HD
+#define BOOST_MULTI_HD
 #endif
 
 namespace boost::multi {
@@ -122,8 +122,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return extensions_t<D + 1>{tuple{extension, self.base()}};
 	}
 
-	friend HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.base() == other.base();}
-	friend HD auto operator!=(extensions_t const& self, extensions_t const& other) {return self.base() != other.base();}
+	friend BOOST_MULTI_HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.base() == other.base();}
+	friend BOOST_MULTI_HD auto operator!=(extensions_t const& self, extensions_t const& other) {return self.base() != other.base();}
 
 	using indices_type = multi::detail::tuple_prepend_t<multi::index, typename extensions_t<D-1>::indices_type>;
 
@@ -267,8 +267,8 @@ template<> struct extensions_t<0> : tuple<> {
 
 	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t {return {};}
 
-	constexpr HD auto operator==(extensions_t const& /*other*/) const {return true ;}
-	constexpr HD auto operator!=(extensions_t const& /*other*/) const {return false;}
+	constexpr BOOST_MULTI_HD auto operator==(extensions_t const& /*other*/) const {return true ;}
+	constexpr BOOST_MULTI_HD auto operator!=(extensions_t const& /*other*/) const {return false;}
 
 	template<std::size_t Index>  // TODO(correaa) = detele ?
 	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
@@ -306,8 +306,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	extensions_t() = default;
 	constexpr auto base() const -> base_ const& {return *this;}
 
-	HD constexpr auto operator==(extensions_t const& other) const -> bool {return base() == other.base();}  // when compiling as cuda code, this needs --expt-relaxed-constexpr
-	HD constexpr auto operator!=(extensions_t const& other) const -> bool {return base() != other.base();}
+	BOOST_MULTI_HD constexpr auto operator==(extensions_t const& other) const -> bool {return base() == other.base();}  // when compiling as cuda code, this needs --expt-relaxed-constexpr
+	BOOST_MULTI_HD constexpr auto operator!=(extensions_t const& other) const -> bool {return base() != other.base();}
 
 	constexpr auto num_elements() const -> size_type {
 		return this->base().head().size();
@@ -442,7 +442,7 @@ constexpr auto get(boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-cpp
 namespace boost::multi {
 
 struct monostate : equality_comparable<monostate> {
-	friend HD constexpr auto operator==(monostate const& /*self*/, monostate const& /*other*/) {return true;}
+	friend BOOST_MULTI_HD constexpr auto operator==(monostate const& /*self*/, monostate const& /*other*/) {return true;}
 };
 
 template<typename SSize>
@@ -487,10 +487,10 @@ struct layout_t<0, SSize>
 
  public:
 	layout_t() = default;
-	HD constexpr explicit layout_t(extensions_type const& /*nil*/) {}
-	HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/) {}
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
 
-	HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
+	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	[[nodiscard]] constexpr auto extensions()        const        {return extensions_type{};}
@@ -534,7 +534,7 @@ struct layout_t<0, SSize>
 	constexpr auto scale(size_type /*num*/, size_type /*den*/) const {return *this;}
 
 //  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
-	friend HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
+	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
 		return
 			   std::tie(self .sub_, self .stride_, self .offset_, self .nelems_)
 			== std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
@@ -596,7 +596,7 @@ struct layout_t
 
  public:
 	layout_t() = default;
-	HD constexpr explicit layout_t(extensions_type const& extensions) :
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions) :
 		sub_{
 			std::apply(
 				[](auto const&... subextensions) {return multi::extensions_t<D-1>{subextensions...};},
@@ -608,7 +608,7 @@ struct layout_t
 		nelems_{boost::multi::detail::get<0>(extensions.base()).size()*sub().num_elements()}
 	{}
 
-	HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides) :
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides) :
 		sub_{
 			std::apply(
 				[](auto const&... subextensions) {return multi::extensions_t<D-1>{subextensions...};},
@@ -621,7 +621,7 @@ struct layout_t
 		nelems_{boost::multi::detail::get<0>(extensions.base()).size()*sub().num_elements()}
 	{}
 
-	HD constexpr explicit layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	constexpr auto origin() const {return sub_.origin() - offset_;}
@@ -639,23 +639,23 @@ struct layout_t
 	constexpr auto operator()(index idx)                  const {return at_aux(idx);}
 	constexpr auto operator()()                           const {return *this;}
 
-	       HD constexpr auto sub()             &       -> sub_type      & {return      sub_ ;}
-	       HD constexpr auto sub()        const&       -> sub_type const& {return      sub_ ;}
-	friend HD constexpr auto sub(layout_t const& self) -> sub_type const& {return self.sub();}
+	       BOOST_MULTI_HD constexpr auto sub()             &       -> sub_type      & {return      sub_ ;}
+	       BOOST_MULTI_HD constexpr auto sub()        const&       -> sub_type const& {return      sub_ ;}
+	friend BOOST_MULTI_HD constexpr auto sub(layout_t const& self) -> sub_type const& {return self.sub();}
 
-	       HD constexpr auto nelems()             &       -> nelems_type      & {return      nelems_ ;}
-	       HD constexpr auto nelems()        const&       -> nelems_type const& {return      nelems_ ;}
-	friend HD constexpr auto nelems(layout_t const& self) -> nelems_type const& {return self.nelems();}
+	       BOOST_MULTI_HD constexpr auto nelems()             &       -> nelems_type      & {return      nelems_ ;}
+	       BOOST_MULTI_HD constexpr auto nelems()        const&       -> nelems_type const& {return      nelems_ ;}
+	friend BOOST_MULTI_HD constexpr auto nelems(layout_t const& self) -> nelems_type const& {return self.nelems();}
 
-	constexpr HD auto nelems(dimensionality_type dim) const {return (dim != 0)?sub_.nelems(dim - 1):nelems_;}
+	constexpr BOOST_MULTI_HD auto nelems(dimensionality_type dim) const {return (dim != 0)?sub_.nelems(dim - 1):nelems_;}
 
-	friend HD constexpr auto operator==(layout_t const& self, layout_t const& other) -> bool {
+	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) -> bool {
 		return 
 			   std::tie(self .sub_, self .stride_, self .offset_, self. nelems_)
 			== std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
 		;
 	}
-	constexpr HD auto operator< (layout_t const& other) const -> bool {
+	constexpr BOOST_MULTI_HD auto operator< (layout_t const& other) const -> bool {
 		return
 			   std::tie(      sub_,       stride_,       offset_,       nelems_)
 			<  std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
@@ -683,19 +683,19 @@ struct layout_t
 		return nelems_/stride_;
 	}
 
-	constexpr HD auto stride()       -> stride_type      & {return stride_;}
-	constexpr HD auto stride() const -> stride_type const& {return stride_;}
+	constexpr BOOST_MULTI_HD auto stride()       -> stride_type      & {return stride_;}
+	constexpr BOOST_MULTI_HD auto stride() const -> stride_type const& {return stride_;}
 
-	friend HD constexpr auto stride(layout_t const& self) -> index {return self.stride();}
+	friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index {return self.stride();}
 
-	       HD constexpr auto strides()        const        -> strides_type {return strides_type{stride(), sub_.strides()};}
-	friend HD constexpr auto strides(layout_t const& self) -> strides_type {return self.strides();}
+	       BOOST_MULTI_HD constexpr auto strides()        const        -> strides_type {return strides_type{stride(), sub_.strides()};}
+	friend BOOST_MULTI_HD constexpr auto strides(layout_t const& self) -> strides_type {return self.strides();}
 
-	constexpr HD auto offset(dimensionality_type dim) const -> index {return (dim != 0)?sub_.offset(dim - 1):offset_;}
-	       HD constexpr auto offset() const -> index {return offset_;}
-	friend HD constexpr auto offset(layout_t const& self) -> index {return self.offset();}
-	constexpr HD auto offsets() const {return boost::multi::detail::tuple{offset(), sub_.offsets()};}
-	constexpr HD auto nelemss() const {return boost::multi::detail::tuple{nelems(), sub_.nelemss()};}
+	constexpr BOOST_MULTI_HD auto offset(dimensionality_type dim) const -> index {return (dim != 0)?sub_.offset(dim - 1):offset_;}
+	       BOOST_MULTI_HD constexpr auto offset() const -> index {return offset_;}
+	friend BOOST_MULTI_HD constexpr auto offset(layout_t const& self) -> index {return self.offset();}
+	constexpr BOOST_MULTI_HD auto offsets() const {return boost::multi::detail::tuple{offset(), sub_.offsets()};}
+	constexpr BOOST_MULTI_HD auto nelemss() const {return boost::multi::detail::tuple{nelems(), sub_.nelemss()};}
 
 	constexpr auto base_size() const {using std::max; return max(nelems_, sub_.base_size());}
 
@@ -705,7 +705,7 @@ struct layout_t
 	       constexpr auto shape()        const&       -> decltype(auto) {return      sizes();}
 	friend constexpr auto shape(layout_t const& self) -> decltype(auto) {return self.shape();}
 
-	constexpr HD auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
+	constexpr BOOST_MULTI_HD auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
 
 	friend        constexpr auto extension(layout_t const& self) {return self.extension();}
 	[[nodiscard]] constexpr auto extension()        const     -> extension_type {
@@ -720,7 +720,7 @@ struct layout_t
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
 //  [[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-	constexpr auto extension(dimensionality_type dim) const {return std::apply([](auto... extensions) {return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim));}
+	constexpr auto extension(dimensionality_type dim) const {return std::apply([](auto... extensions) {return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim));}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14 
 //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto stride   (dimensionality_type dim) const {return std::apply([](auto... strides   ) {return std::array<stride_type    , static_cast<std::size_t>(D)>{strides   ...};}, strides   ()       ).at(static_cast<std::size_t>(dim));}
 //  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
@@ -836,5 +836,7 @@ template<class Array> struct std::tuple_size<boost::multi::decaying_array<Array>
 #ifdef __clang__
 #  pragma clang diagnostic pop
 #endif
+
+#undef BOOST_MULTI_HD
 
 #endif  // BOOST_MULTI_DETAIL_LAYOUT_HPP

@@ -18,6 +18,13 @@
 #include <type_traits>  // for std::common_reference
 #include <utility>  // for std::move
 
+// TODO(correaa) or should be (__CUDA__) or CUDA__ || HIP__
+#if defined(__NVCC__)
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
 namespace boost::multi {
 
 template<class Allocator>
@@ -93,18 +100,18 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	);
 
  private:
-	using Alloc = typename allocator_traits<DummyAlloc>::template rebind_alloc<T>;
+	// using Alloc = typename allocator_traits<DummyAlloc>::template rebind_alloc<T>;
 
  protected:
-	using array_alloc = array_allocator<Alloc>;
+	using array_alloc = array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T> >;
 
  public:
 	using array_alloc::get_allocator;
-	using allocator_type = typename array_allocator<Alloc>::allocator_type;
-	using decay_type     = array<T, D, Alloc>;
-	using layout_type    = typename array_ref<T, D, typename allocator_traits<Alloc>::pointer>::layout_type;
+	using allocator_type = typename array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;
+	using decay_type     = array<T, D, allocator_type>;
+	using layout_type    = typename array_ref<T, D, typename allocator_traits<allocator_type>::pointer>::layout_type;
 
-	using ref = array_ref<T, D, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
+	using ref = array_ref<T, D, typename allocator_traits<typename allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer>;
 
 	auto operator new(std::size_t count) -> void* { return ::operator new(count); }
 	auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }
@@ -152,7 +159,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	explicit static_array(allocator_type const& alloc) : array_alloc{alloc}, ref(nullptr, {}) {}
 
 	using ref::       operator();
-	HD constexpr auto operator()() && -> decltype(auto) { return ref::element_moved(); }
+	BOOST_MULTI_HD constexpr auto operator()() && -> decltype(auto) { return ref::element_moved(); }
 
 	using ref::taked;
 	constexpr auto taked(difference_type n) && -> decltype(auto) { return ref::taked(n).element_moved(); }
@@ -193,7 +200,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
-		class = std::enable_if_t<!is_subarray<Range const&>{}>>
+		class = std::enable_if_t<!is_subarray<Range const&>{}> >
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	: static_array{std::begin(rng), std::end(rng)} {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
@@ -231,8 +238,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	//  std::forward<Ts>(args)...
 	// } {}
 
-	template<class Element, std::enable_if_t<(D == 0) && std::is_convertible_v<Element, typename static_array::element>, int> = 0>
-	explicit static_array(Element const& elem, allocator_type const& alloc)
+	template<class Element>
+	explicit static_array(
+		Element const& elem, allocator_type const& alloc,
+		std::enable_if_t<std::is_convertible_v<Element, typename static_array::element> && (D == 0), int> /*dummy*/ = 0  // NOLINT(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
+	)
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
 	constexpr static_array(typename static_array::extensions_type extensions, typename static_array::element const& elem)
@@ -358,13 +368,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	static_array(static_array const& other)  // 5b
-	: array_alloc{allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
+	: array_alloc{allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		uninitialized_copy_elements(other.data_elements());
 	}
 
 	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename static_array::extensions_type>, int> =0>
 	static_array(ExecutionPolicy&& policy, static_array const& other)
-	: array_alloc{allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
+	: array_alloc{allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
 	}
 
@@ -392,15 +402,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto end() & -> typename static_array::iterator { return ref::end(); }
 
 	using ref::operator[];
-	HD constexpr auto operator[](index idx) const& -> typename static_array::const_reference { return ref::operator[](idx); }
-	HD constexpr auto operator[](index idx) && -> decltype(auto) {
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename static_array::const_reference { return ref::operator[](idx); }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
 		if constexpr(D == 1) {
 			return std::move(ref::operator[](idx));
 		} else {
 			return ref::operator[](idx).moved();
 		}  // NOLINT(readability/braces)
 	}
-	HD constexpr auto operator[](index idx) & -> typename static_array::reference { return ref::operator[](idx); }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> typename static_array::reference { return ref::operator[](idx); }
 
 	constexpr auto max_size() const noexcept { return static_cast<typename static_array::size_type>(alloc_traits::max_size(this->alloc())); }  // TODO(correaa)  divide by nelements in under-dimensions?
 
@@ -464,9 +474,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	friend auto get_allocator(static_array const& self) -> allocator_type { return self.get_allocator(); }
 
-	HD constexpr auto           data_elements() const& -> element_const_ptr { return this->base_; }
-	HD constexpr auto           data_elements() & -> typename static_array::element_ptr { return this->base_; }
-	HD constexpr auto           data_elements() && -> typename static_array::element_move_ptr { return std::make_move_iterator(this->base_); }
+	BOOST_MULTI_HD constexpr auto           data_elements() const& -> element_const_ptr { return this->base_; }
+	BOOST_MULTI_HD constexpr auto           data_elements() & -> typename static_array::element_ptr { return this->base_; }
+	BOOST_MULTI_HD constexpr auto           data_elements() && -> typename static_array::element_move_ptr { return std::make_move_iterator(this->base_); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(static_array const& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(static_array& self) { return self.data_elements(); }
@@ -937,11 +947,11 @@ struct array : static_array<T, D, Alloc> {
 	);
 
 	// NOLINTNEXTLINE(runtime/operator)
-	HD constexpr auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
+	BOOST_MULTI_HD constexpr auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	HD constexpr auto operator&() & -> array* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
+	BOOST_MULTI_HD constexpr auto operator&() & -> array* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
-	HD constexpr auto operator&() const& -> array const* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
+	BOOST_MULTI_HD constexpr auto operator&() const& -> array const* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 
 	friend auto sizes(array const& self) -> typename array::sizes_type { return self.sizes(); }
 
@@ -998,8 +1008,13 @@ struct array : static_array<T, D, Alloc> {
 		return self.move();
 	}
 
-	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_{std::move(other), alloc} {}
+	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_array<T, D, Alloc>{std::move(other), alloc} {}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {}
+
+#if defined(_MSC_VER)
+	array(typename array::extensions_type exts, Alloc const& alloc)
+	: static_array<T, D, Alloc>{exts, alloc} {}  // needed by MSVC 14.2?
+#endif
 
 	friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
@@ -1264,22 +1279,22 @@ struct array : static_array<T, D, Alloc> {
 
 #if defined(__cpp_deduction_guides)
 
-#define IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing TODO(correaa) remove
+#define BOOST_MULTI_IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing TODO(correaa) remove
 
-template<class T> static_array(IL<T>) -> static_array<T, dimensionality_type{1}, std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::static_array': use of class template requires template argument list
-template<class T> static_array(IL<IL<T>>) -> static_array<T, dimensionality_type{2}, std::allocator<T>>;
-template<class T> static_array(IL<IL<IL<T>>>) -> static_array<T, dimensionality_type{3}, std::allocator<T>>;
-template<class T> static_array(IL<IL<IL<IL<T>>>>) -> static_array<T, dimensionality_type{4}, std::allocator<T>>;
-template<class T> static_array(IL<IL<IL<IL<IL<T>>>>>) -> static_array<T, dimensionality_type{5}, std::allocator<T>>;
+template<class T> static_array(BOOST_MULTI_IL<T>) -> static_array<T, dimensionality_type{1}, std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::static_array': use of class template requires template argument list
+template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> static_array<T, dimensionality_type{2}, std::allocator<T>>;
+template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> static_array<T, dimensionality_type{3}, std::allocator<T>>;
+template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> static_array<T, dimensionality_type{4}, std::allocator<T>>;
+template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> static_array<T, dimensionality_type{5}, std::allocator<T>>;
 
 // TODO(correaa) add zero dimensional case?
-template<class T> array(IL<T>) -> array<T, dimensionality_type{1}>;
-template<class T> array(IL<IL<T>>) -> array<T, dimensionality_type{2}>;
-template<class T> array(IL<IL<IL<T>>>) -> array<T, dimensionality_type{3}>;
-template<class T> array(IL<IL<IL<IL<T>>>>) -> array<T, dimensionality_type{4}>;
-template<class T> array(IL<IL<IL<IL<IL<T>>>>>) -> array<T, dimensionality_type{5}>;
+template<class T> array(BOOST_MULTI_IL<T>) -> array<T, dimensionality_type{1}>;
+template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> array<T, dimensionality_type{2}>;
+template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> array<T, dimensionality_type{3}>;
+template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, dimensionality_type{4}>;
+template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, dimensionality_type{5}>;
 
-#undef IL
+#undef BOOST_MULTI_IL
 
 template<class T> array(T[]) -> array<T, dimensionality_type{1}>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
@@ -1336,5 +1351,7 @@ struct version<boost::multi::array<T, D, A>> {
 };
 
 }  // end namespace boost::serialization
+
+#undef BOOST_MULTI_HD
 
 #endif  // BOOST_MULTI_ARRAY_HPP_
