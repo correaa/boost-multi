@@ -1008,10 +1008,10 @@ struct array : static_array<T, D, Alloc> {
 		return self.move();
 	}
 
-	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_(std::move(other), alloc) {}
+	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_array<T, D, Alloc>{std::move(other), alloc} {}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {}
 
-	array(typename array::extensions_type exts, typename array::allocator_type const& alloc) : static_(exts, alloc) {}  // needed by MSVC?
+	array(typename array::extensions_type exts, typename array::allocator_type const& alloc) : static_array<T, D, Alloc>{exts, alloc} {}  // needed by MSVC?
 
 	friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
