@@ -694,7 +694,7 @@ zig:
     - CXX="zig c++" cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 --verbose || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["g++"]
+#  needs: ["g++"]
 
 circle:
   stage: build
