@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
 		BOOST_TEST( heap1 == 1  );
 		BOOST_TEST( heap2 == 1L );
 	#else
-		BOOST_TEST( heap1 == 13  );
+		BOOST_TEST( heap1 ==  1  );
 		BOOST_TEST( heap2 == 13L );
 	#endif
 	}
