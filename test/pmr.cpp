@@ -36,6 +36,9 @@
 
 namespace multi = boost::multi;
 
+BOOST_AUTO_TEST_CASE(pmr_dummy) {
+}
+
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	{
