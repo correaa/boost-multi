@@ -681,7 +681,7 @@ zig-fedora-rawhide:
   stage: build
   image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
   script:
-    - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel boost-devel g++ cmake fftw-devel make pkg-config
+    - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel boost-devel g++ cmake fftw-devel make pkg-config zig
     - mkdir build && cd build
     - c++ --version
     - zig c++ --version
