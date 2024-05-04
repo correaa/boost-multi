@@ -100,7 +100,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	);
 
  private:
-	using Alloc = typename allocator_traits<DummyAlloc>::template rebind_alloc<T>;
+	// using Alloc = typename allocator_traits<DummyAlloc>::template rebind_alloc<T>;
 
  protected:
 	using array_alloc = array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T> >;
