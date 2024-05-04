@@ -688,6 +688,8 @@ zig:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config snap
     - snap install zig --classic --beta
     - mkdir build && cd build
+    - c++ --version
+    - zig c++ --version
     - zig --version
     - CXX="zig c++" cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 --verbose || make VERBOSE=1
