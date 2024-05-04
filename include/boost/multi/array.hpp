@@ -200,7 +200,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
-		class = std::enable_if_t<!is_subarray<Range const&>{}>>
+		class = std::enable_if_t<!is_subarray<Range const&>{}> >
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	: static_array{std::begin(rng), std::end(rng)} {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
@@ -1008,10 +1008,10 @@ struct array : static_array<T, D, Alloc> {
 		return self.move();
 	}
 
-	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_(std::move(other), alloc) {}
+	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_array<T, D, Alloc>{std::move(other), alloc} {}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {}
 
-	array(typename array::extensions_type exts, typename array::allocator_type const& alloc) : static_(exts, alloc) {}  // needed by MSVC?
+	array(typename array::extensions_type exts, typename array::allocator_type const& alloc) : static_array<T, D, Alloc>{exts, alloc} {}  // needed by MSVC?
 
 	friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
