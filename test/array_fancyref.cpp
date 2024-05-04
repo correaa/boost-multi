@@ -22,7 +22,7 @@
 #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
-#  pragma warning(disable : 4285) // Recursive return type for fancy_ptr if infix notationis applied
+#  pragma warning(disable : 4285)  // Recursive return type for fancy_ptr if infix notationis applied
 #endif
 
 #ifndef BOOST_TEST_MODULE
