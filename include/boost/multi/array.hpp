@@ -103,15 +103,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using Alloc = typename allocator_traits<DummyAlloc>::template rebind_alloc<T>;
 
  protected:
-	using array_alloc = array_allocator<Alloc>;
+	using array_alloc = array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T> >;
 
  public:
 	using array_alloc::get_allocator;
-	using allocator_type = typename array_allocator<Alloc>::allocator_type;
-	using decay_type     = array<T, D, Alloc>;
-	using layout_type    = typename array_ref<T, D, typename allocator_traits<Alloc>::pointer>::layout_type;
+	using allocator_type = typename array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;
+	using decay_type     = array<T, D, allocator_type>;
+	using layout_type    = typename array_ref<T, D, typename allocator_traits<allocator_type>::pointer>::layout_type;
 
-	using ref = array_ref<T, D, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
+	using ref = array_ref<T, D, typename allocator_traits<typename allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer>;
 
 	auto operator new(std::size_t count) -> void* { return ::operator new(count); }
 	auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }
@@ -368,13 +368,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	static_array(static_array const& other)  // 5b
-	: array_alloc{allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
+	: array_alloc{allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		uninitialized_copy_elements(other.data_elements());
 	}
 
 	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename static_array::extensions_type>, int> =0>
 	static_array(ExecutionPolicy&& policy, static_array const& other)
-	: array_alloc{allocator_traits<Alloc>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
+	: array_alloc{allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
 	}
 
