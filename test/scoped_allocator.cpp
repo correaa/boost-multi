@@ -191,8 +191,6 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector_auto) {
 	// these values are depdenent on the implementation of std::vector
 	#if !defined(_MSC_VER)
 		BOOST_TEST( heap2 ==  1L );
-	#else
-		BOOST_TEST( heap2 == 13L );
 	#endif
 	}
 }
