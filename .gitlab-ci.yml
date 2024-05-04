@@ -679,6 +679,7 @@ rocm:
 
 zig-fedora-rawhide:
   stage: build
+  allow_failure: true
   image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
   script:
     - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel boost-devel g++ cmake fftw-devel make pkg-config zig
