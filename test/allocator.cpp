@@ -190,6 +190,7 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	BOOST_REQUIRE(Aarr[0][0] == 996.0);
 #endif
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(static_allocator) {
 	using T = int;
@@ -367,20 +368,21 @@ BOOST_AUTO_TEST_CASE(props_of_static_allocator) {
 		swap( ww, xx );
 		BOOST_REQUIRE( ww == std::vector<int>(20, 22) );  // NOLINT(fuchsia-default-arguments-calls)
     }
-    {
-        std::vector<int, multi::detail::static_allocator<int, 32>> vv(20, 11);  // NOLINT(fuchsia-default-arguments-calls)
-        std::vector<int, multi::detail::static_allocator<int, 32>> ww = vv;
-        BOOST_REQUIRE( ww == vv );
+#if !defined(_MSC_VER)  // static_allocator doesn't work with MSVC implementation of vector
+	{
+		std::vector<int, multi::detail::static_allocator<int, 32>> vv(20, 11);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int, multi::detail::static_allocator<int, 32>> ww = vv;
+		BOOST_REQUIRE( ww == vv );
 
-        ww = vv;
-        BOOST_REQUIRE( ww == vv );
+		ww = vv;
+		BOOST_REQUIRE( ww == vv );
 
-        ww = std::move(vv);
-        BOOST_REQUIRE( vv.size() == 0 );  // NOLINT(readability-container-size-empty,bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
+		ww = std::move(vv);
+		BOOST_REQUIRE( vv.size() == 0 );  // NOLINT(readability-container-size-empty,bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
 
 		std::vector<int, multi::detail::static_allocator<int, 32>> xx(20, 22);  // NOLINT(fuchsia-default-arguments-calls)
 		swap( ww, xx );
 		BOOST_REQUIRE(( ww == std::vector<int, multi::detail::static_allocator<int, 32>>(20, 22) ));  // NOLINT(fuchsia-default-arguments-calls)
-    }
-}
+	}
 #endif
+}
