@@ -19,6 +19,8 @@ variables:
 
 g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: build
+  tags:
+    - non-shared
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
@@ -31,6 +33,7 @@ g++-m32:
   stage: build
   image: debian:latest
   tags:
+    - non-shared
     - high-bandwidth
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake make tar wget
@@ -65,6 +68,7 @@ clang++-9:
   stage: build
   image: ubuntu:20.04
   tags:
+    - non-shared
     - high-bandwidth
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-9 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
@@ -79,6 +83,7 @@ clang++-11:
   stage: build
   image: ubuntu:22.04
   tags:
+    - non-shared
     - high-bandwidth
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-11 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
@@ -92,6 +97,7 @@ clang++-11:
 coverage:
   stage: build
   tags:
+    - non-shared
     - docker
   allow_failure: true
   script:
@@ -121,6 +127,7 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
   stage: build
   allow_failure: true
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config valgrind
@@ -138,6 +145,7 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
 g++-testing sanitizer:
   stage: build
   tags:
+    - non-shared
     - docker
   image: debian:testing
   script:
@@ -152,6 +160,7 @@ g++-7:
   stage: build
   image: debian:oldoldstable  # default is gcc 8 as of Dec 2023
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
@@ -169,6 +178,7 @@ g++-testing c++20:
   stage: build
   image: debian:testing
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
@@ -182,6 +192,7 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
   image: debian:unstable
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
@@ -193,6 +204,8 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
 
 clang++:
   stage: build
+  tags:
+    - non-shared
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -223,6 +236,7 @@ clang++-latest libc++:
   stage: build
   image: debian:latest
   tags:
+    - non-shared
     - docker
     - high-bandwidth
   script:
@@ -301,6 +315,7 @@ clang++-testing tidy:
   stage: build
   image: debian:unstable  # clang 18 as of Apr 2024
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-18 clang-tidy-18 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
@@ -316,6 +331,7 @@ g++-testing c++20:
   stage: build
   image: debian:testing
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
@@ -329,6 +345,7 @@ g++-testing sanitizer:
   stage: build
   image: debian:testing
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
@@ -342,6 +359,7 @@ clang++-17-unstable libc++ c++23 boost_1_84:
   stage: build
   image: debian:unstable  # clang 17 as of March 2024
   tags:
+    - non-shared
     - docker
     - high-bandwidth
   script:  # clang 17 doesn't work with gcc 13 libstd
@@ -373,6 +391,7 @@ clang++-oldoldstable:
   stage: build
   image: debian:oldoldstable  # clang 7.0.1 as of April 2024
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
@@ -389,6 +408,7 @@ oneapi:
   stage: build
   image: intel/oneapi-hpckit:2023.0.0-devel-ubuntu22.04  # Intel(R) oneAPI DPC++/C++ Compiler 2023.0.0 (2023.0.0.20221201)
   tags:
+    - non-shared
     - large-disk-space
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -402,6 +422,7 @@ oneapi-latest c++20:
   stage: build
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
   tags:
+    - non-shared
     - large-disk-space
     - high-bandwidth
   script:
@@ -419,6 +440,7 @@ oneapi-2022.2:
   stage: build
   image: intel/oneapi-hpckit:2022.2-devel-ubuntu20.04
   tags:
+    - non-shared
     - large-disk-space
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -433,6 +455,7 @@ nvhpc:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
+    - non-shared
     - large-disk-space
   script:
     - nvidia-smi
@@ -447,6 +470,7 @@ nvhpc-22.7:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.7-devel-cuda11.7-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
+    - non-shared
     - large-disk-space
   script:
     - nvidia-smi
@@ -462,6 +486,7 @@ nvhpc-24.3 c++20 par:
   stage: build
   image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
+      - non-shared
       - large-disk-space
   script:
     - nvidia-smi
@@ -477,6 +502,7 @@ cuda:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
+    - non-shared
     - nvidia-gpu
   script:
     - nvidia-smi
@@ -497,6 +523,7 @@ cuda-11.8 mkl:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
+    - non-shared
     - nvidia-gpu
   script:
     - nvidia-smi
@@ -518,6 +545,7 @@ cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   tags:
+    - non-shared
     - nvidia-gpu
   script:
     - nvidia-smi
@@ -538,6 +566,7 @@ cuclang++-16 cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   tags:
+    - non-shared
     - nvidia-gpu
   script:
     - nvidia-smi
@@ -561,6 +590,7 @@ culang++-17 cuda-11.8:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
   tags:
+    - non-shared
     - nvidia-gpu
     - high-bandwidth
   script:
@@ -582,6 +612,7 @@ culang++-19 cuda-12.1.1 tidy:
   image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
   allow_failure: false
   tags:
+    - non-shared
     - nvidia-gpu
     - high-bandwidth
   script:
@@ -605,6 +636,7 @@ cuda-12.3.1:
   allow_failure: false
   image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
   tags:
+    - non-shared
     - nvidia-gpu
   script:
     - nvidia-smi
@@ -622,6 +654,7 @@ rocm:
   image: rocm/dev-ubuntu-22.04
   allow_failure: false
   tags:
+    - non-shared
     - docker
     - high-bandwidth
   script:
@@ -647,6 +680,7 @@ rocm:
 circle:
   stage: build
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
@@ -664,6 +698,7 @@ circle:
 circle-187:
   stage: build
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
@@ -682,6 +717,7 @@ circle-187:
 circle-latest:
   stage: build
   tags:
+    - non-shared
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
@@ -701,6 +737,7 @@ inq:
   stage: test
   image: debian:stable
   tags:
+    - non-shared
     - large-memory-space
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
@@ -728,6 +765,7 @@ inq cuda:
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
+    - non-shared
     - nvidia-gpu
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
@@ -761,6 +799,7 @@ inq rocm:
   image: rocm/dev-ubuntu-22.04
   allow_failure: false
   tags:
+    - non-shared
     - large-disk-space
   script:
     - apt-get -qq update
@@ -797,6 +836,7 @@ qmcpack:
   stage: test
   image: debian:latest
   tags:
+    - non-shared
     - docker
     - high-bandwidth
   before_script:
@@ -842,6 +882,7 @@ qmcpack cuda-12.3.1:
   stage: test
   image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
   tags:
+    - non-shared
     - nvidia-gpu
     - high-bandwidth
   before_script:
@@ -895,6 +936,7 @@ sonar:
     refs:
       - master
   tags:
+    - non-shared
     - docker
   # cache:
   #   policy: pull-push
