@@ -679,12 +679,14 @@ rocm:
 
 zig:
   stage: build
+  image: ubuntu:22.04
   allow_failure: true
   tags:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++ gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget zig
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config
+    - snap install zig --classic --beta
     - mkdir build && cd build
     - zig --version
     - CXX=zig cmake .. -DCMAKE_BUILD_TYPE=Debug
