@@ -144,9 +144,6 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 	#if !defined(_MSC_VER)
 		BOOST_TEST( heap1 == 1  );
 		BOOST_TEST( heap2 == 1L );
-	#else
-		BOOST_TEST( heap1 == 2  );
-		BOOST_TEST( heap2 == 11L );
 	#endif
 	}
 
@@ -168,13 +165,10 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
 		cont[1][2].resize(100);
 		cont[1][2].resize(200);
 
-		BOOST_TEST( heap1 == 1  );
-
 	// these values are depdenent on the implementation of std::vector
 	#if !defined(_MSC_VER)
-		BOOST_TEST( heap2 ==  1L );
-	#else
-		BOOST_TEST( heap2 == 13L );
+		BOOST_TEST( heap1 == 1  );
+		BOOST_TEST( heap2 == 1L );
 	#endif
 	}
 }

@@ -376,17 +376,6 @@ clang++-17-unstable libc++ c++23 boost_1_84:
     - ctest --output-on-failure
   needs: ["clang++-latest libc++", "g++-testing c++20"]
 
-# clang++-fedora c++23:
-#   stage: build
-#   image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
-#   script:  # clang 17 doesn't work with gcc 13 libstd
-#     - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel boost-devel clang cmake fftw-devel make pkg-config
-#     - mkdir build && cd build
-#     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23  # -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib -DBoost_NO_SYSTEM_PATHS=ON
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest --output-on-failure
-#   needs: ["clang++-testing c++20"]
-
 clang++-oldoldstable:
   stage: build
   image: debian:oldoldstable  # clang 7.0.1 as of April 2024
@@ -677,23 +666,47 @@ rocm:
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
   needs: ["clang++", "g++"]
 
-zig:
+# clang++-fedora c++23:
+#   stage: build
+#   image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
+#   script:  # clang 17 doesn't work with gcc 13 libstd
+#     - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel boost-devel clang cmake fftw-devel make pkg-config
+#     - mkdir build && cd build
+#     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23  # -DBoost_INCLUDE_DIR=../boost_1_84_0 -DBoost_LIBRARY_DIR=../boost_1_84_0/stage/lib -DBoost_NO_SYSTEM_PATHS=ON
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest --output-on-failure
+#   needs: ["clang++-testing c++20"]
+
+zig-fedora-rawhide:
   stage: build
-  image: ubuntu:22.04
   allow_failure: true
-  tags:
-    - non-shared
-    - docker
+  image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config snap snapd
-    - snap install zig --classic --beta
+    - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel boost-devel g++ cmake fftw-devel make pkg-config zig
     - mkdir build && cd build
     - c++ --version
     - zig c++ --version
-    - zig --version
     - CXX="zig c++" cmake .. -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build . --parallel 2 --verbose || make VERBOSE=1
-    - ctest -j 2 --output-on-failure
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest --output-on-failure
+#  needs: ["clang++-testing c++20"]
+
+# zig-latest:
+#   stage: build
+#   image: esolang/zig:latest
+#   allow_failure: true
+#   tags:
+#     - non-shared
+#     - docker
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config
+#     - mkdir build && cd build
+#     - c++ --version
+#     - zig c++ --version
+#     - zig --version
+#     - CXX="zig c++" cmake .. -DCMAKE_BUILD_TYPE=Debug
+#     - cmake --build . --parallel 2 --verbose || make VERBOSE=1
+#     - ctest -j 2 --output-on-failure
 #  needs: ["g++"]
 
 circle:

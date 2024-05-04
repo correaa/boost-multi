@@ -24,7 +24,7 @@
 #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
-#  pragma warning(disable : 4324) // Explicit padding required
+#  pragma warning(disable : 4324)  // Explicit padding required
 #endif
 
 #ifndef BOOST_TEST_MODULE
