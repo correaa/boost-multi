@@ -25,7 +25,7 @@
 #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
-#  pragma warning(disable : 4244)
+#  pragma warning(disable : 4244)  // narrowing conversion
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -36,8 +36,8 @@
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
+BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
@@ -91,11 +91,9 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		BOOST_TEST( arr[0][0] == 666.0 );
 		BOOST_TEST( arr[1][2] == 666.0 );
 	}
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
-#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 
@@ -107,7 +105,10 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 		exts.begin(), exts.end(), int64_t{0},
 		std::plus<>{},
 		[&resp](auto idx) {
-			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(multi::extension_t<2>{1000 - idx%10, 1000 + idx%10}, resp);
+			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
+				multi::extensions_t<2>{1000 - idx%10, 1000 + idx%10},  // MSVC needs multi::extensions_t<2>
+				resp
+			);
 			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
 			return std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
 		}
@@ -115,5 +116,5 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout<< time.count() / count <<"          "<< acc << '\n';
-#endif
 }
+#endif
