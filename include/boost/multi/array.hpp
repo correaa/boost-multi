@@ -1011,7 +1011,7 @@ struct array : static_array<T, D, Alloc> {
 	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_(std::move(other), alloc) {}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {}
 
-	array(extensions_t<D> const& exts, typename array::allocator_type const& alloc) : static_(exts, alloc) {}  // needed by MSVC?
+	array(typename array::extensions_type exts, typename array::allocator_type const& alloc) : static_(exts, alloc) {}  // needed by MSVC?
 
 	friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
