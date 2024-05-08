@@ -856,7 +856,7 @@ else()
 		add_executable(main main.cpp)
 
 		# target_link_libraries(main PRIVATE multi)
-		target_compile_features   (main INTERFACE cxx_std_17)
+		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
 		target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi main")
 
