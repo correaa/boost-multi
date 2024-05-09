@@ -95,7 +95,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 , public array_ref<T, D, typename allocator_traits<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
 , boost::multi::random_iterable<static_array<T, D, typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>> {
 	static_assert(
-		std::is_same_v<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, typename static_array::element> || std::is_same_v<std::remove_const_t<typename allocator_traits<DummyAlloc>::value_type>, void>,  // allocator template can be redundant or void (which can be a default for the allocator)
+		std::is_same_v<
+			std::remove_const_t<typename multi::allocator_traits<DummyAlloc>::value_type>,
+			typename static_array::element
+		> 
+		||
+		std::is_same_v<
+			std::remove_const_t<typename multi::allocator_traits<DummyAlloc>::value_type>,
+			void
+		>,  // allocator template can be redundant or void (which can be a default for the allocator)
 		"allocator value type must match array value type"
 	);
 
@@ -103,7 +111,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// using Alloc = typename allocator_traits<DummyAlloc>::template rebind_alloc<T>;
 
  protected:
-	using array_alloc = array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T> >;
+	using array_alloc = array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T> >;
 
  public:
 	using array_alloc::get_allocator;
@@ -111,7 +119,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using decay_type     = array<T, D, allocator_type>;
 	using layout_type    = typename array_ref<T, D, typename allocator_traits<allocator_type>::pointer>::layout_type;
 
-	using ref = array_ref<T, D, typename allocator_traits<typename allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer>;
+	using ref = array_ref<
+		T, D,
+		typename multi::allocator_traits<typename allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer
+	>;
 
 	auto operator new(std::size_t count) -> void* { return ::operator new(count); }
 	auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }
@@ -180,7 +191,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It first, It last, allocator_type const& alloc)
 	: array_alloc{alloc}, ref{
-		                      array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(layout_type{index_extension{adl_distance(first, last)} * multi::extensions(*first)}.num_elements())),
+		                      array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension{adl_distance(first, last)} * multi::extensions(*first)}.num_elements())),
 		                      index_extension{adl_distance(first, last)} * multi::extensions(*first)} {
 		if(adl_distance(first, last) == 0) {return;}
 	#if defined(__clang__) && defined(__CUDACC__)
@@ -246,8 +257,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
 	constexpr static_array(typename static_array::extensions_type extensions, typename static_array::element const& elem)
-	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions} {
-		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
+	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions} {
+		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extensions()), std::enable_if_t<std::is_convertible_v<ValueType, typename static_array::value_type>, int> =0>
@@ -263,7 +274,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(extension, value, allocator_type{}) {}
 
 	explicit static_array(typename static_array::extensions_type extensions, allocator_type const& alloc)
-	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
+	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_default_construct();
 	}
 
@@ -274,7 +285,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	         class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
 	         class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
 	constexpr static_array(multi::subarray<TT, D, Args...> const& other, allocator_type const& alloc)
-	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())), other.extensions()) {
+	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())), other.extensions()) {
 	#if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
 			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
@@ -569,7 +580,7 @@ template<class T, class Alloc>
 struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
 : protected array_allocator<Alloc>
 , public array_ref<T, 0, typename allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer> {
-	static_assert(std::is_same_v<typename allocator_traits<Alloc>::value_type, typename static_array::element>,
+	static_assert(std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, typename static_array::element>,
 	              "allocator value type must match array value type");
 
  private:
@@ -605,7 +616,7 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 
  protected:
 	using alloc_traits = typename multi::allocator_traits<allocator_type>;
-	using ref          = array_ref<T, 0, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
+	using ref          = array_ref<T, 0, typename multi::allocator_traits<typename multi::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
 	auto uninitialized_value_construct() {
 		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element> && ! multi::force_element_trivial_default_construction<typename static_array::element>) {
@@ -696,7 +707,7 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 	auto uninitialized_fill(typename static_array::element const& elem) {
 		array_alloc::uninitialized_fill_n(
 			this->base_,
-			static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()),
+			static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()),
 			elem
 		);
 	}
@@ -711,7 +722,7 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 		typename static_array::extensions_type const& extensions,
 		typename static_array::element const&         elem
 	)  // 2
-	: array_alloc{}, ref(static_array::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions) {
+	: array_alloc{}, ref(static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions) {
 		uninitialized_fill(elem);
 	}
 
@@ -942,7 +953,15 @@ template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc> {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
-		std::is_same_v<typename array::alloc_traits::value_type, std::remove_const_t<T>> || std::is_same_v<typename array::alloc_traits::value_type, void>,
+		std::is_same_v<
+			typename multi::allocator_traits<Alloc>::value_type, std::remove_const_t<T>
+			// typename array::alloc_traits::value_type, std::remove_const_t<T>
+		>
+		||
+		std::is_same_v<
+			typename multi::allocator_traits<Alloc>::value_type, void
+			// typename array::alloc_traits::value_type, void
+		>,
 		"only exact type of array element or void (default?) is allowed as allocator value type"
 	);
 
