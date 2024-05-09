@@ -1281,30 +1281,31 @@ struct array : static_array<T, D, Alloc> {
 
 #define BOOST_MULTI_IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing TODO(correaa) remove
 
-template<class T> static_array(BOOST_MULTI_IL<T>) -> static_array<T, dimensionality_type{1}, std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::static_array': use of class template requires template argument list
-template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> static_array<T, dimensionality_type{2}, std::allocator<T>>;
-template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> static_array<T, dimensionality_type{3}, std::allocator<T>>;
-template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> static_array<T, dimensionality_type{4}, std::allocator<T>>;
-template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> static_array<T, dimensionality_type{5}, std::allocator<T>>;
+// vvv MSVC 14.3 in c++17 mode needs paranthesis in dimensionality_type(d)
+template<class T> static_array(BOOST_MULTI_IL<T>) -> static_array<T, dimensionality_type(1), std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::static_array': use of class template requires template argument list
+template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> static_array<T, dimensionality_type(2), std::allocator<T>>;
+template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> static_array<T, dimensionality_type(3), std::allocator<T>>;
+template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> static_array<T, dimensionality_type(4), std::allocator<T>>;
+template<class T> static_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> static_array<T, dimensionality_type(5), std::allocator<T>>;
 
 // TODO(correaa) add zero dimensional case?
-template<class T> array(BOOST_MULTI_IL<T>) -> array<T, dimensionality_type{1}>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> array<T, dimensionality_type{2}>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> array<T, dimensionality_type{3}>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, dimensionality_type{4}>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, dimensionality_type{5}>;
+template<class T> array(BOOST_MULTI_IL<T>) -> array<T, dimensionality_type(1)>;
+template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> array<T, dimensionality_type(2)>;
+template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> array<T, dimensionality_type(3)>;
+template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, dimensionality_type(4)>;
+template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, dimensionality_type(5)>;
 
 #undef BOOST_MULTI_IL
 
-template<class T> array(T[]) -> array<T, dimensionality_type{1}>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+template<class T> array(T[]) -> array<T, dimensionality_type(1)>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, dimensionality_type{0}>;  // TODO(correaa) use some std::allocator_traits instead of is_allocator
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<1>, T) -> array<T, dimensionality_type{1}>;
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<2>, T) -> array<T, dimensionality_type{2}>;
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<3>, T) -> array<T, dimensionality_type{3}>;
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<4>, T) -> array<T, dimensionality_type{4}>;
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<5>, T) -> array<T, dimensionality_type{5}>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, dimensionality_type(0)>;  // TODO(correaa) use some std::allocator_traits instead of is_allocator
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<1>, T) -> array<T, dimensionality_type(1)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<2>, T) -> array<T, dimensionality_type(2)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<3>, T) -> array<T, dimensionality_type(3)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<4>, T) -> array<T, dimensionality_type(4)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<5>, T) -> array<T, dimensionality_type(5)>;
 
 // generalization, will not work with naked {n, m, ...} notation (or single integer notation)
 template<dimensionality_type D, class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>>>
