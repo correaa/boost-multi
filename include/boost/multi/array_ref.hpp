@@ -25,7 +25,7 @@
 #include <new>         // for std::launder
 
 #if __has_include(<span>)
-#if !defined(_MSVC_LANG) || (_MSVC_LANG >= 202002L)
+#if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
 #include <span>
 #endif
 #if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
@@ -599,11 +599,11 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	}
 
 	BOOST_MULTI_HD /*[[gnu::pure]]*/ constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
-		assert(base_ == other.base_ and l_ == other.l_);
+		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
 	}
 	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
-		assert(base_ == other.base_ and l_ == other.l_);
+		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
 	}
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret += n; return ret;}  // explicitly necessary for nvcc/thrust
