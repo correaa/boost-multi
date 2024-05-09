@@ -954,8 +954,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux(index first, index last) const {
 		// TODO(correaa) remove first == last condition
-		BOOST_MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		BOOST_MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ACCESS_ASSERT(this->base_ || ((first*this->layout().stride() - this->layout().offset()) == 0) );  // it is UB to offset a nullptr
