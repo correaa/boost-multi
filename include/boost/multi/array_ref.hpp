@@ -749,6 +749,8 @@ BOOST_MULTI_HD constexpr auto ref(It begin, It end)
 	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
 
+template<typename, ::boost::multi::dimensionality_type, class Alloc> struct static_array;  // this might be needed by MSVC 14.3 in c++17 mode
+
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
 struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
@@ -778,6 +780,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  protected:
 	using types::types;
+
+	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
 
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
 	subarray(subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
@@ -1889,7 +1893,7 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	subarray(subarray const&) = default;
 
 	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct subarray;
-	template<typename, ::boost::multi::dimensionality_type, class Alloc>                friend struct static_array;
+	template<typename, ::boost::multi::dimensionality_type, class Alloc>                friend struct static_array;  // TODO(correaa) check if this is necessary
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);

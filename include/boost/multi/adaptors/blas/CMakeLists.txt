@@ -39,7 +39,12 @@ if(BLAS_FOUND)
 endif()
 
 if(BLAS_FOUND)
-  add_subdirectory(test)
+	find_package(Boost COMPONENTS unit_test_framework)
+	if(Boost_unit_test_framework_FOUND)
+		add_subdirectory(test)
+	else()
+		message(WARNING "Boost Unit Test Framework not found, BLAS-adaptor tests will not be compiled and run. If you want this feature, install Boost")
+	endif()
 else()
 	message(WARNING "BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:"
 		"\n    sudo apt install libblas-dev"
