@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 			#endif
 			);
 			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
-			return std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
+			return std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), int64_t{}, std::plus<int64_t>{});
 		}
 	);
 
