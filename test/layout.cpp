@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(layout_3) {
 	BOOST_REQUIRE( size(arr(0, {10, 20})) == 10 );
 
 	BOOST_REQUIRE(      arr.layout() == arr.layout()  );
-	BOOST_REQUIRE( not (arr.layout() <  arr.layout()) );
+	BOOST_REQUIRE( ! (arr.layout() <  arr.layout()) );
 }
 
 BOOST_AUTO_TEST_CASE(layout) {
@@ -251,9 +251,9 @@ BOOST_AUTO_TEST_CASE(layout) {
 		BOOST_REQUIRE( size(A2) == 3 );
 
 		multi::array<int, 2> B2(
-#if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
-			multi::extensions_t<2>
-#endif
+//#if defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__ < 6))
+//      multi::extensions_t<2>
+//#endif
 			{4, 4}
 		);
 		BOOST_REQUIRE( size(B2) == 4 );
