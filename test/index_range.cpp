@@ -38,7 +38,7 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_range) {
-#if defined(__cpp_deduction_guides) and __cpp_deduction_guides and not defined(__NVCC__)
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides && ! defined(__NVCC__)
 	BOOST_REQUIRE(( multi::range{5, 5}.empty() ));
 #else
 	BOOST_REQUIRE(( multi::range<std::ptrdiff_t>{5, 5}.empty() ));
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 	multi::range<int> const irng{5, 12};
 
 	BOOST_REQUIRE( irng.contains(6) );
-	BOOST_REQUIRE( not irng.contains(12) );
+	BOOST_REQUIRE( ! irng.contains(12) );
 
 	BOOST_REQUIRE( * irng.begin()      ==  5 );
 	BOOST_REQUIRE( *(irng.begin() + 1) ==  6 );
@@ -127,9 +127,11 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 		BOOST_REQUIRE( std::get<1>(ies).size() == 4 );
 		BOOST_REQUIRE( std::get<2>(ies).size() == 5 );
 
+	#ifndef _MSC_VER  // doesn't work in MSVC 14.3 in c++17 mode
 		auto [eyes, jays, kays] = ies;
 		BOOST_REQUIRE( eyes.size() == 3 );
 		BOOST_REQUIRE( jays.size() == 4 );
 		BOOST_REQUIRE( kays.size() == 5 );
+	#endif
 	}
 }
