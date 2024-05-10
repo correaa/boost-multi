@@ -10,7 +10,7 @@
 #if __has_include(<memory_resource>)
 #  include <memory_resource>
 // Apple clang provides the header but not the compiled library prior to version 16
-#  if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) && !(defined(__APPLE__) && defined(__clang_major__) && __clang_major__ <= 15)
+#  if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) && !(defined(__APPLE__) && defined(__clang_major__) && __clang_major__ <= 15) && (!defined(_LIBCPP_VERSION) || !(_LIBCPP_VERSION <= 160001) )
 #    define BOOST_MULTI_HAS_MEMORY_RESOURCE
 #  endif
 #endif
