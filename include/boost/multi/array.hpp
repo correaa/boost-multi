@@ -92,8 +92,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 : protected array_allocator<
 	  // Alloc
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
-, public array_ref<T, D, typename allocator_traits<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
-, boost::multi::random_iterable<static_array<T, D, typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>> {
+, public array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
+, boost::multi::random_iterable<static_array<T, D, typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>> {
 	static_assert(
 		std::is_same_v<
 			std::remove_const_t<typename multi::allocator_traits<DummyAlloc>::value_type>,
@@ -158,7 +158,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	void allocate() {
-		this->base_ = array_alloc::allocate(static_cast<typename allocator_traits<typename static_array::allocator_type>::size_type>(this->static_array::num_elements()));
+		this->base_ = array_alloc::allocate(static_cast<typename multi::allocator_traits<typename static_array::allocator_type>::size_type>(this->static_array::num_elements()));
 	}
 
  public:
@@ -446,7 +446,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
  protected:
 	constexpr void deallocate() {
 		if(this->num_elements()) {
-			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename multi::alloc_traits::size_type>(this->num_elements()));
 		}
 	}
 	void clear() noexcept {
@@ -804,7 +804,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
  protected:
 	void deallocate() {  // TODO(correaa) : move this to array_allocator
 		if(this->num_elements()) {
-			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename multi::alloc_traits::size_type>(this->num_elements()));
 		}
 	}
 	void clear() noexcept {
