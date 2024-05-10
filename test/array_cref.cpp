@@ -78,8 +78,6 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_carray) {
 #endif
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_const_carray) {
-	[]{}()(std::array<int, _MSC_VER>{});
-
 	double const a_c_array[] = {1.0, 2.0, 3.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 	multi::array     <double, 1> an_array_value          (a_c_array);  // ok, it is a copy
 	multi::array_cref<double, 1> an_array_const_reference(a_c_array);  // ok, it is read only reference
