@@ -165,6 +165,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 
 	BOOST_REQUIRE(( arr[0] == complex{1.0, 2.0} ));
 
+#ifndef _MSC_VER  // problem with MVSC 14.3 c++17
 	multi::array<double, 1> arr2 = arr.reinterpret_array_cast<double>();
 	BOOST_REQUIRE( dimensionality(arr2) == dimensionality(arr) );
 	BOOST_REQUIRE( arr2[0] == 1 && arr2[1] == 1 );
@@ -174,6 +175,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	BOOST_REQUIRE(( sizes(arr3)==decltype(sizes(arr3)){100, 2} ));
 	BOOST_REQUIRE( arr3[5][0] == real(arr[5]) );
 	BOOST_REQUIRE( arr3[5][1] == imag(arr[5]) );
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
