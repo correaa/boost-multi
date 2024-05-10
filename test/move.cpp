@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements_range) {
 
 	std::copy( arr({0, 5}).moved().elements().begin(), arr({0, 5}).moved().elements().end(), sink.begin() );
 	BOOST_REQUIRE(     arr[1].empty() );
-	BOOST_REQUIRE( not arr[5].empty() );
+	BOOST_REQUIRE( ! arr[5].empty() );
 
 	BOOST_REQUIRE( sink[1].data() == ptr1 );
 }
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements_to_array) {
 	BOOST_REQUIRE( arr2[1][4] == 99.0 );
 
 	BOOST_REQUIRE(     arr[1].empty() );
-	BOOST_REQUIRE( not arr[5].empty() );
+	BOOST_REQUIRE( ! arr[5].empty() );
 
 	BOOST_REQUIRE( arr2[1].data() == ptr1 );
 }
