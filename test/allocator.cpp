@@ -44,7 +44,9 @@ BOOST_AUTO_TEST_CASE(empty_stride) {
 	multi::array<double, 2> ma0({0, 0}, 0.0);
 	BOOST_REQUIRE(ma0.size() == 0);
 	BOOST_REQUIRE(ma0.stride() != 0);
+#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	BOOST_REQUIRE(size(ma0) == 0);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
@@ -55,9 +57,12 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 		[](auto idx){return multi::array<double, 2>({idx, idx}, static_cast<double>(idx));}
 	);
 
+#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	BOOST_REQUIRE( size(va[0]) == 0 );
 	BOOST_REQUIRE( size(va[1]) == 1 );
 	BOOST_REQUIRE( size(va[2]) == 2 );
+#endif
+
 	BOOST_REQUIRE( va[1] [0][0] == 1 );
 	BOOST_REQUIRE( va[2] [0][0] == 2 );
 
@@ -66,7 +71,9 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 		multi::array<double, 2>({1, 1}, 1.0),
 		multi::array<double, 2>({2, 2}, 2.0),
 	};
+#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	BOOST_REQUIRE( size(va) == size(wa) );
+#endif
 	BOOST_REQUIRE( va == wa );
 
 	std::vector<multi::array<double, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
