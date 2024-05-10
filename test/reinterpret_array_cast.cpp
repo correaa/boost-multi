@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex) {
 		BOOST_REQUIRE( ceePC );
 		BOOST_REQUIRE( real(cee)==11 );
 	}
-#ifndf _MSC_VER
+#ifndef _MSC_VER  // problem with MSVC 14.3 c++17
 	{
 		multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
 
