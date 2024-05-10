@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
 	BOOST_REQUIRE( !  (tt >= uu)  );
 	BOOST_REQUIRE( !  (tt == uu)  );
 	BOOST_REQUIRE(    (tt != uu)  );
-	BOOST_REQUIRE( not(uu <  tt)  );
+	BOOST_REQUIRE( ! (uu <  tt)  );
 	BOOST_REQUIRE(    (uu >  tt)  );
 	BOOST_REQUIRE( !  (uu <= tt)  );
 	BOOST_REQUIRE(    (uu >= tt)  );
@@ -148,11 +148,11 @@ BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort) {
 
 	auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 
-	BOOST_REQUIRE( not std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
+	BOOST_REQUIRE( ! std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
 	std::stable_sort(begin(d2D_ref), end(d2D_ref));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D_ref), end(d2D_ref) ) );
 
-	BOOST_REQUIRE( not std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
+	BOOST_REQUIRE( ! std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
 	std::stable_sort(begin(d2D_ref.rotated()), end(d2D_ref.rotated()));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
 }
