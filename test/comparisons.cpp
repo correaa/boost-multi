@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE(comparison_complex) {
 
 		BOOST_REQUIRE( arr[1] == arr2[1] );
 		BOOST_REQUIRE( arr == arr2 );
-		BOOST_REQUIRE( not (arr != arr2) );
+		BOOST_REQUIRE( ! (arr != arr2) );
 		BOOST_REQUIRE( arr2 == arr );
-		BOOST_REQUIRE( not (arr2 != arr) );
+		BOOST_REQUIRE( ! (arr2 != arr) );
 	}
 	{
 		multi::array<double, 2> const arr = {
@@ -61,18 +61,18 @@ BOOST_AUTO_TEST_CASE(comparison_complex) {
 
 		BOOST_REQUIRE( arr[1][1] == arr2[1][1] );
 		BOOST_REQUIRE( arr == arr2 );
-		BOOST_REQUIRE( not (arr != arr2) );
+		BOOST_REQUIRE( ! (arr != arr2) );
 		BOOST_REQUIRE( arr2 == arr );
-		BOOST_REQUIRE( not (arr2 != arr) );
+		BOOST_REQUIRE( ! (arr2 != arr) );
 		BOOST_REQUIRE( std::equal(arr[1].begin(), arr[1].end(), begin(arr2[1]), end(arr2[1])) );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_comparisons_swap) {
 	multi::array<double, 3> arr = {
-		{ {1.2, 1.1},  {2.4, 1.}},
-		{{11.2, 3.0}, {34.4, 4.}},
-		{ {1.2, 1.1},  {2.4, 1.}},
+		{ {1.2, 1.1},  {2.4, 1.0}},
+		{{11.2, 3.0}, {34.4, 4.0}},
+		{ {1.2, 1.1},  {2.4, 1.0}},
 	};
 	BOOST_REQUIRE( arr[0] < arr[1] );
 
