@@ -1636,10 +1636,10 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-		return {
-			layout_t<D+1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),
+		return subarray<std::decay_t<T2>, D + 1, P2>(
+			layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
 			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-		};
+		);
 	}
 
 	template<class Archive>
