@@ -374,7 +374,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class TT, class... Args,
 	         std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...> const&>().base()), T>, int> = 0>
 	explicit static_array(array_ref<TT, D, Args...> const& other)  // NOLINT(fuchsia-default-arguments-declarations)
-	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
+	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		static_array::uninitialized_copy_elements(std::move(other).data_elements());
 	}
 
@@ -1068,7 +1068,7 @@ struct array : static_array<T, D, Alloc> {
 			if(this == &other) {
 				return *this;
 			}  // required by cert-oop54-cpp
-			if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
+			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
 			static_::operator=(other);
