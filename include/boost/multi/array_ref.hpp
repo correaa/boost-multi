@@ -28,7 +28,7 @@
 #if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
 #include <span>
 #endif
-#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
+#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L && !defined(_MSVC_LANG)
 #define BOOST_MULTI_HAS_SPAN
 #endif
 #endif
