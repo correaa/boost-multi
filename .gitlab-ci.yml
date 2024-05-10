@@ -691,6 +691,7 @@ zig-fedora-rawhide:
     - cd boost_1_84_0
     - ./bootstrap.sh --with-toolset=clang
     - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+    - cd ..
     - mkdir build && cd build
     - c++ --version
     - zig c++ --version
