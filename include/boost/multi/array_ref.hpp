@@ -1622,7 +1622,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		assert( count > 0 );
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return subarray<std::decay_t<T2>, D + 1, P2>(
-			layout_t<D + 1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
+			layout_t<D + 1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
 			reinterpret_pointer_cast<P2>(this->base())  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
 		);
 	}
