@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE(multi_layout_part1) {
 		BOOST_REQUIRE( size(lyt) == 2 );
 		BOOST_REQUIRE( size(extension(lyt))==2 );
 		BOOST_REQUIRE( stride(lyt)==10 );
-		BOOST_REQUIRE( not is_empty(lyt) );
+		BOOST_REQUIRE( ! is_empty(lyt) );
 	}
 	{
 		multi::layout_t<1> const lyt(multi::iextensions<1>{20});
@@ -408,7 +408,7 @@ BOOST_AUTO_TEST_CASE(multi_layout_part2) {
 		static_assert(decltype(lyt)::rank_v == 2);
 		BOOST_REQUIRE( num_elements(lyt) == 10 );
 		BOOST_REQUIRE( size(lyt) == 1);
-		BOOST_REQUIRE( not is_empty(lyt) );
+		BOOST_REQUIRE( ! is_empty(lyt) );
 		BOOST_REQUIRE( size(extension(lyt))==1 );
 		BOOST_REQUIRE( stride(lyt)== 10 );  // std::numeric_limits<std::ptrdiff_t>::max() );
 
@@ -583,7 +583,7 @@ BOOST_AUTO_TEST_CASE(continued_part2) {
 		{0, 30},
 	});
 
-	BOOST_REQUIRE( not lyt.empty() );
+	BOOST_REQUIRE( ! lyt.empty() );
 
 	BOOST_REQUIRE( stride(lyt) == lyt.stride() );
 	BOOST_REQUIRE( offset(lyt) == lyt.offset() );
