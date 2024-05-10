@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -99,12 +98,12 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_2) {
 	resize_copy_2(source, dest_v);
 
 	BOOST_REQUIRE( dest_v.size() == 4 );
-	BOOST_REQUIRE( dest_v[3] == 3. );
+	BOOST_REQUIRE( dest_v[3] == 3.0 );
 
 	resize_copy_2(source, dest_a);
 
 	BOOST_REQUIRE( dest_v.size() == 4 );
-	BOOST_REQUIRE( dest_v[3] == 3. );
+	BOOST_REQUIRE( dest_v[3] == 3.0 );
 }
 
 BOOST_AUTO_TEST_CASE(test_resize_copy_3) {
