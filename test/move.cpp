@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move) {
 
 	BOOST_REQUIRE( is_empty(Av[0]) );
 	BOOST_REQUIRE( size(arr2) == 4 );
-	BOOST_REQUIRE( arr2[1][2] == 99. );
+	BOOST_REQUIRE( arr2[1][2] == 99.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_into_vector) {

@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 
 	multi::array<double, 1> arr2 = arr.reinterpret_array_cast<double>();
 	BOOST_REQUIRE( dimensionality(arr2) == dimensionality(arr) );
-	BOOST_REQUIRE( arr2[0] == 1 and arr2[1] == 1 );
+	BOOST_REQUIRE( arr2[0] == 1 && arr2[1] == 1 );
 
 	multi::array<double, 2> arr3 = arr.reinterpret_array_cast<double>(2);
 
@@ -178,6 +178,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 	using vector3 = std::array<double, 3>;
 
 	vector3 v3d;
+
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
 	BOOST_REQUIRE( &reinterpret_cast<double(&)[3]>(v3d)[1] == &std::get<1>(v3d) );
 	{
