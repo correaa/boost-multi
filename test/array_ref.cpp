@@ -333,7 +333,12 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 
 	{
 		auto exts = aref.extensions();
+	#ifndef _MSC_VER
 		auto const [exts0, exts1] = exts;
+	#else
+		auto const exts0 = std::get<0>(exts);
+		auto const exts1 = std::get<1>(exts);
+	#endif
 		BOOST_REQUIRE( exts0 == multi::iextension(1, 3) );
 
 		BOOST_REQUIRE( exts1.first()  == 1 );
