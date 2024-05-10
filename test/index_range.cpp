@@ -127,9 +127,11 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 		BOOST_REQUIRE( std::get<1>(ies).size() == 4 );
 		BOOST_REQUIRE( std::get<2>(ies).size() == 5 );
 
+	#ifndef _MSC_VER  // doesn't work in MSVC 14.3 in c++17 mode
 		auto [eyes, jays, kays] = ies;
 		BOOST_REQUIRE( eyes.size() == 3 );
 		BOOST_REQUIRE( jays.size() == 4 );
 		BOOST_REQUIRE( kays.size() == 5 );
+	#endif
 	}
 }
