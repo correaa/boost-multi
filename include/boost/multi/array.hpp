@@ -1041,7 +1041,7 @@ struct array : static_array<T, D, Alloc> {
 
 	void swap(array& other) noexcept {
 		using std::swap;
-		if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) {
+		if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) {
 			swap(this->alloc(), other.alloc());
 		}
 		swap(this->base_, other.base_);
@@ -1058,7 +1058,7 @@ struct array : static_array<T, D, Alloc> {
 		}
 		clear();
 		this->base_ = other.base_;
-		if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
+		if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
 			this->alloc() = std::move(other.alloc());
 		}
 		this->layout_mutable() = std::exchange(other.layout_mutable(), {});
