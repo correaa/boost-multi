@@ -376,12 +376,28 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class TT, class... Args,
 	         std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...> const&>().base()), T>, int> = 0>
 	explicit static_array(array_ref<TT, D, Args...> const& other)  // NOLINT(fuchsia-default-arguments-declarations)
-	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
+	:
+	array_alloc{},
+	ref{
+		array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+		other.extensions()
+	} {
 		static_array::uninitialized_copy_elements(std::move(other).data_elements());
 	}
 
 	static_array(static_array const& other)  // 5b
-	: array_alloc{multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
+	: 
+		array_alloc{
+			multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())
+		},
+		ref{
+			array_alloc::allocate(
+				static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()) //,
+				// other.data_elements()
+			),
+			extensions(other)
+		}
+	{
 		uninitialized_copy_elements(other.data_elements());
 	}
 

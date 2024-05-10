@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 	using vector3 = std::array<double, 3>;
 
 	vector3 v3d;
-
+	
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
 	BOOST_REQUIRE( &reinterpret_cast<double(&)[3]>(v3d)[1] == &std::get<1>(v3d) );
 	{
