@@ -114,7 +114,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using array_alloc = array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T> >;
 
  public:
-	using array_alloc::get_allocator;
+	// constexpr auto get_allocator() const -> allocator_type { return alloc_; }
+	using array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T> >::get_allocator;
+
 	using allocator_type = typename array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;
 	using decay_type     = array<T, D, allocator_type>;
 	using layout_type    = typename array_ref<T, D, typename allocator_traits<allocator_type>::pointer>::layout_type;
