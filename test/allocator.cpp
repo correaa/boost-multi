@@ -66,11 +66,20 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( va[1] [0][0] == 1 );
 	BOOST_REQUIRE( va[2] [0][0] == 2 );
 
+#ifndef _MSC_VER   // doesn't work with msvc 14.3 c++17 permissive mode
 	std::vector<multi::array<double, 2>> const wa = {  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<double, 2>({0, 0}, 0.0),
 		multi::array<double, 2>({1, 1}, 1.0),
 		multi::array<double, 2>({2, 2}, 2.0),
 	};
+#else
+	std::vector<multi::array<double, 2>> const wa = {  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
+		multi::array<double, 2>(multi::extensions_t<2>(0, 0), 0.0),
+		multi::array<double, 2>(multi::extensions_t<2>(1, 1), 1.0),
+		multi::array<double, 2>(multi::extensions_t<2>(2, 2), 2.0),
+	};
+#endif
+
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	BOOST_REQUIRE( size(va) == size(wa) );
 #endif
