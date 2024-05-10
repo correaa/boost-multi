@@ -185,6 +185,8 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 	
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
 	BOOST_REQUIRE( &reinterpret_cast<double(&)[3]>(v3d)[1] == &std::get<1>(v3d) );
+
+#ifndef _MSC_VER  // problem with MVSC 14.3 c++17
 	{
 		multi::array<vector3, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[2][1] == &std::get<1>(arr[2]) );
@@ -216,6 +218,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 		auto arr3 = +arr.reinterpret_array_cast<double>(3);
 		BOOST_REQUIRE( arr3 == arr2 );
 	}
+#endif
 }
 
 template<class T> struct complex_dummy {
