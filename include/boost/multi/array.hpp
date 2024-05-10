@@ -1068,13 +1068,13 @@ struct array : static_array<T, D, Alloc> {
 			if(this == &other) {
 				return *this;
 			}  // required by cert-oop54-cpp
-			if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
+			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
 			static_::operator=(other);
 		} else {
 			clear();
-			if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
+			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
 			this->layout_mutable() = other.layout();
