@@ -2362,6 +2362,8 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	friend constexpr auto operator<(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(self, other); }
 	friend constexpr auto operator>(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(other, self); }  // NOLINT(readability-suspicious-call-argument)
 
+	constexpr auto operator>(subarray const& other) const {return operator>(*this, other);}  // TODO(correaa) needed by MSVC 14.3 c++17 ?
+
 	friend constexpr auto operator<=(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(self, other) || self == other; }
 	friend constexpr auto operator>=(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(other, self) || self == other; }  // NOLINT(readability-suspicious-call-argument)
 
