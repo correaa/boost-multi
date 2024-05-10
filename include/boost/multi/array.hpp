@@ -431,6 +431,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto end() & -> typename static_array::iterator { return ref::end(); }
 
 	using ref::operator[];
+
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename static_array::const_reference { return ref::operator[](idx); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
 		if constexpr(D == 1) {
@@ -446,7 +447,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
  protected:
 	constexpr void deallocate() {
 		if(this->num_elements()) {
-			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename multi::alloc_traits::size_type>(this->num_elements()));
+			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
 		}
 	}
 	void clear() noexcept {
@@ -804,7 +805,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
  protected:
 	void deallocate() {  // TODO(correaa) : move this to array_allocator
 		if(this->num_elements()) {
-			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename multi::alloc_traits::size_type>(this->num_elements()));
+			multi::allocator_traits<allocator_type>::deallocate(this->alloc(), this->base_, static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()));
 		}
 	}
 	void clear() noexcept {
