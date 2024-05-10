@@ -117,13 +117,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// constexpr auto get_allocator() const -> allocator_type { return alloc_; }
 	using array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T> >::get_allocator;
 
-	using allocator_type = typename array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;
+	using allocator_type = typename array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;
 	using decay_type     = array<T, D, allocator_type>;
-	using layout_type    = typename array_ref<T, D, typename allocator_traits<allocator_type>::pointer>::layout_type;
+	using layout_type    = typename array_ref<T, D, typename multi::allocator_traits<allocator_type>::pointer>::layout_type;
 
 	using ref = array_ref<
 		T, D,
-		typename multi::allocator_traits<typename allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer
+		typename multi::allocator_traits<typename multi::allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer
 	>;
 
 	auto operator new(std::size_t count) -> void* { return ::operator new(count); }
