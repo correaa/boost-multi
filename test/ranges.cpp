@@ -1,4 +1,4 @@
-// Copyright 2023 Alfredo A. Correa
+// Copyright 2023-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -31,7 +31,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(range_accumulate) {
-#if defined(__cpp_lib_ranges_fold) and (__cpp_lib_ranges_fold >= 202207L)
+#if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 	namespace multi = boost::multi;
 
 	static constexpr auto accumulate = [](auto const& R) {return std::ranges::fold_left(R, 0, std::plus<>{});};
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 }
 
 BOOST_AUTO_TEST_CASE(range_find) {
-#if defined(__cpp_lib_ranges_fold) and (__cpp_lib_ranges_fold >= 202207L)
+#if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 	namespace multi = boost::multi;
 
     using Array2D = multi::array<int, 2>;
