@@ -1,4 +1,4 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -109,9 +109,11 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	}
 }
 
+#ifndef _MSC_VER  // TODO(correaa) not supported by MSVC 14.3 in c++17 mode
 constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& { return std::move(array)[2]; }
 
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
 	double arr[5] = {150.0, 16.0, 17.0, 18.0, 19.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	BOOST_REQUIRE( &f2(arr) == &arr[2] );
 }
+#endif
