@@ -685,7 +685,7 @@ zig-fedora-rawhide:
     - non-shared
     - high-bandwidth
   script:
-    - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel g++ clang libcxx cmake fftw-devel make pkg-config zig wget tar which
+    - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel g++ clang libcxx-devel cmake fftw-devel make pkg-config zig wget tar which
     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
