@@ -119,7 +119,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto base()            const&    -> base_ const& {return *this;} // impl_;}
 
 	friend constexpr auto operator*(index_extension const& extension, extensions_t const& self) -> extensions_t<D + 1> {
-		return extensions_t<D + 1>(tuple(extension, self.base()));
+		// return extensions_t<D + 1>(tuple(extension, self.base()));
+		return extensions_t<D + 1>(extension, self);
 	}
 
 	friend BOOST_MULTI_HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.base() == other.base();}
