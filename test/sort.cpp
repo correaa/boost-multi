@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
 		{100.0, 11.0, 12.0, 13.0, 14.0},
 		{ 50.0,  6.0,  7.0,  8.0,  9.0},
 	};
-	BOOST_REQUIRE( not std::is_sorted(begin(d2D), end(d2D) ) );
+	BOOST_REQUIRE( ! std::is_sorted(begin(d2D), end(d2D) ) );
 
 	std::stable_sort(begin(d2D), end(d2D));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D), end(d2D) ) );
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
 		}
 	));
 
-	BOOST_REQUIRE( not std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
+	BOOST_REQUIRE( ! std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
 
 	std::stable_sort(begin(d2D.rotated()), end(d2D.rotated()));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
