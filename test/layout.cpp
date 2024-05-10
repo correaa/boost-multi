@@ -102,10 +102,16 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
 
 	auto const& rot = sub.rotated();
 
+#ifndef _MSC_VER
 	auto const [is, js, ks] = rot.extensions();
-	for(auto i : is) {
-		for(auto j : js) {
-			for(auto k : ks) {
+#else
+	auto const is = std::get<0>(rot.extensions());
+	auto const js = std::get<0>(rot.extensions());
+	auto const ks = std::get<0>(rot.extensions());
+#endif
+	for(auto const i : is) {
+		for(auto const j : js) {
+			for(auto const k : ks) {
 				BOOST_REQUIRE( &  rot.base()  [rot.layout()(i, j, k)] == &rot(i, j, k) );
 				BOOST_REQUIRE( &*(rot.base() + rot.layout()(i, j, k)) == &rot(i, j, k) );
 			}
