@@ -560,7 +560,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		if(std::addressof(other) == this) {
 			return *this;
 		}  // cert-oop54-cpp
-		assert(extensions(other) == static_array::extensions());
+		assert(other.extensions() == this->extensions());
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
