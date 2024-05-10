@@ -2496,10 +2496,10 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		// static_assert( sizeof(T)%sizeof(T2)== 0,
 		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
-		return subarray<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n},
+		return subarray<std::decay_t<T2>, 2, P2>(
+			layout_t<2>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n),
 			reinterpret_pointer_cast<P2>(this->base())
-		}.rotated();
+		).rotated();
 	}
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type n)&& -> subarray<std::decay_t<T2>, 2, P2> {
