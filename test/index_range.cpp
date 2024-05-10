@@ -123,6 +123,15 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 			{0, 4},
 			{0, 5},
 		});
+
+		auto const ies0 = std::get<0>(ies);
+		auto const ies1 = std::get<1>(ies);
+		auto const ies2 = std::get<2>(ies);
+
+		BOOST_REQUIRE( ies0.size() == 3 );
+		BOOST_REQUIRE( ies1.size() == 4 );
+		BOOST_REQUIRE( ies2.size() == 5 );
+
 		BOOST_REQUIRE( std::get<0>(ies).size() == 3 );
 		BOOST_REQUIRE( std::get<1>(ies).size() == 4 );
 		BOOST_REQUIRE( std::get<2>(ies).size() == 5 );
