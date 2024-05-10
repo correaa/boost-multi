@@ -686,6 +686,7 @@ zig-fedora-rawhide:
     - mkdir build && cd build
     - c++ --version
     - zig c++ --version
+    - echo | zig c++ -dM -E -x c++ -
     - CXX="zig c++" CXXFLAGS="-lstdc++" cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
