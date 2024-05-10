@@ -2381,8 +2381,8 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
  private:
 	template<class A1, class A2>
 	static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {  // NOLINT(readability-suspicious-call-argument)
-		if(extension(self).first() > extension(other).first()) {return true ;}
-		if(extension(self).first() < extension(other).first()) {return false;}
+		if(self.extension().first() > other.extension().first()) {return true ;}
+		if(self.extension().first() < other.extension().first()) {return false;}
 		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
 	}
 
