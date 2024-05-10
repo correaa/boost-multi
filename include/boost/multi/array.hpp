@@ -395,7 +395,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 				static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()) //,
 				// other.data_elements()
 			),
-			extensions(other)
+			other.extensions()
 		}
 	{
 		uninitialized_copy_elements(other.data_elements());
