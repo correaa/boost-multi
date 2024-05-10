@@ -783,7 +783,6 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
 
-	template<typename, dimensionality_type, class Alloc> friend struct static_array;
 	subarray(subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
 
 	template<class, class> friend struct subarray_ptr;
