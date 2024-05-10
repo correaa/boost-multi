@@ -70,9 +70,9 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_carray) {
 	multi::array_cref<double, 1> an_array_const_reference(a_c_array);  // ok, it is read only reference
 	multi::array_ref <double, 1> an_array_reference      (a_c_array);  // ok, it is a reference
 
-	BOOST_REQUIRE( an_array_value          .size() == 3 and an_array_value          [1] == 2.0 );
-	BOOST_REQUIRE( an_array_const_reference.size() == 3 and an_array_const_reference[1] == 2.0 );
-	BOOST_REQUIRE( an_array_reference      .size() == 3 and an_array_reference      [1] == 2.0 );
+	BOOST_REQUIRE( an_array_value          .size() == 3 && an_array_value          [1] == 2.0 );
+	BOOST_REQUIRE( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 2.0 );
+	BOOST_REQUIRE( an_array_reference      .size() == 3 && an_array_reference      [1] == 2.0 );
 }
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_const_carray) {
@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_const_carray) {
 	multi::array_cref<double, 1> an_array_const_reference(a_c_array);  // ok, it is read only reference
 //  multi::array_ref <double, 1> an_array_reference      (a_c_array);  // not ok, c array is const
 
-	BOOST_REQUIRE( an_array_value          .size() == 3 and an_array_value          [1] == 2.0 );
-	BOOST_REQUIRE( an_array_const_reference.size() == 3 and an_array_const_reference[1] == 2.0 );
-//  BOOST_REQUIRE( an_array_reference      .size() == 3 and an_array_reference      [1] == 2. );
+	BOOST_REQUIRE( an_array_value          .size() == 3 && an_array_value          [1] == 2.0 );
+	BOOST_REQUIRE( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 2.0 );
+//  BOOST_REQUIRE( an_array_reference      .size() == 3 && an_array_reference      [1] == 2. );
 }
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_init_list) {
@@ -92,9 +92,9 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_init_list) {
 	multi::array_cref<double, 1> an_array_const_reference(il);  // ok, it is read only
 //  multi::array_ref <double, 1> an_array_reference      ({1., 2., 3.});  // not allowed, the init list elems are const
 
-	BOOST_REQUIRE( an_array_value           .size() == 3 and an_array_value          [1] == 2.0 );
-	BOOST_REQUIRE( an_array_const_reference.size() == 3 and an_array_const_reference[1] == 2.0 );
-//  BOOST_REQUIRE( an_array_reference      .size() == 3 and an_array_reference      [1] == 2. );
+	BOOST_REQUIRE( an_array_value          .size() == 3 && an_array_value          [1] == 2.0 );
+	BOOST_REQUIRE( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 2.0 );
+//  BOOST_REQUIRE( an_array_reference      .size() == 3 && an_array_reference      [1] == 2. );
 }
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_auto_init_list) {
@@ -103,9 +103,9 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_auto_init_list) {
 	multi::array_cref<double, 1> an_array_const_reference(il);  // ok, it is read only
 //  multi::array_ref <double, 1> an_array_reference      ({1., 2., 3.});  // not allowed, the init list elems are const
 
-	BOOST_REQUIRE( an_array_value           .size() == 3 and an_array_value          [1] == 2.0 );
-	BOOST_REQUIRE( an_array_const_reference.size() == 3 and an_array_const_reference[1] == 2.0 );
-//  BOOST_REQUIRE( an_array_reference      .size() == 3 and an_array_reference      [1] == 2. );
+	BOOST_REQUIRE( an_array_value          .size() == 3 && an_array_value          [1] == 2.0 );
+	BOOST_REQUIRE( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 2.0 );
+//  BOOST_REQUIRE( an_array_reference      .size() == 3 && an_array_reference      [1] == 2. );
 }
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_init_list) {
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_init_list) {
 //  multi::array_cref<double, 1> an_array_const_reference({1.0, 2.0, 3.0});  // not ok, constructor disable because memcheck detects use after scope
 //  multi::array_ref <double, 1> an_array_reference      ({1., 2., 3.});  // not allowed, the init list elems are const
 
-	BOOST_REQUIRE( an_array_value          .size() == 3 and an_array_value          [1] == 2. );
-//  BOOST_REQUIRE( an_array_const_reference.size() == 3 and an_array_const_reference[1] == 2.0 );
-//  BOOST_REQUIRE( an_array_reference      .size() == 3 and an_array_reference      [1] == 2. );
+	BOOST_REQUIRE( an_array_value          .size() == 3 && an_array_value          [1] == 2. );
+//  BOOST_REQUIRE( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 2.0 );
+//  BOOST_REQUIRE( an_array_reference      .size() == 3 && an_array_reference      [1] == 2. );
 }
