@@ -305,7 +305,7 @@ template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL*4UL>
 using small_array = multi::static_array<T, D, multi::detail::static_allocator<T, Capacity>>;
 // https://godbolt.org/z/d8ozWahna
 
-#if !defined(_MSC_VER) || (_MSC_VER > 193030706) // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
+#if !defined(_MSC_VER) || (_MSC_VER > 193030706)  // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
 BOOST_AUTO_TEST_CASE(small_array_int) {
 	small_array<int, 2, 4UL*4UL> vv({4, 4}, 42);
 
