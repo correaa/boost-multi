@@ -75,7 +75,6 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_carray) {
 	BOOST_REQUIRE( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 2.0 );
 	BOOST_REQUIRE( an_array_reference      .size() == 3 && an_array_reference      [1] == 2.0 );
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_const_carray) {
 	double const a_c_array[] = {1.0, 2.0, 3.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
