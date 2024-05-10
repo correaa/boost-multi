@@ -83,7 +83,7 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
 	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
 		assert(n <= N);
-		assert(not dirty_);  // do not attempt to resize a vector with static_allocator
+		assert(! dirty_);  // do not attempt to resize a vector with static_allocator
 		dirty_ = true;
 		return reinterpret_cast<pointer>(buffer_.data());  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
