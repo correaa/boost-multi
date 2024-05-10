@@ -2847,7 +2847,7 @@ struct array_ptr
 	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  // NOSONAR
 
 	constexpr auto operator*() const {
-		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};
+		return array_ref<T, D, Ptr>(this->base(), (*this)->extensions());
 	}
 };
 
