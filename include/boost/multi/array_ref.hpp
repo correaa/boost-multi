@@ -1808,6 +1808,8 @@ struct subarray<T, 0, ElementPtr, Layout>
 	constexpr auto operator!=(subarray const& other) const {return ! adl_equal(other.base_, other.base_ + 1, this->base_);}
 	constexpr auto operator==(subarray const& other) const {return     adl_equal(other.base_, other.base_ + 1, this->base_);}
 
+	constexpr auto operator<(subarray const& other) const {return adl_lexicographical_compare(this->base_, this->base_ + this->num_elements(), other.base_);}
+
 	using decay_type = typename types::element;
 
 	constexpr auto operator()() const -> element_ref {return *(this->base_);}
