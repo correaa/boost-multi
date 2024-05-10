@@ -1316,7 +1316,7 @@ template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI
 
 #undef BOOST_MULTI_IL
 
-template<class T> array(T[]) -> array<T, dimensionality_type(1)>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+template<class T> array(T[]) -> array<T, static_cast<dimensionality_type>(1)>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, static_cast<dimensionality_type>(0)>;  // TODO(correaa) use some std::allocator_traits instead of is_allocator
