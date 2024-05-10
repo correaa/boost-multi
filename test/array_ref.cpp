@@ -824,7 +824,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		print_me1(*multi::array_ptr<int, 1>{arr2.data(), {6}});
 
 		multi::static_array<int, 1> marr({10}, 99);
-		print_me1(*multi::array_ptr<int, 1>{marr.data_elements(), 10});
+		print_me1(*multi::array_ptr<int, 1>(marr.data_elements(), 10));
 
 		auto& alias = marr;
 
