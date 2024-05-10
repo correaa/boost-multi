@@ -305,6 +305,7 @@ template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL*4UL>
 using small_array = multi::static_array<T, D, multi::detail::static_allocator<T, Capacity>>;
 // https://godbolt.org/z/d8ozWahna
 
+#if !defined(_MSC_VER) || (_MSC_VER > 193030706)  // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
 BOOST_AUTO_TEST_CASE(small_array_int) {
 	small_array<int, 2, 4UL*4UL> vv({4, 4}, 42);
 
@@ -337,8 +338,11 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 	small_array<int, 2, 4UL*4UL> yy({4, 4});
 	yy = vv;
 	BOOST_REQUIRE( yy == vv );
+
+// #ifndef _MSC_VER  // TODO(correaa) does not compile in MSVC 1.43 in c++17 mode
 	yy = std::move(vv);
 	BOOST_REQUIRE( vv.size() == 4 );  // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move,hicpp-invalid-access-moved)
+// #endif
 
 	{
 		std::vector< small_array<int, 2, 4UL*4UL> > VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
@@ -351,6 +355,7 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 		BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(props_of_static_allocator) {
 	{

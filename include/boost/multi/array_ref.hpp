@@ -25,7 +25,7 @@
 #include <new>         // for std::launder
 
 #if __has_include(<span>)
-#if !defined(_MSVC_LANG) || (_MSVC_LANG >= 202002L)
+#if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
 #include <span>
 #endif
 #if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
@@ -599,11 +599,11 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	}
 
 	BOOST_MULTI_HD /*[[gnu::pure]]*/ constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
-		assert(base_ == other.base_ and l_ == other.l_);
+		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
 	}
 	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
-		assert(base_ == other.base_ and l_ == other.l_);
+		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
 	}
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret += n; return ret;}  // explicitly necessary for nvcc/thrust
@@ -954,8 +954,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux(index first, index last) const {
 		// TODO(correaa) remove first == last condition
-		BOOST_MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		BOOST_MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ACCESS_ASSERT(this->base_ || ((first*this->layout().stride() - this->layout().offset()) == 0) );  // it is UB to offset a nullptr

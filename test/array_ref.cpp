@@ -333,7 +333,12 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 
 	{
 		auto exts = aref.extensions();
+	#ifndef _MSC_VER
 		auto const [exts0, exts1] = exts;
+	#else
+		auto const exts0 = std::get<0>(exts);
+		auto const exts1 = std::get<1>(exts);
+	#endif
 		BOOST_REQUIRE( exts0 == multi::iextension(1, 3) );
 
 		BOOST_REQUIRE( exts1.first()  == 1 );
@@ -557,14 +562,15 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
 
 	multi::array_cref<std::string, 3> cref(&dc3D[0][0][0], {4, 2, 3});
-	BOOST_REQUIRE( num_elements(cref) == 24 and cref[2][1][1] == "C1b" );
-	auto const& A2 = cref.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
-	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
+	BOOST_REQUIRE( num_elements(cref) == 24 && cref[2][1][1] == "C1b" );
 
-	BOOST_REQUIRE( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
+	auto const& A2 = cref.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
+	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && num_elements(A2) == 6 );
+
+	BOOST_REQUIRE( std::get<0>(sizes(A2)) == 3 && std::get<1>(sizes(A2)) == 2 );
 
 	auto const& A3 = cref({0, 3}, 1, {0, 2});
-	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );
+	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A3)>>{} == 2 && num_elements(A3) == 6 );
 
 	BOOST_REQUIRE( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 	BOOST_REQUIRE( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );

@@ -46,10 +46,10 @@ BOOST_AUTO_TEST_CASE(equality_1D) {
 	multi::array<double, 1> arr  = {1.0, 2.0, 3.0};
 	multi::array<double, 1> arr2 = {1.0, 2.0, 3.0};
 	BOOST_REQUIRE(      arr == arr2   );
-	BOOST_REQUIRE( not (arr != arr2) );
+	BOOST_REQUIRE( ! (arr != arr2) );
 
 	BOOST_REQUIRE(      arr() == arr2() );
-	BOOST_REQUIRE( not (arr() != arr2()) );
+	BOOST_REQUIRE( ! (arr() != arr2()) );
 }
 
 BOOST_AUTO_TEST_CASE(equality_2D) {
@@ -62,13 +62,13 @@ BOOST_AUTO_TEST_CASE(equality_2D) {
 		{4.0, 5.0, 6.0},
 	};
 	BOOST_REQUIRE( arr == arr2 );
-	BOOST_REQUIRE( not (arr != arr2) );
+	BOOST_REQUIRE( ! (arr != arr2) );
 
 	BOOST_REQUIRE( arr() == arr2() );
-	BOOST_REQUIRE( not (arr() != arr2()) );
+	BOOST_REQUIRE( ! (arr() != arr2()) );
 
 	BOOST_REQUIRE( arr[0] == arr2[0] );
-	BOOST_REQUIRE( not (arr[0] != arr2[0]) );
+	BOOST_REQUIRE( ! (arr[0] != arr2[0]) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_copy_move) {
@@ -136,8 +136,8 @@ BOOST_AUTO_TEST_CASE(assignments) {
 		multi::array<double, 2> const arr({5, 7}, val);
 		multi::array_ref<double, 2>(vec.data(), {5, 7}) = arr();  // arr() is a subarray
 		BOOST_REQUIRE( vec[9] == val );
-		BOOST_REQUIRE( not vec.empty() );
-		BOOST_REQUIRE( not is_empty(arr) );
+		BOOST_REQUIRE( ! vec.empty() );
+		BOOST_REQUIRE( ! is_empty(arr) );
 	}
 	{
 		std::vector<double> vec(5 * 7L, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
