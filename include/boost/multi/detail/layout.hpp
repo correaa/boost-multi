@@ -367,13 +367,13 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
-	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+	constexpr auto get() const -> decltype(auto) {  // -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
-	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
+	friend constexpr auto get(extensions_t const& self) -> decltype(auto) {  // -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
