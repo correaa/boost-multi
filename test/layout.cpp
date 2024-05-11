@@ -83,8 +83,14 @@ BOOST_AUTO_TEST_CASE(extensions_to_linear) {
 }
 
 BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
-	multi::array<double, 3> arr({40, 50, 80});
-	auto&&                  sub = arr({10, 30}, {20, 32}, {60, 75});
+	multi::array<double, 3> arr(
+	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+		multi::extensions_t<3>
+	#endif
+		{40, 50, 80}
+	);
+
+	auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
 	for(int i = 0; i != 10; ++i) {
 		for(int j = 0; j != 12; ++j) {
@@ -97,8 +103,14 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
 }
 
 BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
-	multi::array<double, 3> arr({40, 50, 80});
-	auto&&                  sub = arr({10, 30}, {20, 32}, {60, 75});
+	multi::array<double, 3> arr(
+	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+		multi::extensions_t<3>
+	#endif
+		{40, 50, 80}
+	);
+
+	auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
 	auto const& rot = sub.rotated();
 
@@ -120,7 +132,12 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
 }
 
 BOOST_AUTO_TEST_CASE(linearize) {
-	multi::array<double, 3> const arr({10, 20, 30});
+	multi::array<double, 3> const arr(
+	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+		multi::extensions_t<3>
+	#endif
+		{10, 20, 30}
+	);
 
 	BOOST_REQUIRE((  25 % extensions(arr) == decltype(  25 % extensions(arr)){0, 0, 25} ));
 	BOOST_REQUIRE((  55 % extensions(arr) == decltype(  55 % extensions(arr))(0, 1, 25) ));
@@ -190,7 +207,12 @@ BOOST_AUTO_TEST_CASE(layout_tuple_3d) {
 }
 
 BOOST_AUTO_TEST_CASE(layout_0) {
-	multi::array<double, 3> arr({51, 52, 53});
+	multi::array<double, 3> arr(
+	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+		multi::extensions_t<3>
+	#endif
+		{51, 52, 53}
+	);
 
 	BOOST_REQUIRE( size(arr)  == 51       );
 	BOOST_REQUIRE( arr.size() == 51       );
@@ -225,7 +247,12 @@ BOOST_AUTO_TEST_CASE(layout_2) {
 }
 
 BOOST_AUTO_TEST_CASE(layout_3) {
-	multi::array<double, 2> arr({50, 50});
+	multi::array<double, 2> arr(
+	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+		multi::extensions_t<2>
+	#endif
+		{50, 50}
+	);
 	BOOST_REQUIRE( size(arr)  == 50 );
 	BOOST_REQUIRE( arr.size() == 50 );
 
@@ -254,6 +281,9 @@ BOOST_AUTO_TEST_CASE(layout) {
 //#if defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__ < 6))
 //      multi::extensions_t<2>
 //#endif
+	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+		multi::extensions_t<2>
+	#endif
 			{4, 4}
 		);
 		BOOST_REQUIRE( size(B2) == 4 );
