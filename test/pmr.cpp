@@ -111,11 +111,7 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 		[&resp](auto idx) {
 			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
 				multi::extensions_t<2>{1000 - idx%10, 1000 + idx%10},  // MSVC needs multi::extensions_t<2>
-			#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 				resp
-			#else
-				std::pmr::polymorphic_allocator<int64_t>(resp)
-			#endif
 			);
 			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
 			auto* be = arr.data_elements();
