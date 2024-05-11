@@ -9,15 +9,6 @@
 #include <iostream>  // for std::cout
 #include <numeric>  // for std::iota
 
-#if __has_include(<span>)
-#if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
-#include <span>
-#endif
-#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L && !defined(_MSVC_LANG)
-#define BOOST_MULTI_HAS_SPAN
-#endif
-#endif
-
 // Suppress warnings from boost.test
 #if defined(__clang__)
 #pragma clang diagnostic push
