@@ -96,6 +96,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	}
 }
 
+#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
@@ -126,4 +127,5 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout<< time.count() / count <<"          "<< acc << '\n';
 }
+#endif
 #endif
