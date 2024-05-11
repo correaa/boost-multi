@@ -73,7 +73,13 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 
 BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 	{
-		multi::array<std::complex<double>, 2> const arr({1, 2}, std::allocator<std::complex<double>>{});
+		multi::array<std::complex<double>, 2> const arr(
+		#ifdef _MSC_VER  // problem with 14.3 c++17
+			multi::extensions_t<2>
+		#endif
+			{1, 2},
+			std::allocator<std::complex<double>>{}
+		);
 		BOOST_REQUIRE( arr.size() == 1 );
 	}
 	{
