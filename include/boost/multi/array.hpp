@@ -1008,6 +1008,11 @@ struct array : static_array<T, D, Alloc> {
 	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
+#ifdef _MSC_VER
+	explicit array(typename array::extensions_type extensions, typename array::allocator_type const& alloc)
+	: static_array<T, D, Alloc>(exts, alloc) {}
+#endif
+
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
 	: static_{array<T, D>(ilv.begin(), ilv.end())} {}
