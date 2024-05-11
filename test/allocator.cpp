@@ -176,8 +176,13 @@ BOOST_AUTO_TEST_CASE(pmr2) {
 	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
+#ifndef _MSC_VER
 	multi::pmr::array<char, 2> Aarr({2, 2}, 'a', &pool);
 	multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
+#else
+	multi::pmr::array<char, 2> Aarr(multi::extensions_t<2>{2, 2}, 'a', &pool);
+	multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
+#endif
 
 #if defined(__GLIBCXX__)
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
