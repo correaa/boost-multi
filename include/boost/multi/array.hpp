@@ -1009,9 +1009,9 @@ struct array : static_array<T, D, Alloc> {
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
 #ifdef _MSC_VER
-	array(typename array::extensions_type const& exts, typename array::allocator_type const& alloc)
+	array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
 	: static_array<T, D, Alloc>(exts, alloc) {}
-	array(typename array::extensions_type const& exts)
+	array(typename array::extensions_type exts)
 	: static_array<T, D, Alloc>(exts) {}
 #endif
 
