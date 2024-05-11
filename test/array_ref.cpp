@@ -10,12 +10,12 @@
 #include <numeric>  // for std::iota
 
 #if __has_include(<span>)
-
-#  include <span>
-#  if defined(__cpp_lib_span) && (__cpp_lib_span >= 202002L)
-#    define BOOST_MULTI_TEST_SPAN
-#  endif
-
+#if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
+#include <span>
+#endif
+#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L && !defined(_MSVC_LANG)
+#define BOOST_MULTI_HAS_SPAN
+#endif
 #endif
 
 // Suppress warnings from boost.test
@@ -770,7 +770,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(as_span) {
-#ifdef BOOST_MULTI_TEST_SPAN
+#ifdef BOOST_MULTI_HAS_SPAN
 	auto print_me0 = [](std::span<int> rng) {
 		std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
 		std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });
@@ -790,7 +790,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		std::cout << "\n\n";
 	};
 
-#ifdef BOOST_MULTI_TEST_SPAN
+#ifdef BOOST_MULTI_HAS_SPAN
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy arrays
 		print_me0(arr);
