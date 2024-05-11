@@ -1011,6 +1011,8 @@ struct array : static_array<T, D, Alloc> {
 #ifdef _MSC_VER
 	array(typename array::extensions_type const& exts, typename array::allocator_type const& alloc)
 	: static_array<T, D, Alloc>(exts, alloc) {}
+	array(typename array::extensions_type const& exts)
+	: static_array<T, D, Alloc>(exts) {}
 #endif
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
