@@ -1009,7 +1009,7 @@ struct array : static_array<T, D, Alloc> {
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
 #ifdef _MSC_VER
-	explicit array(typename array::extensions_type extensions, typename array::allocator_type const& alloc)
+	array(typename array::extensions_type const& exts, typename array::allocator_type const& alloc)
 	: static_array<T, D, Alloc>(exts, alloc) {}
 #endif
 
@@ -1053,11 +1053,6 @@ struct array : static_array<T, D, Alloc> {
 
 	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_array<T, D, Alloc>{std::move(other), alloc} {}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {}
-
-#if defined(_MSC_VER)
-	array(typename array::extensions_type exts, Alloc const& alloc)
-	: static_array<T, D, Alloc>{exts, alloc} {}  // needed by MSVC 14.2?
-#endif
 
 	friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
