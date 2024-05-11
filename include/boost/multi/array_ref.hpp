@@ -328,7 +328,7 @@ public:
 
 	BOOST_MULTI_HD constexpr void advance(difference_type n) {ref_.base_ += ref_.nelems()*n;}
 	BOOST_MULTI_HD constexpr auto distance_to(subarray_ptr const& other) const -> difference_type {
-		assert( Ref::nelems() == other.Ref::nelems() and Ref::nelems() != 0 );
+		assert( Ref::nelems() == other.Ref::nelems() && Ref::nelems() != 0 );
 		assert( (other.base() - base())%Ref::nelems() == 0);
 		assert( ref_.layout() == other.ref_.layout() );
 		return (other.base() - base())/Ref::nelems();
@@ -659,7 +659,7 @@ struct elements_range_t {
 
  private:
 	constexpr auto at_aux(difference_type n) const -> reference {
-		assert( not is_empty() );
+		assert( ! is_empty() );
 		return base_[std::apply(l_, l_.extensions().from_linear(n))];
 	}
 
