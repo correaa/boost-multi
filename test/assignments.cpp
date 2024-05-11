@@ -102,8 +102,18 @@ BOOST_AUTO_TEST_CASE(range_assignment) {
 }
 
 BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-	multi::array<int, 4> tmp({14, 14, 7, 4});
-	multi::array<int, 5> src({2, 14, 14, 7, 2});
+	multi::array<int, 4> tmp(
+	#ifdef _MSC_VER  // problem with 14.3 c++17
+		multi::extensions_t<4>
+	#endif
+		{14, 14, 7, 4}
+	);
+	multi::array<int, 5> src(
+	#ifdef _MSC_VER  // problem with 14.3 c++17
+		multi::extensions_t<5>
+	#endif
+		{2, 14, 14, 7, 2}
+	);
 	src[0][1][2][3][1] = 99.0;
 
 	BOOST_REQUIRE( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
