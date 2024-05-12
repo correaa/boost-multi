@@ -111,6 +111,8 @@ BOOST_AUTO_TEST_CASE(rearranged_assignment) {
 
 	auto const ext5 = multi::extensions_t<5>{2, 14, 14, 7, 2};
 
+	[[maybe_unused]] auto const ext52 = ext5;
+
 	[[maybe_unused]] multi::array<int, 5> const src_test(ext5);
 
 	multi::array<int, 5> src(
