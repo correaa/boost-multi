@@ -109,9 +109,9 @@ BOOST_AUTO_TEST_CASE(rearranged_assignment) {
 		{14, 14, 7, 4}
 	);
 
-	auto ext5 = multi::extensions_t<5>{2, 14, 14, 7, 2};
+	auto const ext5 = multi::extensions_t<5>{2, 14, 14, 7, 2};
 
-	[[maybe_unused]] multi::array<int, 5> src_test(ext5);
+	[[maybe_unused]] multi::array<int, 5> const src_test(ext5);
 
 	multi::array<int, 5> src(
 	#ifdef _MSC_VER  // problem with 14.3 c++17
