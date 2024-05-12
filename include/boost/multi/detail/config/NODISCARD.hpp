@@ -3,8 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_CONFIG_NODISCARD_HPP_
-#define BOOST_MULTI_CONFIG_NODISCARD_HPP_
+#ifndef BOOST_MULTI_DETAIL_CONFIG_NODISCARD_HPP
+#define BOOST_MULTI_DETAIL_CONFIG_NODISCARD_HPP
 
 // clang-format off
 #ifdef __has_cpp_attribute
@@ -43,4 +43,4 @@
 
 // clang-format on
 
-#endif  // BOOST_MULTI_CONFIG_NODISCARD_HPP_
+#endif  // BOOST_MULTI_DETAIL_CONFIG_NODISCARD_HPP

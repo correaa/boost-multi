@@ -9,7 +9,7 @@
 #include <boost/multi/detail/operators.hpp>
 #include <boost/multi/detail/tuple_zip.hpp>
 
-#include <boost/multi/config/ASSERT.hpp>
+#include <boost/multi/detail/config/ASSERT.hpp>
 
 #include <tuple>
 #include <type_traits>  // for make_signed_t
