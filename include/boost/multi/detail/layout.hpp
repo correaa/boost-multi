@@ -429,7 +429,7 @@ template<> class tuple_size<boost::multi::extensions_t<3>> : public std::integra
 template<> class tuple_size<boost::multi::extensions_t<4>> : public std::integral_constant<boost::multi::dimensionality_type, 4> {};
 #endif
 
-#if !defined(__GLIBCXX__) || (__GLIBCXX__ <= 20240707)
+#if !defined(_MSC_VER) && (!defined(__GLIBCXX__) || (__GLIBCXX__ <= 20240707) )
 template<std::size_t N, boost::multi::dimensionality_type D>
 constexpr auto get(boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
 ->decltype(tp.template get<N>()) {
