@@ -7,7 +7,7 @@
 
 #include <boost/multi/array_ref.hpp>
 
-#include "./config/NO_UNIQUE_ADDRESS.hpp"
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <boost/multi/detail/adl.hpp>
 #include <boost/multi/detail/memory.hpp>
@@ -17,6 +17,14 @@
 #include <tuple>  // needed by a deprecated function
 #include <type_traits>  // for std::common_reference
 #include <utility>  // for std::move
+
+#if __has_include(<memory_resource>)
+#  include <memory_resource>
+// Apple clang provides the header but not the compiled library prior to version 16
+#  if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) && !(defined(__APPLE__) && defined(__clang_major__) && __clang_major__ <= 15) && (!defined(_LIBCPP_VERSION) || !(_LIBCPP_VERSION <= 160001) )
+#    define BOOST_MULTI_HAS_MEMORY_RESOURCE
+#  endif
+#endif
 
 // TODO(correaa) or should be (__CUDA__) or CUDA__ || HIP__
 #if defined(__NVCC__)
@@ -1373,6 +1381,18 @@ struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arr
 };
 
 }  // end namespace boost::multi
+
+namespace boost::multi::pmr {
+
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
+template<class T, boost::multi::dimensionality_type D>
+using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
+#else
+template<class T, boost::multi::dimensionality_type D>
+struct [[deprecated("no PMR allocator")]] array;  // your version of C++ doesn't provide polymorphic_allocators
+#endif
+
+}  // end namespace boost::multi::pmr
 
 // common_reference for compatibility with ranges
 #if defined(__cpp_lib_common_reference) || defined(__cpp_lib_ranges)
