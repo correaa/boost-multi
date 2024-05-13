@@ -2579,8 +2579,8 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
 
-	constexpr explicit array_ref(typename array_ref::element_ptr dat, typename array_ref::extensions_type extensions) noexcept  // TODO(correa) eliminate this ctor
-	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
+	constexpr explicit array_ref(typename array_ref::element_ptr dat, typename array_ref::extensions_type exts) noexcept  // TODO(correa) eliminate this ctor
+	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{exts}, dat} {}
 
 	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
 	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
@@ -2861,8 +2861,8 @@ class array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
 	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : ref_(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
 
-	constexpr explicit operator bool() const {return this->base();}
-	constexpr explicit operator Ptr () const {return this->base();}
+	constexpr explicit operator bool() const {return ref_.base();}
+	constexpr explicit operator Ptr () const {return ref_.base();}
 
 	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() == other.ref_.base();}
 	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() != other.ref_.base();}
