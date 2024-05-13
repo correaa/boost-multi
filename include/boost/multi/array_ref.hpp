@@ -2579,7 +2579,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
 
-	constexpr explicit array_ref(typename array_ref::element_ptr dat, typename array_ref::extensions_type exts) noexcept  // TODO(correa) eliminate this ctor
+	constexpr explicit array_ref(ElementPtr dat, typename array_ref::extensions_type exts) noexcept  // TODO(correa) eliminate this ctor
 	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{exts}, dat} {}
 
 	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
