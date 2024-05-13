@@ -407,6 +407,11 @@ template<boost::multi::dimensionality_type D>
 struct std::tuple_size<boost::multi::extensions_t<D>>  // NOLINT(cert-dcl58-cpp) to implement structured binding
 : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
 
+template<>
+struct std::tuple_element<0, boost::multi::extensions_t<0>> {  // NOLINT(cert-dcl58-cpp) to implement structured binding
+	using type = void;
+};
+
 template<std::size_t Index, boost::multi::dimensionality_type D>
 struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cert-dcl58-cpp) to implement structured binding
 	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
