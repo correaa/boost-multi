@@ -37,7 +37,7 @@ namespace multi = boost::multi;
 
 namespace {
 
-constexpr auto make_ref(double* ptr) -> multi::array_ref<double, 2> {
+constexpr auto make_ref(double* ptr) {
 	return multi::array_ref<double, 2>(ptr, {5, 7});
 }
 }  // namespace

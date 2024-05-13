@@ -268,8 +268,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	constexpr static_array(typename static_array::extensions_type exts, typename static_array::element const& elem)
 	:
-	array_alloc{}, 
-	ref(
+	array_alloc{},
+	array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(
 		array_alloc::allocate(
 			static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t(exts).num_elements()),
 			nullptr
