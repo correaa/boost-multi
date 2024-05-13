@@ -159,7 +159,13 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
 	using OuterCont = multi::array<InnerCont, 2, std::scoped_allocator_adaptor<allocator1<InnerCont>, allocator2<int>>>;
 
 	{
-		OuterCont cont({3, 4}, {&heap1,  allocator2<int>{&heap2}});  // without allocator2<>{...} gives ambiguous construction in libc++
+		OuterCont cont(
+		#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+			multi::extensions_t<2>
+		#endif
+			{3, 4},
+			{&heap1, allocator2<int>{&heap2}}  // without allocator2<>{...} gives ambiguous construction in libc++
+		);
 
 		cont[1][2].resize(10);
 		cont[1][2].resize(100);

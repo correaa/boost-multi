@@ -677,26 +677,27 @@ rocm:
 #     - ctest --output-on-failure
 #   needs: ["clang++-testing c++20"]
 
-zig-fedora-rawhide:
-  stage: build
-  allow_failure: true
-  image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
-  tags:
-    - non-shared
-    - high-bandwidth
-  script:
-    - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel g++ clang cmake fftw-devel make pkg-config zig wget tar
-    - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
-    - tar -xf boost_1_84_0.tar.gz 
-    - cd boost_1_84_0
-    - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4 # libc++ only works with boost test compiled with libc++
-    - mkdir build && cd build
-    - c++ --version
-    - zig c++ --version
-    - CXX="zig c++" cmake .. -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --output-on-failure
+# zig-fedora-rawhide:
+#   stage: build
+#   allow_failure: true
+#   image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
+#   tags:
+#     - non-shared
+#     - high-bandwidth
+#   script:
+#     - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel g++ clang libcxx-devel cmake fftw-devel make pkg-config zig wget tar which
+#     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
+#     - tar -xf boost_1_84_0.tar.gz 
+#     - cd boost_1_84_0
+#     - ./bootstrap.sh --with-toolset=clang
+#     - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+#     - cd ..
+#     - mkdir build && cd build
+#     - c++ --version
+#     - zig c++ --version
+#     - CXX="zig c++" cmake .. -DCMAKE_BUILD_TYPE=Debug
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest --output-on-failure
 #  needs: ["clang++-testing c++20"]
 
 # zig-latest:

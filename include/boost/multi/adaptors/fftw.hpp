@@ -186,7 +186,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 // template<
 //  typename It1, class It2,
-//  std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0>
+//  std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} || std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0>
 // auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags flags)
 //  -> fftw_plan {
 
@@ -232,7 +232,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 //  auto const inembed = [&]() {
 //      std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
 //      std::adjacent_difference(
-//          istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto alpha, auto omega) {assert(omega != 0 and alpha%omega == 0); return alpha/omega; }
+//          istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto alpha, auto omega) {assert(omega != 0 && alpha%omega == 0); return alpha/omega; }
 //      );
 //      return inembed;
 //  }();
@@ -240,7 +240,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 //  auto const onembed = [&]() {
 //      std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> onembed{};
 //      std::adjacent_difference(
-//          ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto alpha, auto omega) {assert(omega != 0 and alpha%omega == 0); return alpha/omega; }
+//          ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto alpha, auto omega) {assert(omega != 0 && alpha%omega == 0); return alpha/omega; }
 //      );
 //      return onembed;
 //  }();
@@ -266,7 +266,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 // template<
 //  typename It1, class It2,
-//  std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0>
+//  std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} || std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0>
 // auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign)
 //  -> fftw_plan {
 //  return fftw_plan_many_dft(first, last, d_first, sign, fftw::estimate);
@@ -303,7 +303,7 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 	assert(in_base);
 	assert(out_base);
 
-	assert((sign == -1) or (sign == +1));
+	assert((sign == -1) || (sign == +1));
 
 	fftw_plan ret = fftw_plan_guru64_dft(
 		/*int                 rank         */ dims_end - dims.begin(),

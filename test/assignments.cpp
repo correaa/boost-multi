@@ -37,18 +37,20 @@ namespace multi = boost::multi;
 
 namespace {
 
-constexpr auto make_ref(double* ptr) -> multi::array_ref<double, 2> {
+constexpr auto make_ref(double* ptr) {
 	return multi::array_ref<double, 2>(ptr, {5, 7});
 }
+
 }  // namespace
 
 BOOST_AUTO_TEST_CASE(equality_1D) {
 	multi::array<double, 1> arr  = {1.0, 2.0, 3.0};
 	multi::array<double, 1> arr2 = {1.0, 2.0, 3.0};
-	BOOST_REQUIRE(      arr == arr2   );
+
+	BOOST_REQUIRE(    arr == arr2  );
 	BOOST_REQUIRE( ! (arr != arr2) );
 
-	BOOST_REQUIRE(      arr() == arr2() );
+	BOOST_REQUIRE(    arr() == arr2()  );
 	BOOST_REQUIRE( ! (arr() != arr2()) );
 }
 
@@ -88,22 +90,44 @@ BOOST_AUTO_TEST_CASE(multi_copy_move) {
 
 BOOST_AUTO_TEST_CASE(range_assignment) {
 	{
-		auto                    ext = multi::make_extension_t(10L);
+		auto const ext = multi::make_extension_t(10L);
+
 		multi::array<double, 1> vec(ext.begin(), ext.end());
+
 		BOOST_REQUIRE( ext.size() == vec.size() );
 		BOOST_REQUIRE( vec[1] = 10 );
 	}
 	{
 		multi::array<double, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
-		auto                    ext = extension(vec);
+
+		auto const ext = extension(vec);
+
 		vec.assign(ext.begin(), ext.end());
 		BOOST_REQUIRE( vec[1] == 1 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-	multi::array<int, 4> tmp({14, 14, 7, 4});
-	multi::array<int, 5> src({2, 14, 14, 7, 2});
+	multi::array<int, 4> tmp(
+#ifdef _MSC_VER  // problem with 14.3 c++17
+		multi::extensions_t<4>
+#endif
+		{14, 14, 7, 4}
+	);
+
+	auto const ext5 = multi::extensions_t<5>{2, 14, 14, 7, 2};
+
+	[[maybe_unused]] auto const ext52 = ext5;
+
+	[[maybe_unused]] multi::array<int, 5> const src_test(ext5);
+
+	multi::array<int, 5> src(
+#ifdef _MSC_VER  // problem with 14.3 c++17
+		multi::extensions_t<5>
+#endif
+		{2, 14, 14, 7, 2}
+	);
+
 	src[0][1][2][3][1] = 99.0;
 
 	BOOST_REQUIRE( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );

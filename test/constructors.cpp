@@ -9,23 +9,23 @@
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wundef"
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wundef"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
@@ -115,27 +115,27 @@ BOOST_AUTO_TEST_CASE(multi_constructors) {
 		// multi::array<double, 1> arr({10}, {}); assert(size(arr)==10); // error ambiguous
 	} {
 		multi::array<int, 1> arr = {10};
-		BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );
+		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
 	}
 	{
 		multi::array<std::size_t, 1> arr = {10};
-		BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );
+		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
 	}
 	{
 		multi::array<double, 1> arr = {10};
-		BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );
+		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
 	}
 	{
 		multi::array<int, 1> arr({10});
-		BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );
+		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
 	}
 	{
 		multi::array<std::size_t, 1> arr({10});
-		BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );
+		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
 	}
 	{
 		multi::array<double, 1> arr({10});
-		BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );
+		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
 		//}{ multi::array<std::size_t, 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 		//}{ multi::array<int        , 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 		//}{ multi::array<double     , 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked

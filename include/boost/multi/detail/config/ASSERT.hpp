@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_CONFIG_ASSERT_HPP_
-#define BOOST_MULTI_CONFIG_ASSERT_HPP_
+#ifndef BOOST_MULTI_DETAIL_CONFIG_ASSERT_HPP
+#define BOOST_MULTI_DETAIL_CONFIG_ASSERT_HPP
 
 #include<cassert>
 
@@ -19,4 +19,4 @@
 	// #endif
 #endif
 
-#endif  // BOOST_MULTI_CONFIG_ASSERT_HPP_
+#endif  // BOOST_MULTI_DETAIL_CONFIG_ASSERT_HPP

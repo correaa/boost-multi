@@ -4,7 +4,6 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/pmr.hpp>
 
 #include <numeric>
 
@@ -96,6 +95,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	}
 }
 
+#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
@@ -113,11 +113,14 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 				resp
 			);
 			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
-			return std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
+			auto* be = arr.data_elements();
+			decltype(be) en = arr.data_elements() + arr.num_elements();
+			return std::accumulate(be, en, int64_t{}, std::plus<int64_t>{});
 		}
 	);
 
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout<< time.count() / count <<"          "<< acc << '\n';
 }
+#endif
 #endif

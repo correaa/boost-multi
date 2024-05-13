@@ -7,8 +7,10 @@
 #pragma once
 
 #include "../../adaptors/complex.hpp"
-#include "../../array_ref.hpp"
-#include "../../complex.hpp"
+
+#include <boost/multi/array_ref.hpp>
+
+#include <boost/multi/detail/complex.hpp>
 
 #include "../blas/complex_traits.hpp"
 

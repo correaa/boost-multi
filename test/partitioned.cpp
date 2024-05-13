@@ -1,4 +1,4 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -222,8 +222,9 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());
 	// auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.strides());
 
-	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and arr.num_elements() == arr.nelems() );  // contiguous c-ordering
+	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) && arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 
+#ifndef _MSC_VER  // problem with MSVC 14.3 c++17
 	auto&& A4 = arr.reinterpret_array_cast<double>(1);
 
 	BOOST_REQUIRE(( arr.extensions() == decltype(arr.extensions()){2, 4, 6} ));
@@ -233,6 +234,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 //  BOOST_REQUIRE( A4.flatted().is_flattable() );
 
 	BOOST_REQUIRE( &A4[1][2][3][0] == &arr[1][2][3] );
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
