@@ -287,6 +287,11 @@ struct std::tuple_size<boost::multi::detail::tuple<Ts...>> {  // NOLINT(cert-dcl
 	static constexpr std::size_t value = sizeof...(Ts);
 };
 
+template<class T0>
+struct std::tuple_element<0, boost::multi::detail::tuple<T0>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+	using type = T0;
+};
+
 template<class T0, class... Ts>
 struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
 	using type = T0;
