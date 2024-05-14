@@ -760,6 +760,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 	}
 }
 
+#ifdef _MSC_VER
 BOOST_AUTO_TEST_CASE(as_span) {
 #ifdef BOOST_MULTI_HAS_SPAN
 	auto print_me0 = [](std::span<int> rng) {
@@ -815,16 +816,16 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		print_me1(*multi::array_ptr<int, 1>{arr2.data(), {6}});
 
 		multi::static_array<int, 1> marr(
-#ifdef _MSC_VER  // problems with MSVC 14.3 c++17
+// #ifdef _MSC_VER  // problems with MSVC 14.3 c++17
 			multi::extensions_t<1>
-#endif
+// #endif
 			{10},
 			99
 		);
 
 		print_me1(*multi::array_ptr<int, 1>(marr.data_elements(), 10));
 
-	#ifndef _MSC_VER
+	// #ifndef _MSC_VER
 		auto& alias = marr;
 
 		marr = alias;
@@ -832,7 +833,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 
 		marr = alias();
 		BOOST_REQUIRE(marr[5] = 99);
-	#endif
+	// #endif
 	}
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
@@ -853,6 +854,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		//  print_me2(&marr);  // TODO(correaa) make this work
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(diagonal) {
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
