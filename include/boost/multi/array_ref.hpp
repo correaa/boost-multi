@@ -854,10 +854,17 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 	BOOST_MULTI_HD constexpr auto at_aux(index idx) const {
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
 		return reference {
 			this->layout().sub(),
 			this->base_ + (idx*this->layout().stride() - this->layout().offset())
 		};  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
  public:
@@ -1983,11 +1990,18 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
  private:
 	BOOST_MULTI_HD constexpr auto at_aux(index idx) const -> typename subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
 		auto ba = this->base_;  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto of = (idx*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 		return *pt;  // in C++17 this is allowed even with syntethic references
 	//  return *(this->base() + (idx*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
  public:
