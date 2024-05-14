@@ -266,36 +266,19 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	)
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
 
-#ifndef _MSC_VER
 	constexpr static_array(typename static_array::extensions_type exts, typename static_array::element const& elem)
 	:
 	array_alloc{},
 	array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(
+		exts,
 		array_alloc::allocate(
-			static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t(exts).num_elements()),
+			static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t(exts).num_elements()) ,
 			nullptr
-		),
-		exts
+		)
 	)
 	{
 		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
-#else
-	constexpr static_array(typename static_array::extensions_type exts, typename static_array::element const& elem)
-	:
-	array_alloc{},
-	array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(
-		typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer{},
-		exts
-	)
-	{
-		this->base_ = array_alloc::allocate(
-			static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t(exts).num_elements()),
-			nullptr
-		);
-		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
-	}
-#endif
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extensions()), std::enable_if_t<std::is_convertible_v<ValueType, typename static_array::value_type>, int> =0>
 	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)  // fill constructor
