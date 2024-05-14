@@ -274,6 +274,12 @@ constexpr auto destroy_n(BidirIt first, Size count)
 	return first;
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
+
 template<class Alloc, class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
 constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 ->std::decay_t<decltype(std::addressof(*(first-1)), first)> {
@@ -283,6 +289,10 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 	}
 	return first;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
