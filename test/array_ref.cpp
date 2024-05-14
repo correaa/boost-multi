@@ -760,7 +760,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 	}
 }
 
-#ifdef _MSC_VER
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE(as_span) {
 #ifdef BOOST_MULTI_HAS_SPAN
 	auto print_me0 = [](std::span<int> rng) {
