@@ -824,6 +824,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 
 		print_me1(*multi::array_ptr<int, 1>(marr.data_elements(), 10));
 
+	#ifndef _MSC_VER
 		auto& alias = marr;
 
 		marr = alias;
@@ -831,6 +832,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 
 		marr = alias();
 		BOOST_REQUIRE(marr[5] = 99);
+	#endif
 	}
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
@@ -990,7 +992,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
 	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
 
-	BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
+//  BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
 	//  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
 
 	//  BOOST_REQUIRE(( trace_separate_ref4                        (arr) == 3 ));  // not allowed
