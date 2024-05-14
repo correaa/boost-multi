@@ -1759,8 +1759,18 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	       BOOST_MULTI_HD constexpr auto stride()              const        -> stride_type {return      stride_;}
 	friend    constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto operator++() -> array_iterator& {data_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {data_ -= stride_; return *this;}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.data_ == other.data_;}
 
@@ -2734,10 +2744,22 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	template<typename TT, class... As>
 	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) { return false; }
+
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+		#endif
+
 		return adl_equal(
 			other.data_elements(), other.data_elements() + other.num_elements(),
 			self .data_elements()
 		);
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
+
 	}
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
