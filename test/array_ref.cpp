@@ -990,7 +990,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
 	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
 
-	BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
+//  BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
 	//  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
 
 	//  BOOST_REQUIRE(( trace_separate_ref4                        (arr) == 3 ));  // not allowed
