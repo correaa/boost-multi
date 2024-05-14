@@ -2611,7 +2611,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	: array_ref(&elem, {}) {}
 
 	template<class TT, std::size_t N>
-	constexpr array_ref(TT (&arr)[N])  // @SuppressWarnings(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
+	constexpr array_ref(TT (&arr)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-explicit-constructor,hicpp-explicit-conversions) : for backward compatibility // NOSONAR
 	: array_ref(
 		::boost::multi::extensions(arr),
 		::boost::multi::data_elements(arr)
