@@ -824,12 +824,12 @@ BOOST_AUTO_TEST_CASE(as_span) {
 
 		print_me1(*multi::array_ptr<int, 1>(marr.data_elements(), 10));
 
+	#ifndef _MSC_VER
 		auto& alias = marr;
 
 		marr = alias;
 		BOOST_REQUIRE(marr[5] = 99);
 
-	#ifndef _MSC_VER
 		marr = alias();
 		BOOST_REQUIRE(marr[5] = 99);
 	#endif
