@@ -829,8 +829,10 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		marr = alias;
 		BOOST_REQUIRE(marr[5] = 99);
 
+	#ifndef _MSC_VER
 		marr = alias();
 		BOOST_REQUIRE(marr[5] = 99);
+	#endif
 	}
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
