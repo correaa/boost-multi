@@ -856,7 +856,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto at_aux(index idx) const {
 		#if defined(__clang__)
 		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 		#endif
 		return reference {
 			this->layout().sub(),
@@ -1992,7 +1993,8 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		#if defined(__clang__)
 		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 		#endif
 		auto ba = this->base_;  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto of = (idx*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
