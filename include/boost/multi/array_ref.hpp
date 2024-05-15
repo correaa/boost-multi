@@ -1799,18 +1799,18 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto operator++() -> array_iterator& {data_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {data_ -= stride_; return *this;}
 
+	constexpr auto operator+=(difference_type n) -> array_iterator& {data_ += stride_*n; return *this;}
+	constexpr auto operator-=(difference_type n) -> array_iterator& {data_ -= stride_*n; return *this;}
+
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
 	#endif
 
+	constexpr auto operator-(array_iterator const& other) const -> difference_type {return -distance_to(other);}
+
 	friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.data_ == other.data_;}
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference { return *data_; } // NOLINT(readability-const-return-type)
-
-	constexpr auto operator-(array_iterator const& other) const -> difference_type {return -distance_to(other);}
-
-	constexpr auto operator+=(difference_type n) -> array_iterator& {data_ += stride_*n; return *this;}
-	constexpr auto operator-=(difference_type n) -> array_iterator& {data_ -= stride_*n; return *this;}
 };
 
 template<class Element, dimensionality_type D, typename... Ts>
