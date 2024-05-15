@@ -456,8 +456,19 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
 	friend constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
 
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto operator++() -> array_iterator& {ptr_->base_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {decrement(); return *this;}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type {
 		assert(self.stride_ == other.stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
@@ -598,6 +609,12 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return *this;
 	}
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	BOOST_MULTI_HD /*[[gnu::pure]]*/ constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
@@ -606,10 +623,16 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret += n; return ret;}  // explicitly necessary for nvcc/thrust
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret -= n; return ret;}  // explicitly necessary for nvcc/thrust
 
 	constexpr auto current() const -> pointer {return base_ + std::apply(l_, ns_);}
+
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
 	BOOST_MULTI_HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
