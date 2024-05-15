@@ -91,7 +91,7 @@ Inside HIP code, it can be compile with AMD's clang rocm (5.0+).)
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, blas, lapack, thurst, or CUDA
 (all can be installed with `sudo apt install libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install blas-devel fftw-devel`.)
 
-## Quick reference and types
+## Quick reference and types (cheatsheet)
 
 * `multi::array<T, D, Alloc = std::allocator<T>>`: 
 Array of integer positive dimension `D`, it has value semantics if element type `T` has value semantics.
