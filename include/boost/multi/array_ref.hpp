@@ -585,6 +585,13 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 
 	elements_iterator_t(elements_iterator_t const&) = default;
 
+	BOOST_MULTI_HD constexpr auto operator=(elements_iterator_t const& other) -> elements_iterator_t {  // fixes (?) warning: definition of implicit copy assignment operator for 'elements_iterator_t<boost::multi::array<double, 3> *, boost::multi::layout_t<1>>' is deprecated because it has a user-declared copy constructor [-Wdeprecated-copy]
+		base_ = other.base_;
+		xs_ = other.xs_;
+		n_ = other.n_;
+		return *this;
+	}
+
 	BOOST_MULTI_HD constexpr auto operator++() -> elements_iterator_t& {
 		std::apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
 		++n_;
@@ -624,13 +631,6 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return n_ < other.n_;
 	}
 
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
-
-	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret += n; return ret;}  // explicitly necessary for nvcc/thrust
-	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret -= n; return ret;}  // explicitly necessary for nvcc/thrust
-
 	constexpr auto current() const -> pointer {return base_ + std::apply(l_, ns_);}
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
@@ -639,6 +639,13 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		auto const nn = std::apply(xs_, ns_);
 		return base_[std::apply(l_, xs_.from_linear(nn + n))];
 	}  // explicit here is necessary for nvcc/thrust
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
+	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret += n; return ret;}  // explicitly necessary for nvcc/thrust
+	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret -= n; return ret;}  // explicitly necessary for nvcc/thrust
 
 	BOOST_MULTI_HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
 		assert(base_ == other.base_ && l_ == other.l_);  // TODO(correaa) calling host function from host device
