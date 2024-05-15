@@ -33,7 +33,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-// Suppress warnings from boost.test
 #if defined(__clang__)
 #  pragma clang diagnostic pop
 #elif defined(__GNUC__)
@@ -79,8 +78,8 @@ BOOST_AUTO_TEST_CASE(double_to_complex_conversion_documentation) {
 	double const               dee = 5.0;
 	std::complex<double> const zee = dee;
 
-	BOOST_REQUIRE( zee.real() == 5.0 );
-	BOOST_REQUIRE( zee.imag() == 0.0 );
+	BOOST_REQUIRE_CLOSE( zee.real(), 5.0, 1E-6 );
+	BOOST_REQUIRE_CLOSE( zee.imag(), 0.0, 1E-6 );
 
 	// ... therefore from array of reals to arrays of complex is also
 	multi::array<double, 2>               DEE({10, 10}, dee);
@@ -91,10 +90,10 @@ BOOST_AUTO_TEST_CASE(double_to_complex_conversion_documentation) {
 
 	multi::array<std::complex<double>, 2> ZEE2{DEE};
 
-	BOOST_REQUIRE( ZEE2[3][4].real() == 5.0 );
-	BOOST_REQUIRE( ZEE2[3][4].imag() == 0.0 );
+	BOOST_REQUIRE_CLOSE( ZEE2[3][4].real(), 5.0, 1E-6);
+	BOOST_REQUIRE_CLOSE( ZEE2[3][4].imag(), 0.0, 1E-6 );
 
-	// multi::array<double, 2> DEE2{ZEE};  // compilation error
+	// multi::array<double, 2> DEE2{ZEE};  // compilation error, good
 }
 
 void fun(multi::array<std::complex<float>, 2> arr);
@@ -119,13 +118,13 @@ BOOST_AUTO_TEST_CASE(double_to_float) {
 	auto const eff = static_cast<float>(dee);
 
 	// BOOST_REQUIRE( eff == 5.0 );  // -Wdouble-promotion
-	BOOST_REQUIRE( eff == 5.0F );
+	BOOST_REQUIRE_CLOSE( eff, 5.0F, 1E-6 );
 
 	multi::array<double, 2> const DEE({10, 10}, dee);
 	// multi::array<float, 2> const EFF(DEE);
 	auto const EFF = static_cast<multi::array<float, 2>>(DEE);  // TODO(correaa) investigate producing intermediate types accessible through interminediate types
 
-	BOOST_REQUIRE( EFF[3][4] == 5.0F );
+	BOOST_REQUIRE_CLOSE( EFF[3][4], 5.0F, 1E-6 );
 
 	// multi::array<float, 2> const EFF = DEE;
 }
@@ -134,25 +133,25 @@ BOOST_AUTO_TEST_CASE(complex_to_complex_conversion) {
 	std::complex<float> const  cee{1.0, 2.0};
 	std::complex<double> const zee = cee;
 
-	BOOST_REQUIRE( zee.real() == 1.0 );
-	BOOST_REQUIRE( zee.imag() == 2.0 );
+	BOOST_REQUIRE_CLOSE( zee.real(), 1.0, 1E-6 );
+	BOOST_REQUIRE_CLOSE( zee.imag(), 2.0, 1E-6 );
 
 	// std::complex<float> cee2 = zee;  // implicit conversion, compilation error
 	std::complex<float> const cee2{zee};
 
-	BOOST_REQUIRE( cee2.real() == 1.0F );
-	BOOST_REQUIRE( cee2.imag() == 2.0F );
+	BOOST_REQUIRE_CLOSE( cee2.real(), 1.0F, 1E-6 );
+	BOOST_REQUIRE_CLOSE( cee2.imag(), 2.0F, 1E-6 );
 
 	multi::array<std::complex<float>, 2> const  CEE({10, 10}, cee);
 	multi::array<std::complex<double>, 2> const ZEE = CEE;
 
-	BOOST_REQUIRE( ZEE[3][4].real() == 1.0 );
-	BOOST_REQUIRE( ZEE[3][4].imag() == 2.0 );
+	BOOST_REQUIRE_CLOSE( ZEE[3][4].real(), 1.0, 1E-6);
+	BOOST_REQUIRE_CLOSE( ZEE[3][4].imag(), 2.0, 1E-6);
 
 	// multi::array<std::complex<float>, 2> const CEE2 = ZEE;  // implicit conversion, compilation error
 	multi::array<std::complex<float>, 2> const CEE2{ZEE};
 
-	BOOST_REQUIRE( CEE2[3][4].real() == 1.0F );
-	BOOST_REQUIRE( CEE2[3][4].imag() == 2.0F );
+	BOOST_REQUIRE_CLOSE( CEE2[3][4].real(), 1.0F, 1E-6 );
+	BOOST_REQUIRE_CLOSE( CEE2[3][4].imag(), 2.0F, 1E-6 );
 }
 // NOLINTEND(fuchsia-default-arguments-calls)
