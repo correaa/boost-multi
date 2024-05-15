@@ -1767,7 +1767,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
  private:
 	friend struct subarray<Element, 1, Ptr>;
 
-	element_ptr data_{nullptr};  // TODO(correaa) : consider uninitialized pointer
+	element_ptr data_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
 	stride_type stride_ = {1};
 
 	constexpr auto distance_to(array_iterator const& other) const -> difference_type {
