@@ -33,6 +33,16 @@
 
 #include <boost/test/unit_test.hpp>
 
+// Suppress warnings from boost.test
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#  pragma warning(pop)
+#  pragma warning(disable : 4244)
+#endif
+
 namespace multi = boost::multi;
 
 // NOLINTBEGIN(fuchsia-default-arguments-calls)  // this is a defect in std::complex, not in the library
@@ -53,12 +63,12 @@ BOOST_AUTO_TEST_CASE(complex_conversion_float_to_double) {
 BOOST_AUTO_TEST_CASE(complex_conversion_double_to_float) {
 	std::complex<double> const zee{1.0, 2.0};
 
-	static_assert(multi::detail::is_explicitly_convertible_v<std::complex<double>, std::complex<float>>);
+	static_assert( multi::detail::is_explicitly_convertible_v<std::complex<double>, std::complex<float>>);
 	static_assert(!multi::detail::is_implicitly_convertible_v<std::complex<double>, std::complex<float>>);
 
 	std::complex<float> const cee{zee};
 
-	BOOST_TEST(cee.real() == zee.real());
+	BOOST_CHECK_CLOSE( cee.real(), static_cast<float>(zee.real()) , 1E-6);
 
 	multi::static_array<std::complex<double>, 1> const ZEE1(10, std::complex<float>{});
 	multi::static_array<std::complex<float>, 1> const  CEE1{ZEE1};
