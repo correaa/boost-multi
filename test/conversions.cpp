@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(complex_conversion_float_to_double) {
 	static_assert(multi::detail::is_explicitly_convertible_v<std::complex<float>, std::complex<double>>);
 	static_assert(multi::detail::is_implicitly_convertible_v<std::complex<float>, std::complex<double>>);
 
-	BOOST_TEST_CLOSE( cee.real(), static_cast<float>(zee.real()), 1E-6 );
+	BOOST_CHECK_CLOSE( cee.real(), static_cast<float>(zee.real()), 1E-6 );
 
 	multi::static_array<std::complex<float>, 1> const  CEE1(10, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
 	multi::static_array<std::complex<double>, 1> const ZEE1 = CEE1;
