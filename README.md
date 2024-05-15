@@ -27,7 +27,7 @@ This library shares some of their goals and is compatible with them, but it is o
 The code is entirely independent and has fundamental implementation and semantics differences.
 The library's primary concern is with the storage and logic structure of data; it doesn't make algebraic or geometric assumptions about the arrays and their elements.
 In this sense, it is instead a building block to implement algorithms to represent mathematical operations, specifically on numeric data. 
-Most of the examples use numeric elements for conciseness.
+Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or user-defined types.)
 
 ## Contents
 [[_TOC_]]
@@ -474,8 +474,6 @@ Subarrays or views cannot change their size or be emptied (e.g. `A[1].reextents(
 For the same reason, subarrays cannot be assigned from an array or another subarray of a different size.
 
 Changing the size of arrays by `reextents`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
-In contrast, `static_array<T, D>`, which can be used in many cases as a replacement of `array<T, D>`, doesn't have operations that invalidate iterators as it cannot be resized or assigned from arrays of different size.
-(Preventing iterator invalidation can be a helpful technique in multithreaded programs.)
 
 ## Iteration
 
@@ -1264,7 +1262,7 @@ The former typically works when using it as function argument.
 
 ## Comparison to other array libraries (mdspan, Boost.MultiArray, etc)
 
-The C++23 standard is projected to provide `std::mdspan`, a non-owning _multidimensional_ array.
+The C++23 standard provides `std::mdspan`, a non-owning _multidimensional_ array.
 So here is an appropriate point to compare the two libraries.
 Although the goals are similar, the two libraries differ in their generality and approach.
 
