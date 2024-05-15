@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 			auto operator+() const { return operator particle(); }
 
 			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
-			explicit reference(particle& other) : reference{other.mass, other.position} {}
+			// unused: explicit reference(particle& other) : reference{other.mass, other.position} {}
 
 		 private:  // NOLINT(whitespace/indent) nested class
 			friend class particles_soa;
