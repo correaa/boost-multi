@@ -14,14 +14,14 @@
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable : 4244)
@@ -85,8 +85,8 @@ BOOST_AUTO_TEST_CASE(double_to_complex_conversion_documentation) {
 	multi::array<double, 2>               DEE({10, 10}, dee);
 	multi::array<std::complex<double>, 2> ZEE = DEE;
 
-	BOOST_REQUIRE( ZEE[3][4].real() == 5.0 );
-	BOOST_REQUIRE( ZEE[3][4].imag() == 0.0 );
+	BOOST_REQUIRE_CLOSE( ZEE[3][4].real(), 5.0, 1E-6 );
+	BOOST_REQUIRE_CLOSE( ZEE[3][4].imag(), 0.0, 1E-6 );
 
 	multi::array<std::complex<double>, 2> ZEE2{DEE};
 
