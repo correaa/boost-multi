@@ -144,8 +144,8 @@ Other operations characteristic of their multidimensional structure.
 - `.operator()(ii, jj, kk)`, the arguments can be indices or ranges. This function allows positional-aware ranges. Each index argument lowers the rank by one. A special range is given by `multi::_` which means "the whole range".
 If `A` is 3D, `A(3, {2, 8}, {3, 5})` gives a reference to a 2D array where the first index is fixed at 3 and `6` by `2` subblock in the second and third dimension. Note that `A(3, {2, 8}, {3, 5})` is not equivalent to `A[3]({2, 8})({3, 5})`.
 - `.operator()()` gives the same array but always as a subarray (for consistency).
-- `.sizes()` gives a tuple with the sizes in all dimensions.
-- `.extensions()` gives a tuple of ranges with the extensions in each dimension.
+- `.sizes()` gives a tuple with the sizes in all dimensions. Tuple elements can be accessed via `get<N>` or by structured bindings (e.g. `auto [n, m] = A.sizes();`).
+- `.extensions()` gives a tuple of ranges with the extensions in each dimension. (e.g. `auto [is, js] = A.extensions();`, `is` and `ij` are now ranges, e.g. `for(auto i : is) for (auto j : js) ...` )
 - `.num_elements()` gives the number of total elements.
 
 None of this operations copies, modifies elements, or create new independet arrays (hence commonly called "view").
@@ -153,8 +153,16 @@ Copies only happen after assignment, from and to other arrays (or subarrays).
 
 - `.operator=(other)` (assignement as in `A = B` or `A({0, 3}, {0, 3}) = B`). assigment must preserve shape for `multi::array_ref` and for `multi::subarray`, while assignments are valid in general for `multi::array` as long as the dimensionality is the compatible, including changing shape.
 
+It is important to note that, in this library, assigment is always deep, reference-like types cannot be rebound after construction.
+Reference-like types have pointer-like types that provides an extra level of indirection and can be rebound (just like language pointers), these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray`.
+`.operator*` (as in `*A1_ptr`) generates the corresponding reference-like array, while
+`.operator&` (as in `A1_ptr = &A[1]`) does the inverse.
+Note that rebinding the possible for pointer-likes, e.g. `A1_ptr = &A[2]`).
+
+`multi::array`s have these mutating operations to change extensions:
+
 - `.clear()` clears the values and resets the size on array to zero (preserving rank).
-- `.reextents({e1, e2, ...})` changes the shape of the array, preserving elements when possible.
+- `.reextents({e1, e2, ...})` changes the extensions of the array, preserving elements when possible.
 - `.reextents({e1, e2, ...}, value)`, same, but new elements are initialized to `value`.
 
 ## Basic Usage
@@ -449,7 +457,7 @@ A.reextents({4, 4});
 assert( A[0][0] == 1.0 );
 ```
 
-Arrays can be emptied (zero-size) and memory is freed with `.clear()` (equivalent to `.reextents({0, ...})`).
+Arrays can be emptied (to zero-size) with `.clear()` (equivalent to `.reextents({0, 0, ...})`).
 
 The main purpose of `reextents` is element preservation.
 Allocations are not amortized; 
