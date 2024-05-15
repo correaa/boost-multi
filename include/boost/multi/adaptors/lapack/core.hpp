@@ -111,7 +111,7 @@ inline auto getrf(lapack_int m, lapack_int n, double* A, lapack_int lda, int* ip
 
 // TODO(correaa) make into a template, then remove inline
 inline void getrs(char trans, lapack_int const n, lapack_int const nrhs, double const* A, lapack_int const lda, int const* ipiv, double* B, lapack_int const ldb) {  // NOLINT(readability-identifier-length) lapack conventional name
-	assert( trans == 'T' or trans == 'N' or trans == 'C' );
+	assert( trans == 'T' || trans == 'N' || trans == 'C' );
 	assert( n >= 0 );
 	assert( nrhs >= 0 );
 	assert( lda >= std::max(1, n) );
