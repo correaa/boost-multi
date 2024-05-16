@@ -67,6 +67,8 @@ class allocator1 {
 	}
 	template<class U>
 	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ == other.heap_; }
+	template<class U>
+	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ != other.heap_; }
 };
 
 template<class T, class U>
@@ -104,8 +106,11 @@ class allocator2 {
 		--*heap_;
 		::operator delete(ptr);
 	}
+
 	template<class U>
 	friend auto operator==(allocator2 const& self, allocator2<U> const& other) noexcept { return self.heap_ == other.heap_; }
+	template<class U>
+	friend auto operator!=(allocator2 const& self, allocator2<U> const& other) noexcept { return self.heap_ != other.heap_; }
 };
 
 template<class T, class U>
