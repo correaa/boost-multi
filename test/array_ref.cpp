@@ -829,10 +829,10 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		auto& alias = marr;
 
 		marr = alias;
-		BOOST_REQUIRE(marr[5] = 99);
+		BOOST_REQUIRE(marr[5] == 99);
 
 		marr = alias();
-		BOOST_REQUIRE(marr[5] = 99);
+		BOOST_REQUIRE(marr[5] == 99);
 	// #endif
 	}
 	{
