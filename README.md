@@ -10,13 +10,21 @@ _© Alfredo A. Correa, 2018-2024_
 _Multi_ is a modern C++ library that provides access and manipulation of data in multidimensional arrays, for both CPU and GPU memory.
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
-This library offers array containers and views in arbitrary dimensions with well-behaved value semantics. It is totally compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
-It requires, at least, C++17.
+This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
+featuring logical access recursively across dimensions and to elements through indices and iterators.
+The data structure is stride-based, which makes it compatible with low-level C-libraries.
+
+It is totally compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
+
+The library's primary concern is with the storage and logic structure of data;
+it doesn't make algebraic or geometric assumptions about the arrays and their elements.
+In this sense, it is instead a building block to implement algorithms to represent mathematical operations, specifically on numeric data. 
+Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or, in general, user-defined value-types.)
 
 Some features of this library:
 
 * Value semantics of multidimensional array containers
-* Well-defined referential semantics of subarray (view) types
+* Well-defined referential semantics of subarray (also called "view") types
 * Interoperability with other libraries, STL, ranges, thrust (CUDA and AMD GPUs), Boost, and C-libraries
 * Fast access to elements and subarrays (views) types
 * Arbitrary pointer types (fancy pointers, memory spaces)
@@ -25,9 +33,8 @@ Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/li
 or with the standard MDSpan proposal `std::mdspan`.
 This library shares some of their goals and is compatible with them, but it is otherwise designed at a different level of generality.
 The code is entirely independent and has fundamental implementation and semantics differences.
-The library's primary concern is with the storage and logic structure of data; it doesn't make algebraic or geometric assumptions about the arrays and their elements.
-In this sense, it is instead a building block to implement algorithms to represent mathematical operations, specifically on numeric data. 
-Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or user-defined types.)
+
+It requires, at least, C++17.
 
 ## Contents
 [[_TOC_]]
