@@ -14,14 +14,14 @@
 #pragma clang diagnostic ignored "-Wundef"
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wsign-conversion"
-#pragma clang diagnostic ignored "-Wfloat-equal"
+// #pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wundef"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
+// #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -29,6 +29,12 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 BOOST_AUTO_TEST_CASE(range_accumulate) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -45,11 +51,7 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 		{2, 2, 4, 4},
 	};
 
-    boost::multi::array<int, 1, std::allocator<int> > aaa = {1, 2, 3};
-    std::ranges::equal_to{}( aaa, values[3] );
-    // boost::multi::subarray<int, 1, const int*, boost::multi::layout_t<1, long int> >&
-
-	// static_assert(std::invocable<std::ranges::equal_to&, boost::multi::array<int, 1>&, boost::multi::subarray<int, 1, int const*>&>);
+	boost::multi::array<int, 1, std::allocator<int>> aaa = {1, 2, 3};
 
 	constexpr auto rowOddSum = [](auto const& arr) {
 		return std::ranges::find_if(arr, [](auto const& row) { return (accumulate(row) & 1) == 1; });
