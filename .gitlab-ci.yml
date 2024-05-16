@@ -823,7 +823,7 @@ inq cuda:
     - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=75  # =80
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61  # =75  # =80
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
