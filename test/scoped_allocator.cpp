@@ -68,7 +68,7 @@ class allocator1 {
 	template<class U>
 	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ == other.heap_; }
 	template<class U>
-	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ != other.heap_; }
+	friend auto operator!=(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ != other.heap_; }
 };
 
 template<class T, class U>
