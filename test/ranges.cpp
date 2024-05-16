@@ -77,6 +77,25 @@ BOOST_AUTO_TEST_CASE(range_find) {
 		auto const needle = std::ranges::find_if(a, [](auto const& row) { return row[0] == 9; });
 		BOOST_REQUIRE(needle == a.end());
 	}
+
+	{
+		std::ranges::equal_to eto;
+
+		auto a1 = a[1];
+        auto a1_val = +a[1];
+
+		eto(a1_val, a1);
+		// std::ranges::equal_to&,boost::multi::array<int,1,std::allocator<int>>&,boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&
+	}
+
+	{
+		auto&&     a1     = a[1];
+		auto const needle = std::ranges::find(a, a1);
+		BOOST_REQUIRE(needle != a.end());
+		BOOST_REQUIRE( *needle == a1 );
+		BOOST_REQUIRE( *needle == a[1] );
+	}
+
 	{
 		auto const needle = std::ranges::find(a, a[1]);
 		BOOST_REQUIRE(needle != a.end());
