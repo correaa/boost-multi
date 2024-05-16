@@ -66,13 +66,16 @@ class allocator1 {
 		::operator delete(ptr);
 	}
 	template<class U>
-	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ == other.heap_; }
+	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept -> bool { return self.heap_ == other.heap_; }
 	template<class U>
-	friend auto operator!=(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ != other.heap_; }
+	friend auto operator!=(allocator1 const& self, allocator1<U> const& other) noexcept -> bool { return self.heap_ != other.heap_; }
 };
 
 template<class T, class U>
-auto operator!=(allocator1<T> const& self, allocator1<U> const& other) noexcept { return ! (self == other); }
+auto operator!=(allocator1<T> const& self, allocator1<U> const& other) noexcept -> bool { return ! (self == other); }
+
+template<class T, class U>
+auto operator==(allocator1<T> const& self, allocator1<U> const& other) noexcept -> bool { return   (self == other); }
 
 template<class T = void>
 class allocator2 {
@@ -108,14 +111,19 @@ class allocator2 {
 	}
 
 	template<class U>
-	friend auto operator==(allocator2 const& self, allocator2<U> const& other) noexcept { return self.heap_ == other.heap_; }
+	friend auto operator==(allocator2 const& self, allocator2<U> const& other) noexcept -> bool { return self.heap_ == other.heap_; }
 	template<class U>
-	friend auto operator!=(allocator2 const& self, allocator2<U> const& other) noexcept { return self.heap_ != other.heap_; }
+	friend auto operator!=(allocator2 const& self, allocator2<U> const& other) noexcept -> bool { return self.heap_ != other.heap_; }
 };
 
 template<class T, class U>
-auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept {
+auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept -> bool {
 	return ! (self == other);
+}
+
+template<class T, class U>
+auto operator==(allocator2<T> const& self, allocator2<U> const& other) noexcept -> bool {
+	return (self == other);
 }
 
 BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
