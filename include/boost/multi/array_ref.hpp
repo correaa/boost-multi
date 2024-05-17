@@ -916,7 +916,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_reference{at_aux(idx)}; }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_reference(at_aux(idx)); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference {return at_aux(idx) ; }
 	BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference {return at_aux(idx) ; }
 
