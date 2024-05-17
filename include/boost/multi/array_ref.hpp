@@ -290,7 +290,7 @@ public:
 
 	BOOST_MULTI_HD constexpr auto dereference() const -> Ref {return Ref{this->layout(), this->base_};}
 
-	BOOST_MULTI_HD constexpr auto  operator* () const -> Ref {return ref_;}
+	BOOST_MULTI_HD constexpr auto  operator* () const -> Ref {return Ref{ref_};}
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return std::addressof(ref_);}
 	// BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
@@ -809,11 +809,27 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		operator=(other); return *this;
 	}
 
+	// template<class ElementPtr2,
+	// 	std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
+	// >
+	operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
+		return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
+	}
+
+	// template<class ElementPtr2,
+	// 	std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
+	// >
+	// operator subarray<T, D, typename types::element_const_ptr, Layout> () & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
+	// 	return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
+	// }
+
  protected:
-	using types::types;
+	// using types::types;
+	subarray(std::nullptr_t nil) : types{nil} {}
 
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
 
+	// TODO(correaa) vvv consider making it explicit (seems that in C++23 it can prevent auto s = a[0];)
 	subarray(subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
 
 	template<class, class> friend struct subarray_ptr;
