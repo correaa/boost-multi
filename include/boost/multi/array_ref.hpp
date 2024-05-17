@@ -809,12 +809,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		operator=(other); return *this;
 	}
 
+#pragma diag_suppress = conversion_function_not_usable
 	// template<class ElementPtr2,
 	// 	std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
 	// >
 	operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
 		return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
 	}
+#pragma diag_default = conversion_function_not_usable
 
 	// template<class ElementPtr2,
 	// 	std::enable_if_t<std::is_same_v<ElementPtr2, typename subarray::element_const_ptr>, int> = 0
@@ -825,7 +827,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  protected:
 	// using types::types;
-	subarray(std::nullptr_t nil) : types{nil} {}
+	BOOST_MULTI_HD constexpr explicit subarray(std::nullptr_t nil) : types{nil} {}
 
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
 
@@ -916,7 +918,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_reference(at_aux(idx)); }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return static_cast<const_reference>(at_aux(idx)); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference {return at_aux(idx) ; }
 	BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference {return at_aux(idx) ; }
 
