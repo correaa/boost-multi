@@ -80,7 +80,10 @@ BOOST_AUTO_TEST_CASE(range_find) {
 
 	{
 		std::ranges::equal_to eto;
-
+        auto a2 = a();
+        static_cast<const boost::multi::subarray<int, 2, const int*, boost::multi::layout_t<2, boost::multi::size_type>>&>(a);
+        static_cast<const boost::multi::subarray<int, 2, const int*, boost::multi::layout_t<2, boost::multi::size_type>>&>(std::as_const(a));
+		
 		auto a1 = a[1];
         auto a1_val = +a[1];
 
