@@ -842,10 +842,10 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
-	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
-	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto       elements() const&                         {return const_elements_range(this->base(), this->layout());}
-	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
+	constexpr auto elements() & -> elements_range { return elements_aux(); }
+	constexpr auto elements() && -> elements_range { return elements_aux(); }
+	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }
+	constexpr auto const_elements() const -> const_elements_range { return elements_aux(); }
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
 		return {this->base(), std::abs(this->hull_size())};
