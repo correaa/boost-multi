@@ -1022,7 +1022,7 @@ struct array : static_array<T, D, Alloc> {
 	}
 
 	// vvv workaround for MSVC 14.3 and ranges, TODO(correaa) good solution would be to inherit from const_subarray
-	BOOST_MULTI_HD operator subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&() const {  // NOLINT(oogle-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD operator subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&() const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return reinterpret_cast<subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
