@@ -94,7 +94,8 @@ BOOST_AUTO_TEST_CASE(range_find) {
 		// static_assert( std::equality_comparable_with<boost::multi::array<int,1,std::allocator<int>>&,boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&> );
 
 
-		eto(a1_val, a1);
+		bool const res = eto(a1_val, a1);
+		BOOST_REQUIRE( res );
 		// std::ranges::equal_to&,boost::multi::array<int,1,std::allocator<int>>&,boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&
 	}
 
