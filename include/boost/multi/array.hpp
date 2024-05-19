@@ -1021,6 +1021,11 @@ struct array : static_array<T, D, Alloc> {
 		static_::serialize(arxiv, version);
 	}
 
+	// vvv workaround for MSVC 14.3 and ranges, TODO(correaa) good solution would be to inherit from const_subarray
+	BOOST_MULTI_HD operator subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&() const {  // NOLINT(oogle-explicit-constructor,hicpp-explicit-conversions)
+		return reinterpret_cast<subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	}
+
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17 ?
 	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
