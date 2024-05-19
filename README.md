@@ -1111,7 +1111,7 @@ Along with STL itself, the library tries to interact with other existing quality
 
 ### Ranges (C++20)
 
-[Standard ranges](https://en.cppreference.com/w/cpp/ranges) provides algorithms that omit the use of iterators when they are not necessary for the benefit of composition.
+[Standard ranges](https://en.cppreference.com/w/cpp/ranges) extends algorithms to reducing the need of iterators and in favor of more composability and a less error prone syntax.
 
 In this example, we replace the values of the the first row for which the sum of the elements is odd:
 
@@ -1132,7 +1132,7 @@ In this example, we replace the values of the the first row for which the sum of
 [(live)](https://godbolt.org/z/cT9WGffM3)
 
 Together with the array constructors, the ranges library enable a more functional programming style;
-this allows to work with immutable variables in many cases instead of mutable variables.
+this allows to work with immutable variables in many cases.
 
 ```cpp
     multi::array<double, 2> const A = {{...}};
@@ -1140,7 +1140,7 @@ this allows to work with immutable variables in many cases instead of mutable va
 
     multi::array<double, 1> const R = std::views::zip_transform(std::plus<>{}, A[0], V);
 
-	// multi::array<double, 1> R(V.size());  // in the alternative imperative code, R is created...
+	// multi::array<double, 1> R(V.size());  // in the alternative imperative mutating code, R is created...
     // for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...then mutated
 ```
 [(live)](https://godbolt.org/z/M84arKMnT)
