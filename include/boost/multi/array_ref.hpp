@@ -290,7 +290,7 @@ public:
 
 	BOOST_MULTI_HD constexpr auto dereference() const -> Ref {return Ref{this->layout(), this->base_};}
 
-	BOOST_MULTI_HD constexpr auto  operator* () const -> Ref {return ref_;}
+	BOOST_MULTI_HD constexpr auto  operator* () const -> Ref {return Ref{ref_};}
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return std::addressof(ref_);}
 	// BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
@@ -809,11 +809,29 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		operator=(other); return *this;
 	}
 
+#if defined(__NVCOMPILER)
+#pragma diagnostic push
+#pragma diag_suppress = conversion_function_not_usable
+#elif defined(__NVCC__)
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = conversion_function_not_usable
+#endif
+	BOOST_MULTI_HD constexpr operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
+		return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
+	}
+#ifdef __NVCOMPILER
+#pragma diagnostic pop
+#elif defined(__NVCC__)
+#pragma nv_diagnostic pop
+#endif
+
  protected:
-	using types::types;
+	// using types::types;
+	BOOST_MULTI_HD constexpr explicit subarray(std::nullptr_t nil) : types{nil} {}
 
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
 
+	// TODO(correaa) vvv consider making it explicit (seems that in C++23 it can prevent auto s = a[0];)
 	subarray(subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
 
 	template<class, class> friend struct subarray_ptr;
@@ -900,7 +918,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_reference{at_aux(idx)}; }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return static_cast<const_reference>(at_aux(idx)); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference {return at_aux(idx) ; }
 	BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference {return at_aux(idx) ; }
 
