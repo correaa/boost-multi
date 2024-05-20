@@ -44,4 +44,4 @@ target_include_directories(totalview.x SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(totalview.x PRIVATE ${Boost_LIBRARIES})
 target_link_directories(totalview.x PRIVATE ${Boost_LIBRARY_DIRS})
 
-add_test(NAME totalview.x COMMAND totalview.x)
+add_test(NAME totalview.x COMMAND $<TARGET_FILE:totalview.x>)
