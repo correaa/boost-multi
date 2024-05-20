@@ -25,10 +25,10 @@
 #include <new>         // for std::launder
 
 #if __has_include(<span>)
-#if !defined(_MSVC_LANG) || (_MSVC_LANG >= 202002L)
+#if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
 #include <span>
 #endif
-#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
+#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L && !defined(_MSVC_LANG)
 #define BOOST_MULTI_HAS_SPAN
 #endif
 #endif
@@ -290,7 +290,7 @@ public:
 
 	BOOST_MULTI_HD constexpr auto dereference() const -> Ref {return Ref{this->layout(), this->base_};}
 
-	BOOST_MULTI_HD constexpr auto  operator* () const -> Ref {return ref_;}
+	BOOST_MULTI_HD constexpr auto  operator* () const -> Ref {return Ref{ref_};}
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return std::addressof(ref_);}
 	// BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
@@ -328,7 +328,7 @@ public:
 
 	BOOST_MULTI_HD constexpr void advance(difference_type n) {ref_.base_ += ref_.nelems()*n;}
 	BOOST_MULTI_HD constexpr auto distance_to(subarray_ptr const& other) const -> difference_type {
-		assert( Ref::nelems() == other.Ref::nelems() and Ref::nelems() != 0 );
+		assert( Ref::nelems() == other.Ref::nelems() && Ref::nelems() != 0 );
 		assert( (other.base() - base())%Ref::nelems() == 0);
 		assert( ref_.layout() == other.ref_.layout() );
 		return (other.base() - base())/Ref::nelems();
@@ -456,8 +456,19 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
 	friend constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
 
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto operator++() -> array_iterator& {ptr_->base_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {decrement(); return *this;}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type {
 		assert(self.stride_ == other.stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
@@ -574,6 +585,14 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 
 	elements_iterator_t(elements_iterator_t const&) = default;
 
+	BOOST_MULTI_HD constexpr auto operator=(elements_iterator_t const& other) -> elements_iterator_t& {  // fixes (?) warning: definition of implicit copy assignment operator for 'elements_iterator_t<boost::multi::array<double, 3> *, boost::multi::layout_t<1>>' is deprecated because it has a user-declared copy constructor [-Wdeprecated-copy]
+		if(&other == this) {return *this;}  // for cert-oop54-cpp
+		base_ = other.base_;
+		xs_ = other.xs_;
+		n_ = other.n_;
+		return *this;
+	}
+
 	BOOST_MULTI_HD constexpr auto operator++() -> elements_iterator_t& {
 		std::apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
 		++n_;
@@ -598,24 +617,36 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return *this;
 	}
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	BOOST_MULTI_HD /*[[gnu::pure]]*/ constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
-		assert(base_ == other.base_ and l_ == other.l_);
+		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
 	}
 	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
-		assert(base_ == other.base_ and l_ == other.l_);
+		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
 	}
-	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret += n; return ret;}  // explicitly necessary for nvcc/thrust
-	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret -= n; return ret;}  // explicitly necessary for nvcc/thrust
 
 	constexpr auto current() const -> pointer {return base_ + std::apply(l_, ns_);}
+
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
 	BOOST_MULTI_HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
 		auto const nn = std::apply(xs_, ns_);
 		return base_[std::apply(l_, xs_.from_linear(nn + n))];
 	}  // explicit here is necessary for nvcc/thrust
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
+	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret += n; return ret;}  // explicitly necessary for nvcc/thrust
+	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {auto ret{*this}; ret -= n; return ret;}  // explicitly necessary for nvcc/thrust
 
 	BOOST_MULTI_HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
 		assert(base_ == other.base_ && l_ == other.l_);  // TODO(correaa) calling host function from host device
@@ -659,7 +690,7 @@ struct elements_range_t {
 
  private:
 	constexpr auto at_aux(difference_type n) const -> reference {
-		assert( not is_empty() );
+		assert( ! is_empty() );
 		return base_[std::apply(l_, l_.extensions().from_linear(n))];
 	}
 
@@ -749,6 +780,8 @@ BOOST_MULTI_HD constexpr auto ref(It begin, It end)
 	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
 
+template<typename, ::boost::multi::dimensionality_type, class Alloc> struct static_array;  // this might be needed by MSVC 14.3 in c++17 mode
+
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
 struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
@@ -776,10 +809,29 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		operator=(other); return *this;
 	}
 
- protected:
-	using types::types;
+#if defined(__NVCOMPILER)
+#pragma diagnostic push
+#pragma diag_suppress = conversion_function_not_usable
+#elif defined(__NVCC__)
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = conversion_function_not_usable
+#endif
+	BOOST_MULTI_HD constexpr operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
+		return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
+	}
+#ifdef __NVCOMPILER
+#pragma diagnostic pop
+#elif defined(__NVCC__)
+#pragma nv_diagnostic pop
+#endif
 
-	template<typename, dimensionality_type, class Alloc> friend struct static_array;
+ protected:
+	// using types::types;
+	BOOST_MULTI_HD constexpr explicit subarray(std::nullptr_t nil) : types{nil} {}
+
+	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
+
+	// TODO(correaa) vvv consider making it explicit (seems that in C++23 it can prevent auto s = a[0];)
 	subarray(subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
 
 	template<class, class> friend struct subarray_ptr;
@@ -808,10 +860,10 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	subarray(subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
-	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
-	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto       elements() const&                         {return const_elements_range(this->base(), this->layout());}
-	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
+	constexpr auto elements() & -> elements_range { return elements_aux(); }
+	constexpr auto elements() && -> elements_range { return elements_aux(); }
+	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }
+	constexpr auto const_elements() const -> const_elements_range { return elements_aux(); }
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
 		return {this->base(), std::abs(this->hull_size())};
@@ -851,14 +903,22 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 	BOOST_MULTI_HD constexpr auto at_aux(index idx) const {
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+		#endif
 		return reference {
 			this->layout().sub(),
 			this->base_ + (idx*this->layout().stride() - this->layout().offset())
 		};  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_reference{at_aux(idx)}; }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return static_cast<const_reference>(at_aux(idx)); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference {return at_aux(idx) ; }
 	BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference {return at_aux(idx) ; }
 
@@ -950,8 +1010,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux(index first, index last) const {
 		// TODO(correaa) remove first == last condition
-		BOOST_MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		BOOST_MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ACCESS_ASSERT(this->base_ || ((first*this->layout().stride() - this->layout().offset()) == 0) );  // it is UB to offset a nullptr
@@ -1618,10 +1678,10 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 		assert( count > 0 );
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return {
-			layout_t<D + 1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
+		return subarray<std::decay_t<T2>, D + 1, P2>(
+			layout_t<D + 1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
 			reinterpret_pointer_cast<P2>(this->base())  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
-		};
+		);
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2> >
@@ -1633,10 +1693,10 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-		return {
-			layout_t<D+1>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),
+		return subarray<std::decay_t<T2>, D + 1, P2>(
+			layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
 			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-		};
+		);
 	}
 
 	template<class Archive>
@@ -1669,7 +1729,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	using affine = multi::affine<array_iterator<Element, 1, Ptr>, multi::difference_type>;
 	using difference_type = typename affine::difference_type;
 
-	array_iterator() = default;
+	array_iterator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 	using layout_type = multi::layout_t<0>;
 
 	template<
@@ -1725,11 +1785,11 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
  private:
 	friend struct subarray<Element, 1, Ptr>;
 
-	element_ptr data_{nullptr};  // TODO(correaa) : consider uninitialized pointer
+	element_ptr data_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
 	stride_type stride_ = {1};
 
 	constexpr auto distance_to(array_iterator const& other) const -> difference_type {
-		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert(stride_==other.stride_ && (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return (other.data_ - data_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
 	}
 
@@ -1748,17 +1808,27 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	       BOOST_MULTI_HD constexpr auto stride()              const        -> stride_type {return      stride_;}
 	friend    constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto operator++() -> array_iterator& {data_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {data_ -= stride_; return *this;}
+
+	constexpr auto operator+=(difference_type n) -> array_iterator& {data_ += stride_*n; return *this;}
+	constexpr auto operator-=(difference_type n) -> array_iterator& {data_ -= stride_*n; return *this;}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
+	constexpr auto operator-(array_iterator const& other) const -> difference_type {return -distance_to(other);}
 
 	friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.data_ == other.data_;}
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference { return *data_; } // NOLINT(readability-const-return-type)
-
-	constexpr auto operator-(array_iterator const& other) const -> difference_type {return -distance_to(other);}
-
-	constexpr auto operator+=(difference_type n) -> array_iterator& {data_ += stride_*n; return *this;}
-	constexpr auto operator-=(difference_type n) -> array_iterator& {data_ -= stride_*n; return *this;}
 };
 
 template<class Element, dimensionality_type D, typename... Ts>
@@ -1803,7 +1873,9 @@ struct subarray<T, 0, ElementPtr, Layout>
 	constexpr auto elements_at(size_type idx [[maybe_unused]])      & -> element_ref  {assert(idx < this->num_elements()); return *(this->base_);}
 
 	constexpr auto operator!=(subarray const& other) const {return ! adl_equal(other.base_, other.base_ + 1, this->base_);}
-	constexpr auto operator==(subarray const& other) const {return     adl_equal(other.base_, other.base_ + 1, this->base_);}
+	constexpr auto operator==(subarray const& other) const {return   adl_equal(other.base_, other.base_ + 1, this->base_);}
+
+	constexpr auto operator<(subarray const& other) const {return adl_lexicographical_compare(this->base_, this->base_ + this->num_elements(), other.base_);}
 
 	using decay_type = typename types::element;
 
@@ -1889,7 +1961,7 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	subarray(subarray const&) = default;
 
 	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct subarray;
-	template<typename, ::boost::multi::dimensionality_type, class Alloc>                friend struct static_array;
+	template<typename, ::boost::multi::dimensionality_type, class Alloc>                friend struct static_array;  // TODO(correaa) check if this is necessary
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
@@ -1978,11 +2050,19 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
  private:
 	BOOST_MULTI_HD constexpr auto at_aux(index idx) const -> typename subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+		#endif
 		auto ba = this->base_;  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto of = (idx*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 		return *pt;  // in C++17 this is allowed even with syntethic references
 	//  return *(this->base() + (idx*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
  public:
@@ -2359,6 +2439,10 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	friend constexpr auto operator<(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(self, other); }
 	friend constexpr auto operator>(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(other, self); }  // NOLINT(readability-suspicious-call-argument)
 
+// #ifdef _MSC_VER
+//  constexpr auto operator>(subarray const& other) const {return operator>(*this, other);}  // TODO(correaa) needed by MSVC 14.3 c++17 ?
+// #endif
+
 	friend constexpr auto operator<=(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(self, other) || self == other; }
 	friend constexpr auto operator>=(subarray const& self, subarray const& other) -> bool { return lexicographical_compare(other, self) || self == other; }  // NOLINT(readability-suspicious-call-argument)
 
@@ -2374,8 +2458,8 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
  private:
 	template<class A1, class A2>
 	static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {  // NOLINT(readability-suspicious-call-argument)
-		if(extension(self).first() > extension(other).first()) {return true ;}
-		if(extension(self).first() < extension(other).first()) {return false;}
+		if(self.extension().first() > other.extension().first()) {return true ;}
+		if(self.extension().first() < other.extension().first()) {return false;}
 		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
 	}
 
@@ -2489,10 +2573,10 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		// static_assert( sizeof(T)%sizeof(T2)== 0,
 		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
-		return subarray<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n},
+		return subarray<std::decay_t<T2>, 2, P2>(
+			layout_t<2>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n),
 			reinterpret_pointer_cast<P2>(this->base())
-		}.rotated();
+		).rotated();
 	}
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type n)&& -> subarray<std::decay_t<T2>, 2, P2> {
@@ -2570,14 +2654,18 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
 
-	constexpr explicit array_ref(typename array_ref::element_ptr dat, typename array_ref::extensions_type extensions) noexcept  // TODO(correa) eliminate this ctor
-	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
+	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) /*noexcept*/  // TODO(correa) eliminate this ctor
+	: subarray<T, D, ElementPtr>{typename subarray<T, D, ElementPtr>::types::layout_t(xs), dat} {}
 
-	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
-	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
+	// constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
+	// : subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
+
+	constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
+	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t(exts), dat} {}
 
 	template<
 		class Array,
+		std::enable_if_t<! std::is_array_v<Array> > =0,
 		std::enable_if_t<! std::is_base_of_v<array_ref, std::decay_t<Array>>, int> =0,
 		std::enable_if_t<std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
 	>
@@ -2596,6 +2684,21 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		T& elem // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	)
 	: array_ref(&elem, {}) {}
+
+	template<class TT, std::size_t N>
+	constexpr array_ref(TT (&arr)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-explicit-constructor,hicpp-explicit-conversions) : for backward compatibility // NOSONAR
+	: array_ref(
+		::boost::multi::extensions(arr),
+		::boost::multi::data_elements(arr)
+	)
+	{}
+
+	template<
+		class TT, std::size_t N//,
+		//std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), ElementPtr>, int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
+	>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
+	constexpr array_ref(std::array<TT, N>& arr) : array_ref(::boost::multi::extensions(arr), ::boost::multi::data_elements(arr)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  // NOSONAR
 
 //  this ctor makes memcheck complain about memmory used after scope
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>
@@ -2690,10 +2793,22 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	template<typename TT, class... As>
 	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) { return false; }
+
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+		#endif
+
 		return adl_equal(
 			other.data_elements(), other.data_elements() + other.num_elements(),
 			self .data_elements()
 		);
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
+
 	}
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
@@ -2840,7 +2955,7 @@ struct array_ptr
 	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  // NOSONAR
 
 	constexpr auto operator*() const {
-		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};
+		return array_ref<T, D, Ptr>((*this)->extensions(), this->base());
 	}
 };
 
@@ -2852,8 +2967,8 @@ class array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
 	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : ref_(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
 
-	constexpr explicit operator bool() const {return this->base();}
-	constexpr explicit operator Ptr () const {return this->base();}
+	constexpr explicit operator bool() const {return ref_.base();}
+	constexpr explicit operator Ptr () const {return ref_.base();}
 
 	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() == other.ref_.base();}
 	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() != other.ref_.base();}

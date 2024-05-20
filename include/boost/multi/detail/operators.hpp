@@ -57,12 +57,12 @@ template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
 
 template<class T>
 struct totally_ordered2<T, void> {
-	template<class U>
-	friend constexpr auto operator<=(T const& self, U const& other) { return (self < other) || (self == other); }
-	template<class U>
-	friend constexpr auto operator>=(T const& self, U const& other) { return (other < self) || (self == other); }
-	template<class U>
-	friend constexpr auto operator>(T const& self, U const& other) { return other < self; }
+	// template<class U>
+	// friend constexpr auto operator<=(T const& self, U const& other) { return (self < other) || (self == other); }
+	//template<class U>
+	//friend constexpr auto operator>=(T const& self, U const& other) { return (other < self) || (self == other); }
+	// template<class U>
+	// friend constexpr auto operator>(T const& self, U const& other) { return other < self; }
 };
 
 template<class T>

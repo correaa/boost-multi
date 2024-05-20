@@ -856,7 +856,7 @@ else()
 		add_executable(main main.cpp)
 
 		# target_link_libraries(main PRIVATE multi)
-		target_compile_features   (main INTERFACE cxx_std_17)
+		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
 		target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi main")
 
@@ -868,7 +868,7 @@ else()
 			target_compile_definitions(main PRIVATE "BOOST_TEST_DYN_LINK=1")
 			target_compile_options    (main PRIVATE -Werror -Wall)
 		endif()
-		add_test(NAME main COMMAND ./main)
+		add_test(NAME main COMMAND $<TARGET_FILE:main>)
 
 	else()
 
@@ -902,7 +902,7 @@ else()
 				target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
 				target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
 			endif()
-			add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
 
 	endif()

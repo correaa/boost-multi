@@ -77,13 +77,15 @@ jobs:
             os: ubuntu-22.04
             install:
               - g++-12-multilib
-          - toolset: gcc-13
-            cxxstd: "03,11,14,17,20,23"
-            address_model: 32,64
-            os: ubuntu-22.04
-            install:
-              - g++-13-multilib
-            cxxflags: -Wno-dangling-reference # Boost test hits error
+          # Gitub deleted support from 22.04 and 24.04 has internal warnings about futex
+          # Disable until the runner is out of beta
+          #- toolset: gcc-13
+          #  cxxstd: "03,11,14,17,20,23"
+          #  address_model: 32,64
+          #  os: ubuntu-24.04
+          #  install:
+          #    - g++-13-multilib
+          #  cxxflags: -Wno-dangling-reference # Boost test hits error
           - toolset: gcc-12
             cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
             address_model: "32"
@@ -459,12 +461,12 @@ jobs:
           - toolset: msvc-14.2
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
-            cxxflags: "/permissive-"
+            # cxxflags: "/permissive-"
             os: windows-2019
           - toolset: msvc-14.3
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
-            cxxflags: "/permissive-"
+            # cxxflags: "/permissive-"
             os: windows-2022
           - toolset: gcc
             cxxstd: "03,11,14,17,2a"
@@ -549,4 +551,4 @@ jobs:
         shell: cmd
         run: |
           cd ../boost-root
-          b2 -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release link=static,shared embed-manifest-via=linker define=_CRT_SECURE_NO_WARNINGS cxxflags="-Wno-reserved-macro-identifier -Wno-microsoft-cpp-macro -Wno-documentation -Wno-inconsistent-missing-destructor-override -Wno-global-constructors -Wno-zero-as-null-pointer-constant"
+          b2 -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release link=static,shared embed-manifest-via=linker define=_CRT_SECURE_NO_WARNINGS cxxflags="-Wno-reserved-macro-identifier -Wno-microsoft-cpp-macro -Wno-documentation -Wno-inconsistent-missing-destructor-override -Wno-global-constructors -Wno-zero-as-null-pointer-constant -Wno-suggest-destructor-override -Wno-redundant-parens -Wno-disabled-macro-expansion -Wno-missing-prototypes -Wno-used-but-marked-unused -Wno-reserved-identifier -Wno-unsafe-buffer-usage -Wno-exit-time-destructors"

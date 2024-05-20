@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 			auto operator+() const { return operator particle(); }
 
 			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
-			explicit reference(particle& other) : reference{other.mass, other.position} {}
+			// unused: explicit reference(particle& other) : reference{other.mass, other.position} {}
 
 		 private:  // NOLINT(whitespace/indent) nested class
 			friend class particles_soa;
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	SoA(1, 1) = SoA(0, 0);
 	BOOST_REQUIRE(SoA(1, 1).mass == SoA(0, 0).mass);
 	BOOST_REQUIRE(SoA(1, 1) == SoA(0, 0));
-	BOOST_REQUIRE(not(SoA(1, 1) != SoA(0, 0)));
+	BOOST_REQUIRE( ! (SoA(1, 1) != SoA(0, 0)));
 }
 
 struct employee_dummy {
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 }
 #endif
 
-#if not defined(__circle_build__)
+#if ! defined(__circle_build__)
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	struct record {
 		int    id;

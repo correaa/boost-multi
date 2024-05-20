@@ -197,7 +197,8 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
-    - CXXFLAGS="-fexcess-precision=standard" cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=23
+    - c++ --version  # CXXFLAGS="-fexcess-precision=standard" 
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++-testing c++20"]
@@ -254,19 +255,19 @@ clang++-latest libc++:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-build_windows:
-  stage: build
-  allow_failure: true
-  script:
-    - '& "$msbuild" -help'
-    - '& "$msbuild" -version'
-    - choco install -y cmake
-    - $env:Path += ';C:\Program Files\CMake\bin'
-    - cmake --version
-  tags:
-    - shared-windows
-    - windows
-    - windows-1809
+# build_windows:
+#   stage: build
+#   allow_failure: true
+#   script:
+#     - '& "$msbuild" -help'
+#     - '& "$msbuild" -version'
+#     - choco install -y cmake
+#     - $env:Path += ';C:\Program Files\CMake\bin'
+#     - cmake --version
+#   tags:
+#     - shared-windows
+#     - windows
+#     - windows-1809
 
 # clang++-macos:
 #   stage: build
@@ -677,18 +678,27 @@ rocm:
 #     - ctest --output-on-failure
 #   needs: ["clang++-testing c++20"]
 
-zig-fedora-rawhide:
-  stage: build
-  allow_failure: true
-  image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
-  script:
-    - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel boost-devel g++ cmake fftw-devel make pkg-config zig
-    - mkdir build && cd build
-    - c++ --version
-    - zig c++ --version
-    - CXX="zig c++" CXXFLAGS="-lstdc++" cmake .. -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --output-on-failure
+# zig-fedora-rawhide:
+#   stage: build
+#   allow_failure: true
+#   image: fedora:rawhide  # clang 17.0.6 as of Dec 2023
+#   tags:
+#     - non-shared
+#     - high-bandwidth
+#   script:
+#     - dnf install --setopt=install_weak_deps=False -y ca-certificates blas-devel g++ clang libcxx-devel cmake fftw-devel make pkg-config zig wget tar which
+#     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
+#     - tar -xf boost_1_84_0.tar.gz 
+#     - cd boost_1_84_0
+#     - ./bootstrap.sh --with-toolset=clang
+#     - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+#     - cd ..
+#     - mkdir build && cd build
+#     - c++ --version
+#     - zig c++ --version
+#     - CXX="zig c++" cmake .. -DCMAKE_BUILD_TYPE=Debug
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest --output-on-failure
 #  needs: ["clang++-testing c++20"]
 
 # zig-latest:
@@ -814,7 +824,7 @@ inq cuda:
     - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=75  # =80
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61  # =75  # =80
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1

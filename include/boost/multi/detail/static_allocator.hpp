@@ -5,8 +5,8 @@
 #ifndef BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 #define BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 
-#include <boost/multi/config/NODISCARD.hpp>
-#include <boost/multi/config/NO_UNIQUE_ADDRESS.hpp>
+#include <boost/multi/detail/config/NODISCARD.hpp>
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <array>
 #include <cassert>
@@ -83,7 +83,7 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
 	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
 		assert(n <= N);
-		assert(not dirty_);  // do not attempt to resize a vector with static_allocator
+		assert(! dirty_);  // do not attempt to resize a vector with static_allocator
 		dirty_ = true;
 		return reinterpret_cast<pointer>(buffer_.data());  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}

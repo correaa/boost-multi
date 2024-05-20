@@ -66,11 +66,16 @@ class allocator1 {
 		::operator delete(ptr);
 	}
 	template<class U>
-	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept { return self.heap_ == other.heap_; }
+	friend auto operator==(allocator1 const& self, allocator1<U> const& other) noexcept -> bool { return self.heap_ == other.heap_; }
+	template<class U>
+	friend auto operator!=(allocator1 const& self, allocator1<U> const& other) noexcept -> bool { return self.heap_ != other.heap_; }
 };
 
 template<class T, class U>
-auto operator!=(allocator1<T> const& self, allocator1<U> const& other) noexcept { return ! (self == other); }
+auto operator!=(allocator1<T> const& self, allocator1<U> const& other) noexcept -> bool { return ! (self == other); }
+
+template<class T, class U>
+auto operator==(allocator1<T> const& self, allocator1<U> const& other) noexcept -> bool { return   (self == other); }
 
 template<class T = void>
 class allocator2 {
@@ -104,13 +109,21 @@ class allocator2 {
 		--*heap_;
 		::operator delete(ptr);
 	}
+
 	template<class U>
-	friend auto operator==(allocator2 const& self, allocator2<U> const& other) noexcept { return self.heap_ == other.heap_; }
+	friend auto operator==(allocator2 const& self, allocator2<U> const& other) noexcept -> bool { return self.heap_ == other.heap_; }
+	template<class U>
+	friend auto operator!=(allocator2 const& self, allocator2<U> const& other) noexcept -> bool { return self.heap_ != other.heap_; }
 };
 
 template<class T, class U>
-auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept {
+auto operator!=(allocator2<T> const& self, allocator2<U> const& other) noexcept -> bool {
 	return ! (self == other);
+}
+
+template<class T, class U>
+auto operator==(allocator2<T> const& self, allocator2<U> const& other) noexcept -> bool {
+	return (self == other);
 }
 
 BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
@@ -159,7 +172,13 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
 	using OuterCont = multi::array<InnerCont, 2, std::scoped_allocator_adaptor<allocator1<InnerCont>, allocator2<int>>>;
 
 	{
-		OuterCont cont({3, 4}, {&heap1,  allocator2<int>{&heap2}});  // without allocator2<>{...} gives ambiguous construction in libc++
+		OuterCont cont(
+		#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+			multi::extensions_t<2>
+		#endif
+			{3, 4},
+			{&heap1, allocator2<int>{&heap2}}  // without allocator2<>{...} gives ambiguous construction in libc++
+		);
 
 		cont[1][2].resize(10);
 		cont[1][2].resize(100);

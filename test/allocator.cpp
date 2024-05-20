@@ -4,7 +4,6 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/pmr.hpp>
 
 #include <boost/multi/detail/static_allocator.hpp>
 
@@ -44,7 +43,9 @@ BOOST_AUTO_TEST_CASE(empty_stride) {
 	multi::array<double, 2> ma0({0, 0}, 0.0);
 	BOOST_REQUIRE(ma0.size() == 0);
 	BOOST_REQUIRE(ma0.stride() != 0);
+#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	BOOST_REQUIRE(size(ma0) == 0);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
@@ -55,18 +56,32 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 		[](auto idx){return multi::array<double, 2>({idx, idx}, static_cast<double>(idx));}
 	);
 
+#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	BOOST_REQUIRE( size(va[0]) == 0 );
 	BOOST_REQUIRE( size(va[1]) == 1 );
 	BOOST_REQUIRE( size(va[2]) == 2 );
+#endif
+
 	BOOST_REQUIRE( va[1] [0][0] == 1 );
 	BOOST_REQUIRE( va[2] [0][0] == 2 );
 
+#ifndef _MSC_VER   // doesn't work with msvc 14.3 c++17 permissive mode
 	std::vector<multi::array<double, 2>> const wa = {  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<double, 2>({0, 0}, 0.0),
 		multi::array<double, 2>({1, 1}, 1.0),
 		multi::array<double, 2>({2, 2}, 2.0),
 	};
+#else
+	std::vector<multi::array<double, 2>> const wa = {  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
+		multi::array<double, 2>(multi::extensions_t<2>(0, 0), 0.0),
+		multi::array<double, 2>(multi::extensions_t<2>(1, 1), 1.0),
+		multi::array<double, 2>(multi::extensions_t<2>(2, 2), 2.0),
+	};
+#endif
+
+#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	BOOST_REQUIRE( size(va) == size(wa) );
+#endif
 	BOOST_REQUIRE( va == wa );
 
 	std::vector<multi::array<double, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
@@ -160,8 +175,13 @@ BOOST_AUTO_TEST_CASE(pmr2) {
 	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
+#ifndef _MSC_VER
 	multi::pmr::array<char, 2> Aarr({2, 2}, 'a', &pool);
 	multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
+#else
+	multi::pmr::array<char, 2> Aarr(multi::extensions_t<2>{2, 2}, 'a', &pool);
+	multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
+#endif
 
 #if defined(__GLIBCXX__)
 	BOOST_REQUIRE(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
@@ -305,6 +325,7 @@ template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL*4UL>
 using small_array = multi::static_array<T, D, multi::detail::static_allocator<T, Capacity>>;
 // https://godbolt.org/z/d8ozWahna
 
+#if !defined(_MSC_VER) || (_MSC_VER > 193030706)  // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
 BOOST_AUTO_TEST_CASE(small_array_int) {
 	small_array<int, 2, 4UL*4UL> vv({4, 4}, 42);
 
@@ -337,8 +358,11 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 	small_array<int, 2, 4UL*4UL> yy({4, 4});
 	yy = vv;
 	BOOST_REQUIRE( yy == vv );
+
+// #ifndef _MSC_VER  // TODO(correaa) does not compile in MSVC 1.43 in c++17 mode
 	yy = std::move(vv);
 	BOOST_REQUIRE( vv.size() == 4 );  // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move,hicpp-invalid-access-moved)
+// #endif
 
 	{
 		std::vector< small_array<int, 2, 4UL*4UL> > VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
@@ -351,6 +375,7 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 		BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(props_of_static_allocator) {
 	{

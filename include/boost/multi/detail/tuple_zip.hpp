@@ -287,6 +287,16 @@ struct std::tuple_size<boost::multi::detail::tuple<Ts...>> {  // NOLINT(cert-dcl
 	static constexpr std::size_t value = sizeof...(Ts);
 };
 
+template<>
+struct std::tuple_element<0, boost::multi::detail::tuple<>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+	using type = void;
+};
+
+template<class T0>
+struct std::tuple_element<0, boost::multi::detail::tuple<T0>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+	using type = T0;
+};
+
 template<class T0, class... Ts>
 struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
 	using type = T0;
@@ -392,6 +402,20 @@ constexpr auto tuple_zip_impl(Tuple1&& tup1, Tuple2&& tup2, Tuple3&& tup3, Tuple
 	);
 }
 
+template<class Tuple1, class Tuple2, class Tuple3, class Tuple4, class Tuple5, std::size_t... Is>
+constexpr auto tuple_zip_impl(Tuple1&& tup1, Tuple2&& tup2, Tuple3&& tup3, Tuple4&& tup4, Tuple5&& tup5, std::index_sequence<Is...> /*012*/) {
+	using boost::multi::detail::get;
+	return boost::multi::detail::mk_tuple(
+		boost::multi::detail::mk_tuple(
+			get<Is>(std::forward<Tuple1>(tup1)),
+			get<Is>(std::forward<Tuple2>(tup2)),
+			get<Is>(std::forward<Tuple3>(tup3)),
+			get<Is>(std::forward<Tuple4>(tup4)),
+			get<Is>(std::forward<Tuple4>(tup5))
+		)...
+	);
+}
+
 template<class T1, class T2>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2) {
 	return detail::tuple_zip_impl(
@@ -412,6 +436,14 @@ template<class T1, class T2, class T3, class T4>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3), std::forward<T4>(tup4),
+		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
+	);
+}
+
+template<class T1, class T2, class T3, class T4, class T5>
+constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4, T5&& tup5) {
+	return detail::tuple_zip_impl(
+		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3), std::forward<T4>(tup4), std::forward<T5>(tup5),
 		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
 	);
 }
