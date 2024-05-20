@@ -1112,45 +1112,48 @@ Along with STL itself, the library tries to interact with other existing quality
 
 ### Ranges (C++20)
 
-[Standard ranges](https://en.cppreference.com/w/cpp/ranges) extends algorithms to reducing the need of iterators and in favor of more composability and a less error prone syntax.
+[Standard ranges](https://en.cppreference.com/w/cpp/ranges) extend standard algorithms, reducing the need for iterators, in favor of more composability and a less error-prone syntax.
 
-In this example, we replace the values of the the first row for which the sum of the elements is odd:
+In this example, we replace the values of the first row for which the sum of the elements is odd:
 
 ```cpp
-    static constexpr auto accumulate = [](auto const& R) {return std::ranges::fold_left(R, 0, std::plus<>{});};
+	static constexpr auto accumulate = [](auto const& R) {return std::ranges::fold_left(R, 0, std::plus<>{});};
 
 	auto arr = multi::array<int, 2>{
-        {2, 0, 2, 2},
-        {2, 7, 0, 2},  // this row adds to an odd number
-        {2, 2, 0, 4},
-    };
+		{2, 0, 2, 2},
+		{2, 7, 0, 2},  // this row adds to an odd number
+		{2, 2, 0, 4},
+	};
 
-    auto const row = std::ranges::find_if(arr, [](auto const& r) {return accumulate(r) %2 == 1;});
-    if(row != arr.end()) std::ranges::fill(*row, 9);
+	auto const row = std::ranges::find_if(arr, [](auto const& r) { return accumulate(r) %2 == 1; });
+	if(row != arr.end()) std::ranges::fill(*row, 9);
 
 	assert(arr[1][0] == 9 );
 ```
 [(live)](https://godbolt.org/z/cT9WGffM3)
 
-Together with the array constructors, the ranges library enable a more functional programming style;
-this allows to work with immutable variables in many cases.
+Together with the array constructors, the ranges library enables a more functional programming style;
+this allows us to work with immutable variables in many cases.
 
 ```cpp
-    multi::array<double, 2> const A = {{...}};
-    multi::array<double, 1> const V = {...};
+	multi::array<double, 2> const A = {{...}};
+	multi::array<double, 1> const V = {...};
 
-    multi::array<double, 1> const R = std::views::zip_transform(std::plus<>{}, A[0], V);
+	multi::array<double, 1> const R = std::views::zip_transform(std::plus<>{}, A[0], V);
 
-	// multi::array<double, 1> R(V.size());  // in the alternative imperative mutating code, R is created...
-    // for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...then mutated
+	// Alternative imperative mutating code:
+	// multi::array<double, 1> R(V.size());  // R is created here...
+	// for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...and then mutated here
 ```
 [(live)](https://godbolt.org/z/M84arKMnT)
 
 
-The "pipe" (`|`) notation of standard ranges allow one-line expressions.
-In this example, the expression will yield the maximum value of the rows sums: [`std::ranges::max(arr | std::views::transform(accumulate))`](https://godbolt.org/z/hvqnsf4xb)
+The "pipe" (`|`) notation of standard ranges allows one-line expressions.
+In this example, the expression will yield the maximum value of the rows sums:
+[`std::ranges::max(arr | std::views::transform(accumulate))`](https://godbolt.org/z/hvqnsf4xb)
 
-Like in classic STL, standard range algorithms acting on sequences operate in the first dimension by default, for example lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
+Like in classic STL, standard range algorithms acting on sequences operate in the first dimension by default,
+for example, lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
 
 ```cpp
 	auto A = multi::array<char, 2>{
@@ -1173,11 +1176,11 @@ Like in classic STL, standard range algorithms acting on sequences operate in th
 	);
 ```
 
-To operate on the second dimension (sort by columns), use `std::ranges::sort(~A)` (or ``std::ranges::sort(A.transposed())`).
+To operate on the second dimension (sort by columns), use `std::ranges::sort(~A)` (or `std::ranges::sort(A.transposed())`).
 
 ### Execution policies (parallel algorithms)
 
-Multi iterators can exploit parallel algorithms by specifying execution policies.
+Multi's iterators can exploit parallel algorithms by specifying execution policies.
 This code takes every row of a two-dimensional array and sums its elements, putting the results in a one-dimensional array of compatible size.
 The execution policy (`par`) selected is passed as the first argument.
 
@@ -1196,12 +1199,12 @@ For example, parallelization happens for the transformation operation, but not t
 
 The optimal way to parallelize specific operations strongly depends on the array's size and shape.
 Generally, straightforward parallelization without exploiting the n-dimensional structure of the data has a limited pay-off;
-and nesting parallelization policies usually doesn't help either.
+and nesting parallelization policies usually don't help either.
 
 Flattening the n-dimensional structure for certain algorithms might help, but such techniques are beyond the scope of this documentation.
 
-There are some member functions that internally perform algorithms and that can benefit from execution policies.
-Some of these funcitons have the option to pass a policy.
+Some member functions internally perform algorithms and that can benefit from execution policies;
+in turn, some of these functions have the option to pass a policy.
 For example, this copy construction can initialize elements in parallel from the source:
 
 ```cpp
@@ -1209,18 +1212,20 @@ For example, this copy construction can initialize elements in parallel from the
     multi::array<double, 1> const B(std::execution::par, A);  // copies A into B, in parallel, same effect as multi::array<double, 1> const B(A); or ... B = A;
 ```
 
-Execution policies are not limited to STL, Thrust and oneAPI also offers execution policies that can be used with the corresponding algorithms.
+Execution policies are not limited to STL;
+Thrust and oneAPI also offer execution policies that can be used with the corresponding algorithms.
 
 Execution policies and ranges can be mixed (`x` and `y` can be 1D dimensional arrays, of any arithmetic element type)
 ```cpp
 template <class X1D, class Y1D>
 auto dot_product(X1D const& x, Y1D const& y) {
-    assert(x.size() == y.size());
-    auto const& z = std::ranges::views::zip(x, y) |
-             std::ranges::views::transform([](auto const& ab) {auto const [a, b] = ab;
-                 return a * b;
-             });
-    return std::reduce(std::execution::par_unseq, z.begin(), z.end());
+	assert(x.size() == y.size());
+	auto const& z = std::ranges::views::zip(x, y)
+		| std::ranges::views::transform([](auto const& ab) { auto const [a, b] = ab;
+			return a * b;
+		})
+	;
+	return std::reduce(std::execution::par_unseq, z.begin(), z.end());
 }
 ```
 https://godbolt.org/z/cMq87xPvb
