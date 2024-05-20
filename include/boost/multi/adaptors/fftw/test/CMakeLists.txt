@@ -155,6 +155,8 @@ foreach(TEST_FILE ${TEST_SRCS})
           target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
         endif()
 	endif()
-	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
-    target_link_libraries(${TEST_EXE} PRIVATE multi PkgConfig::FFTW)
+
+	target_link_libraries(${TEST_EXE} PRIVATE multi PkgConfig::FFTW)
+
+	add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 endforeach()

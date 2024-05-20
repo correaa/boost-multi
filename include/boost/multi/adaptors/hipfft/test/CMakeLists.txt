@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 project(
 	boost-multi-adaptors-hipfft-test
 	VERSION 0.1
@@ -35,4 +33,5 @@ set_source_files_properties(hipfft.cpp PROPERTIES LANGUAGE HIP)
 # target_link_libraries(${TEST_EXE} PRIVATE multi)
 target_link_libraries(hipfft.cpp.x PRIVATE hip::hipfft Boost::unit_test_framework)
 
-add_test(NAME hipfft.cpp.x COMMAND hipfft.cpp.x)
+add_test(NAME hipfft.cpp.x COMMAND $<TARGET_FILE:hipfft.cpp.x>)
+
