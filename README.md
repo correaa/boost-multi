@@ -1081,7 +1081,8 @@ In this example the original arrays is transformed into a transposed array with 
 
     auto B = + A.rotated().element_transformed(scale);
 	assert( B[1][0] == A[0][1] * 2 );
-```+
+```
+
 ([live](https://godbolt.org/z/b7E56Mjc8))
 
 Since `elements_transformed` is a reference (transformed view) to the original data, it is important to understand the semantics of evaluation and possible allocations incurred.
@@ -1089,18 +1090,18 @@ As mentioned in other sections using `auto` and/or `+` appropriately can lead to
 
 | Construction    | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes |
 | -------- | ------- | ------- | ------- | ------- |
-| `multi::array<T, D> const B = A.element_transformed(fun);` | Yes        | No  | Yes | Implicit conversion to `T` if result is different, dimensions must match   |
+| `multi::array<T, D> const B = A.element_transformed(fun);` | Yes        | No  | Yes | Implicit conversion to `T` if result is different, dimensions must match. B can be mutable.   |
 | `multi::array<T, D> const B = + A.element_transformed(fun);` | Yes (and move, or might allocate twice if types don't match)  | No  | Yes | Not recommended | 
 | `multi::array<T, D> const B{A.element_transformed(fun)};` | Yes        | No  | Yes | Explicit conversion to `T` if result is different, dimensions must match   |
 | `auto const B = + A.elements_transformed(fun);`           | Yes         | No  | Yes | Types and dimension are deduced, result is contiguous, preferred |
 | `auto const B = A.element_transformed(fun);`               | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`, usually `const`, not recommended   |
-| `auto[&& const&] B = A.elements_transformed(fun);`           | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`, usually `const&`, preferred way  |
+| `auto const& B = A.elements_transformed(fun);`           | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`. Preferred way.  |
 | `multi::array<T, D> B(A.extensions()); B = A.element_transformed(fun);`           | Yes         | Yes (during construction)  | Yes | "Two-step" construction. `B` is mutable. Not recommended  |
 
 | Assigment    | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes |
 | -------- | ------- | ------- | ------- | ------- |
 | `B = A.elements_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred  |
-| `B = + A.elements_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended |
+| `B = + A.elements_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended. |
 
 # Interoperability with other software
 
