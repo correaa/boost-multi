@@ -868,7 +868,7 @@ else()
 			target_compile_definitions(main PRIVATE "BOOST_TEST_DYN_LINK=1")
 			target_compile_options    (main PRIVATE -Werror -Wall)
 		endif()
-		add_test(NAME main COMMAND ./main)
+		add_test(NAME main COMMAND $<TARGET_FILE:main>)
 
 	else()
 
@@ -902,7 +902,7 @@ else()
 				target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
 				target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
 			endif()
-			add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
 
 	endif()
