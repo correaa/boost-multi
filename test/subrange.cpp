@@ -34,7 +34,11 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_array_range_section) {
 	{
+	#ifndef _MSC_VER
 		multi::array<double, 4> arr({10, 20, 30, 40}, 99.0);
+	#else
+		multi::array<double, 4> arr(multi::extensions_t<4>{10, 20, 30, 40}, 99.0);
+	#endif
 		std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
 		{

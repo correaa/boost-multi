@@ -81,27 +81,43 @@ BOOST_AUTO_TEST_CASE(move_unique_ptr_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_swap) {
-	multi::array<double, 2> arr({3,  5}, 99.);
-	multi::array<double, 2> arr2({7, 11}, 88.);
+#ifndef _MSC_VER  // problems with 14.3 c++17
+	multi::array<double, 2> arr({3,  5}, 99.0);
+	multi::array<double, 2> arr2({7, 11}, 88.0);
+#else
+	multi::array<double, 2> arr(multi::extensions_t<2>{3,  5}, 99.0);
+	multi::array<double, 2> arr2(multi::extensions_t<2>{7, 11}, 88.0);
+#endif
+
 	swap(arr, arr2);
+
 	BOOST_REQUIRE( size(arr) == 7 );
-	BOOST_REQUIRE( arr[1][2] == 88. );
-	BOOST_REQUIRE( arr2[1][2] == 99. );
+	BOOST_REQUIRE( arr[1][2] == 88.0 );
+	BOOST_REQUIRE( arr2[1][2] == 99.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_std_swap) {
-	multi::array<double, 2> arr({3,  5}, 99.);
-	multi::array<double, 2> arr2({7, 11}, 88.);
+#ifndef _MSC_VER  // problems with 14.3 c++17
+	multi::array<double, 2> arr({3,  5}, 99.0);
+	multi::array<double, 2> arr2({7, 11}, 88.0);
+#else
+	multi::array<double, 2> arr(multi::extensions_t<2>{3,  5}, 99.0);
+	multi::array<double, 2> arr2(multi::extensions_t<2>{7, 11}, 88.0);
+#endif
+
 	using std::swap;
 	swap(arr, arr2);
+
 	BOOST_REQUIRE( size(arr) == 7 );
-	BOOST_REQUIRE( arr[1][2] == 88. );
-	BOOST_REQUIRE( arr2[1][2] == 99. );
+	BOOST_REQUIRE( arr[1][2] == 88.0 );
+	BOOST_REQUIRE( arr2[1][2] == 99.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_clear) {
 	multi::array<double, 2> arr({10, 10}, 99.0);
+
 	arr.clear();
+
 	BOOST_REQUIRE(arr.is_empty());
 
 	arr.reextent({20, 20}, 99.0);
@@ -117,7 +133,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move) {
 
 	BOOST_REQUIRE( is_empty(Av[0]) );
 	BOOST_REQUIRE( size(arr2) == 4 );
-	BOOST_REQUIRE( arr2[1][2] == 99. );
+	BOOST_REQUIRE( arr2[1][2] == 99.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_into_vector) {
@@ -173,7 +189,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements) {
 
 	std::copy( arr({0, 5}).moved().begin(), arr({0, 5}).moved().end(), sink.begin() );
 	BOOST_REQUIRE(     arr[1].empty() );
-	BOOST_REQUIRE( not arr[5].empty() );
+	BOOST_REQUIRE( ! arr[5].empty() );
 
 	BOOST_REQUIRE( sink[1].data() == ptr1 );
 }
@@ -187,7 +203,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements_range) {
 
 	std::copy( arr({0, 5}).moved().elements().begin(), arr({0, 5}).moved().elements().end(), sink.begin() );
 	BOOST_REQUIRE(     arr[1].empty() );
-	BOOST_REQUIRE( not arr[5].empty() );
+	BOOST_REQUIRE( ! arr[5].empty() );
 
 	BOOST_REQUIRE( sink[1].data() == ptr1 );
 }
@@ -205,7 +221,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements_to_array) {
 	BOOST_REQUIRE( arr2[1][4] == 99.0 );
 
 	BOOST_REQUIRE(     arr[1].empty() );
-	BOOST_REQUIRE( not arr[5].empty() );
+	BOOST_REQUIRE( ! arr[5].empty() );
 
 	BOOST_REQUIRE( arr2[1].data() == ptr1 );
 }

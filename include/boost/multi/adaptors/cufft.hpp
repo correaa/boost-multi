@@ -7,14 +7,11 @@
 
 #include "../adaptors/../utility.hpp"
 #include "../adaptors/../array.hpp"
-#include "../adaptors/../config/NODISCARD.hpp"
 
-// #include "../adaptors/cuda.hpp"
+#include <boost/multi/detail/config/NODISCARD.hpp>
 
 #include<tuple>
 #include<array>
-
-// #include "../complex.hpp"
 
 #include<thrust/memory.h>  // for raw_pointer_cast
 

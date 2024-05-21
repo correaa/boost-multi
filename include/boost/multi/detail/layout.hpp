@@ -9,7 +9,7 @@
 #include <boost/multi/detail/operators.hpp>
 #include <boost/multi/detail/tuple_zip.hpp>
 
-#include <boost/multi/config/ASSERT.hpp>
+#include <boost/multi/detail/config/ASSERT.hpp>
 
 #include <tuple>
 #include <type_traits>  // for make_signed_t
@@ -109,6 +109,14 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(::std::tuple<T1, T2, T3, T4> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
+	template<class T1, class T2, class T3, class T4, class T5, class T = void, class = decltype(base_{tuple<T1, T2, T3, T4, T5>{}}), std::enable_if_t<sizeof(T*) && D == 5, int> = 0>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
+	constexpr extensions_t(tuple<T1, T2, T3, T4, T5> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
+	template<class T1, class T2, class T3, class T4, class T5, class T = void, class = decltype(base_{::std::tuple<T1, T2, T3, T4, T5>{}}), std::enable_if_t<sizeof(T*) && D == 5, int> = 0>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
+	constexpr extensions_t(::std::tuple<T1, T2, T3, T4, T5> extensions) : base_{std::move(extensions)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
 	template<class... Ts>
 	constexpr explicit extensions_t(tuple<Ts...> const& tup)
 	: extensions_t(tup, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
@@ -119,7 +127,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto base()            const&    -> base_ const& {return *this;} // impl_;}
 
 	friend constexpr auto operator*(index_extension const& extension, extensions_t const& self) -> extensions_t<D + 1> {
-		return extensions_t<D + 1>{tuple{extension, self.base()}};
+		// return extensions_t<D + 1>(tuple(extension, self.base()));
+		return extensions_t<D + 1>(extension, self);
 	}
 
 	friend BOOST_MULTI_HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.base() == other.base();}
@@ -367,13 +376,13 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
-	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+	constexpr auto get() const -> decltype(auto) {  // -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> =0>
-	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
+	friend constexpr auto get(extensions_t const& self) -> decltype(auto) {  // -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
@@ -398,6 +407,11 @@ template<boost::multi::dimensionality_type D>
 struct std::tuple_size<boost::multi::extensions_t<D>>  // NOLINT(cert-dcl58-cpp) to implement structured binding
 : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
 
+template<>
+struct std::tuple_element<0, boost::multi::extensions_t<0>> {  // NOLINT(cert-dcl58-cpp) to implement structured binding
+	using type = void;
+};
+
 template<std::size_t Index, boost::multi::dimensionality_type D>
 struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cert-dcl58-cpp) to implement structured binding
 	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
@@ -412,15 +426,17 @@ template<> struct tuple_size<boost::multi::extensions_t<1>> : std::integral_cons
 template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2> {};
 template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3> {};
 template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
+template<> struct tuple_size<boost::multi::extensions_t<5>> : std::integral_constant<boost::multi::dimensionality_type, 5> {};
 #else
 template<> class tuple_size<boost::multi::extensions_t<0>> : public std::integral_constant<boost::multi::dimensionality_type, 0> {};
 template<> class tuple_size<boost::multi::extensions_t<1>> : public std::integral_constant<boost::multi::dimensionality_type, 1> {};
 template<> class tuple_size<boost::multi::extensions_t<2>> : public std::integral_constant<boost::multi::dimensionality_type, 2> {};
 template<> class tuple_size<boost::multi::extensions_t<3>> : public std::integral_constant<boost::multi::dimensionality_type, 3> {};
 template<> class tuple_size<boost::multi::extensions_t<4>> : public std::integral_constant<boost::multi::dimensionality_type, 4> {};
+template<> class tuple_size<boost::multi::extensions_t<5>> : public std::integral_constant<boost::multi::dimensionality_type, 5> {};
 #endif
 
-#if !defined(__GLIBCXX__) || (__GLIBCXX__ <= 20240707)
+#if !defined(_MSC_VER) && (!defined(__GLIBCXX__) || (__GLIBCXX__ <= 20240707) )
 template<std::size_t N, boost::multi::dimensionality_type D>
 constexpr auto get(boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
 ->decltype(tp.template get<N>()) {
@@ -720,7 +736,7 @@ struct layout_t
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
 //  [[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-	constexpr auto extension(dimensionality_type dim) const {return std::apply([](auto... extensions) {return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim));}
+	constexpr auto extension(dimensionality_type dim) const {return std::apply([](auto... extensions) {return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim));}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14 
 //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto stride   (dimensionality_type dim) const {return std::apply([](auto... strides   ) {return std::array<stride_type    , static_cast<std::size_t>(D)>{strides   ...};}, strides   ()       ).at(static_cast<std::size_t>(dim));}
 //  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output

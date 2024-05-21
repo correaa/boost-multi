@@ -238,6 +238,8 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 
 	//  for(auto&& elem : indirect_v) {elem = 88.;}
 	//  std::fill(indirect_v.begin(), indirect_v.end(), 88.0);
+
+#if !defined(_MSC_VER)
 	indirect_v.fill(88.0);
 	BOOST_REQUIRE(  vec[3] ==  88.0 );
 
@@ -245,6 +247,7 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 	(void)const_indirect_v;
 	//  const_indirect_v[1] = 999.;  // does not compile, good!
 	BOOST_REQUIRE(const_indirect_v[3] ==  88.0);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {

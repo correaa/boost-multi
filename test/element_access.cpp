@@ -179,10 +179,10 @@ BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
 	BOOST_REQUIRE( &arr.elements()[0] == &arr[0] );
 	BOOST_REQUIRE( &arr.elements()[9] == &arr[9] );
 
-	BOOST_REQUIRE(      arr.elements().begin() <  arr.elements().end()     );
-	BOOST_REQUIRE(      arr.elements().end()   >  arr.elements().begin()   );
-	BOOST_REQUIRE(      arr.elements().begin() != arr.elements().end()     );
-	BOOST_REQUIRE( not( arr.elements().begin() == arr.elements().end()   ) );
+	BOOST_REQUIRE(    arr.elements().begin() <  arr.elements().end()     );
+	BOOST_REQUIRE(    arr.elements().end()   >  arr.elements().begin()   );
+	BOOST_REQUIRE(    arr.elements().begin() != arr.elements().end()     );
+	BOOST_REQUIRE( !( arr.elements().begin() == arr.elements().end()   ) );
 
 	BOOST_REQUIRE(  arr().elements().begin() <  arr().elements().end() );
 	BOOST_REQUIRE(  arr().elements().begin() == arr().elements().begin() );
@@ -194,8 +194,8 @@ BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
 	BOOST_REQUIRE(  arr().elements().end()  >= arr().elements().begin() );
 
 	arr.elements() = {9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0};
-	BOOST_REQUIRE( arr[2] == 7. );
-	BOOST_REQUIRE( arr.elements()[2] == 7. );
+	BOOST_REQUIRE( arr[2] == 7.0 );
+	BOOST_REQUIRE( arr.elements()[2] == 7.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range) {

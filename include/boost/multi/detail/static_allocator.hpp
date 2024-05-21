@@ -5,8 +5,8 @@
 #ifndef BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 #define BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 
-#include <boost/multi/config/NODISCARD.hpp>
-#include <boost/multi/config/NO_UNIQUE_ADDRESS.hpp>
+#include <boost/multi/detail/config/NODISCARD.hpp>
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <array>
 #include <cassert>
@@ -21,7 +21,7 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable : 4324) // Warning that the structure is padded due to the below
+#pragma warning(disable : 4324)  // Warning that the structure is padded due to the below
 #endif 
 	
 	BOOST_MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
@@ -42,9 +42,16 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 
 	static_allocator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) buffer_ is not initialized
 
+	template<class TT, std::size_t NN>
+	static_allocator(static_allocator<TT, NN> const& /*other*/) {  // NOLINT(hicpp-explicit-conversions,google-explicit-constructor) follow std::allocator
+		// static_assert(sizeof(T) == sizeof(TT));
+		static_assert(NN == N);
+	}
+
 	static_allocator(static_allocator const& /*other*/) // std::vector makes a copy right away
 	// = default;  // this copies the internal buffer
 	{}
+
 	[[deprecated("don't move dynamic container with static_allocator")]]
 	static_allocator(static_allocator&& /*other*/)  // this is called *by the elements* during move construction of a vector
 	// = delete;
@@ -76,7 +83,7 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
 	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
 		assert(n <= N);
-		assert(not dirty_);  // do not attempt to resize a vector with static_allocator
+		assert(! dirty_);  // do not attempt to resize a vector with static_allocator
 		dirty_ = true;
 		return reinterpret_cast<pointer>(buffer_.data());  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}

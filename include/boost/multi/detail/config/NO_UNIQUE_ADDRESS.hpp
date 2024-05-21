@@ -3,8 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_CONFIG_NO_UNIQUE_ADDRESS_HPP_
-#define BOOST_MULTI_CONFIG_NO_UNIQUE_ADDRESS_HPP_
+#ifndef BOOST_MULTI_DETAIL_CONFIG_NO_UNIQUE_ADDRESS_HPP
+#define BOOST_MULTI_DETAIL_CONFIG_NO_UNIQUE_ADDRESS_HPP
 
 // clang-format off
 #ifdef __has_cpp_attribute
@@ -19,4 +19,4 @@
 #endif
 // clang-format on
 
-#endif  // BOOST_MULTI_CONFIG_NO_UNIQUE_ADDRESS_HPP_
+#endif  // BOOST_MULTI_DETAIL_CONFIG_NO_UNIQUE_ADDRESS_HPP

@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/config/NO_UNIQUE_ADDRESS.hpp>  // TODO(correaa) remove in c++20
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>  // TODO(correaa) remove in c++20
 
 #include <numeric>
 

@@ -15,7 +15,7 @@ namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_T_sub) {
-	namespace blas  = multi::blas;
+	namespace blas = multi::blas;
 
 	multi::array<double, 2> A({100, 4}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<double, 2> B({4, 4}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -249,14 +249,14 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square) {
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 		blas::gemm(1.0, ~a, b, 0.0, c);  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE(( c[1][1] == 169.0 and c[1][0] == 82.0 ));
+		BOOST_REQUIRE(( c[1][1] == 169.0 && c[1][0] == 82.0 ));
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 		blas::context const ctxt;
 		blas::gemm_n(&ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(c));
-		BOOST_REQUIRE(( c[1][1] == 169 and c[1][0] == 82 ));
+		BOOST_REQUIRE(( c[1][1] == 169 && c[1][0] == 82 ));
 	}
 	{
 		multi::array<double, 2> const c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -314,12 +314,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare) {
-    // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const a = {
 		{1.0, 3.0, 1.0},
 		{9.0, 7.0, 1.0},
 	};
-    // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const b = {
 		{11.0, 12.0, 1.0},
 		{ 7.0, 19.0, 1.0},
@@ -338,8 +338,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic) {
-	namespace blas                  = multi::blas;
-    // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	namespace blas = multi::blas;
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const a = {
 		{1.0, 3.0, 1.0},
 		{9.0, 7.0, 1.0},
@@ -982,12 +982,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square) {
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., ~a, b, 0., c);  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE(( c[1][1] == 170.-8.*I and c[1][0] == 77.+42.*I ));
+		BOOST_REQUIRE(( c[1][1] == 170.-8.*I && c[1][0] == 77.+42.*I ));
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(~a), size(~a), begin(b), 0., begin(c));  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE(( c[1][1] == 170.-8.*I and c[1][0] == 77.+42.*I ));
+		BOOST_REQUIRE(( c[1][1] == 170.-8.*I && c[1][0] == 77.+42.*I ));
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
@@ -1357,12 +1357,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square_automatic) {
 	{
 		multi::array<double, 2> c({2, 2});
 		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][0] == 148 and c[1][1] == 241 );
+		BOOST_REQUIRE( c[1][0] == 148 && c[1][1] == 241 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});
 		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][0] == 148 and c[1][1] == 241 );
+		BOOST_REQUIRE( c[1][0] == 148 && c[1][1] == 241 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});
@@ -1431,22 +1431,22 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic_part2) {
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::T(a), b, 0., c);  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE(( c[1][1] == complex(180, 29) and c[1][0] == complex(53, 54) ));
+		BOOST_REQUIRE(( c[1][1] == complex(180, 29) && c[1][0] == complex(53, 54) ));
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(blas::T(a)), size(blas::T(a)), begin(b), 0., begin(c));  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE(( c[1][1] == complex(180, 29) and c[1][0] == complex(53, 54) ));
+		BOOST_REQUIRE(( c[1][1] == complex(180, 29) && c[1][0] == complex(53, 54) ));
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::T(a), blas::T(b), 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE(( c[1][1] == complex(186, 65) and c[1][0] == complex(116, 25) ));
+		BOOST_REQUIRE(( c[1][1] == complex(186, 65) && c[1][0] == complex(116, 25) ));
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE(( c[1][1] == complex(186, 65) and c[1][0] == complex(116, 25) ));
+		BOOST_REQUIRE(( c[1][1] == complex(186, 65) && c[1][0] == complex(116, 25) ));
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
@@ -1455,13 +1455,13 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic_part2) {
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
+		blas::gemm_n(1., begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][0] == complex(115, 104) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::H(a), b, 0., c);  // c=a†b, c†=b†a
-		BOOST_REQUIRE( c[1][0] == complex(111, 64) and c[1][1] == complex(158, -51) );
+		BOOST_REQUIRE( c[1][0] == complex(111, 64) && c[1][1] == complex(158, -51) );
 	}
 }
 
@@ -1480,12 +1480,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic_part3) {
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(blas::H(a)), size(blas::H(a)), begin(b), 0., begin(c));  // c=a†b, c†=b†a
-		BOOST_REQUIRE( c[1][0] == complex(111, 64) and c[1][1] == complex(158, -51) );
+		BOOST_REQUIRE( c[1][0] == complex(111, 64) && c[1][1] == complex(158, -51) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., a, blas::H(b), 0., c);  // c=ab†, c†=ba†
-		BOOST_REQUIRE( c[1][0] == complex(188, 43) and c[1][1] == complex(196, 25) );
+		BOOST_REQUIRE( c[1][0] == complex(188, 43) && c[1][1] == complex(196, 25) );
 		auto c2 = +blas::gemm(1., a, blas::H(b));
 		BOOST_REQUIRE( c2 == c );
 	}
@@ -1498,32 +1498,32 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic_part3) {
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::H(a), blas::H(b), 0., c);  // c=a†b†, c†=ba
-		BOOST_REQUIRE( c[1][0] == complex(116, -25) and c[1][1] == complex(186, -65) );
+		BOOST_REQUIRE( c[1][0] == complex(116, -25) && c[1][1] == complex(186, -65) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0., begin(c));  // c=a†b†, c†=ba
-		BOOST_REQUIRE( c[1][0] == complex(116, -25) and c[1][1] == complex(186, -65) );
+		BOOST_REQUIRE( c[1][0] == complex(116, -25) && c[1][1] == complex(186, -65) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::T(a), blas::H(b), 0., c);  // c=a⸆b†, c†=ba⸆†
-		BOOST_REQUIRE( c[1][0] == complex(118, 5) and c[1][1] == complex(122, 45) );
+		BOOST_REQUIRE( c[1][0] == complex(118, 5) && c[1][1] == complex(122, 45) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(blas::T(a)), size(blas::T(a)), begin(blas::H(b)), 0., begin(c));  // c=a⸆b†, c†=ba⸆†
-		BOOST_REQUIRE( c[1][0] == complex(118, 5) and c[1][1] == complex(122, 45) );
+		BOOST_REQUIRE( c[1][0] == complex(118, 5) && c[1][1] == complex(122, 45) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::T(a), blas::T(b), 0., c);  // c=a⸆b⸆, c⸆=ba
-		BOOST_REQUIRE( c[1][0] == complex(116, 25) and c[1][1] == complex(186, 65) );
+		BOOST_REQUIRE( c[1][0] == complex(116, 25) && c[1][1] == complex(186, 65) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0., begin(c));  // c=a⸆b⸆, c⸆=ba
-		BOOST_REQUIRE( c[1][0] == complex(116, 25) and c[1][1] == complex(186, 65) );
+		BOOST_REQUIRE( c[1][0] == complex(116, 25) && c[1][1] == complex(186, 65) );
 	}
 }
 
@@ -1600,8 +1600,8 @@ BOOST_AUTO_TEST_CASE(submatrix_result_issue_97) {
 	multi::array<complex, 2> M = {
 		{2. + 3. * I, 2. + 1. * I, 1. + 2. * I},
 		{4. + 2. * I, 2. + 4. * I, 3. + 1. * I},
-		{7. + 1. * I, 1. + 5. * I, 0. + 3. * I}
-                                                                                                   };
+		{7. + 1. * I, 1. + 5. * I, 0. + 3. * I},
+	};
 	auto M2 = +M({0, 3}, {0, 1});
 	BOOST_REQUIRE( M2 == M({0, 3}, {0, 1}) );
 }

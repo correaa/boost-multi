@@ -1,10 +1,9 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/pmr.hpp>
 
 #include <numeric>
 
@@ -25,7 +24,7 @@
 #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
-#  pragma warning(disable : 4244)
+#  pragma warning(disable : 4244)  // narrowing conversion
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -36,8 +35,11 @@
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
+BOOST_AUTO_TEST_CASE(pmr_dummy) {
+}
+
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
+BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
@@ -62,8 +64,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
 		//  BOOST_TEST( buffer[13] != '3' );
 
-		BOOST_TEST( A[0][0] == 0. );
-		BOOST_TEST( A[1][2] == 0. );
+		BOOST_TEST( A[0][0] == 0.0 );
+		BOOST_TEST( A[1][2] == 0.0 );
 	}
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
@@ -84,18 +86,17 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		std::pmr::monotonic_buffer_resource mbr{std::data(buffer), std::size(buffer)};
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
-		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({2, 3}, 666., &mbr);
+		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({2, 3}, 666.0, &mbr);
 		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
 		//  BOOST_TEST( buffer[13] != '3' );
 
 		BOOST_TEST( arr[0][0] == 666.0 );
 		BOOST_TEST( arr[1][2] == 666.0 );
 	}
-#endif
 }
 
+#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
-#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 
@@ -107,13 +108,19 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 		exts.begin(), exts.end(), int64_t{0},
 		std::plus<>{},
 		[&resp](auto idx) {
-			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr({1000 - idx%10, 1000 + idx%10}, resp);
+			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
+				multi::extensions_t<2>{1000 - idx%10, 1000 + idx%10},  // MSVC needs multi::extensions_t<2>
+				resp
+			);
 			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
-			return std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
+			auto* be = arr.data_elements();
+			decltype(be) en = arr.data_elements() + arr.num_elements();
+			return std::accumulate(be, en, int64_t{}, std::plus<int64_t>{});
 		}
 	);
 
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout<< time.count() / count <<"          "<< acc << '\n';
-#endif
 }
+#endif
+#endif

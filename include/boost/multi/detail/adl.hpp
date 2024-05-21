@@ -231,6 +231,12 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size c
 	}
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
+
 template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
 auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size count)
 -> std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)> {
@@ -240,6 +246,7 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	}
 	using alloc_traits = std::allocator_traits<Alloc>;
 	ForwardIt current  = first;
+
 	try {
 		//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 		//  workadoung for gcc 8.3.1 in Lass
@@ -252,8 +259,14 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 		throw;
 	}
 	// LCOV_EXCL_STOP
+
+
 	// return current;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 }  // end namespace xtd
 
@@ -274,6 +287,12 @@ constexpr auto destroy_n(BidirIt first, Size count)
 	return first;
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
+
 template<class Alloc, class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
 constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 ->std::decay_t<decltype(std::addressof(*(first-1)), first)> {
@@ -283,6 +302,10 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 	}
 	return first;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
