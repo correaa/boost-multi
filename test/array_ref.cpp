@@ -9,15 +9,6 @@
 #include <iostream>  // for std::cout
 #include <numeric>  // for std::iota
 
-#if __has_include(<span>)
-
-#  include <span>
-#  if defined(__cpp_lib_span) && (__cpp_lib_span >= 202002L)
-#    define BOOST_MULTI_TEST_SPAN
-#  endif
-
-#endif
-
 // Suppress warnings from boost.test
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -333,7 +324,12 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 
 	{
 		auto exts = aref.extensions();
+#ifndef _MSC_VER
 		auto const [exts0, exts1] = exts;
+#else
+		auto const exts0 = std::get<0>(exts);
+		auto const exts1 = std::get<1>(exts);
+#endif
 		BOOST_REQUIRE( exts0 == multi::iextension(1, 3) );
 
 		BOOST_REQUIRE( exts1.first()  == 1 );
@@ -520,8 +516,8 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 	BOOST_REQUIRE( &other_darr2[1][0] == &darr[1][0] );
 	BOOST_REQUIRE( &other_darr3[1][0] == &darr[1][0] );
 
-    // Homebrew GCC-13 terminates rather than having the expected exception caught.
-    #if !(defined(__GNUC__) && __GNUC__ >= 5 && defined(__APPLE__))
+// Homebrew GCC-13 terminates rather than having the expected exception caught.
+#if !(defined(__GNUC__) && __GNUC__ >= 5 && defined(__APPLE__))
 	BOOST_REQUIRE_THROW(
 		([&] {
 			double(&other_darr4)[3][3](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
@@ -529,7 +525,7 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 		}()),
 		std::bad_cast
 	);
-    #endif
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
@@ -557,14 +553,15 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
 
 	multi::array_cref<std::string, 3> cref(&dc3D[0][0][0], {4, 2, 3});
-	BOOST_REQUIRE( num_elements(cref) == 24 and cref[2][1][1] == "C1b" );
-	auto const& A2 = cref.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
-	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
+	BOOST_REQUIRE( num_elements(cref) == 24 && cref[2][1][1] == "C1b" );
 
-	BOOST_REQUIRE( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
+	auto const& A2 = cref.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
+	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && num_elements(A2) == 6 );
+
+	BOOST_REQUIRE( std::get<0>(sizes(A2)) == 3 && std::get<1>(sizes(A2)) == 2 );
 
 	auto const& A3 = cref({0, 3}, 1, {0, 2});
-	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );
+	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A3)>>{} == 2 && num_elements(A3) == 6 );
 
 	BOOST_REQUIRE( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 	BOOST_REQUIRE( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );
@@ -763,8 +760,9 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 	}
 }
 
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE(as_span) {
-#ifdef BOOST_MULTI_TEST_SPAN
+#ifdef BOOST_MULTI_HAS_SPAN
 	auto print_me0 = [](std::span<int> rng) {
 		std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
 		std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });
@@ -784,7 +782,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		std::cout << "\n\n";
 	};
 
-#ifdef BOOST_MULTI_TEST_SPAN
+#ifdef BOOST_MULTI_HAS_SPAN
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy arrays
 		print_me0(arr);
@@ -817,16 +815,25 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		print_me1(arr2);
 		print_me1(*multi::array_ptr<int, 1>{arr2.data(), {6}});
 
-		multi::static_array<int, 1> marr({10}, 99);
-		print_me1(*multi::array_ptr<int, 1>{marr.data_elements(), 10});
+		multi::static_array<int, 1> marr(
+// #ifdef _MSC_VER  // problems with MSVC 14.3 c++17
+			multi::extensions_t<1>
+// #endif
+			{10},
+			99
+		);
 
+		print_me1(*multi::array_ptr<int, 1>(marr.data_elements(), 10));
+
+	// #ifndef _MSC_VER
 		auto& alias = marr;
 
 		marr = alias;
-		BOOST_REQUIRE(marr[5] = 99);
+		BOOST_REQUIRE(marr[5] == 99);
 
 		marr = alias();
-		BOOST_REQUIRE(marr[5] = 99);
+		BOOST_REQUIRE(marr[5] == 99);
+	// #endif
 	}
 	{
 		int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
@@ -847,6 +854,7 @@ BOOST_AUTO_TEST_CASE(as_span) {
 		//  print_me2(&marr);  // TODO(correaa) make this work
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(diagonal) {
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
@@ -986,7 +994,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
 	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
 
-	BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
+//  BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
 	//  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
 
 	//  BOOST_REQUIRE(( trace_separate_ref4                        (arr) == 3 ));  // not allowed

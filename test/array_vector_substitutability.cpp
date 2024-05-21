@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -10,23 +9,23 @@
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wundef"
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wundef"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
@@ -55,7 +54,7 @@ void resize_copy_3(std::vector<double> const& source, DynamicArray& darr) {
 	darr = std::decay_t<decltype(darr)>(source.begin(), source.end());  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 }
 
-template<class It, class DynamicArray>   // e.g. std::vector or multi::array
+template<class It, class DynamicArray>  // e.g. std::vector or multi::array
 void resize_copy_4(It first, It last, DynamicArray& darr) {
 	darr = DynamicArray(first, last);  // or std::decay_t<decltype(da)>(source.begin(), source.end())  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 }
@@ -99,12 +98,12 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_2) {
 	resize_copy_2(source, dest_v);
 
 	BOOST_REQUIRE( dest_v.size() == 4 );
-	BOOST_REQUIRE( dest_v[3] == 3. );
+	BOOST_REQUIRE( dest_v[3] == 3.0 );
 
 	resize_copy_2(source, dest_a);
 
 	BOOST_REQUIRE( dest_v.size() == 4 );
-	BOOST_REQUIRE( dest_v[3] == 3. );
+	BOOST_REQUIRE( dest_v[3] == 3.0 );
 }
 
 BOOST_AUTO_TEST_CASE(test_resize_copy_3) {
@@ -194,19 +193,19 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_6) {
 BOOST_AUTO_TEST_CASE(assign_equality) {
 	{
 		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
-		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const     aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
 	{
 		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
-		std::vector<double> const aa(AA.begin(), AA.end());  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const     aa(AA.begin(), AA.end());  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
 	{
 		multi::array<double, 1> const AA = {1.0, 2.0, 3.0};
-		auto const aa(AA().operator std::vector<double>());
+		auto const                    aa(AA().operator std::vector<double>());
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
@@ -217,13 +216,13 @@ BOOST_AUTO_TEST_CASE(assign_equality) {
 	//  BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	// }
 	{
-		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const     aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 		multi::array<double, 1> const AA(aa.begin(), aa.end());
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
 	{
-		std::vector<double> const aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const     aa = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 		multi::array<double, 1> const AA(aa);
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
@@ -232,38 +231,54 @@ BOOST_AUTO_TEST_CASE(assign_equality) {
 
 BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 	{
-		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0},
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<multi::array<double, 1>> const aa(AA.begin(), AA.end());  // NOLINT(fuchsia-default-arguments-calls)
 	}
 	{
-		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0},
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		auto const aa(AA().operator std::vector<std::vector<double>>());
 	}
 	{
-	#if not defined(__circle_build__)
-		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+#if ! defined(__circle_build__)
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0},
+		};
+
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<std::vector<double>> const aa(AA);
 		BOOST_REQUIRE( aa.size() == 2 );
 		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
-	#endif
+#endif
 	}
 	{
-		multi::array<double, 2> const               AA = {{1.0, 2.0}, {3.0, 4.0}};
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0},
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 	}
 	{
-	#if not defined(__circle_build__)
-		multi::array<double, 2> const              AA = {{1.0, 2.0}, {3.0, 4.0}};
+#if ! defined(__circle_build__)
+		multi::array<double, 2> const AA = {
+			{1.0, 2.0},
+			{3.0, 4.0},
+		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		std::vector<multi::array<double, 1>> const aa(AA);
 		BOOST_REQUIRE( aa.size() == 2 );
-	#endif
+#endif
 	}
 }

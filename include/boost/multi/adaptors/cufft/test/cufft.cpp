@@ -1,4 +1,6 @@
-// © Alfredo A. Correa 2020-2024
+// Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuFFT adaptor"
 #include<boost/test/unit_test.hpp>
@@ -9,7 +11,7 @@
 #include "../../../adaptors/fft.hpp"
 #include "../../../adaptors/fftw.hpp"
 
-#if (not (defined(__HIP_PLATFORM_AMD__) or defined(__HIP_PLATFORM_NVIDIA__))) and (not defined(__HIPCC__))
+#if (! (defined(__HIP_PLATFORM_AMD__) || defined(__HIP_PLATFORM_NVIDIA__))) && (! defined(__HIPCC__))
 #include "../../../adaptors/cufft.hpp"
 #else
 #include "../../../adaptors/hipfft.hpp"
@@ -18,9 +20,10 @@
 #include "../../../adaptors/thrust.hpp"
 
 #include<thrust/complex.h>
-#include "../../../complex.hpp"
 
-#if not defined(__HIP_PLATFORM_AMD__) and not defined(__HIPCC__)
+#include <boost/multi/detail/complex.hpp>
+
+#if ! defined(__HIP_PLATFORM_AMD__) && ! defined(__HIPCC__)
 #include<cuda_runtime.h>  // cudaDeviceSynchronize
 #else
 #endif

@@ -4,11 +4,11 @@
 
 // TODO(correaa) move this header to blas/numeric
 
-#ifndef BOOST_MULTI_COMPLEX_HPP
-#define BOOST_MULTI_COMPLEX_HPP
+#ifndef BOOST_MULTI_DETAIL_COMPLEX_HPP
+#define BOOST_MULTI_DETAIL_COMPLEX_HPP
 #pragma once
 
-#include "array_ref.hpp"
+// #include <boost/multi/array_ref.hpp>
 
 // #include "detail/fix_complex_traits.hpp"
 
@@ -168,4 +168,4 @@ struct imag_t {
 #undef BOOST_MULTI_DECLRETURN
 #undef BOOST_MULTI_JUSTRETURN
 
-#endif
+#endif  // BOOST_MULTI_DETAIL_COMPLEX_HPP

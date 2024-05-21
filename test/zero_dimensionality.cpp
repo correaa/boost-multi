@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -74,8 +73,14 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 
 BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 	{
-		multi::array<std::complex<double>, 2> const arr({1, 2}, std::allocator<std::complex<double>>{});
-		BOOST_REQUIRE( size(arr) == 1 );
+		multi::array<std::complex<double>, 2> const arr(
+		#ifdef _MSC_VER  // problem with 14.3 c++17
+			multi::extensions_t<2>
+		#endif
+			{1, 2},
+			std::allocator<std::complex<double>>{}
+		);
+		BOOST_REQUIRE( arr.size() == 1 );
 	}
 	{
 		double doub = 2.0;

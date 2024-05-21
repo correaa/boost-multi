@@ -143,10 +143,10 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 		BOOST_REQUIRE( arr[1] == 22 );
 	}
 	{
-#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+#if defined(__cpp_deduction_guides) && ! defined(__NVCC__)
 //      multi::array arr = {{1.1, 2.2, 3.3}};
 //      static_assert( decltype(arr)::dimensionality == 1 , "!");
-//      BOOST_REQUIRE( size(arr)==3 and arr[1] == 2.2 );
+//      BOOST_REQUIRE( size(arr)==3 && arr[1] == 2.2 );
 #endif
 	}
 	{
@@ -294,22 +294,26 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 	{
 		using std::string;
+
+		// NOLINTBEGIN(fuchsia-default-arguments-calls)
 		multi::array<string, 3> B3 = {
-			{{"000", "001", "002"}, {"010", "011", "012"}}, // NOLINT(fuchsia-default-arguments-calls)
-			{{"100", "101", "102"}, {"110", "111", "112"}}, // NOLINT(fuchsia-default-arguments-calls)
+			{{"000", "001", "002"}, {"010", "011", "012"}},
+			{{"100", "101", "102"}, {"110", "111", "112"}},
 		};
-		BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
+		// NOLINTEND(fuchsia-default-arguments-calls)
+
+		BOOST_REQUIRE( num_elements(B3)==12 && B3[1][0][1] == "101" );
 	}
 }
 
-#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+#if defined(__cpp_deduction_guides) && ! defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 	{
-#if not defined(__circle_build__)
+#if ! defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
-		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
+		BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr)==3 && arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
 #endif
 	}
@@ -319,42 +323,42 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 	{
 		multi::array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
-		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
+		BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr)==3 && arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
 	}
 	{
 		multi::array arr({1.0, 2.0});
 		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
-		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr) == 2 and arr[1] == 2.0 );
+		BOOST_REQUIRE( size(arr) == 2 && num_elements(arr) == 2 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr) == 2 && arr[1] == 2.0 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 	}
 	{
 		multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
-		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 and num_elements(arr) == 2 and arr[1] == 2.0 );
+		BOOST_REQUIRE( size(arr) == 2 && num_elements(arr) == 2 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 && num_elements(arr) == 2 && arr[1] == 2.0 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 	}
 	{
 		multi::array arr({9.0});  // multi::array arr = {9.0}; not working with CTAD
 		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==1 and arr[0]==9. );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr)==1 && arr[0]==9.0 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
 	{
 		multi::array arr({9});  // multi::array arr = {9}; not working with CTAD
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
-		BOOST_REQUIRE( size(arr) == 1 and num_elements(arr) == 1 );
+		BOOST_REQUIRE( size(arr) == 1 && num_elements(arr) == 1 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
-		BOOST_REQUIRE( num_elements(arr) == 1 and arr[0] == 9.0 );
+		BOOST_REQUIRE( num_elements(arr) == 1 && arr[0] == 9.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 	{
-#if not defined(__circle_build__)
+#if ! defined(__circle_build__)
 		multi::static_array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
@@ -364,7 +368,7 @@ BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 #endif
 	}
 	{
-#if not defined(__circle_build__)
+#if ! defined(__circle_build__)
 		multi::array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},

@@ -17,10 +17,10 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_n) {
 		{5.0,  6.0,  7.0,  8.0},
 		{9.0, 10.0, 11.0, 12.0},
 	};
-	BOOST_REQUIRE( (arr[0][2] == 3.0) and (arr[2][2] == 11.0) );
+	BOOST_REQUIRE( (arr[0][2] == 3.0) && (arr[2][2] == 11.0) );
 
 	blas::scal_n(2.0, arr[2].begin(), arr[2].size());
-	BOOST_REQUIRE( arr[0][2] == 3. and arr[2][2] == 11.0*2.0 );
+	BOOST_REQUIRE( arr[0][2] == 3. && arr[2][2] == 11.0*2.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it) {
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real) {
 	BOOST_REQUIRE( +blas::scal(1.0, arr[2]) ==  arr[2] );
 
 	blas::scal(2.0, arr[2]);
-	BOOST_REQUIRE( arr[0][2] == 3.0 and arr[2][2] == 11.0*2.0 );
+	BOOST_REQUIRE( arr[0][2] == 3.0 && arr[2][2] == 11.0*2.0 );
 
 	BOOST_REQUIRE( &blas::scal(1.0, arr[2]) == &arr[2] );
 }
