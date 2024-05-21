@@ -55,7 +55,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_link_libraries(${TEST_EXE} PRIVATE multi)
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
     if(ENABLE_CUDA)
-	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+	    add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
     endif()
 endforeach()
 

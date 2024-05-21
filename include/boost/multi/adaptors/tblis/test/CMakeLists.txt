@@ -109,5 +109,5 @@ foreach(TEST_FILE ${TEST_SRCS})
 					/W4>
 		)
 	endif()
-	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+	add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 endforeach()
