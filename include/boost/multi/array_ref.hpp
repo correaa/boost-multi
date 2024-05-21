@@ -59,13 +59,24 @@ constexpr auto home(Array&& arr)
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
+template<class, class, class = void>
+struct rebind_const_or_void { using type = void; };
+ 
+template<class ElementPtr, class Element>
+struct rebind_const_or_void<
+	ElementPtr, Element,
+	std::void_t<typename std::pointer_traits<ElementPtr>::template rebind<Element const> >
+> {
+	using type = typename std::pointer_traits<ElementPtr>::template rebind<Element const>;
+};
+
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 
 	using element_ptr       = ElementPtr;
-	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+	using element_const_ptr = typename rebind_const_or_void<ElementPtr, element>::type;  // typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
