@@ -240,9 +240,6 @@ jobs:
               - libc++abi-14-dev
 
           - toolset: clang
-            cxxstd: "03,11,14,17,2a"
-            os: macos-11
-          - toolset: clang
             cxxstd: "03,11,14,17,20,2b"
             os: macos-12
           - toolset: clang
