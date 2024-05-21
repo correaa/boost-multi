@@ -64,4 +64,4 @@ include(CTest)
 add_executable(potrf.cpp.x potrf.cpp)
 target_link_libraries(potrf.cpp.x PRIVATE multi-lapack Boost::unit_test_framework)
 
-add_test(NAME potrf.cpp.x COMMAND ./potrf.cpp.x)
+add_test(NAME potrf.cpp.x COMMAND $<TARGET_FILE:potrf.cpp.x>)
