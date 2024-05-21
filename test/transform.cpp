@@ -31,7 +31,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#define DECLRETURN(ExpR) \
+#define BOOST_MULTI_DECLRETURN(ExpR) \
 	->decltype(ExpR) { return ExpR; }  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
 namespace test {
@@ -123,26 +123,26 @@ class basic_conjugate_t {
 	// clang-format off
 	template<int N> struct prio : std::conditional_t<N != 0, prio<N - 1>, std::true_type> {};
 
-	template<class T> static auto _(prio<0> /**/, T const& value) DECLRETURN( std::conj(value))
-	template<class T> static auto _(prio<1> /**/, T const& value) DECLRETURN(      conj(value))
-	template<class T> static auto _(prio<2> /**/, T const& value) DECLRETURN(   T::conj(value))
-	template<class T> static auto _(prio<3> /**/, T const& value) DECLRETURN(value.conj()     )
+	template<class T> static auto _(prio<0> /**/, T const& value) BOOST_MULTI_DECLRETURN( std::conj(value))
+	template<class T> static auto _(prio<1> /**/, T const& value) BOOST_MULTI_DECLRETURN(      conj(value))
+	template<class T> static auto _(prio<2> /**/, T const& value) BOOST_MULTI_DECLRETURN(   T::conj(value))
+	template<class T> static auto _(prio<3> /**/, T const& value) BOOST_MULTI_DECLRETURN(value.conj()     )
 
  public:
 	template<class T>
-	static auto _(T const& value) DECLRETURN(_(prio<3>{}, value))
+	static auto _(T const& value) BOOST_MULTI_DECLRETURN(_(prio<3>{}, value))
 	// clang-format on
 };
 
 template<class T = void>
 struct conjugate : private basic_conjugate_t {
-	constexpr auto operator()(T const& arg) const DECLRETURN(_(arg))
+	constexpr auto operator()(T const& arg) const BOOST_MULTI_DECLRETURN(_(arg))
 };
 
 template<>
 struct conjugate<> : private basic_conjugate_t {
 	template<class T>
-	constexpr auto operator()(T const& arg) const DECLRETURN(_(arg))
+	constexpr auto operator()(T const& arg) const BOOST_MULTI_DECLRETURN(_(arg))
 };
 
 #if defined(__NVCC__)
@@ -311,4 +311,4 @@ BOOST_AUTO_TEST_CASE(transformed_to_string) {
 }
 #endif
 
-#undef DECLRETURN
+#undef BOOST_MULTI_DECLRETURN
