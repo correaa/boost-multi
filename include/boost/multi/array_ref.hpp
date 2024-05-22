@@ -1321,14 +1321,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>                constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
 
  private:
-	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& tuple, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
-	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& tuple, std::index_sequence<I...>/*012*/)      & -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
-	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& tuple, std::index_sequence<I...>/*012*/)     && -> decltype(auto) {return std::move(*this).operator()(std::get<I>(tuple)...);}
+	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
+	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/)      & -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
+	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/)     && -> decltype(auto) {return std::move(*this).operator()(std::get<I>(tuple)...);}
 
  public:
-	template<typename Tuple> constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) {return apply_impl(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	template<typename Tuple> constexpr auto apply(Tuple const& tuple)     && -> decltype(auto) {return apply_impl(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	template<typename Tuple> constexpr auto apply(Tuple const& tuple)      & -> decltype(auto) {return apply_impl(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> constexpr auto apply(Tuple const& tuple)     && -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> constexpr auto apply(Tuple const& tuple)      & -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
 	using       iterator = array_iterator<element, D, element_ptr      >;
 	using const_iterator = array_iterator<element, D, element_const_ptr>;
@@ -2311,20 +2311,20 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux_(size);}
 
  private:
-	constexpr auto reversed_aux() const -> subarray {
+	constexpr auto reversed_aux_() const -> subarray {
 		auto new_layout = this->layout();
 		new_layout.reverse();
 		return {new_layout, types::base_};
 	}
 
  public:
-	constexpr auto reversed() const& -> basic_const_array {return reversed_aux();}
-	constexpr auto reversed()      & -> subarray       {return reversed_aux();}
-	constexpr auto reversed()     && -> subarray       {return reversed_aux();}
+	constexpr auto reversed() const& -> basic_const_array {return reversed_aux_();}
+	constexpr auto reversed()      & ->          subarray {return reversed_aux_();}
+	constexpr auto reversed()     && ->          subarray {return reversed_aux_();}
 
 	friend constexpr auto reversed(subarray const& self) -> basic_const_array {return           self .reversed();}
-	friend constexpr auto reversed(subarray      & self) -> subarray       {return           self .reversed();}
-	friend constexpr auto reversed(subarray     && self) -> subarray       {return std::move(self).reversed();}
+	friend constexpr auto reversed(subarray      & self) ->          subarray {return           self .reversed();}
+	friend constexpr auto reversed(subarray     && self) ->          subarray {return std::move(self).reversed();}
 
 	friend constexpr auto   rotated(subarray const& self) -> decltype(auto) {return self.  rotated();}
 	friend constexpr auto unrotated(subarray const& self) -> decltype(auto) {return self.unrotated();}
@@ -2369,13 +2369,13 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	}
 	friend constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
-	constexpr BOOST_MULTI_HD auto begin_aux() const {return iterator{this->base_                  , this->stride()};}
-	constexpr    auto end_aux  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
+	constexpr BOOST_MULTI_HD auto begin_aux_() const {return iterator{this->base_                  , this->stride()};}
+	constexpr                auto end_aux_  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
 
  public:
-	constexpr BOOST_MULTI_HD auto  begin() const& -> const_iterator {return begin_aux();}
-	constexpr    auto  begin()      & ->       iterator {return begin_aux();}
-	constexpr    auto  begin()     && ->       iterator {return begin_aux();}
+	BOOST_MULTI_HD constexpr auto  begin() const& -> const_iterator {return begin_aux_();}
+	               constexpr auto  begin()      & ->       iterator {return begin_aux_();}
+	               constexpr auto  begin()     && ->       iterator {return begin_aux_();}
 
 	constexpr auto mbegin()      & {return move_iterator{begin()};}
 	constexpr auto mend  ()      & {return move_iterator{end  ()};}
@@ -2383,9 +2383,9 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	constexpr auto mbegin()     && {return move_iterator{begin()};}
 	constexpr auto mend  ()     && {return move_iterator{end  ()};}
 
-	constexpr auto  end  () const& -> const_iterator {return end_aux();}
-	constexpr auto  end  ()      & ->       iterator {return end_aux();}
-	constexpr auto  end  ()     && ->       iterator {return end_aux();}
+	constexpr auto  end  () const& -> const_iterator {return end_aux_();}
+	constexpr auto  end  ()      & ->       iterator {return end_aux_();}
+	constexpr auto  end  ()     && ->       iterator {return end_aux_();}
 
 	[[deprecated("implement as negative stride")]] constexpr auto rbegin() const& {return const_reverse_iterator(end  ());}  // TODO(correaa) implement as negative stride?
 	[[deprecated("implement as negative stride")]] constexpr auto rend  () const& {return const_reverse_iterator(begin());}  // TODO(correaa) implement as negative stride?
