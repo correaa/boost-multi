@@ -1357,12 +1357,12 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using const_pointer = const_ptr;
 
  private:
-	constexpr auto addressof_aux() const {return ptr(this->base_, this->layout());}
+	constexpr auto addressof_aux_() const {return ptr(this->base_, this->layout());}
 
  public:
-	constexpr auto addressof()     && ->       ptr { return addressof_aux(); }
-	constexpr auto addressof()      & ->       ptr { return addressof_aux(); }
-	constexpr auto addressof() const& -> const_ptr { return addressof_aux(); }
+	constexpr auto addressof()     && ->       ptr { return addressof_aux_(); }
+	constexpr auto addressof()      & ->       ptr { return addressof_aux_(); }
+	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }
 
 	// NOLINTNEXTLINE(runtime/operator) //NOSONAR
 	                                constexpr auto operator&()     && {return addressof();}  // NOLINT(google-runtime-operator) //NOSONAR
@@ -1370,24 +1370,24 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	[[deprecated("controversial")]] constexpr auto operator&()      & {return addressof();}  // NOLINT(google-runtime-operator) //NOSONAR
 	// NOLINTNEXTLINE(runtime/operator) //NOSONAR
 	[[deprecated("controversial")]] constexpr auto operator&() const& {return addressof();}  // NOLINT(google-runtime-operator) //NOSONAR
-
+        
  private:
-	BOOST_MULTI_HD constexpr auto begin_aux() const {return iterator{types::base_                 , this->sub(), this->stride()};}
-	   constexpr auto end_aux  () const {return iterator{types::base_ + this->nelems(), this->sub(), this->stride()};}
+	BOOST_MULTI_HD constexpr auto begin_aux_() const {return iterator(types::base_                 , this->sub(), this->stride());}
+	               constexpr auto end_aux_  () const {return iterator(types::base_ + this->nelems(), this->sub(), this->stride());}
 
  public:
-	       BOOST_MULTI_HD constexpr auto  begin()                & {return begin_aux();}
-	          constexpr auto  end  ()                & {return end_aux()  ;}
-	friend BOOST_MULTI_HD /*constexpr*/ auto  begin(subarray      & self) {return self.begin();}
-	friend constexpr auto  end  (subarray      & self) {return self.end  ();}
+	       BOOST_MULTI_HD constexpr     auto begin()       &       {return begin_aux_();}
+	                      constexpr     auto end  ()       &       {return end_aux_()  ;}
+	friend BOOST_MULTI_HD /*constexpr*/ auto begin(subarray& self) {return self.begin();}
+	friend constexpr                    auto end  (subarray& self) {return self.end  ();}
 
-	       constexpr auto  begin()               && {return begin();}
-	       constexpr auto  end  ()               && {return end()  ;}
-	friend /*constexpr*/ auto  begin(subarray     && self) {return std::move(self).begin();}
-	friend /*constexpr*/ auto  end  (subarray     && self) {return std::move(self).end()  ;}
+	       constexpr     auto begin()       &&       {return begin();}
+	       constexpr     auto end  ()       &&       {return end()  ;}
+	friend /*constexpr*/ auto begin(subarray&& self) {return std::move(self).begin();}
+	friend /*constexpr*/ auto end  (subarray&& self) {return std::move(self).end()  ;}
 
-	       constexpr auto  begin()           const& -> const_iterator {return begin_aux();}
-	       constexpr auto  end  ()           const& -> const_iterator {return end_aux()  ;}
+	       constexpr     auto  begin()        const&       -> const_iterator { return begin_aux_(); }
+	       constexpr     auto  end  ()        const&       -> const_iterator { return end_aux_()  ; }
 	friend /*constexpr*/ auto  begin(subarray const& self) -> const_iterator { return self.begin(); }  // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
 	friend /*constexpr*/ auto  end  (subarray const& self) -> const_iterator { return self.end()  ; }  // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
 
@@ -1791,7 +1791,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	constexpr auto operator<(array_iterator const& other) const -> bool {return distance_to(other) > 0;}
+	constexpr auto operator<(array_iterator const& other) const -> bool {return distance_to_(other) > 0;}
 
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename subarray<Element, 1, Ptr>::index stride)
 	: data_{ptr}, stride_{stride} {}
@@ -1802,7 +1802,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	element_ptr data_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
 	stride_type stride_ = {1};
 
-	constexpr auto distance_to(array_iterator const& other) const -> difference_type {
+	constexpr auto distance_to_(array_iterator const& other) const -> difference_type {
 		assert(stride_==other.stride_ && (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return (other.data_ - data_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
 	}
@@ -1838,7 +1838,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	#pragma clang diagnostic pop
 	#endif
 
-	constexpr auto operator-(array_iterator const& other) const -> difference_type {return -distance_to(other);}
+	constexpr auto operator-(array_iterator const& other) const -> difference_type {return -distance_to_(other);}
 
 	friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.data_ == other.data_;}
 
@@ -2286,7 +2286,7 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	using partitioned_const_type = subarray<T, 2, element_const_ptr>;
 
  private:
-	BOOST_MULTI_HD constexpr auto partitioned_aux(size_type size) const -> partitioned_type {
+	BOOST_MULTI_HD constexpr auto partitioned_aux_(size_type size) const -> partitioned_type {
 		assert( size != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert( (this->layout().nelems() % size) == 0 );  // TODO(correaa) remove assert? truncate left over? (like mathematica) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/size, 0, this->layout().nelems()};
@@ -2295,20 +2295,20 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto partitioned(size_type size) const& -> partitioned_const_type {return partitioned_aux(size);}
-	BOOST_MULTI_HD constexpr auto partitioned(size_type size)      & -> partitioned_type       {return partitioned_aux(size);}
-	BOOST_MULTI_HD constexpr auto partitioned(size_type size)     && -> partitioned_type       {return partitioned_aux(size);}
+	BOOST_MULTI_HD constexpr auto partitioned(size_type size) const& -> partitioned_const_type {return partitioned_aux_(size);}
+	BOOST_MULTI_HD constexpr auto partitioned(size_type size)      & -> partitioned_type       {return partitioned_aux_(size);}
+	BOOST_MULTI_HD constexpr auto partitioned(size_type size)     && -> partitioned_type       {return partitioned_aux_(size);}
 
  private:
-	BOOST_MULTI_HD constexpr auto chunked_aux(size_type size) const -> partitioned_type {
+	BOOST_MULTI_HD constexpr auto chunked_aux_(size_type size) const -> partitioned_type {
 		assert( this->size() % size == 0 );
-		return partitioned_aux(this->size()/size);
+		return partitioned_aux_(this->size()/size);
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
-	BOOST_MULTI_HD constexpr auto chunked(size_type size) const& -> partitioned_const_type {return chunked_aux(size);}
-	BOOST_MULTI_HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux(size);}
-	BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux(size);}
+	BOOST_MULTI_HD constexpr auto chunked(size_type size) const& -> partitioned_const_type {return chunked_aux_(size);}
+	BOOST_MULTI_HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux_(size);}
+	BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux_(size);}
 
  private:
 	constexpr auto reversed_aux() const -> subarray {
