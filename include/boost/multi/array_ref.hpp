@@ -537,14 +537,14 @@ struct cursor_t {
 
  private:
 	template<class Tuple, std::size_t... I>
-	BOOST_MULTI_HD constexpr auto apply_impl(Tuple const& tup, std::index_sequence<I...> /*012*/) const -> decltype(auto) {
+	BOOST_MULTI_HD constexpr auto apply_impl_(Tuple const& tup, std::index_sequence<I...> /*012*/) const -> decltype(auto) {
 		return ((std::get<I>(tup)*std::get<I>(strides_)) + ...);
 	}
 
  public:
 	template<class Tuple = indices_type>
 	BOOST_MULTI_HD constexpr auto operator+=(Tuple const& tup) -> cursor_t& {
-		base_ += apply_impl(tup, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
+		base_ += apply_impl_(tup, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator* () const -> reference {return *base_;}
@@ -697,15 +697,15 @@ struct elements_range_t {
 	constexpr elements_range_t(pointer base, layout_type lyt) : base_{base}, l_{lyt} {}
 
  private:
-	constexpr auto at_aux(difference_type n) const -> reference {
+	constexpr auto at_aux_(difference_type n) const -> reference {
 		assert( ! is_empty() );
 		return base_[std::apply(l_, l_.extensions().from_linear(n))];
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux(n);}
-	BOOST_MULTI_HD constexpr auto operator[](difference_type n)     && ->       reference {return at_aux(n);}
-	BOOST_MULTI_HD constexpr auto operator[](difference_type n)      & ->       reference {return at_aux(n);}
+	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux_(n);}
+	BOOST_MULTI_HD constexpr auto operator[](difference_type n)     && ->       reference {return at_aux_(n);}
+	BOOST_MULTI_HD constexpr auto operator[](difference_type n)      & ->       reference {return at_aux_(n);}
 
 	constexpr auto size() const -> size_type {return l_.num_elements();}
 
@@ -733,18 +733,18 @@ struct elements_range_t {
 	~elements_range_t() = default;
 
  private:
-	constexpr auto begin_aux() const {return iterator{base_, l_, 0                };}
-	constexpr auto end_aux  () const {return iterator{base_, l_, l_.num_elements()};}
+	constexpr auto begin_aux_() const {return iterator{base_, l_, 0                };}
+	constexpr auto end_aux_  () const {return iterator{base_, l_, l_.num_elements()};}
 
  public:
-	constexpr auto begin() const& -> const_iterator {return begin_aux();}
-	constexpr auto end  () const& -> const_iterator {return end_aux  ();}
+	constexpr auto begin() const& -> const_iterator {return begin_aux_();}
+	constexpr auto end  () const& -> const_iterator {return end_aux_  ();}
 
-	constexpr auto begin()     && ->       iterator {return begin_aux();}
-	constexpr auto end  ()     && ->       iterator {return end_aux()  ;}
+	constexpr auto begin()     && ->       iterator {return begin_aux_();}
+	constexpr auto end  ()     && ->       iterator {return end_aux_  ();}
 
-	constexpr auto begin()      & ->       iterator {return begin_aux();}
-	constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
+	constexpr auto begin()      & ->       iterator {return begin_aux_();}
+	constexpr auto end  ()      & ->       iterator {return end_aux_  ();}
 
 	constexpr auto front() const& -> const_reference {return *begin();}
 	constexpr auto back () const& -> const_reference {return *std::prev(end(), 1);}
@@ -910,7 +910,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using typename types::const_reference;
 
  private:
-	BOOST_MULTI_HD constexpr auto at_aux(index idx) const {
+	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
 		#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -926,9 +926,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return static_cast<const_reference>(at_aux(idx)); }
-	BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference {return at_aux(idx) ; }
-	BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference {return at_aux(idx) ; }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const&                  { return static_cast<const_reference>(at_aux_(idx)); }  // TODO(correaa) use return type to cast
+	BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference { return                              at_aux_(idx) ; }
+	BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference { return                              at_aux_(idx) ; }
 
 	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)> >
 	BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
@@ -982,7 +982,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	constexpr auto taked_aux(difference_type n) const {
+	constexpr auto taked_aux_(difference_type n) const {
 		assert( n <= this->size() );
 		typename types::layout_t const new_layout(
 			this->layout().sub(),
@@ -994,9 +994,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto taked(difference_type n) const& -> basic_const_array {return taked_aux(n);}
-	constexpr auto taked(difference_type n)     && -> subarray          {return taked_aux(n);}
-	constexpr auto taked(difference_type n)      & -> subarray          {return taked_aux(n);}
+	constexpr auto taked(difference_type n) const& -> basic_const_array {return taked_aux_(n);}
+	constexpr auto taked(difference_type n)     && -> subarray          {return taked_aux_(n);}
+	constexpr auto taked(difference_type n)      & -> subarray          {return taked_aux_(n);}
 
  private:
 	constexpr auto dropped_aux(difference_type n) const {
@@ -1186,35 +1186,35 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto chunked(size_type count)     && -> partitioned_type       {return chunked_aux(count);}
 
  private:
-	constexpr auto reversed_aux() const -> subarray {
+	constexpr auto reversed_aux_() const -> subarray {
 		auto new_layout = this->layout();
 		new_layout.reverse();
 		return {new_layout, types::base_};
 	}
 
  public:
-	       constexpr auto reversed()           const&       -> basic_const_array {return reversed_aux();}
-	       constexpr auto reversed()                &       -> subarray       {return reversed_aux();}
-	       constexpr auto reversed()               &&       -> subarray       {return reversed_aux();}
-	friend constexpr auto reversed(subarray const& self) -> basic_const_array {return           self .reversed();}
-	friend constexpr auto reversed(subarray      & self) -> subarray       {return           self .reversed();}
-	friend constexpr auto reversed(subarray     && self) -> subarray       {return std::move(self).reversed();}
+	       constexpr auto reversed()           const&       -> basic_const_array { return reversed_aux_(); }
+	       constexpr auto reversed()                &       ->          subarray { return reversed_aux_(); }
+	       constexpr auto reversed()               &&       ->          subarray { return reversed_aux_(); }
+	friend constexpr auto reversed(subarray const& self) -> basic_const_array { return           self .reversed(); }
+	friend constexpr auto reversed(subarray      & self) ->          subarray { return           self .reversed(); }
+	friend constexpr auto reversed(subarray     && self) ->          subarray { return std::move(self).reversed(); }
 
  private:
-	BOOST_MULTI_HD constexpr auto transposed_aux() const -> subarray {
+	BOOST_MULTI_HD constexpr auto transposed_aux_() const -> subarray {
 		auto new_layout = this->layout();
 		new_layout.transpose();
 		return {new_layout, types::base_};
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto transposed() const& -> basic_const_array {return transposed_aux();}
-	BOOST_MULTI_HD constexpr auto transposed()      & -> subarray       {return transposed_aux();}
-	BOOST_MULTI_HD constexpr auto transposed()     && -> subarray       {return transposed_aux();}
+	BOOST_MULTI_HD constexpr auto transposed() const& -> basic_const_array { return transposed_aux_(); }
+	BOOST_MULTI_HD constexpr auto transposed()      & ->          subarray { return transposed_aux_(); }
+	BOOST_MULTI_HD constexpr auto transposed()     && ->          subarray { return transposed_aux_(); }
 
-	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(subarray const& self) -> basic_const_array {return self.transposed();}
-	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(subarray      & self) -> subarray       {return self.transposed();}
-	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(subarray     && self) -> subarray       {return std::move(self).transposed();}
+	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(subarray const& self) -> basic_const_array { return           self .transposed(); }
+	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(subarray      & self) ->          subarray { return           self .transposed(); }
+	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(subarray     && self) ->          subarray { return std::move(self).transposed(); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
 	auto operator~ (subarray const& self) -> basic_const_array {return self.transposed();}
@@ -1224,36 +1224,36 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	auto operator~ (subarray&& self) -> subarray {return std::move(self).transposed();}
 
  private:
-	BOOST_MULTI_HD constexpr auto rotated_aux() const {
+	BOOST_MULTI_HD constexpr auto rotated_aux_() const {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.rotate();
-		return subarray{new_layout, types::base_};
+		return subarray(new_layout, types::base_);
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto rotated()     && -> subarray       {return rotated_aux();}
-	BOOST_MULTI_HD constexpr auto rotated()      & -> subarray       {return rotated_aux();}
-	BOOST_MULTI_HD constexpr auto rotated() const& -> basic_const_array {return rotated_aux();}
+	BOOST_MULTI_HD constexpr auto rotated()     && ->          subarray { return rotated_aux_(); }
+	BOOST_MULTI_HD constexpr auto rotated()      & ->          subarray { return rotated_aux_(); }
+	BOOST_MULTI_HD constexpr auto rotated() const& -> basic_const_array { return rotated_aux_(); }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray const& self) {return           self .rotated();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray      & self) {return           self .rotated();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray     && self) {return std::move(self).rotated();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray const& self) { return           self .rotated(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray      & self) { return           self .rotated(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(subarray     && self) { return std::move(self).rotated(); }
 
  private:
-	BOOST_MULTI_HD constexpr auto unrotated_aux() const {
+	BOOST_MULTI_HD constexpr auto unrotated_aux_() const {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.unrotate();
-		return subarray{new_layout, types::base_};
+		return subarray(new_layout, types::base_);
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto unrotated()      & -> subarray       {return unrotated_aux();}
-	BOOST_MULTI_HD constexpr auto unrotated()     && -> subarray       {return unrotated_aux();}
-	BOOST_MULTI_HD constexpr auto unrotated() const& -> basic_const_array /*const*/ {return unrotated_aux();}  // NOLINT(readability-const-return-type)
+	BOOST_MULTI_HD constexpr auto unrotated()      & ->          subarray           { return unrotated_aux_(); }
+	BOOST_MULTI_HD constexpr auto unrotated()     && ->          subarray           { return unrotated_aux_();}
+	BOOST_MULTI_HD constexpr auto unrotated() const& -> basic_const_array /*const*/ { return unrotated_aux_(); }  // NOLINT(readability-const-return-type)
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray const& self) {return           self .unrotated();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray      & self) {return           self .unrotated();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray     && self) {return std::move(self).unrotated();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray const& self) { return           self .unrotated(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray      & self) { return           self .unrotated(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(subarray     && self) { return std::move(self).unrotated(); }
 
 	constexpr auto operator|(typename subarray::size_type n)      & -> decltype(auto) {return partitioned(n);}
 	constexpr auto operator|(typename subarray::size_type n)     && -> decltype(auto) {return std::move(*this).partitioned(n);}
@@ -1414,17 +1414,17 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	using       cursor = cursor_t<typename subarray::element_ptr      , D, typename subarray::strides_type>;
 
  private:
-	constexpr auto home_aux() const {return cursor(this->base_, this->strides());}
+	constexpr auto home_aux_() const {return cursor(this->base_, this->strides());}
 
  public:
 	using const_cursor = cursor_t<typename subarray::element_const_ptr, D, typename subarray::strides_type>;
 
-	constexpr auto home() const& -> const_cursor {return home_aux();}
-	constexpr auto home()     && ->       cursor {return home_aux();}
-	constexpr auto home()      & ->       cursor {return home_aux();}
+	constexpr auto home() const& -> const_cursor { return home_aux_(); }
+	constexpr auto home()     && ->       cursor { return home_aux_(); }
+	constexpr auto home()      & ->       cursor { return home_aux_(); }
 
-	template<class It> constexpr auto assign(It first) & -> It {adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
-	template<class It> constexpr auto assign(It first)&& -> It {return assign(first);}
+	template<class It> constexpr auto assign(It first) & -> It { adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first; }
+	template<class It> constexpr auto assign(It first)&& -> It { return assign(first);}
 
 	template<
 		class Range,
@@ -1524,7 +1524,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	friend constexpr auto lexicographical_compare(subarray const& self, subarray const& other) -> bool {
+	friend constexpr auto lexicographical_compare_(subarray const& self, subarray const& other) -> bool {
 		if(self.extension().first() > other.extension().first()) {return true ;}
 		if(self.extension().first() < other.extension().first()) {return false;}
 		return adl_lexicographical_compare(
@@ -1534,8 +1534,8 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto operator< (subarray const& other) const& -> bool {return lexicographical_compare(*this, other);}
-	constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare(*this, other);}
+	constexpr auto operator< (subarray const& other) const& -> bool {return lexicographical_compare_(*this, other);}
+	constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare_(*this, other);}
 	constexpr auto operator> (subarray const& other) const& -> bool {return other < *this;}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, std::enable_if_t<  std::is_const_v<typename std::pointer_traits<P2>::element_type>,int> =0>
@@ -2062,7 +2062,7 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	// }
 
  private:
-	BOOST_MULTI_HD constexpr auto at_aux(index idx) const -> typename subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		#if defined(__clang__)
 		#pragma clang diagnostic push
@@ -2085,9 +2085,9 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		return subarray<T, 2, typename subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
-	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename subarray::const_reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-	BOOST_MULTI_HD constexpr auto operator[](index idx)      & -> typename subarray::      reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-	BOOST_MULTI_HD constexpr auto operator[](index idx)     && -> typename subarray::      reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	BOOST_MULTI_HD constexpr auto operator[](index idx)      & -> typename subarray::      reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	BOOST_MULTI_HD constexpr auto operator[](index idx)     && -> typename subarray::      reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
 	constexpr auto front() const& -> const_reference {return *begin();}
 	constexpr auto back()  const& -> const_reference {return *std::prev(end(), 1);}
@@ -2136,7 +2136,7 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	}
 
  private:
-	BOOST_MULTI_HD constexpr auto taked_aux(difference_type count) const {
+	BOOST_MULTI_HD constexpr auto taked_aux_(difference_type count) const {
 		assert( count <= this->size() );  // calculating size is expensive that is why
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -2148,12 +2148,12 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	}
 
  public:
-	constexpr auto taked(difference_type count) const& -> basic_const_array {return taked_aux(count);}
-	constexpr auto taked(difference_type count)     && -> subarray          {return taked_aux(count);}
-	constexpr auto taked(difference_type count)      & -> subarray          {return taked_aux(count);}
+	constexpr auto taked(difference_type count) const& -> basic_const_array {return taked_aux_(count);}
+	constexpr auto taked(difference_type count)     && -> subarray          {return taked_aux_(count);}
+	constexpr auto taked(difference_type count)      & -> subarray          {return taked_aux_(count);}
 
  private:
-	BOOST_MULTI_HD constexpr auto dropped_aux(difference_type count) const -> subarray {
+	BOOST_MULTI_HD constexpr auto dropped_aux_(difference_type count) const -> subarray {
 		assert( count <= this->size() );
 		typename types::layout_t const new_layout{
 			this->layout().sub(),
@@ -2165,12 +2165,12 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	}
 
  public:
-	constexpr auto dropped(difference_type count) const& -> basic_const_array {return dropped_aux(count);}
-	constexpr auto dropped(difference_type count)     && -> subarray       {return dropped_aux(count);}
-	constexpr auto dropped(difference_type count)      & -> subarray       {return dropped_aux(count);}
+	constexpr auto dropped(difference_type count) const& -> basic_const_array { return dropped_aux_(count); }
+	constexpr auto dropped(difference_type count)     && ->          subarray { return dropped_aux_(count); }
+	constexpr auto dropped(difference_type count)      & ->          subarray { return dropped_aux_(count); }
 
  private:
-	BOOST_MULTI_HD constexpr auto sliced_aux(index first, index last) const {
+	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
 		typename types::layout_t new_layout = this->layout();
 		if(this->is_empty()) {
 			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -2183,9 +2183,9 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> basic_const_array /*const*/ {return basic_const_array{sliced_aux(first, last)};}  // NOLINT(readability-const-return-type)
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last)      & -> subarray       {return sliced_aux(first, last);}
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last)     && -> subarray       {return sliced_aux(first, last);}
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> basic_const_array /*const*/ { return basic_const_array{sliced_aux_(first, last)};}  // NOLINT(readability-const-return-type)
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last)      & ->          subarray           { return                   sliced_aux_(first, last) ;}
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last)     && ->          subarray           { return                   sliced_aux_(first, last) ;}
 
 	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
@@ -2194,14 +2194,14 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 
  private:
-	constexpr auto elements_aux() const {return elements_range{this->base_, this->layout()};}
+	constexpr auto elements_aux_() const {return elements_range{this->base_, this->layout()};}
 
  public:
-	constexpr auto  elements()      & ->       elements_range {return elements_aux();}
-	constexpr auto  elements()     && ->       elements_range {return elements_aux();}
+	constexpr auto  elements()      & ->       elements_range {return elements_aux_();}
+	constexpr auto  elements()     && ->       elements_range {return elements_aux_();}
 	constexpr auto  elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
 
-	constexpr auto celements() const  -> const_elements_range {return elements_aux();}
+	constexpr auto celements() const  -> const_elements_range {return elements_aux_();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
 		return {std::min(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};
@@ -2215,19 +2215,19 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	}
 
  private:
-	constexpr auto strided_aux(difference_type diff) const -> subarray {
+	constexpr auto strided_aux_(difference_type diff) const -> subarray {
 		auto const new_layout = typename types::layout_t{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> basic_const_array {return strided_aux(diff);}
-	constexpr auto strided(difference_type diff)     && -> subarray       {return strided_aux(diff);}
-	constexpr auto strided(difference_type diff)      & -> subarray       {return strided_aux(diff);}
+	constexpr auto strided(difference_type diff) const& -> basic_const_array { return strided_aux_(diff);}
+	constexpr auto strided(difference_type diff)     && ->          subarray { return strided_aux_(diff);}
+	constexpr auto strided(difference_type diff)      & ->          subarray { return strided_aux_(diff);}
 
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array {return sliced(first, last).strided(stride);}
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)     && -> subarray       {return sliced(first, last).strided(stride);}
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)      & -> subarray       {return sliced(first, last).strided(stride);}
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)     && ->          subarray { return sliced(first, last).strided(stride); }
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)      & ->          subarray { return sliced(first, last).strided(stride); }
 
 	BOOST_MULTI_HD constexpr auto range(index_range const& rng)      & {return                  sliced(rng.front(), rng.last());}
 	BOOST_MULTI_HD constexpr auto range(index_range const& rng)     && {return std::move(*this).sliced(rng.front(), rng.last());}

@@ -605,11 +605,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
  private:
-	void swap(static_array& other) noexcept { operator()().swap(other()); }
+	void swap_(static_array& other) noexcept { operator()().swap(other()); }
 
  public:
 	friend void swap(static_array& lhs, static_array& rhs) noexcept {
-		lhs.swap(rhs);
+		lhs.swap_(rhs);
 	}
 };
 
