@@ -182,7 +182,8 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	BOOST_REQUIRE( &arrc[0][0][0] == &arr[0][0][0] );
 
 	auto const& arrc2 = arr();
-	BOOST_REQUIRE( &arrc == &arrc2 );
+
+	BOOST_REQUIRE( arrc.addressof() == arrc2.addressof() );  // BOOST_REQUIRE( &arrc == &arrc2 );
 
 	multi::array<double, 3>::iterator const it2 = begin(arr);
 	BOOST_REQUIRE(it == it2);

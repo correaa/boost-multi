@@ -28,8 +28,8 @@ template<
 >
 class iterator_facade {
 	using self_type = Self;
-	[[nodiscard]] constexpr auto self()      & {return static_cast<self_type      &>(*this);}
-	[[nodiscard]] constexpr auto self() const& {return static_cast<self_type const&>(*this);}
+	[[nodiscard]] constexpr auto self_()      & {return static_cast<self_type      &>(*this);}
+	[[nodiscard]] constexpr auto self_() const& {return static_cast<self_type const&>(*this);}
 
  public:
 	using value_type        = ValueType;
@@ -44,14 +44,14 @@ class iterator_facade {
 	friend constexpr auto operator> (self_type const& self, self_type const& other) {return !(self <= other);}
 	friend constexpr auto operator>=(self_type const& self, self_type const& other) {return !(self <  other);}
 
-	       constexpr auto operator-(difference_type n) const {return self_type{self()} -= n;}
-	       constexpr auto operator+(difference_type n) const {return self_type{self()} += n;}
+	       constexpr auto operator-(difference_type n) const {return self_type{self_()} -= n;}
+	       constexpr auto operator+(difference_type n) const {return self_type{self_()} += n;}
 	friend constexpr auto operator+(difference_type n, self_type const& self) {return self + n;}
 
 	friend constexpr auto operator++(self_type& self, int) -> self_type {self_type ret = self; ++self; return ret;}
 	friend constexpr auto operator--(self_type& self, int) -> self_type {self_type ret = self; --self; return ret;}
 
-	constexpr auto operator[](difference_type n) const {return *(self() + n);}
+	constexpr auto operator[](difference_type n) const {return *(self_() + n);}
 };
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<> >
@@ -207,7 +207,7 @@ class intersecting_range {
 	range<IndexType> impl_{std::numeric_limits<IndexType>::min(), std::numeric_limits<IndexType>::max()};
 
 	constexpr intersecting_range() = default;  // MSVC 19.07 needs constexpr to initialize ALL later
-	static constexpr auto make(IndexType first, IndexType last) -> intersecting_range {
+	static constexpr auto make_(IndexType first, IndexType last) -> intersecting_range {
 		intersecting_range ret; ret.impl_ = range<IndexType>{first, last}; return ret;
 	}
 	friend constexpr auto intersection(intersecting_range const& self, range<IndexType> const& other) {
@@ -217,10 +217,10 @@ class intersecting_range {
 		return intersection(other, self.impl_);
 	}
 	friend constexpr auto operator<(intersecting_range const& self, IndexType end) {
-		return intersecting_range::make(self.impl_.first(), end);
+		return intersecting_range::make_(self.impl_.first(), end);
 	}
 	friend constexpr auto operator<=(IndexType first, intersecting_range const& self) {
-		return intersecting_range::make(first, self.impl_.last());
+		return intersecting_range::make_(first, self.impl_.last());
 	}
 
  public:

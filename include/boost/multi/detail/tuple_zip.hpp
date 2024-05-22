@@ -90,13 +90,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N - 1>> {};
 
 	template<class Index>
-	constexpr auto at_aux(priority<0> /*prio*/, Index idx) const
+	constexpr auto at_aux_(priority<0> /*prio*/, Index idx) const
 		-> decltype(ht_tuple(std::declval<head_type const&>(), std::declval<tail_type const&>()[idx])) {
 		return ht_tuple(head(), tail()[idx]);
 	}
 
 	template<class Index>
-	constexpr auto at_aux(priority<1> /*prio*/, Index idx) const
+	constexpr auto at_aux_(priority<1> /*prio*/, Index idx) const
 		-> decltype(ht_tuple(std::declval<head_type const&>()[idx], std::declval<tail_type const&>())) {
 		return ht_tuple(head()[idx], tail());
 	}
@@ -104,8 +104,8 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
  public:
 	template<class Index>
 	constexpr auto operator[](Index idx) const
-		-> decltype(std::declval<tuple<T0, Ts...> const&>().at_aux(priority<1>{}, idx)) {
-		return this->at_aux(priority<1>{}, idx);
+		-> decltype(std::declval<tuple<T0, Ts...> const&>().at_aux_(priority<1>{}, idx)) {
+		return this->at_aux_(priority<1>{}, idx);
 	}
 
 	template<std::size_t N>
