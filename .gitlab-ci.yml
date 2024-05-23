@@ -8,6 +8,10 @@
 
 image: debian:stable
 
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
@@ -19,6 +23,7 @@ variables:
 
 g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: build
+  interruptible: false
   tags:
     - non-shared
   script:
@@ -35,6 +40,7 @@ g++-m32:
   tags:
     - non-shared
     - high-bandwidth
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake make tar wget
     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
@@ -55,6 +61,7 @@ g++-10:
   image: ubuntu:20.04
   tags:
     - high-bandwidth
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++-10 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget  # linux-libc-dev:i386
     - mkdir build && cd build
@@ -70,6 +77,7 @@ clang++-9:
   tags:
     - non-shared
     - high-bandwidth
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-9 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
     - mkdir build && cd build
@@ -85,6 +93,7 @@ clang++-11:
   tags:
     - non-shared
     - high-bandwidth
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-11 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
     - mkdir build && cd build
@@ -100,6 +109,7 @@ coverage:
     - non-shared
     - docker
   allow_failure: true
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
@@ -126,6 +136,7 @@ coverage:
 g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
   stage: build
   allow_failure: true
+  interruptible: true
   tags:
     - non-shared
     - docker
@@ -148,6 +159,7 @@ g++-testing sanitizer:
     - non-shared
     - docker
   image: debian:testing
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -162,6 +174,7 @@ g++-7:
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
@@ -180,6 +193,7 @@ g++-testing c++20:
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
@@ -194,6 +208,7 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
@@ -207,6 +222,7 @@ clang++:
   stage: build
   tags:
     - non-shared
+  interruptible: false
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -240,6 +256,7 @@ clang++-latest libc++:
     - non-shared
     - docker
     - high-bandwidth
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
     - wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose # 1.70 doesn't install boost timer well, there is no version 1.72 in sourceforge
@@ -297,6 +314,7 @@ clang++-m32:
   image: debian:latest
   tags:
     - high-bandwidth
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib cmake make tar wget
     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
@@ -318,6 +336,7 @@ clang++-testing tidy:
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-18 clang-tidy-18 cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -334,6 +353,7 @@ g++-testing c++20:
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
@@ -348,6 +368,7 @@ g++-testing sanitizer:
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
@@ -363,6 +384,7 @@ clang++-17-unstable libc++ c++23 boost_1_84:
     - non-shared
     - docker
     - high-bandwidth
+  interruptible: true
   script:  # clang 17 doesn't work with gcc 13 libstd
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang clang-17 cmake make libblas-dev libc++-17-dev libc++abi-17-dev libfftw3-dev pkg-config tar wget
     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
@@ -383,6 +405,7 @@ clang++-oldoldstable:
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
@@ -400,6 +423,7 @@ oneapi:
   tags:
     - non-shared
     - large-disk-space
+  interruptible: true
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -415,6 +439,7 @@ oneapi-latest c++20:
     - non-shared
     - large-disk-space
     - high-bandwidth
+  interruptible: true
   script:
     - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
     - echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
@@ -432,6 +457,7 @@ oneapi-2022.2:
   tags:
     - non-shared
     - large-disk-space
+  interruptible: true
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -447,6 +473,7 @@ nvhpc:
   tags:
     - non-shared
     - large-disk-space
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
@@ -462,6 +489,7 @@ nvhpc-22.7:
   tags:
     - non-shared
     - large-disk-space
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev
@@ -476,8 +504,9 @@ nvhpc-24.3 c++20 par:
   stage: build
   image: nvcr.io/nvidia/nvhpc:24.3-devel-cuda12.3-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
-      - non-shared
-      - large-disk-space
+    - non-shared
+    - large-disk-space
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
@@ -494,6 +523,7 @@ cuda:
   tags:
     - non-shared
     - nvidia-gpu
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -515,6 +545,7 @@ cuda-11.8 mkl:
   tags:
     - non-shared
     - nvidia-gpu
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -537,6 +568,7 @@ cuda-11.4.3:
   tags:
     - non-shared
     - nvidia-gpu
+  interruptible: true
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
@@ -558,6 +590,7 @@ cuclang++-16 cuda-11.4.3:
   tags:
     - non-shared
     - nvidia-gpu
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -583,6 +616,7 @@ culang++-17 cuda-11.8:
     - non-shared
     - nvidia-gpu
     - high-bandwidth
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -605,6 +639,7 @@ culang++-19 cuda-12.1.1 tidy:
     - non-shared
     - nvidia-gpu
     - high-bandwidth
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -628,6 +663,7 @@ cuda-12.3.1:
   tags:
     - non-shared
     - nvidia-gpu
+  interruptible: true
   script:
     - nvidia-smi
     - apt-get -qq update && apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -647,6 +683,7 @@ rocm:
     - non-shared
     - docker
     - high-bandwidth
+  interruptible: true
   script:
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
@@ -724,6 +761,7 @@ circle:
   tags:
     - non-shared
     - docker
+  interruptible: false
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
@@ -742,6 +780,7 @@ circle-187:
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
@@ -761,6 +800,7 @@ circle-latest:
   tags:
     - non-shared
     - docker
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
@@ -781,6 +821,7 @@ inq:
   tags:
     - non-shared
     - large-memory-space
+  interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
     - export PREFIX=`mktemp -d`
@@ -809,6 +850,7 @@ inq cuda:
   tags:
     - non-shared
     - nvidia-gpu
+  interruptible: true
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
   script:
@@ -843,6 +885,7 @@ inq rocm:
   tags:
     - non-shared
     - large-disk-space
+  interruptible: true
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev rocm-device-libs wget
@@ -881,6 +924,7 @@ qmcpack:
     - non-shared
     - docker
     - high-bandwidth
+  interruptible: true
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
@@ -927,6 +971,7 @@ qmcpack cuda-12.3.1:
     - non-shared
     - nvidia-gpu
     - high-bandwidth
+  interruptible: true
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
@@ -987,6 +1032,7 @@ sonar:
   #     - build-wrapper/
   #     - sonar-scanner/
   #     - bw-output/
+  interruptible: true
   script:
     # Run the build inside the build wrapper
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl unzip g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config gcovr lcov
