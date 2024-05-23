@@ -362,11 +362,11 @@ enum class direction : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size
 class plan;
 
 class environment {
-	static void cleanup() { ::fftw_cleanup(); }
-	static void set_timelimit(std::chrono::duration<double> limit) {
+	static void cleanup_() { ::fftw_cleanup(); }
+	static void set_timelimit_(std::chrono::duration<double> limit) {
 		::fftw_set_timelimit(limit.count());
 	}
-	static void unset_timelimit() { ::fftw_set_timelimit(FFTW_NO_TIMELIMIT); }
+	static void unset_timelimit_() { ::fftw_set_timelimit(FFTW_NO_TIMELIMIT); }
 
  public:
 	environment() = default;
@@ -382,7 +382,7 @@ class environment {
 	template<class In, class Out>
 	auto make_plan_backward(std::array<bool, +In::rank_v> which, In const& in, Out&& out);
 
-	~environment() { cleanup(); }
+	~environment() { cleanup_(); }
 };
 
 class plan {
