@@ -103,7 +103,7 @@ else()
 	-Wexpansion-to-defined
 	# -Wexceptions  # (gcc 11, not in 10)
 	# -Wextra-semi # (gcc 8, not in 7)
-	-Wfloat-conversion # -Wfloat-equal # (disallows float equality)
+	-Wfloat-conversion -Wfloat-equal
 	-Wformat=2
 	-Wformat-contains-nul # (gcc 12, not in 11)
 	# -Wformat-diag # (gcc 10, not in 9)
@@ -434,7 +434,7 @@ else()
 	# -Wfixed-point-overflow (clang 11, not in clang 9)
 	-Wflag-enum
 	-Wflexible-array-extensions
-	-Wfloat-conversion # -Wfloat-equal
+	-Wfloat-conversion -Wfloat-equal
 	-Wfloat-overflow-conversion -Wfloat-zero-conversion
 	-Wfor-loop-analysis
 	-Wformat -Wformat-extra-args
