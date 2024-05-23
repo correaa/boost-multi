@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(empty_intersection) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
-	multi::array<double, 2> arr({3, 3}, 44.0);
+	multi::array<char, 2> arr({3, 3}, 'k');
 
 	std::array<int, 2> point = {
 		{1, 2}
@@ -87,17 +87,17 @@ BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
-	multi::array<double, 2> const carr({10, 10}, 99.0);
+	multi::array<char, 2> const carr({10, 10}, '9');
 
 	BOOST_REQUIRE( size( carr(1, {0, 3}) ) == 3 );
 
-	BOOST_REQUIRE( carr(1, {0, 3})[1] == 99.0 );
+	BOOST_REQUIRE( carr(1, {0, 3})[1] == '9' );
 	static_assert(decltype(carr({0, 3}, 1))::rank_v == 1);
 	BOOST_REQUIRE( size(carr.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( carr.range({0, 3}).rotated()[1].unrotated().size() == 3 );
 
-	BOOST_REQUIRE( carr({0, 3}, {0, 3})[1][1] == 99.0 );
+	BOOST_REQUIRE( carr({0, 3}, {0, 3})[1][1] == '9' );
 
 	static_assert(! std::is_assignable_v<decltype(carr(1, {0, 3})[1]), double>);
 }
@@ -138,8 +138,8 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 }
 
 BOOST_AUTO_TEST_CASE(empty_elements) {
-	multi::array<double, 2> arr1;
-	multi::array<double, 2> arr2;
+	multi::array<int, 2> arr1;
+	multi::array<int, 2> arr2;
 
 	BOOST_REQUIRE( arr1.elements().size() == 0 );
 	BOOST_REQUIRE( arr2.elements().size() == 0 );
