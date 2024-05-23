@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(elements_from_init_list_2D) {
 	BOOST_REQUIRE(arr[1][0] == 3);
 
 	arr.elements() = {10, 20, 30, 40, 50, 60};
-	BOOST_REQUIRE(arr[1][0] == 30.);
+	BOOST_REQUIRE(arr[1][0] == 30);
 }
 
 BOOST_AUTO_TEST_CASE(front_back_2D) {
