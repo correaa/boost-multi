@@ -1523,7 +1523,6 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return (this->extension() != other.extension()) ||  (this->elements() != other.elements());
 	}
 
- public:
 	friend constexpr auto lexicographical_compare(subarray const& self, subarray const& other) -> bool {
 		if(self.extension().first() > other.extension().first()) {return true ;}
 		if(self.extension().first() < other.extension().first()) {return false;}
