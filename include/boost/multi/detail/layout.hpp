@@ -181,7 +181,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
  private:
 	template<class Archive, std::size_t... I>
-	void serialize_impl(Archive& arxiv, std::index_sequence<I...> /*unused012*/) {
+	void serialize_impl_(Archive& arxiv, std::index_sequence<I...> /*unused012*/) {
 		using boost::multi::detail::get;
 		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extension",      get<I>(this->base())) , 0U)...};
 	}
@@ -189,26 +189,26 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
  public:
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned int const /*version*/) {
-		serialize_impl(arxiv, std::make_index_sequence<static_cast<std::size_t>(D)>());
+		serialize_impl_(arxiv, std::make_index_sequence<static_cast<std::size_t>(D)>());
 	}
 
  private:
 	template<class Array, std::size_t... I, typename = decltype(base_{boost::multi::detail::get<I>(std::declval<Array const&>())...})>
 	constexpr extensions_t(Array const& tup, std::index_sequence<I...> /*unused012*/) : base_{boost::multi::detail::get<I>(tup)...} {}
 
-	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1U);}
-	static constexpr auto multiply_fold(size_type const& size) -> size_type {return size;}
+	static constexpr auto multiply_fold_() -> size_type {return static_cast<size_type>(1U);}
+	static constexpr auto multiply_fold_(size_type const& size) -> size_type {return size;}
 	template<class...As>
-	static constexpr auto multiply_fold(size_type const& size, As const&... rest) -> size_type {return size*static_cast<size_type>(multiply_fold(rest...));}
+	static constexpr auto multiply_fold_(size_type const& size, As const&... rest) -> size_type {return size*static_cast<size_type>(multiply_fold_(rest...));}
 
-	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*unused012*/) const -> size_type {
+	template<std::size_t... I> constexpr auto num_elements_impl_(std::index_sequence<I...> /*unused012*/) const -> size_type {
 		using boost::multi::detail::get;
-		return static_cast<size_type>(multiply_fold(static_cast<size_type>(get<I>(this->base()).size())...));
+		return static_cast<size_type>(multiply_fold_(static_cast<size_type>(get<I>(this->base()).size())...));
 	}
 
  public:
 	constexpr auto num_elements() const -> size_type {
-		return static_cast<size_type>(num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>()));
+		return static_cast<size_type>(num_elements_impl_(std::make_index_sequence<static_cast<std::size_t>(D)>()));
 	}
 	friend constexpr auto intersection(extensions_t const& self, extensions_t const& other) -> extensions_t{
 		using boost::multi::detail::get;
@@ -643,16 +643,16 @@ struct layout_t
 	constexpr auto origin() const {return sub_.origin() - offset_;}
 
  private:
-	constexpr auto at_aux(index idx) const {
+	constexpr auto at_aux_(index idx) const {
 		return sub_type{sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + idx*stride_, sub_.nelems_}();
 	}
 
  public:
-	constexpr auto operator[](index idx) const {return at_aux(idx);}
+	constexpr auto operator[](index idx) const {return at_aux_(idx);}
 
 	template<typename... Indices>
 	constexpr auto operator()(index idx, Indices... rest) const {return operator[](idx)(rest...);}
-	constexpr auto operator()(index idx)                  const {return at_aux(idx);}
+	constexpr auto operator()(index idx)                  const {return at_aux_(idx);}
 	constexpr auto operator()()                           const {return *this;}
 
 	       BOOST_MULTI_HD constexpr auto sub()             &       -> sub_type      & {return      sub_ ;}
