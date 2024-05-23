@@ -21,7 +21,7 @@
 
 #include<thrust/complex.h>
 
-#include <boost/multi/detail/complex.hpp>
+#include <boost/multi/adaptors/complex/adl.hpp>
 
 #if ! defined(__HIP_PLATFORM_AMD__) && ! defined(__HIPCC__)
 #include<cuda_runtime.h>  // cudaDeviceSynchronize
