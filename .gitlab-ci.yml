@@ -202,7 +202,7 @@ g++-testing c++20:
     - ctest --output-on-failure
   needs: ["g++"]
 
-g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
+g++-14 c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
   image: debian:unstable
   tags:
@@ -213,7 +213,7 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ g++-14 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
     - g++-14 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
+    - CXX=g++-14 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++-testing c++20"]
