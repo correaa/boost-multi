@@ -2272,13 +2272,13 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 
 	template<class... Args>
 	constexpr auto operator()(Args&&... args) &&
-	->decltype(paren(std::move(*this), std::forward<Args>(args)...)) {
-		return paren(std::move(*this), std::forward<Args>(args)...); }
+	->decltype(paren_(std::move(*this), std::forward<Args>(args)...)) {
+		return paren_(std::move(*this), std::forward<Args>(args)...); }
 
 	template<class... Args>
 	constexpr auto operator()(Args&&... args) const&
-	->decltype(paren(*this, std::forward<Args>(args)...)) {
-		return paren(*this, std::forward<Args>(args)...); }
+	->decltype(paren_(*this, std::forward<Args>(args)...)) {
+		return paren_(*this, std::forward<Args>(args)...); }
 
 	using partitioned_type       = subarray<T, 2, element_ptr      >;
 	using partitioned_const_type = subarray<T, 2, element_const_ptr>;
