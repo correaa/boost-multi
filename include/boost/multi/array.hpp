@@ -605,11 +605,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
  private:
-	void swap(static_array& other) noexcept { operator()().swap(other()); }
+	void swap_(static_array& other) noexcept { operator()().swap(other()); }
 
  public:
 	friend void swap(static_array& lhs, static_array& rhs) noexcept {
-		lhs.swap(rhs);
+		lhs.swap_(rhs);
 	}
 };
 
@@ -887,15 +887,15 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	friend constexpr auto rotated(static_array const& self) -> decltype(auto) { return self.rotated(); }
 
  private:
-	constexpr auto unrotated_aux() {
+	constexpr auto unrotated_aux_() {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate();
 		return subarray<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
  public:
-	constexpr auto unrotated() & { return unrotated_aux(); }
-	constexpr auto unrotated() const& { return unrotated_aux().as_const(); }
+	constexpr auto unrotated() & { return unrotated_aux_(); }
+	constexpr auto unrotated() const& { return unrotated_aux_().as_const(); }
 
 	friend constexpr auto unrotated(static_array& self) -> decltype(auto) { return self.unrotated(); }
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) { return self.unrotated(); }
@@ -916,12 +916,12 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
  private:
-	constexpr auto equal_extensions_if(std::true_type /*true */, static_array const& other) { return this->extensions() == extensions(other); }
-	constexpr auto equal_extensions_if(std::false_type /*false*/, static_array const& /*other*/) { return true; }
+	constexpr auto equal_extensions_if_(std::true_type /*true */, static_array const& other) { return this->extensions() == extensions(other); }
+	constexpr auto equal_extensions_if_(std::false_type /*false*/, static_array const& /*other*/) { return true; }
 
  public:
 	constexpr auto operator=(static_array&& other) noexcept -> static_array& {
-		assert(equal_extensions_if(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		assert(equal_extensions_if_(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
 		return *this;
 	}

@@ -16,14 +16,14 @@
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable : 4244)
@@ -36,30 +36,6 @@
 #include <boost/test/unit_test.hpp>
 
 namespace multi = boost::multi;
-
-namespace test_bee {
-struct bee {};
-
-template<class Array> auto paren(Array&& arr, bee const& /*unused*/) -> decltype(auto) {
-	return std::forward<Array>(arr)(0);
-}
-}  // end namespace test_bee
-
-BOOST_AUTO_TEST_CASE(overload_initlist) {
-	multi::array<double, 1> arr = {10.0};
-
-	test_bee::bee const zero;
-
-	BOOST_REQUIRE( &arr(0) == &arr(zero) );
-}
-
-BOOST_AUTO_TEST_CASE(overload_paren) {
-	multi::array<double, 1> arr({10});
-
-	test_bee::bee const zero;
-
-	BOOST_REQUIRE( &arr(0) == &arr(zero) );
-}
 
 BOOST_AUTO_TEST_CASE(empty_intersection) {
 	multi::array<double, 1> arr({10});

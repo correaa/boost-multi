@@ -5,21 +5,21 @@ HeaderFilterRegex: '.'
 FormatStyle: file
 
 CheckOptions:
-  - { key: readability-identifier-naming.ClassCase                   , value: lower_case }
-  - { key: readability-identifier-naming.FunctionCase                , value: lower_case }
-  - { key: readability-identifier-naming.GlobalConstantCase          , value: aNy_CasE   }
-  - { key: readability-identifier-naming.NamespaceCase               , value: lower_case }
-  - { key: readability-identifier-naming.PrivateMemberPrefix         , value: ''         }
-  - { key: readability-identifier-naming.PrivateMemberSuffix         , value: _          }
-  - { key: readability-identifier-naming.StructCase                  , value: lower_case }
-  - { key: readability-identifier-naming.TemplateParameterCase       , value: CamelCase  }
-  - { key: readability-identifier-length.MinimumLoopCounterNameLength, value: 2          }
-  - { key: readability-identifier-length.MinimumParameterNameLength  , value: 2          }
-  - { key: readability-identifier-length.MinimumVariableNameLength   , value: 2          }
-  - { key: readability-identifier-length.IgnoredLoopCounterNames     , value: "^[ijk_]$" }
-  - { key: readability-identifier-length.IgnoredVariableNames        , value: "^[ijk_]$" }
-  - { key: readability-identifier-naming.GlobalConstantCase          , value: aNy_CasE   }
-  - { key: readability-identifier-naming.PrivateMemberSufix          , value: _          }
+  - { key: readability-identifier-naming.ClassCase                         , value: lower_case }
+  - { key: readability-identifier-naming.FunctionCase                      , value: lower_case }
+  - { key: readability-identifier-naming.GlobalConstantCase                , value: aNy_CasE   }
+  - { key: readability-identifier-length.IgnoredLoopCounterNames           , value: "^[ijk_]$" }
+  - { key: readability-identifier-length.IgnoredVariableNames              , value: "^[ijk_]$" }
+  - { key: readability-identifier-length.MethodCase                        , value: lower_case }
+  - { key: readability-identifier-length.MinimumLoopCounterNameLength      , value: 2          }
+  - { key: readability-identifier-length.MinimumParameterNameLength        , value: 2          }
+  - { key: readability-identifier-length.MinimumVariableNameLength         , value: 2          }
+  - { key: readability-identifier-naming.NamespaceCase                     , value: lower_case }
+  - { key: readability-identifier-naming.PrivateMemberPrefix               , value: ''         }
+  - { key: readability-identifier-naming.PrivateMemberSuffix               , value: _          }
+  - { key: readability-identifier-naming.PrivateMethodSuffix               , value: _          }
+  - { key: readability-identifier-naming.StructCase                        , value: lower_case }
+  - { key: readability-identifier-naming.TemplateParameterCase             , value: CamelCase  }
   - { key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp, value: expr-type}
   - { key: readability-operators-representation.BinaryOperators, value: '&&;&=;&;|;~;!;!=;||;|=;^;^='}
 # value: expr-type , bug in clang 16 in c++20 mode https://stackoverflow.com/a/75157215/225186
