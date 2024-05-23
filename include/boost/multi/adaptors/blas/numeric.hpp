@@ -10,7 +10,7 @@
 
 #include <boost/multi/array_ref.hpp>
 
-#include <boost/multi/detail/complex.hpp>
+#include <boost/multi/adaptors/complex/adl.hpp>
 
 #include "../blas/complex_traits.hpp"
 
