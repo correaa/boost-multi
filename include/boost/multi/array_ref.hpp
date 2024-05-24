@@ -2433,6 +2433,20 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	->decltype(adl_copy_n(first, std::declval<size_type>(), std::declval<iterator>()), void()) {
 		return adl_copy_n(first, this->       size()      , std::move(*this).begin()), void(); }
 
+	friend constexpr auto operator==(subarray const& self, subarray const& other) -> bool {
+		return
+			self.extension() == other.extension()
+			&& self.elements() == other.elements()
+		;
+	}
+
+	friend constexpr auto operator!=(subarray const& self, subarray const& other) -> bool {
+		return
+			self.extension() != other.extension()
+			|| self.elements() != other.elements()
+		;
+	}
+
 	template<class TT, class... As>
 	friend constexpr auto operator==(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
 		return
@@ -2440,6 +2454,7 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 			&& self.elements() == other.elements()
 		;
 	}
+
 	template<class TT, class... As>
 	friend constexpr auto operator!=(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
 		return
