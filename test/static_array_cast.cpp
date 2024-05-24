@@ -135,11 +135,12 @@ BOOST_AUTO_TEST_CASE(static_array_cast) {
 
 	auto&& ref = arr.static_array_cast<double, double const*>();
 
-	BOOST_REQUIRE( &ref[2] == &arr    [2] );
-	BOOST_REQUIRE( &arr    [2] == &ref[2] );
+	BOOST_REQUIRE( &ref[2] == &arr[2] );
+	BOOST_REQUIRE( &arr[2] == &ref[2] );
 
 	BOOST_REQUIRE( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
-	BOOST_REQUIRE( ref == arr     );
+
+	BOOST_REQUIRE( ref == arr );
 	BOOST_REQUIRE( arr == ref );
 }
 
@@ -148,12 +149,15 @@ BOOST_AUTO_TEST_CASE(static_array_cast_2) {
 	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
 	auto&& ref = arr.static_array_cast<double, double const*>();
+
 	BOOST_REQUIRE( ref[1][1] == arr[1][1] );
 	BOOST_REQUIRE( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
 	BOOST_REQUIRE( ref[1] == arr[1] );
+
 	BOOST_REQUIRE( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
-	BOOST_REQUIRE( ref == arr     );
-	BOOST_REQUIRE( arr     == ref );
+
+	BOOST_REQUIRE( ref == arr );
+	BOOST_REQUIRE( arr == ref );
 }
 
 BOOST_AUTO_TEST_CASE(static_array_cast_3) {

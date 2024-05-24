@@ -202,7 +202,7 @@ g++-testing c++20:
     - ctest --output-on-failure
   needs: ["g++"]
 
-g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
+g++-13 c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
   image: debian:unstable
   tags:
@@ -210,10 +210,27 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
     - docker
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ g++-14 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
-    - c++ --version  # CXXFLAGS="-fexcess-precision=standard" 
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
+    - g++-13 --version
+    - CXX=g++-13 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest --output-on-failure
+  needs: ["g++-testing c++20"]
+
+g++-14 c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
+  stage: build
+  image: debian:unstable
+  tags:
+    - non-shared
+    - docker
+  allow_failure: true
+  interruptible: true
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ g++-14 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
+    - mkdir build && cd build
+    - g++-14 --version
+    - CXX=g++-14 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++-testing c++20"]
