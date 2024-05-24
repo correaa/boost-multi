@@ -1230,7 +1230,7 @@ auto dot_product(X1D const& x, Y1D const& y) {
 	return std::reduce(std::execution::par_unseq, z.begin(), z.end());
 }
 ```
-https://godbolt.org/z/cMq87xPvb
+[(live)](https://godbolt.org/z/cMq87xPvb)
 
 ### Polymorphic Memory Resources
 
@@ -1285,64 +1285,10 @@ and for this reason, there is no single substitute for `std::span` for all cases
 Depending on how it is used, either `multi::array_ref<T, 1> [const& | &&]` or `multi::array_ptr<T [const], 1>` may replace the features of `std::span`.
 The former typically works when using it as function argument.
 
-## Comparison to other array libraries (mdspan, Boost.MultiArray, etc)
+Multi-dimensinal arrays can interoperate with C++23's non-owning `mdspan`.
+[Preliminarily](https://godbolt.org/z/aWW3vzfPj), Multi's subarrays (arrays) can be converted (viewed as) `mdspan`.
 
-The C++23 standard provides `std::mdspan`, a non-owning _multidimensional_ array.
-So here is an appropriate point to compare the two libraries.
-Although the goals are similar, the two libraries differ in their generality and approach.
-
-The Multi library concentrates on _well-defined value- and reference-semantics of arbitrary memory types with regularly arranged elements_ (distributions described by strides and offsets) and _extreme compatibility with STL algorithms_ (via iterators) and other fundamental libraries.
-While `mdspan` concentrates on _arbitrary layouts_ for non-owning memory of a single type (CPU raw pointers).
-Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library. 
-Therefore, its compatibility with the rest of the STL is lacking.
-(The ultimate reason is that arbitrary layouts do not compose well across subdimensions, and, in turn, this imposes certain limitations in `mdspan`, such as ad-hoc slicing and subarray.)
-[Preliminarily](https://godbolt.org/z/aWW3vzfPj), Multi array can be converted (viewed as) `mdspan`.
-
-[Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) is the original multidimensional array library shipped with Boost.
-This library can replace Boost.MultiArray in most contexts, it even fulfillis the concepts of `boost::multi_array_concepts::ConstMultiArrayConcept` and `...::MutableMultiArrayConcept`.
-Boost.MultiArray has technical and semantic limitations that are overcome in this library, regarding layouts and references;
-it doesn't support value-semantics, iterator support is limited and it has other technical problems.
-
-[Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) is a very popular matrix linear algebra library, and as such, it only handles the special 2D (and 1D) array case.
-Instead, the Multi library is dimension-generic and doesn't make any algebraic assumptions for arrays or contained elements (but still can be used to _implement_ dense linear algebra algorithms.)
-
-Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) and Eigen. 
-[(online)](https://godbolt.org/z/555893MqW).
-
-
-|                             | Multi                                                           | mdspan                                                                          | Boost.MultiArray (R. Garcia)                                                                         | Inria's Eigen                                                                           |
-|---                          | ---                                                             | ---                                                                             | ---                                                                                                  | ---                                                                                     |
-| No external Deps            | **yes** (only Standard Library C++17)                           | **yes** (only Standard Library)                                                 | **yes** (only Boost)                                                                                 | **yes**                                                                                 |
-| Arbritary number of dims    | **yes**, via positive dimension (compile-time) parameter `D`    | **yes**                                                                         | **yes**                                                                                              | no  (only 1D and 2D)                                                                    |
-| Non-owning view of data     | **yes**, via `multi::array_ref<T, D>(ptr, {n1, n2, ..., nD})`   | **yes**, via `mdspan m{T*, extents{n1, n2, ..., nD}};`                          | **yes**, via `boost::multi_array_ref<T, D>(T*, boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Map<Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>>(ptr, n1, n2)` |
-| Compile-time dim size       | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` | no                                                                             | **yes**, via `Eigen::Array<T, N1, N2>` |
-| Array values (owning data)  | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`            | no, (planned `mdarray`)                                   | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Array<T>(n1, n2)` |
-| Value semantic (Regular)    | **yes**, via cctor, mctor, assign, massign, auto decay of views | no, and not planned                                       | partial, assigment on equal extensions  | **yes** (?) |
-| Move semantic               | **yes**, via mctor and massign                                  | no                                                        | no (C++98 library)                      | **yes** (?) |
-| const-propagation semantics | **yes**, via `const` or `const&`                                | no, const mdspan elements are assignable!                 | no, inconsistent                        | (?) |
-| Element initialization      | **yes**, via nested init-list                                   | no                                                        | no                                      | no, only delayed init via `A << v1, v2, ...;` |
-| References w/no-rebinding   | **yes**, assignment is deep                                     | no, assignment of mdspan rebinds!                         | **yes**                                 | **yes** (?) |
-| Element access              | **yes**, via `A(i, j, ...)` or `A[i][j]...`                     | **yes**, via `A(i, j, ...)`                               | **yes**, via `A[i][j]...`               | **yes**, via `A(i, j)` (2D only) |
-| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`                       | **yes**, via `submdspan(A, i, full_extent)`               | **yes**, via `A[i]`                     | **yes**, via `A.row(i)` |
-| Subarray views              | **yes**, via `A({0, 2}, {1, 3})` or `A(1, {1, 3})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{1, 3})` | **yes**, via `A[indices[range(0, 2)][range(1, 3)]]` | **yes**, via `A.block(i, j, di, dj)` |
-| Subarray with lower dim     | **yes**, via `A(1, {1, 3})`                                     | **yes**, via `submdspan(A, 1, std::tuple{1, 3})`          | **yes**, via `A[1][indices[range(1, 3)]]`                    | **yes**, via `A(1, Eigen::placeholders::all)` |
-| Subarray w/well def layout  | **yes** (strided layout)                                        | no                                                        | **yes** (strided layout)                      | **yes** (strided) |
-| Recursive subarray          | **yes** (layout is stack-based and owned by the view)           | **yes** (?)                                               | no (subarray may dangle layout, design bug?)  | **yes** (?) (1D only) |
-| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | no (no allocation or ownership)                           | **yes** (stateless?)                          | no | 
-| PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)                           |   no     | no |
-| Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                                        |   no     | no |
-| Strided Layout              | **yes**                                                         | **yes**                                                   |  **yes** | **yes** |
-| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes** (only views are supported)                        |  **yes** | **yes** |
-| Zig-zag / Hilbert ordering  | no                                                              | **yes**, via arbitrary layouts (no inverse or flattening) | no       | no |
-| Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing       | no       | no |
-| Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)          | no, only for allocated arrays | no, not for subblocks (?) |
-| Iterators                   | **yes**, standard compliant, random-access-iterator             | no, or very limited                                       | **yes**, limited | no |
-| Multidimensional iterators (cursors) | **yes** (experimental)                                 | no                                                        | no               | no |         
-| STL algorithms or Ranges    | **yes**                                                         | no, limited via `std::cartesian_product`                  | **yes**, some do not work | no |
-| Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                                                        | no | no |
-| Compatibility with Thrust or GPUs | **yes**, via flatten views (loop fusion), thrust-pointers/-refs | no                                                   | no          | no |
-| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq)  | (?) , experience from Kokkos incarnation             | **yes** (?) | [**yes**](https://eigen.tuxfamily.org/index.php?title=Main_Page#Projects_using_Eigen) |
-
+A detailed comparison with other array libraries (mspan, Boost.MultiArray, Eigen) is explained in an Appendix.
 
 ## Serialization
 
@@ -1881,4 +1827,61 @@ In all these cases, the `.end()` iterator may point to invalid memory.
 It's important to note that the act of constructing certain iterators, even if the element is never dereferenced, is undefined in the abstract machine.
 This underscores the need for caution when using such operations in your code.
 
-A through description of the cases and workaround is beyond the scope of this section.
+A thorough description of the cases and workaround is beyond the scope of this section.
+
+# Appendix: Comparison to other array libraries (mdspan, Boost.MultiArray, etc)
+
+The C++23 standard provides `std::mdspan`, a non-owning _multidimensional_ array.
+So here is an appropriate point to compare the two libraries.
+Although the goals are similar, the two libraries differ in their generality and approach.
+
+The Multi library concentrates on _well-defined value- and reference-semantics of arbitrary memory types with regularly arranged elements_ (distributions described by strides and offsets) and _extreme compatibility with STL algorithms_ (via iterators) and other fundamental libraries.
+While `mdspan` concentrates on _arbitrary layouts_ for non-owning memory of a single type (CPU raw pointers).
+Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library. 
+Therefore, its compatibility with the rest of the STL is lacking.
+[Preliminarily](https://godbolt.org/z/aWW3vzfPj), Multi array can be converted (viewed as) `mdspan`.
+
+[Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) is the original multidimensional array library shipped with Boost.
+This library can replace Boost.MultiArray in most contexts, it even fulfillis the concepts of `boost::multi_array_concepts::ConstMultiArrayConcept` and `...::MutableMultiArrayConcept`.
+Boost.MultiArray has technical and semantic limitations that are overcome in this library, regarding layouts and references;
+it doesn't support value-semantics, iterator support is limited and it has other technical problems.
+
+[Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) is a very popular matrix linear algebra library, and as such, it only handles the special 2D (and 1D) array case.
+Instead, the Multi library is dimension-generic and doesn't make any algebraic assumptions for arrays or contained elements (but still can be used to _implement_ dense linear algebra algorithms.)
+
+Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) and Eigen. 
+[(online)](https://godbolt.org/z/555893MqW).
+
+
+|                             | Multi                                                           | mdspan                                                                          | Boost.MultiArray (R. Garcia)                                                                         | Inria's Eigen                                                                           |
+|---                          | ---                                                             | ---                                                                             | ---                                                                                                  | ---                                                                                     |
+| No external Deps            | **yes** (only Standard Library C++17)                           | **yes** (only Standard Library)                                                 | **yes** (only Boost)                                                                                 | **yes**                                                                                 |
+| Arbritary number of dims    | **yes**, via positive dimension (compile-time) parameter `D`    | **yes**                                                                         | **yes**                                                                                              | no  (only 1D and 2D)                                                                    |
+| Non-owning view of data     | **yes**, via `multi::array_ref<T, D>(ptr, {n1, n2, ..., nD})`   | **yes**, via `mdspan m{T*, extents{n1, n2, ..., nD}};`                          | **yes**, via `boost::multi_array_ref<T, D>(T*, boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Map<Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>>(ptr, n1, n2)` |
+| Compile-time dim size       | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` | no                                                                             | **yes**, via `Eigen::Array<T, N1, N2>` |
+| Array values (owning data)  | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`            | no, (planned `mdarray`)                                   | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Array<T>(n1, n2)` |
+| Value semantic (Regular)    | **yes**, via cctor, mctor, assign, massign, auto decay of views | no, and not planned                                       | partial, assigment on equal extensions  | **yes** (?) |
+| Move semantic               | **yes**, via mctor and massign                                  | no                                                        | no (C++98 library)                      | **yes** (?) |
+| const-propagation semantics | **yes**, via `const` or `const&`                                | no, const mdspan elements are assignable!                 | no, inconsistent                        | (?) |
+| Element initialization      | **yes**, via nested init-list                                   | no                                                        | no                                      | no, only delayed init via `A << v1, v2, ...;` |
+| References w/no-rebinding   | **yes**, assignment is deep                                     | no, assignment of mdspan rebinds!                         | **yes**                                 | **yes** (?) |
+| Element access              | **yes**, via `A(i, j, ...)` or `A[i][j]...`                     | **yes**, via `A(i, j, ...)`                               | **yes**, via `A[i][j]...`               | **yes**, via `A(i, j)` (2D only) |
+| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`                       | **yes**, via `submdspan(A, i, full_extent)`               | **yes**, via `A[i]`                     | **yes**, via `A.row(i)` |
+| Subarray views              | **yes**, via `A({0, 2}, {1, 3})` or `A(1, {1, 3})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{1, 3})` | **yes**, via `A[indices[range(0, 2)][range(1, 3)]]` | **yes**, via `A.block(i, j, di, dj)` |
+| Subarray with lower dim     | **yes**, via `A(1, {1, 3})`                                     | **yes**, via `submdspan(A, 1, std::tuple{1, 3})`          | **yes**, via `A[1][indices[range(1, 3)]]`                    | **yes**, via `A(1, Eigen::placeholders::all)` |
+| Subarray w/well def layout  | **yes** (strided layout)                                        | no                                                        | **yes** (strided layout)                      | **yes** (strided) |
+| Recursive subarray          | **yes** (layout is stack-based and owned by the view)           | **yes** (?)                                               | no (subarray may dangle layout, design bug?)  | **yes** (?) (1D only) |
+| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | no (no allocation or ownership)                           | **yes** (stateless?)                          | no | 
+| PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)                           |   no     | no |
+| Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                                        |   no     | no |
+| Strided Layout              | **yes**                                                         | **yes**                                                   |  **yes** | **yes** |
+| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes** (only views are supported)                        |  **yes** | **yes** |
+| Zig-zag / Hilbert ordering  | no                                                              | **yes**, via arbitrary layouts (no inverse or flattening) | no       | no |
+| Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing       | no       | no |
+| Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)          | no, only for allocated arrays | no, not for subblocks (?) |
+| Iterators                   | **yes**, standard compliant, random-access-iterator             | no, or very limited                                       | **yes**, limited | no |
+| Multidimensional iterators (cursors) | **yes** (experimental)                                 | no                                                        | no               | no |         
+| STL algorithms or Ranges    | **yes**                                                         | no, limited via `std::cartesian_product`                  | **yes**, some do not work | no |
+| Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                                                        | no | no |
+| Compatibility with Thrust or GPUs | **yes**, via flatten views (loop fusion), thrust-pointers/-refs | no                                                   | no          | no |
+| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq)  | (?) , experience from Kokkos incarnation             | **yes** (?) | [**yes**](https://eigen.tuxfamily.org/index.php?title=Main_Page#Projects_using_Eigen) |
