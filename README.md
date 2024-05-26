@@ -99,17 +99,17 @@ Inside HIP code, it can be compile with AMD's clang rocm (5.0+).)
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, blas, lapack, thurst, or CUDA
 (all can be installed with `sudo apt install libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install blas-devel fftw-devel`.)
 
-## Reference of classes
+## Reference of types
 
-The library interface presents several closely related classes, multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
+The library interface presents several closely related classes representing types of arrays.
+The most imporant types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `static_array`).
 
-When using the library, it is convenient to start from `array`, other types are rarely explicitly used, especially if using `auto`;
-however, for documentation, it is convenient to present the classes in a different order:
-the classes `subarray`, `array_ref`, `static_array`, and `array` have a *is-a* relationship (from left to right). 
+When using the library, it is simpler to start from `array`, and other types are rarely explicitly used, especially if using `auto`;
+however, for documentation, it is convenient to present the classes in a different order since the the classes `subarray`, `array_ref`, `static_array`, and `array` have a *is-a* relationship (from left to right). 
 For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref`.
 
-### `multi::subarray<T, D, P = T*, ...>`
+### class `multi::subarray<T, D, P = T*, ...>`
 
 An instance of this class represents a part (or a whole) of another `subarray` (including an `array`).
 These have reference semantics, and in essence, they behave like language-references.
@@ -135,7 +135,16 @@ The whole object can be invalidated if the original array is destroyed.
 | (constructors)    | Not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements. |
 | `operator=`       | assigns the elements from the source, sizes must match.
 
-It is important to note that, in this library, assignment is always "deep", reference-like types cannot be rebound after construction.
+It is important to note that, in this library, assignments is always "deep", reference-like types cannot be rebound after construction.
+(Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (just like language pointers), these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.)
+
+| Relational fuctions   |    |
+|---                |--- |
+| `operator==`/`operator!=`    | Tells if element of two `subarray` are equal (and if extensions of the subarrays are the same)
+| `operator<`/`operator<=`       | Less-than lexicographical comparison (requires elements to be comparable)
+| `operator>`/`operator>=`       | Less-than lexicographical comparison (requires elements to be comparable)
+
+It is important to note that, in this library, assignments is always "deep", reference-like types cannot be rebound after construction.
 (Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (just like language pointers), these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.)
 
 | Element access    |    |
@@ -192,7 +201,10 @@ For example, if `S` is 3D, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D arra
 |---                |---  |
 | `decay` (same as prefix `operator+`) | creates a concrete independent `array` with the same dimension and elements as the view. Usually used to force a copy of the elements, or in combination with `auto` (e.g. `auto A2_copy = + A[2];`).
 
-### `multi::array_ref<T, D, P = T*, ...>`
+As a reference `subarray` can be invalidated when its origin array is invalidated or destroyed.
+For example, if the `array` from which it originates is destroyed or resized.
+
+### class `multi::array_ref<T, D, P = T*, ...>`
 
 A D-dimensional view of the contiguous pre-exisitng memory buffer.
 This class doesn't manage the elements it contains and it has reference sematics (it can't be rebound, assignments are deep and have the same size restrictions as `subarray`)
@@ -224,7 +236,13 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 | Creating arrays   | same as for `subarray`  |
 |---                |---  |
 
-### `multi::static_array<T, D, Alloc = std::allocator<T>, ...>`
+| Relational fuctions   |  same as for `subarray`  |
+|---                |--- |
+
+
+`array_ref` can be invalidates if the original buffer is deallocated.
+
+### class `multi::static_array<T, D, Alloc = std::allocator<T>, ...>`
 
 A D-dimensional array that manages an internal memory buffer.
 This class owns the elements it contains, it has restricted value semantics because assignments are restricted to sources with equal sizes.
@@ -243,7 +261,7 @@ For most uses a `multi::array` should be preferred instead.
 
 | Member fuctions   | same as for `array_ref` plus ... |
 |---                |--- |
-| (constructors)    | `static_array::static_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements.
+| (constructors)    | `static_array::static_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `static_array::static_array(std::initializer_list<...>` constructs the array with elements initialized from a nested list.
 | (destructor)      | Destructor deallocates memory and destroy the elements |
 | `operator=`       | assigns the elements from the source, sizes must match.
 
@@ -265,7 +283,10 @@ For most uses a `multi::array` should be preferred instead.
 | Creating arrays   | same as for `array_ref`  |
 |---                |---  |
 
-### `multi::array<T, D, Alloc = std::allocator<T>, ...>`
+| Relational fuctions   |  same as for `array_ref`  |
+|---                |--- |
+
+### class `multi::array<T, D, Alloc = std::allocator<T>, ...>`
 
 Array of integer positive dimension D, it has value semantics if element type T has value semantics.
 It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::static_array`.
@@ -275,7 +296,7 @@ It supports stateful and polymorphic allocators, which are the default for the s
 
 | Member fuctions   |    |
 |---                |--- |
-| (constructors)    | `array::array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements; `array::array(It first, It last)` and `array::array(Range const& rng)`, same for a range of subarrays.
+| (constructors)    | `array::array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements;`array::array(It first, It last)` and `array::array(Range const& rng)`, same for a range of subarrays. `static_array::static_array(std::initializer_list<...>, Alloc = {})` constructs the array with elements initialized from a nested list.
 | (destructor)      | Destructor deallocates memory and destroy the elements |
 | `operator=`       | assigns for a source `subarray`, or from another `array`. `array`s can be moved |
 
@@ -297,17 +318,23 @@ It supports stateful and polymorphic allocators, which are the default for the s
 | Creating arrays   | same as for `static_array`  |
 |---                |---  |
 
+| Relational fuctions   |  same as for `static_array`  |
+|---                |--- |
+
 | Manipulation      |     |
 |---                |---  |
 | `clear`           | Erases all elements from the container. The array is resized to zero size. |
-| `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized if necessary or `reextent({e1, e2, ...}, val)` can hold a default value. |
+| `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with `reextent({e1, e2, ...}, val)`.
 
-### `multi::subarray<T, D, ...>::(const_)iterator`
+### class `multi::subarray<T, D, ...>::(const_)iterator`
 
-Random access iterator to subarrays of dimension `D - 1`, generaly used to interact with or implement algorithms.
-They can be default constructed but do not expose other constructors, since they are generally created from `.begin` and `.end` and arithmetic operators, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`, `operator-`.
+A random-access iterator to subarrays of dimension `D - 1`, generaly used to interact with or implement algorithms.
+They can be default constructed but do not expose other constructors, since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`, `operator-`.
 They can be dereferenced by `operator*` and index access `operator[]`, returning objects of lower dimension `subarray<T, D, ... >::reference` (see above).
 Note that this is the same time all related arrays, for example `multi::array<T, D, ...>::(const_)iterator`.
+
+`iterator` can be invalidated when its original array is invalidated, destroyed or resized.
+An `iterator` that stems from `static_array` becomes invalid only if the original array was destroyed or out-of-scope. 
 
 ## Basic Usage
 
@@ -316,7 +343,7 @@ individual elements can be initialized from a nested rectangular list.
 ```cpp
 multi::array<double, 2> A = {
     {1.0, 2.0, 3.0},
-    {4.0, 5.0, 6.0}
+    {4.0, 5.0, 6.0},
 };
 
 auto const [n, m] = A.sizes();
