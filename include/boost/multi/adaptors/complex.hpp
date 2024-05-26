@@ -1,5 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2023 Alfredo A. Correa
+// Copyright 2023-2024 Alfredo A. Correa
 
 #ifndef BOOST_MULTI_ADAPTORS_COMPLEX_HPP
 #define BOOST_MULTI_ADAPTORS_COMPLEX_HPP
