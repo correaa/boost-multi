@@ -103,12 +103,12 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	{
-// #if !defined(__circle_build__)  // crashes circle 198
+#if !defined(__circle_build__) || (__circle_build__ != 198 )  // crashes circle 198
 		multi::static_array const arr = {12, 34, 56};
 		BOOST_TEST_REQUIRE( size(arr) == 3 );
 		BOOST_TEST_REQUIRE( arr[2] == 56 );
 		BOOST_TEST_REQUIRE(( arr == multi::static_array{12, 34, 56} ));
-// #endif
+#endif
 	}
 	{
 		multi::array arr({12, 34, 56});
