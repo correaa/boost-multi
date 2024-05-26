@@ -185,9 +185,8 @@ For example, if `S` is 3D, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D arra
 
 | Creating views by pointer manipulation  |     |
 |---                |---  |
-| `static_cast_array<T2, P2 = T2*>(args...)` produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
-| `reinterpret_cast_array<T2>()` reinterpretes the underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal.
-| `reinterpret_cast_array<T2>(n)` produces a view where the underlying elements are interpreted as an array of `n` elements of type `T2`.
+| `static_cast_array<T2, P2 = T2*>(args...)` | produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
+| `reinterpret_cast_array<T2>` | underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal; `reinterpret_cast_array<T2>(n)` produces a view where the underlying elements are interpreted as an array of `n` elements of type `T2`.
 
 | Creating arrays   |     |
 |---                |---  |
