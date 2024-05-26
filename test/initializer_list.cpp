@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	{
-#if !defined(__circle_build__) || (__circle_build__ <= 200 )  // crashes circle 187-200 in docker
+#if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
 		multi::static_array const arr = {12, 34, 56};
 		BOOST_TEST_REQUIRE( size(arr) == 3 );
 		BOOST_TEST_REQUIRE( arr[2] == 56 );
