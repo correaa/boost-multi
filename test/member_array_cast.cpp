@@ -13,15 +13,15 @@
 #  pragma clang diagnostic ignored "-Wold-style-cast"
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+// #  pragma clang diagnostic ignored "-Wsign-conversion"
+// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+// #  pragma GCC diagnostic ignored "-Wsign-conversion"
+// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable : 4324)  // Explicit padding required
@@ -40,27 +40,27 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 
 	// some members might need explicit padding to work well with member_cast
 	struct particle {
-		double mass;
+		int mass;
 		v3d    position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
 	};
 
 	class particles_soa {
-		multi::array<double, 2> masses_;
+		multi::array<int, 2> masses_;
 		multi::array<v3d, 2>    positions_;
 
 	 public:  // NOLINT(whitespace/indent) nested class
 		// NOLINTNEXTLINE(runtime/explicit)
 		explicit particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
-		: masses_{AoS.member_cast<double>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
+		: masses_{AoS.member_cast<int>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
 
 		struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) // NOSONAR
-			double& mass;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
+			int& mass;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 			v3d&    position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
 			operator particle() const { return {mass, position}; }  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) allow direct assignment
 			auto operator+() const { return operator particle(); }
 
-			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
+			reference(int& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
 			// unused: explicit reference(particle& other) : reference{other.mass, other.position} {}
 
 		 private:  // NOLINT(whitespace/indent) nested class
@@ -83,31 +83,31 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	};
 
 	multi::array<particle, 2> AoS({2, 2}, particle{});
-	AoS[1][1] = particle{99.0, v3d{{1.0, 2.0}}};
+	AoS[1][1] = particle{99, v3d{{1.0, 2.0}}};
 
-	auto&& masses = AoS.member_cast<double>(&particle::mass);
+	auto&& masses = AoS.member_cast<int>(&particle::mass);
 	BOOST_REQUIRE(size(masses) == 2);
-	BOOST_REQUIRE(masses[1][1] == 99.0);
+	BOOST_REQUIRE(masses[1][1] == 99 );
 
-	multi::array<double, 2> masses_copy = masses;
+	multi::array<int, 2> masses_copy = masses;
 	BOOST_REQUIRE(&masses_copy[1][1] != &masses[1][1]);
 
 	particles_soa SoA{AoS};
 
-	BOOST_REQUIRE(SoA(1, 1).mass == 99.0);
+	BOOST_REQUIRE( SoA(1, 1).mass == 99 );
 
 	particle const p11 = SoA(1, 1);
-	BOOST_REQUIRE(p11.mass == 99.0);
+	BOOST_REQUIRE(p11.mass == 99 );
 
 	auto autop11 = +SoA(1, 1);
-	BOOST_REQUIRE(autop11.mass == 99.0);
+	BOOST_REQUIRE(autop11.mass == 99 );
 
-	SoA(1, 1).mass = 88.0;
-	BOOST_REQUIRE(SoA(1, 1).mass == 88.0);
+	SoA(1, 1).mass = 88;
+	BOOST_REQUIRE( SoA(1, 1).mass == 88 );
 
 	SoA(1, 1) = SoA(0, 0);
-	BOOST_REQUIRE(SoA(1, 1).mass == SoA(0, 0).mass);
-	BOOST_REQUIRE(SoA(1, 1) == SoA(0, 0));
+	BOOST_REQUIRE( SoA(1, 1).mass == SoA(0, 0).mass);
+	BOOST_REQUIRE( SoA(1, 1) == SoA(0, 0));
 	BOOST_REQUIRE( ! (SoA(1, 1) != SoA(0, 0)));
 }
 
