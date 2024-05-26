@@ -216,7 +216,7 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 
 | Member fuctions   | same as for `subarray` plus ... |
 |---                |--- |
-| (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size size of the multidimensional array (product of sizes). Destructor is trivial since elements are not owned or managed. |
+| (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size size of the multidimensional array (product of sizes). Default constructor or copy constructor is not exposed. Destructor is trivial since elements are not owned or managed. |
 
 | Element access    | same as for `subarray` |
 |---                |--- |
