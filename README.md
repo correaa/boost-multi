@@ -101,7 +101,7 @@ Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific de
 
 ## Reference of types
 
-The library interface presents several closely related classes representing types of arrays.
+The library interface presents several closely related C++ types (classes) representing arrays.
 The most imporant types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `static_array`).
 
