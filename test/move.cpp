@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(move_unique_ptr_1D) {
 
 		multi::array<std::unique_ptr<int>, 1> arr2(multi::extensions_t<1>{10});
 	//  arr2() = arr();  // fails to compile, elements are not copy assignable
-		arr2() = arr().moved();
+		arr2() = arr().element_moved();
 		BOOST_REQUIRE( !arr[1] );
 		BOOST_REQUIRE(  arr2[1] );
 		BOOST_REQUIRE( *arr2[1] == 42 );
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements) {
 
 	auto* ptr1 = arr[1].data();
 
-	std::copy( arr({0, 5}).moved().begin(), arr({0, 5}).moved().end(), sink.begin() );
+	std::copy( arr({0, 5}).element_moved().begin(), arr({0, 5}).element_moved().end(), sink.begin() );
 	BOOST_REQUIRE(     arr[1].empty() );
 	BOOST_REQUIRE( ! arr[5].empty() );
 
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements_range) {
 
 	auto* ptr1 = arr[1].data();
 
-	std::copy( arr({0, 5}).moved().elements().begin(), arr({0, 5}).moved().elements().end(), sink.begin() );
+	std::copy( arr({0, 5}).element_moved().elements().begin(), arr({0, 5}).element_moved().elements().end(), sink.begin() );
 	BOOST_REQUIRE(     arr[1].empty() );
 	BOOST_REQUIRE( ! arr[5].empty() );
 
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements_to_array) {
 
 	auto* ptr1 = arr[1].data();
 
-	arr2().elements() = arr({0, 5}).moved().elements();
+	arr2().elements() = arr({0, 5}).element_moved().elements();
 
 	BOOST_REQUIRE( arr2[1].size() == 5 );
 	BOOST_REQUIRE( arr2[1][4] == 99.0 );
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(copy_move_range_moved_begin) {
 	multi::array<std::vector<double>, 2> arr ({10, 20}, std::vector<double>{1.0, 2.0, 3.0});  // NOLINT(fuchsia-default-arguments-calls)
 	multi::array<std::vector<double>, 2> arr2({10, 20}, std::vector<double>{}             );  // NOLINT(fuchsia-default-arguments-calls)
 
-	std::copy(arr.moved().begin(), arr.moved().end(), arr2.begin());
+	std::copy(arr.element_moved().begin(), arr.element_moved().end(), arr2.begin());
 
 	BOOST_REQUIRE( arr2[0][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( arr2[0][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE(copy_move_range_moved_begin_block) {
 	multi::array<std::vector<double>, 2> arr ({10, 20}, std::vector<double>{1.0, 2.0, 3.0});  // NOLINT(fuchsia-default-arguments-calls)
 	multi::array<std::vector<double>, 2> arr2({ 3,  5}, std::vector<double>{}             );
 
-	std::copy(arr({5, 8}, {10, 15}).moved().begin(), arr({5, 8}, {10, 15}).moved().end(), arr2.begin());
+	std::copy(arr({5, 8}, {10, 15}).element_moved().begin(), arr({5, 8}, {10, 15}).element_moved().end(), arr2.begin());
 
 	BOOST_REQUIRE( arr2[0][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( arr2[0][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
@@ -339,8 +339,8 @@ BOOST_AUTO_TEST_CASE(move_reference_range) {
 	multi::array<std::vector<double>, 2> arr ({10, 20}, std::vector<double>{1.0, 2.0, 3.0});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	multi::array<std::vector<double>, 2> arr2({10, 20}, std::vector<double>{}             );  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-//  arr2() = arr().moved();
-	std::copy(arr().moved().begin(), arr().moved().end(), arr2().begin());
+//  arr2() = arr().element_moved();
+	std::copy(arr().element_moved().begin(), arr().element_moved().end(), arr2().begin());
 
 	BOOST_REQUIRE( arr2[0][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( arr2[0][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)

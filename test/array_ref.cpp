@@ -975,6 +975,9 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	BOOST_REQUIRE( trace_array_deduce        (arr) == 3 );
 	BOOST_REQUIRE( trace_array_deduce<double>(arr) == 3 );
 
+	multi::array<double, 2> const arr_paren_copy(arr());
+	BOOST_REQUIRE( arr_paren_copy.size() == 3 );
+
 	BOOST_REQUIRE(  trace_generic                              (arr) == 3  );
 	BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr) == 3 ));
 	//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
