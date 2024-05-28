@@ -8,18 +8,15 @@ rm $0x; exit
 #define BOOST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP
 
 #include<cassert>
-//#include<iostream>
 
 #include "../../../adaptors/cuda.hpp"
 //#include "../algorithms/for_each.hpp"
 
-//#include "/home/correaa/prj/alf/boost/iterator/zipper.hpp"
-
-#ifndef HD
+#ifndef BOOST_MULTI_HD
 #if defined(__CUDACC__)
-#define HD __host__ __device__
+#define BOOST_MULTI_HD __host__ __device__
 #else
-#define HD
+#define BOOST_MULTI_HD
 #endif
 #endif
 
@@ -67,7 +64,6 @@ array_iterator<To, 1, To*> copy(
 }}
 }
 
-
 #ifdef _TEST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA copy"
 #define BOOST_TEST_DYN_LINK
@@ -102,7 +98,7 @@ BOOST_AUTO_TEST_CASE(copy_by_iterator){
 
 	multi::cuda::array<double, 2> B(extensions(A));
 	B() = A();
-//	BOOST_REQUIRE( A[13] == B[13] );
+//  BOOST_REQUIRE( A[13] == B[13] );
 }
 
 BOOST_AUTO_TEST_CASE(copy_by_pointer){
@@ -115,7 +111,7 @@ BOOST_AUTO_TEST_CASE(copy_by_pointer){
 
 	multi::cuda::array<double, 2> B(extensions(A));
 	B = A;
-//	BOOST_REQUIRE( A[13] == B[13] );
+//  BOOST_REQUIRE( A[13] == B[13] );
 }
 
 
@@ -164,7 +160,7 @@ BOOST_AUTO_TEST_CASE(cuda_copy){
 	BOOST_REQUIRE( CUDA_SLOW( B[10] == 99. ) );
 #endif
 
-/*	multi::cuda::for_each_n(
+/*  multi::cuda::for_each_n(
 		boost::iterators::zip(begin(A), begin(B)), 
 		size(A), 
 		[]__device__(auto&& e){
@@ -173,14 +169,14 @@ BOOST_AUTO_TEST_CASE(cuda_copy){
 		}
 	);*/
 
-//	auto l = 
-//	BOOST_REQUIRE( l == end(B) );
-//	std::cout << B[8] << std::endl;
-//	multi::cuda::array<double, 1> A(10, 99.);
-//	BOOST_REQUIRE( CUDA_SLOW( A[5] == 99. ) );
-//	int uno = 1.;
-//	for_each(begin(A), end(A), [uno]__device__(auto&& e){e = uno;});
-//	BOOST_REQUIRE( CUDA_SLOW( A[5] == 1. ) );
+//  auto l = 
+//  BOOST_REQUIRE( l == end(B) );
+//  std::cout << B[8] << std::endl;
+//  multi::cuda::array<double, 1> A(10, 99.);
+//  BOOST_REQUIRE( CUDA_SLOW( A[5] == 99. ) );
+//  int uno = 1.;
+//  for_each(begin(A), end(A), [uno]__device__(auto&& e){e = uno;});
+//  BOOST_REQUIRE( CUDA_SLOW( A[5] == 1. ) );
 }
 
 #if 0
@@ -231,4 +227,7 @@ BOOST_AUTO_TEST_CASE(cuda_timing){
 #endif
 
 #endif
+
+#undef BOOST_MULTI_HD
+
 #endif  // BOOST_MULTI_ADAPTORS_CUDA_ALGORITHMS_COPY_HPP
