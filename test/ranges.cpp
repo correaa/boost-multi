@@ -14,14 +14,12 @@
 #pragma clang diagnostic ignored "-Wundef"
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wsign-conversion"
-// #pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wundef"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-// #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -77,22 +75,22 @@ BOOST_AUTO_TEST_CASE(range_find) {
 		auto const needle = std::ranges::find_if(a, [](auto const& row) { return row[0] == 9; });
 		BOOST_REQUIRE(needle == a.end());
 	}
-
 	{
 		std::ranges::equal_to eto;
-        auto a2 = a();
-        [[maybe_unused]] auto const& _84 = static_cast<const boost::multi::subarray<int, 2, const int*, boost::multi::layout_t<2, boost::multi::size_type>>&>(a);
-        [[maybe_unused]] auto const& _85 = static_cast<const boost::multi::subarray<int, 2, const int*, boost::multi::layout_t<2, boost::multi::size_type>>&>(std::as_const(a));
-		
-		auto a1 = a[1];
-        auto a1_val = +a[1];
+
+		auto a2 = a();
+
+		[[maybe_unused]] auto const& _84 = static_cast<boost::multi::subarray<int, 2, int const*, boost::multi::layout_t<2, boost::multi::size_type>> const&>(a);
+		[[maybe_unused]] auto const& _85 = static_cast<boost::multi::subarray<int, 2, int const*, boost::multi::layout_t<2, boost::multi::size_type>> const&>(std::as_const(a));
+
+		auto a1     = a[1];
+		auto a1_val = +a[1];
 
 		// [[maybe_unused]] auto const& _90 = static_cast<const boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&>(a1_val);
 		// [[maybe_unused]] auto const& _91 = static_cast<const boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&>(std::as_const(a1_val));
 
 		// static_assert( std::convertible_to<const boost::multi::array<int,1,std::allocator<int>>&, const boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&> );
 		// static_assert( std::equality_comparable_with<boost::multi::array<int,1,std::allocator<int>>&,boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&> );
-
 
 		bool const res = eto(a1_val, a1);
 		BOOST_REQUIRE( res );
