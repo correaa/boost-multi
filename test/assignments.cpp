@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(rearranged_assignment) {
 		{2, 14, 14, 7, 2}
 	);
 
-	src[0][1][2][3][1] = 99.0;
+	src[0][1][2][3][1] = 99;
 
 	BOOST_REQUIRE( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
 }
