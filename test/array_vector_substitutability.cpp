@@ -21,7 +21,7 @@
 #pragma GCC diagnostic ignored "-Wundef"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-//#pragma GCC diagnostic ignored "-Wfloat-equal"
+// #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
