@@ -1,11 +1,10 @@
 // Copyright 2020-2024 Alfredo A. Correa
 
-#ifndef MULTI_ADAPTORS_HIPFFT_HPP
-#define MULTI_ADAPTORS_HIPFFT_HPP
+#ifndef BOOST_MULTI_ADAPTORS_HIPFFT_HPP
+#define BOOST_MULTI_ADAPTORS_HIPFFT_HPP
 
 #include <hipfft/hipfft.h>
 #include <hipfft/hipfftXt.h>
-
 
 using cudaError_t = hipError_t;
 
@@ -62,4 +61,4 @@ CU2HIPFFT_(Z2Z);
 //     namespace cufft = hipfft;
 // }
 
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_HIPFFT_HPP
