@@ -349,6 +349,7 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 	BOOST_REQUIRE( vv.base() == vvb );
 
 	auto xx = std::move(ww);
+
 	BOOST_REQUIRE( vv[3][3] == 51 );
 	BOOST_REQUIRE( xx[3][3] == 42 );
 	// BOOST_REQUIRE( ww[3][3] == 42 );
