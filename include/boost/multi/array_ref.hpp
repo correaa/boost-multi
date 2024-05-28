@@ -52,6 +52,21 @@ namespace boost::multi {
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct subarray;
 
+template<class T, dimensionality_type D, class... Ts>
+constexpr auto is_subarray_aux(subarray<T, D, Ts...> const&) -> std::true_type;
+constexpr auto is_subarray_aux(...                            ) -> std::false_type;
+
+template<class A> struct is_subarray: decltype(is_subarray_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+
+template<dimensionality_type D>
+struct of_dim {
+template<class T, class... Ts>
+static constexpr auto is_subarray_of_dim_aux(subarray<T, D, Ts...> const&) -> std::true_type;
+static constexpr auto is_subarray_of_dim_aux(...                         ) -> std::false_type;
+
+template<class A> struct is_subarray_of_dim: decltype(is_subarray_of_dim_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+};
+
 template<class Array>
 constexpr auto home(Array&& arr)
 ->decltype(std::forward<A>(arr).home()) {
@@ -1429,6 +1444,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	template<
 		class Range,
 		class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>,
+		class = std::enable_if_t<! is_subarray<Range>::value>,
 		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename subarray::size_type>(), std::declval<typename subarray::iterator>()))
 	>
 	constexpr auto operator=(Range const& rng) &  // check that you LHS is not read-only
@@ -1655,8 +1671,6 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto as_const() const {
 		return rebind<element, element_const_ptr>{this->layout(), this->base()};
 	}
-	constexpr auto moved()  & {return rebind<element, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
-	constexpr auto moved() && {return moved();}
 
 	constexpr auto element_moved()  & {return rebind<element, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
 	constexpr auto element_moved() && {return element_moved();}
@@ -2402,15 +2416,15 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	friend BOOST_MULTI_HD /*constexpr*/ auto cbegin(subarray const& self) {return self.cbegin();}
 	BOOST_MULTI_FRIEND_CONSTEXPR auto cend  (subarray const& self) {return self.cend()  ;}
 
-	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...> const& other) && -> subarray& {operator=(          other ); return *this;}
-	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...> const& other)  & -> subarray& {
+	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1L, As...> const& other) && -> subarray& {operator=(          other ); return *this;}
+	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1L, As...> const& other)  & -> subarray& {
 		assert(other.extensions() == this->extensions());
 		elements() = other.elements();
 		return *this;
 	}
 
-	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...>     && other) && -> subarray& {operator=(std::move(other)); return *this;}
-	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1, As...>     && other)  & -> subarray& {
+	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1L, As...>     && other) && -> subarray& {operator=(std::move(other)); return *this;}
+	template<class TT, class... As> constexpr auto operator=(subarray<TT, 1L, As...>     && other)  & -> subarray& {
 		assert(this->extensions() == other.extensions());
 		elements() = std::move(other).elements();
 		return *this;
@@ -2418,7 +2432,8 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 
 	template<
 		class Range,
-		class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>
+		class = std::enable_if_t<! std::is_base_of_v<subarray, Range> >,
+		class = std::enable_if_t<! is_subarray<Range>::value>
 	>
 	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
 	-> subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -2426,7 +2441,11 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		adl_copy_n(adl_begin(rng), adl_size(rng), begin());
 		return *this;
 	}
-	template<class Range, class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>>
+	template<
+		class Range,
+		class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>,
+		class = std::enable_if_t<! is_subarray<Range>::value>
+	>
 	constexpr auto operator=(Range const& rng) && -> subarray& {operator=(rng); return *this;}
 
 	template<class It> constexpr auto assign(It first) &&
@@ -2447,18 +2466,18 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		;
 	}
 
-	template<class TT, class... As>
-	friend constexpr auto operator==(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
+	template<class TT, typename EEPP, class LL>
+	friend constexpr auto operator==(subarray const& self, subarray<TT, 1, EEPP, LL> const& other) -> bool {
 		return
 			self.extension() == other.extension()
 			&& self.elements() == other.elements()
 		;
 	}
 
-	template<class TT, class... As>
-	friend constexpr auto operator!=(subarray const& self, subarray<TT, 1, As...> const& other) -> bool {
+	template<class TT, typename EEPP, class LL>
+	friend constexpr auto operator!=(subarray const& self, subarray<TT, 1, EEPP, LL> const& other) -> bool {
 		return
-	        self.extension() != other.extension()
+			self.extension() != other.extension()
 			|| self.elements() != other.elements()
 		;
 	}
@@ -2546,9 +2565,6 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 #endif
 		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), p2);
 	}
-
-	constexpr auto moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
-	constexpr auto moved() && {return moved();}
 
 	constexpr auto element_moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
 	constexpr auto element_moved() && {return element_moved();}
@@ -3076,21 +3092,6 @@ template<class RandomAccessIterator, dimensionality_type D>
 constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> extensions)
 -> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
 {return {data, extensions};}
-
-template<class T, dimensionality_type D, class... Ts>
-constexpr auto is_subarray_aux(subarray<T, D, Ts...> const&) -> std::true_type;
-constexpr auto is_subarray_aux(...                            ) -> std::false_type;
-
-template<class A> struct is_subarray: decltype(is_subarray_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-
-template<dimensionality_type D>
-struct of_dim {
-template<class T, class... Ts>
-static constexpr auto is_subarray_of_dim_aux(subarray<T, D, Ts...> const&) -> std::true_type;
-static constexpr auto is_subarray_of_dim_aux(...                         ) -> std::false_type;
-
-template<class A> struct is_subarray_of_dim: decltype(is_subarray_of_dim_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-};
 
 template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy
