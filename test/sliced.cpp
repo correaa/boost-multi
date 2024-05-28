@@ -14,14 +14,14 @@
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -29,6 +29,12 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#endif
 
 namespace multi = boost::multi;
 
@@ -39,8 +45,8 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced_empty) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced) {
-	multi::array<double, 4> arr({10, 20, 30, 40}, 99.0);
-	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+	multi::array<int, 4> arr({10, 20, 30, 40}, 99);
+	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
 	static_assert( decltype( arr.sliced(0, 5) )::rank::value == 4);
 	static_assert( decltype( arr.sliced(0, 5) )::rank{} == 4);
@@ -71,46 +77,46 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_stride) {
-	multi::array<double, 2> arr = {
-		{ 1.0,  2.0,  3.0,  4.0},
-		{ 5.0,  6.0,  7.0,  8.0},
-		{ 9.0, 10.0, 11.0, 12.0},
-		{13.0, 14.0, 15.0, 16.0},
+	multi::array<int, 2> arr = {
+		{ 10,  20,  30,  40},
+		{ 50,  60,  70,  80},
+		{ 90, 100, 110, 120},
+		{130, 140, 150, 160},
 	};
 	BOOST_REQUIRE((
-		arr.strided(2) == multi::array<double, 2>{
-			{ 1.0,  2.0,  3.0,  4.0},
-			{ 9.0, 10.0, 11.0, 12.0},
+		arr.strided(2) == multi::array<int, 2>{
+			{ 10,  20,  30,  40},
+			{ 90, 100, 110, 120},
 		}
 	));
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_take) {
-	multi::array<double, 2> arr = {
-		{ 1.0,  2.0,  3.0,  4.0},
-		{ 5.0,  6.0,  7.0,  8.0},
-		{ 9.0, 10.0, 11.0, 12.0},
-		{13.0, 14.0, 15.0, 16.0},
+	multi::array<int, 2> arr = {
+		{ 10,  20,  30,  40},
+		{ 50,  60,  70,  80},
+		{ 90, 100, 110, 120},
+		{130, 140, 150, 160},
 	};
 	BOOST_REQUIRE((
-		arr.taked(2) == multi::array<double, 2>{
-			{ 1.0,  2.0,  3.0,  4.0},
-			{ 5.0,  6.0,  7.0,  8.0},
+		arr.taked(2) == multi::array<int, 2>{
+			{ 10,  20,  30,  40},
+			{ 50,  60,  70,  80},
 		}
 	));
 }
 
 BOOST_AUTO_TEST_CASE(drop) {
 	multi::array<double, 2> arr = {
-		{ 1.0,  2.0,  3.0,  4.0},
-		{ 5.0,  6.0,  7.0,  8.0},
-		{ 9.0, 10.0, 11.0, 12.0},
-		{13.0, 14.0, 15.0, 16.0},
+		{ 10,  20,  30,  40},
+		{ 50,  60,  70,  80},
+		{ 90, 100, 110, 120},
+		{130, 140, 150, 160},
 	};
 	BOOST_REQUIRE((
 		arr.dropped(2) == multi::array<double, 2>{
-			{ 9.0, 10.0, 11.0, 12.0},
-			{13.0, 14.0, 15.0, 16.0},
+			{ 90, 100, 110, 120},
+			{130, 140, 150, 160},
 		}
 	));
 }
