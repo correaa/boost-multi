@@ -13,15 +13,13 @@
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #pragma clang diagnostic ignored "-Wundef"
 #pragma clang diagnostic ignored "-Wconversion"
-#pragma clang diagnostic ignored "-Wsign-conversion"
-#pragma clang diagnostic ignored "-Wfloat-equal"
+// #pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wundef"
 #pragma GCC diagnostic ignored "-Wconversion"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
+// #pragma GCC diagnostic ignored "-Wsign-conversion"
 #elif defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4244)
@@ -33,12 +31,20 @@
 
 #include <boost/test/unit_test.hpp>
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 namespace multi = boost::multi;
 
 namespace {
 
-constexpr auto make_ref(double* ptr) {
-	return multi::array_ref<double, 2>(ptr, {5, 7});
+constexpr auto make_ref(int* ptr) {
+	return multi::array_ref<int, 2>(ptr, {5, 7});
 }
 
 }  // namespace
@@ -92,13 +98,13 @@ BOOST_AUTO_TEST_CASE(range_assignment) {
 	{
 		auto const ext = multi::make_extension_t(10L);
 
-		multi::array<double, 1> vec(ext.begin(), ext.end());
+		multi::array<int, 1> vec(ext.begin(), ext.end());
 
 		BOOST_REQUIRE( ext.size() == vec.size() );
 		BOOST_REQUIRE( vec[1] = 10 );
 	}
 	{
-		multi::array<double, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
+		multi::array<int, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
 
 		auto const ext = extension(vec);
 
@@ -155,38 +161,45 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments) {
 
 BOOST_AUTO_TEST_CASE(assignments) {
 	{
-		std::vector<double>           vec(static_cast<std::size_t>(5 * 7), 99.0);  // NOLINT(fuchsia-default-arguments-calls)
-		constexpr double              val = 33.0;
-		multi::array<double, 2> const arr({5, 7}, val);
-		multi::array_ref<double, 2>(vec.data(), {5, 7}) = arr();  // arr() is a subarray
+		std::vector<int> vec(static_cast<std::size_t>(5 * 7), 99);  // NOLINT(fuchsia-default-arguments-calls)
+
+		constexpr int val = 33;
+
+		multi::array<int, 2> const arr({5, 7}, val);
+		multi::array_ref<int, 2>(vec.data(), {5, 7}) = arr();  // arr() is a subarray
+
 		BOOST_REQUIRE( vec[9] == val );
 		BOOST_REQUIRE( ! vec.empty() );
 		BOOST_REQUIRE( ! is_empty(arr) );
 	}
 	{
-		std::vector<double> vec(5 * 7L, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
-		std::vector<double> wec(5 * 7L, 33.0);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> vec(5 * 7L, 99);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> wec(5 * 7L, 33);  // NOLINT(fuchsia-default-arguments-calls)
 
-		multi::array_ptr<double, 2> const Bp(wec.data(), {5, 7});
+		multi::array_ptr<int, 2> const Bp(wec.data(), {5, 7});
 		make_ref(vec.data()) = *Bp;
+
+		auto&& mref = make_ref(vec.data());
+		mref        = Bp->sliced(0, 5);
+
 		make_ref(vec.data()) = Bp->sliced(0, 5);
 
-		BOOST_REQUIRE( vec[9] == 33.0 );
+		BOOST_REQUIRE( vec[9] == 33 );
 	}
 	{
-		std::vector<double> vec(5 * 7L, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
-		std::vector<double> wec(5 * 7L, 33.0);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> vec(5 * 7L, 99);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> wec(5 * 7L, 33);  // NOLINT(fuchsia-default-arguments-calls)
 
 		make_ref(vec.data()) = make_ref(wec.data());
 
-		BOOST_REQUIRE( vec[9] == 33.0 );
+		BOOST_REQUIRE( vec[9] == 33 );
 	}
 }
 
 template<class T, class Allocator>
 auto eye(multi::extensions_t<2> exts, Allocator alloc) {
-	multi::array<T, 2, Allocator> ret(exts, 0.0, alloc);
-	ret.diagonal().fill(1.0);
+	multi::array<T, 2, Allocator> ret(exts, 0, alloc);
+	ret.diagonal().fill(1);
 	return ret;
 }
 
@@ -194,8 +207,8 @@ template<class T>
 auto eye(multi::extensions_t<2> exts) { return eye<T>(exts, std::allocator<T>{}); }
 
 BOOST_AUTO_TEST_CASE(assigment_temporary) {
-	multi::array<double, 2> Id = eye<double>(multi::extensions_t<2>({3, 3}));
+	multi::array<int, 2> Id = eye<int>(multi::extensions_t<2>({3, 3}));
 	BOOST_REQUIRE( Id == eye<double>({3, 3}) );
-	BOOST_REQUIRE( Id[1][1] == 1.0 );
-	BOOST_REQUIRE( Id[1][0] == 0.0 );
+	BOOST_REQUIRE( Id[1][1] == 1 );
+	BOOST_REQUIRE( Id[1][0] == 0 );
 }
