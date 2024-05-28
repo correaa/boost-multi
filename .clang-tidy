@@ -14,6 +14,9 @@ CheckOptions:
   - { key: readability-identifier-length.MinimumLoopCounterNameLength      , value: 2          }
   - { key: readability-identifier-length.MinimumParameterNameLength        , value: 2          }
   - { key: readability-identifier-length.MinimumVariableNameLength         , value: 2          }
+  - { key: readability-identifier-naming.MacroDefinitionCase               , value: UPPER_CASE }
+  - { key: readability-identifier-naming.MacroDefinitionPrefix,            , value: BOOST_MULTI_ }
+  - { key: readability-identifier-naming.MacroDefinitionSuffix,            , value: *          }
   - { key: readability-identifier-naming.NamespaceCase                     , value: lower_case }
   - { key: readability-identifier-naming.PrivateMemberPrefix               , value: ''         }
   - { key: readability-identifier-naming.PrivateMemberSuffix               , value: _          }
@@ -21,7 +24,7 @@ CheckOptions:
   - { key: readability-identifier-naming.StructCase                        , value: lower_case }
   - { key: readability-identifier-naming.TemplateParameterCase             , value: CamelCase  }
   - { key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp, value: expr-type}
-  - { key: readability-operators-representation.BinaryOperators, value: '&&;&=;&;|;~;!;!=;||;|=;^;^='}
+  - { key: readability-operators-representation.BinaryOperators            , value: '&&;&=;&;|;~;!;!=;||;|=;^;^='}
 # value: expr-type , bug in clang 16 in c++20 mode https://stackoverflow.com/a/75157215/225186
 
 # for range-for loops, e.g. `for(auto i : is) ...`
