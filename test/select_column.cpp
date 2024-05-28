@@ -12,14 +12,12 @@
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -28,15 +26,21 @@
 
 #include <boost/test/unit_test.hpp>
 
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#endif
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_array_range_section_1D) {
-	multi::array<double, 1> arr = {00.0, 01.0, 02.0}; (void)arr;
+	multi::array<int, 1> arr = {0, 10, 20}; (void)arr;
 	BOOST_REQUIRE( arr == arr(multi::ALL) );
 	BOOST_REQUIRE( size(arr( 1 <= multi::ALL )) == 2 );
-	BOOST_REQUIRE( arr( 1 <= multi::ALL )[0] == 1.0 );
+	BOOST_REQUIRE( arr( 1 <= multi::ALL )[0] == 10 );
 	BOOST_REQUIRE( size(arr( multi::ALL < 2 )) == 2 );
-	BOOST_REQUIRE( arr( multi::ALL < 2 )[1] == 1.0 );
+	BOOST_REQUIRE( arr( multi::ALL < 2 )[1] == 10 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_range_section_part1) {
@@ -69,16 +73,6 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part1) {
 	BOOST_REQUIRE( size( arr(             _ < 2   , 2) ) == 2 );
 	BOOST_REQUIRE( size( arr( 1 <=        _       , 2) ) == 3 );
 	BOOST_REQUIRE( size( arr( 1 <=        _ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
-
-	// BOOST_REQUIRE( size( arr(             _._       , 2) ) == 4 );
-	// BOOST_REQUIRE( size( arr(             _._ < 2   , 2) ) == 2 );
-	// BOOST_REQUIRE( size( arr( 1 <=        _._       , 2) ) == 3 );
-	// BOOST_REQUIRE( size( arr( 1 <=        _._ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
-
-	// BOOST_REQUIRE( size( arr(           _._._       , 2) ) == 4 );
-	// BOOST_REQUIRE( size( arr(           _._._ < 2   , 2) ) == 2 );
-	// BOOST_REQUIRE( size( arr( 1 <=      _._._       , 2) ) == 3 );
-	// BOOST_REQUIRE( size( arr( 1 <=      _._._ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
@@ -134,12 +128,6 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_syntax) {
 	BOOST_REQUIRE( size( arr(       V       , 2) ) == size(arr) );
 
 	BOOST_REQUIRE( size( arr(       V       , 2) ) == size(arr) );
-
-//  using multi::A;
-//  BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
-//  BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
-
-//  BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
 
 	BOOST_REQUIRE( size( arr(       _  < 2  , 2) ) == 2 );
 	BOOST_REQUIRE( size( arr(      *_  < 2  , 2) ) == 2 );
