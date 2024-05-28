@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 
 		auto const aa(AA().operator std::vector<std::vector<double>>());
 	}
-#if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docke
+#if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
 	{
 		multi::array<double, 2> const AA = {
 			{1.0, 2.0},
