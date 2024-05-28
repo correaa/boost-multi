@@ -13,7 +13,7 @@
 	// #include<stacktrace>
 	// // NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this is for very inefficient asserts
 	// #if defined(__cpp_lib_stacktrace) && (__cpp_lib_stacktrace >= 202011L)
-	// #define MULTI_ACCESS_ASSERT(Expr) assert((std::cerr<<std::stacktrace()<<std::endl) && (Expr))
+	// #define BOOST_MULTI_ACCESS_ASSERT(Expr) assert((std::cerr<<std::stacktrace()<<std::endl) && (Expr))
 	// #else
 	#define BOOST_MULTI_ACCESS_ASSERT(Expr) assert(Expr)  // NOLINT(cppcoreguidelines-macro-usage)
 	// #endif

@@ -1,7 +1,7 @@
 // Copyright 2020-2024 Alfredo A. Correa
 
-#ifndef MULTI_ADAPTORS_FFT_HPP
-#define MULTI_ADAPTORS_FFT_HPP
+#ifndef BOOST_MULTI_ADAPTORS_FFT_HPP
+#define BOOST_MULTI_ADAPTORS_FFT_HPP
 
 #include "../adaptors/fftw.hpp"
 
@@ -42,4 +42,4 @@ namespace fft {
 
 #undef BOOST_MULTI_DECLRETURN_
 
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_FFT_HPP
