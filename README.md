@@ -182,23 +182,24 @@ For example, if `S` is 3D, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D arra
 | `extension`       | returns a contiguous range describing the set of valid indices
 | `num_elements`    | returns the total number of elements
 
-| Creating views    |     |
-|---                |---  |
-| `rotated/unrotated` | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j])`. Preserves dimension. The function is cyclic; `D` applications will give the original view.  |
-| `transposed` (same as `operator~`) | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view  |
-| `range`           | `range(a, b)` returns a subarray with elements from index `a` to index `b` (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
-| `strided`        | returns a subarray skipping `s` elements. Preserves the dimension.
-| `broadcasted` | returns an infinite view of the array of higher dimensions obtained by repeating elements.
+| Creating views        | (this operations do not copy elements or allocate)    |
+|---                    |---  |
+| `broadcasted`         | returns an infinite view of the array of higher dimensions obtained by repeating elements. This returns a special kind of subarray with a degenerate layout and no size operation
+| `dropped`             | returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
 | `element_transformed` | creates a view of the array, where each element is transformed according to a function |
-| `elements`         | a flatted view of all the elements rearranged in a canonical way. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. 
+| `elements`            | a flatted view of all the elements rearranged in a canonical way. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range.
+| `rotated/unrotated`   | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j])`. Preserves dimension. The function is cyclic; `D` applications will give the original view.  |
+| `transposed` (same as `operator~`) | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view  |
+| `sliced`              | returns a subarray with elements from index `a`to index `b` (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
+| `strided`             | returns a subarray skipping `s` elements. Preserves the dimension.
 
-| Creating views by pointer manipulation  |     |
-|---                |---  |
+| Creating views by pointer manipulation     |     |
+|---                                         |---  |
 | `static_cast_array<T2, P2 = T2*>(args...)` | produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
-| `reinterpret_cast_array<T2>` | underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal; `reinterpret_cast_array<T2>(n)` produces a view where the underlying elements are interpreted as an array of `n` elements of type `T2`.
+| `reinterpret_cast_array<T2>`               | underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal; `reinterpret_cast_array<T2>(n)` produces a view where the underlying elements are interpreted as an array of `n` elements of type `T2`.
 
-| Creating arrays   |     |
-|---                |---  |
+| Creating arrays                     |     |
+|---                                  |---  |
 | `decay` (same as prefix `operator+`) | creates a concrete independent `array` with the same dimension and elements as the view. Usually used to force a copy of the elements or in combination with `auto` (e.g., `auto A2_copy = + A[2];`).
 
 A reference `subarray` can be invalidated when its origin array is invalidated or destroyed.
@@ -214,7 +215,7 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 | Member types      | same as for `subarray` |
 |---                |---                        |
 
-| Member functions   | same as for `subarray` plus ... |
+| Member functions  | same as for `subarray` plus ... |
 |---                |--- |
 | (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size size of the multidimensional array (product of sizes). The default constructor and copy constructor are not exposed. Destructor is trivial since elements are not owned or managed. |
 
@@ -239,8 +240,7 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 | Relational functions   |  same as for `subarray`  |
 |---                |--- |
 
-
-`array_ref` can be invalidated if the original buffer is deallocated.
+An `array_ref` can be invalidated if the original buffer is deallocated.
 
 ### class `multi::static_array<T, D, Alloc = std::allocator<T>, ...>`
 
@@ -329,7 +329,7 @@ It supports stateful and polymorphic allocators, the default for the special typ
 ### class `multi::subarray<T, D, ...>::(const_)iterator`
 
 A random-access iterator to subarrays of dimension `D - 1`, generaly used to interact with or implement algorithms.
-They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`, `operator-`.
+They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
 They can be dereferenced by `operator*` and index access `operator[]`, returning objects of lower dimension `subarray<T, D, ... >::reference` (see above).
 Note that this is the same type for all related arrays, for example, `multi::array<T, D, ...>::(const_)iterator`.
 
@@ -351,7 +351,7 @@ auto const [n, m] = A.sizes();
 assert( n == 2 );  // or std::get<0>(A.sizes()) == 2
 assert( m == 3 );  // or std::get<1>(A.sizes()) == 3
 
-assert( A.size() == 2 );  // size in first dimension, or std::get<0>(A.sizes())
+assert( A.size() == 2 );  // size in first dimension, same as std::get<0>(A.sizes())
 assert( A.num_elements() == 6 );  // total number of elements
 ```
 
@@ -360,10 +360,10 @@ copies are equal but independent (disjoint).
 
 ```cpp
 std::array<double, 2> B = A;
-assert( extensions(B) == extensions(A) );
 assert(  B       ==  A                 );  // copies are equal
-assert(  B[0][1] ==  A[0][1]           );  // elements are equal
-assert( &B[0][1] != &A[0][1]           );  // elements are independent
+assert( extensions(B) == extensions(A) );  // extensions (sizes) are equal
+assert(  B[0][1] ==  A[0][1]           );  // all elements are equal
+assert( &B[0][1] != &A[0][1]           );  // elements are independent (dfferent addresses)
 ```
 
 Individual elements can be accessed by the multidimensional indices, either with square brackets (one index at a time, as above) or with parenthesis (comma separated).
