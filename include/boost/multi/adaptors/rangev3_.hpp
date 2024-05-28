@@ -8,8 +8,8 @@
 
 #include<range/v3/range_fwd.hpp>
 
-#ifndef MULTI_ADAPTORS_RANGEV3_HPP
-#define MULTI_ADAPTORS_RANGEV3_HPP
+#ifndef BOOST_MULTI_ADAPTORS_RANGEV3_HPP
+#define BOOST_MULTI_ADAPTORS_RANGEV3_HPP
 
 namespace ranges{namespace v3{
 namespace concepts{ // needed for later version of rangesv3
@@ -47,5 +47,4 @@ int main(){
 }
 #endif
 
-#endif
-
+#endif  // BOOST_MULTI_ADAPTORS_RANGEV3_HPP
