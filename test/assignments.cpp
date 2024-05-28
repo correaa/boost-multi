@@ -31,13 +31,13 @@
 
 #include <boost/test/unit_test.hpp>
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+// #if defined(__clang__)
+// #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+// #pragma GCC diagnostic pop
+// #elif defined(_MSC_VER)
+// #pragma warning(pop)
+// #endif
 
 namespace multi = boost::multi;
 
