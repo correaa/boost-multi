@@ -102,14 +102,14 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
-	{
 #if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
+	{
 		multi::static_array const arr = {12, 34, 56};
 		BOOST_TEST_REQUIRE( size(arr) == 3 );
 		BOOST_TEST_REQUIRE( arr[2] == 56 );
 		BOOST_TEST_REQUIRE(( arr == multi::static_array{12, 34, 56} ));
-#endif
 	}
+#endif
 	{
 		multi::array arr({12, 34, 56});
 		BOOST_TEST_REQUIRE( size(arr) == 3 );
@@ -308,15 +308,15 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 
 #if defined(__cpp_deduction_guides) && ! defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
+#if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
 	{
-#if ! defined(__circle_build__)
 		multi::static_array arr({1.0, 2.0, 3.0});
 		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
 		BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr)==3 && arr[1] == 2.0 );
 		static_assert(typename decltype(arr)::rank{} == 1);
-#endif
 	}
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(initializer_list_1d) {
@@ -357,26 +357,24 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(initializer_list_2d) {
+#if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
 	{
-#if ! defined(__circle_build__)
 		multi::static_array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
-#endif
 	}
 	{
-#if ! defined(__circle_build__)
 		multi::array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
 		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
 		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
-#endif
 	}
+#endif
 }
 #endif
 
