@@ -76,8 +76,8 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part1) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
-	multi::array<double, 2> arr = {
-		{  0, 010,  20},
+	multi::array<int, 2> arr = {
+		{  0,  10,  20},
 		{100, 110, 120},
 		{200, 210, 220},
 		{300, 310, 320},
