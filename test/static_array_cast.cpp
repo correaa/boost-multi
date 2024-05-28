@@ -140,6 +140,9 @@ BOOST_AUTO_TEST_CASE(static_array_cast) {
 
 	BOOST_REQUIRE( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
+	BOOST_REQUIRE( ref == arr() );
+	BOOST_REQUIRE( arr() == ref );
+
 	BOOST_REQUIRE( ref == arr );
 	BOOST_REQUIRE( arr == ref );
 }
