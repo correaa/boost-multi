@@ -1096,9 +1096,9 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	constexpr auto strided_aux_(difference_type diff) const -> subarray {
+	constexpr auto strided_aux_(difference_type diff) const {
 		typename types::layout_t const new_layout{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
-		return {new_layout, types::base_};
+		return subarray(new_layout, types::base_);
 	}
 
  public:
