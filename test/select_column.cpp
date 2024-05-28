@@ -77,10 +77,10 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part1) {
 
 BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 	multi::array<double, 2> arr = {
-		{00.0, 01.0, 02.0},
-		{10.0, 11.0, 12.0},
-		{20.0, 21.0, 22.0},
-		{30.0, 31.0, 32.0},
+		{  0, 010,  20},
+		{100, 110, 120},
+		{200, 210, 220},
+		{300, 310, 320},
 	};
 
 	BOOST_REQUIRE( size( arr(arr.extension(), 2) ) == size(arr) );
@@ -95,9 +95,9 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 	BOOST_REQUIRE( size(col2) == size(arr) );
 	BOOST_REQUIRE( col2.size() == size(arr) );
 	BOOST_REQUIRE( col2.stride() == 3 );
-	BOOST_REQUIRE( col2[0] == 02. );
-	BOOST_REQUIRE( col2[1] == 12. );
-	BOOST_REQUIRE(( col2 == multi::array<double, 1>{02.0, 12.0, 22.0, 32.0} ));
+	BOOST_REQUIRE( col2[0] ==  20 );
+	BOOST_REQUIRE( col2[1] == 120 );
+	BOOST_REQUIRE(( col2 == multi::array<double, 1>{20, 120, 220, 320} ));
 	BOOST_REQUIRE(( col2 == multi::array<double, 1>(rotated(arr)[2]) ));
 	BOOST_REQUIRE(( col2 == rotated(arr)[2] ));
 	BOOST_REQUIRE(( col2 == arr(arr.extension(), 2) ));
