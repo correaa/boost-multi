@@ -99,8 +99,7 @@ struct array_allocator {
 }  // end namespace detail
 
 template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-// NOLINTNEXTLINE(fuchsia-multiple-inheritance) : multiple inheritance used for composition
-struct static_array  // PHOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) workaround clang-tidy 16.0 bug, move constructor is defined
+struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
 : protected detail::array_allocator<
 	  // Alloc
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
@@ -192,15 +191,7 @@ struct static_array  // PHOLINT(cppcoreguidelines-special-member-functions,hicpp
 	using ref::dropped;
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
-	static_array(static_array const& other)
-	: array_alloc{other.get_allocator()}, ref{static_array::allocate(other.num_elements(), other.data_elements()), {}} {
-		uninitialized_copy(other.data_elements());
-	}
-
-	static_array(static_array&& other) noexcept
-	: array_alloc{other.get_allocator()}, ref{static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()} {
-		uninitialized_move(std::move(other).data_elements());
-	}
+	static_array(static_array&& other) noexcept : static_array{other.element_moved()} {}
 
 	constexpr static_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}, ref{std::exchange(other.base_, nullptr), other.extensions()} {
@@ -316,7 +307,7 @@ struct static_array  // PHOLINT(cppcoreguidelines-special-member-functions,hicpp
 	template<class TT, class... Args,
 	         class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<TT, D, Args...>::element>{}>,
 	         class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
-	constexpr static_array(subarray<TT, D, Args...> const& other, allocator_type const& alloc)
+	constexpr static_array(multi::subarray<TT, D, Args...> const& other, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())), other.extensions()) {
 	#if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
@@ -329,47 +320,17 @@ struct static_array  // PHOLINT(cppcoreguidelines-special-member-functions,hicpp
 	}
 
 	template<class TT, class... Args,
-		// std::enable_if_t<! std::is_base_of_v<subarray<TT, D, Args...>, static_array>, int> =0,
-	         std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> = 0//,
-	         // class                                                                                                                                          = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
-	>
+	         std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> = 0,
+	         class                                                                                                                                          = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr /*mplct*/ static_array(subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr /*mplct*/ static_array(multi::subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: static_array(other, allocator_type{}) {}
 
 	template<class TT, class... Args,
-		//std::enable_if_t<! std::is_base_of_v<subarray<TT, D, Args...>, static_array>, int> =0,
-	         std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> = 0//,
-	         // class                                                                                                                                           = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
-	>
-	explicit static_array(subarray<TT, D, Args...> const& other)
+	         std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...> const&>().base()), T>, int> = 0,
+	         class                                                                                                                                           = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
+	explicit static_array(multi::subarray<TT, D, Args...> const& other)
 	: static_array(other, allocator_type{}) {}
-
-
-	// template<class TT, class... Args,
-	//  std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<subarray<TT, D, Args...> const&>().base()), T>, int> = 0,
-	//  std::enable_if_t<! std::is_base_of_v<subarray<TT, D, Args...>, static_array>, int> =0
-	// >
-	// // cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	// /*mplct*/ static_array(subarray<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	// : array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
-	//  static_array::uninitialized_copy_elements(other.elements().begin());
-	// }
-
-	// template<class TT, class... Args,
-	//  std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<subarray<TT, D, Args...> const&>().base()), T>, int> = 0,
-	//  std::enable_if_t<! std::is_base_of_v<subarray<TT, D, Args...>, static_array>, int> =0
-	// >
-	// explicit static_array(subarray<TT, D, Args...> const& other)  // NOLINT(fuchsia-default-arguments-declarations)
-	// :
-	// array_alloc{},
-	// ref{
-	//  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
-	//  other.extensions()
-	// } {
-	//  static_array::uninitialized_copy_elements(std::move(other).elements().begin());
-	// }
-
 
 	template<class TT, class... Args,
 	         std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, Args...>&>().base()), T>, int> = 0,
@@ -850,6 +811,17 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	: array_alloc{alloc}, ref{static_array::allocate(other.num_elements()), extensions(other)} {
 		uninitialized_copy_(other.data_elements());
 	}
+
+	static_array(static_array const& other)  // 5b
+	: array_alloc{other.get_allocator()}, ref{static_array::allocate(other.num_elements(), other.data_elements()), {}} {
+		uninitialized_copy(other.data_elements());
+	}
+
+	static_array(static_array&& other) noexcept  // it is private because it is a valid operation for derived classes //5b
+	: array_alloc{other.get_allocator()}, ref{static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()} {
+		uninitialized_move(std::move(other).data_elements());
+	}
+	//  template<class It> static auto distance(It a, It b) {using std::distance; return distance(a, b);}
 
  protected:
 	void deallocate() {  // TODO(correaa) : move this to detail::array_allocator
