@@ -35,6 +35,8 @@
 
 namespace boost::multi {
 
+namespace detail {
+
 template<class Allocator>
 struct array_allocator {
 	using allocator_type = Allocator;
@@ -94,10 +96,11 @@ struct array_allocator {
  public:
 	constexpr auto get_allocator() const -> allocator_type { return alloc_; }
 };
+}  // end namespace detail
 
 template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
 struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
-: protected array_allocator<
+: protected detail::array_allocator<
 	  // Alloc
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
 , public array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
@@ -119,13 +122,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// using Alloc = typename allocator_traits<DummyAlloc>::template rebind_alloc<T>;
 
  protected:
-	using array_alloc = array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T> >;
+	using array_alloc = detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T> >;
 
  public:
 	// constexpr auto get_allocator() const -> allocator_type { return alloc_; }
-	using array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T> >::get_allocator;
+	using detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T> >::get_allocator;
 
-	using allocator_type = typename array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;
+	using allocator_type = typename detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;
 	using decay_type     = array<T, D, allocator_type>;
 	using layout_type    = typename array_ref<T, D, typename multi::allocator_traits<allocator_type>::pointer>::layout_type;
 
@@ -615,13 +618,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 template<typename T, class Alloc>
 struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
-: protected array_allocator<Alloc>
-, public array_ref<T, 0, typename multi::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer> {
+: protected detail::array_allocator<Alloc>
+, public array_ref<T, 0, typename multi::allocator_traits<typename detail::array_allocator<Alloc>::allocator_type>::pointer> {
 	static_assert(std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, typename static_array::element>,
 	              "allocator value type must match array value type");
 
  private:
-	using array_alloc = array_allocator<Alloc>;
+	using array_alloc = detail::array_allocator<Alloc>;
 
  public:
 	// NOLINTNEXTLINE(runtime/operator)
@@ -821,7 +824,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	//  template<class It> static auto distance(It a, It b) {using std::distance; return distance(a, b);}
 
  protected:
-	void deallocate() {  // TODO(correaa) : move this to array_allocator
+	void deallocate() {  // TODO(correaa) : move this to detail::array_allocator
 		if(this->num_elements()) {
 			multi::allocator_traits<allocator_type>::deallocate(this->alloc(), this->base_, static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()));
 		}
