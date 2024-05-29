@@ -295,7 +295,6 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 	}
 #if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
 	{
-#if !defined(__circle_build__) || (__circle_build__ > 200)  // crashes circle 187-200 in docker
 		multi::array<double, 2> const AA = {
 			{1.0, 2.0},
 			{3.0, 4.0},
