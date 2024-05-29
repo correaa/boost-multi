@@ -264,7 +264,8 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
 		// std::vector<std::vector<double>> const aa(AA);  // doesn't compile with circle 201
-		std::vector<std::vector<double>> const aa = static_cast<std::vector<std::vector<double>>>(AA);
+		// std::vector<std::vector<double>> const aa = static_cast<std::vector<std::vector<double>>>(AA);
+		auto const aa = AA.operator std::vector<std::vector<double>>();
 
 		BOOST_REQUIRE( aa.size() == 2 );
 		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
