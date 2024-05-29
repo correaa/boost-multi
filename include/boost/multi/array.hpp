@@ -1030,6 +1030,7 @@ struct array : static_array<T, D, Alloc> {
 		return reinterpret_cast<subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
+	// move this to static_array
 	template<
 	 class Range,
 	 std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
@@ -1040,6 +1041,7 @@ struct array : static_array<T, D, Alloc> {
 	 return Range{this->begin(), this->end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
 	}
 
+	// move this to static_array
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
 	constexpr explicit operator TTN const&() const& { return array::template to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
