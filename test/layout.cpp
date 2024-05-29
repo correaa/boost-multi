@@ -30,8 +30,8 @@
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
 // #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
-// #  pragma warning(push)
-// #  pragma warning(disable : 4244)  // 'conversion' conversion from 'type1' to 'type2', possible loss of data
+#  pragma warning(push)
+#  pragma warning(disable : 4244)  // 'conversion' conversion from 'type1' to 'type2', possible loss of data
 #endif
 
 #ifndef BOOST_TEST_MODULE
