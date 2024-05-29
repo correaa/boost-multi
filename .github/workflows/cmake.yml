@@ -145,8 +145,14 @@ jobs:
     - name: Install Boost
       run: .\vcpkg\vcpkg install boost
 
+    - name: Set up Boost environment variables
+      run: |
+        echo BOOST_ROOT=.\vcpkg\installed\x64-windows > $env:GITHUB_ENV
+        echo BOOST_INCLUDEDIR=.\vcpkg\installed\x64-windows\include >> $env:GITHUB_ENV
+        echo BOOST_LIBRARYDIR=.\vcpkg\installed\x64-windows\lib >> $env:GITHUB_ENV
+
     - name: Configure CMake
-      run: cmake -S . -B build -A x64 -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake
+      run: cmake -S . -B build -A x64 -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
 
     - name: Build
       run: cmake --build build --config Release
