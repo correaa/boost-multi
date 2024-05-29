@@ -71,22 +71,39 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(backwards) {
 	multi::array<int, 2> const MA({2, 2});
+
+    #ifdef __GNUC__
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #endif
 	// BOOST_REQUIRE(A.index_bases()[0] == 0);  // dangles?
 	// BOOST_REQUIRE(A.index_bases()[1] == 0);
+
+    #ifdef __GNUC__
 	#pragma GCC diagnostic pop
+    #endif
 
 	{
+        #ifdef __NVCC__
 		#pragma nv_diagnostic push
 		#pragma nv_diag_suppress = deprecated_entity_with_custom_message  // nvcc #?
+        #endif
+
+        #ifdef __GNUC__
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        #endif
 		// auto ib = MA.index_bases(); (void)ib;
 		// BOOST_REQUIRE(ib[0] == 0);  // dangles?
 		// BOOST_REQUIRE(ib[1] == 0);
+
+        #ifdef __GNUC__
 		#pragma GCC diagnostic pop
+        #endif
+
+        #ifdef __NVCC__
 		#pragma nv_diagnostic pop
+        #endif
 	}
 	// {
 	//  #pragma GCC diagnostic push
@@ -97,36 +114,55 @@ BOOST_AUTO_TEST_CASE(backwards) {
 	//  #pragma GCC diagnostic pop
 	// }
 	{
+        #ifdef __GNUC__
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        #endif
 		// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(MA.index_bases())[0] == 0);  // dangles
 		// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(MA.index_bases())[1] == 0);
+
+        #ifdef __GNUC__
 		#pragma GCC diagnostic pop
+        #endif
 	}
 	{
+        #ifdef __GNUC__
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        #endif
 		// BOOST_REQUIRE(MA.index_bases()[0] == 0);  // dangles
 		// BOOST_REQUIRE(MA.index_bases()[1] == 0);
+
+        #ifdef __GNUC__
 		#pragma GCC diagnostic pop
+        #endif
 	}
 	{
+        #ifdef __GNUC__
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        #endif
 		// std::ptrdiff_t const* ib = MA.index_bases();
 		// BOOST_REQUIRE(ib);
 		// BOOST_REQUIRE(ib[0] == 0);  // dangles
 		// BOOST_REQUIRE(ib[1] == 0);
+        #ifdef __GNUC__
 		#pragma GCC diagnostic pop
+        #endif
 	}
 	{
+        #ifdef __GNUC__
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        #endif
 		std::vector<std::ptrdiff_t> const ib(2); (void)ib;  // NOLINT(fuchsia-default-arguments-calls)
 		// std::copy_n(static_cast<std::ptrdiff_t const*>(MA.index_bases()), 2, ib.begin());
 		// BOOST_REQUIRE(ib[0] == 0);  // dangles
 		// BOOST_REQUIRE(ib[1] == 0);
+
+        #ifdef __GNUC__
 		#pragma GCC diagnostic pop
+        #endif
 	}
 	// {
 	//  #pragma GCC diagnostic push
