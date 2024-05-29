@@ -783,6 +783,8 @@ circle-203:
   script:
     - apt-get -qq update
     - DEBIAN_FRONTEND=noninteractive apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++ gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_203.tgz --no-verbose
     - tar -zxvf build_???.tgz
