@@ -1509,11 +1509,10 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<
 		class Range,
-		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
-	//  std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
-		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))
-	>
-	constexpr explicit operator Range() const & {return Range(begin(), end());}  // NOLINT(fuchsia-default-arguments-calls) for example std::vector(it, ti, alloc = {})
+		std::enable_if_t<!has_extensions<std::decay_t<Range>>::value, int> = 0,
+		//  std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
+		class = decltype(Range(std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()))>
+	constexpr explicit operator Range() const { return Range(begin(), end()); }  // NOLINT(fuchsia-default-arguments-calls) for example std::vector(it, ti, alloc = {})
 
 	template<class Array> constexpr void swap(Array&& other) && noexcept {
 		assert( std::move(*this).extension() == std::forward<Array>(other).extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
