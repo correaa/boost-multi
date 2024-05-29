@@ -2137,7 +2137,17 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	->decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
 		return operator[](std::get<0>(indices))[detail::tuple_tail(indices)]; }
 
-	[[deprecated("BMA compat, finish impl")]] BOOST_MULTI_HD constexpr auto operator[](std::tuple<irange> const& indices) const& { return (*this)({std::get<0>(indices).front(), std::get<0>(indices).back() + 1}); }
+    // Warning C4459 comes from boost::multi_array having a namespace indices which collides with the variable name?
+    #ifdef _MSC_VER
+    #pragma warning( push )
+    #pragma warning( disable : 4459 )
+    #endif
+
+    [[deprecated("BMA compat, finish impl")]] BOOST_MULTI_HD constexpr auto operator[](std::tuple<irange> const& indices) const& { return (*this)({std::get<0>(indices).front(), std::get<0>(indices).back() + 1}); }
+
+    #ifdef _MSC_VER
+    #pragma warning( pop )
+    #endif
 
 	BOOST_MULTI_HD constexpr auto elements_at(size_type idx) const& -> decltype(auto) {assert(idx < this->num_elements()); return operator[](idx);}
 	BOOST_MULTI_HD constexpr auto elements_at(size_type idx)     && -> decltype(auto) {assert(idx < this->num_elements()); return operator[](idx);}
