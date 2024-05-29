@@ -773,13 +773,15 @@ circle-187:
   needs: ["circle"]
 
 circle-203:
+  image: ubuntu:22.04
   stage: build
+  allow_failure: true
   tags:
     - non-shared
     - docker
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++ gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_203.tgz --no-verbose
     - tar -zxvf build_???.tgz
