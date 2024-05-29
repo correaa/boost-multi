@@ -14,14 +14,12 @@
 #pragma clang diagnostic ignored "-Wundef"
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wsign-conversion"
-// #pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wundef"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-//#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -211,7 +209,8 @@ BOOST_AUTO_TEST_CASE(assign_equality) {
 	}
 	{
 		multi::array<int, 1> const AA = {10, 20, 30};
-		auto const                    aa(AA().operator std::vector<double>());
+
+		auto const aa(AA().operator std::vector<double>());
 
 		BOOST_REQUIRE( std::equal(AA.begin(), AA.end(), aa.begin() ) );
 	}
@@ -272,7 +271,7 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 
 		auto const aa = static_cast<std::vector<std::vector<double>>>(AA);
 	}
-#if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
+#if !defined(__circle_build__) || (__circle_build__ > 200)  // crashes circle 187-200 in docker
 	{
 		multi::array<double, 2> const AA = {
 			{1.0, 2.0},
@@ -281,7 +280,7 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
-		std::vector<std::vector<double>> const aa(AA);  // doesn't compile with circle 201
+		std::vector<std::vector<double>> const aa(AA);
 
 		BOOST_REQUIRE( aa.size() == 2 );
 		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
@@ -295,7 +294,7 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 	}
 	{
-#if ! defined(__circle_build__)
+#if !defined(__circle_build__) || (__circle_build__ > 200)  // crashes circle 187-200 in docker
 		multi::array<double, 2> const AA = {
 			{1.0, 2.0},
 			{3.0, 4.0},
