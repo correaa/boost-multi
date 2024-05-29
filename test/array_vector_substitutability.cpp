@@ -254,6 +254,24 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 
 		auto const aa(AA().operator std::vector<std::vector<double>>());
 	}
+	{
+		multi::array<int, 2> const AA = {
+			{10, 20},
+			{30, 40},
+		};
+		BOOST_REQUIRE( AA.num_elements() == 4 );
+
+		auto const aa = AA.operator std::vector<std::vector<double>>();
+	}
+	{
+		multi::array<int, 2> const AA = {
+			{10, 20},
+			{30, 40},
+		};
+		BOOST_REQUIRE( AA.num_elements() == 4 );
+
+		auto const aa = static_cast<std::vector<std::vector<double>>>(AA);
+	}
 #if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
 	{
 		multi::array<double, 2> const AA = {
@@ -263,9 +281,7 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 
-		// std::vector<std::vector<double>> const aa(AA);  // doesn't compile with circle 201
-		// std::vector<std::vector<double>> const aa = static_cast<std::vector<std::vector<double>>>(AA);
-		auto const aa = AA.operator std::vector<std::vector<double>>();
+		std::vector<std::vector<double>> const aa(AA);  // doesn't compile with circle 201
 
 		BOOST_REQUIRE( aa.size() == 2 );
 		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
