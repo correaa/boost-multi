@@ -2906,6 +2906,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		#endif
 	}
 
+ protected:
 	template<class TTN>
 	constexpr auto to_carray_()& -> TTN& {
 		check_sizes_<TTN>();
