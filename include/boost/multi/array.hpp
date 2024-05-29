@@ -1030,15 +1030,22 @@ struct array : static_array<T, D, Alloc> {
 		return reinterpret_cast<subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
-	// template<
-	//  class Range,
-	//  std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
-	//  class = decltype(Range{std::declval<typename array::const_iterator>(), std::declval<typename array::const_iterator>()})
-	// >
-	// constexpr explicit operator Range() const {
-	//  // vvv Range{...} needed by Windows GCC?
-	//  return Range{this->begin(), this->end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
-	// }
+	template<
+	 class Range,
+	 std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
+	 class = decltype(Range{std::declval<typename array::const_iterator>(), std::declval<typename array::const_iterator>()})
+	>
+	constexpr explicit operator Range() const {
+	 // vvv Range{...} needed by Windows GCC?
+	 return Range{this->begin(), this->end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
+	}
+
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
+	constexpr explicit operator TTN const&() const& { return array::template to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
+	constexpr explicit operator TTN&() && { return array::template to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
+	constexpr explicit operator TTN&() & { return array::template to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17 ?
 	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
