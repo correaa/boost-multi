@@ -2368,7 +2368,7 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
 		class = decltype(Range{std::declval<typename subarray::const_iterator>(), std::declval<typename subarray::const_iterator>()})
 	>
-	constexpr explicit operator Range() const & {
+	constexpr explicit operator Range() const {
 		// vvv Range{...} needed by Windows GCC?
 		return Range{begin(), end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
 	}
@@ -2899,11 +2899,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
 	template<class TT> static auto launder_(TT* pointer) -> TT* {
-		#if(defined(__cpp_lib_launder) && ( __cpp_lib_launder >= 201606L)) 
+	#if(defined(__cpp_lib_launder) && ( __cpp_lib_launder >= 201606L)) 
 		return std::launder(pointer);
-		#else
+	#else
 		return              pointer ;
-		#endif
+	#endif
 	}
 
  protected:
