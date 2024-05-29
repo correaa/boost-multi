@@ -278,9 +278,6 @@ BOOST_AUTO_TEST_CASE(layout) {
 		BOOST_REQUIRE( size(A2) == 3 );
 
 		multi::array<int, 2> B2(
-//#if defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__ < 6))
-//      multi::extensions_t<2>
-//#endif
 	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
 		multi::extensions_t<2>
 	#endif
@@ -293,16 +290,14 @@ BOOST_AUTO_TEST_CASE(layout) {
 
 		BOOST_REQUIRE( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
 
-		std::array<std::array<decltype(B2({
-			                                  0, 2
-                                                                                                                                                                                                      },
-		                                  {0, 2})),
-		                      2>,
-		           2>
+		// clang-format off
+		std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2>
 			B2blk = {{
 				{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
 				{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
-			}};
+			}}
+		;
+		// clang-format on
 
 		BOOST_REQUIRE( &B2blk[1][1][1][1] == &B2[3][3] );
 	}
@@ -310,7 +305,7 @@ BOOST_AUTO_TEST_CASE(layout) {
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 		double arr[3][4][5] = {};
 		using multi::dimensionality;
-		static_assert(dimensionality(arr) == 3, "!");
+		static_assert( dimensionality(arr) == 3 );
 		using multi::extensions;
 		auto xA = extensions(arr);
 
@@ -327,7 +322,7 @@ BOOST_AUTO_TEST_CASE(layout) {
 		using multi::layout;
 		BOOST_REQUIRE( layout(AA) == layout(arr) );
 
-		BOOST_REQUIRE( AA     .stride() == 20 );
+		BOOST_REQUIRE( AA.stride() == 20 );
 	}
 	{
 		std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
