@@ -1043,11 +1043,11 @@ struct array : static_array<T, D, Alloc> {
 
 	// move this to static_array
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
-	constexpr explicit operator TTN const&() const& { return this->template to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr explicit operator TTN const&() const& { return this->template to_carray_<TTN>(); }
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
-	constexpr explicit operator TTN&() && { return this->template to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr explicit operator TTN&() && { return this->template to_carray_<TTN>(); }
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>
-	constexpr explicit operator TTN&() & { return this->template to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr explicit operator TTN&() & { return this->template to_carray_<TTN>(); }
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17 ?
 	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
