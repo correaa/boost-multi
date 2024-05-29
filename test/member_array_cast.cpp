@@ -169,12 +169,12 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 #endif
 
 #if !defined(__circle_build__) || (__circle_build__ > 200 )
-BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
-	struct record {
-		int    id;
-		double data;
-	};
+struct record {
+	int    id;
+	double data;
+};
 
+BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	multi::array<record, 2> const recs = {
 		{{1, 1.1}, {2, 2.2}},
 		{{3, 3.3}, {4, 4.4}},
