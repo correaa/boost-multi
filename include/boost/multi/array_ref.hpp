@@ -2579,6 +2579,16 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), p2);
 	}
 
+	template<class UFP>
+	constexpr auto operator->*(UFP* fun) const {
+		return element_transformed(*fun);
+	}
+
+	template<class UF>
+	constexpr auto operator->*(UF&& fun) const {
+		return element_transformed(std::forward<UF>(fun));
+	}
+
 	constexpr auto element_moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
 	constexpr auto element_moved() && {return element_moved();}
 
