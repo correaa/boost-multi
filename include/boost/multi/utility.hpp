@@ -92,7 +92,7 @@ struct transform_ptr {
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
 	#endif
 
-	constexpr transform_ptr(pointer ptr, UF fun) : p_{ptr}, f_(std::move(fun)) {}
+	constexpr transform_ptr(pointer ptr, UF fun) : p_{ptr}, f_{std::forward<UF>(fun)} {}  // std::move(fun)) {}
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* =nullptr>
 	// cppcheck-suppress noExplicitConstructor

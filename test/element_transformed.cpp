@@ -10,27 +10,27 @@
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
-#  pragma clang diagnostic ignored "-Wignored-qualifiers"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wundef"
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wundef"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
-#  pragma warning(push)
-#  pragma warning(disable : 4244)
+#pragma warning(push)
+#pragma warning(disable : 4244)
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
@@ -174,14 +174,112 @@ BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
 
 	multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
 
-	// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 	constexpr auto conj_ro = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
 
 	auto const& conjd_arr = arr.element_transformed(conj_ro);
 	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
 
-	//  Ac[0] = 5. + 4.i;  // doesn't compile thanks to the `auto const` in the `conj` def
+	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
+}
+
+BOOST_AUTO_TEST_CASE(arrow_1D_array) {
+	using complex = std::complex<double>;
+	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+
+	multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
+
+	constexpr auto conj_ro = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
+
+	auto const& conjd_arr = arr ->* &conj_ro;
+	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
+
+	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
+}
+
+BOOST_AUTO_TEST_CASE(arrow_1D_array_exp_syntax) {
+	using complex = std::complex<double>;
+	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+
+	multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
+
+	constexpr auto conj_ro = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
+
+	auto const& conjd_arr = arr ->*(&conj_ro, conj_ro);
+	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
+
+	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
+}
+
+BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda_function_ptr) {
+	using complex = std::complex<double>;
+	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+
+	multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
+
+	constexpr auto conj_ro   = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
+	auto           fptr      = +[](complex const& zee) noexcept { return std::conj(zee); };
+	auto const&    conjd_arr = arr->*fptr;
+
+	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
+
+	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
+}
+
+BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_decaying_lambda) {
+	using complex = std::complex<double>;
+	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+
+	multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
+
+	constexpr auto conj_ro   = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
+
+	// auto const&    conjd_arr = arr->*+[](complex const& zee) noexcept { return std::conj(zee); };
+	auto const&    conjd_arr = arr->* [](complex const& zee) noexcept { return std::conj(zee); };
+
+	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
+
+	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
+}
+
+BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda_address) {
+	using complex = std::complex<double>;
+	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+
+	multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
+
+	constexpr auto conj_ro   = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-temporary"
+	auto const&    conjd_arr = arr->*&[](auto const& zee) noexcept { return std::conj(zee); };
+#pragma GCC diagnostic pop
+
+	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
+
+	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
+}
+
+BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda) {
+	using complex = std::complex<double>;
+	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
+
+	multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
+
+	constexpr auto conj_ro   = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
+
+	// auto const&    conjd_arr = arr-> [](auto const& zee) noexcept { return std::conj(zee); };  // this syntax doesn't work
+	auto const&    conjd_arr = arr->*[](auto const& zee) noexcept { return std::conj(zee); };
+
+	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
+
+	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
 }
 
 BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
@@ -191,8 +289,10 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
 	};
 
 	multi::array<S, 1> arr({2}, S{});
-	auto&&             ref = arr.element_transformed(&S::a);
-	ref[0]                 = 99.0;
+
+	auto&& ref = arr.element_transformed(&S::a);
+
+	ref[0] = 99.0;
 
 	BOOST_REQUIRE( arr[0].a == 99.0 );
 
