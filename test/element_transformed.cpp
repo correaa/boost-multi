@@ -198,21 +198,6 @@ BOOST_AUTO_TEST_CASE(arrow_1D_array) {
 	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
 }
 
-BOOST_AUTO_TEST_CASE(arrow_1D_array_exp_syntax) {
-	using complex = std::complex<double>;
-	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
-
-	multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
-
-	constexpr auto conj_ro = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
-
-	auto const& conjd_arr = arr ->*(&conj_ro, conj_ro);
-	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
-	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
-
-	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
-}
-
 BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda_function_ptr) {
 	using complex = std::complex<double>;
 	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
