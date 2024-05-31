@@ -239,10 +239,10 @@ BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda_address) {
 
 	constexpr auto conj_ro   = [](auto const& zee) noexcept { return std::conj(zee); };  // g++ -std=20 needs the transformation (lambda) to be noexcept
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Waddress-of-temporary"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Waddress-of-temporary"
 	auto const&    conjd_arr = arr->*&[](auto const& zee) noexcept { return std::conj(zee); };
-#pragma GCC diagnostic pop
+#pragma clang diagnostic pop
 
 	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
