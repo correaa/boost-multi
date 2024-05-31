@@ -243,14 +243,14 @@ BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda_address) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Waddress-of-temporary"
 #elif defined(__GNUC__)
-#pragma clang diagnostic push
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-fpermissive"
 #endif
 	auto const&    conjd_arr = arr->*&[](auto const& zee) noexcept { return std::conj(zee); };
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
 	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
