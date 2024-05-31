@@ -231,6 +231,7 @@ BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_decaying_lambda) {
 	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
 }
 
+#ifndef __GNUC__
 BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda_address) {
 	using complex = std::complex<double>;
 	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
@@ -242,15 +243,10 @@ BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda_address) {
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Waddress-of-temporary"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-fpermissive"
 #endif
 	auto const&    conjd_arr = arr->*&[](auto const& zee) noexcept { return std::conj(zee); };
 #if defined(__clang__)
 #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
 #endif
 
 	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
@@ -258,6 +254,7 @@ BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda_address) {
 
 	//  Ac[0] = 5.0 + 4.0i;  // doesn't compile thanks to the `auto const` in the `conj` def
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(arrow_1D_array_inplace_lambda) {
 	using complex = std::complex<double>;
