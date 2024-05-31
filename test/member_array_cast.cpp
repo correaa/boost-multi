@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(d2D_names[1][1] == "David");
 
 #if !(defined(__clang__) && defined(__CUDACC__))
-#if !defined(__circle_build__) || (__circle_build__ > 200 )
+#if !defined(__circle_build__) || (__circle_build__ > 203 )
 	multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(&employee::name);
 	BOOST_REQUIRE(d2D_names_copy_members[1][1] == "David");
 	BOOST_REQUIRE(d2D_names_copy_members       == d2D_names);
@@ -168,7 +168,27 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 }
 #endif
 
-#if !defined(__circle_build__) || (__circle_build__ > 203 )
+#if !defined(__circle_build__) || (__circle_build__ > 200 )
+BOOST_AUTO_TEST_CASE(element_transformed_from_member_1D) {
+	struct record {
+		int    id;
+		double data;
+	};
+
+	multi::array<record, 1> const recs;// = {record{1, 1.1}, record{2, 2.2}};
+
+	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& record::id));
+	multi::array<int, 1> ids = recs.element_transformed(&record::id);
+
+	BOOST_REQUIRE( ids[1] == 2 );
+	BOOST_REQUIRE( ids == recs.member_cast<int>(&record::id) );
+
+	// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
+	// BOOST_REQUIRE( recs[1][1].id == 5 );
+}
+#endif
+
+#if !defined(__circle_build__) || (__circle_build__ > 200 )
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	struct record {
 		int    id;
@@ -180,7 +200,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 		{{3, 3.3}, {4, 4.4}},
 	};
 
-	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
+	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& record::id));
 	multi::array<int, 2> ids = recs.element_transformed(&record::id);
 
 	BOOST_REQUIRE( ids[1][1] == 4 );
