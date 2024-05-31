@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member_1D) {
 		double data;
 	};
 
-	multi::array<record, 1> const recs;// = {record{1, 1.1}, record{2, 2.2}};
+	multi::array<record, 1> const recs = {record{1, 1.1}, record{2, 2.2}};
 
 	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& record::id));
 	multi::array<int, 1> ids = recs.element_transformed(&record::id);
