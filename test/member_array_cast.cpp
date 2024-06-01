@@ -189,6 +189,69 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member_1D) {
 #endif
 
 #if !defined(__circle_build__) || (__circle_build__ > 200 )
+// BOOST_AUTO_TEST_CASE(element_transformed_from_member_deconstruct) {
+// 	struct record {
+// 		int    id;
+// 		double data;
+// 	};
+
+// 	multi::array<record, 2> const recs = {
+// 		{{1, 1.1}, {2, 2.2}},
+// 		{{3, 3.3}, {4, 4.4}},
+// 	};
+
+// 	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& record::id));
+// 	multi::array<int, 2> ids = 
+// 		// recs.static_array_cast_<
+// 		// 	int,
+// 		// 	multi::transform_ptr<
+// 		// 		int,
+// 		// 		decltype(&record::id), record*      ,  int const&
+// 		// 	>
+// 		// >(&record::id)
+// 		multi::subarray<int, 2, multi::transform_ptr<
+// 			int,
+// 			decltype(&record::id), record*      ,  int const&
+// 		>>(recs.layout(), );
+// 	;
+
+// 	BOOST_REQUIRE( ids[1][1] == 4 );
+// 	BOOST_REQUIRE( ids == recs.member_cast<int>(&record::id) );
+
+// 	// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
+// 	// BOOST_REQUIRE( recs[1][1].id == 5 );
+// }
+
+BOOST_AUTO_TEST_CASE(element_transformed_from_member_deconstruct) {
+	struct record {
+		int    id;
+		double data;
+	};
+
+	multi::array<record, 2> const recs = {
+		{{1, 1.1}, {2, 2.2}},
+		{{3, 3.3}, {4, 4.4}},
+	};
+
+	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& record::id));
+	multi::array<int, 2> ids = 
+	//  recs.element_transformed(&record::id)
+		recs.static_array_cast_<
+			int,
+			multi::transform_ptr<
+				int,
+				decltype(&record::id), record*      ,  int const&
+			>
+		>(&record::id)
+	;
+
+	BOOST_REQUIRE( ids[1][1] == 4 );
+	BOOST_REQUIRE( ids == recs.member_cast<int>(&record::id) );
+
+	// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
+	// BOOST_REQUIRE( recs[1][1].id == 5 );
+}
+
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	struct record {
 		int    id;

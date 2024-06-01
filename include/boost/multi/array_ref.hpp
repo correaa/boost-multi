@@ -1576,13 +1576,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
 	}
 
- private:
+// private:
+ public:
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
 	constexpr auto static_array_cast_(Args&&... args) const & {  // name taken from std::static_pointer_cast
 		return subarray<T2, D, P2>(this->layout(), P2{this->base_, std::forward<Args>(args)...});
 	}
 
- public:
+// public:
 	template<class UF>
 	constexpr auto element_transformed(UF&& fun) const& {
 		return static_array_cast_<
