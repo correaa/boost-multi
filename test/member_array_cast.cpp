@@ -157,6 +157,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(&employee::name);
 	BOOST_REQUIRE(d2D_names_copy_members[1][1] == "David");
 	BOOST_REQUIRE(d2D_names_copy_members       == d2D_names);
+
 #endif
 #endif
 
@@ -168,7 +169,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 }
 #endif
 
-#if !defined(__circle_build__) || (__circle_build__ > 203 )
+#if !defined(__circle_build__) || (__circle_build__ > 200 )
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	struct record {
 		int    id;
