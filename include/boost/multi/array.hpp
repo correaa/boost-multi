@@ -309,13 +309,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	         class = decltype(adl_copy(std::declval<multi::subarray<TT, D, Args...> const&>().begin(), std::declval<multi::subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
 	constexpr static_array(multi::subarray<TT, D, Args...> const& other, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())), other.extensions()) {
-	#if defined(__clang__) && defined(__CUDACC__)
+	#if (defined(__clang__) && defined(__CUDACC__))
 		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
 			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
 		}
 		adl_copy              (other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
 	#else
-		adl_uninitialized_copy(/*static_array::alloc()*/ other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
+		// adl_uninitialized_copy(/*static_array::alloc()*/ other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
+		// adl_uninitialized_copy(other.elements().begin(), other.elements().end(), this->elements().begin());
+		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
 	#endif
 	}
 
