@@ -153,15 +153,10 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(d2D_names[1][1] == "David");
 
 #if !(defined(__clang__) && defined(__CUDACC__))
-#if !defined(__circle_build__) || (__circle_build__ > 200 )
 	multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(&employee::name);
 	BOOST_REQUIRE(d2D_names_copy_members[1][1] == "David");
 	BOOST_REQUIRE(d2D_names_copy_members       == d2D_names);
 
-#endif
-#endif
-
-#if !(defined(__clang__) && defined(__CUDACC__))
 	multi::array<std::string, 2> d2D_names_copy{d2D_names};
 	BOOST_REQUIRE(d2D_names == d2D_names_copy);
 	BOOST_REQUIRE(base(d2D_names) != base(d2D_names_copy));
@@ -169,7 +164,6 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 }
 #endif
 
-#if !defined(__circle_build__) || (__circle_build__ > 200 )
 BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	struct record {
 		int    id;
@@ -190,7 +184,6 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
 	// BOOST_REQUIRE( recs[1][1].id == 5 );
 }
-#endif
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
 #if !(defined(__NVCC__) || defined(__HIPCC__))
