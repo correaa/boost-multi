@@ -64,13 +64,7 @@ arm64:
     - arm
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ cmake make tar wget
-    - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
-    - tar -xf boost_1_84_0.tar.gz 
-    - cd boost_1_84_0
-    - ./bootstrap.sh
-    - ./b2 --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
-    - cd ..
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ cmake make libblas-dev liblapack-dev libboost-test-dev libboost-timer-dev libboost-serialization-dev pkg-config libfftw3-dev tar wget
     - mkdir build && cd build
     - c++ --version
     - cmake .. -DCMAKE_BUILD_TYPE=Debug
