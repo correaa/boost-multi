@@ -58,7 +58,7 @@ g++-m32:
 
 arm64:
   stage: build
-  image: amd64/debian:latest
+  image: arm64v8/debian:latest
   tags:
     - non-shared
     - arm
