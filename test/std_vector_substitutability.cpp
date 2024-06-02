@@ -271,7 +271,6 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 
 		auto const aa = static_cast<std::vector<std::vector<double>>>(AA);
 	}
-#if !defined(__circle_build__) || (__circle_build__ > 200)  // crashes circle 187-200 in docker
 	{
 		multi::array<double, 2> const AA = {
 			{1.0, 2.0},
@@ -285,7 +284,6 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 		BOOST_REQUIRE( aa.size() == 2 );
 		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
 	}
-#endif
 	{
 		multi::array<double, 2> const AA = {
 			{1.0, 2.0},
@@ -293,7 +291,6 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 		};
 		BOOST_REQUIRE( AA.num_elements() == 4 );
 	}
-#if !defined(__circle_build__) || (__circle_build__ > 200 )  // crashes circle 187-200 in docker
 	{
 		multi::array<double, 2> const AA = {
 			{1.0, 2.0},
@@ -304,5 +301,4 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 		std::vector<multi::array<double, 1>> const aa(AA);
 		BOOST_REQUIRE( aa.size() == 2 );
 	}
-#endif
 }
