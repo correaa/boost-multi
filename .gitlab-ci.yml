@@ -72,21 +72,6 @@ arm64:
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
-g++-10:
-  stage: build
-  image: ubuntu:20.04
-  tags:
-    - high-bandwidth
-  interruptible: true
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++-10 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget  # linux-libc-dev:i386
-    - mkdir build && cd build
-    - g++-10 --version
-    - CXX=g++-10 cmake .. -DCMAKE_BUILD_TYPE=Debug # -DCMAKE_CXX_FLAGS="-m32"
-    - cmake --build .
-    - ctest -j 2 --output-on-failure
-  needs: ["g++"]
-
 clang++-9:
   stage: build
   image: ubuntu:20.04
@@ -99,22 +84,6 @@ clang++-9:
     - mkdir build && cd build
     - clang++-9 --version
     - CXX=clang++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build .
-    - ctest -j 2 --output-on-failure
-  needs: ["clang++"]
-
-clang++-11:
-  stage: build
-  image: ubuntu:22.04
-  tags:
-    - non-shared
-    - high-bandwidth
-  interruptible: true
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-11 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
-    - mkdir build && cd build
-    - clang++-11 --version
-    - CXX=clang++-11 cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -217,22 +186,6 @@ g++-testing c++20:
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++"]
-
-g++-13 c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
-  stage: build
-  image: debian:unstable
-  tags:
-    - non-shared
-    - docker
-  interruptible: true
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ g++-14 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
-    - mkdir build && cd build
-    - g++-13 --version
-    - CXX=g++-13 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --output-on-failure
-  needs: ["g++-testing c++20"]
 
 g++-14 c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   stage: build
