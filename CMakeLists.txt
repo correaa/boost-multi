@@ -50,7 +50,7 @@ else()
 
   message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
-  include_directories(${PROJECT_SOURCE_DIR}/include)  # workaround for vscode to detect headers https://stackoverflow.com/a/68139743/225186
+  # include_directories(${PROJECT_SOURCE_DIR}/include)  # workaround for vscode to detect headers https://stackoverflow.com/a/68139743/225186
 
   include(CMakePackageConfigHelpers)
   include(CMakeDependentOption)
