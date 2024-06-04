@@ -61,7 +61,6 @@ arm64:
   stage: build
   image: arm64v8/debian:latest
   tags:
-    - non-shared
     - arm
   interruptible: true
   script:
