@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_ARRAY_HPP_
 #define BOOST_MULTI_ARRAY_HPP_
 
-#include <boost/multi/array_ref.hpp>
+#include <boost/multi/array_ref.hpp>  // IWYU pragma: export
 
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 

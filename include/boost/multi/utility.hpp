@@ -6,7 +6,7 @@
 #define BOOST_MULTI_UTILITY_HPP
 #pragma once
 
-#include <boost/multi/detail/implicit_cast.hpp>
+#include <boost/multi/detail/implicit_cast.hpp>  // IWYU pragma: export
 #include <boost/multi/detail/layout.hpp>
 
 #include <functional>    // for std::invoke
