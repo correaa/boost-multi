@@ -5,6 +5,7 @@
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
+#include <complex>
 #include <numeric>  // for std::transform_reduce
 
 namespace multi = boost::multi;

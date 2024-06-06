@@ -2,14 +2,23 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/test/tools/fpc_tolerance.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 
-#include <chrono>  // NOLINT(build/c++11)
-#include <complex>
-#include <iostream>
-#include <random>
+#include <boost/multi/array.hpp>
+
+#include <algorithm>  // for generate, for_each
+#include <array>      // for array
+#include <chrono>     // for operator-, duration
+#include <complex>    // for complex, operator==
+#include <iostream>   // for operator<<, basic_os...
+#include <numeric>    // for iota
+#include <random>     // for linear_congruential_...
+#include <string>     // for operator""s, operator+
+#include <utility>    // for move
+#include <vector>     // for vector
 
 namespace multi = boost::multi;
 
@@ -71,23 +80,27 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)) {
 
 	for(auto which : which_cases) {  // NOLINT(altera-unroll-loops)
 		cout << "case ";
-		copy(begin(which), end(which), std::ostream_iterator<bool>{cout, ", "});
+		std::for_each(which.begin(), which.end(), [](auto e) { cout << e << ", "; });
+		// copy(which.begin(), which.end(), std::ostream_iterator<bool>{cout, ", "});
 		cout << "\n";
 
 		marray<complex, 4> out = in;
 		{
 			auto const  pln = multi::fftw::plan::forward(which, in.base(), in.layout(), out.base(), out.layout());
-			watch const unnamed{"cpu_oplac planned %ws wall, CPU (%p%)\n"s};
+			watch const unnamed("cpu_oplac planned %ws wall, CPU (%p%)\n"s);
 			pln.execute(in.base(), out.base());
 		}
 		{
-			auto        in_rw = in;
+			auto in_rw = in;
+
 			watch const unnamed{"cpu_iplac %ws wall, CPU (%p%)\n"s};
 			multi::fftw::dft_forward(which, in_rw, in_rw);
 		}
 		{
-			auto        in_rw = in;
-			auto const  pln   = multi::fftw::plan::forward(which, in_rw.base(), in_rw.layout(), in_rw.base(), in_rw.layout());
+			auto in_rw = in;
+
+			auto const pln = multi::fftw::plan::forward(which, in_rw.base(), in_rw.layout(), in_rw.base(), in_rw.layout());
+
 			watch const unnamed{"cpu_iplac planned %ws wall, CPU (%p%)\n"s};
 			pln.execute(in_rw.base(), in_rw.base());
 		}
@@ -155,11 +168,13 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 
 	auto const in = [] {
 		marray<complex, 4> ret(exts);
-		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
-		              [eng        = std::default_random_engine{std::random_device{}()},
-		               uniform_01 = std::uniform_real_distribution<>{}]() mutable {
-			              return complex{uniform_01(eng), uniform_01(eng)};
-		              });
+		std::generate(
+			ret.data_elements(), ret.data_elements() + ret.num_elements(),
+			[eng        = std::default_random_engine{std::random_device{}()},
+			 uniform_01 = std::uniform_real_distribution<>{}]() mutable {
+				return complex{uniform_01(eng), uniform_01(eng)};
+			}
+		);
 		return ret;
 	}();
 

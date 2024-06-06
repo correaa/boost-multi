@@ -6,15 +6,15 @@
 #define BOOST_MULTI_ARRAY_REF_HPP_
 #pragma once
 
-#include <boost/multi/detail/pointer_traits.hpp>
-#include <boost/multi/utility.hpp>
+#include <boost/multi/utility.hpp>  // IWYU pragma: export
 
 #include <boost/multi/detail/adl.hpp>
-#include <boost/multi/detail/layout.hpp>
-#include <boost/multi/detail/memory.hpp>         // for pointer_traits
-#include <boost/multi/detail/operators.hpp>      // for random_iterable
+#include <boost/multi/detail/layout.hpp>          // IWYU pragma: export
+#include <boost/multi/detail/memory.hpp>          // for pointer_traits
+#include <boost/multi/detail/operators.hpp>       // for random_iterable
 #include <boost/multi/detail/serialization.hpp>
-#include <boost/multi/detail/types.hpp>          // for dimensionality_type
+#include <boost/multi/detail/pointer_traits.hpp>  // IWYU pragma: export
+#include <boost/multi/detail/types.hpp>           // for dimensionality_type  // IWYU pragma: export
 
 #include <algorithm>   // fpr copy_n
 #include <array>

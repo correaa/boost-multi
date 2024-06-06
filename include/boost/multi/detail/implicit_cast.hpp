@@ -6,6 +6,9 @@
 #define BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
 #pragma once
 
+#include <type_traits>
+#include <utility>
+
 namespace boost::multi::detail {
 
 template<class From, class To> constexpr bool is_implicitly_convertible_v = std::is_convertible_v<From, To>;

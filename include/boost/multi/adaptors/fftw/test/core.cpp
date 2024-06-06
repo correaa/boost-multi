@@ -3,15 +3,19 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
+#include <boost/test/tools/fpc_tolerance.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
-#include <chrono>  // NOLINT(build/c++11) bug in cpplint
-#include <iostream>
-#include <random>
-
-#include <fftw3.h>
+#include <algorithm>                                    // for for_each, tra...
+#include <complex>                                      // for operator*
+#include <iterator>                                     // for begin, end
+#include <numeric>                                      // for accumulate, iota
+#include <string>                                       // for operator""s
+#include <type_traits>                                  // for decay_t, enab...
+#include <utility>                                      // for forward
+#include <random>                                       // std::mt19937_64
 
 namespace {
 

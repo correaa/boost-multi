@@ -6,10 +6,16 @@
 
 #include <boost/multi/adaptors/fftw.hpp>
 
-#include <chrono>  // NOLINT(build/c++11)
-#include <complex>
-#include <iostream>
-#include <random>
+#include <boost/multi/array.hpp>
+
+#include <algorithm>   // for generate
+#include <chrono>      // for operator-, duration, system...
+#include <complex>     // for operator==, complex
+#include <functional>  // for invoke
+#include <iostream>    // for operator<<, basic_os...
+#include <random>      // for linear_congruential_...
+#include <string>      // for operator<<, operator""s
+#include <utility>     // for move
 
 namespace multi = boost::multi;
 
