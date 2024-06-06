@@ -4,15 +4,14 @@
 
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
-#pragma once
 
 #include <type_traits>  // for enable_if
-#include <utility>  // for forward
+#include <utility>      // for forward
 
 #if defined(__NVCC__)
-#define BOOST_MULTI_HD __host__ __device__
+# define BOOST_MULTI_HD __host__ __device__
 #else
-#define BOOST_MULTI_HD
+# define BOOST_MULTI_HD
 #endif
 
 namespace boost::multi {
