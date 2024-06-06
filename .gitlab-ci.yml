@@ -37,7 +37,7 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
 
 g++-m32:
   stage: build
-  #image: debian:latest
+  image: debian:latest
   tags:
     - non-shared
     - high-bandwidth
