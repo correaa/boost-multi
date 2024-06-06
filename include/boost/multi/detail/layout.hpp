@@ -5,9 +5,9 @@
 #ifndef BOOST_MULTI_DETAIL_LAYOUT_HPP
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
-#include <boost/multi/detail/index_range.hpp>
-#include <boost/multi/detail/operators.hpp>
-#include <boost/multi/detail/tuple_zip.hpp>
+#include <boost/multi/detail/index_range.hpp>  // IWYU pragma: export
+#include <boost/multi/detail/operators.hpp>    // IWYU pragma: export
+#include <boost/multi/detail/tuple_zip.hpp>    // IWYU pragma: export
 
 #include <boost/multi/detail/config/ASSERT.hpp>
 

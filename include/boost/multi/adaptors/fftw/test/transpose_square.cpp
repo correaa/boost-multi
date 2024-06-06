@@ -3,14 +3,18 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
-#include <boost/timer/timer.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
+#include <boost/multi/array.hpp>
 
 #include <chrono>  // NOLINT(build/c++11)
-#include <complex>
-#include <iostream>
-#include <random>
+#include <algorithm>   // for for_each, generate
+#include <complex>     // for operator==, complex
+#include <functional>  // for invoke
+#include <iostream>    // for operator<<, basic_os...
+#include <random>      // for linear_congruential_...
+#include <string>      // for operator""s, operator<<
+#include <utility>     // for move, swap
 
 namespace multi = boost::multi;
 
@@ -41,7 +45,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 
 	multi::fftw::initialize_threads();
 	{
-		auto const in = [] {
+		auto const in = std::invoke([] {
 			//  multi::array<complex, 2> ret({819, 819});
 			multi::array<complex, 2> ret({81, 81});
 			std::generate(
@@ -51,14 +55,13 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 					return complex{uniform_01(eng), uniform_01(eng)};
 				}
 			);
-			//  std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 			return ret;
-		}();
+		});
 		{
 			multi::array<complex, 2> out = in;
-			multi::array<complex, 2> aux(extensions(out));
+			multi::array<complex, 2> aux(out.extensions());
 			{
-				watch const unnamed{"auxiliary copy           %ws wall, CPU (%p%)\n"s};
+				watch const unnamed("auxiliary copy           %ws wall, CPU (%p%)\n"s);
 				aux = ~out;
 				out = std::move(aux);
 				BOOST_REQUIRE( out[35][79] == in[79][35] );

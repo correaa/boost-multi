@@ -10,7 +10,10 @@ AlignConsecutiveAssignments: Consecutive  # None
 AlignConsecutiveDeclarations: Consecutive
 #AlignEscapedNewlines: Left
 AlignOperands:   AlignAfterOperator
-AlignTrailingComments: false
+# AlignTrailingComments: false
+AlignTrailingComments:
+  Kind: Always  # Leave  # Always
+  # OverEmptyLines: 2
 #AllowAllArgumentsOnNextLine: true
 #AllowAllParametersOfDeclarationOnNextLine: true
 #AllowShortEnumsOnASingleLine: true
@@ -106,7 +109,7 @@ AccessModifierOffset: -98  # 2
 #IndentCaseLabels: true
 #IndentCaseBlocks: false
 #IndentGotoLabels: true
-#IndentPPDirectives: None
+IndentPPDirectives: BeforeHash  # AfterHash  # None
 #IndentExternBlock: AfterExternBlock
 #IndentRequires:  false
 IndentWidth:     99
