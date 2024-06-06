@@ -6,7 +6,8 @@
 #    curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
 #    sudo apt-get install gitlab-runner
 
-image: debian:stable
+# image: debian:stable
+image: npneq/debian_inq_deps:bookworm
 
 workflow:
   auto_cancel:
@@ -60,7 +61,6 @@ arm64:
   stage: build
   image: arm64v8/debian:latest
   tags:
-    - non-shared
     - arm
   interruptible: true
   script:
@@ -72,21 +72,21 @@ arm64:
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
-clang++-9:
-  stage: build
-  image: ubuntu:20.04
-  tags:
-    - non-shared
-    - high-bandwidth
-  interruptible: true
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-9 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
-    - mkdir build && cd build
-    - clang++-9 --version
-    - CXX=clang++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build .
-    - ctest -j 2 --output-on-failure
-  needs: ["clang++"]
+# clang++-9:
+#   stage: build
+#   image: ubuntu:20.04
+#   tags:
+#     - non-shared
+#     - high-bandwidth
+#   interruptible: true
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-9 cmake libboost-test-dev libboost-timer-dev libboost-serialization-dev make tar wget
+#     - mkdir build && cd build
+#     - clang++-9 --version
+#     - CXX=clang++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug
+#     - cmake --build .
+#     - ctest -j 2 --output-on-failure
+#   needs: ["clang++"]
 
 coverage:
   stage: build
@@ -143,7 +143,7 @@ g++-testing sanitizer:
   tags:
     - non-shared
     - docker
-  image: debian:testing
+  # image: debian:testing
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
@@ -182,7 +182,7 @@ g++-testing c++20:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_STANDARD=20 
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++"]
@@ -316,7 +316,7 @@ clang++-m32:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-testing tidy:
+clang++-unstable tidy:
   stage: build
   image: debian:unstable  # clang 18 as of Apr 2024
   tags:
@@ -733,7 +733,7 @@ circle-latest:
 
 inq:
   stage: test
-  image: debian:stable
+  # image: debian:stable
   tags:
     - non-shared
     - large-memory-space
