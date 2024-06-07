@@ -8,8 +8,8 @@
 #  pragma clang diagnostic push
 #  pragma clang diagnositc ignored "-Wdeprecated-declarations"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+// #  pragma GCC diagnostic push
+// #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
 #endif
 
 #include <boost/multi/array.hpp>
@@ -17,7 +17,7 @@
 #if defined(__clang__)
 #  pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic pop
+// #  pragma GCC diagnostic pop
 #endif
 
 // Suppress warnings from other boost libraries
