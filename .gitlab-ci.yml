@@ -687,7 +687,7 @@ rocm:
     - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
-    - cmake .. -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
+    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
   needs: ["clang++", "g++"]
