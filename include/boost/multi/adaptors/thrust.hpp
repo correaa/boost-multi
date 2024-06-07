@@ -51,7 +51,7 @@
 #include<cassert>
 #include <iterator>                                            // for iterator_traits
 #include <memory>                                              // for allocator_traits, allocator, pointer_traits
-#include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
+// #include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
 #include <type_traits>                                         // for decay_t
 
 // #include <boost/multi/adaptors/thrust/fix_copy.hpp>
@@ -161,7 +161,7 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 // this is important for algorithms to dispatch to the right thrust executor
 namespace thrust {
 
-// template<class It> struct iterator_system;
+template<class It> struct iterator_system;
 
 template<class T, boost::multi::dimensionality_type D, class Pointer>
 struct iterator_system<boost::multi::array_iterator<T, D, Pointer>>{
