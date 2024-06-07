@@ -1454,6 +1454,8 @@ template<class T, ::boost::multi::dimensionality_type D, class... A> struct std:
 
 namespace boost::serialization {
 
+template<typename T> struct version;  // in case serialization was not included before
+
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version<boost::multi::array<T, D, A>> {
 	using type = std::integral_constant<int, BOOST_MULTI_SERIALIZATION_ARRAY_VERSION>;  // TODO(correaa) use constexpr variable here, not macro
