@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_DETAIL_TYPE_TRAITS_HPP
 #define BOOST_MULTI_DETAIL_TYPE_TRAITS_HPP
 
-#include<type_traits>
+#include <type_traits>
 
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces)
 namespace multi {
