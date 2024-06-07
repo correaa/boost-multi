@@ -66,7 +66,7 @@ QualifierAlignment: Right  # Leave
 #CompactNamespaces: false
 ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 99
-#Cpp11BracedListStyle: true
+Cpp11BracedListStyle: false  # true
 #DeriveLineEnding: true
 #DerivePointerAlignment: true
 #DisableFormat:   false
