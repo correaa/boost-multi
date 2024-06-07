@@ -6,28 +6,61 @@
 #define BOOST_MULTI_ADAPTORS_THRUST_HPP_
 #pragma once
 
-#include "../array.hpp"
+#include <boost/multi/array.hpp>                                        // for dimensionality_type, array, array_iterator, elements_iterator_t
 
-#include "./thrust/reference.hpp"
-
-#include <thrust/device_allocator.h>
-
-#include <thrust/universal_allocator.h>
-#include <thrust/universal_ptr.h>
+#include <cuda_runtime_api.h>                                  // for cudaGetDevice, cudaMemPrefetchAsync, cudaPointerGetAttributes
+#include <driver_types.h>                                      // for cudaErrorInvalidValue, cudaPointerAttributes, cudaSuccess, cudaErrorInvalidDevice, cudaMemoryTypeManaged
+#include <thrust/detail/pointer.h>                             // for pointer
+#include <thrust/device_allocator.h>                           // for device_allocator
+#include <thrust/mr/allocator.h>                               // for allocator (ptr only), stateless_resource_allocator
+#include <thrust/mr/memory_resource.h>                         // for memory_resource
 
 #if not defined(MULTI_USE_HIP)
-#include <thrust/system/cuda/memory.h> // for ::thrust::cuda::allocator
+#include <thrust/system/cuda/detail/execution_policy.h>        // for tag
+#include <thrust/system/cuda/memory.h>                         // for universal_allocator, allocator
+#include <thrust/system/cuda/memory_resource.h>                // for universal_memory_resource
+#include <thrust/system/cuda/pointer.h>                        // for universal_pointer
 #else
-#include <thrust/system/hip/memory.h>  // for ::thrust::hip::allocator
+#include <thrust/system/hip/detail/execution_policy.h>        // for tag
+#include <thrust/system/hip/memory.h>                         // for universal_allocator, allocator
+#include <thrust/system/hip/memory_resource.h>                // for universal_memory_resource
+#include <thrust/system/hip/pointer.h>                        // for universal_pointer
 #endif
-// #include <thrust/system/cuda/memory.h>  // ::thrust::cuda::allocator
 
-// #include <thrust/detail/type_traits/pointer_traits.h>
+#include <thrust/universal_allocator.h>                        // for universal_ptr
+#include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>  // for pointer
+#include <cassert>                                             // for assert
+#include <iterator>                                            // for iterator_traits
+#include <memory>                                              // for allocator_traits, allocator, pointer_traits
+#include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
+#include <type_traits>                                         // for decay_t
 
-#include <utility>  // std::copy
 
-#include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>
-#include <boost/multi/adaptors/thrust/fix_copy.hpp>
+namespace boost { namespace multi { template <class Alloc> struct allocator_traits; } }
+
+// #include "../array.hpp"
+
+// #include "./thrust/reference.hpp"
+
+// #include <thrust/device_allocator.h>
+
+// #include <thrust/universal_allocator.h>
+// #include <thrust/universal_ptr.h>
+
+// #if not defined(MULTI_USE_HIP)
+// #include <thrust/system/cuda/memory.h> // for ::thrust::cuda::allocator
+// #else
+// #include <thrust/system/hip/memory.h>  // for ::thrust::hip::allocator
+// #endif
+// // #include <thrust/system/cuda/memory.h>  // ::thrust::cuda::allocator
+
+// // #include <thrust/detail/type_traits/pointer_traits.h>
+
+// #include <cassert>
+// #include <utility>  // std::copy
+
+// #include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>
+// #include <boost/multi/adaptors/thrust/fix_copy.hpp>
 
 // // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
 // namespace thrust {
