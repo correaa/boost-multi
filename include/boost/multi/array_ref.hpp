@@ -16,6 +16,8 @@
 #include <boost/multi/detail/pointer_traits.hpp>  // IWYU pragma: export
 #include <boost/multi/detail/types.hpp>           // for dimensionality_type  // IWYU pragma: export
 
+#include <boost/multi/detail/config/ASSERT.hpp>
+
 #include <algorithm>   // fpr copy_n
 #include <array>
 #include <cstring>     // for std::memset in reinterpret_cast

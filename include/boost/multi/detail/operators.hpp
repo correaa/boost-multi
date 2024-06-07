@@ -5,13 +5,15 @@
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
 
-#include <type_traits>  // for enable_if
+#include <cstddef>      // for ptrdiff_t
+#include <iterator>     // for random_access_iterator_tag
+#include <type_traits>  // for enable_if_t, is_base_of
 #include <utility>      // for forward
 
 #if defined(__NVCC__)
-# define BOOST_MULTI_HD __host__ __device__
+	#define BOOST_MULTI_HD __host__ __device__
 #else
-# define BOOST_MULTI_HD
+	#define BOOST_MULTI_HD
 #endif
 
 namespace boost::multi {
@@ -58,8 +60,8 @@ template<class T>
 struct totally_ordered2<T, void> {
 	// template<class U>
 	// friend constexpr auto operator<=(T const& self, U const& other) { return (self < other) || (self == other); }
-	//template<class U>
-	//friend constexpr auto operator>=(T const& self, U const& other) { return (other < self) || (self == other); }
+	// template<class U>
+	// friend constexpr auto operator>=(T const& self, U const& other) { return (other < self) || (self == other); }
 	// template<class U>
 	// friend constexpr auto operator>(T const& self, U const& other) { return other < self; }
 };

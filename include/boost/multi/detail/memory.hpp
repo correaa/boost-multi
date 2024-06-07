@@ -6,8 +6,12 @@
 #define BOOST_MULTI_DETAIL_MEMORY_HPP
 #pragma once
 
-#include <memory>  // for std::allocator_traits
-#include <type_traits>  // for std::void_t
+#include <boost/multi/utility.hpp>  // for has_rank, to_address
+
+#include <iterator>                 // for copy, iterator_traits
+#include <memory>                   // for allocator_traits
+#include <type_traits>              // for declval, enable_if_t, false_type, is_trivially_default_constructible, true_type, void_t
+#include <utility>                  // for addressof, forward
 
 namespace boost::multi {
 
@@ -107,12 +111,12 @@ template<class Alloc> constexpr bool is_allocator_v = is_allocator<Alloc>::value
 
 // template<dimensionality_type N, class InputIt, class ForwardIt>
 // auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest) {
-// 	while(first!=last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-// 		uninitialized_copy<N-1>(begin(*first), end(*first), begin(*dest));
-// 		++first;
-// 		++dest;
-// 	}
-// 	return dest;
+//  while(first!=last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//    uninitialized_copy<N-1>(begin(*first), end(*first), begin(*dest));
+//    ++first;
+//    ++dest;
+//  }
+//  return dest;
 // }
 
 }  // end namespace boost::multi
