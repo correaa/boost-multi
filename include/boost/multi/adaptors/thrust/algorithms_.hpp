@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_ADAPTORS_THRUST_ALGORITHMS_HPP
 #define BOOST_MULTI_ADAPTORS_THRUST_ALGORITHMS_HPP
 
-#include "../thrust/algorithms/copy.hpp"
+// #include "../thrust/algorithms/copy.hpp"
 
 //#include "../../array_ref.hpp"
 //#include<thrust/device_ptr.h>
@@ -40,10 +40,10 @@ namespace multi{
 		assert( f.stride() == l.stride() ); static_assert(sizeof(From) == sizeof(To), "!");
 		auto n = std::distance(f, l);
 		if(f.stride()==1){
-		//	auto s = cudaMemcpy(f.data(), thrust::raw_pointer_cast(&value), n*sizeof(To), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
+		//  auto s = cudaMemcpy(f.data(), thrust::raw_pointer_cast(&value), n*sizeof(To), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
 		}else{
-		//	auto s = cudaMemcpy2D(f.data(), f.stride()*sizeof(To), raw_pointer_cast(&value), 0*sizeof(To), sizeof(To), n, cudaMemcpyHostToDevice);
-		//	assert( s == cudaSuccess );
+		//  auto s = cudaMemcpy2D(f.data(), f.stride()*sizeof(To), raw_pointer_cast(&value), 0*sizeof(To), sizeof(To), n, cudaMemcpyHostToDevice);
+		//  assert( s == cudaSuccess );
 		}
 		return;
 	}
@@ -76,7 +76,7 @@ int main(){
 
 	multi::array<double, 1> A_host({100}, 99.);
 	{
-	//	multi::array<double, 1, thrust::device_allocator<double>> Adev({10}, 0.); std::iota(begin(Adev), end(Adev), 0.);
+	//  multi::array<double, 1, thrust::device_allocator<double>> Adev({10}, 0.); std::iota(begin(Adev), end(Adev), 0.);
 		multi::array<double, 2, thrust::device_allocator<double>> Adev({3, 3}, 0.); std::iota(begin(Adev[2]), end(Adev[2]), 5.);
 
 		std::cout <<"iota? "<< Adev[0][0] <<" "<< Adev[0][1] <<" "<< Adev[0][2] <<" " << std::endl;
@@ -85,9 +85,9 @@ int main(){
 		std::cout <<"----"<< std::endl;
 
 		multi::array<double, 2> Ahos({3, 3}, 0.);
-	//	assert( Ahos[1].size() == Adev[2].size());
+	//  assert( Ahos[1].size() == Adev[2].size());
 		Ahos.rotated()[1] = Adev[2];
-	//	Ahos.rotated()[0] = Adev[2];
+	//  Ahos.rotated()[0] = Adev[2];
 		std::cout <<"iota? "<< Ahos[0][0] <<" "<< Ahos[0][1] <<" "<< Ahos[0][2] <<" "<< std::endl;
 		std::cout <<"iota? "<< Ahos[1][0] <<" "<< Ahos[1][1] <<" "<< Ahos[1][2] <<" "<< std::endl;
 		std::cout <<"iota? "<< Ahos[2][0] <<" "<< Ahos[2][1] <<" "<< Ahos[2][2] <<" "<< std::endl;
@@ -97,9 +97,9 @@ int main(){
 		namespace multi = boost::multi;
 		multi::array<double, 2, thrust::device_allocator<double>> A({100, 100}, 5.);
 		multi::array<double, 2> B({100, 100}, 3.);
-	//	B = A;
-	//	assert( B[3][2] == 5. );
-	//	multi::array<double, 2, thrust::device_allocator<double>> A({100, 100}, 0.);
+	//  B = A;
+	//  assert( B[3][2] == 5. );
+	//  multi::array<double, 2, thrust::device_allocator<double>> A({100, 100}, 0.);
 	}
 
 	assert( A_host[25] == 99. );
