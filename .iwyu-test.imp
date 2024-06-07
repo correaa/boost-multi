@@ -19,4 +19,5 @@
     { "include": ["@<boost/test/utils/lazy_ostream.hpp>", "public", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/utils/wrap_stringstream.hpp>", "public", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<bits/chrono.h>", "private", "<chrono>", "public"] },
+    { "include": ["@<bits/utility.h>", "private", "<tuple>", "public"] },
 ]
