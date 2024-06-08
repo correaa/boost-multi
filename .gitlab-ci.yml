@@ -663,6 +663,25 @@ cuda-12.3.1:
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of drivers"
   needs: ["cuda"]
 
+cuda-12.5.0:
+  stage: build
+  allow_failure: true
+  image: nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+  interruptible: true
+  script:
+    - nvidia-smi
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - g++-12 --version
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of drivers"
+  needs: ["cuda"]
+
 rocm:
   stage: build
   image: rocm/dev-ubuntu-22.04
