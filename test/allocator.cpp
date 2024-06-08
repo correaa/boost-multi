@@ -55,11 +55,11 @@ BOOST_AUTO_TEST_CASE(empty_stride) {
 }
 
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
-	std::vector<multi::array<std::string, 2>> va;
+	std::vector<multi::array<int, 2>> va;
 	std::transform(
 		begin(multi::iextension(3)), end(multi::iextension(3)),
 		std::back_inserter(va),
-		[](auto idx) { return multi::array<std::string, 2>({ idx, idx }, std::to_string(idx)); }
+		[](auto idx) { return multi::array<int, 2>({ idx, idx }, static_cast<int>(idx)); }
 	);
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
@@ -68,24 +68,24 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( size(va[2]) == 2 );
 #endif
 
-	BOOST_REQUIRE( va[1] [0][0] == "1" );
-	BOOST_REQUIRE( va[2] [0][0] == "2" );
+	BOOST_REQUIRE( va[1] [0][0] == 1 );
+	BOOST_REQUIRE( va[2] [0][0] == 2 );
 
 	using namespace std::string_literals;
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-	std::vector<multi::array<std::string, 2>> const wa = {
+	std::vector<multi::array<int, 2>> const wa = {
 		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
-		multi::array<std::string, 2>({ 0, 0 }, "0"s),
-		multi::array<std::string, 2>({ 1, 1 }, "1"s),
-		multi::array<std::string, 2>({ 2, 2 }, "2"s),
+		multi::array<int, 2>({ 0, 0 }, 0 ),
+		multi::array<int, 2>({ 1, 1 }, 1 ),
+		multi::array<int, 2>({ 2, 2 }, 2 ),
 	};
 #else
 	std::vector<multi::array<std::string, 2>> const wa = {
 		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
-		multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
-		multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
-		multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
+		multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0 ),
+		multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1 ),
+		multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2 ),
 	};
 #endif
 
@@ -94,12 +94,14 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 #endif
 	BOOST_REQUIRE( va == wa );
 
-	std::vector<multi::array<std::string, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
-	auto                                      iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+	std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
+
+	auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+
 	std::transform(
 		begin(iex), end(iex),
 		begin(ua),
-		[](auto idx) { return multi::array<std::string, 2>({ idx, idx }, std::to_string(idx)); }
+		[](auto idx) { return multi::array<int, 2>({ idx, idx }, static_cast<int>(idx)); }
 	);
 	BOOST_REQUIRE( ua == va );
 }
