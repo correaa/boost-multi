@@ -6,7 +6,10 @@
 #include <boost/multi/array.hpp>
 
 #include <algorithm>  // for std::ranges::fold_left
+
+#if(__cplusplus >= 202002L)
 #include<ranges>
+#endif
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
@@ -54,6 +57,8 @@ BOOST_AUTO_TEST_CASE(iota_range_experiment) {
 	BOOST_REQUIRE( two_by_three[1][0] == 3 );
 	BOOST_REQUIRE( two_by_three[1][1] == 4 );
 	BOOST_REQUIRE( two_by_three[1][2] == 5 );
+
+	// two_by_three[1][2] = 6;  // doesn't compile, good, "error: expression is not assignable"
 }
 #endif
 
