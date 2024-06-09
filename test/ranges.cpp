@@ -6,6 +6,7 @@
 #include <boost/multi/array.hpp>
 
 #include <algorithm>  // for std::ranges::fold_left
+#include<ranges>
 
 // Suppress warnings from boost.test
 #if defined(__clang__)
@@ -34,10 +35,30 @@
 #pragma GCC diagnostic pop
 #endif
 
+namespace multi = boost::multi;
+
+#if(__cplusplus >= 202002L)
+BOOST_AUTO_TEST_CASE(iota_range_experiment) {
+	//  auto zero_to_six = std::ranges::views::iota(0, 6);
+	//  using it = decltype(zero_to_six.begin());
+	// using pp = typename std::pointer_traits<it>::element_type;
+
+	auto two_by_three = multi::array_ref<int, 2, decltype(std::ranges::views::iota(0, 6).begin())>({2, 3}, std::ranges::views::iota(0, 6).begin());
+
+	BOOST_REQUIRE( two_by_three.size() == 2 );
+
+	BOOST_REQUIRE( two_by_three[0][0] == 0 );
+	BOOST_REQUIRE( two_by_three[0][1] == 1 );
+	BOOST_REQUIRE( two_by_three[0][2] == 2 );
+
+	BOOST_REQUIRE( two_by_three[1][0] == 3 );
+	BOOST_REQUIRE( two_by_three[1][1] == 4 );
+	BOOST_REQUIRE( two_by_three[1][2] == 5 );
+}
+#endif
+
 BOOST_AUTO_TEST_CASE(range_accumulate) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
-	namespace multi = boost::multi;
-
 	static constexpr auto accumulate = [](auto const& R) { return std::ranges::fold_left(R, 0, std::plus<>{}); };
 
 	auto const values = multi::array<int, 2>{

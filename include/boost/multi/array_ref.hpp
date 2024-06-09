@@ -80,7 +80,24 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 
 	using element_ptr       = ElementPtr;
-	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+
+ private:
+	template<class TT> struct identity { using type = TT; };
+
+	template<class EEPP> 
+	struct pt_rebind {using type = typename std::pointer_traits<EEPP>::template rebind<element const>;};
+
+ public:
+	// using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+	using element_const_ptr =
+	 typename std::conditional<
+	     std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+		 // || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+		 ,
+	     identity<element_ptr>,
+	     pt_rebind<element_ptr>
+	 >::type::type;
+
 	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
@@ -167,10 +184,33 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  protected:
 	constexpr auto layout_mutable() -> layout_t& {return static_cast<layout_t&>(*this);}
 
+ private:
+	// template<class TT> struct identity { using type = TT; };
+
+	template<class EEPP> 
+	struct default_value_type {using type = array<element, D-1, typename multi::pointer_traits<EEPP>::default_allocator_type>;};
+
+//  public:
+//  using element_const_ptr =
+//   typename std::conditional<
+//       std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+//       // || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+//       ,
+//       identity<element_ptr>,
+//       pt_rebind<element_ptr>
+//   >::type::type;
+//  // using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+
  public:
 	using value_type = typename std::conditional_t<
 		(D > 1),
-		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
+		typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<array<element, D-1> >,
+			default_value_type<element_ptr>
+		>::type::type,
 		element
 	>;
 
@@ -386,7 +426,24 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using difference_type = typename layout_t<D>::difference_type;
 	using element = Element;
 	using element_ptr = ElementPtr;
-	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+
+ private:
+	template<class TT> struct identity { using type = TT; };
+
+	template<class EEPP> 
+	struct pt_rebind {using type = typename std::pointer_traits<EEPP>::template rebind<element const>;};
+
+ public:
+	using element_const_ptr =
+	 typename std::conditional<
+	     std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+		 // || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+		 ,
+	     identity<element_ptr>,
+	     pt_rebind<element_ptr>
+	 >::type::type;
+	// using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+
 	using value_type = typename subarray<element, D-1, element_ptr>::decay_type;
 
 	using pointer   = subarray<element, D-1, element_ptr>*;
@@ -821,7 +878,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	BOOST_MULTI_HD constexpr auto layout() const -> layout_type {return array_types<T, D, ElementPtr, Layout>::layout();}
 
-	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
+	using basic_const_array = subarray<T, D, typename subarray::element_const_ptr, Layout>;  // TODO(correaa) should be const_subarray (not impl yet)
 
 	subarray() = default;
 
@@ -908,7 +965,23 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using typename types::reference;
 
-	using default_allocator_type = typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type;
+ private:
+	template<class TT> struct identity { using type = TT; };
+
+	template<class EEPP> 
+	struct default_default_allocator{using type = typename multi::pointer_traits<EEPP>::default_allocator_type;};
+
+ public:
+	// using default_allocator_type = typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type;
+	using default_allocator_type =
+		typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<std::allocator<element> >,
+			default_default_allocator<element_ptr>
+		>::type::type
+	;
 
 	constexpr auto get_allocator() const -> default_allocator_type {
 		using multi::get_allocator;
@@ -917,7 +990,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(subarray const& self) -> default_allocator_type {return self.get_allocator();}
 
-	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type>;
+	using decay_type = array<typename types::element_type, D, default_allocator_type>;
 
 	friend constexpr auto decay(subarray const& self) -> decay_type {return self.decay();}
 	       constexpr auto decay()           const&    -> decay_type {
@@ -1555,29 +1628,81 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator<=(subarray const& other) const& -> bool {return *this == other || lexicographical_compare(*this, other);}
 	constexpr auto operator> (subarray const& other) const& -> bool {return other < *this;}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, std::enable_if_t<  std::is_const_v<typename std::pointer_traits<P2>::element_type>,int> =0>
+ private:
+	template<typename EEPP, typename TT2> 
+	struct pt_rebind_2nd {using type = typename std::pointer_traits<EEPP>::template rebind<TT2>;};
+
+ public:
+	template<class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type,
+		std::enable_if_t<  std::is_const_v<typename std::pointer_traits<P2>::element_type>,int> =0
+	>
 	constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
 		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));  // TODO(correaa) might violate constness
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, std::enable_if_t<! std::is_const_v<typename std::pointer_traits<P2>::element_type>,int> =0>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type,
+		std::enable_if_t<! std::is_const_v<typename std::pointer_traits<P2>::element_type>,int> =0
+	>
 	[[deprecated("violates constness")]]
 	constexpr auto static_array_cast() const & {  // name taken from std::static_pointer_cast
 		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base_));  // TODO(correaa) might violate constness
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto static_array_cast() && {  // name taken from std::static_pointer_cast
 		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto static_array_cast() & {  // name taken from std::static_pointer_cast
 		return subarray<T2, D, P2>(this->layout(), static_cast<P2>(this->base()));
 	}
 
  private:
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type,
+		class... Args
+	>
 	constexpr auto static_array_cast_(Args&&... args) const & {  // name taken from std::static_pointer_cast
 		return subarray<T2, D, P2>(this->layout(), P2{this->base_, std::forward<Args>(args)...});
 	}
@@ -1609,7 +1734,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto element_transformed(UF&& fun) && {return element_transformed(std::forward<UF>(fun));}
 
 	template<
-		class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2 const>,
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2 const>
+		>::type::type,
 		class Element = typename subarray::element,
 		class PM = T2 Element::*
 	>
@@ -1623,7 +1755,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
 	template<
-		class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>,
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type,
 		class Element = typename subarray::element,
 		class PM = T2 Element::*
 	>
@@ -1637,7 +1776,14 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
 	template<
-		class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>,
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type,
 		class Element = typename subarray::element,
 		class PM = T2 Element::*
 	>
@@ -1645,16 +1791,43 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		return this->member_cast<T2, P2, Element, PM>(member);
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	using rebind = subarray<std::decay_t<T2>, D, P2>;
 
 	template<
 		class T2 = std::remove_const_t<T>,
-		class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type,
 		std::enable_if_t<
 			std::is_same_v<  // check that pointer family is not changed
-				typename std::pointer_traits<P2>::template rebind<T2>,
-				typename std::pointer_traits<element_ptr>::template rebind<T2>
+				typename std::conditional<
+					std::is_same_v<typename std::iterator_traits<P2>::reference, typename std::iterator_traits<P2>::value_type>
+					// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+					,
+					identity<P2>,
+					pt_rebind_2nd<P2, T2>
+				>::type::type,
+				typename std::conditional<
+					std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+					// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+					,
+					identity<element_ptr>,
+					pt_rebind_2nd<element_ptr, T2>
+				>::type::type
 			>
 			&& 
 			std::is_same_v<  // check that only constness is changed
@@ -1691,16 +1864,50 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
+	template<class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2 const>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast() const& {return reinterpret_array_cast_aux_<T2, P2>().as_const();}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast()      & {return reinterpret_array_cast_aux_<T2, P2>();}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast()     && {return reinterpret_array_cast_aux_<T2, P2>();}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2> >
+	template<class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast(multi::size_type count) & -> subarray<std::decay_t<T2>, D + 1, P2> {
 		// static_assert( sizeof(T)%sizeof(T2) == 0,
 		//  "error: reinterpret_array_cast is limited to integral stride values");
@@ -1713,10 +1920,28 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 		);
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2> >
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast(multi::size_type count)     && -> subarray<std::decay_t<T2>, D + 1, P2> {return reinterpret_array_cast<T2, P2>(count);}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename subarray::element_ptr>::template rebind<T2 const> >
+	template<
+		class T2, 
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2 const>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast(size_type count) const& -> subarray<std::decay_t<T2>, D + 1, P2> {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
@@ -1750,7 +1975,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	Element, std::random_access_iterator_tag,
 	typename std::iterator_traits<Ptr>::reference, multi::difference_type
 >
-, multi::affine          <array_iterator<Element, 1, Ptr>, multi::difference_type>
+, multi::affine           <array_iterator<Element, 1, Ptr>, multi::difference_type>
 , multi::decrementable   <array_iterator<Element, 1, Ptr>>
 , multi::incrementable   <array_iterator<Element, 1, Ptr>>
 , multi::totally_ordered2<array_iterator<Element, 1, Ptr>, void>
@@ -1949,8 +2174,9 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 
 	using element_type = T;
 
+	using element           = typename types::element;
 	using element_ptr       = typename types::element_ptr;
-	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element_type const>;
+	using element_const_ptr = typename types::element_const_ptr;  // typename std::pointer_traits<ElementPtr>::template rebind<element_type const>;
 	using element_move_ptr  = multi::move_ptr<element_type, element_ptr>;
 	using element_ref       = typename types::element_ref;
 	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
@@ -1960,22 +2186,38 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	using const_reference   = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
 	using       reference   = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::      reference;
 
-	using default_allocator_type = typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type;
+ private:
+	template<class TT> struct identity { using type = TT; };
+
+	template<class EEPP> 
+	struct default_default_allocator{using type = typename multi::pointer_traits<EEPP>::default_allocator_type;};
+
+ public:
+	// using default_allocator_type = typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type;
+	using default_allocator_type =
+		typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<std::allocator<element> >,
+			default_default_allocator<element_ptr>
+		>::type::type
+	;
 
 	constexpr auto get_allocator() const -> default_allocator_type {return default_allocator_of(subarray::base());}
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto get_allocator(subarray const& self) -> default_allocator_type {return self.get_allocator();}
 
-	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename subarray::element_ptr>::default_allocator_type>;
+	using decay_type = array<typename types::element, dimensionality_type{1}, default_allocator_type>;
 
 	       constexpr auto decay()           const        -> decay_type {return decay_type{*this};}
 	BOOST_MULTI_FRIEND_CONSTEXPR auto decay(subarray const& self) -> decay_type {return self.decay();}
 
 	using basic_const_array = subarray<
 		T, 1,
-		typename std::pointer_traits<ElementPtr>::template rebind<typename subarray::element_type const>,
+		element_const_ptr,  // typename std::pointer_traits<ElementPtr>::template rebind<typename subarray::element_type const>,
 		Layout
-	>;
+	>;  // TODO(correaa) should be const_subarray<T, 1, TPtr>
 
  protected:
 	template<class A> constexpr void intersection_assign(A&& other)&& {intersection_assign(std::forward<A>(other));}
@@ -2522,12 +2764,36 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
 	}
 
+ private:
+	template<typename EEPP, typename TT2> 
+	struct pt_rebind_2nd {using type = typename std::pointer_traits<EEPP>::template rebind<TT2>;};
+
  public:
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto static_array_cast() const -> subarray<T2, 1, P2> {  // name taken from std::static_pointer_cast
 		return {this->layout(), static_cast<P2>(this->base_)};
 	}
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
+
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type,
+		class... Args
+	>
 	constexpr auto static_array_cast(Args&&... args) const -> subarray<T2, 1, P2> {  // name taken from std::static_pointer_cast
 		return {this->layout(), P2{this->base_, std::forward<Args>(args)...}};
 	}
@@ -2558,7 +2824,14 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	constexpr auto element_transformed(UF&& fun) && {return element_transformed(std::forward<UF>(fun));}
 
 	template<
-		class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type,
 		class Element = typename subarray::element,
 		class PM = T2 std::decay_t<Element>::*
 	>
@@ -2582,7 +2855,16 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	constexpr auto element_moved()  & {return subarray<typename subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
 	constexpr auto element_moved() && {return element_moved();}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast()  const& {
 		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
 
@@ -2592,7 +2874,16 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		};
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast()  & {
 		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
 
@@ -2602,7 +2893,16 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		};
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast() && {
 		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
 
@@ -2612,7 +2912,16 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 		};
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const> >
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2 const>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast(size_type n) const& -> subarray<std::decay_t<T2>, 2, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
@@ -2624,7 +2933,16 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	}
 
 	// TODO(correaa) : rename to reinterpret_pointer_cast?
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast(size_type n)& -> subarray<std::decay_t<T2>, 2, P2> {
 		// static_assert( sizeof(T)%sizeof(T2)== 0,
 		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
@@ -2634,7 +2952,16 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 			reinterpret_pointer_cast<P2>(this->base())
 		).rotated();
 	}
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
+	template<
+		class T2,
+		class P2 = typename std::conditional<
+			std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type>
+			// || std::is_same_v<typename std::iterator_traits<element_ptr>::reference, typename std::iterator_traits<element_ptr>::value_type const>
+			,
+			identity<element_ptr>,
+			pt_rebind_2nd<element_ptr, T2>
+		>::type::type
+	>
 	constexpr auto reinterpret_array_cast(size_type n)&& -> subarray<std::decay_t<T2>, 2, P2> {
 		return this->reinterpret_array_cast<T2, P2>(n);
 	}

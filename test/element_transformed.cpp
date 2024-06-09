@@ -36,7 +36,6 @@
 #include <boost/test/unit_test.hpp>
 
 namespace multi = boost::multi;
-
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	using complex = std::complex<double>;
 	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
@@ -49,8 +48,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	BOOST_REQUIRE( conjd_arr[0] == conj(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == conj(arr[1]) );
 
-	//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
-	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
+	conjd_arr[0] = 5.0 + 4.0 * I;  // TODO(correaa) it would be nice if this didn't compile, it compiles now because std::complex is a class and has operator=() for l or rvalue reference, this is assigning to a temporary and discarding the result
+	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 
 	BOOST_TEST_REQUIRE( real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0})) == std::norm(arr[0]) + std::norm(arr[1]) );
 	BOOST_REQUIRE( imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0})) == 0.                                    );
