@@ -6,15 +6,17 @@
 #define BOOST_MULTI_ARRAY_REF_HPP_
 #pragma once
 
-#include <boost/multi/detail/pointer_traits.hpp>
-#include <boost/multi/utility.hpp>
+#include <boost/multi/utility.hpp>  // IWYU pragma: export
 
 #include <boost/multi/detail/adl.hpp>
-#include <boost/multi/detail/layout.hpp>
-#include <boost/multi/detail/memory.hpp>         // for pointer_traits
-#include <boost/multi/detail/operators.hpp>      // for random_iterable
+#include <boost/multi/detail/layout.hpp>          // IWYU pragma: export
+#include <boost/multi/detail/memory.hpp>          // for pointer_traits
+#include <boost/multi/detail/operators.hpp>       // for random_iterable
 #include <boost/multi/detail/serialization.hpp>
-#include <boost/multi/detail/types.hpp>          // for dimensionality_type
+#include <boost/multi/detail/pointer_traits.hpp>  // IWYU pragma: export
+#include <boost/multi/detail/types.hpp>           // for dimensionality_type  // IWYU pragma: export
+
+#include <boost/multi/detail/config/ASSERT.hpp>
 
 #include <algorithm>   // fpr copy_n
 #include <array>
@@ -45,6 +47,17 @@
 	#define BOOST_MULTI_HD __host__ __device__
 #else
 	#define BOOST_MULTI_HD
+#endif
+
+#if defined(__APPLE__) && !defined(__clang__) && defined(__aarch64__) && defined(BOOST_UNIT_TEST_FRAMEWORK_DYN_LINK)
+#include <boost/test/tree/test_unit.hpp>
+#include <boost/test/tools/detail/print_helper.hpp>
+
+auto boost::test_tools::tt_detail::print_log_value<char>::operator()(std::ostream&, char) -> void {}
+auto boost::unit_test::test_unit::full_name() const -> std::string { return std::string{}; }
+auto boost::unit_test::ut_detail::normalize_test_case_name(boost::unit_test::basic_cstring<char const> name) -> std::string {
+	return std::string(name.begin(), name.end());
+}
 #endif
 
 namespace boost::multi {

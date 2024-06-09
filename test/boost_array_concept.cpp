@@ -4,21 +4,21 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 // Test explicitly calls deprecated function
-// #if defined(__clang__)
-// #  pragma clang diagnostic push
-// #  pragma clang diagnositc ignored "-Wdeprecated-declarations"
-// #elif defined(__GNUC__)
+#if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnositc ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
 // #  pragma GCC diagnostic push
 // #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
-// #endif
+#endif
 
 #include <boost/multi/array.hpp>
 
-// #if defined(__clang__)
-// #  pragma clang diagnostic pop
-// #elif defined(__GNUC__)
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
 // #  pragma GCC diagnostic pop
-// #endif
+#endif
 
 // Suppress warnings from other boost libraries
 #if defined(__clang__)

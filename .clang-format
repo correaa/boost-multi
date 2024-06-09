@@ -10,7 +10,10 @@ AlignConsecutiveAssignments: Consecutive  # None
 AlignConsecutiveDeclarations: Consecutive
 #AlignEscapedNewlines: Left
 AlignOperands:   AlignAfterOperator
-AlignTrailingComments: false
+# AlignTrailingComments: false
+AlignTrailingComments:
+  Kind: Always  # Leave  # Always
+  # OverEmptyLines: 2
 #AllowAllArgumentsOnNextLine: true
 #AllowAllParametersOfDeclarationOnNextLine: true
 #AllowShortEnumsOnASingleLine: true
@@ -63,7 +66,7 @@ QualifierAlignment: Right  # Leave
 #CompactNamespaces: false
 ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 99
-#Cpp11BracedListStyle: true
+Cpp11BracedListStyle: false  # true
 #DeriveLineEnding: true
 #DerivePointerAlignment: true
 #DisableFormat:   false
@@ -106,7 +109,7 @@ AccessModifierOffset: -98  # 2
 #IndentCaseLabels: true
 #IndentCaseBlocks: false
 #IndentGotoLabels: true
-#IndentPPDirectives: None
+IndentPPDirectives: BeforeHash  # AfterHash  # None
 #IndentExternBlock: AfterExternBlock
 #IndentRequires:  false
 IndentWidth:     99

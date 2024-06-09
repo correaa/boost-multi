@@ -517,7 +517,8 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 	BOOST_REQUIRE( &other_darr3[1][0] == &darr[1][0] );
 
 // Homebrew GCC-13 terminates rather than having the expected exception caught.
-#if !(defined(__GNUC__) && __GNUC__ >= 5 && defined(__APPLE__))
+// MSVC 17.10 fails to compile
+#if !(defined(__GNUC__) && __GNUC__ >= 5 && defined(__APPLE__)) && !defined(_MSC_VER)
 	BOOST_REQUIRE_THROW(
 		([&] {
 			double(&other_darr4)[3][3](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type

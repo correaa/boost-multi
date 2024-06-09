@@ -5,13 +5,13 @@
 #ifndef BOOST_MULTI_ARRAY_HPP_
 #define BOOST_MULTI_ARRAY_HPP_
 
-#include <boost/multi/array_ref.hpp>
+#include <boost/multi/array_ref.hpp>  // IWYU pragma: export
 
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <boost/multi/detail/adl.hpp>
 #include <boost/multi/detail/memory.hpp>
-#include <boost/multi/detail/type_traits.hpp>
+#include <boost/multi/detail/is_trivial.hpp>
 
 #include <memory>  // for std::allocator_traits
 #include <tuple>  // needed by a deprecated function
@@ -206,7 +206,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: array_alloc{alloc}, ref{
 		                      array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension{adl_distance(first, last)} * multi::extensions(*first)}.num_elements())),
 		                      index_extension{adl_distance(first, last)} * multi::extensions(*first)} {
-		if(adl_distance(first, last) == 0) {return;}
 	#if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
 		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
@@ -313,16 +312,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())),
 		  other.extensions()
 	  ) {
-		// #if (defined(__clang__) && defined(__CUDACC__))
-		//  if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
-		//      adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
-		//  }
-		//  adl_copy              (other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
-		// #else
-		// adl_uninitialized_copy(/*static_array::alloc()*/ other.begin(), other.end(), this->begin());  // TODO(correaa) implement via .elements()
-		// adl_uninitialized_copy(other.elements().begin(), other.elements().end(), this->elements().begin());
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
-		// #endif
 	}
 
 	template<class TT, class... Args,
@@ -1453,6 +1443,8 @@ template<class T, ::boost::multi::dimensionality_type D, class... A> struct std:
 #endif
 
 namespace boost::serialization {
+
+template<typename T> struct version;  // in case serialization was not included before
 
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version<boost::multi::array<T, D, A>> {

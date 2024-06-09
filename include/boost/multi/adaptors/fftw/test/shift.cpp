@@ -2,14 +2,20 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "../../fftw.hpp"
+#include <boost/multi/adaptors/fftw.hpp>
 
-#include <chrono>  // NOLINT(build/c++11)
+#include <boost/multi/array.hpp>
+
+#include <algorithm>  // for for_each, rotate
+#include <chrono>     // NOLINT(build/c++11)
+#include <complex>    // for complex
+#include <cstddef>    // for size_t, ptrdiff_t
 #include <random>
 
 template<class T>
 class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	std::size_t                              n_ = 0;
+	std::size_t n_ = 0;
+
 	mutable std::mt19937                     gen_{std::random_device{}()};  // NOLINT(whitespace/braces) cpplint 1.6 bug
 	mutable std::uniform_real_distribution<> dist_{-1.0, 1.0};
 
@@ -30,8 +36,8 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 			return *this;
 		}
 
-		friend auto operator==(iterator const& self, iterator const& other) { return self.n_ == other.n_; }
-		friend auto operator!=(iterator const& self, iterator const& other) { return self.n_ != other.n_; }
+		auto operator==(iterator const& other) const { return n_ == other.n_; }
+		auto operator!=(iterator const& other) const { return n_ != other.n_; }
 
 		auto operator-(iterator const& other) const { return n_ - other.n_; }
 

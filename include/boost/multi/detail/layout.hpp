@@ -5,20 +5,58 @@
 #ifndef BOOST_MULTI_DETAIL_LAYOUT_HPP
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
-#include <boost/multi/detail/index_range.hpp>
-#include <boost/multi/detail/operators.hpp>
-#include <boost/multi/detail/tuple_zip.hpp>
+#include "boost/multi/detail/index_range.hpp"    // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
+#include "boost/multi/detail/operators.hpp"      // for equality_comparable
+#include "boost/multi/detail/serialization.hpp"  // for archive_traits
+#include "boost/multi/detail/tuple_zip.hpp"      // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
+#include "boost/multi/detail/types.hpp"          // for dimensionality_type, index, size_type, difference_type, size_t
 
-#include <boost/multi/detail/config/ASSERT.hpp>
+#include <algorithm>                             // for max
+#include <array>                                 // for array
+#include <cassert>                               // for assert
+#include <cstddef>                               // for size_t, ptrdiff_t, __GLIBCXX__
+#include <cstdlib>                               // for abs
+#include <initializer_list>                      // for initializer_list
+#include <memory>                                // for swap
+#include <tuple>                                 // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
+#include <type_traits>                           // for enable_if_t, integral_constant, decay_t, declval, make_signed_t, common_type_t
+#include <utility>                               // for forward
 
-#include <tuple>
-#include <type_traits>  // for make_signed_t
-#include <utility>      // for swap
+// clang-format off
+namespace boost::multi { template <boost::multi::dimensionality_type D, typename SSize = multi::size_type> struct layout_t; }
+namespace boost::multi::detail { template <class ...Ts> class tuple; }
+// clang-format on
+
+// #include "boost/multi/detail/index_range.hpp"
+// #include "boost/multi/detail/operators.hpp"
+// #include "boost/multi/detail/serialization.hpp"  // for archive_traits
+// #include "boost/multi/detail/tuple_zip.hpp"      // for tuple (ptr only)
+// #include "boost/multi/detail/types.hpp"          // for dimensionality_type, index, size_type, difference_type, size_t
+
+// #include<cstdlib>  // for abs
+// #include <cassert>                              // for assert
+// // #include <tuple>                        // for tuple_element, tuple_size, make_index_sequence, index_sequence
+// // #include <stdlib.h>                              // for abs
+// #include <algorithm>                             // for max
+// #include <array>                                 // for array
+// #include <cstddef>                               // for size_t, ptrdiff_t, __GLIBCXX__
+// #include <initializer_list>                      // for initializer_list
+// #include <memory>                                // for swap
+
+// #include <boost/multi/detail/index_range.hpp>  // IWYU pragma: export
+// #include <boost/multi/detail/operators.hpp>    // IWYU pragma: export
+// #include <boost/multi/detail/tuple_zip.hpp>    // IWYU pragma: export
+
+// #include <boost/multi/detail/config/ASSERT.hpp>
+
+// #include <tuple>
+// #include <type_traits>  // for make_signed_t
+// #include <utility>      // for swap
 
 #if defined(__NVCC__)
-#define BOOST_MULTI_HD __host__ __device__
+	#define BOOST_MULTI_HD __host__ __device__
 #else
-#define BOOST_MULTI_HD
+	#define BOOST_MULTI_HD
 #endif
 
 namespace boost::multi {
@@ -39,7 +77,7 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 
 }  // end namespace detail
 
-template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
+// template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
 template<dimensionality_type D>
 struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D-1>::base_> {
@@ -693,7 +731,7 @@ struct layout_t
 	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
 	       constexpr auto size()        const        noexcept -> size_type {
 	//  if(nelems_ == 0) {return 0;}
-		BOOST_MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// BOOST_MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
 		// return nelems_ == 0?0:nelems_/stride_;
 		return nelems_/stride_;
