@@ -14,12 +14,13 @@
 #include <thrust/uninitialized_copy.h>
 #endif
 
-#include <algorithm>  // for std::copy, std::copy_n, std::equal, etc
-#include <cstddef>      // std::size_t
-#include <iterator>   // for begin, end
-#include <memory>     // for uninitialized_copy, etc
-#include <type_traits>  // std::conditional_t
-#include <utility>
+#include <algorithm>    // for for_each, copy_n, fill, fill_n, lexicographical_compare, swap_ranges  // IWYU pragma: keep  // bug in iwyu 0.18
+#include <cstddef>      // for size_t
+#include <functional>   // for equal_to
+#include <iterator>     // for iterator_traits, distance, size
+#include <memory>       // for allocator_traits, allocator, pointer_traits
+#include <type_traits>  // for decay_t, enable_if_t, conditional_t, declval, is_pointer, true_type
+#include <utility>      // for forward, addressof
 
 #ifdef _MULTI_FORCE_TRIVIAL_STD_COMPLEX
 #include<complex>
@@ -139,8 +140,6 @@ class adl_equal_t {
 };
 inline constexpr adl_equal_t adl_equal;
 
-template<class... Args> struct adl_custom_copy;
-
 #ifndef _MSC_VER
 template<class... As, class = std::enable_if_t<sizeof...(As) == 0> > void copy(As...) = delete;
 #endif
@@ -164,12 +163,12 @@ class adl_copy_t {
 inline constexpr adl_copy_t adl_copy;
 
 namespace adl {
-	namespace custom {template<class...> struct fill_t;}
+	// namespace custom {template<class...> struct fill_t;}
 	class fill_t {
 		template<class... As>          auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(              std::  fill              (std::forward<As>(args)...))
 		template<class... As>          auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     fill              (std::forward<As>(args)...))
 		template<class T, class... As> auto _(priority<3>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).fill              (std::forward<As>(args)...))
-		template<class... As>          auto _(priority<4>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(custom::             fill_t<As&&...>::_(std::forward<As>(args)...))
+		// template<class... As>          auto _(priority<4>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(custom::             fill_t<As&&...>::_(std::forward<As>(args)...))
 	
 	 public:
 		template<class... As> auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))

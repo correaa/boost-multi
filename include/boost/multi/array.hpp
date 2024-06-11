@@ -11,7 +11,7 @@
 
 #include <boost/multi/detail/adl.hpp>
 #include <boost/multi/detail/memory.hpp>
-#include <boost/multi/detail/type_traits.hpp>
+#include <boost/multi/detail/is_trivial.hpp>
 
 #include <memory>  // for std::allocator_traits
 #include <tuple>  // needed by a deprecated function

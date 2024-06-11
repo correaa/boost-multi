@@ -16,14 +16,12 @@
 	#pragma clang diagnostic ignored "-Wundef"
 	#pragma clang diagnostic ignored "-Wconversion"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
-// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
-// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -74,8 +72,8 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	using namespace std::string_literals;
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+                  // NOXXXLINT(fuchsia-default-arguments-calls)
 	std::vector<multi::array<int, 2>> const wa = {
-		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<int, 2>({ 0, 0 }, 0),
 		multi::array<int, 2>({ 1, 1 }, 1),
 		multi::array<int, 2>({ 2, 2 }, 2),
@@ -89,9 +87,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	};
 #endif
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-	BOOST_REQUIRE( size(va) == size(wa) );
-#endif
+	BOOST_REQUIRE( va.size() == wa.size() );
 	BOOST_REQUIRE( va == wa );
 
 	std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
@@ -206,11 +202,8 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init) {
 
 BOOST_AUTO_TEST_CASE(const_elements) {
 	auto ptr = std::make_unique<int const>(2);
-	//  *ptr = 3.0;  // ok, can't assign
+	// ok, can't assign  //  *ptr = 3.0;
 	BOOST_REQUIRE( *ptr == 2 );
-
-	//  multi::array<double const, 2, std::allocator<double>> arr({10, 10}, 99.0);
-	//  BOOST_REQUIRE( arr[1][2] == 99.0 );
 }
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
@@ -351,19 +344,9 @@ BOOST_AUTO_TEST_CASE(static_allocator_on_vector_int) {
 	BOOST_REQUIRE( vv[3] == 42 );
 	BOOST_REQUIRE( xx[3] == 51 );
 
-	// swap(xx, vv);
-	// BOOST_REQUIRE( vv[3] == 51 );
-	// BOOST_REQUIRE( xx[3] == 42 );
-
 	{
 		std::vector<std::vector<int, multi::detail::static_allocator<int, 32>>> const VV = { vv, xx, vv };  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_REQUIRE( VV.size() == 3 );
-		// swap(VV[0], VV[1]);
-		// std::sort(VV.begin(), VV.end());
-		// BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
-		// VV.resize(10, xx);
-		// std::sort(VV.begin(), VV.end());
-		// BOOST_REQUIRE( std::is_sorted(VV.begin(), VV.end()) );
 	}
 }
 
@@ -416,16 +399,20 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 	BOOST_REQUIRE( vv[3][3] == 42 );
 
 	auto ww = vv;
+
 	BOOST_REQUIRE( ww[3][3] == 42 );
 	BOOST_REQUIRE( ww.base() != vv.base() );
-	auto* wwb = ww.base();
-	auto* vvb = vv.base();
+
+	auto const* wwb = ww.base();
+	auto const* vvb = vv.base();
 
 	ww[3][3] = 51;
+
 	BOOST_REQUIRE( ww[3][3] == 51 );
 	BOOST_REQUIRE( vv[3][3] == 42 );
 
 	swap(ww, vv);
+
 	BOOST_REQUIRE( vv[3][3] == 51 );
 	BOOST_REQUIRE( ww[3][3] == 42 );
 
@@ -442,6 +429,7 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 
 	small_array<int, 2, 4UL * 4UL> yy({ 4, 4 });
 	yy = vv;
+
 	BOOST_REQUIRE( yy == vv );
 
 	yy = std::move(vv);

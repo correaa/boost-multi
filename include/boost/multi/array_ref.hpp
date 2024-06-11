@@ -483,7 +483,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?
 
 	BOOST_MULTI_HD constexpr void decrement_() {ptr_->base_ -= stride_;}
-	BOOST_MULTI_HD constexpr void advance_(difference_type n) {ptr_->base_ += stride_*n;}
+	BOOST_MULTI_HD constexpr void advance_(difference_type n) {assert(stride_ != 0); ptr_->base_ += stride_*n;}
 
  public:
 	BOOST_MULTI_HD constexpr auto base()              const&       -> element_ptr {return ptr_.base();}
@@ -508,7 +508,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type {
 		assert(self.stride_ == other.stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
-		assert(self.stride_ != 0);              // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
+		assert(self.stride_ != 0);
 		return (self.ptr_.base() - other.ptr_.base())/self.stride_;
 	}
 
@@ -1859,8 +1859,8 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto operator++() -> array_iterator& {data_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {data_ -= stride_; return *this;}
 
-	constexpr auto operator+=(difference_type n) -> array_iterator& {data_ += stride_*n; return *this;}
-	constexpr auto operator-=(difference_type n) -> array_iterator& {data_ -= stride_*n; return *this;}
+	constexpr auto operator+=(difference_type n) -> array_iterator& {assert(stride_ != 0); data_ += stride_*n; return *this;}
+	constexpr auto operator-=(difference_type n) -> array_iterator& {assert(stride_ != 0); data_ -= stride_*n; return *this;}
 
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
@@ -2087,6 +2087,27 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	//  if(this == std::addressof(other)) {return static_cast<subarray const&&>(*this);}  // lints cert-oop54-cpp
 	//  const_cast<subarray&&>(*this).operator=(other);
 	//  return static_cast<subarray const&&>(*this);
+	// }
+
+	template<
+		class ECPtr,
+		class = std::enable_if_t< std::is_same_v<element_const_ptr, ECPtr> && !std::is_same_v<element_const_ptr, element_ptr> >
+	>
+	constexpr auto operator=(subarray<T, 1L, ECPtr, Layout> const& other) const && -> subarray& {assert(0); operator=(          other ); return *this;}  // required by https://en.cppreference.com/w/cpp/iterator/indirectly_writable for std::ranges::copy_n
+
+	// template<
+	//  class ECPtr,
+	//  class = std::enable_if_t< std::is_same_v<element_const_ptr, ECPtr> && !std::is_same_v<element_const_ptr, element_ptr> >
+	// >
+	// constexpr auto operator=(subarray<T, 1L, ECPtr, Layout> const& other) && -> subarray& {operator=(          other ); return *this;}
+	// template<
+	//  class ECPtr,
+	//  class = std::enable_if_t< std::is_same_v<element_const_ptr, ECPtr> && !std::is_same_v<element_const_ptr, element_ptr> >
+	// >
+	// constexpr auto operator=(subarray<T, 1L, ECPtr, Layout> const& other)  & -> subarray& {
+	//  assert(other.extensions() == this->extensions());
+	//  elements() = other.elements();
+	//  return *this;
 	// }
 
  private:
