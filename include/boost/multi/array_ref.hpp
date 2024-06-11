@@ -483,7 +483,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?
 
 	BOOST_MULTI_HD constexpr void decrement_() {ptr_->base_ -= stride_;}
-	BOOST_MULTI_HD constexpr void advance_(difference_type n) {ptr_->base_ += stride_*n;}
+	BOOST_MULTI_HD constexpr void advance_(difference_type n) {assert(stride_ != 0); ptr_->base_ += stride_*n;}
 
  public:
 	BOOST_MULTI_HD constexpr auto base()              const&       -> element_ptr {return ptr_.base();}
@@ -1859,8 +1859,8 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto operator++() -> array_iterator& {data_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {data_ -= stride_; return *this;}
 
-	constexpr auto operator+=(difference_type n) -> array_iterator& {data_ += stride_*n; return *this;}
-	constexpr auto operator-=(difference_type n) -> array_iterator& {data_ -= stride_*n; return *this;}
+	constexpr auto operator+=(difference_type n) -> array_iterator& {assert(stride_ != 0); data_ += stride_*n; return *this;}
+	constexpr auto operator-=(difference_type n) -> array_iterator& {assert(stride_ != 0); data_ -= stride_*n; return *this;}
 
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
