@@ -22,7 +22,9 @@
 
 #include <boost/multi/array.hpp>
 
-#include <algorithm>  // for std::ranges::fold_left
+#include <algorithm>                           // for all_of, fill_n
+#include "boost/multi/detail/index_range.hpp"  // for operator==, operator!=
+#include "boost/multi/detail/tuple_zip.hpp"    // for apply
 
 #ifndef BOOST_TEST_MODULE
 	#define BOOST_TEST_MAIN

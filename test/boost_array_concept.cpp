@@ -47,9 +47,20 @@
 #  define BOOST_TEST_MAIN
 #endif
 
+#if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnositc ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
+#endif
+
 #include <boost/multi_array.hpp>
 
 #include <boost/concept_check.hpp>
+
+#if defined(__clang__)
+#  pragma clang diagnositc pop
+#elif defined(__GNUC__)
+#endif
 
 #include <boost/test/unit_test.hpp>
 
