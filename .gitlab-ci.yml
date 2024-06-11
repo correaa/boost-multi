@@ -654,7 +654,8 @@ cuda-12.3.1:
   interruptible: true
   script:
     - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - g++-12 --version
     - /usr/local/cuda/bin/nvcc --version
@@ -673,7 +674,7 @@ cuda-12.5.0:
   interruptible: true
   script:
     - nvidia-smi
-    # - apt-get -qq update && 
+    - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - g++-12 --version
