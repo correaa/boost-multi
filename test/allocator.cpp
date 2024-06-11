@@ -106,7 +106,6 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( ua == va );
 }
 
-#if (__CUDACC_VER_MAJOR__ * 10000 + __CUDACC_VER_MINOR__ * 100 + __CUDACC_VER_BUILD__ > 110900 )
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 	std::vector<multi::array<std::string, 2>> va;
 	std::transform(
@@ -158,7 +157,6 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 
 	BOOST_REQUIRE( ua == va );
 }
-#endif
 
 // TODO(correaa) make this code work with nvcc compiler (non device function called from device host through adl uninitialized_fill)
 #if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
