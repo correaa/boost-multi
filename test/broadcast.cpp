@@ -56,5 +56,5 @@ BOOST_AUTO_TEST_CASE(broadcast_as_fill) {
 	BOOST_REQUIRE( B[0] == b );
 	BOOST_REQUIRE( B[1] == b );
 
-	// BOOST_REQUIRE( std::all_of(B.begin(), B.end(), [b](auto const& row) { return row == b; }) );
+	BOOST_REQUIRE( std::all_of(B.begin(), B.end(), [b](auto const& row) { return row == b; }) );
 }
