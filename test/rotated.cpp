@@ -172,6 +172,7 @@ BOOST_AUTO_TEST_CASE(miguel) {
 }
 
 #if(__cplusplus >= 202002L)
+#if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 auto meshgrid(auto const& x, auto const& y) {
 	return std::pair{ x.broadcasted().rotated(), y.broadcasted() };
 }
@@ -203,4 +204,5 @@ BOOST_AUTO_TEST_CASE(matlab_meshgrid) {
 		}
 	}
 }
+#endif
 #endif
