@@ -6,7 +6,10 @@
 #include <boost/multi/array.hpp>
 
 #include <array>
+
+#if(__cplusplus >= 202002L)
 #include <ranges>
+#endif
 
 // template<>
 // inline constexpr bool std::ranges::enable_borrowed_range<
