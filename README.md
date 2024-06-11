@@ -987,7 +987,7 @@ Broadcasting is a technique by which arrays are reinterpreted as having a higher
 The technique allows the reuse of operations designed for high dimensionality and effectively apply them to arrays of lower dimensionality.
 The result is generally an economy in the number of distinct operations that need to be provided in exchange for understanding how and where to exploit the broadcast operations.
 
-Broadcasting is popular in array-based languages, such as Julia and NumPy, and the broadcast is generally applied automatically to match the dimension expected by the operation and other operation inputs.
+Broadcasting is popular in array-based languages, such as Julia and NumPy, and the broadcast operation is generally applied automatically to match the dimension expected by the operation and other operation inputs.
 The library provides a basic form of broadcasting with certain limitations.
 
 Here is an example of an algorithm designed for two 2D arrays to obtain the row-by-row inner product.
@@ -1034,7 +1034,7 @@ First, broadcasted arrays are infinite in the broadcasted dimension; iteration w
 Explicit loops or algorithms that depend on reaching `.end()` from `.begin()` will effectively be non-terminating.
 Second, these array views are strictly read-only and alias their element addresses, e.g. `&b.broadcasted()[1][0] == &b.broadcasted()[2][0]` (since internal layouts' strides can be zero).
 
-For illustration purposes only, `fill` here is replaced by `copy`; problematic uses are highlighted:
+<!-- For illustration purposes only, `fill` here is replaced by `copy`; problematic uses are highlighted:
 
 ```cpp
 multi::array<double, 2> B({10, 2});
@@ -1046,13 +1046,17 @@ std::copy_n(b.broadcasted().begin(), B.size(), B.begin());                // equ
 std::copy_n(b.broadcasted().begin(), b.broadcasted().size(), B.begin());  // incorrect, undefined behavior, no useful size()
 std::copy  (b.broadcasted().begin(), b.broadcasted().end(), B.begin());   // incorrect, undefined behavior, non-terminating loop (end is not reacheable)
 B = b.broadcasted();                                                      // incorrect, undefined behavior, B would be of infinite allocated size
-```
+``` -->
 
-Unlike popular languages, broadcasting is not automatic in the library and is applied to the leading dimension only, one dimension at a time.
+Unlike in popular languages, broadcasting is not automatic in the library and is applied to the leading dimension only, one dimension at a time.
 Broadcasting in non-leading dimensions can be achieved by transpositions and index rotation.
 
-Abuse of broadcast can make it harder to reason about operations; its primary use is to reuse existing efficient implementations of algorithms when implementations for a specific lower dimensions are not available.
+Abuse of broadcast can make it harder to reason about operations;
+its primary use is to reuse existing efficient implementations of algorithms when implementations for a specific lower dimensions are not available.
 These algorithms need to be compatible with broadcasted views (e.g., no explicit use of `.size()` or infinite loops stemming from problematic use of `.begin()/end()`.)
+
+(In STL, algorithms ending with `_n` should be friendly to broadcast arrays, unfortunately `std::copy_n` is sometimes internally implemented in terms of `std::copy` causing a problematic iterator arithmetic on infinite arrays.
+NB: `thrust::copy_n` can be used instead.)
 
 As a final example, consider a function that computes the elements-by-element product of two 2D arrays,
 
