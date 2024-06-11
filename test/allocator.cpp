@@ -76,16 +76,16 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	std::vector<multi::array<int, 2>> const wa = {
 		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
-		multi::array<int, 2>({ 0, 0 }, 0 ),
-		multi::array<int, 2>({ 1, 1 }, 1 ),
-		multi::array<int, 2>({ 2, 2 }, 2 ),
+		multi::array<int, 2>({ 0, 0 }, 0),
+		multi::array<int, 2>({ 1, 1 }, 1),
+		multi::array<int, 2>({ 2, 2 }, 2),
 	};
 #else
 	std::vector<multi::array<std::string, 2>> const wa = {
 		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
-		multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0 ),
-		multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1 ),
-		multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2 ),
+		multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
+		multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
+		multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
 	};
 #endif
 
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( ua == va );
 }
 
-
+#if (__CUDACC_VER_MAJOR__ * 10000 + __CUDACC_VER_MINOR__ * 100 + __CUDACC_VER_BUILD__ > 110900 )
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 	std::vector<multi::array<std::string, 2>> va;
 	std::transform(
@@ -147,14 +147,18 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 	BOOST_REQUIRE( va == wa );
 
 	std::vector<multi::array<std::string, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
-	auto                                      iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+
+	auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+
 	std::transform(
 		begin(iex), end(iex),
 		begin(ua),
 		[](auto idx) { return multi::array<std::string, 2>({ idx, idx }, std::to_string(idx)); }
 	);
+
 	BOOST_REQUIRE( ua == va );
 }
+#endif
 
 // TODO(correaa) make this code work with nvcc compiler (non device function called from device host through adl uninitialized_fill)
 #if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
