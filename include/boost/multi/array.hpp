@@ -312,7 +312,14 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())),
 		  other.extensions()
 	  ) {
+		// #if (defined(__clang__) && defined(__CUDACC__))
+		// if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+		//  adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
+		// }
+		// adl_copy_n                    (                       other.elements().begin(), this->num_elements(), this->data_elements());
+		// #else
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
+		// #endif
 	}
 
 	template<class TT, class... Args,
