@@ -32,6 +32,11 @@
 
 #include <algorithm>  // for std::ranges::fold_left
 
+// template<>
+// inline constexpr bool std::ranges::enable_borrowed_range<
+//  boost::multi::subarray<double, 2, const double*, boost::multi::layout_t<2, long int> >
+// > = true;
+
 #ifndef BOOST_TEST_MODULE
 #define BOOST_TEST_MAIN
 #endif
