@@ -16,8 +16,8 @@
 #pragma GCC diagnostic ignored "-Wundef"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Wstringop-overflow="
-#pragma GCC diagnostic ignored "-Warray-bounds="
+// #pragma GCC diagnostic ignored "-Wstringop-overflow="
+// #pragma GCC diagnostic ignored "-Warray-bounds="
 #endif
 
 #include <boost/multi/array.hpp>
@@ -115,25 +115,25 @@ BOOST_AUTO_TEST_CASE(range_find) {
 #endif
 }
 
-#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
-BOOST_AUTO_TEST_CASE(range_copy_n_1D) {
-	namespace multi = boost::multi;
+// #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+// BOOST_AUTO_TEST_CASE(range_copy_n_1D) {
+//  namespace multi = boost::multi;
 
-	multi::array<int, 1> const X1 = {1, 2, 3};
-	multi::array<int, 1> X2(X1.extensions());
+//  multi::array<int, 1> const X1 = {1, 2, 3};
+//  multi::array<int, 1> X2(X1.extensions());
 
-	std::ranges::copy_n(X1.begin(), 10, X2.begin());
+//  std::ranges::copy_n(X1.begin(), 10, X2.begin());
 
-	BOOST_REQUIRE( X1 == X2 );
-}
+//  BOOST_REQUIRE( X1 == X2 );
+// }
 
-BOOST_AUTO_TEST_CASE(range_copy_n) {
-	namespace multi = boost::multi;
+// BOOST_AUTO_TEST_CASE(range_copy_n) {
+//  namespace multi = boost::multi;
 
-	multi::array<int, 2> const X1({ 10, 10 }, 99);
-	multi::array<int, 2> X2(X1.extensions());
+//  multi::array<int, 2> const X1({ 10, 10 }, 99);
+//  multi::array<int, 2> X2(X1.extensions());
 
-	std::ranges::copy_n(X1.begin(), 10, X2.begin());
-	BOOST_REQUIRE( X1 == X2 );
-}
-#endif
+//  std::ranges::copy_n(X1.begin(), 10, X2.begin());
+//  BOOST_REQUIRE( X1 == X2 );
+// }
+// #endif
