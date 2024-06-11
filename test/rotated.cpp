@@ -8,13 +8,8 @@
 #include <array>
 
 #if(__cplusplus >= 202002L)
-#include <ranges>
+	#include <ranges>
 #endif
-
-// template<>
-// inline constexpr bool std::ranges::enable_borrowed_range<
-//  boost::multi::subarray<double, 2, const double*, boost::multi::layout_t<2, long int> >
-// > = true;
 
 #include <algorithm>
 #include <numeric>  // for std::iota
@@ -112,8 +107,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
 BOOST_AUTO_TEST_CASE(multi_rotate) {
 	{
 		multi::array<int, 2> arr = {
-			{00, 01},
-			{10, 11},
+			{ 00, 01 },
+			{ 10, 11 },
 		};
 		BOOST_REQUIRE(       arr[1][0] == 10 );
 		BOOST_REQUIRE( (arr.rotated())[0][1] == 10 );
@@ -149,8 +144,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 	}
 	{
 		multi::array<int, 2> const arr = {
-			{00, 01},
-			{10, 11},
+			{ 00, 01 },
+			{ 10, 11 },
 		};
 		BOOST_REQUIRE(   arr.rotated() [0][1] == 10 );
 		BOOST_REQUIRE( &(arr.rotated())[1][0] == &arr[0][1] );
@@ -160,9 +155,9 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 
 BOOST_AUTO_TEST_CASE(multi_transposed) {
 	multi::array<int, 2> const arr0 = {
-		{ 9, 24, 30, 9},
-		{ 4, 10, 12, 7},
-		{14, 16, 36, 1},
+		{  9, 24, 30, 9 },
+		{  4, 10, 12, 7 },
+		{ 14, 16, 36, 1 },
 	};
 	multi::array<int, 2> const arr1 = arr0.transposed();
 	multi::array<int, 2> const arr2 = ~arr0;
@@ -177,40 +172,37 @@ BOOST_AUTO_TEST_CASE(miguel) {
 }
 
 #if(__cplusplus >= 202002L)
-template<class XArray1D, class YArray1D>
-auto meshgrid(XArray1D const& x, YArray1D const& y) {
-	return std::make_pair(x.broadcasted().rotated(), y.broadcasted());
+#if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
+auto meshgrid(auto const& x, auto const& y) {
+	return std::pair{ x.broadcasted().rotated(), y.broadcasted() };
 }
 
-template<class XArray1D, class YArray1D>
-auto meshgrid_copy(XArray1D const& x, YArray1D const& y) {
-	auto ret = std::make_pair(
-		multi::array<typename XArray1D::element_type, 2>({ x.size(), y.size() }),
-		multi::array<typename YArray1D::element_type, 2>({ x.size(), y.size() })
-	);
+template<class X1D, class Y1D>
+auto meshgrid_copy(X1D const& x, Y1D const& y) {
+	auto ret = std::pair{
+		multi::array<typename X1D::element_type, 2>({ x.size(), y.size() }),
+		multi::array<typename Y1D::element_type, 2>(std::views::repeat(y, x.size()))
+	};
 
-	// thrust::copy_n(x.broadcasted().begin(), ret.first.rotated().size(), ret.first.rotated().begin());  // std::copy_n doesn't work
-	// thrust::copy_n(y.broadcasted().begin(), ret.second.rotated().size(), ret.second        .begin());  // std::copy_n doesn't work
-
-	std::fill(ret.first.rotated().begin(), ret.first.rotated().end(), x);
-	std::fill(ret.second.begin(), ret.second.end(), y);
-
+	std::ranges::fill(ret.first.rotated(), x);
+	
 	return ret;
 }
 
 BOOST_AUTO_TEST_CASE(matlab_meshgrid) {
+	auto const x = multi::array{ 1, 2, 3 };
+	auto const y = multi::array{ 1, 2, 3, 4, 5 };
 
-	auto const x = multi::array<int, 1>{ 1, 2, 3 };
-	auto const y = multi::array<int, 1>{ 1, 2, 3, 4, 5 };
+	auto const& [X, Y] = meshgrid(x, y);
 
-	auto const& [X, Y]    = meshgrid(x, y);
-	auto [X_copy, Y_copy] = meshgrid_copy(x, y);
+	auto const [X_copy, Y_copy] = meshgrid_copy(x, y);
 
-	for(auto i : X.extension()) {
-		for(auto j : Y.rotated().extension()) {
-			BOOST_REQUIRE( X[i][j] == X_copy[i][j] );
-			BOOST_REQUIRE( Y[i][j] == Y_copy[i][j] );
+	for(auto i : x.extension()) {
+		for(auto j : y.extension()) {
+			BOOST_TEST( X[i][j] == X_copy[i][j] );
+			BOOST_TEST( Y[i][j] == Y_copy[i][j] );
 		}
 	}
 }
+#endif
 #endif
