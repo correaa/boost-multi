@@ -161,7 +161,7 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 // this is important for algorithms to dispatch to the right thrust executor
 namespace thrust {
 
-template<class It> struct iterator_system;
+// template<class It> struct iterator_system;  // not needed in cuda 12.0, doesn't work on cuda 12.5
 
 template<class T, boost::multi::dimensionality_type D, class Pointer>
 struct iterator_system<boost::multi::array_iterator<T, D, Pointer>>{
