@@ -1819,7 +1819,12 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	constexpr auto operator<(array_iterator const& other) const -> bool {return distance_to_(other) > 0;}
+	constexpr auto operator<(array_iterator const& other) const -> bool { 
+		assert(other.stride_ == stride_); ;
+		assert((data_ - other.data_)%stride_ == 0);
+		return (data_ - other.data_)/stride_ < 0;
+		// return distance_to_(other) > 0;
+	}
 
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename subarray<Element, 1, Ptr>::index stride)
 	: data_{ptr}, stride_{stride} {}
@@ -1830,10 +1835,10 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	element_ptr data_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
 	stride_type stride_ = {1};
 
-	constexpr auto distance_to_(array_iterator const& other) const -> difference_type {
-		assert(stride_==other.stride_ && (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return (other.data_ - data_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
-	}
+	// constexpr auto distance_to_(array_iterator const& other) const -> difference_type {
+	//  assert(stride_==other.stride_ && (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	//  return (other.data_ - data_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
+	// }
 
  public:
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator {array_iterator ret{*this}; ret+=n; return ret;}
@@ -1866,7 +1871,11 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	#pragma clang diagnostic pop
 	#endif
 
-	constexpr auto operator-(array_iterator const& other) const -> difference_type {return -distance_to_(other);}
+	constexpr auto operator-(array_iterator const& other) const -> difference_type {
+		assert(stride_==other.stride_ && (data_ - other.data_)%stride_ == 0);
+		return (data_ - other.data_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
+		// return -distance_to_(other);
+	}
 
 	friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.data_ == other.data_;}
 
