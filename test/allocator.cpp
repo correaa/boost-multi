@@ -38,7 +38,9 @@
 #include <cstddef>                                  // for __GLIBCXX__, size_t
 #include <iterator>                                 // for size, back_insert...
 #include <memory>                                   // for make_unique, uniq...
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 #include <memory_resource>                          // for monotonic_buffer_...
+#endif
 #include <new>                                      // for operator new
 #include <string>                                   // for basic_string, string
 #include <utility>                                  // for move, forward
