@@ -3,13 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <boost/multi/detail/static_allocator.hpp>
-
-#include <vector>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -29,6 +22,27 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+
+#include <boost/multi/array.hpp>
+
+#include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
+
+#include <algorithm>                                // for transform, is_sorted
+#include <array>                                    // for array, operator==
+#include <cstddef>                                  // for __GLIBCXX__, size_t
+#include <iterator>                                 // for size, back_insert...
+#include <memory>                                   // for make_unique, uniq...
+#include <memory_resource>                          // for monotonic_buffer_...
+#include <new>                                      // for operator new
+#include <string>                                   // for basic_string, string
+#include <utility>                                  // for move, forward
+#include <vector>                                   // for vector, allocator
 
 namespace multi = boost::multi;
 
