@@ -265,7 +265,7 @@ vs2019-windows:
     # - '& "$msbuild" -help'
     # - '& "$msbuild" -version'  # 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
     - choco --version
-    - choco upgrade chocolatey
+    - choco upgrade -y chocolatey
     - choco --version
     - choco install -y visualstudio2019community
     - choco install -y boost-msvc-14.2
@@ -278,6 +278,7 @@ vs2019-windows:
     - ctest --test-dir build --output-on-failure -C Release
   tags:
     - saas-windows-medium-amd64
+  needs: ["clang++", "g++"]
 
 clang++-macos:
   stage: build
