@@ -258,24 +258,22 @@ clang++-latest libc++:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-build_windows:
+vs2019-windows:
   stage: build
   allow_failure: true
   script:
     # - '& "$msbuild" -help'
     # - '& "$msbuild" -version'  # 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
-    - choco install -y visualstudio2019community
+    - choco install -y visualstudio2019community boost-msvc-14.3
     # - '& "$msbuild" -version'
-    - choco install -y cmake
     - $env:Path += ';C:\Program Files\CMake\bin'
     - cmake --version
     - mkdir build
     - cmake -S . -B build -A x64
+    - cmake --build build --config Release
+    - ctest --test-dir build --output-on-failure -C Release
   tags:
     - saas-windows-medium-amd64
-    # - shared-windows
-    # - windows
-    # - windows-1809
 
 clang++-macos:
   stage: build
@@ -335,6 +333,7 @@ clang++-testing tidy iwuy:
     - mkdir build && cd build
     - clang++-18 --version
     - clang-tidy-18 --version
+    - iwyu --version
     - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure

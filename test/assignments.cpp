@@ -3,10 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <complex>
-
-#include <boost/multi/array.hpp>
-
 // Suppress warnings from boost.test
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -39,6 +35,14 @@
 // #pragma warning(pop)
 // #endif
 
+#include <boost/multi/array.hpp>     // for array, apply, operator==, layout_t
+
+#include <complex>                   // for complex
+#include <cstddef>                   // for size_t
+#include <iterator>                  // for size
+#include <utility>                   // for move
+#include <vector>                    // for vector, allocator
+
 namespace multi = boost::multi;
 
 namespace {
@@ -50,8 +54,8 @@ constexpr auto make_ref(int* ptr) {
 }  // namespace
 
 BOOST_AUTO_TEST_CASE(equality_1D) {
-	multi::array<double, 1> arr  = {1.0, 2.0, 3.0};
-	multi::array<double, 1> arr2 = {1.0, 2.0, 3.0};
+	multi::array<int, 1> arr  = {10, 20, 30};
+	multi::array<int, 1> arr2 = {10, 20, 30};
 
 	BOOST_REQUIRE(    arr == arr2  );
 	BOOST_REQUIRE( ! (arr != arr2) );
@@ -61,14 +65,15 @@ BOOST_AUTO_TEST_CASE(equality_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(equality_2D) {
-	multi::array<double, 2> arr = {
-		{1.0, 2.0, 3.0},
-		{4.0, 5.0, 6.0},
+	multi::array<int, 2> arr = {
+		{10, 20, 30},
+		{40, 50, 60},
 	};
-	multi::array<double, 2> arr2 = {
-		{1.0, 2.0, 3.0},
-		{4.0, 5.0, 6.0},
+	multi::array<int, 2> arr2 = {
+		{10, 20, 30},
+		{40, 50, 60},
 	};
+
 	BOOST_REQUIRE( arr == arr2 );
 	BOOST_REQUIRE( ! (arr != arr2) );
 
