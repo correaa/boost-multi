@@ -262,7 +262,9 @@ build_windows:
   stage: build
   allow_failure: true
   script:
-    - '& "$msbuild" -help'
+    # - '& "$msbuild" -help'
+    # - '& "$msbuild" -version'  # 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
+    - choco install visualstudio2019community
     - '& "$msbuild" -version'
     - choco install -y cmake
     - $env:Path += ';C:\Program Files\CMake\bin'
