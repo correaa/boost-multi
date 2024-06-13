@@ -269,6 +269,7 @@ vs2019-windows:
     - choco --version
     - choco install -y visualstudio2019community
     - choco install -y boost-msvc-14.3 --params "/StaticBuild"
+    - type C:\ProgramData\chocolatey\logs\chocolatey.log
     # - '& "$msbuild" -version'
     # - git clone https://github.com/microsoft/vcpkg.git
     # - .\vcpkg\bootstrap-vcpkg.bat
@@ -278,9 +279,10 @@ vs2019-windows:
     # - echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
     # - echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
     # - $env:Path += ';C:\Program Files\CMake\bin'
+    - type 
     - cmake --version
     - mkdir build
-    - cmake -S . -B build -A x64  -DBOOST_USE_STATIC_LIBS=ON # -DBOOST_ROOT=.\vcpkg\installed\x64-windows
+    - cmake -S . -B build -A x64  # -DBOOST_ROOT=.\vcpkg\installed\x64-windows
     - cmake --build build --config Release
     - ctest --test-dir build --output-on-failure -C Release
   tags:
