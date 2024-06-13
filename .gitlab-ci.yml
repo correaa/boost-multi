@@ -258,19 +258,21 @@ clang++-latest libc++:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-# build_windows:
-#   stage: build
-#   allow_failure: true
-#   script:
-#     - '& "$msbuild" -help'
-#     - '& "$msbuild" -version'
-#     - choco install -y cmake
-#     - $env:Path += ';C:\Program Files\CMake\bin'
-#     - cmake --version
-#   tags:
-#     - shared-windows
-#     - windows
-#     - windows-1809
+build_windows:
+  stage: build
+  allow_failure: true
+  script:
+    - '& "$msbuild" -help'
+    - '& "$msbuild" -version'
+    - choco install -y cmake
+    - $env:Path += ';C:\Program Files\CMake\bin'
+    - cmake --version
+    - mkdir build
+    - cmake -S . -B build -A x64
+  tags:
+    - shared-windows
+    # - windows
+    # - windows-1809
 
 # clang++-macos:
 #   stage: build
