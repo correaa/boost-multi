@@ -3,8 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
 // Suppress warnings from boost.test
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -36,6 +34,13 @@
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic pop
 #endif
+
+#include <boost/multi/array.hpp>     // for array, array_iterator, static_array
+
+#include <cstddef>                   // for size_t, nullptr_t, ptrdiff_t
+#include <iterator>                  // for random_access_iterator_tag
+#include <memory>                    // for allocator
+#include <type_traits>               // for decay_t
 
 namespace fancy {
 
