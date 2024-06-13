@@ -281,7 +281,7 @@ vs2019-windows:
     # - $env:Path += ';C:\Program Files\CMake\bin'
     - cmake --version
     - mkdir build
-    - cmake -S . -B build -A x64  # -DBOOST_ROOT=.\vcpkg\installed\x64-windows
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release # -A x64  # -DBOOST_ROOT=.\vcpkg\installed\x64-windows
     - cmake --build build --config Release
     - ctest --test-dir build --output-on-failure -C Release
   tags:
