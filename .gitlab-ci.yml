@@ -270,7 +270,8 @@ build_windows:
     - mkdir build
     - cmake -S . -B build -A x64
   tags:
-    - shared-windows
+    - saas-windows-medium-amd64
+    # - shared-windows
     # - windows
     # - windows-1809
 
