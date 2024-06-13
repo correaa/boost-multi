@@ -35,10 +35,10 @@
 #  pragma GCC diagnostic pop
 #endif
 
-#include <boost/multi/array.hpp>     // for layout_t, apply, subarray, array...
+#include <boost/multi/array.hpp>     // for layout_t, apply, subarray, array...  // IWYU pragma: keep  // bug in iwyu 8.22
 
 #include <algorithm>                 // for equal
-#include <array>                     // for array
+#include <array>                     // for array  // IWYU pragma: keep  // bug in iwyu 8.22
 #include <utility>                   // for as_const, addressof, exchange, move
 #include <vector>                    // for vector
 
