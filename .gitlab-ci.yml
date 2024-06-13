@@ -268,12 +268,19 @@ vs2019-windows:
     - choco upgrade -y chocolatey
     - choco --version
     - choco install -y visualstudio2019community
-    - choco install -y boost-msvc-14.2
+    # - choco install -y boost-msvc-14.2
     # - '& "$msbuild" -version'
+    - git clone https://github.com/microsoft/vcpkg.git
+    - .\vcpkg\bootstrap-vcpkg.bat
+    - .\vcpkg\vcpkg install boost-multi-array boost-test boost-timer boost-serialization
+    - echo "BOOST_ROOT=$(Get-Location)\vcpkg\installed\x64-windows" >> $env:GITHUB_ENV
+    - echo "BOOST_INCLUDEDIR=$(Get-Location)\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
+    - echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
+    - echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
     - $env:Path += ';C:\Program Files\CMake\bin'
     - cmake --version
     - mkdir build
-    - cmake -S . -B build -A x64
+    - cmake -S . -B build -A x64 -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
     - cmake --build build --config Release
     - ctest --test-dir build --output-on-failure -C Release
   tags:
