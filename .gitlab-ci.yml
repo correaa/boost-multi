@@ -264,7 +264,11 @@ vs2019-windows:
   script:
     # - '& "$msbuild" -help'
     # - '& "$msbuild" -version'  # 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
-    - choco install -y visualstudio2019community boost-msvc-14.3
+    - choco --version
+    - choco upgrade chocolatey
+    - choco --version
+    - choco install -y visualstudio2019community
+    - choco install -y boost-msvc-14.2
     # - '& "$msbuild" -version'
     - $env:Path += ';C:\Program Files\CMake\bin'
     - cmake --version
@@ -281,8 +285,8 @@ clang++-macos:
 # variables:
 #   HOMEBREW_NO_AUTO_UPDATE: 1
   tags:
-#   - saas-macos-medium-m1
-    - saas-macos-large-m2pro 
+    - saas-macos-medium-m1
+    # - saas-macos-large-m2pro 
   allow_failure: true
   script:
     #- apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
@@ -402,8 +406,9 @@ clang++-oldoldstable:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     # - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
-    - wget https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-x86_64.sh --no-verbose
-    - sh cmake-3.18.0-rc1-Linux-x86_64.sh --skip-license --prefix=/usr
+    # - wget -O cmake-install.sh https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-x86_64.sh --no-verbose
+    - wget -O cmake-install.sh https://cmake.org/files/v3.17/cmake-3.17.0-rc1-Linux-x86_64.sh --no-verbose
+    - sh cmake-install.sh --skip-license --prefix=/usr
     - mkdir build && cd build 
     - clang++ --version
     - CXX=clang++ CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
