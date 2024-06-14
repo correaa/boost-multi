@@ -138,12 +138,12 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
     - ctest -j 2 --output-on-failure -T memcheck
   needs: ["g++"]
 
-clang++-testing sanitizer:
+clang++ sanitizer:
   stage: build
   tags:
     - non-shared
     - docker
-  image: debian:testing
+  # image: debian:testing
   allow_failure: true
   interruptible: true
   script:
@@ -154,9 +154,9 @@ clang++-testing sanitizer:
     - ASAN_OPTIONS="new_delete_type_mismatch=true:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=true" ctest -j 2 --output-on-failure -T Test
   needs: ["clang++"]
 
-g++-testing sanitizer:
+g++ sanitizer:
   stage: build
-  image: debian:testing
+  # image: debian:testing
   tags:
     - non-shared
     - docker
