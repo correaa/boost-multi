@@ -7,7 +7,6 @@
 
 #include <array>
 
-// Suppress warnings from boost.test
 #if defined(__clang__)
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wold-style-cast"
@@ -30,17 +29,30 @@
 
 #include <boost/test/unit_test.hpp>
 
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#endif
+
+#include <boost/multi/array.hpp>     // for layout_t, apply, subarray, array...  // IWYU pragma: keep  // bug in iwyu 8.22
+
+#include <algorithm>                 // for equal
+#include <array>                     // for array  // IWYU pragma: keep  // bug in iwyu 8.22
+#include <utility>                   // for as_const, addressof, exchange, move
+#include <vector>                    // for vector
+
 namespace multi = boost::multi;
 
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
 template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
-	multi::array<double, 2> arr = {
-		{1.0, 2.0, 3.0},
-		{4.0, 5.0, 6.0},
-		{7.0, 8.0, 9.0},
-		{1.0, 2.0, 3.0},
+	multi::array<int, 2> arr = {
+		{10, 20, 30},
+		{40, 50, 60},
+		{70, 80, 90},
+		{10, 20, 30},
 	};
 	BOOST_REQUIRE(  arr[2] ==  arr[2] );
 	BOOST_REQUIRE( &arr[2] == &arr[2] );
@@ -118,53 +130,54 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		BOOST_REQUIRE( size(arrR) == arrP->size() );
 	}
 	{
-		std::array<std::array<double, 5>, 4> arr = {
-			{std::array<double, 5>{{0.0, 1.0, 2.0, 3.0, 4.0}},
-			 std::array<double, 5>{{5.0, 6.0, 7.0, 8.0, 9.0}},
-			 std::array<double, 5>{{10.0, 11.0, 12.0, 13.0, 14.0}},
-			 std::array<double, 5>{{15.0, 16.0, 17.0, 18.0, 19.0}}},
+		std::array<std::array<int, 5>, 4> arr = {
+			{std::array<int, 5>{{ 00,  10,  20,  30,  40}},
+			 std::array<int, 5>{{ 50,  60,  70,  80,  90}},
+			 std::array<int, 5>{{100, 110, 120, 130, 140}},
+			 std::array<int, 5>{{150, 160, 170, 180, 190}}},
 		};
 
-		std::vector<multi::array_ptr<double, 1>> ptrs;
+		std::vector<multi::array_ptr<int, 1>> ptrs;
 		ptrs.emplace_back(&arr[0][0], 5);  // NOLINT(readability-container-data-pointer) test access
 		ptrs.emplace_back(arr[2].data(), 5);
 		ptrs.emplace_back(&arr[3][0], 5);  // NOLINT(readability-container-data-pointer) test access
 
 		BOOST_REQUIRE( &(*ptrs[2])[4] == &arr[3][4]   );
-		BOOST_REQUIRE(  (*ptrs[2])[4] == 19         );
-		BOOST_REQUIRE(    ptrs[2]->operator[](4) == 19 );
+		BOOST_REQUIRE(  (*ptrs[2])[4] == 190         );
+		BOOST_REQUIRE(    ptrs[2]->operator[](4) == 190 );
 	}
 	{
-		std::vector<double>                v1(100, 3.0);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
-		std::vector<double> const          v2(100, 4.0);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
-		multi::array_ptr<double, 2> const  v1P2D(v1.data(), {10, 10});
-		multi::array_cptr<double, 2> const v2P2D(v2.data(), {10, 10});
+		std::vector<int>                v1(100, 30);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> const          v2(100, 40);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
+
+		multi::array_ptr <int, 2> const  v1P2D(v1.data(), {10, 10});
+		multi::array_cptr<int, 2> const v2P2D(v2.data(), {10, 10});
 
 		*v1P2D = *v2P2D;
 		v1P2D->operator=(*v2P2D);
 
-		BOOST_REQUIRE( v1[8] == 4.0 );
+		BOOST_REQUIRE( v1[8] == 40 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(span_like) {
-	std::vector<double> vec = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
+	std::vector<int> vec = {00, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-	using my_span = multi::array_ref<double, 1>;
+	using my_span = multi::array_ref<int, 1>;
 
 	auto aP = &my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_REQUIRE( aP->size() == 5 );
-	BOOST_REQUIRE( (*aP)[0] == 2.0 );
+	BOOST_REQUIRE( (*aP)[0] == 20 );
 
 	auto const& aCRef = *aP;
 	BOOST_REQUIRE(  aCRef.size() == 5 );
 
 	BOOST_REQUIRE( &aCRef[0] == &vec[2] );
-	BOOST_REQUIRE(  aCRef[0] == 2.0     );
+	BOOST_REQUIRE(  aCRef[0] == 20     );
 
 	auto&& aRef = *aP;
-	aRef[0]     = 99.0;
-	BOOST_REQUIRE( vec[2] == 99.0 );
+	aRef[0]     = 990;
+	BOOST_REQUIRE( vec[2] == 990 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {

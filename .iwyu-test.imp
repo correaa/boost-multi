@@ -20,5 +20,7 @@
     { "include": ["@<boost/test/utils/wrap_stringstream.hpp>", "public", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<bits/chrono.h>", "private", "<chrono>", "public"] },
     { "include": ["@<bits/utility.h>", "private", "<tuple>", "public"] },
-    { "include": ["@<bits/memory_resource.h>", "private", "<memory_resource>", "public"] }
+    { "include": ["@<bits/memory_resource.h>", "private", "<memory_resource>", "public"] },
+    { "include": ["@<assert.h>", "public", "<cassert>", "public"] },
+    { "include": ["@<stdint.h>", "public", "<cstdint>", "public"] }
 ]
