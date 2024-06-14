@@ -269,7 +269,7 @@ vs2019-windows:
     - choco --version
     - choco install -y visualstudio2019community
     - choco install -y boost-msvc-14.2 --version 1.74.0  # --params "/StaticBuild"
-    - type C:\ProgramData\chocolatey\logs\chocolatey.log
+    # - type C:\ProgramData\chocolatey\logs\chocolatey.log
     # - '& "$msbuild" -version'
     # - git clone https://github.com/microsoft/vcpkg.git
     # - .\vcpkg\bootstrap-vcpkg.bat
