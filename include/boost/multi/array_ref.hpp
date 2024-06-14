@@ -1953,7 +1953,7 @@ struct subarray<T, 0, ElementPtr, Layout>
 
 template<typename T, typename ElementPtr, class Layout>
 struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
-: multi::random_iterable<subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout> >
+: multi::random_iterable<subarray<T, ::boost::multi::dimensionality_type(1), ElementPtr, Layout> >  // paren for msvc?
 , array_types<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout> {
 	~subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
