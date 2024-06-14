@@ -10,6 +10,7 @@
 #include <boost/multi/detail/layout.hpp>
 
 #include <functional>    // for std::invoke
+#include <iterator>  // for std::size (in c++17)
 #include <memory>       // for allocator<>
 #include <type_traits>  // for std::invoke_result
 

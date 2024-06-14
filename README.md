@@ -88,10 +88,10 @@ The code requires compilers with standard C++17 support; for reference any of:
 LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
 GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
 Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) and `nvc++` (22.7+),
-Intel's      `icpc` (2021.2.0+) and `icpx` (2022.0.0+),
+Intel's      `icpx` (2022.0.0+),
 Baxter's    [`circle`](https://www.circle-lang.org/) (build 202+),
 [Zig](https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j) in [c++ mode (v0.9.0+)](https://godbolt.org/z/cKGebsWMG), and
-Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.2](https://godbolt.org/z/vrfh1fxWK)).
+Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.1](https://godbolt.org/z/vrfh1fxWK)).
 
 (Multi code inside CUDA kernel can be compiled with `nvcc` and with [`clang` (in CUDA mode)](https://godbolt.org/z/7dTKdPTxc).
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
