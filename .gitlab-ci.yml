@@ -258,42 +258,62 @@ clang++-latest libc++:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-# build_windows:
-#   stage: build
-#   allow_failure: true
-#   script:
-#     - '& "$msbuild" -help'
-#     - '& "$msbuild" -version'
-#     - choco install -y cmake
-#     - $env:Path += ';C:\Program Files\CMake\bin'
-#     - cmake --version
-#   tags:
-#     - shared-windows
-#     - windows
-#     - windows-1809
+vs2019-windows:
+  stage: build
+  allow_failure: true
+  script:
+    # - '& "$msbuild" -help'
+    # - '& "$msbuild" -version'  # 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
+    - choco --version
+    - choco upgrade -y chocolatey
+    - choco --version
+    - choco install -y visualstudio2019community
+    - choco install -y boost-msvc-14.2 --version 1.74.0  # --params "/StaticBuild"
+    - type C:\ProgramData\chocolatey\logs\chocolatey.log
+    # - '& "$msbuild" -version'
+    # - git clone https://github.com/microsoft/vcpkg.git
+    # - .\vcpkg\bootstrap-vcpkg.bat
+    # - .\vcpkg\vcpkg install boost-multi-array boost-test boost-timer boost-serialization
+    # - echo "BOOST_ROOT=$(Get-Location)\vcpkg\installed\x64-windows" >> $env:GITHUB_ENV
+    # - echo "BOOST_INCLUDEDIR=$(Get-Location)\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
+    # - echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
+    # - echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
+    # - $env:Path += ';C:\Program Files\CMake\bin'
+    - cmake --version
+    - mkdir build
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT=C:\Libraries\boost_1_74_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_74_0\lib64-msvc-14.2  # c:/local/boost_1_74_0/lib64-msvc-14.2
+    # - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release # -A x64  # -DBOOST_ROOT=.\vcpkg\installed\x64-windows
+    - cmake --build build --config Release
+    - ctest --test-dir build --output-on-failure -V -C Release
+  tags:
+    - saas-windows-medium-amd64
+  needs: ["clang++", "g++"]
 
-# clang++-macos:
-#   stage: build
-#   image: macos-14-xcode-15
-#   # variables:
-#   #   HOMEBREW_NO_AUTO_UPDATE: 1
-#   tags:
-#     - saas-macos-medium-m1
-#   allow_failure: true
-#   script:
-#     #- apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
-#     #- wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose # 1.70 doesn't install boost timer well, there is no version 1.72 in sourceforge
-#     #- tar -xf boost_1_72_0.tar.gz 
-#     #- cd boost_1_72_0
-#     #- ./bootstrap.sh --with-toolset=clang
-#     #- ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4 # libc++ only works with boost test compiled with libc++
-#     #- cd ..
-#     - mkdir build && cd build
-#     - c++ --version
-#     - CXX=c++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0  # -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
-#     - cmake --build .
-#     - ctest -j 2 --output-on-failure
-#   needs: ["clang++"]
+clang++-macos:
+  interruptible: true
+  stage: build
+# image: macos-14-xcode-15
+# variables:
+#   HOMEBREW_NO_AUTO_UPDATE: 1
+  tags:
+    - shared-macos-amd64
+    # - saas-macos-medium-m1
+    # - saas-macos-large-m2pro 
+  allow_failure: true
+  script:
+    #- apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
+    #- wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose # 1.70 doesn't install boost timer well, there is no version 1.72 in sourceforge
+    #- tar -xf boost_1_72_0.tar.gz 
+    #- cd boost_1_72_0
+    #- ./bootstrap.sh --with-toolset=clang
+    #- ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4 # libc++ only works with boost test compiled with libc++
+    #- cd ..
+    - mkdir build && cd build
+    - c++ --version
+    - CXX=c++ cmake .. -DCMAKE_BUILD_TYPE=Debug  # -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
 
 clang++-m32:
   stage: build
@@ -329,6 +349,7 @@ clang++-testing tidy iwuy:
     - mkdir build && cd build
     - clang++-18 --version
     - clang-tidy-18 --version
+    - iwyu --version
     - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
@@ -395,8 +416,11 @@ clang++-oldoldstable:
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
-    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    # - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    # - wget -O cmake-install.sh https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-x86_64.sh --no-verbose
+    - wget -O cmake-install.sh https://cmake.org/files/v3.17/cmake-3.17.0-rc1-Linux-x86_64.sh --no-verbose
+    - sh cmake-install.sh --skip-license --prefix=/usr
     - mkdir build && cd build 
     - clang++ --version
     - CXX=clang++ CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
