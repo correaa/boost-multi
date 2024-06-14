@@ -300,6 +300,7 @@ vs2022-windows:
     # - choco upgrade -y chocolatey
     - choco --version
     - choco install -y visualstudio2022community
+    - NuGet\Install-Package boost_test-vc142 -Version 1.85.0
     - choco install -y boost-msvc-14.2 --version 1.74.0  # --params "/StaticBuild"
     - mkdir build
     - cmake --version
