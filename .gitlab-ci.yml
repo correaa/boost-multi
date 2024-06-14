@@ -281,10 +281,10 @@ vs2019-windows:
     # - $env:Path += ';C:\Program Files\CMake\bin'
     - cmake --version
     - mkdir build
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT="C:\local\boost_1_74_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_74_0\lib64-msvc-14.2"  # c:/local/boost_1_74_0/lib64-msvc-14.2
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  # -DBOOST_ROOT="C:\local\boost_1_74_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_74_0\lib64-msvc-14.2"  # c:/local/boost_1_74_0/lib64-msvc-14.2
     # - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release # -A x64  # -DBOOST_ROOT=.\vcpkg\installed\x64-windows
     - cmake --build build --config Release
-    - $env:Path += ';C:\Program Files\CMake\bin;C:\local\boost_1_74_0;C:\local\boost_1_74_0\lib64-msvc-14.2'
+    - $env:Path += ';C:\Program Files\CMake\bin;C:\local\boost_1_74_0\lib64-msvc-14.2'  # C:\local\boost_1_74_0;
     - ctest --test-dir build --output-on-failure -V -C Release
   tags:
     - saas-windows-medium-amd64
