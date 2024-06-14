@@ -10,12 +10,9 @@
 #include <boost/multi/detail/layout.hpp>
 
 #include <functional>    // for std::invoke
+#include <iterator>  // for std::size (in c++17)
 #include <memory>       // for allocator<>
 #include <type_traits>  // for std::invoke_result
-
-#if(__cplusplus >= 201703L)
-#include <iterator>  // for std::size (in c++17)
-#endif
 
 #if defined(__NVCC__)
 #define BOOST_MULTI_HD __host__ __device__
