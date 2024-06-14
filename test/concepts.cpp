@@ -39,12 +39,12 @@
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang "-Wconversion"
+	#pragma clang diagnostic ignored "-Wconversion"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wconversion"
 #endif
 
 #include <boost/concept/assert.hpp>  // for BOOST_CONCEPT_ASSERT
