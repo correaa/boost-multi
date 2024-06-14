@@ -232,14 +232,14 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		// BOOST_REQUIRE_CLOSE( zee.imag(), -2.0, 1E-6);
 	}
 	{
-		double doub = 5.0;
+		int val = 50;
 
-		auto&& negd_a = test::involuted<test::neg_t, double&>(test::neg, doub);
-		BOOST_REQUIRE( negd_a == -5.0 );
+		auto&& negd_a = test::involuted<test::neg_t, int&>(test::neg, val);
+		BOOST_REQUIRE( negd_a == -50 );
 
-		negd_a = 10.0;
-		BOOST_REQUIRE( negd_a == 10.0 );
-		BOOST_REQUIRE( doub = -10.0 );
+		negd_a = 100;
+		BOOST_REQUIRE( negd_a == 100 );
+		BOOST_REQUIRE( val = -100 );
 	}
 	{
 		multi::array<double, 1> arr = { 0.0, 1.0, 2.0, 3.0, 4.0 };
