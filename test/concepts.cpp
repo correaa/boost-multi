@@ -34,13 +34,28 @@
 // #include <boost/mp11.hpp>  // Boost.Test 1.67 needs test cases to be mpl list
 #include <boost/mpl/list.hpp>
 
+
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
 #include <boost/concept/assert.hpp>  // for BOOST_CONCEPT_ASSERT
 #include <boost/concept_check.hpp>   // for Assignable, CopyCons...
-
 #include <boost/iterator/iterator_facade.hpp>  // for operator-
-
 #include <boost/multi_array.hpp>                 // for multi_array
 #include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
 
 #include <cstddef>  // for ptrdiff_t
 #include <vector>   // for vector
