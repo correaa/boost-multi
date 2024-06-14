@@ -7,35 +7,46 @@
 
 #include <complex>
 
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#pragma clang diagnostic ignored "-Wundef"
-#pragma clang diagnostic ignored "-Wconversion"
-#pragma clang diagnostic ignored "-Wsign-conversion"
-#pragma clang diagnostic ignored "-Wfloat-equal"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wundef"
-#pragma GCC diagnostic ignored "-Wconversion"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
+	#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+
+#include <boost/multi/array.hpp>  // for array, apply, operator!=, operat...
+
+#include <algorithm>  // for equal
+#include <complex>    // for complex, operator==
+#include <iterator>   // for begin, end, cbegin, cend, size
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(comparison_complex) {
 	using complex = std::complex<double>;
 	{
-		multi::array<double, 1>  arr  = {1.0, 2.0, 3.0};
+		multi::array<double, 1>  arr  = { 1.0, 2.0, 3.0 };
 		multi::array<complex, 1> arr2 = {
 			{1.0, 0.0},
 			{2.0, 0.0},
@@ -55,8 +66,8 @@ BOOST_AUTO_TEST_CASE(comparison_complex) {
 		};
 
 		multi::array<complex, 2> const arr2 = {
-			{{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}},
-			{{4.0, 0.0}, {5.0, 0.0}, {6.0, 0.0}},
+			{{ 1.0, 0.0 }, { 2.0, 0.0 }, { 3.0, 0.0 }},
+			{{ 4.0, 0.0 }, { 5.0, 0.0 }, { 6.0, 0.0 }},
 		};
 
 		BOOST_REQUIRE( arr[1][1] == arr2[1][1] );
@@ -70,9 +81,9 @@ BOOST_AUTO_TEST_CASE(comparison_complex) {
 
 BOOST_AUTO_TEST_CASE(multi_comparisons_swap) {
 	multi::array<double, 3> arr = {
-		{ {1.2, 1.1},  {2.4, 1.0}},
-		{{11.2, 3.0}, {34.4, 4.0}},
-		{ {1.2, 1.1},  {2.4, 1.0}},
+		{ { 1.2, 1.1 },  { 2.4, 1.0 }},
+		{{ 11.2, 3.0 }, { 34.4, 4.0 }},
+		{ { 1.2, 1.1 },  { 2.4, 1.0 }},
 	};
 	BOOST_REQUIRE( arr[0] < arr[1] );
 
@@ -85,9 +96,9 @@ BOOST_AUTO_TEST_CASE(multi_comparisons_swap) {
 
 BOOST_AUTO_TEST_CASE(comparisons_equality) {
 	multi::array<double, 3> arr = {
-		{ {1.2, 1.1},  {2.4, 1.0}},
-		{{11.2, 3.0}, {34.4, 4.0}},
-		{ {1.2, 1.1},  {2.4, 1.0}},
+		{ { 1.2, 1.1 },  { 2.4, 1.0 }},
+		{{ 11.2, 3.0 }, { 34.4, 4.0 }},
+		{ { 1.2, 1.1 },  { 2.4, 1.0 }},
 	};
 
 	multi::array_ref<double, 3>  ref(arr.data_elements(), extensions(arr));
@@ -112,15 +123,15 @@ BOOST_AUTO_TEST_CASE(comparisons_equality) {
 }
 
 BOOST_AUTO_TEST_CASE(comparisons_ordering) {
-	multi::array<double, 3> arr = {
-		{ {12, 11},  {24, 10}},
-		{{112, 30}, {344, 40}},
-		{ {12, 11},  {24, 10}},
+	multi::array<int, 3> arr = {
+		{ { 12, 11 },  { 24, 10 }},
+		{{ 112, 30 }, { 344, 40 }},
+		{ { 12, 11 },  { 24, 10 }},
 	};
 
-	multi::array_ref<double, 3> ref(arr.data_elements(), extensions(arr));
+	multi::array_ref<int, 3> ref(arr.data_elements(), extensions(arr));
 
-	multi::array_cref<double, 3> cref(data_elements(arr), extensions(arr));
+	multi::array_cref<int, 3> cref(data_elements(arr), extensions(arr));
 
 	BOOST_REQUIRE(  arr[0]    <=  arr[1] );
 	BOOST_REQUIRE(  ref[0]    <=  arr[1] );

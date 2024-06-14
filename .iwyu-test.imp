@@ -18,6 +18,7 @@
     { "include": ["@<boost/test/utils/basic_cstring/basic_cstring.hpp>", "public", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/utils/lazy_ostream.hpp>", "public", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/utils/wrap_stringstream.hpp>", "public", "<boost/test/unit_test.hpp>", "public"] },
+    { "include": ["@<boost/mpl/aux_/preprocessed/gcc/list.hpp>", "private", "<boost/mpl/list.hpp>", "public"] },
     { "include": ["@<bits/chrono.h>", "private", "<chrono>", "public"] },
     { "include": ["@<bits/utility.h>", "private", "<tuple>", "public"] },
     { "include": ["@<bits/memory_resource.h>", "private", "<memory_resource>", "public"] },
