@@ -24,7 +24,7 @@
 #  endif 
 
 // No discard class
-#  if(__has_cpp_attribute(nodiscard) && !defined(__NVCC__) && (!defined(__clang__) || (defined(__clang__) && (__cplusplus >= 202002L)))) )
+#  if(__has_cpp_attribute(nodiscard) && !defined(__NVCC__) && (!defined(__clang__) || (defined(__clang__) && (__cplusplus >= 202002L))))
 #    if (__has_cpp_attribute(nodiscard) >= 201907L) && (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #      define BOOST_MULTI_NODISCARD_CLASS(MsG) [[nodiscard_(MsG)]]
 #    else
