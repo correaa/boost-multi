@@ -120,7 +120,7 @@ coverage:
 
 g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
   stage: build
-  allow_failure: true
+  allow_failure: false
   interruptible: true
   tags:
     - non-shared
@@ -138,19 +138,35 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
     - ctest -j 2 --output-on-failure -T memcheck
   needs: ["g++"]
 
-g++-testing sanitizer:
+clang++ sanitizer:
   stage: build
   tags:
     - non-shared
     - docker
   # image: debian:testing
+  allow_failure: true
+  interruptible: true
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake clang make libasan8 libasan6 libclang-rt-dev libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - mkdir build && cd build
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"  # ,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-omit-frame-pointer -fno-sanitize-recover=all"
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ASAN_OPTIONS="check_initialization_order=1" ctest -j 2 --output-on-failure -T Test
+  needs: ["clang++"]
+
+g++ sanitizer:
+  stage: build
+  # image: debian:testing
+  tags:
+    - non-shared
+    - docker
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-fsanitize=address" -fno-omit-frame-pointer  # ,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-omit-frame-pointer -fno-sanitize-recover=all"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ASAN_OPTIONS="new_delete_type_mismatch=true:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=true" ctest -j 2 --output-on-failure -T Test
+    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
 
 g++-7:
@@ -213,8 +229,8 @@ clang++:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
+    - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
 
 # deb:
@@ -376,21 +392,6 @@ g++-testing c++20:
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
-  needs: ["g++"]
-
-g++-testing sanitizer:
-  stage: build
-  image: debian:testing
-  tags:
-    - non-shared
-    - docker
-  interruptible: true
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
 
 clang++-17-unstable libc++ c++23 boost_1_84:
