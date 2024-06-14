@@ -13,9 +13,7 @@
 #include <memory>       // for allocator<>
 #include <type_traits>  // for std::invoke_result
 
-#if(__cplusplus >= 201703L)
 #include <iterator>  // for std::size (in c++17)
-#endif
 
 #if defined(__NVCC__)
 #define BOOST_MULTI_HD __host__ __device__
@@ -500,14 +498,6 @@ template<class T, std::size_t M, std::size_t N>
 constexpr auto dimensionality(std::array<std::array<T, M>, N> const& arr) -> boost::multi::dimensionality_type {
 	return 1 + dimensionality(arr[0]);
 }
-
-#if (__cplusplus < 201703L)
-// this conflicts with std::size in nvcc 11 and c++17
-template<class T, std::size_t N>
-constexpr auto size(std::array<T, N> const& /*arr*/) {
-	return multi::size_type{N};
-}
-#endif
 
 template<class T, std::size_t N>
 constexpr auto extensions(std::array<T, N> const& /*arr*/) {
