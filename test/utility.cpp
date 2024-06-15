@@ -133,9 +133,9 @@ BOOST_AUTO_TEST_CASE(test_utility_1d) {
 	multi::array_ref<int, 1> marr(carr.data(), { multi::iextension{ 10 } });
 
 	std::vector<int> varr(10);  // NOLINT(fuchsia-default-arguments-calls)
-	std::iota(begin(varr), end(varr), 0);
+	std::iota(varr.begin(), varr.end(), 0);
 	std::array<int, 10> aarr{};
-	std::iota(begin(aarr), end(aarr), 0);
+	std::iota(aarr.begin(), aarr.end(), 0);
 
 	BOOST_REQUIRE( size(marr) == 10 );
 
