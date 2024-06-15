@@ -290,8 +290,8 @@ vs2019-windows:
     - ctest --test-dir build --output-on-failure -C Release
   tags:
     - saas-windows-medium-amd64
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   needs: ["clang++", "g++"]
 
 vs2022-windows:
@@ -311,8 +311,8 @@ vs2022-windows:
     - ctest --test-dir build --output-on-failure -C Release
   tags:
     - saas-windows-medium-amd64
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   needs: ["vs2019-windows"]
 
 vs2017-windows:
@@ -330,8 +330,8 @@ vs2017-windows:
     - ctest --test-dir build --output-on-failure -C Release
   tags:
     - saas-windows-medium-amd64
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  # rules:
+  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   needs: ["vs2019-windows"]
 
 # clang++-macos:
