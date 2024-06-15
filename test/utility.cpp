@@ -3,34 +3,40 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-#include <boost/multi/detail/tuple_zip.hpp>
-
-#include <fstream>
-#include <numeric>  // for iota
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+
+#include <boost/multi/array.hpp>  // for array_ref, data_elements, num_el...
+
+#include <array>        // for array
+#include <iterator>     // for begin, end, iterator_traits, rend
+#include <numeric>      // for iota
+#include <type_traits>  // for is_same
+#include <utility>      // for addressof
+#include <vector>       // for vector, allocator
 
 namespace multi = boost::multi;
 
@@ -60,7 +66,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 #ifdef _MSC_VER  // problem with 14.3 c++17
 		multi::extensions_t<3>
 #endif
-		{3, 4, 5}
+		{ 3, 4, 5 }
 	);
 	using multi::layout;
 	BOOST_REQUIRE( layout(arr) == layout(marr) );
@@ -90,7 +96,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(arr) == 12 );
 
-	multi::array<double, 2> const marr({3, 4});
+	multi::array<double, 2> const marr({ 3, 4 });
 	using multi::layout;
 	BOOST_REQUIRE( layout(arr) == layout(marr) );
 
@@ -120,16 +126,16 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(test_utility_1d) {
-	// clang-format off
-	std::array<double, 10> carr = {{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0}};
-	// clang-format on
+	std::array<int, 10> carr = {
+		{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	};
 
-	multi::array_ref<double, 1> marr(carr.data(), {multi::iextension{10}});
+	multi::array_ref<int, 1> marr(carr.data(), { multi::iextension{ 10 } });
 
-	std::vector<double> varr(10);  // NOLINT(fuchsia-default-arguments-calls)
-	std::iota(begin(varr), end(varr), 0.0);
-	std::array<double, 10> aarr{};
-	std::iota(begin(aarr), end(aarr), 0.0);
+	std::vector<int> varr(10);  // NOLINT(fuchsia-default-arguments-calls)
+	std::iota(begin(varr), end(varr), 0);
+	std::array<int, 10> aarr{};
+	std::iota(begin(aarr), end(aarr), 0);
 
 	BOOST_REQUIRE( size(marr) == 10 );
 
@@ -164,13 +170,14 @@ BOOST_AUTO_TEST_CASE(test_utility_1d) {
 
 BOOST_AUTO_TEST_CASE(test_utility_2d) {
 	// clang-format off
-	std::array<std::array<double, 10>, 3> carr{{
-		{{ 0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0}},
-		{{10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0}},
-		{{20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0}},
+	std::array<std::array<int, 10>, 3> carr{{
+		{{ 00, 10, 20, 30, 40, 50, 60, 70, 80, 90 }},
+		{{ 100, 110, 120, 130, 140, 150, 160, 170, 180, 190 }},
+		{{ 200, 210, 220, 230, 240, 250, 260, 270, 280, 290 }},
 	}};
 	// clang-format on
-	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});  // NOLINT(readability-container-data-pointer) tests access
+
+	multi::array_ref<int, 2> marr(&carr[0][0], { 3, 10 });  // NOLINT(readability-container-data-pointer) tests access
 
 	BOOST_REQUIRE( static_cast<multi::size_t>(carr.size()) == size(marr) );
 
@@ -186,7 +193,7 @@ BOOST_AUTO_TEST_CASE(test_utility_2d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_utility_test) {
-	static_assert(std::is_same<std::iterator_traits<double const*>::value_type, double>{}, "!");
+	static_assert(std::is_same_v<std::iterator_traits<int const*>::value_type, int>);
 
 	using multi::corigin;
 	using multi::dimensionality;
@@ -196,7 +203,7 @@ BOOST_AUTO_TEST_CASE(multi_utility_test) {
 	using multi::size;
 	using multi::sizes;
 	{
-		double arr[4] = {1.0, 2.0, 3.0, 4.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+		int arr[4] = { 10, 20, 30, 40 };  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 		BOOST_REQUIRE( dimensionality(arr) == 1 );
 		BOOST_REQUIRE( extension(arr).first() == 0 );
 		BOOST_REQUIRE( extension(arr).last() == 4 );
@@ -207,27 +214,28 @@ BOOST_AUTO_TEST_CASE(multi_utility_test) {
 		BOOST_REQUIRE( get<0>(sizes(arr)) == size(arr) );
 		using multi::get_allocator;
 
-		static_assert(std::is_same<decltype(get_allocator(arr)), std::allocator<double>>{});
+		static_assert(std::is_same_v<decltype(get_allocator(arr)), std::allocator<int>>);
 
 		using std::addressof;
 
 		using multi::data_elements;
-		static_assert(std::is_same<decltype(data_elements(arr)), double*>{});
+		static_assert(std::is_same_v<decltype(data_elements(arr)), int*>);
 		//  BOOST_REQUIRE( data(A) == addressof(A[0]) );
 		BOOST_REQUIRE(data_elements(arr) == addressof(arr[0]));
 	}
 	{
-		double arr[2][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
-			{1.0, 2.0, 3.0},
-			{4.0, 5.0, 6.0},
+		int arr[2][3] = {
+  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
+			{10, 20, 30},
+			{40, 50, 60},
 		};
 		BOOST_REQUIRE( dimensionality(arr) == 2 );
 		BOOST_REQUIRE( extension(arr).first() == 0 );
 		BOOST_REQUIRE( extension(arr).last() == 2 );
 
-		arr[0][0] = 99.0;
+		arr[0][0] = 990;
 
-		BOOST_REQUIRE( arr[0][0] == 99.0 );
+		BOOST_REQUIRE( arr[0][0] == 990 );
 		BOOST_REQUIRE( corigin(arr) == &arr[0][0] );
 		BOOST_REQUIRE( size(arr) == 2 );
 
