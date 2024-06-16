@@ -47,11 +47,17 @@
 #  define BOOST_TEST_MAIN
 #endif
 
-#include <boost/multi_array.hpp>
-
-#include <boost/concept_check.hpp>
-
 #include <boost/test/unit_test.hpp>
+
+#include <boost/multi/array.hpp>                 // for operator!=, implicit...
+
+#include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT
+#include <boost/concept_check.hpp>               // for Assignable, CopyCons...
+#include <boost/multi_array.hpp>                 // for multi_array
+#include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
+
+#include <iosfwd>                                // for ptrdiff_t
+#include <vector>                                // for vector
 
 BOOST_AUTO_TEST_CASE(concepts_boost_array) {
 	using BMA [[maybe_unused]] = boost::multi_array<int, 2>;  // maybe_unused for bug in nvcc 11.8
