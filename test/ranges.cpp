@@ -3,43 +3,44 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#pragma clang diagnostic ignored "-Wundef"
-#pragma clang diagnostic ignored "-Wconversion"
-#pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wundef"
-#pragma GCC diagnostic ignored "-Wconversion"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-// #pragma GCC diagnostic ignored "-Wstringop-overflow="
-// #pragma GCC diagnostic ignored "-Warray-bounds="
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #include <boost/multi/array.hpp>
 
 #include <algorithm>  // for std::ranges::fold_left
 
-// template<>
-// inline constexpr bool std::ranges::enable_borrowed_range<
-//  boost::multi::subarray<double, 2, const double*, boost::multi::layout_t<2, long int> >
-// > = true;
-
 #ifndef BOOST_TEST_MODULE
-#define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
 
 #if defined(__clang__)
-#pragma clang diagnostic pop
+	#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#pragma GCC diagnostic pop
+	#pragma GCC diagnostic pop
 #endif
+
+#include <boost/multi/array.hpp>  // for array, subarray, static_array
+
+#include <array>        // for get, array
+#include <complex>      // for complex, real, operator==, imag
+#include <iterator>     // for size, begin, end
+#include <numeric>      // for iota
+#include <type_traits>  // for is_same_v
+#include <utility>      // for pair
 
 BOOST_AUTO_TEST_CASE(range_accumulate) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -56,7 +57,7 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 		{2, 2, 4, 4},
 	};
 
-	boost::multi::array<int, 1, std::allocator<int>> aaa = {1, 2, 3};
+	boost::multi::array<int, 1, std::allocator<int>> aaa = { 1, 2, 3 };
 
 	constexpr auto rowOddSum = [](auto const& arr) {
 		return std::ranges::find_if(arr, [](auto const& row) { return (accumulate(row) & 1) == 1; });
