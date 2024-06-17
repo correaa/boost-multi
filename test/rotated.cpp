@@ -37,7 +37,7 @@
 	#include <ranges>
 #endif
 
-	namespace multi = boost::multi;
+namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 	multi::array<double, 3> arr({ 3, 4, 5 });
