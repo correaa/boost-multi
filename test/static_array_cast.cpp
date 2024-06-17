@@ -2,8 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <numeric>
-
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -189,8 +187,8 @@ BOOST_AUTO_TEST_CASE(static_array_cast_3) {
 		BOOST_REQUIRE( arr2 == neg_arr );
 	}
 	{
-		multi::static_array<int, 2> arr({ 4, 5 }, 0.0);
-		std::iota(elements(arr).begin(), elements(arr).end(), 0.0);
+		multi::static_array<int, 2> arr({ 4, 5 }, 0);
+		std::iota(elements(arr).begin(), elements(arr).end(), 0);
 
 		multi::array<int, 2> arr2({ 4, 5 });
 		std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});

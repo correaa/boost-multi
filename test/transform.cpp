@@ -55,8 +55,6 @@ constexpr inline neg_t neg;
 
 namespace test {
 
-template<class Involution, class It> class involuter;
-
 template<class Involution, class Ref>
 class involuted {
 	Ref         r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)

@@ -12,8 +12,6 @@
 // #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
 #endif
 
-#include <boost/multi/array.hpp>
-
 #if defined(__clang__)
 #  pragma clang diagnostic pop
 #elif defined(__GNUC__)
