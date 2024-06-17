@@ -1,7 +1,6 @@
 // Copyright 2019-2024 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
-
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -159,7 +158,7 @@ BOOST_AUTO_TEST_CASE(static_array_cast) {
 
 BOOST_AUTO_TEST_CASE(static_array_cast_2) {
 	multi::array<int, 2> arr({ 2, 5 });
-	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
 	auto&& ref = arr.static_array_cast<int, int const*>();
 
