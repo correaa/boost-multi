@@ -3,12 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <array>
-#include <scoped_allocator>
-#include <vector>
-
 // Suppress warnings from boost.test
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -16,14 +10,14 @@
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -31,6 +25,15 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#include <boost/multi/array.hpp>     // for static_array, array
+
+#include <cassert>                  // for assert
+#include <cstddef>                   // for size_t
+#include <cstdint>                   // for int64_t, int32_t
+#include <new>                       // for bad_alloc
+#include <scoped_allocator>          // for scoped_allocator_adaptor
+#include <vector>                    // for vector
 
 namespace multi = boost::multi;
 
