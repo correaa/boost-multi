@@ -283,7 +283,8 @@ vs2019-windows:
     - choco --version
     - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
     # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
-    - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
+    - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
+    # - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
     - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart | more
     - mkdir build
     - cmake --version
