@@ -535,7 +535,7 @@ struct layout_t<0, SSize>
 	[[nodiscard]] constexpr auto nelemss() const {return nelemss_type{};}
 
 	constexpr auto operator()() const {return offset_;}
-	constexpr explicit operator offset_type() const {return offset_;}
+	// constexpr explicit operator offset_type() const {return offset_;}
 
 	constexpr auto stride() const -> stride_type = delete;
 	constexpr auto offset() const -> offset_type {return offset_;}
