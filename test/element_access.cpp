@@ -249,7 +249,7 @@ void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& des
 
 BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 	using movable_type = std::vector<double>;
-	movable_type const movable_value(5., 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+	movable_type const movable_value(5, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 	multi::array<movable_type, 1> arr = { movable_value, movable_value, movable_value };
 	BOOST_REQUIRE( arr.size() == 3 );
