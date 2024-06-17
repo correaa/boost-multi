@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE(layout) {
 			{4, 4}
 		);
 		BOOST_REQUIRE( size(B2) == 4 );
-		B2[3][3] = 99.0;
+		B2[3][3] = 99;
 
 		auto B2copy = +B2({0, 2}, {0, 2});
 
