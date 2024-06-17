@@ -297,7 +297,7 @@ vs2019-windows:
   #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   only:
     - merge_requests
-  needs: ["clang++", "g++"]
+  # needs: ["clang++", "g++"]
 
 # vs2022-windows:
 #   stage: build
