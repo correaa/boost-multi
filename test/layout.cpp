@@ -6,29 +6,18 @@
 // Should be fixed in 18, but we know 16 and 17 are broken
 #if !(defined(__clang__) && (__clang_major__ == 16 || __clang_major__ == 17) && __cplusplus > 202002L)
 
-#include <boost/multi/array.hpp>
-#include <boost/multi/utility.hpp>
-
-#include <boost/multi/detail/tuple_zip.hpp>
-
-#include <array>
-#include <tuple>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wold-style-cast"
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable : 4244)  // 'conversion' conversion from 'type1' to 'type2', possible loss of data
@@ -39,6 +28,20 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#  pragma warning(pop)
+#endif
+
+#include <boost/multi/array.hpp>     // for range, layout_t, get, extensions_t
+
+#include <array>                     // for array
+#include <iterator>                  // for size
+#include <tuple>                     // for make_tuple, tuple
 
 namespace multi = boost::multi;
 
