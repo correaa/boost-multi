@@ -280,14 +280,17 @@ vs2019-windows:
   allow_failure: true
   script:
     - choco --version
-    - choco install -y visualstudio2019community
-    - choco install -y boost-msvc-14.2 --version 1.74.0 --x64  # --params "/StaticBuild"
+    - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
+    - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
+    - type C:\ProgramData\chocolatey\logs\chocolatey.log
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -A x64
     - cmake --build build --config Release
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
+    - Invoke-WebRequest 'https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
+    - ./boost_1_74_0-msvc-14.2-64.exe
   tags:
     - saas-windows-medium-amd64
   # rules:

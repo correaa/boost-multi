@@ -3,35 +3,51 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <numeric>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #elif defined(_MSC_VER)
-#  pragma warning(push)
-#  pragma warning(disable : 4244)  // narrowing conversion
+	#pragma warning(push)
+	#pragma warning(disable : 4244)  // narrowing conversion
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+	#pragma warning(pop)
+#endif
+
+#include <boost/multi/array.hpp>  // for array, extension_t, static_array
+
+#include <algorithm>   // for fill_n
+#include <chrono>      // for high_resolution_clock, operator-
+#include <cstdint>     // for int64_t
+#include <functional>  // for plus
+#include <iostream>    // for char_traits, basic_ostream, oper...
+#include <iterator>    // for size, data
+
+#if __has_include(<memory_resource>)
+	#include <memory_resource>  // for polymorphic_allocator, monotonic...
+#endif
+
+#include <numeric>  // for accumulate, transform_reduce
 
 namespace multi = boost::multi;
 
@@ -43,10 +59,10 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
-		std::pmr::monotonic_buffer_resource mbr{std::data(buffer), std::size(buffer)};
-		static_assert( std::size(buffer) > 6*sizeof(double) );
+		std::pmr::monotonic_buffer_resource mbr{ std::data(buffer), std::size(buffer) };
+		static_assert(std::size(buffer) > 6 * sizeof(double));
 
-		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> const arr({2, 3}, &mbr);
+		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> const arr({ 2, 3 }, &mbr);
 		BOOST_TEST( buffer[ 0] == '0' );  // buffer is intact when initializing without value
 		BOOST_TEST( buffer[13] == '3' );
 
@@ -58,9 +74,9 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
 		std::pmr::monotonic_buffer_resource mbr(std::data(buffer), std::size(buffer));
-		static_assert( std::size(buffer) > 6*sizeof(double) );
+		static_assert(std::size(buffer) > 6 * sizeof(double));
 
-		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({2, 3}, 0.0, &mbr);  // NOLINT(readability-identifier-length)
+		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({ 2, 3 }, 0.0, &mbr);  // NOLINT(readability-identifier-length)
 		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
 		//  BOOST_TEST( buffer[13] != '3' );
 
@@ -71,9 +87,9 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
 		std::pmr::monotonic_buffer_resource mbr(std::data(buffer), std::size(buffer));
-		static_assert( std::size(buffer) > 6*sizeof(double) );
+		static_assert(std::size(buffer) > 6 * sizeof(double));
 
-		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({2, 3}, {}, &mbr);
+		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({ 2, 3 }, {}, &mbr);
 		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
 		//  BOOST_TEST( buffer[13] != '3' );
 
@@ -83,10 +99,10 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 
-		std::pmr::monotonic_buffer_resource mbr{std::data(buffer), std::size(buffer)};
-		static_assert( std::size(buffer) > 6*sizeof(double) );
+		std::pmr::monotonic_buffer_resource mbr{ std::data(buffer), std::size(buffer) };
+		static_assert(std::size(buffer) > 6 * sizeof(double));
 
-		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({2, 3}, 666.0, &mbr);
+		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({ 2, 3 }, 666.0, &mbr);
 		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
 		//  BOOST_TEST( buffer[13] != '3' );
 
@@ -95,32 +111,32 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	}
 }
 
-#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
+	#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 
-	auto count = 50;
+	auto count      = 50;
 	auto start_time = std::chrono::high_resolution_clock::now();
 
-	multi::extension_t const exts{0, count};
-	auto acc = std::transform_reduce(
-		exts.begin(), exts.end(), int64_t{0},
-		std::plus<>{},
-		[&resp](auto idx) {
-			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
-				multi::extensions_t<2>{1000 - idx%10, 1000 + idx%10},  // MSVC needs multi::extensions_t<2>
-				resp
-			);
-			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
-			auto* be = arr.data_elements();
-			decltype(be) en = arr.data_elements() + arr.num_elements();
-			return std::accumulate(be, en, int64_t{}, std::plus<int64_t>{});
-		}
-	);
+	multi::extension_t const exts{ 0, count };
+	auto                     acc = std::transform_reduce(
+                                                                                                                                                                                                      exts.begin(), exts.end(), int64_t{ 0 },
+                                                                                                                                                                                                      std::plus<>{},
+                                                                                                                                                                                                      [&resp](auto idx) {
+                                                                                                                                                                                                                                                                                                         multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
+                                                                                                                                                                                                                                                                                                                                                                                                            multi::extensions_t<2>{ 1000 - idx % 10, 1000 + idx % 10 },  // MSVC needs multi::extensions_t<2>
+                                                                                                                                                                                                                                                                                                                                                                                                            resp
+                                                                                                                                                                                                                                                                                                         );
+                                                                                                                                                                                                                                                                                                         std::fill_n(arr.data_elements(), arr.num_elements(), 1);
+                                                                                                                                                                                                                                                                                                         auto*        be = arr.data_elements();
+                                                                                                                                                                                                                                                                                                         decltype(be) en = arr.data_elements() + arr.num_elements();
+                                                                                                                                                                                                                                                                                                         return std::accumulate(be, en, int64_t{}, std::plus<int64_t>{});
+                                                                                                                                                                                                      }
+                                                                                                   );
 
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
-	std::cout<< time.count() / count <<"          "<< acc << '\n';
+	std::cout << time.count() / count << "          " << acc << '\n';
 }
-#endif
+	#endif
 #endif

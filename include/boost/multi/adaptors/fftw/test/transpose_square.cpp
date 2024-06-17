@@ -16,6 +16,19 @@
 #include <string>      // for char_traits, operator""s
 #include <utility>     // for move, swap
 
+#include <algorithm>                           // for for_each, generate
+#include <boost/multi/adaptors/fftw.hpp>       // for initialize_threads
+#include <boost/multi/array.hpp>               // for array, subarray, layout_t
+#include <boost/test/tree/global_fixture.hpp>  // for global_fixture_impl
+#include <boost/test/unit_test.hpp>            // for operator<<, BOOST_PP_I...
+#include <chrono>                              // for duration, operator-
+#include <complex>                             // for operator==, complex
+#include <functional>                          // for invoke
+#include <iostream>                            // for basic_ostream, operator<<
+#include <random>                              // for uniform_real_distribution
+#include <string>                              // for char_traits, operator""s
+#include <utility>                             // for move, swap
+
 namespace multi = boost::multi;
 
 using fftw_fixture = multi::fftw::environment;

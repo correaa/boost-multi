@@ -17,10 +17,6 @@
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
-#include <boost/multi/array.hpp>
-
-#include <algorithm>  // for std::ranges::fold_left
-
 #ifndef BOOST_TEST_MODULE
 	#define BOOST_TEST_MAIN
 #endif
@@ -35,6 +31,7 @@
 
 #include <boost/multi/array.hpp>  // for array, subarray, static_array
 
+#include <algorithm>    // for std::ran
 #include <array>        // for get, array
 #include <complex>      // for complex, real, operator==, imag
 #include <iterator>     // for size, begin, end
