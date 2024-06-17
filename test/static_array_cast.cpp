@@ -2,33 +2,45 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>  // TODO(correaa) remove in c++20
-
 #include <numeric>
 
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+
+#include <boost/multi/array.hpp>
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>  // TODO(correaa) remove in c++20
+
+#include <algorithm>    // for equal
+#include <cassert>      // for assert
+#include <functional>   // for negate
+#include <iterator>     // for begin, end
+#include <memory>       // for pointer_t...
+#include <numeric>      // for iota
+#include <type_traits>  // for decay_t
+#include <utility>      // for move, dec...
 
 namespace multi = boost::multi;
 
@@ -36,14 +48,14 @@ template<class It, class F> class involuter;
 
 template<class Ref, class Involution>
 class involuted {
-	Ref                                r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+	Ref                                      r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr involuted(Ref ref, Involution fun) : r_{ref}, f_{fun} {}
-	constexpr explicit involuted(Ref ref) : r_{ref}, f_{} {}
+	constexpr involuted(Ref ref, Involution fun) : r_{ ref }, f_{ fun } {}
+	constexpr explicit involuted(Ref ref) : r_{ ref }, f_{} {}
 
 	involuted(involuted const&)     = default;
 	involuted(involuted&&) noexcept = default;
@@ -73,7 +85,7 @@ class involuted {
 
 template<class It, class F>
 class involuter {
-	It                        it_;
+	It                              it_;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
 	template<class, class> friend class involuter;
 
@@ -86,14 +98,14 @@ class involuter {
 	using reference         = involuted<typename std::iterator_traits<It>::reference, F>;
 	using value_type        = typename std::iterator_traits<It>::value_type;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
-	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{} {}  // NOLINT(readability-identifier-length) clang-tidy 14 bug
-	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
+	explicit constexpr involuter(It it) : it_{ std::move(it) }, f_{} {}  // NOLINT(readability-identifier-length) clang-tidy 14 bug
+	constexpr involuter(It it, F fun) : it_{ std::move(it) }, f_{ std::move(fun) } {}
 
 	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
-	template<class Other> constexpr involuter(involuter<Other, F> const& other) : it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}  // NOSONAR(cpp:S1709)
+	template<class Other> constexpr involuter(involuter<Other, F> const& other) : it_{ multi::detail::implicit_cast<It>(other.it_) }, f_{ other.f_ } {}  // NOSONAR(cpp:S1709)
 
-	constexpr auto operator*() const { return reference{*it_, f_}; }
-	constexpr auto operator->() const { return pointer{&*it_, f_}; }
+	constexpr auto operator*() const { return reference{ *it_, f_ }; }
+	constexpr auto operator->() const { return pointer{ &*it_, f_ }; }
 
 	constexpr auto operator==(involuter const& other) const { return it_ == other.it_; }
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
@@ -103,11 +115,11 @@ class involuter {
 		it_ += n;
 		return *this;
 	}
-	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }
-	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }
+	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{ it_ + n, f_ }; }
+	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{ it_ - n, f_ }; }
 	constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 
-	constexpr auto operator[](typename involuter::difference_type n) const { return reference{*(it_ + n), f_}; }
+	constexpr auto operator[](typename involuter::difference_type n) const { return reference{ *(it_ + n), f_ }; }
 };
 
 #if defined(__cpp_deduction_guides)
@@ -118,20 +130,20 @@ template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class Ptr> using negater = involuter<Ptr, std::negate<>>;
 
 BOOST_AUTO_TEST_CASE(multi_array_involution) {
-	double doub = 5;
+	int doub = 50;
 
-	auto&& cee = involuted<double&, std::negate<>>{doub};
-	BOOST_REQUIRE( cee == -5.0 );
+	auto&& cee = involuted<int&, std::negate<>>{ doub };
+	BOOST_REQUIRE( cee == -50 );
 
-	cee = 10.;
-	BOOST_REQUIRE( doub = -10.0 );
+	cee = 100;
+	BOOST_REQUIRE( doub = -100 );
 
-	auto m5 = involuted<double, std::negate<>>(5.0);
-	BOOST_REQUIRE( m5 == -5.0 );
+	auto m5 = involuted<int, std::negate<>>(50);
+	BOOST_REQUIRE( m5 == -50 );
 }
 
 BOOST_AUTO_TEST_CASE(static_array_cast) {
-	multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
+	multi::static_array<double, 1> arr = { 0.0, 1.0, 2.0, 3.0, 4.0 };
 
 	auto&& ref = arr.static_array_cast<double, double const*>();
 
@@ -148,10 +160,10 @@ BOOST_AUTO_TEST_CASE(static_array_cast) {
 }
 
 BOOST_AUTO_TEST_CASE(static_array_cast_2) {
-	multi::array<double, 2> arr({2, 5});
+	multi::array<int, 2> arr({ 2, 5 });
 	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
-	auto&& ref = arr.static_array_cast<double, double const*>();
+	auto&& ref = arr.static_array_cast<int, int const*>();
 
 	BOOST_REQUIRE( ref[1][1] == arr[1][1] );
 	BOOST_REQUIRE( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
@@ -165,10 +177,10 @@ BOOST_AUTO_TEST_CASE(static_array_cast_2) {
 
 BOOST_AUTO_TEST_CASE(static_array_cast_3) {
 	{
-		multi::static_array<double, 1> const arr  = {+0.0, +1.0, +2.0, +3.0, +4.0};
-		multi::static_array<double, 1>       arr2 = {-0.0, -1.0, -2.0, -3.0, -4.0};
+		multi::static_array<int, 1> const arr  = { +00, +10, +20, +30, +40 };
+		multi::static_array<int, 1>       arr2 = { -00, -10, -20, -30, -40 };
 
-		auto&& neg_arr = multi::static_array_cast<double, involuter<double*, std::negate<>>>(arr);
+		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
 
 		BOOST_REQUIRE( neg_arr[2] == arr2[2] );
 		BOOST_REQUIRE( arr2[2] == neg_arr[2] );
@@ -177,13 +189,13 @@ BOOST_AUTO_TEST_CASE(static_array_cast_3) {
 		BOOST_REQUIRE( arr2 == neg_arr );
 	}
 	{
-		multi::static_array<double, 2> arr({4, 5}, 0.0);
+		multi::static_array<int, 2> arr({ 4, 5 }, 0.0);
 		std::iota(elements(arr).begin(), elements(arr).end(), 0.0);
 
-		multi::array<double, 2> arr2({4, 5});
+		multi::array<int, 2> arr2({ 4, 5 });
 		std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
 
-		auto&& neg_arr = arr.static_array_cast<double, negater<double*>>();
+		auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
 
 		BOOST_REQUIRE( neg_arr[1][1] == arr2[1][1] );
 		BOOST_REQUIRE( arr2[1][1] == neg_arr[1][1] );

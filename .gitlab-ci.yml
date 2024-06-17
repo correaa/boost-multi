@@ -289,7 +289,7 @@ vs2019-windows:
     - cmake --build build --config Release
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
-    - wget 'https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe' -OutFile 'C:\Users\gitlab_runner\AppData\Local\Temp\boost-msvc-14.2\1.74.0\boost_1_74_0-msvc-14.2-64.exe'
+    - Invoke-WebRequest 'https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe' -OutFile 'C:\Users\gitlab_runner\AppData\Local\Temp\boost-msvc-14.2\1.74.0\boost_1_74_0-msvc-14.2-64.exe'
     - C:\Users\gitlab_runner\AppData\Local\Temp\boost-msvc-14.2\1.74.0\boost_1_74_0-msvc-14.2-64.exe
   tags:
     - saas-windows-medium-amd64
