@@ -29,12 +29,6 @@
 	#pragma GCC diagnostic pop
 #endif
 
-#include <boost/multi/array.hpp>  // for operator!=, implicit...
-
-// #include <boost/mp11.hpp>  // Boost.Test 1.67 needs test cases to be mpl list
-#include <boost/mpl/list.hpp>
-
-
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -58,6 +52,11 @@
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic pop
 #endif
+
+#include <boost/multi/array.hpp>  // for operator!=, implicit...
+
+// #include <boost/mp11.hpp>  // Boost.Test 1.67 needs test cases to be mpl list
+#include <boost/mpl/list.hpp>        // for list
 
 #include <cstddef>  // for ptrdiff_t
 #include <vector>   // for vector
