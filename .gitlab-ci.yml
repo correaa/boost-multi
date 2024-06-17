@@ -289,34 +289,13 @@ vs2019-windows:
     - cmake --build build --config Release
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
-    - Get-WebFile -url 'https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe' -fileName 'C:\Users\gitlab_runner\AppData\Local\Temp\boost-msvc-14.2\1.74.0\boost_1_74_0-msvc-14.2-64.exe'
+    - wget 'https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe' -OutFile 'C:\Users\gitlab_runner\AppData\Local\Temp\boost-msvc-14.2\1.74.0\boost_1_74_0-msvc-14.2-64.exe'
     - C:\Users\gitlab_runner\AppData\Local\Temp\boost-msvc-14.2\1.74.0\boost_1_74_0-msvc-14.2-64.exe
   tags:
     - saas-windows-medium-amd64
   # rules:
   #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   needs: ["clang++", "g++"]
-
-vs2015-windows:
-  stage: build
-  allow_failure: true
-  script:
-    - choco --version
-    - choco install -y visualstudio2015community
-    - type C:\ProgramData\chocolatey\logs\chocolatey.log
-    - choco install -y boost-msvc-14.1 --version 1.74.0  # --params "/StaticBuild"
-    - mkdir build
-    - cmake --version
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -A x64  # -DBOOST_ROOT="C:\local\boost_1_74_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_74_0\lib64-msvc-14.2"  # c:/local/boost_1_74_0/lib64-msvc-14.2
-    - cmake --build build --config Release
-    - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.1'  # C:\local\boost_1_74_0;  ;C:\Program Files\CMake\bin
-    - ctest --test-dir build --output-on-failure -C Release
-  tags:
-    - saas-windows-medium-amd64
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  needs: ["clang++", "g++"]
-  # needs: ["vs2019-windows"]
 
 # vs2022-windows:
 #   stage: build
