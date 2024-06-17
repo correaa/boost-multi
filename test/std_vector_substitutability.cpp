@@ -5,9 +5,6 @@
 
 #include <boost/multi/array.hpp>
 
-#include <complex>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -33,6 +30,12 @@
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
+
+#include <boost/multi/array.hpp>     // for array, layout_t, operator==, imp...
+
+#include <algorithm>                 // for equal
+#include <type_traits>               // for decay_t
+#include <vector>                    // for vector
 
 // workaround for libc++ and boost test
 // namespace boost::unit_test::ut_detail {
