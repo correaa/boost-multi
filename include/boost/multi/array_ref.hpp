@@ -2689,8 +2689,8 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 	constexpr auto fill()& -> decltype(auto) {return fill(typename subarray::element_type{});}
 
 	template<class TT = typename subarray::element_type>
-	constexpr auto fill(TT const& value) && -> decltype(auto) {return std::move(this->fill(value));}
-	constexpr auto fill() && -> decltype(auto) {
+	[[deprecated]] constexpr auto fill(TT const& value) && -> decltype(auto) {return std::move(this->fill(value));}
+	[[deprecated]] constexpr auto fill() && -> decltype(auto) {
 		return std::move(*this).fill(typename subarray::element_type{});
 	}
 
