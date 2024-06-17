@@ -39,7 +39,6 @@
 #include <boost/iterator/transform_iterator.hpp>
 
 #include <cstddef>  // for ptrdiff_t
-#include <iosfwd>   // for ptrdiff_t
 #include <numeric>  // for accumulate
 #include <vector>   // for vector
 

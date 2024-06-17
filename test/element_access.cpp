@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(front_back_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(front_back_1D) {
-	multi::array<int, 1> arr({ 30 }, double{});
+	multi::array<int, 1> arr({ 30 }, int{});
 	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0);
 
 	BOOST_REQUIRE(  arr.front() ==  arr[ 0] );
