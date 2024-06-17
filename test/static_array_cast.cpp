@@ -1,6 +1,7 @@
 // Copyright 2019-2024 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
+
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -40,8 +41,6 @@
 #include <utility>      // for move, dec...
 
 namespace multi = boost::multi;
-
-template<class It, class F> class involuter;
 
 template<class Ref, class Involution>
 class involuted {
