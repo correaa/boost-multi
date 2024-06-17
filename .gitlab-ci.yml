@@ -280,7 +280,7 @@ vs2019-windows:
   allow_failure: true
   script:
     - choco --version
-    - choco install -y visualstudio2019community  # 16.11.36.0
+    - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
     - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
     - type C:\ProgramData\chocolatey\logs\chocolatey.log
     - mkdir build
@@ -289,6 +289,8 @@ vs2019-windows:
     - cmake --build build --config Release
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
+    - Get-WebFile -url 'https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe' -fileName 'C:\Users\gitlab_runner\AppData\Local\Temp\boost-msvc-14.2\1.74.0\boost_1_74_0-msvc-14.2-64.exe'
+    - C:\Users\gitlab_runner\AppData\Local\Temp\boost-msvc-14.2\1.74.0\boost_1_74_0-msvc-14.2-64.exe
   tags:
     - saas-windows-medium-amd64
   # rules:
@@ -300,7 +302,7 @@ vs2015-windows:
   allow_failure: true
   script:
     - choco --version
-    - choco install -y visualstudio2017community
+    - choco install -y visualstudio2015community
     - type C:\ProgramData\chocolatey\logs\chocolatey.log
     - choco install -y boost-msvc-14.1 --version 1.74.0  # --params "/StaticBuild"
     - mkdir build
@@ -313,7 +315,8 @@ vs2015-windows:
     - saas-windows-medium-amd64
   # rules:
   #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  needs: ["vs2019-windows"]
+  needs: ["clang++", "g++"]
+  # needs: ["vs2019-windows"]
 
 # vs2022-windows:
 #   stage: build
