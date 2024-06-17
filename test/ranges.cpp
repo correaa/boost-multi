@@ -29,6 +29,8 @@
 	#pragma GCC diagnostic pop
 #endif
 
+// IWYU pragma: begin_keep  // because conditional compilation on ranges
+
 #include <boost/multi/array.hpp>  // for array, subarray, static_array
 
 #include <algorithm>    // for std::ran
@@ -38,6 +40,8 @@
 #include <numeric>      // for iota
 #include <type_traits>  // for is_same_v
 #include <utility>      // for pair
+
+// IWYU pragma: end_keep
 
 BOOST_AUTO_TEST_CASE(range_accumulate) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)

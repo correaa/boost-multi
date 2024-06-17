@@ -34,7 +34,7 @@
 #include <array>    // for array
 #include <numeric>  // for iota
 #if(__cplusplus >= 202002L)
-	#include <ranges>
+	#include <ranges>  // IWYU Pragma: keep  // conditional
 #endif
 
 namespace multi = boost::multi;
