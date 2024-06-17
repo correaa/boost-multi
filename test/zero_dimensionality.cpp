@@ -97,13 +97,11 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 	}
 	{
 		int doub = 20;
-		int dd{ multi::array_ref<int, 0>(&doub, {}) };
+		auto dd = static_cast<int>( multi::array_ref<int, 0>(&doub, {}) );
 
 		BOOST_REQUIRE( dd == doub );
 
-		multi::array_ptr<int, 1> const ap1(&doub, multi::extensions_t<1>{
-			                                          {0, 1}
-                                                                                                                                                                                                      });
+		multi::array_ptr<int, 1> const ap1(&doub, multi::extensions_t<1>({0, 1}));
 		BOOST_REQUIRE( ap1->base() == &doub );
 		BOOST_REQUIRE( (*ap1).base() == &doub );
 
