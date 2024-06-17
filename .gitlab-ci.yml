@@ -293,10 +293,10 @@ vs2019-windows:
     - ctest --test-dir build --output-on-failure -C Release
   tags:
     - saas-windows-medium-amd64
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  only:
-    - merge_requests
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  # only:
+  #   - merge_requests
   # needs: ["clang++", "g++"]
 
 # vs2022-windows:
