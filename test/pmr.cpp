@@ -36,14 +36,18 @@
 
 #include <boost/multi/array.hpp>  // for array, extension_t, static_array
 
-#include <algorithm>        // for fill_n
-#include <chrono>           // for high_resolution_clock, operator-
-#include <cstdint>          // for int64_t
-#include <functional>       // for plus
-#include <iostream>         // for char_traits, basic_ostream, oper...
-#include <iterator>         // for size, data
-#include <memory_resource>  // for polymorphic_allocator, monotonic...
-#include <numeric>          // for accumulate, transform_reduce
+#include <algorithm>   // for fill_n
+#include <chrono>      // for high_resolution_clock, operator-
+#include <cstdint>     // for int64_t
+#include <functional>  // for plus
+#include <iostream>    // for char_traits, basic_ostream, oper...
+#include <iterator>    // for size, data
+
+#if __has_include(<memory_resource>)
+	#include <memory_resource>  // for polymorphic_allocator, monotonic...
+#endif
+
+#include <numeric>  // for accumulate, transform_reduce
 
 namespace multi = boost::multi;
 
