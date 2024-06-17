@@ -295,6 +295,8 @@ vs2019-windows:
     - saas-windows-medium-amd64
   # rules:
   #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  only:
+    - merge_requests
   needs: ["clang++", "g++"]
 
 # vs2022-windows:
