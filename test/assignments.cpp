@@ -37,6 +37,7 @@
 
 #include <boost/multi/array.hpp>     // for array, apply, operator==, layout_t
 
+#include <algorithm>                 // for fill
 #include <complex>                   // for complex
 #include <cstddef>                   // for size_t
 #include <iterator>                  // for size
