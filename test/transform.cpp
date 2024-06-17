@@ -3,11 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <array>
-#include <complex>
-
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -36,7 +31,7 @@
 
 #include <boost/multi/array.hpp>  // for array, subarray, static_array
 
-#include <array>        // for array
+#include <array>        // for array  // IWYU Pragma: keep   // bug iwyu 0.22
 #include <complex>      // for complex, operator*, operator+
 #include <cstddef>      // for ptrdiff_t
 #include <functional>   // for negate
@@ -59,8 +54,6 @@ constexpr inline neg_t neg;
 }  // end namespace test
 
 namespace test {
-
-template<class Involution, class It> class involuter;
 
 template<class Involution, class Ref>
 class involuted {

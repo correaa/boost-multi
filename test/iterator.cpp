@@ -15,14 +15,14 @@
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable : 4244)
@@ -267,15 +267,15 @@ BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D) {
-	multi::array<double, 2> arr = {
-		{  1.0,   2.0},
-		{ 10.0,  20.0},
-		{100.0, 200.0}
+	multi::array<int, 2> arr = {
+		{  10,   20},
+		{ 100,  200},
+		{1000, 2000}
 	};
-	BOOST_REQUIRE( (*arr.begin())[1] == 2.0 );
+	BOOST_REQUIRE( (*arr.begin())[1] == 20 );
 	auto rbegin = std::make_reverse_iterator(arr.end());
 
-	BOOST_TEST( (*rbegin)[1] == 200.0 );
+	BOOST_TEST( (*rbegin)[1] == 2000 );
 
 	BOOST_REQUIRE( arr.begin()   < arr.begin() + 1 );
 	BOOST_REQUIRE( arr.end() - 1 < arr.end()       );

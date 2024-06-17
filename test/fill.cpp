@@ -18,14 +18,12 @@
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable : 4244)
@@ -122,27 +120,25 @@ BOOST_AUTO_TEST_CASE(fill_1d_d) {
 BOOST_AUTO_TEST_CASE(fill_member) {
 	namespace multi = boost::multi;
 
-	multi::array<double, 1> d1D = {1.0, 2.0, 3.0, 4.0};
-	d1D.fill(42.0);
+	multi::array<int, 1> d1D = {10, 20, 30, 40};
+	d1D.fill(420);
 
-	multi::array<double, 2> d2D = {
-		{150.0, 16.0, 17.0, 18.0, 19.0},
-		{  5.0,  5.0,  5.0,  5.0,  5.0},
-		{100.0, 11.0, 12.0, 13.0, 14.0},
-		{ 50.0,  6.0,  7.0,  8.0,  9.0},
+	multi::array<int, 2> d2D = {
+		{1500, 160, 170, 180, 190},
+		{  50,  50,  50,  50,  50},
+		{1000, 110, 120, 130, 140},
+		{ 500,  60,  70,  80,  90},
 	};
 
 	BOOST_REQUIRE(   d2D.elements().size()  == d2D.num_elements()  );
 	BOOST_REQUIRE(   d2D.elements().base()  == d2D.base()          );
-	BOOST_REQUIRE(   d2D.elements()[3]      == 18.0                 );
+	BOOST_REQUIRE(   d2D.elements()[3]      == 180                 );
 	BOOST_REQUIRE( &*d2D.elements().begin() == d2D.data_elements() );
 	BOOST_REQUIRE( &*d2D.elements().end()   == d2D.data_elements() + d2D.num_elements() );
 
-	//  std::fill( d2D.elements().begin(), d2D.elements().end() , 99. );
-	//  multi::adl_fill_n( d2D.elements().begin(), d2D.elements().size(), 99. );
-	d2D.elements().fill(99.0);
+	std::fill( d2D.elements().begin(), d2D.elements().end() , 990 );
 
-	BOOST_REQUIRE( d2D[1][1] == 99.0 );
+	BOOST_REQUIRE( d2D[1][1] == 990 );
 }
 
 BOOST_AUTO_TEST_CASE(fill) {
@@ -150,29 +146,29 @@ BOOST_AUTO_TEST_CASE(fill) {
 
 	namespace multi = boost::multi;
 
-	multi::array<double, 2> d2D = {
-		{150.0, 16.0, 17.0, 18.0, 19.0},
-		{  5.0,  5.0,  5.0,  5.0,  5.0},
-		{100.0, 11.0, 12.0, 13.0, 14.0},
-		{ 50.0,  6.0,  7.0,  8.0,  9.0},
+	multi::array<int, 2> d2D = {
+		{1500, 160, 170, 180, 190},
+		{  50,  50,  50,  50,  50},
+		{1000, 110, 120, 130, 140},
+		{ 500,  60,  70,  80,  90},
 	};
 	using std::all_of;
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 5.0;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 50;}) );
 
 	using std::fill;
-	fill(d2D[1].begin(), d2D[1].end(), 8.0);
+	fill(d2D[1].begin(), d2D[1].end(), 80);
 
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 8.0;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 80;}) );
 
-	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 8.0);
-	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& elem) { return elem == 8.0;}) );
+	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 80);
+	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& elem) { return elem == 80;}) );
 
-	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.0);
-	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) { return elem == 8.0;}) );
+	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 80);
+	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) { return elem == 80;}) );
 
-	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937_64(randdev())]() mutable { return gauss(gen); };  // NOSONAR
+	auto rand = [gauss = std::uniform_int_distribution<>(0, 10), gen = std::mt19937_64(randdev())]() mutable { return gauss(gen); };  // NOSONAR
 
-	multi::array<double, 2> r2D({5, 5});
+	multi::array<int, 2> r2D({5, 5});
 	std::for_each(begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); });
 }
 
