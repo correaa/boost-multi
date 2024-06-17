@@ -21,6 +21,7 @@
     { "include": ["@<boost/test/tree/auto_registration.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/tree/decorator.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/tree/test_unit.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
+    { "include": ["@<boost/test/tree/global_fixture.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/unit_test_suite.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include" :["@<boost/test/framework.hpp>", "public", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/unit_test_log.hpp>", "public", "<boost/test/unit_test.hpp>", "public"] },
