@@ -3,12 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <complex>
-#include <numeric>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -33,6 +27,22 @@
 
 #include <boost/test/unit_test.hpp>
 
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+	#pragma warning(pop)
+#endif
+
+#include <boost/multi/array.hpp>  // for transform_ptr, array, subarray
+
+#include <complex>      // for complex, operator*, operator+
+#include <numeric>      // for inner_product
+#include <type_traits>  // for declval
+#include <utility>      // for declval, forward
+#include <vector>       // for vector
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
@@ -48,7 +58,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	BOOST_REQUIRE( conjd_arr[1] == conj(arr[1]) );
 
 	//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
-	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
+	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 
 	BOOST_TEST_REQUIRE( real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0})) == std::norm(arr[0]) + std::norm(arr[1]) );
 	BOOST_REQUIRE_CLOSE(imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), 0.0, 1E-6);
@@ -274,5 +284,5 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 	auto const& const_indirect_v = indirect_v;
 
 	BOOST_REQUIRE(  const_indirect_v[1][2] ==  111110 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) testing legacy type
-	                                                     //  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
+	                                                    //  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
 }

@@ -1,15 +1,27 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuSolver potrf"
+#include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance
 #include <boost/test/unit_test.hpp>
 
-#include "../../blas/gemm.hpp"
-#include "../../blas/herk.hpp"
+#include <boost/multi/adaptors/lapack/filling.hpp>  // for filling, filling...
+#include <boost/multi/adaptors/lapack/potrf.hpp>    // for potrf
 
-#include "../../lapack/potrf.hpp"
+#include <boost/multi/adaptors/blas/complex_traits.hpp>  // for blas
+#include <boost/multi/adaptors/blas/gemm.hpp>            // for gemm
+#include <boost/multi/adaptors/blas/herk.hpp>            // for herk
+#include <boost/multi/adaptors/blas/numeric.hpp>         // for underlying
+#include <boost/multi/adaptors/blas/operations.hpp>      // for H, (anonymous)
 
-#include <iostream>
-#include <random>
+#include <boost/multi/array.hpp>  // for array, subarray
+
+#include <complex>   // for operator*, complex
+#include <iostream>  // for operator<<, ostream
+#include <limits>    // for numeric_limits
+#include <random>    // for uniform_real_dis...
+#include <string>    // for allocator, opera...
+#include <tuple>     // for tuple_element<>:...
+#include <utility>   // for forward
 
 namespace multi = boost::multi;
 // namespace lapack = multi::lapack;
@@ -42,15 +54,15 @@ template<class M> auto print(M const& arr, std::string const& msg) -> decltype(a
 	}
 	return cout << '}' << '\n';
 }
-template<class M> auto print(M const& arr, char const* msg) -> decltype(auto) { return print(arr, std::string{msg}); }  // NOLINT(fuchsia-default-arguments-calls)
+template<class M> auto print(M const& arr, char const* msg) -> decltype(auto) { return print(arr, std::string{ msg }); }  // NOLINT(fuchsia-default-arguments-calls)
 
 template<class M>
 auto randomize(M&& arr) -> M&& {
 	std::random_device dev;
-	std::mt19937       eng{dev()};
+	std::mt19937       eng{ dev() };
 
 	auto gen = [&]() {
-		auto unif = std::uniform_real_distribution<>{-1.0, 1.0};
+		auto unif = std::uniform_real_distribution<>{ -1.0, 1.0 };
 		return std::complex<double>(unif(eng), unif(eng));
 	};
 
@@ -105,7 +117,7 @@ BOOST_AUTO_TEST_CASE(orthogonalization_over_columns, *boost::unit_test::toleranc
 
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_both_sides, *boost::unit_test::tolerance(0.0000001)) {
 	double const nan = std::numeric_limits<double>::quiet_NaN();
-	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
+	auto const   I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length)
 
 	multi::array<complex, 2> const A_gold = {
 		{3.23 + 0.00 * I,  1.51 - 1.92 * I,  1.90 + 0.84 * I,  0.42 + 2.50 * I},
@@ -139,7 +151,7 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_both_sides, *boost::unit_te
 
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_upper, *boost::unit_test::tolerance(0.0000001)) {
 	double const nan = std::numeric_limits<double>::quiet_NaN();
-	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
+	auto const   I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length)
 
 	multi::array<complex, 2> const A_gold = {
 		{3.23 + 0.00 * I, 1.51 - 1.92 * I,  1.90 + 0.84 * I,  0.42 + 2.50 * I},
@@ -165,7 +177,7 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_upper, *boost::unit_test::t
 	auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
 	print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
-	print(C, "recover");  // NOLINT(fuchsia-default-arguments-calls)
+	print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
 
 	for(auto i = 0; i != 4; ++i) {
 		for(auto j = i; j != 4; ++j) {  // NOLINT(altera-id-dependent-backward-branch)  // only compare upper part of the reference array (the other half is garbage)
@@ -177,7 +189,7 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_upper, *boost::unit_test::t
 
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_test::tolerance(0.0000001)) {  // NOLINT(fuchsia-default-arguments-calls)
 	double const nan = std::numeric_limits<double>::quiet_NaN();
-	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
+	auto const   I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length)
 
 	multi::array<complex, 2> const A_gold = {
 		{3.23 + 0.00 * I, 1.51 - 1.92 * I,      1.90 + 0.84 * I,     0.42 + 2.50 * I},
@@ -195,7 +207,7 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_te
 
 	auto AA = +Adec;
 
-	for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
+	for(auto i = 0; i != AA.size(); ++i) {                                                                                             // NOLINT(altera-id-dependent-backward-branch)
 		for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops)
 			AA[i][j] = 0.0;
 		}
@@ -204,9 +216,9 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_te
 	auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
 	print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
-	print(C, "recover");  // NOLINT(fuchsia-default-arguments-calls)
+	print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
 
-	for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
+	for(auto i = 0; i != AA.size(); ++i) {                                                                                                                  // NOLINT(altera-id-dependent-backward-branch)
 		for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // only compare upper part of the reference array (the other half is garbage)  // NOLINT(altera-id-dependent-backward-branch)
 			BOOST_TEST( real(A_gold[i][j]) == real(C[i][j]) );
 			BOOST_TEST( imag(A_gold[i][j]) == imag(C[i][j]) );
@@ -216,7 +228,7 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_te
 
 BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit_test::tolerance(0.0000001)) {  // NOLINT(fuchsia-default-arguments-calls)
 	double const nan = std::numeric_limits<double>::quiet_NaN();
-	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
+	auto const   I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length)
 
 	multi::array<complex, 2> const A_gold = {
 		{1.00 + 0.00 * I, 0.00 - 0.00 * I,  0.00 + 0.00 * I,  0.00 + 0.00 * I},
@@ -234,7 +246,7 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit
 
 	auto AA = +Adec;
 
-	for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
+	for(auto i = 0; i != AA.size(); ++i) {                                                                                             // NOLINT(altera-id-dependent-backward-branch)
 		for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops)
 			AA[i][j] = 0.0;
 		}
@@ -243,9 +255,9 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit
 	auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
 	print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
-	print(C, "recover");  // NOLINT(fuchsia-default-arguments-calls)
+	print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
 
-	for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
+	for(auto i = 0; i != AA.size(); ++i) {                                                                                                                  // NOLINT(altera-id-dependent-backward-branch)
 		for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // only compare upper part of the reference array (the other half is garbage)  // NOLINT(altera-id-dependent-backward-branch)
 			BOOST_TEST( real(A_gold[i][j]) == real(C[i][j]) );
 			BOOST_TEST( imag(A_gold[i][j]) == imag(C[i][j]) );
@@ -255,7 +267,7 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_nontrivial_imperfect, *boost::unit
 
 BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001)) {
 	double const nan = std::numeric_limits<double>::quiet_NaN();
-	auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
+	auto const   I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length)
 
 	{
 		// NOLINTNEXTLINE(readability-identifier-length)
@@ -277,7 +289,7 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001)) {
 		//  BOOST_TEST( A[2][1] != A[2][1] );
 		print(A, "decomposition");
 
-		multi::array<complex, 2> C(A.extensions(), complex{0.0, 0.0});  // NOLINT(readability-identifier-length) conventional lapack name
+		multi::array<complex, 2> C(A.extensions(), complex{ 0.0, 0.0 });  // NOLINT(readability-identifier-length) conventional lapack name
 
 		multi::array<complex, 2> AA = A;
 
@@ -288,7 +300,7 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001)) {
 			}
 		}
 
-		blas::gemm(complex{1.0, 0.0}, blas::H(AA), AA, complex{0.0, 0.0}, C);
+		blas::gemm(complex{ 1.0, 0.0 }, blas::H(AA), AA, complex{ 0.0, 0.0 }, C);
 
 		print(C, "recovery");
 	}

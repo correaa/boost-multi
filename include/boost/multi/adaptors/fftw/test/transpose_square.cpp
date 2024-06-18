@@ -2,32 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>  // for operator<<, BOOST_PP_IIF_1
 
-#include <boost/multi/adaptors/fftw.hpp>
-#include <boost/multi/array.hpp>
+#include <boost/multi/adaptors/fftw.hpp>  // for initialize_threads, environ...
+#include <boost/multi/array.hpp>          // for array, subarray, layout_t
 
 #include <algorithm>   // for for_each, generate
-#include <chrono>      // for duration, operator-  // NOLINT(build/c++11)
+#include <chrono>      // for duration, operator-, high_r...
 #include <complex>     // for operator==, complex
 #include <functional>  // for invoke
 #include <iostream>    // for basic_ostream, operator<<
 #include <random>      // for uniform_real_distribution
 #include <string>      // for char_traits, operator""s
 #include <utility>     // for move, swap
-
-#include <algorithm>                           // for for_each, generate
-#include <boost/multi/adaptors/fftw.hpp>       // for initialize_threads
-#include <boost/multi/array.hpp>               // for array, subarray, layout_t
-#include <boost/test/tree/global_fixture.hpp>  // for global_fixture_impl
-#include <boost/test/unit_test.hpp>            // for operator<<, BOOST_PP_I...
-#include <chrono>                              // for duration, operator-
-#include <complex>                             // for operator==, complex
-#include <functional>                          // for invoke
-#include <iostream>                            // for basic_ostream, operator<<
-#include <random>                              // for uniform_real_distribution
-#include <string>                              // for char_traits, operator""s
-#include <utility>                             // for move, swap
 
 namespace multi = boost::multi;
 
