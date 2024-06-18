@@ -24,7 +24,6 @@ variables:
   NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
-  msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
 
 g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: build

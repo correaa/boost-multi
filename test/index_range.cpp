@@ -38,9 +38,11 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 
-#include <cstddef>  // for ptrdiff_t
-#include <numeric>  // for accumulate
-#include <vector>   // for vector
+#include <algorithm>              // for equal
+#include <boost/multi_array.hpp>  // for operator!=
+#include <cstddef>                // for ptrdiff_t
+#include <numeric>                // for accumulate
+#include <vector>                 // for vector
 
 namespace multi = boost::multi;
 
@@ -51,7 +53,8 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 	BOOST_REQUIRE(( multi::range<std::ptrdiff_t>{5, 5}.empty() ));
 #endif
 	{
-		auto             drng = multi::range<std::ptrdiff_t>{ 5, 10 };
+		auto drng = multi::range<std::ptrdiff_t>{ 5, 10 };
+
 		std::vector<int> vec(drng.begin(), drng.end());  // testing std::vector NOLINT(fuchsia-default-arguments-calls)
 		BOOST_REQUIRE( vec[1] == 6 );
 	}

@@ -32,7 +32,6 @@
 #include <boost/multi/array_ref.hpp>  // for array_ptr, array_ref, subarray
 
 #include <array>        // for array
-#include <cstddef>      // for ptrdiff_t
 #include <iterator>     // for iterator_traits
 #include <memory>       // for allocator
 #include <type_traits>  // for is_same, is_convertible, enable...

@@ -41,15 +41,11 @@
 	#pragma GCC diagnostic ignored "-Wconversion"
 #endif
 
-// IWYU pragma: begin_keep  // iwyu gets confused?
-
-#include <boost/concept/assert.hpp>  // for BOOST_CONCEPT_ASSERT
-#include <boost/concept_check.hpp>   // for Assignable, CopyCons...
-#include <boost/iterator/iterator_facade.hpp>  // for operator-
-#include <boost/multi_array.hpp>                 // for multi_array
-#include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
-
-// IWYU pragma: end_keep  // iwyu gets confused?
+#include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT  // IWYU pragma: keep
+#include <boost/concept_check.hpp>               // for Assignable, CopyCons...  // IWYU pragma: keep
+#include <boost/iterator/iterator_facade.hpp>    // for operator-  // IWYU pragma: keep
+#include <boost/multi_array.hpp>                 // for multi_array  // IWYU pragma: keep
+#include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept  // IWYU pragma: keep
 
 #if defined(__clang__)
 	#pragma clang diagnostic pop
@@ -60,14 +56,10 @@
 #include <boost/multi/array.hpp>  // for operator!=, implicit...
 
 // #include <boost/mp11.hpp>  // Boost.Test 1.67 needs test cases to be mpl list
-#include <boost/mpl/list.hpp>        // for list
+#include <boost/mpl/list.hpp>  // for list
 
-// IWYU pragma: begin_keep  // iwyu gets confused?
-
-#include <cstddef>  // for ptrdiff_t
-#include <vector>   // for vector
-
-// IWYU pragma: end_keep  // iwyu gets confused?
+#include <cstddef>  // for ptrdiff_t  // IWYU pragma: keep
+#include <vector>   // for vector  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 

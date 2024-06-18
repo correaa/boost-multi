@@ -23,6 +23,12 @@
 
 #include <boost/test/unit_test.hpp>
 
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+
 #include <boost/multi/array.hpp>  // for implicit_cast, explicit_cast
 
 #include <algorithm>    // for for_each, equal
@@ -33,7 +39,9 @@
 #include <iterator>     // for size
 #include <memory>       // for allocator, unique_ptr
 #include <numeric>      // for accumulate, iota
+#include <span>         // for span
 #include <string>       // for basic_string, operator""s, string
+#include <tuple>        // for tuple_element<>::type, __tuple_e...
 #include <type_traits>  // for remove_reference, remove_const
 #include <typeinfo>     // for bad_cast
 #include <utility>      // for as_const, move
@@ -58,7 +66,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 
 	BOOST_REQUIRE( &mar[1][1] == &arr[1][1] );
 
-	mar[1][1] = 9.0;
+	mar[1][1] = 90;
 	BOOST_REQUIRE( &mar[1][1] == &arr[1][1] );
 
 	auto const& a_const = arr;
@@ -1050,9 +1058,10 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 
 template<class T>
 auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
-	arr[0][1] = 4.0;
+	arr[0][1] = 40;
 
 	auto const& diag = arr.diagonal();
+
 	return std::accumulate(diag.begin(), diag.end(), T{ 0 });
 }
 
