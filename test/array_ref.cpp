@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	int arr[][4] = {
 		{},
-		{  00,  10,  20,  30 },
-		{  50,  60,  70,  80 },
+		{ 00, 10, 20, 30 },
+		{ 50, 60, 70, 80 },
 		{ 100, 110, 120, 130 },
 		{ 150, 160, 170, 180 },
 		{},
@@ -1014,24 +1014,25 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 
 #if __cplusplus > 202002L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
-	auto buffer = std::make_unique<double[]>(9);
-	std::fill_n(buffer.get(), 9, 1.0);
+	auto buffer = std::make_unique<int[]>(9);
+	std::fill_n(buffer.get(), 9, 1);
 
-	multi::array<double, 2> const     arr({ 3, 3 }, 1.0);
-	multi::array_ref<double, 2> const aref(buffer.get(), { 3, 3 });
-	auto const&                       asub = arr({ 0, 3 }, { 0, 3 });
+	multi::array<int, 2> const     arr({ 3, 3 }, 1);
+	multi::array_ref<int, 2> const aref(buffer.get(), { 3, 3 });
+
+	auto const& asub = arr({ 0, 3 }, { 0, 3 });
 
 	auto deduce_array = []<class Arr>(Arr const& a) { return std::accumulate(a.diagonal().begin(), a.diagonal().end(), typename Arr::element_type{ 0 }); };  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
-	BOOST_REQUIRE( deduce_array(arr) == 3 );
-	BOOST_REQUIRE( deduce_array(aref) == 3 );
-	BOOST_REQUIRE( deduce_array(asub) == 3 );
+	BOOST_TEST( deduce_array(arr ) == 3 );
+	BOOST_TEST( deduce_array(aref) == 3 );
+	BOOST_TEST( deduce_array(asub) == 3 );
 
 	auto deduce_element = []<class T>(multi::array<T, 2> const& a) { return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{ 0 }); };  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
 	BOOST_REQUIRE( deduce_element(arr) == 3 );
-	// BOOST_REQUIRE( deduce_element(aref) == 3 );
-	// BOOST_REQUIRE( deduce_element(asub) == 3 );
+	// BOOST_REQUIRE( deduce_element(aref) == 30 );
+	// BOOST_REQUIRE( deduce_element(asub) == 30 );
 
 	auto deduce_element_ref = []<class T>(multi::array_ref<T, 2> const& a) { return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{ 0 }); };  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
