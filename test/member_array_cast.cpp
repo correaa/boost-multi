@@ -15,9 +15,6 @@
 	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
-#elif defined(_MSC_VER)
-	#pragma warning(push)
-	#pragma warning(disable : 4324)  // Explicit padding required
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -43,6 +40,11 @@
 #include <string>      // for operator""s, allocator, char_traits
 #include <tuple>       // for tie, operator==, tuple
 #include <utility>     // for addressof
+
+#if defined(_MSC_VER)
+	#pragma warning(push)
+	#pragma warning(disable : 4324)  // Explicit padding required, for particle example
+#endif
 
 namespace multi = boost::multi;
 
