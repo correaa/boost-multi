@@ -12,6 +12,10 @@ image: npneq/debian_inq_deps:bookworm
 workflow:
   auto_cancel:
     on_new_commit: interruptible
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
