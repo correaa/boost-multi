@@ -35,7 +35,10 @@
 #include <complex>          // for complex, operator==
 #include <iosfwd>           // for __GLIBCXX__
 #include <iterator>         // for data
-#include <memory_resource>  // for monotonic_buffer_resource
+
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
+	#include <memory_resource>  // for monotonic_buffer_resource
+#endif
 
 namespace multi = boost::multi;
 
