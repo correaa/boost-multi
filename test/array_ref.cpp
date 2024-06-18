@@ -88,20 +88,20 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 
 BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	double arr[4][4] = {
-		{ 0.0,  1.0,  2.0,  3.0},
-		{ 5.0,  6.0,  7.0,  8.0},
-		{10.0, 11.0, 12.0, 13.0},
-		{15.0, 16.0, 17.0, 18.0},
+	int arr[4][4] = {
+		{  0,  10,  20,  30},
+		{ 50,  60,  70,  80},
+		{100, 110, 120, 130},
+		{150, 160, 170, 180},
 	};
 
-	multi::array_ref<double, 2> const map{ arr };  // multi::array_ref<double, 2> const map(&arr[0][0], {4, 4});
+	multi::array_ref<int, 2> const map{ arr };  // multi::array_ref<double, 2> const map(&arr[0][0], {4, 4});
 
 	auto const& diag = map.diagonal();
 
 	BOOST_REQUIRE( diag.begin() != diag.end() );
 	// -Werror=array-bounds
-	// BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+	// BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 6 + 12 + 18 );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
