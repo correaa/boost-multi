@@ -31,6 +31,7 @@
 #include <cassert>           // for assert
 #include <cstddef>           // for size_t
 #include <cstdint>           // for int64_t, int32_t
+#include <memory>            // for allocator_traits<>::value_type  // IWYU pragma: keep  // bug in iwyu 0.22
 #include <new>               // for bad_alloc
 #include <scoped_allocator>  // for scoped_allocator_adaptor
 #include <vector>            // for vector

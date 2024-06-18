@@ -12,6 +12,9 @@ image: npneq/debian_inq_deps:bookworm
 workflow:
   auto_cancel:
     on_new_commit: interruptible
+  # rules:
+  #   - if: $CI_COMMIT_TAG
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -20,7 +23,6 @@ variables:
   NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
-  msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
 
 g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: build
@@ -152,7 +154,7 @@ clang++ sanitizer:
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"  # ,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-omit-frame-pointer -fno-sanitize-recover=all"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     # - ASAN_OPTIONS="check_initialization_order=1" 
-    - ASAN_OPTIONS="new_delete_type_mismatch=1" ctest -j 2 --output-on-failure -T Test
+    - ctest -j 2 --output-on-failure -T Test
   needs: ["clang++"]
 
 g++ sanitizer:
@@ -278,24 +280,26 @@ clang++-latest libc++:
 vs2019-windows:
   stage: build
   allow_failure: true
+  interruptible: true
   script:
     - choco --version
     - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
-    - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
-    - type C:\ProgramData\chocolatey\logs\chocolatey.log
+    # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
+    - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
+    # - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
+    - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart | more
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -A x64
-    - cmake --build build --config Release
+    - cmake --build build --config Release --parallel 2
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
-    - Invoke-WebRequest 'https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
-    - ./boost_1_74_0-msvc-14.2-64.exe
   tags:
     - saas-windows-medium-amd64
-  # rules:
-  #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   needs: ["clang++", "g++"]
+  # rules:
+  #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  #   - when: never
 
 # vs2022-windows:
 #   stage: build
@@ -398,7 +402,7 @@ clang++-testing tidy iwuy:
     - clang++-18 --version
     - clang-tidy-18 --version
     - iwyu --version
-    - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp"
+    - CXX=clang++-18 cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]

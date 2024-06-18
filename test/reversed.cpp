@@ -1,38 +1,42 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
 
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+
+#include <boost/multi/array.hpp>
+
+#include <utility>  // for forward
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_reversed_3d) {
-	multi::array<double, 3> arr({30, 40, 50});
+	multi::array<double, 3> arr({ 30, 40, 50 });
 
 	BOOST_TEST_REQUIRE( arr.reversed().size() == 50 );
 
@@ -50,12 +54,11 @@ auto partitioned_last(Array&& arr, multi::size_type n) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
-	multi::array<double, 4> arr({13, 5, 7, 11});
+	multi::array<double, 4> arr({ 13, 5, 7, 11 });
 
 	BOOST_TEST_REQUIRE( arr.reversed().size() == 11 );
 
 	BOOST_REQUIRE( &arr.reversed()[1][2][3][4] == &arr[4][3][2][1] );
-
 
 	BOOST_REQUIRE( std::get<0>( arr.reversed().transposed().flatted().reversed().sizes() ) == 13 );
 	BOOST_REQUIRE( std::get<1>( arr.reversed().transposed().flatted().reversed().sizes() ) ==  5 );
@@ -72,7 +75,7 @@ BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_reversed_4d_partition_last) {
-	multi::array<double, 4> arr({11, 5, 7, 12});
+	multi::array<double, 4> arr({ 11, 5, 7, 12 });
 
 	BOOST_REQUIRE( arr.reversed().size() == 12 );
 

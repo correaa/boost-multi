@@ -3,21 +3,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// Suppress warnings from boost.test
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wundef"
 	#pragma clang diagnostic ignored "-Wconversion"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -26,17 +23,27 @@
 
 #include <boost/test/unit_test.hpp>
 
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+
 #include <boost/multi/array.hpp>  // for implicit_cast, explicit_cast
 
-#include <algorithm>    // for for_each, equal
-#include <array>        // for array
-#include <cassert>      // for assert
-#include <cstdint>      // for int64_t
-#include <iostream>     // for char_traits, operator<<, basic_o...
-#include <iterator>     // for size
-#include <memory>       // for allocator, unique_ptr
-#include <numeric>      // for accumulate, iota
+#include <algorithm>  // for for_each, equal
+#include <array>      // for array
+#include <cassert>    // for assert
+#include <cstdint>    // for int64_t
+#include <iostream>   // for char_traits, operator<<, basic_o...
+#include <iterator>   // for size
+#include <memory>     // for allocator, unique_ptr
+#include <numeric>    // for accumulate, iota
+#ifdef BOOST_MULTI_HAS_SPAN
+	#include <span>  // for span
+#endif
 #include <string>       // for basic_string, operator""s, string
+#include <tuple>        // for tuple_element<>::type, __tuple_e...
 #include <type_traits>  // for remove_reference, remove_const
 #include <typeinfo>     // for bad_cast
 #include <utility>      // for as_const, move
@@ -46,26 +53,26 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	double arr[4][5] = {
-		{ 0.0,  1.0,  2.0,  3.0,  4.0},
-		{ 5.0,  6.0,  7.0,  8.0,  9.0},
-		{10.0, 11.0, 12.0, 13.0, 14.0},
-		{15.0, 16.0, 17.0, 18.0, 19.0},
+	int arr[4][5] = {
+		{  0,  10,  20,  30,  40},
+		{ 50,  60,  70,  80,  90},
+		{100, 110, 120, 130, 140},
+		{150, 160, 170, 180, 190},
 	};
 
-	multi::array_ptr<double, 2> const map{ &arr };
+	multi::array_ptr<int, 2> const map{ &arr };
 	BOOST_REQUIRE( &map->operator[](1)[1] == &arr[1][1] );
-	BOOST_REQUIRE( (*&arr)[1][1] == 6.0 );
+	BOOST_REQUIRE( (*&arr)[1][1] == 60 );
 
-	multi::array_ref<double, 2>&& mar = *map;
+	multi::array_ref<int, 2>&& mar = *map;
 
 	BOOST_REQUIRE( &mar[1][1] == &arr[1][1] );
 
-	mar[1][1] = 9.0;
+	mar[1][1] = 90;
 	BOOST_REQUIRE( &mar[1][1] == &arr[1][1] );
 
 	auto const& a_const = arr;
-	//  double const(&a_const)[4][5] = a;
+	//  int const(&a_const)[4][5] = a;
 	BOOST_REQUIRE(&a_const[1][1] == &arr[1][1]);
 
 	static_assert(decltype(mar(2, { 1, 3 }))::rank_v == 1);
@@ -73,7 +80,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	BOOST_REQUIRE( size(mar(2, {1, 3})) == 2 );
 	BOOST_REQUIRE( &mar(2, {1, 3})[1] == &arr[2][2] );
 
-	[[maybe_unused]] multi::array_ref<double, 2> const& cmar = *map;
+	[[maybe_unused]] multi::array_ref<int, 2> const& cmar = *map;
 	// *(cmar.base()) = 99.0;
 	// *(cmar[0].base()) = 88.0;
 	// *(cmar.data_elements()) = 99.0;
@@ -81,68 +88,68 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 
 BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	double arr[4][4] = {
-		{ 0.0,  1.0,  2.0,  3.0},
-		{ 5.0,  6.0,  7.0,  8.0},
-		{10.0, 11.0, 12.0, 13.0},
-		{15.0, 16.0, 17.0, 18.0},
+	int arr[4][4] = {
+		{  0,  10,  20,  30},
+		{ 50,  60,  70,  80},
+		{100, 110, 120, 130},
+		{150, 160, 170, 180},
 	};
 
-	multi::array_ref<double, 2> const map{ arr };  // multi::array_ref<double, 2> const map(&arr[0][0], {4, 4});
+	multi::array_ref<int, 2> const map{ arr };  // multi::array_ref<double, 2> const map(&arr[0][0], {4, 4});
 
 	auto const& diag = map.diagonal();
 
 	BOOST_REQUIRE( diag.begin() != diag.end() );
 	// -Werror=array-bounds
-	// BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+	// BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 6 + 12 + 18 );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	double arr[5][4] = {
-		{ 0.0,  1.0,  2.0,  3.0},
-		{ 5.0,  6.0,  7.0,  8.0},
-		{10.0, 11.0, 12.0, 13.0},
-		{15.0, 16.0, 17.0, 18.0},
+	int arr[5][4] = {
+		{ 00,  10,  20,  30},
+		{ 50,  60,  70,  80},
+		{100, 110, 120, 130},
+		{150, 160, 170, 180},
 	};
 
-	multi::array_ref<double, 2> const map(&arr[0][0], { 4, 4 });
-	// multi::array_ref<double, 2> const map{reinterpret_cast<double(&)[4][4]>(arr)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	multi::array_ref<int, 2> const map(&arr[0][0], { 4, 4 });
+	// multi::array_ref<int, 2> const map{reinterpret_cast<int(&)[4][4]>(arr)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	auto const& diag = map.diagonal();
 	BOOST_REQUIRE( diag.begin() != diag.end() );
-	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 60 + 120 + 180 );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	double arr[][4] = {
+	int arr[][4] = {
 		{},
-		{ 0.0, 1.0, 2.0, 3.0 },
-		{ 5.0, 6.0, 7.0, 8.0 },
-		{ 10.0, 11.0, 12.0, 13.0 },
-		{ 15.0, 16.0, 17.0, 18.0 },
+		{ 00, 10, 20, 30 },
+		{ 50, 60, 70, 80 },
+		{ 100, 110, 120, 130 },
+		{ 150, 160, 170, 180 },
 		{},
 	};
 
-	multi::array_ref<double, 2> const map(&arr[1][0], { 4, 4 });
+	multi::array_ref<int, 2> const map(&arr[1][0], { 4, 4 });
 	// multi::array_ref<double, 2> const map{reinterpret_cast<double(&)[4][4]>(arr)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	auto const& diag = map.diagonal();
 	BOOST_REQUIRE( diag.begin() != diag.end() );
-	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );
+	BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 60 + 120 + 180 );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_unique_ptr) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for illustration
-	std::unique_ptr<double const[]> const arrp(new double const [4UL * 4UL] { 0.0, 1.0, 2.0, 3.0, 5.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 18.0 });
+	std::unique_ptr<int const[]> const arrp(new int const [4UL * 4UL] { 0, 10, 20, 30, 50, 60, 70, 80, 100, 110, 120, 130, 150, 160, 170, 180 });
 
-	BOOST_REQUIRE( arrp[3] == 3.0 );
+	BOOST_REQUIRE( arrp[3] == 30 );
 	{
-		multi::array_ref<double, 2, double const*> const map(arrp.get(), { 4, 4 });  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::array_ref<int, 2, int const*> const map(arrp.get(), { 4, 4 });  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto const& diag = map.diagonal();
 
 		BOOST_REQUIRE( diag.begin() != diag.end() );
-		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 0.0) == 0.0 + 6.0 + 12.0 + 18.0 );  // is this UB?
+		BOOST_REQUIRE( std::accumulate(diag.begin(), diag.end(), 00) == 00 + 60 + 120 + 180 );  // is this UB?
 	}
 }
 
@@ -186,12 +193,14 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
-	std::array<std::array<double, 5>, 4> arr = {
-		{{ { 0.0, 1.0, 2.0, 3.0, 4.0 } },
-                                                                                                                                                                                                       { { 5.0, 6.0, 7.0, 8.0, 9.0 } },
-                                                                                                                                                                                                       { { 10.0, 11.0, 12.0, 13.0, 14.0 } },
-                                                                                                                                                                                                       { { 15.0, 16.0, 17.0, 18.0, 19.0 } }},
-	};
+	// clang-format off
+	std::array<std::array<double, 5>, 4> arr = {{
+		{ { 0.0, 1.0, 2.0, 3.0, 4.0 } },
+		{ { 5.0, 6.0, 7.0, 8.0, 9.0 } },
+		{ { 10.0, 11.0, 12.0, 13.0, 14.0 } },
+		{ { 15.0, 16.0, 17.0, 18.0, 19.0 } }
+	}};
+	// clang-format on
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
 	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
@@ -652,11 +661,11 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 
 BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	double d2D[4][5] = {
-		{1.0, 2.0},
-		{2.0, 3.0},
+	int d2D[4][5] = {
+		{10, 20},
+		{20, 30},
 	};
-	multi::array_ref<double, 2> d2R(&d2D[0][0], { 4, 5 });
+	multi::array_ref<int, 2> d2R(&d2D[0][0], { 4, 5 });
 
 	auto&& d2B     = d2R();
 	auto&& d2B_ref = multi::ref(d2B.begin(), d2B.end());
@@ -727,45 +736,45 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 }
 
-auto f1d5(double const (&carr)[5]) -> double;   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-auto f1d5(double const (&carr)[5]) -> double {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(int const (&carr)[5]) -> int;   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto f1d5(int const (&carr)[5]) -> int {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	return carr[1];
 }
 
-void f2d54(double const (&carr)[5][4]);   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-void f2d54(double const (&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	BOOST_REQUIRE(carr[0][1] == 1.0);
+void f2d54(int const (&carr)[5][4]);   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void f2d54(int const (&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	BOOST_REQUIRE(carr[0][1] == 1);
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
-	multi::array<double, 1> arr({ 5 }, double{});
+	multi::array<int, 1> arr({ 5 }, int{});
 	BOOST_REQUIRE( arr.size() == 5 );
-	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
 	{
-		auto& carr = static_cast<double(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		auto& carr = static_cast<int(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3] == &arr[3] );
 
-		BOOST_REQUIRE(f1d5(static_cast<double(&)[5]>(arr)) == 1.0);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		BOOST_REQUIRE(f1d5(static_cast<int(&)[5]>(arr)) == 1 );  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 	{
-		double(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		int(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3] == &arr[3] );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
-	multi::array<double, 2> arr({ 5, 4 });
-	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+	multi::array<int, 2> arr({ 5, 4 });
+	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
 	{
-		auto& carr = static_cast<double(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		auto& carr = static_cast<int(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
-		f2d54(static_cast<double(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		f2d54(static_cast<int(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 	{
-		double(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		int(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 		//  f2d54((double(&)[5][4])(arr));  // this will warn with -Wold-style-cast NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
@@ -869,21 +878,21 @@ BOOST_AUTO_TEST_CASE(as_span) {
 
 BOOST_AUTO_TEST_CASE(diagonal) {
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
-	double arr[4][3] = {
-		{ 0.0,  1.0,  2.0},
-		{ 5.0,  1.0,  7.0},
-		{10.0, 11.0,  2.0},
-		{99.0, 99.0, 99.9},
+	int arr[4][3] = {
+		{  0,  10,  20},
+		{ 50,  10,  70},
+		{100, 110,  20},
+		{990, 990, 999},
 	};
 
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): special type
-	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
+	multi::array_ref<int, 2> mar = *multi::array_ptr<int, 2>(&arr);
 
 	BOOST_REQUIRE( &mar({0, 3}, {0, 3}).diagonal()[0] == &arr[0][0] );
 	BOOST_REQUIRE( &mar({0, 3}, {0, 3}).diagonal()[1] == &arr[1][1] );
 	BOOST_REQUIRE( &mar({0, 3}, {0, 3}).diagonal()[2] == &arr[2][2] );
 
-	auto sum = 0.0;
+	auto sum = 0;
 
 	// NOLINTNEXTLINE(altera-unroll-loops) test for-range loop
 	for(auto const& aii : mar.diagonal()) {
@@ -937,7 +946,7 @@ auto trace_array_deduce(multi::array<T, 2> const& arr) -> T {
 	return std::accumulate(diag.begin(), diag.end(), T{ 0 });
 }
 
-template double trace_array_deduce(multi::array<double, 2> const&);
+template int trace_array_deduce(multi::array<int, 2> const&);
 
 template<class Array, typename T = typename Array::element_type>
 auto trace_generic(Array const& arr) -> T {
@@ -945,68 +954,68 @@ auto trace_generic(Array const& arr) -> T {
 	return std::accumulate(diag.begin(), diag.end(), T{ 0 });
 }
 
-template double trace_generic<multi::array<double, 2>>(multi::array<double, 2> const&);
+template double trace_generic<multi::array<int, 2>>(multi::array<int, 2> const&);
 
-inline auto trace_separate_ref(multi::array_ref<double, 2> const& arr) -> double {
+inline auto trace_separate_ref(multi::array_ref<int, 2> const& arr) -> int {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0.0);
+	return std::accumulate(diag.begin(), diag.end(), 0);
 }
 
-inline auto trace_separate_sub(multi::subarray<double, 2> const& arr) -> double {
+inline auto trace_separate_sub(multi::subarray<int, 2> const& arr) -> int {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0.0);
+	return std::accumulate(diag.begin(), diag.end(), 0);
 }
 
-inline auto trace_separate_ref2(multi::array_const_view<double, 2> arr) -> double {
+inline auto trace_separate_ref2(multi::array_const_view<int, 2> arr) -> int {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0.0);
-}
-
-// unusable for arrays
-inline auto trace_separate_ref3(multi::array_view<double, 2> arr) -> double {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0.0);
+	return std::accumulate(diag.begin(), diag.end(), 0);
 }
 
 // unusable for arrays
-inline auto trace_separate_ref4(multi::array_ref<double, 2> arr) -> double {
+inline auto trace_separate_ref3(multi::array_view<int, 2> arr) -> int {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0.0);
+	return std::accumulate(diag.begin(), diag.end(), 0);
 }
 
 // unusable for arrays
-inline auto trace_separate_sub4(multi::subarray<double, 2> arr) -> double {
+inline auto trace_separate_ref4(multi::array_ref<int, 2> arr) -> int {
 	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0.0);
+	return std::accumulate(diag.begin(), diag.end(), 0);
+}
+
+// unusable for arrays
+inline auto trace_separate_sub4(multi::subarray<int, 2> arr) -> int {
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(function_passing_3) {
-	multi::array<double, 2> const arr({ 3, 3 }, 1.0);
+	multi::array<int, 2> const arr({ 3, 3 }, 10);
 
-	BOOST_REQUIRE( trace_array_deduce        (arr) == 3 );
-	BOOST_REQUIRE( trace_array_deduce<double>(arr) == 3 );
+	BOOST_REQUIRE( trace_array_deduce     (arr) == 30 );
+	BOOST_REQUIRE( trace_array_deduce<int>(arr) == 30 );
 
-	multi::array<double, 2> const arr_paren_copy(arr());
+	multi::array<int, 2> const arr_paren_copy(arr());
 	BOOST_REQUIRE( arr_paren_copy.size() == 3 );
 
-	BOOST_REQUIRE(  trace_generic                              (arr) == 3  );
-	BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr) == 3 ));
-	//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr) == 3 ));  // can't generate element_type
+	BOOST_REQUIRE(  trace_generic                       (arr) == 30  );
+	BOOST_REQUIRE(( trace_generic<multi::array<int, 2> >(arr) == 30 ));
+	//  BOOST_REQUIRE(( trace_generic<multi::array    <int, 2>&>(arr) == 3 ));  // can't generate element_type
 
-	BOOST_REQUIRE(  trace_generic                              (arr()) == 3  );
-	BOOST_REQUIRE(( trace_generic<multi::array    <double, 2> >(arr()) == 3 ));  // this will make a copy
-	//  BOOST_REQUIRE(( trace_generic<multi::array    <double, 2>&>(arr()) == 3 ));  // can't generate element_type
+	BOOST_REQUIRE(  trace_generic                       (arr()) == 30  );
+	BOOST_REQUIRE(( trace_generic<multi::array<int, 2> >(arr()) == 30 ));  // this will make a copy
+	//  BOOST_REQUIRE(( trace_generic<multi::array<int, 2>&>(arr()) == 3 ));  // can't generate element_type
 
-	BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2> >(arr) == 3 ));
-	//  BOOST_REQUIRE(( trace_generic<multi::array_ref<double, 2>&>(arr) == 3 ));  // can't generate element_type
-	BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr) == 3 ));
-	//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr) == 3 ));  // can't generate element_type
+	BOOST_REQUIRE(( trace_generic<multi::array_ref<int, 2> >(arr) == 30 ));
+	//  BOOST_REQUIRE(( trace_generic<multi::array_ref<int, 2>&>(arr) == 3 ));  // can't generate element_type
+	BOOST_REQUIRE(( trace_generic<multi::subarray <int, 2> >(arr) == 30 ));
+	//  BOOST_REQUIRE(( trace_generic<multi::subarray <int, 2>&>(arr) == 3 ));  // can't generate element_type
 
-	//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2> >(arr({0, 3}, {0, 3})) == 3 ));
-	//  BOOST_REQUIRE(( trace_generic<multi::subarray <double, 2>&>(arr()) == 3 ));  // can't generate element_type
+	//  BOOST_REQUIRE(( trace_generic<multi::subarray <int, 2> >(arr({0, 3}, {0, 3})) == 3 ));
+	//  BOOST_REQUIRE(( trace_generic<multi::subarray <int, 2>&>(arr()) == 3 ));  // can't generate element_type
 
-	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 3 ));
-	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 3 ));
+	BOOST_REQUIRE(( trace_separate_ref                         (arr) == 30 ));
+	BOOST_REQUIRE(( trace_separate_sub                         (arr) == 30 ));
 
 	//  BOOST_REQUIRE(( trace_separate_ref2                        (arr) == 3 ));  // not allowed
 	//  BOOST_REQUIRE(( trace_separate_ref3                        (arr) == 3 ));  // not allowed
@@ -1017,24 +1026,25 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 
 #if __cplusplus > 202002L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
-	auto buffer = std::make_unique<double[]>(9);
-	std::fill_n(buffer.get(), 9, 1.0);
+	auto buffer = std::make_unique<int[]>(9);
+	std::fill_n(buffer.get(), 9, 1);
 
-	multi::array<double, 2> const     arr({ 3, 3 }, 1.0);
-	multi::array_ref<double, 2> const aref(buffer.get(), { 3, 3 });
-	auto const&                       asub = arr({ 0, 3 }, { 0, 3 });
+	multi::array<int, 2> const     arr({ 3, 3 }, 1);
+	multi::array_ref<int, 2> const aref(buffer.get(), { 3, 3 });
+
+	auto const& asub = arr({ 0, 3 }, { 0, 3 });
 
 	auto deduce_array = []<class Arr>(Arr const& a) { return std::accumulate(a.diagonal().begin(), a.diagonal().end(), typename Arr::element_type{ 0 }); };  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
-	BOOST_REQUIRE( deduce_array(arr) == 3 );
-	BOOST_REQUIRE( deduce_array(aref) == 3 );
-	BOOST_REQUIRE( deduce_array(asub) == 3 );
+	BOOST_TEST( deduce_array(arr ) == 3 );
+	BOOST_TEST( deduce_array(aref) == 3 );
+	BOOST_TEST( deduce_array(asub) == 3 );
 
 	auto deduce_element = []<class T>(multi::array<T, 2> const& a) { return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{ 0 }); };  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
 	BOOST_REQUIRE( deduce_element(arr) == 3 );
-	// BOOST_REQUIRE( deduce_element(aref) == 3 );
-	// BOOST_REQUIRE( deduce_element(asub) == 3 );
+	// BOOST_REQUIRE( deduce_element(aref) == 30 );
+	// BOOST_REQUIRE( deduce_element(asub) == 30 );
 
 	auto deduce_element_ref = []<class T>(multi::array_ref<T, 2> const& a) { return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{ 0 }); };  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
@@ -1052,9 +1062,10 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 
 template<class T>
 auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
-	arr[0][1] = 4.0;
+	arr[0][1] = 40;
 
 	auto const& diag = arr.diagonal();
+
 	return std::accumulate(diag.begin(), diag.end(), T{ 0 });
 }
 
@@ -1062,32 +1073,32 @@ template double mut_trace_array_deduce(multi::array<double, 2>&);
 
 template<class Array, typename T = typename Array::element_type>
 auto mut_trace_generic(Array& arr) -> T {
-	arr[0][1] = 4.0;
+	arr[0][1] = 40;
 
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), T{ 0 });
 }
 
 BOOST_AUTO_TEST_CASE(function_passing_4) {
-	multi::array<double, 2> arr({ 3, 3 }, 1.0);
+	multi::array<int, 2> arr({ 3, 3 }, 10);
 
-	BOOST_REQUIRE( mut_trace_array_deduce        (arr) == 3 );
-	BOOST_REQUIRE( mut_trace_array_deduce<double>(arr) == 3 );
+	BOOST_REQUIRE( mut_trace_array_deduce     (arr) == 30 );
+	BOOST_REQUIRE( mut_trace_array_deduce<int>(arr) == 30 );
 
-	BOOST_REQUIRE(  mut_trace_generic                              (arr) == 3  );
-	BOOST_REQUIRE(( mut_trace_generic<multi::array    <double, 2> >(arr) == 3 ));
+	BOOST_REQUIRE(  mut_trace_generic                       (arr) == 30  );
+	BOOST_REQUIRE(( mut_trace_generic<multi::array<int, 2> >(arr) == 30 ));
 }
 
 BOOST_AUTO_TEST_CASE(array_fill_constructor) {
-	multi::array<double, 2> arr(3, multi::array<double, 1>{ 1.0, 2.0, 3.0, 4.0 });
+	multi::array<int, 2> arr(3, multi::array<int, 1>{ 10, 20, 30, 40 });
 
-	BOOST_REQUIRE( arr[0][1] == 2.0 );
-	BOOST_REQUIRE( arr[1][1] == 2.0 );
+	BOOST_REQUIRE( arr[0][1] == 20 );
+	BOOST_REQUIRE( arr[1][1] == 20 );
 }
 
 BOOST_AUTO_TEST_CASE(array_fill_constructor_1D) {
-	multi::array<double, 1> arr(3, 1.0);
+	multi::array<int, 1> arr(3, 10);
 
-	BOOST_REQUIRE( arr[0] == 1.0 );
-	BOOST_REQUIRE( arr[1] == 1.0 );
+	BOOST_REQUIRE( arr[0] == 10 );
+	BOOST_REQUIRE( arr[1] == 10 );
 }

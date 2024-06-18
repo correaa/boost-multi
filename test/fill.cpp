@@ -3,37 +3,50 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <algorithm>  // for std::transform
-#include <limits>
-#include <numeric>  // for std::accumulate
-#include <random>
-#include <type_traits>  // for std::enable_if_t
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #elif defined(_MSC_VER)
-#  pragma warning(push)
-#  pragma warning(disable : 4244)
+	#pragma warning(push)
+	#pragma warning(disable : 4244)
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
+#include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+	#pragma warning(pop)
+#endif
+
+#include <boost/multi/array.hpp>  // for array, apply, operator==
+
+#include <algorithm>    // for fill, all_of, transform
+#include <cstddef>      // for ptrdiff_t
+#include <cstdint>      // for uint64_t
+#include <functional>   // for plus
+#include <iterator>     // for begin, end, size, next
+#include <limits>       // for numeric_limits
+#include <numeric>      // for accumulate
+#include <random>       // for uniform_int_distribution
+#include <type_traits>  // for enable_if_t, is_same_v
+#include <utility>      // for forward
 
 namespace {
 
@@ -70,7 +83,7 @@ class fnv1a_t {
 BOOST_AUTO_TEST_CASE(fill_1d_a) {
 	namespace multi = boost::multi;
 
-	multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+	multi::array<multi::index, 1> d1D(multi::extensions_t<1>{ multi::iextension{ 10 } });
 	static_assert(std::is_same_v<std::iterator_traits<decltype(begin(d1D))>::value_type, multi::index>, "!");
 
 	using std::copy;
@@ -98,7 +111,7 @@ BOOST_AUTO_TEST_CASE(fill_1d_b) {
 BOOST_AUTO_TEST_CASE(fill_1d_c) {
 	namespace multi = boost::multi;
 
-	multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+	multi::array<multi::index, 1> d1D(multi::extensions_t<1>{ multi::iextension{ 10 } });
 	BOOST_REQUIRE( size(d1D) == 10 );
 
 	d1D.assign(begin(extension(d1D)), end(extension(d1D)));
@@ -110,7 +123,7 @@ BOOST_AUTO_TEST_CASE(fill_1d_c) {
 BOOST_AUTO_TEST_CASE(fill_1d_d) {
 	namespace multi = boost::multi;
 
-	multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+	multi::array<multi::index, 1> d1D(multi::extensions_t<1>{ multi::iextension{ 10 } });
 	d1D.assign(extension(d1D));
 	BOOST_REQUIRE( d1D[0] == 0 );
 	BOOST_REQUIRE( d1D[1] == 1 );
@@ -120,7 +133,7 @@ BOOST_AUTO_TEST_CASE(fill_1d_d) {
 BOOST_AUTO_TEST_CASE(fill_member) {
 	namespace multi = boost::multi;
 
-	multi::array<int, 1> d1D = {10, 20, 30, 40};
+	multi::array<int, 1> d1D = { 10, 20, 30, 40 };
 	d1D.fill(420);
 
 	multi::array<int, 2> d2D = {
@@ -136,7 +149,7 @@ BOOST_AUTO_TEST_CASE(fill_member) {
 	BOOST_REQUIRE( &*d2D.elements().begin() == d2D.data_elements() );
 	BOOST_REQUIRE( &*d2D.elements().end()   == d2D.data_elements() + d2D.num_elements() );
 
-	std::fill( d2D.elements().begin(), d2D.elements().end() , 990 );
+	std::fill(d2D.elements().begin(), d2D.elements().end(), 990);
 
 	BOOST_REQUIRE( d2D[1][1] == 990 );
 }
@@ -168,16 +181,16 @@ BOOST_AUTO_TEST_CASE(fill) {
 
 	auto rand = [gauss = std::uniform_int_distribution<>(0, 10), gen = std::mt19937_64(randdev())]() mutable { return gauss(gen); };  // NOSONAR
 
-	multi::array<int, 2> r2D({5, 5});
+	multi::array<int, 2> r2D({ 5, 5 });
 	std::for_each(begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); });
 }
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(fill_1D) {
-	multi::array<double, 1> const arr = {1.0, 2.0, 3.0};
+	multi::array<double, 1> const arr = { 1.0, 2.0, 3.0 };
 
-	multi::array<double, 2> arr2({10, 3});
+	multi::array<double, 2> arr2({ 10, 3 });
 
 	std::fill(begin(arr2), end(arr2), arr);
 
@@ -202,8 +215,8 @@ auto broadcast(BinaryOp op, Column const& col, Array const& in, Out&& out) -> Ou
 
 BOOST_AUTO_TEST_CASE(julia_broadcast, *boost::unit_test::tolerance(0.00001)) {
 	multi::array<double, 2> const col = {
-		{0.1},
-		{0.2},
+		{ 0.1 },
+		{ 0.2 },
 	};
 	multi::array<double, 2> arr = {
 		{1.10813, 1.72068, 1.15387},
@@ -222,7 +235,7 @@ BOOST_AUTO_TEST_CASE(julia_broadcast, *boost::unit_test::tolerance(0.00001)) {
 	BOOST_TEST( arr2[1][2] == 1.67846 );
 
 	// inefficient: replicate the vector before summing elementwise
-	multi::array<double, 2> ax3({2, 3});
+	multi::array<double, 2> ax3({ 2, 3 });
 
 	std::fill(begin(~ax3), end(~ax3), (~col)[0]);
 	BOOST_TEST( ax3[0][0] == 0.1 );

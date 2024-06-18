@@ -29,15 +29,14 @@
 	#pragma GCC diagnostic pop
 #endif
 
-#include <boost/multi/array.hpp>  // for array, subarray, static_array
+#include <boost/multi/array.hpp>  // for array, subarray, static_array  // IWYU pragma: keep
 
-#include <algorithm>    // for std::ran
-#include <array>        // for get, array
-#include <complex>      // for complex, real, operator==, imag
-#include <iterator>     // for size, begin, end
-#include <numeric>      // for iota
-#include <type_traits>  // for is_same_v
-#include <utility>      // for pair
+#include <algorithm>    // for std::ran  // IWYU pragma: keep
+#include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
+#include <iterator>     // for size, begin, end  // IWYU pragma: keep
+#include <numeric>      // for iota  // IWYU pragma: keep
+#include <type_traits>  // for is_same_v  // IWYU pragma: keep
+#include <utility>      // for pair  // IWYU pragma: keep
 
 BOOST_AUTO_TEST_CASE(range_accumulate) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
