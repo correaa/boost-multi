@@ -1,6 +1,6 @@
 // Copyright 2020-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
-// Distributed under the Boost Software License, Version 1.0.
+// Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(__clang__)
@@ -118,13 +118,13 @@ BOOST_AUTO_TEST_CASE(multi_std_swap) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_clear) {
-	multi::array<double, 2> arr({ 10, 10 }, 99.0);
+	multi::array<int, 2> arr({ 10, 10 }, 990);
 
 	arr.clear();
 
 	BOOST_REQUIRE(arr.is_empty());
 
-	arr.reextent({ 20, 20 }, 99.0);
+	arr.reextent({ 20, 20 }, 990);
 	// BOOST_REQUIRE(! arr.is_empty());
 
 	// clear(arr).reextent({30, 30}, 88.0);
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(multi_array_clear) {
 
 BOOST_AUTO_TEST_CASE(multi_array_move) {
 	std::vector<multi::array<int, 2>> Av(10, multi::array<int, 2>({ 4, 5 }, 990));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-	multi::array<int, 2>              arr2(std::move(Av[0]), std::allocator<double>{});
+	multi::array<int, 2>              arr2(std::move(Av[0]), std::allocator<int>{});
 
 	BOOST_REQUIRE( is_empty(Av[0]) );
 	BOOST_REQUIRE( size(arr2) == 4 );
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_reserve) {
 	std::vector<multi::array<int, 2>> Bv;
 	Bv.reserve(Av.size());
 
-	//  for(auto& v: Av) Bv.emplace_back(std::move(v), std::allocator<double>{});  // segfaults nvcc 11.0 but not nvcc 11.1
+	//  for(auto& v: Av) Bv.emplace_back(std::move(v), std::allocator<int>{});  // segfaults nvcc 11.0 but not nvcc 11.1
 	std::move(begin(Av), end(Av), std::back_inserter(Bv));
 
 	BOOST_REQUIRE( size(Bv) == size(Av) );
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_reserve) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_move) {
-	std::vector<multi::array<int, 2>> Av(10, multi::array<double, 2>({ 4, 5 }, 990));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	std::vector<multi::array<int, 2>> Av(10, multi::array<int, 2>({ 4, 5 }, 990));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	std::vector<multi::array<int, 2>> Bv = std::move(Av);
 
 	Av.clear();
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_move) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_array) {
-	multi::array<std::vector<double>, 2> arr({ 10, 10 }, std::vector<double>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 2> arr({ 10, 10 }, std::vector<int>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	auto                                 arr2 = std::move(arr);
 	BOOST_REQUIRE( arr .   empty() );    // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
 	BOOST_REQUIRE( arr .is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
@@ -188,9 +188,9 @@ BOOST_AUTO_TEST_CASE(multi_array_move_array) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_elements) {
-	multi::array<std::vector<double>, 1> arr({ 10 }, std::vector<double>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 1> arr({ 10 }, std::vector<int>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-	std::vector<std::vector<double>> sink(5);  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	std::vector<std::vector<int>> sink(5);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
 	auto* ptr1 = arr[1].data();
 
@@ -202,9 +202,9 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_elements_range) {
-	multi::array<std::vector<double>, 1> arr({ 10 }, std::vector<double>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 1> arr({ 10 }, std::vector<int>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-	std::vector<std::vector<double>> sink(5);  // NOLINT(fuchsia-default-arguments-calls)
+	std::vector<std::vector<int>> sink(5);  // NOLINT(fuchsia-default-arguments-calls)
 
 	auto* ptr1 = arr[1].data();
 
@@ -234,67 +234,67 @@ BOOST_AUTO_TEST_CASE(multi_array_move_elements_to_array) {
 }
 
 BOOST_AUTO_TEST_CASE(move_range_vector_1D) {
-	std::vector<std::vector<double>> arr(10, std::vector<double>{ 1.0, 2.0, 3.0 });  // NOLINT(fuchsia-default-arguments-calls)
-	std::vector<std::vector<double>> arr2(10);                                       // NOLINT(fuchsia-default-arguments-calls)
+	std::vector<std::vector<int>> arr(10, std::vector<int>{ 10, 20, 30 });  // NOLINT(fuchsia-default-arguments-calls)
+	std::vector<std::vector<int>> arr2(10);                                       // NOLINT(fuchsia-default-arguments-calls)
 	std::move(arr.begin(), arr.end(), arr2.begin());
 
-	BOOST_REQUIRE( arr2[0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
 	BOOST_REQUIRE( arr[0].empty() );
 	BOOST_REQUIRE( arr[1].empty() );
 }
 
 BOOST_AUTO_TEST_CASE(copy_range_1D) {
-	multi::array<std::vector<double>, 1> arr({ 3 }, std::vector<double>{ 1.0, 2.0, 3.0 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 1> arr({ 3 }, std::vector<int>{ 10, 20, 30 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( arr.size() == 3 );
-	multi::array<std::vector<double>, 1> arr2({ 3 }, std::vector<double>{});
+	multi::array<std::vector<int>, 1> arr2({ 3 }, std::vector<int>{});
 	std::copy(arr.begin(), arr.end(), arr2.begin());
 
-	BOOST_REQUIRE( arr2[0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
-	BOOST_REQUIRE( arr [0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr [1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr [0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr [1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 }
 
 BOOST_AUTO_TEST_CASE(move_range_1D) {
-	multi::array<std::vector<double>, 1> arr({ 3 }, std::vector<double>{ 1.0, 2.0, 3.0 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 1> arr({ 3 }, std::vector<int>{ 10, 20, 30 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( arr.size() == 3 );
-	multi::array<std::vector<double>, 1> arr2({ 3 }, std::vector<double>{});  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 1> arr2({ 3 }, std::vector<int>{});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	std::move(arr.begin(), arr.end(), arr2.begin());
 
-	BOOST_REQUIRE( arr2[0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
 	BOOST_REQUIRE( arr[0].empty() );
 	BOOST_REQUIRE( arr[1].empty() );
 }
 
 BOOST_AUTO_TEST_CASE(move_range_1D_moved_begin) {
-	multi::array<std::vector<double>, 1> arr({ 3 }, std::vector<double>{ 1.0, 2.0, 3.0 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 1> arr({ 3 }, std::vector<int>{ 10, 20, 30 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( arr.size() == 3 );
-	multi::array<std::vector<double>, 1> arr2({ 3 }, std::vector<double>{});  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 1> arr2({ 3 }, std::vector<int>{});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	std::copy(arr.mbegin(), arr.mend(), arr2.begin());
 
-	BOOST_REQUIRE( arr2[0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
 	BOOST_REQUIRE( arr[0].empty() );
 	BOOST_REQUIRE( arr[1].empty() );
 }
 
 BOOST_AUTO_TEST_CASE(copy_move_range) {
-	multi::array<std::vector<double>, 2> arr({ 10, 20 }, std::vector<double>{ 1.0, 2.0, 3.0 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
-	multi::array<std::vector<double>, 2> arr2({ 10, 20 }, std::vector<double>{});                // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 2> arr({ 10, 20 }, std::vector<int>{ 10, 20, 30 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 2> arr2({ 10, 20 }, std::vector<int>{});                // std::vector NOLINT(fuchsia-default-arguments-calls)
 
 	std::copy(arr.mbegin(), arr.mend(), arr2.begin());
 
-	BOOST_REQUIRE( arr2[0][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[0][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0][0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0][1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
-	BOOST_REQUIRE( arr2[1][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[1][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1][0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1][1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
 	BOOST_REQUIRE( arr[0][0].empty() );
 	BOOST_REQUIRE( arr[0][1].empty() );
@@ -304,16 +304,16 @@ BOOST_AUTO_TEST_CASE(copy_move_range) {
 }
 
 BOOST_AUTO_TEST_CASE(copy_move_range_moved_begin) {
-	multi::array<std::vector<double>, 2> arr({ 10, 20 }, std::vector<double>{ 1.0, 2.0, 3.0 });  // NOLINT(fuchsia-default-arguments-calls)
-	multi::array<std::vector<double>, 2> arr2({ 10, 20 }, std::vector<double>{});                // NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 2> arr({ 10, 20 }, std::vector<int>{ 10, 20, 30 });  // NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 2> arr2({ 10, 20 }, std::vector<int>{});                // NOLINT(fuchsia-default-arguments-calls)
 
 	std::copy(arr.element_moved().begin(), arr.element_moved().end(), arr2.begin());
 
-	BOOST_REQUIRE( arr2[0][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[0][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0][0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0][1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
-	BOOST_REQUIRE( arr2[1][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[1][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1][0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1][1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
 	BOOST_REQUIRE( arr[0][0].empty() );
 	BOOST_REQUIRE( arr[0][1].empty() );
@@ -323,16 +323,16 @@ BOOST_AUTO_TEST_CASE(copy_move_range_moved_begin) {
 }
 
 BOOST_AUTO_TEST_CASE(copy_move_range_moved_begin_block) {
-	multi::array<std::vector<double>, 2> arr({ 10, 20 }, std::vector<double>{ 1.0, 2.0, 3.0 });  // NOLINT(fuchsia-default-arguments-calls)
-	multi::array<std::vector<double>, 2> arr2({ 3, 5 }, std::vector<double>{});
+	multi::array<std::vector<int>, 2> arr({ 10, 20 }, std::vector<int>{ 10, 20, 30 });  // NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 2> arr2({ 3, 5 }, std::vector<int>{});
 
 	std::copy(arr({ 5, 8 }, { 10, 15 }).element_moved().begin(), arr({ 5, 8 }, { 10, 15 }).element_moved().end(), arr2.begin());
 
-	BOOST_REQUIRE( arr2[0][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[0][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0][0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0][1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
-	BOOST_REQUIRE( arr2[1][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[1][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1][0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1][1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
 	BOOST_REQUIRE( arr[5][10].empty() );
 	BOOST_REQUIRE( arr[5][11].empty() );
@@ -342,17 +342,17 @@ BOOST_AUTO_TEST_CASE(copy_move_range_moved_begin_block) {
 }
 
 BOOST_AUTO_TEST_CASE(move_reference_range) {
-	multi::array<std::vector<double>, 2> arr({ 10, 20 }, std::vector<double>{ 1.0, 2.0, 3.0 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
-	multi::array<std::vector<double>, 2> arr2({ 10, 20 }, std::vector<double>{});                // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 2> arr ({ 10, 20 }, std::vector<int>{ 10, 20, 30 });  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	multi::array<std::vector<int>, 2> arr2({ 10, 20 }, std::vector<int>{});                // std::vector NOLINT(fuchsia-default-arguments-calls)
 
 	//  arr2() = arr().element_moved();
 	std::copy(arr().element_moved().begin(), arr().element_moved().end(), arr2().begin());
 
-	BOOST_REQUIRE( arr2[0][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[0][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0][0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[0][1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
-	BOOST_REQUIRE( arr2[1][0] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
-	BOOST_REQUIRE( arr2[1][1] == std::vector<double>({1.0, 2.0, 3.0}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1][0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
+	BOOST_REQUIRE( arr2[1][1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 
 	BOOST_REQUIRE( arr[0][0].empty() );
 	BOOST_REQUIRE( arr[0][1].empty() );
@@ -363,32 +363,32 @@ BOOST_AUTO_TEST_CASE(move_reference_range) {
 
 BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cognitive-complexity)
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		auto arr2 = std::move(arr);
 		BOOST_REQUIRE( arr2.size() == 5 );
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
 	}
 	{
-		auto arr = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-		std::vector<double> const v0 = std::move(arr[0]);
+		std::vector<int> const v0 = std::move(arr[0]);
 		BOOST_REQUIRE( v0.size() == 7 );
 		BOOST_REQUIRE( arr[0].empty() );
 
-		std::vector<double> const v1 = std::move(arr)[1];
+		std::vector<int> const v1 = std::move(arr)[1];
 		BOOST_REQUIRE( v1.size() == 7 );
 		BOOST_REQUIRE( arr[1].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) for test
 
-		auto arr2 = multi::array<std::vector<double>, 1>({ 1 }, std::vector<double>{});
+		auto arr2 = multi::array<std::vector<int>, 1>({ 1 }, std::vector<int>{});
 
 		arr2({ 0, 1 }) = arr({ 2, 3 });
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [2].size() == 7 );
 	}
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 
 		arr2() = arr();
 		BOOST_REQUIRE( arr2[0].size() == 7 );
@@ -399,24 +399,24 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 		BOOST_REQUIRE( arr [2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 
 		arr2() = arr();
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [0].size() == 7 );
 	}
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 
 		arr2() = std::move(arr)();
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 
 		auto&& mAp = std::move(arr)();
 		arr2()     = mAp;
@@ -424,64 +424,64 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 		BOOST_REQUIRE( arr [0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 
 		arr2({ 0, 5 }) = std::move(arr)();
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 
 		arr2() = arr.taked(5);
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [0].size() == 7);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 
 		arr2() = std::move(arr).taked(5);
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto   arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto   arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto   arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto   arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 		auto&& mAt5 = std::move(arr).taked(5);
 		arr2()      = mAt5;
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto   arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto   arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto   arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto   arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 		auto&& mAt5 = std::move(arr).taked(5);
 		arr2()      = mAt5;
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto   arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto   arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto   arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto   arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 		auto&& mAt5 = std::move(arr).taked(5);
 		arr2()      = std::move(mAt5);
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto   arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto   arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto   arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto   arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 		auto&& mAt5 = std::move(arr).taked(5);
 		arr2()      = std::move(mAt5).taked(5);
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto   arr    = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto   arr2   = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto   arr    = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto   arr2   = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 		auto&& mAt5   = std::move(arr).taked(5);
 		auto&& mAt5t5 = std::move(mAt5).taked(5);
 		arr2()        = mAt5t5;
@@ -489,16 +489,16 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 		BOOST_REQUIRE( arr[0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto   arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto   arr2 = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>{});
+		auto   arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto   arr2 = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>{});
 		auto&& mAt5 = std::move(arr).taked(5);
 		arr2()      = std::move(mAt5).dropped(0);
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 	{
-		auto arr  = multi::array<std::vector<double>, 1>({ 5 }, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		auto arr2 = multi::array<std::vector<double>, 1>({ 4 }, std::vector<double>{});   // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr  = multi::array<std::vector<int>, 1>({ 5 }, std::vector<int>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+		auto arr2 = multi::array<std::vector<int>, 1>({ 4 }, std::vector<int>{});   // std::vector NOLINT(fuchsia-default-arguments-calls)
 		arr2()    = std::move(arr).dropped(1);
 		BOOST_REQUIRE( arr2[0].size() == 7 );
 		BOOST_REQUIRE( arr [0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing

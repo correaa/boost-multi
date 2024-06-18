@@ -31,15 +31,17 @@
 
 #include <boost/multi/array.hpp>  // for implicit_cast, explicit_cast
 
-#include <algorithm>    // for for_each, equal
-#include <array>        // for array
-#include <cassert>      // for assert
-#include <cstdint>      // for int64_t
-#include <iostream>     // for char_traits, operator<<, basic_o...
-#include <iterator>     // for size
-#include <memory>       // for allocator, unique_ptr
-#include <numeric>      // for accumulate, iota
-#include <span>         // for span
+#include <algorithm>  // for for_each, equal
+#include <array>      // for array
+#include <cassert>    // for assert
+#include <cstdint>    // for int64_t
+#include <iostream>   // for char_traits, operator<<, basic_o...
+#include <iterator>   // for size
+#include <memory>     // for allocator, unique_ptr
+#include <numeric>    // for accumulate, iota
+#ifdef BOOST_MULTI_HAS_SPAN
+	#include <span>  // for span
+#endif
 #include <string>       // for basic_string, operator""s, string
 #include <tuple>        // for tuple_element<>::type, __tuple_e...
 #include <type_traits>  // for remove_reference, remove_const
@@ -191,12 +193,14 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
-	std::array<std::array<double, 5>, 4> arr = {
-		{{ { 0.0, 1.0, 2.0, 3.0, 4.0 } },
-                                                                                                                                                                                                       { { 5.0, 6.0, 7.0, 8.0, 9.0 } },
-                                                                                                                                                                                                       { { 10.0, 11.0, 12.0, 13.0, 14.0 } },
-                                                                                                                                                                                                       { { 15.0, 16.0, 17.0, 18.0, 19.0 } }},
-	};
+	// clang-format off
+	std::array<std::array<double, 5>, 4> arr = {{
+		{ { 0.0, 1.0, 2.0, 3.0, 4.0 } },
+		{ { 5.0, 6.0, 7.0, 8.0, 9.0 } },
+		{ { 10.0, 11.0, 12.0, 13.0, 14.0 } },
+		{ { 15.0, 16.0, 17.0, 18.0, 19.0 } }
+	}};
+	// clang-format on
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
 	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
