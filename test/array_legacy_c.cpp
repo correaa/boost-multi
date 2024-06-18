@@ -4,36 +4,37 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
 
 #if defined(__clang__)
-#  pragma clang diagnostic pop
+	#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic pop
+	#pragma GCC diagnostic pop
 #endif
 
-#include <boost/multi/array.hpp>     // for array, rotated, subarray, dimens...
+#include <boost/multi/array.hpp>  // for array, rotated, subarray, dimens...
 
-#include <array>                     // for array
-#include <complex>                   // for complex
-#include <utility>                   // for move
+#include <array>        // for array
+#include <complex>      // for complex
+#include <type_traits>  // for remove_reference<>::type
+#include <utility>      // for move
 
 namespace multi = boost::multi;
 
@@ -59,10 +60,10 @@ void fftw_plan_dft(
 BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	using complex                     = std::complex<double>;
 	multi::array<complex, 2> const in = {
-		{{150.0, 0.0}, {16.0, 0.0}, {17.0, 0.0}, {18.0, 0.0}, {19.0, 0.0}},
-		{  {5.0, 0.0},  {5.0, 0.0},  {5.0, 0.0},  {5.0, 0.0},  {5.0, 0.0}},
-		{{100.0, 0.0}, {11.0, 0.0}, {12.0, 0.0}, {13.0, 0.0}, {14.0, 0.0}},
-		{ {50.0, 0.0},  {6.0, 0.0},  {7.0, 0.0},  {8.0, 0.0},  {9.0, 0.0}},
+		{{ 150.0, 0.0 }, { 16.0, 0.0 }, { 17.0, 0.0 }, { 18.0, 0.0 }, { 19.0, 0.0 }},
+		{  { 5.0, 0.0 },  { 5.0, 0.0 },  { 5.0, 0.0 },  { 5.0, 0.0 },  { 5.0, 0.0 }},
+		{{ 100.0, 0.0 }, { 11.0, 0.0 }, { 12.0, 0.0 }, { 13.0, 0.0 }, { 14.0, 0.0 }},
+		{ { 50.0, 0.0 },  { 6.0, 0.0 },  { 7.0, 0.0 },  { 8.0, 0.0 },  { 9.0, 0.0 }},
 	};
 
 	multi::array<std::complex<double>, 2> out(extensions(in));
@@ -73,7 +74,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	static_assert(sizeof(complex) == sizeof(fake::fftw_complex), "!");
 	fake::fftw_plan_dft(
 		decltype(in)::dimensionality,
-		std::apply([](auto... sizes) { return std::array<int, 2>{{static_cast<int>(sizes)...}}; }, in.sizes()).data(),
+		std::apply([](auto... sizes) { return std::array<int, 2>{ { static_cast<int>(sizes)... } }; }, in.sizes()).data(),
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) testing legacy code
 		reinterpret_cast<fake::fftw_complex*>(const_cast<complex*>(in.data_elements())),  // NOSONAR
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): testing legacy code
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		BOOST_REQUIRE( ! rotated(d2D)[2].is_compact() );
 	}
 	{
-		multi::array<complex, 2> d2D({5, 3});
+		multi::array<complex, 2> d2D({ 5, 3 });
 		BOOST_REQUIRE( d2D.is_compact() );
 		BOOST_REQUIRE( rotated(d2D).is_compact() );
 		BOOST_REQUIRE( d2D[3].is_compact() );
@@ -110,7 +111,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& { return std::move(array)[2]; }
 
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
-	double arr[5] = {150.0, 16.0, 17.0, 18.0, 19.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	double arr[5] = { 150.0, 16.0, 17.0, 18.0, 19.0 };  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	BOOST_REQUIRE( &f2(arr) == &arr[2] );
 }
 #endif

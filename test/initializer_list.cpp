@@ -1,14 +1,8 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <array>
-#include <complex>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -27,7 +21,23 @@
 #define BOOST_TEST_MAIN
 #endif
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
 #include <boost/test/unit_test.hpp>
+
+#include <boost/multi/array.hpp>     // for array, static_array, num_elements
+
+#include <array>                     // for array
+#include <complex>                   // for operator*, operator+, complex
+#include <initializer_list>          // for initializer_list, begin, end
+#include <iterator>                  // for size, begin, end
+#include <string>                    // for basic_string, allocator, char_tr...
+#include <type_traits>               // for is_same_v
+#include <vector>                    // for vector
 
 namespace multi = boost::multi;
 

@@ -35,12 +35,13 @@
 	#pragma warning(pop)
 #endif
 
-#include <boost/multi/array.hpp>     // for transform_ptr, array, subarray
+#include <boost/multi/array.hpp>  // for transform_ptr, array, subarray
 
-#include <complex>                   // for complex, operator*, operator+
-#include <numeric>                   // for inner_product
-#include <utility>                   // for declval, forward
-#include <vector>                    // for vector
+#include <complex>      // for complex, operator*, operator+
+#include <numeric>      // for inner_product
+#include <type_traits>  // for declval
+#include <utility>      // for declval, forward
+#include <vector>       // for vector
 
 namespace multi = boost::multi;
 
@@ -283,5 +284,5 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 	auto const& const_indirect_v = indirect_v;
 
 	BOOST_REQUIRE(  const_indirect_v[1][2] ==  111110 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) testing legacy type
-	                                                     //  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
+	                                                    //  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
 }

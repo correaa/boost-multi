@@ -30,11 +30,13 @@
 	#pragma GCC diagnostic pop
 #endif
 
-#include <boost/multi/array.hpp>     // for array_ref, static_array, array_ptr
+#include <boost/multi/array.hpp>  // for array_ref, static_array, array_ptr
 
-#include <complex>                   // for complex
-#include <utility>                   // for move
-#include <vector>                    // for vector, allocator
+#include <algorithm>    // for copy
+#include <complex>      // for complex
+#include <type_traits>  // for remove_reference<>::type
+#include <utility>      // for move
+#include <vector>       // for vector, allocator
 
 namespace multi = boost::multi;
 
@@ -96,12 +98,12 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		BOOST_REQUIRE( &the_doub == &doub );
 	}
 	{
-		int doub = 20;
-		auto dd = static_cast<int>( multi::array_ref<int, 0>(&doub, {}) );
+		int  doub = 20;
+		auto dd   = static_cast<int>(multi::array_ref<int, 0>(&doub, {}));
 
 		BOOST_REQUIRE( dd == doub );
 
-		multi::array_ptr<int, 1> const ap1(&doub, multi::extensions_t<1>({0, 1}));
+		multi::array_ptr<int, 1> const ap1(&doub, multi::extensions_t<1>({ 0, 1 }));
 		BOOST_REQUIRE( ap1->base() == &doub );
 		BOOST_REQUIRE( (*ap1).base() == &doub );
 
