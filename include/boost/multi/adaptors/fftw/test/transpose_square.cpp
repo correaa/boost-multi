@@ -2,18 +2,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>  // for operator<<, BOOST_PP_IIF_1
 
-#include <boost/multi/adaptors/fftw.hpp>
-#include <boost/multi/array.hpp>
+#include <boost/multi/adaptors/fftw.hpp>  // for initialize_threads, environ...
+#include <boost/multi/array.hpp>          // for array, subarray, layout_t
 
-#include <chrono>  // NOLINT(build/c++11)
 #include <algorithm>   // for for_each, generate
+#include <chrono>      // for duration, operator-, high_r...  // NOLINT(build/c++11)
 #include <complex>     // for operator==, complex
 #include <functional>  // for invoke
-#include <iostream>    // for operator<<, basic_os...
-#include <random>      // for linear_congruential_...
-#include <string>      // for operator""s, operator<<
+#include <iostream>    // for basic_ostream, operator<<
+#include <random>      // for uniform_real_distribution
+#include <string>      // for char_traits, operator""s
 #include <utility>     // for move, swap
 
 namespace multi = boost::multi;
@@ -28,7 +28,7 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	time_point  start_ = now();
 
  public:
-	explicit watch(std::string label) : label_{std::move(label)} {}
+	explicit watch(std::string label) : label_{ std::move(label) } {}
 
 	watch(watch const&) = delete;
 	watch(watch&&)      = delete;
@@ -47,12 +47,12 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 	{
 		auto const in = std::invoke([] {
 			//  multi::array<complex, 2> ret({819, 819});
-			multi::array<complex, 2> ret({81, 81});
+			multi::array<complex, 2> ret({ 81, 81 });
 			std::generate(
 				ret.data_elements(), ret.data_elements() + ret.num_elements(),
-				[eng        = std::default_random_engine{std::random_device{}()},
+				[eng        = std::default_random_engine{ std::random_device{}() },
 				 uniform_01 = std::uniform_real_distribution<>{}]() mutable {
-					return complex{uniform_01(eng), uniform_01(eng)};
+					return complex{ uniform_01(eng), uniform_01(eng) };
 				}
 			);
 			return ret;
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		{
 			multi::array<complex, 2> out = in;
 			{
-				watch const unnamed{"transposition with loop   %ws wall, CPU (%p%)\n"s};
+				watch const unnamed{ "transposition with loop   %ws wall, CPU (%p%)\n"s };
 				std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
 					auto ext = multi::extension_t(0L, idx);
 					std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		{
 			multi::array<complex, 2> out = in;
 			{
-				watch const unnamed{"transposition with loop 2 %ws wall, CPU (%p%)\n"s};
+				watch const unnamed{ "transposition with loop 2 %ws wall, CPU (%p%)\n"s };
 				std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
 					auto ext = multi::extension_t(idx + 1, out.size());
 					std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {

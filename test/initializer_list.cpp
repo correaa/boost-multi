@@ -1,42 +1,50 @@
-// Copyright 2019-2023 Alfredo A. Correa
+// Copyright 2019-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <array>
-#include <complex>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #pragma clang diagnostic ignored "-Wundef"
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wsign-conversion"
-#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wundef"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
 #define BOOST_TEST_MAIN
 #endif
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
 #include <boost/test/unit_test.hpp>
+
+#include <boost/multi/array.hpp>     // for array, static_array, num_elements
+
+#include <array>                     // for array
+#include <complex>                   // for operator*, operator+, complex
+#include <initializer_list>          // for initializer_list, begin, end
+#include <iterator>                  // for size, begin, end
+#include <string>                    // for basic_string, allocator, char_tr...
+#include <type_traits>               // for is_same_v
+#include <vector>                    // for vector
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 	{
-		std::vector<double> const vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_REQUIRE( vec[1] == 2. );
+		std::vector<int> const vec = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_REQUIRE( vec[1] == 20 );
 	}
 	{
 		multi::static_array<int, 1> arr = {12, 34, 56};
@@ -49,16 +57,16 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE( arr[2] == 56 );
 	}
 	{
-		auto const il = {1.2, 3.4, 5.6};
+		auto const il = {12, 34, 56};
 
-		multi::static_array<double, 1> const arr(il);
+		multi::static_array<int, 1> const arr(il);
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
-		auto const il = {1.2, 3.4, 5.6};
+		auto const il = {12, 34, 56};
 
-		multi::static_array<double, 1> const arr(begin(il), end(il));
+		multi::static_array<int, 1> const arr(begin(il), end(il));
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
@@ -306,50 +314,77 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 
 #if defined(__cpp_deduction_guides) && ! defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
-	{
-		multi::static_array arr({1.0, 2.0, 3.0});
-		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
-		BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr)==3 && arr[1] == 2.0 );
-		static_assert(typename decltype(arr)::rank{} == 1);
-	}
+	multi::static_array arr({10, 20, 30});
+
+	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+
+	BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
+	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1);
+	BOOST_REQUIRE( num_elements(arr)==3 );
+	BOOST_REQUIRE( arr[1] == 20 );
+
+	static_assert(typename decltype(arr)::rank{} == 1);
 }
 
-BOOST_AUTO_TEST_CASE(initializer_list_1d) {
-	{
-		multi::array arr({1.0, 2.0, 3.0});
-		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
+BOOST_AUTO_TEST_CASE(initializer_list_1d_a) {
+		multi::array arr({10, 20, 30});
+
+		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+
 		BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr)==3 && arr[1] == 2.0 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>::value==1 );
+		BOOST_REQUIRE( num_elements(arr)==3 );
+		BOOST_REQUIRE( arr[1] == 20 );
+
 		static_assert(typename decltype(arr)::rank{} == 1);
-	}
-	{
-		multi::array arr({1.0, 2.0});
-		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
-		BOOST_REQUIRE( size(arr) == 2 && num_elements(arr) == 2 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr) == 2 && arr[1] == 2.0 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
-	}
-	{
-		multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
-		BOOST_REQUIRE( size(arr) == 2 && num_elements(arr) == 2 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 && num_elements(arr) == 2 && arr[1] == 2.0 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
-	}
-	{
-		multi::array arr({9.0});  // multi::array arr = {9.0}; not working with CTAD
-		static_assert(std::is_same_v<decltype(arr)::element_type, double>);
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 && num_elements(arr)==1 && arr[0]==9.0 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
-	}
-	{
-		multi::array arr({9});  // multi::array arr = {9}; not working with CTAD
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
-		BOOST_REQUIRE( size(arr) == 1 && num_elements(arr) == 1 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
-		BOOST_REQUIRE( num_elements(arr) == 1 && arr[0] == 9.0 );
-	}
+}
+
+BOOST_AUTO_TEST_CASE(initializer_list_1d_b) {
+	multi::array arr({10, 20});
+	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+
+	BOOST_REQUIRE( size(arr) == 2 );
+	BOOST_REQUIRE( num_elements(arr) == 2 );
+	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_REQUIRE( num_elements(arr) == 2 );
+	BOOST_REQUIRE( arr[1] == 20 );
+	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
+}
+
+BOOST_AUTO_TEST_CASE(initializer_list_1d_c) {
+	multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
+
+	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+
+	BOOST_REQUIRE( size(arr) == 2 );
+	BOOST_REQUIRE( num_elements(arr) == 2 );
+	BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
+	BOOST_REQUIRE( num_elements(arr) == 2 );
+	BOOST_REQUIRE( arr[1] == 2 );
+	BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
+}
+
+BOOST_AUTO_TEST_CASE(initializer_list_1d_d) {
+	multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+
+	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+
+	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_REQUIRE( num_elements(arr)==1 );
+	BOOST_REQUIRE( arr[0]==90 );
+	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
+}
+
+BOOST_AUTO_TEST_CASE(initializer_list_1d_e) {
+	multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+
+	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+
+	BOOST_REQUIRE( size(arr) == 1 );
+	BOOST_REQUIRE( num_elements(arr) == 1 );
+	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_REQUIRE( num_elements(arr) == 1 );
+	BOOST_REQUIRE( arr[0] == 90 );
 }
 
 BOOST_AUTO_TEST_CASE(initializer_list_2d) {
@@ -373,13 +408,13 @@ BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 #endif
 
 BOOST_AUTO_TEST_CASE(partially_formed) {
-	multi::array<double, 2> arr1({10, 10}, double{});
-	multi::array<double, 2> arr2({10, 10}, {});
-	multi::array<double, 2> arr3({10, 10}, 0.0);
+	multi::array<int, 2> arr1({10, 10}, int{});
+	multi::array<int, 2> arr2({10, 10},    {});
+	multi::array<int, 2> arr3({10, 10}, 0    );
 
-	BOOST_REQUIRE( arr1[0][0] == 0.0);
-	BOOST_REQUIRE( arr2[0][0] == 0.0);
-	BOOST_REQUIRE( arr3[0][0] == 0.0);
+	BOOST_REQUIRE( arr1[0][0] == 0);
+	BOOST_REQUIRE( arr2[0][0] == 0);
+	BOOST_REQUIRE( arr3[0][0] == 0);
 }
 
 BOOST_AUTO_TEST_CASE(partially_formed_int_1) {

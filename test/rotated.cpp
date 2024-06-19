@@ -1,20 +1,8 @@
-// Copyright 2021-2023 Alfredo A. Correa
+// Copyright 2021-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <array>
-
-#if(__cplusplus >= 202002L)
-	#include <ranges>
-#endif
-
-#include <algorithm>
-#include <numeric>  // for std::iota
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -34,6 +22,20 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+
+#include <boost/multi/array.hpp>  // for array, layout_t, subarray, sizes
+
+#include <array>    // for array
+#include <numeric>  // for iota
+#if(__cplusplus >= 202002L)
+	#include <ranges>  // IWYU pragma: keep
+#endif
 
 namespace multi = boost::multi;
 
@@ -107,8 +109,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
 BOOST_AUTO_TEST_CASE(multi_rotate) {
 	{
 		multi::array<int, 2> arr = {
-			{ 00, 01 },
-			{ 10, 11 },
+			{00, 01},
+			{10, 11},
 		};
 		BOOST_REQUIRE(       arr[1][0] == 10 );
 		BOOST_REQUIRE( (arr.rotated())[0][1] == 10 );
@@ -144,8 +146,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 	}
 	{
 		multi::array<int, 2> const arr = {
-			{ 00, 01 },
-			{ 10, 11 },
+			{00, 01},
+			{10, 11},
 		};
 		BOOST_REQUIRE(   arr.rotated() [0][1] == 10 );
 		BOOST_REQUIRE( &(arr.rotated())[1][0] == &arr[0][1] );
@@ -155,9 +157,9 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 
 BOOST_AUTO_TEST_CASE(multi_transposed) {
 	multi::array<int, 2> const arr0 = {
-		{  9, 24, 30, 9 },
-		{  4, 10, 12, 7 },
-		{ 14, 16, 36, 1 },
+		{ 9, 24, 30, 9},
+		{ 4, 10, 12, 7},
+		{14, 16, 36, 1},
 	};
 	multi::array<int, 2> const arr1 = arr0.transposed();
 	multi::array<int, 2> const arr2 = ~arr0;
@@ -172,7 +174,7 @@ BOOST_AUTO_TEST_CASE(miguel) {
 }
 
 #if(__cplusplus >= 202002L)
-#if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
+	#if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 auto meshgrid(auto const& x, auto const& y) {
 	return std::pair{ x.broadcasted().rotated(), y.broadcasted() };
 }
@@ -185,7 +187,7 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 	};
 
 	std::ranges::fill(ret.first.rotated(), x);
-	
+
 	return ret;
 }
 
@@ -204,5 +206,5 @@ BOOST_AUTO_TEST_CASE(matlab_meshgrid) {
 		}
 	}
 }
-#endif
+	#endif
 #endif

@@ -3,75 +3,40 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <algorithm>  // for std::ranges::fold_left
-
-#if(__cplusplus >= 202002L)
-#include<ranges>
-#endif
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#pragma clang diagnostic ignored "-Wundef"
-#pragma clang diagnostic ignored "-Wconversion"
-#pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wundef"
-#pragma GCC diagnostic ignored "-Wconversion"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-// #pragma GCC diagnostic ignored "-Wstringop-overflow="
-// #pragma GCC diagnostic ignored "-Warray-bounds="
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
-
-#include <boost/multi/array.hpp>
-
-#include <algorithm>  // for std::ranges::fold_left
-
-// template<>
-// inline constexpr bool std::ranges::enable_borrowed_range<
-//  boost::multi::subarray<double, 2, const double*, boost::multi::layout_t<2, long int> >
-// > = true;
 
 #ifndef BOOST_TEST_MODULE
-#define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
 
 #if defined(__clang__)
-#pragma clang diagnostic pop
+	#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#pragma GCC diagnostic pop
+	#pragma GCC diagnostic pop
 #endif
 
-namespace multi = boost::multi;
+#include <boost/multi/array.hpp>  // for array, subarray, static_array  // IWYU pragma: keep
 
-#if(__cplusplus >= 202002L)
-BOOST_AUTO_TEST_CASE(iota_range_experiment) {
-	//  auto zero_to_six = std::ranges::views::iota(0, 6);
-	//  using it = decltype(zero_to_six.begin());
-	// using pp = typename std::pointer_traits<it>::element_type;
-
-	auto two_by_three = multi::array_ref<int, 2, decltype(std::ranges::views::iota(0, 6).begin())>({2, 3}, std::ranges::views::iota(0, 6).begin());
-
-	BOOST_REQUIRE( two_by_three.size() == 2 );
-
-	BOOST_REQUIRE( two_by_three[0][0] == 0 );
-	BOOST_REQUIRE( two_by_three[0][1] == 1 );
-	BOOST_REQUIRE( two_by_three[0][2] == 2 );
-
-	BOOST_REQUIRE( two_by_three[1][0] == 3 );
-	BOOST_REQUIRE( two_by_three[1][1] == 4 );
-	BOOST_REQUIRE( two_by_three[1][2] == 5 );
-
-	// two_by_three[1][2] = 6;  // doesn't compile, good, "error: expression is not assignable"
-}
-#endif
+#include <algorithm>    // for std::ran  // IWYU pragma: keep
+#include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
+#include <iterator>     // for size, begin, end  // IWYU pragma: keep
+#include <numeric>      // for iota  // IWYU pragma: keep
+#include <type_traits>  // for is_same_v  // IWYU pragma: keep
+#include <utility>      // for pair  // IWYU pragma: keep
 
 BOOST_AUTO_TEST_CASE(range_accumulate) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -86,7 +51,7 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 		{2, 2, 4, 4},
 	};
 
-	boost::multi::array<int, 1, std::allocator<int>> aaa = {1, 2, 3};
+	boost::multi::array<int, 1, std::allocator<int>> aaa = { 1, 2, 3 };
 
 	constexpr auto rowOddSum = [](auto const& arr) {
 		return std::ranges::find_if(arr, [](auto const& row) { return (accumulate(row) & 1) == 1; });
