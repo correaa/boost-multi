@@ -3,10 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <complex>
-
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -33,7 +29,9 @@
 	#pragma GCC diagnostic pop
 #endif
 
-#include <algorithm>    // for max
+#include <boost/multi/array.hpp>
+
+// #include <algorithm>    // for max
 #include <complex>      // for complex  // IWYU pragma: keep  // bug in iwyu 18.1.7
 #include <cstddef>      // for size_t
 #include <iterator>     // for size

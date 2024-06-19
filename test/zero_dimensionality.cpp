@@ -32,9 +32,9 @@
 
 #include <boost/multi/array.hpp>  // for array_ref, static_array, array_ptr
 
-#include <algorithm>    // for copy
+// #include <algorithm>    // for copy
 #include <complex>      // for complex
-#include <type_traits>  // for remove_reference<>::type
+// #include <type_traits>  // for remove_reference<>::type
 #include <utility>      // for move
 #include <vector>       // for vector, allocator
 

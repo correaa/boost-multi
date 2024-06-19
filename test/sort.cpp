@@ -33,7 +33,7 @@
 
 #include <algorithm>                 // for is_sorted, stable_sort
 #include <array>                     // for array
-#include <functional>                // for __cpp_lib_ranges
+#include <functional>                // for __cpp_lib_ranges  // IWYU pragma: keep
 #include <iterator>                  // for begin, end
 #include <vector>                    // for vector
 
