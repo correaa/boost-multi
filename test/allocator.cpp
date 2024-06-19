@@ -33,18 +33,19 @@
 
 #include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
 
-#include <algorithm>                                // for transform, is_sorted
-#include <array>                                    // for array, operator==
-#include <cstddef>                                  // for __GLIBCXX__, size_t
-#include <iterator>                                 // for size, back_insert...
-#include <memory>                                   // for make_unique, uniq...
+#include <algorithm>  // for transform, is_sorted
+#include <array>      // for array, operator==
+#include <cassert>    // for _LIBCPP_VERSION
+#include <cstddef>    // for __GLIBCXX__, size_t
+#include <iterator>   // for size, back_insert...
+#include <memory>     // for make_unique, uniq...
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
-#include <memory_resource>                          // for monotonic_buffer_...
+	#include <memory_resource>  // for monotonic_buffer_...
 #endif
-#include <new>                                      // for operator new
-#include <string>                                   // for basic_string, string
-#include <utility>                                  // for move, forward
-#include <vector>                                   // for vector, allocator
+#include <new>      // for operator new
+#include <string>   // for basic_string, string
+#include <utility>  // for move, forward
+#include <vector>   // for vector, allocator
 
 namespace multi = boost::multi;
 
@@ -85,7 +86,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( va[1] [0][0] == 1 );
 	BOOST_REQUIRE( va[2] [0][0] == 2 );
 
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces)
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
                   // NOXXXLINT(fuchsia-default-arguments-calls)
@@ -131,7 +132,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 	BOOST_REQUIRE( size(va[1]) == 1 );
 	BOOST_REQUIRE( size(va[2]) == 2 );
 #endif
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces)
 
 	BOOST_REQUIRE( va[1] [0][0] == "1"s );
 	BOOST_REQUIRE( va[2] [0][0] == "2"s );
@@ -185,7 +186,7 @@ BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
 	BOOST_REQUIRE( size(arr[1]) == 1 );
 	BOOST_REQUIRE( size(arr[8]) == 8 );
 
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces)
 	BOOST_REQUIRE( arr[8][4][4] == "8"s );
 }
 
@@ -225,7 +226,7 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 BOOST_AUTO_TEST_CASE(pmr) {
 	std::array<char, 13> buffer = {
-		{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}
+		{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C' }
 	};
 
 	std::pmr::monotonic_buffer_resource pool{ std::data(buffer), std::size(buffer) };
@@ -279,7 +280,7 @@ BOOST_AUTO_TEST_CASE(pmr2) {
 
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	std::array<int, 12> buffer{
-		{4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999}
+		{ 4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999 }
 	};
 
 	std::pmr::monotonic_buffer_resource pool{ static_cast<void*>(std::data(buffer)), 12 * sizeof(int) };
@@ -324,9 +325,9 @@ BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
 
 constexpr auto g() {
 	multi::array<int, 2> arr = {
-		{4, 5, 6},
-		{1, 2, 3},
-		{7, 8, 9},
+		{ 4, 5, 6 },
+		{ 1, 2, 3 },
+		{ 7, 8, 9 },
 	};
 	std::sort(arr.begin(), arr.end());
 	for(auto it = arr.diagonal().begin(); it != arr.diagonal().end(); ++it) {

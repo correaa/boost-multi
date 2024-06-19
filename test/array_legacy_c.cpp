@@ -33,7 +33,7 @@
 
 #include <array>        // for array
 #include <complex>      // for complex
-#include <type_traits>  // for remove_reference<>::type
+// #include <type_traits>  // for remove_reference<>::type
 #include <utility>      // for move
 
 namespace multi = boost::multi;

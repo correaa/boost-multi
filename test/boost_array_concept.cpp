@@ -53,7 +53,7 @@
 #include <boost/concept_check.hpp>               // for Assignable, CopyCons...
 #include <boost/multi_array.hpp>                 // for multi_array
 #include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
-#include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
+// #include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
 
 #include <cstddef>  // for ptrdiff_t
 #include <vector>   // for vector

@@ -8,7 +8,7 @@
 #include <boost/multi/array.hpp>          // for array, subarray, layout_t
 
 #include <algorithm>   // for for_each, generate
-#include <chrono>      // for duration, operator-, high_r...
+#include <chrono>      // for duration, operator-, high_r...  // NOLINT(build/c++11)
 #include <complex>     // for operator==, complex
 #include <functional>  // for invoke
 #include <iostream>    // for basic_ostream, operator<<

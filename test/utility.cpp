@@ -35,7 +35,8 @@
 #include <iterator>     // for begin, end, iterator_traits, rend
 #include <numeric>      // for iota
 #include <type_traits>  // for is_same
-#include <utility>      // for addressof
+#include <memory>                    // for addressof
+// #include <utility>      // for addressof  // addressof is in memory
 #include <vector>       // for vector, allocator
 
 namespace multi = boost::multi;
