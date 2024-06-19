@@ -41,7 +41,7 @@
 #include <complex>                   // for complex
 #include <cstddef>                   // for size_t
 #include <iterator>                  // for size
-// #include <type_traits>               // for decay_t
+// IWYU pragma: no_include <type_traits>  // for decay_t
 #include <utility>                   // for move
 #include <vector>                    // for vector, allocator
 

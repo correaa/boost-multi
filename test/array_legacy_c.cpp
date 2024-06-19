@@ -33,7 +33,7 @@
 
 #include <array>        // for array
 #include <complex>      // for complex
-// #include <type_traits>  // for remove_reference<>::type
+// IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
 #include <utility>      // for move
 
 namespace multi = boost::multi;
@@ -58,7 +58,8 @@ void fftw_plan_dft(
 }  // end namespace fake
 
 BOOST_AUTO_TEST_CASE(array_legacy_c) {
-	using complex                     = std::complex<double>;
+	using complex = std::complex<double>;
+
 	multi::array<complex, 2> const in = {
 		{{ 150.0, 0.0 }, { 16.0, 0.0 }, { 17.0, 0.0 }, { 18.0, 0.0 }, { 19.0, 0.0 }},
 		{  { 5.0, 0.0 },  { 5.0, 0.0 },  { 5.0, 0.0 },  { 5.0, 0.0 },  { 5.0, 0.0 }},

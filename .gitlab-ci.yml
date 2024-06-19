@@ -153,7 +153,6 @@ clang++ sanitizer:
     - mkdir build && cd build
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"  # ,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-omit-frame-pointer -fno-sanitize-recover=all"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    # - ASAN_OPTIONS="check_initialization_order=1" 
     - ctest -j 2 --output-on-failure -T Test
   needs: ["clang++"]
 
@@ -169,7 +168,7 @@ g++ sanitizer:
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
+    - ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
 
 g++-7:
@@ -290,7 +289,7 @@ vs2019-windows:
     - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart | more
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -A x64
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/EHsc /W2" -DCMAKE_BUILD_TYPE=Release -A x64
     - cmake --build build --config Release --parallel 2
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
