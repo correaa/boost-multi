@@ -34,7 +34,8 @@
 #include <algorithm>    // for copy, equal, fill_n, move
 #include <iterator>     // for size, back_insert_iterator, back...
 #include <memory>       // for unique_ptr, make_unique, allocat...
-#include <type_traits>  // for remove_reference<>::type
+// #include <type_traits>  // for remove_reference<>::type
+// IWYU pragma: no_include <map>
 #include <utility>      // for move
 #include <vector>       // for vector, operator==, vector<>::va...
 

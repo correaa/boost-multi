@@ -33,7 +33,7 @@
 	#pragma GCC diagnostic pop
 #endif
 
-#include <algorithm>    // for max
+// #include <algorithm>    // for max
 #include <complex>      // for complex  // IWYU pragma: keep  // bug in iwyu 18.1.7
 #include <cstddef>      // for size_t
 #include <iterator>     // for size

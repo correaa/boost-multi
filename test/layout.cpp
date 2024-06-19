@@ -42,7 +42,7 @@
 #include <array>                     // for array, array<>::value_type
 #include <iterator>                  // for size
 #include <tuple>                     // for make_tuple, tuple_element<>::type
-#include <type_traits>               // for __strip_reference_wrapper<>::__type
+// #include <type_traits>               // for __strip_reference_wrapper<>::__type
 
 namespace multi = boost::multi;
 
