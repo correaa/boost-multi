@@ -8,7 +8,7 @@
 #include <boost/multi/adaptors/lapack/filling.hpp>  // for filling, filling...
 #include <boost/multi/adaptors/lapack/potrf.hpp>    // for potrf
 
-// IWYU pragma: no_include <boost/multi/adaptors/blas/complex_traits.hpp>  // for blas
+// IWYU pragma: no_include "boost/multi/adaptors/blas/complex_traits.hpp"  // for blas
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm
 #include <boost/multi/adaptors/blas/herk.hpp>        // for herk
 #include <boost/multi/adaptors/blas/numeric.hpp>     // for underlying
