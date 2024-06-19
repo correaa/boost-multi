@@ -32,11 +32,11 @@
 
 #include <boost/multi/array.hpp>  // for array_ref, static_array, array_ptr
 
-// #include <algorithm>    // for copy
-#include <complex>      // for complex
-// #include <type_traits>  // for remove_reference<>::type
-#include <utility>      // for move
-#include <vector>       // for vector, allocator
+// IWYU pragma: no_include <algorithm>  // for copy
+#include <complex>  // for complex
+// IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
+#include <utility>  // for move
+#include <vector>   // for vector, allocator
 
 namespace multi = boost::multi;
 
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 		BOOST_REQUIRE( num_elements(m1) == 3 );
 
 		multi::array_ref<int, 0> m0(v1.data(), {});
-		//      BOOST_REQUIRE(( &m0 == multi::array_ptr<double, 0>(v1.data(), {}) ));
+		// BOOST_REQUIRE(( &m0 == multi::array_ptr<double, 0>(v1.data(), {}) ));
 		BOOST_REQUIRE( data_elements(m0) == v1.data() );
 		BOOST_REQUIRE( num_elements(m0) == 1 );
 

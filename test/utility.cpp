@@ -33,11 +33,11 @@
 
 #include <array>        // for array
 #include <iterator>     // for begin, end, iterator_traits, rend
+#include <memory>       // for addressof  // IWYU pragma: keep
 #include <numeric>      // for iota
 #include <type_traits>  // for is_same
-#include <memory>                    // for addressof
-// #include <utility>      // for addressof  // addressof is in memory
-#include <vector>       // for vector, allocator
+// IWYU pragma: no_include <utility>
+#include <vector>  // for vector, allocator
 
 namespace multi = boost::multi;
 
