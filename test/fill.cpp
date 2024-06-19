@@ -227,31 +227,31 @@ BOOST_AUTO_TEST_CASE(julia_broadcast, *boost::unit_test::tolerance(0.00001)) {
 	multi::array<double, 2> arr2(extensions(arr));
 	broadcast(std::plus<>{}, col, arr, arr2);
 
-	BOOST_TEST( arr2[0][0] == 1.20813 );
-	BOOST_TEST( arr2[0][1] == 1.82068 );
-	BOOST_TEST( arr2[0][2] == 1.25387 );
-	BOOST_TEST( arr2[1][0] == 1.56851 );
-	BOOST_TEST( arr2[1][1] == 1.86401 );
-	BOOST_TEST( arr2[1][2] == 1.67846 );
+	BOOST_REQUIRE_CLOSE( arr2[0][0], 1.20813, 1E-6 );
+	BOOST_REQUIRE_CLOSE( arr2[0][1], 1.82068, 1E-6 );
+	BOOST_REQUIRE_CLOSE( arr2[0][2], 1.25387, 1E-6 );
+	BOOST_REQUIRE_CLOSE( arr2[1][0], 1.56851, 1E-6 );
+	BOOST_REQUIRE_CLOSE( arr2[1][1], 1.86401, 1E-6 );
+	BOOST_REQUIRE_CLOSE( arr2[1][2], 1.67846, 1E-6 );
 
 	// inefficient: replicate the vector before summing elementwise
 	multi::array<double, 2> ax3({ 2, 3 });
 
 	std::fill(begin(~ax3), end(~ax3), (~col)[0]);
-	BOOST_TEST( ax3[0][0] == 0.1 );
-	BOOST_TEST( ax3[0][1] == 0.1 );
-	BOOST_TEST( ax3[0][2] == 0.1 );
-	BOOST_TEST( ax3[1][0] == 0.2 );
-	BOOST_TEST( ax3[1][1] == 0.2 );
-	BOOST_TEST( ax3[1][2] == 0.2 );
+	BOOST_REQUIRE_CLOSE( ax3[0][0], 0.1, 1E-6 );
+	BOOST_REQUIRE_CLOSE( ax3[0][1], 0.1, 1E-6 );
+	BOOST_REQUIRE_CLOSE( ax3[0][2], 0.1, 1E-6 );
+	BOOST_REQUIRE_CLOSE( ax3[1][0], 0.2, 1E-6 );
+	BOOST_REQUIRE_CLOSE( ax3[1][1], 0.2, 1E-6 );
+	BOOST_REQUIRE_CLOSE( ax3[1][2], 0.2, 1E-6 );
 
 	multi::array<double, 2> Ap(extensions(arr));
 	std::transform(begin(arr.elements()), end(arr.elements()), begin(ax3.elements()), begin(Ap.elements()), std::plus<>{});
 
-	BOOST_TEST( Ap[0][0] == 1.20813 );
-	BOOST_TEST( Ap[0][1] == 1.82068 );
-	BOOST_TEST( Ap[0][2] == 1.25387 );
-	BOOST_TEST( Ap[1][0] == 1.56851 );
-	BOOST_TEST( Ap[1][1] == 1.86401 );
-	BOOST_TEST( Ap[1][2] == 1.67846 );
+	BOOST_REQUIRE_CLOSE( Ap[0][0], 1.20813, 1E-6 );
+	BOOST_REQUIRE_CLOSE( Ap[0][1], 1.82068, 1E-6 );
+	BOOST_REQUIRE_CLOSE( Ap[0][2], 1.25387, 1E-6 );
+	BOOST_REQUIRE_CLOSE( Ap[1][0], 1.56851, 1E-6 );
+	BOOST_REQUIRE_CLOSE( Ap[1][1], 1.86401, 1E-6 );
+	BOOST_REQUIRE_CLOSE( Ap[1][2], 1.67846, 1E-6 );
 }
