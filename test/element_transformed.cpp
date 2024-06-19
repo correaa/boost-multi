@@ -39,7 +39,7 @@
 
 #include <complex>      // for complex, operator*, operator+
 #include <numeric>      // for inner_product
-#include <type_traits>  // for declval
+// #include <type_traits>  // for declval  // in utility
 #include <utility>      // for declval, forward
 #include <vector>       // for vector
 

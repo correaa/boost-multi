@@ -120,20 +120,21 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	auto start_time = std::chrono::high_resolution_clock::now();
 
 	multi::extension_t const exts{ 0, count };
-	auto                     acc = std::transform_reduce(
-                                                                                                                                                                                                      exts.begin(), exts.end(), int64_t{ 0 },
-                                                                                                                                                                                                      std::plus<>{},
-                                                                                                                                                                                                      [&resp](auto idx) {
-                                                                                                                                                                                                                                                                                                         multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
-                                                                                                                                                                                                                                                                                                                                                                                                            multi::extensions_t<2>{ 1000 - idx % 10, 1000 + idx % 10 },  // MSVC needs multi::extensions_t<2>
-                                                                                                                                                                                                                                                                                                                                                                                                            resp
-                                                                                                                                                                                                                                                                                                         );
-                                                                                                                                                                                                                                                                                                         std::fill_n(arr.data_elements(), arr.num_elements(), 1);
-                                                                                                                                                                                                                                                                                                         auto*        be = arr.data_elements();
-                                                                                                                                                                                                                                                                                                         decltype(be) en = arr.data_elements() + arr.num_elements();
-                                                                                                                                                                                                                                                                                                         return std::accumulate(be, en, int64_t{}, std::plus<int64_t>{});
-                                                                                                                                                                                                      }
-                                                                                                   );
+
+	auto acc = std::transform_reduce(
+		exts.begin(), exts.end(), int64_t{ 0 },
+		std::plus<>{},
+		[&resp](auto idx) {
+			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
+				multi::extensions_t<2>{ 1000 - idx % 10, 1000 + idx % 10 },  // MSVC needs multi::extensions_t<2>
+				resp
+			);
+			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
+			auto*        be = arr.data_elements();
+			decltype(be) en = arr.data_elements() + arr.num_elements();
+			return std::accumulate(be, en, int64_t{}, std::plus<int64_t>{});
+		}
+	);
 
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout << time.count() / count << "          " << acc << '\n';

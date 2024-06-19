@@ -40,7 +40,7 @@
 #include <algorithm>    // for equal
 #include <array>        // for array  // IWYU pragma: keep  // bug in iwyu 8.22
 #include <memory>       // for __alloc_traits<>::value_type
-#include <type_traits>  // for add_const_t, decay_t
+// #include <type_traits>  // for add_const_t, decay_t
 #include <utility>      // for as_const, addressof, exchange, move
 #include <vector>       // for vector
 
@@ -132,20 +132,20 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		BOOST_REQUIRE( size(arrR) == arrP->size() );
 	}
 	{
-		std::array<std::array<int, 5>, 4> arr = {
-			{std::array<int, 5>{ { 00, 10, 20, 30, 40 } },
-                                                                                                                                                                                                                                                                                                          std::array<int, 5>{ { 50, 60, 70, 80, 90 } },
-                                                                                                                                                                                                                                                                                                          std::array<int, 5>{ { 100, 110, 120, 130, 140 } },
-                                                                                                                                                                                                                                                                                                          std::array<int, 5>{ { 150, 160, 170, 180, 190 } }},
-		};
+		std::array<std::array<int, 5>, 4> arr = {{
+			std::array<int, 5>{ { 00, 10, 20, 30, 40 } },
+			std::array<int, 5>{ { 50, 60, 70, 80, 90 } },
+			std::array<int, 5>{ { 100, 110, 120, 130, 140 } },
+			std::array<int, 5>{ { 150, 160, 170, 180, 190 } },
+		}};
 
 		std::vector<multi::array_ptr<int, 1>> ptrs;
 		ptrs.emplace_back(&arr[0][0], 5);  // NOLINT(readability-container-data-pointer) test access
 		ptrs.emplace_back(arr[2].data(), 5);
 		ptrs.emplace_back(&arr[3][0], 5);  // NOLINT(readability-container-data-pointer) test access
 
-		BOOST_REQUIRE( &(*ptrs[2])[4] == &arr[3][4]   );
-		BOOST_REQUIRE(  (*ptrs[2])[4] == 190         );
+		BOOST_REQUIRE( &(*ptrs[2])[4] == &arr[3][4]     );
+		BOOST_REQUIRE(  (*ptrs[2])[4] == 190            );
 		BOOST_REQUIRE(    ptrs[2]->operator[](4) == 190 );
 	}
 	{

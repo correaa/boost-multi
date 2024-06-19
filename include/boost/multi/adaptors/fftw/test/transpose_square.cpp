@@ -7,7 +7,7 @@
 #include <boost/multi/adaptors/fftw.hpp>  // for initialize_threads, environ...
 #include <boost/multi/array.hpp>          // for array, subarray, layout_t
 
-#include <algorithm>   // for for_each, generate
+#include <algorithm>   // for for_each, generate  // NOLINT
 #include <chrono>      // for duration, operator-, high_r...
 #include <complex>     // for operator==, complex
 #include <functional>  // for invoke

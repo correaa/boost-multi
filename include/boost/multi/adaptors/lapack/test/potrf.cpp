@@ -7,7 +7,7 @@
 #include <boost/multi/adaptors/lapack/filling.hpp>  // for filling, filling...
 #include <boost/multi/adaptors/lapack/potrf.hpp>    // for potrf
 
-#include <boost/multi/adaptors/blas/complex_traits.hpp>  // for blas
+// #include <boost/multi/adaptors/blas/complex_traits.hpp>  // for blas
 #include <boost/multi/adaptors/blas/gemm.hpp>            // for gemm
 #include <boost/multi/adaptors/blas/herk.hpp>            // for herk
 #include <boost/multi/adaptors/blas/numeric.hpp>         // for underlying
@@ -15,12 +15,13 @@
 
 #include <boost/multi/array.hpp>  // for array, subarray
 
+#include <algorithm>                                 // for for_each, generate
 #include <complex>   // for operator*, complex
 #include <iostream>  // for operator<<, ostream
 #include <limits>    // for numeric_limits
 #include <random>    // for uniform_real_dis...
 #include <string>    // for allocator, opera...
-#include <tuple>     // for tuple_element<>:...
+// #include <tuple>     // for tuple_element<>:...
 #include <utility>   // for forward
 
 namespace multi = boost::multi;
