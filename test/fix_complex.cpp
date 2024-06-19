@@ -32,9 +32,9 @@
 #include <boost/multi/array.hpp>
 
 #include <array>     // for array
-#include <cassert>   // for _LIBCPP_VERSION
+#include <cassert>   // for _LIBCPP_VERSION  // IWYU pragma: keep
 #include <complex>   // for complex, operator==
-// #include <iosfwd>    // for __GLIBCXX__
+// IWYU pragma: no_include <iosfwd>    // for __GLIBCXX__
 #include <iterator>  // for data
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE

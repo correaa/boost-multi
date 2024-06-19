@@ -12,7 +12,7 @@
 
 #include <boost/multi/adaptors/complex/adl.hpp>
 
-#include "../blas/complex_traits.hpp"
+#include <boost/multi/adaptors/blas/complex_traits.hpp>
 
 #include "../../detail/pointer_traits.hpp"
 

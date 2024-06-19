@@ -35,10 +35,10 @@
 #include <cstddef>     // for offsetof, size_t
 #include <functional>  // for _Mem_fn, mem_fn
 #include <iterator>    // for size
-#include <memory>      // for addressof
+#include <memory>      // for addressof  // IWYU pragma: keep
 #include <string>      // for operator""s, allocator, char_traits
 #include <tuple>       // for tie, operator==, tuple
-// #include <utility>     // for addressof  std::addressof is in memory
+// IWYU pragma: no_include <utility>  // for addressof  std::addressof is in memory
 
 #if defined(_MSC_VER)
 	#pragma warning(push)
@@ -145,8 +145,8 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 	multi::array<employee, 1> d1D = {
-		{  "Al"s, 1430, 35 },
-		{ "Bob"s, 3212, 34 },
+		{ "Al"s, 1430, 35},
+		{"Bob"s, 3212, 34},
 	};
 
 	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
@@ -155,8 +155,8 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(&d1D_names[1] == &d1D[1].name);
 
 	multi::array<employee, 2> d2D = {
-		{   { "Al"s, 1430, 35 },   { "Bob"s, 3212, 34 } },
-		{ { "Carl"s, 1589, 32 }, { "David"s, 2300, 38 } },
+		{  { "Al"s, 1430, 35 },   { "Bob"s, 3212, 34 }},
+		{{ "Carl"s, 1589, 32 }, { "David"s, 2300, 38 }},
 	};
 	BOOST_REQUIRE(d2D[0][0].name == "Al");
 	BOOST_REQUIRE(d2D[0][0].salary == 1430);
@@ -185,8 +185,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	};
 
 	multi::array<record, 2> const recs = {
-		{ { 1, 1.1 }, { 2, 2.2 } },
-		{ { 3, 3.3 }, { 4, 4.4 } },
+		{{ 1, 1.1 }, { 2, 2.2 }},
+		{{ 3, 3.3 }, { 4, 4.4 }},
 	};
 
 	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
@@ -205,8 +205,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 	multi::array<employee, 2> d2D = {
-		{   { "Al"s, 1430, 35 },   { "Bob"s, 3212, 34 } },
-		{ { "Carl"s, 1589, 32 }, { "David"s, 2300, 38 } },
+		{  { "Al"s, 1430, 35 },   { "Bob"s, 3212, 34 }},
+		{{ "Carl"s, 1589, 32 }, { "David"s, 2300, 38 }},
 	};
 
 	// multi::array<std::size_t, 2> d2D_ages_copy =
