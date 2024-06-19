@@ -35,7 +35,7 @@
 #include <cstddef>     // for offsetof, size_t
 #include <functional>  // for _Mem_fn, mem_fn
 #include <iterator>    // for size
-#include <memory>      // for addressof  
+#include <memory>      // for addressof
 #include <string>      // for operator""s, allocator, char_traits
 #include <tuple>       // for tie, operator==, tuple
 // #include <utility>     // for addressof  std::addressof is in memory
