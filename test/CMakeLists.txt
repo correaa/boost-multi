@@ -844,7 +844,7 @@ else()
 	-Wuninitialized
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
-	/WX /W4 /permissive- /volatile:iso # /EHsc /Zc:wchar_t /Zc:forScope /Zc:inline
+	/WX /Wall /EHsc /volatile:iso # /EHsc /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
 	>
 	)
 
