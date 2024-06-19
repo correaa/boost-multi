@@ -3,16 +3,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// Suppress warnings from other boost libraries
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wundef"
 	#pragma clang diagnostic ignored "-Wconversion"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wfloat-equal"
+//  #pragma clang diagnostic ignored "-Wfloat-equal"
 	#pragma clang diagnostic ignored "-Wunknown-pragmas"
-	// #  pragma clang diagnositc ignored "-Wdeprecated-declarations"
 	#pragma clang diagnostic ignored "-Wunused-variable"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
@@ -20,9 +18,8 @@
 	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wfloat-equal"
+//  #pragma GCC diagnostic ignored "-Wfloat-equal"
 	#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-	// #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
 	#pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
@@ -42,18 +39,18 @@
 #endif
 
 #include <boost/multi/array.hpp>  // for operator!=, implicit...
+// IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
+
+#include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT
+#include <boost/concept_check.hpp>               // for Assignable, CopyCons...
+#include <boost/multi_array.hpp>                 // for multi_array
+#include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
 
 #if defined(__clang__)
 	#pragma clang diagnostic pop
 #elif defined(__GNUC__)
 // #  pragma GCC diagnostic pop
 #endif
-
-#include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT
-#include <boost/concept_check.hpp>               // for Assignable, CopyCons...
-#include <boost/multi_array.hpp>                 // for multi_array
-#include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
-// IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
 
 #include <cstddef>  // for ptrdiff_t
 #include <vector>   // for vector
