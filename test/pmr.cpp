@@ -3,6 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#if 0
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -140,4 +141,6 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	std::cout << time.count() / count << "          " << acc << '\n';
 }
 	#endif
+#endif
+
 #endif

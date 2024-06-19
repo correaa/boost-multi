@@ -289,7 +289,7 @@ vs2019-windows:
     - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart | more
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/W2" -DCMAKE_BUILD_TYPE=Release -A x64
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/EHsc /W2" -DCMAKE_BUILD_TYPE=Release -A x64
     - cmake --build build --config Release --parallel 2
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
