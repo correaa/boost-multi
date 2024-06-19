@@ -3,7 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if 0
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -52,6 +51,7 @@
 
 namespace multi = boost::multi;
 
+#if 0
 BOOST_AUTO_TEST_CASE(pmr_dummy) {
 }
 
@@ -78,8 +78,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert(std::size(buffer) > 6 * sizeof(double));
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({ 2, 3 }, 0.0, &mbr);  // NOLINT(readability-identifier-length)
-		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
-		//  BOOST_TEST( buffer[13] != '3' );
+
 
 		BOOST_TEST( A[0][0] == 0.0 );
 		BOOST_TEST( A[1][2] == 0.0 );
@@ -91,8 +90,6 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert(std::size(buffer) > 6 * sizeof(double));
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({ 2, 3 }, {}, &mbr);
-		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
-		//  BOOST_TEST( buffer[13] != '3' );
 
 		BOOST_TEST( arr[0][0] == double{} );
 		BOOST_TEST( arr[1][2] == double{} );
@@ -104,20 +101,19 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert(std::size(buffer) > 6 * sizeof(double));
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({ 2, 3 }, 666.0, &mbr);
-		//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
-		//  BOOST_TEST( buffer[13] != '3' );
 
 		BOOST_TEST( arr[0][0] == 666.0 );
 		BOOST_TEST( arr[1][2] == 666.0 );
 	}
 }
 
-	#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
+#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 
-	auto count      = 50;
+	auto count = 50;
+
 	auto start_time = std::chrono::high_resolution_clock::now();
 
 	multi::extension_t const exts{ 0, count };
@@ -140,7 +136,7 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout << time.count() / count << "          " << acc << '\n';
 }
-	#endif
 #endif
 
+#endif
 #endif
