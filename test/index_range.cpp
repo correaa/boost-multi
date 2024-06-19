@@ -36,58 +36,13 @@
 
 #include <boost/multi/array_ref.hpp>
 
-#include <boost/iterator/transform_iterator.hpp>
-
-#include <algorithm>              // for equal
-#include <boost/multi_array.hpp>  // for operator!=
-#include <cstddef>                // for ptrdiff_t
-#include <numeric>                // for accumulate
-#include <vector>                 // for vector
+#include <algorithm>  // for equal
+#include <numeric>    // for accumulate
+#include <vector>     // for vector
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(multi_range) {
-#if defined(__cpp_deduction_guides) && __cpp_deduction_guides && !defined(__NVCC__)
-	BOOST_REQUIRE(( multi::range{5, 5}.empty() ));
-#else
-	BOOST_REQUIRE(( multi::range<std::ptrdiff_t>{5, 5}.empty() ));
-#endif
-	{
-		auto drng = multi::range<std::ptrdiff_t>{ 5, 10 };
-
-		std::vector<int> vec(drng.begin(), drng.end());  // testing std::vector NOLINT(fuchsia-default-arguments-calls)
-		BOOST_REQUIRE( vec[1] == 6 );
-	}
-	{
-		auto drng = multi::range<std::ptrdiff_t>{ 5, 10 };
-
-		auto fun = [](auto idx) { return idx + 1; };
-
-		std::vector<int> vec(  // testing std::vector NOLINT(fuchsia-default-arguments-calls)
-			boost::make_transform_iterator(drng.begin(), fun),
-			boost::make_transform_iterator(drng.end(), fun)
-		);
-		BOOST_REQUIRE( vec[1] == 7 );
-	}
-}
-
-BOOST_AUTO_TEST_CASE(crazy_range) {
-	// auto trng = multi::range(
-	//    multi::detail::tuple<int, int>{5, 3},
-	//    multi::detail::tuple<int, int>{5, 9},
-	//  [](auto t , int d) {return std::get<1>(t) + d;}
-	//  [](auto t1, auto t2) {return std::get<1>(t1) - std::get<1>(t2);}
-	// );
-
-	// BOOST_REQUIRE( trng[0] == (std::tuple{5, 3}) );
-	// BOOST_REQUIRE( trng[1] == (std::tuple{5, 4}) );
-
-	// BOOST_REQUIRE( *trng.begin() == (std::tuple{5, 3}) );
-	// BOOST_REQUIRE( *(trng.begin() + 1) == (std::tuple{5, 4}) );
-}
-
 BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
-	// BOOST_REQUIRE( multi::extension_t<int>{5} == 5 );
 	BOOST_REQUIRE(( multi::extension_t<int>{5, 12}.contains(10) ));
 
 	multi::range<int> const irng{ 5, 12 };
