@@ -51,7 +51,6 @@
 
 namespace multi = boost::multi;
 
-#if 0
 BOOST_AUTO_TEST_CASE(pmr_dummy) {
 }
 
@@ -78,7 +77,6 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert(std::size(buffer) > 6 * sizeof(double));
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({ 2, 3 }, 0.0, &mbr);  // NOLINT(readability-identifier-length)
-
 
 		BOOST_TEST( A[0][0] == 0.0 );
 		BOOST_TEST( A[1][2] == 0.0 );
@@ -107,7 +105,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	}
 }
 
-#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
+	#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
@@ -136,7 +134,6 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout << time.count() / count << "          " << acc << '\n';
 }
-#endif
+	#endif
 
-#endif
 #endif
