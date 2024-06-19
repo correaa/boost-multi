@@ -37,7 +37,7 @@
 #include <boost/multi/array.hpp>  // for array, extension_t, static_array
 
 #include <algorithm>   // for fill_n
-#include <chrono>      // for high_resolution_clock, operator-
+#include <chrono>      // for high_resolution_clock, operator-  // NOLINT(build/c++11)
 #include <cstdint>     // for int64_t
 #include <functional>  // for plus
 #include <iostream>    // for char_traits, basic_ostream, oper...

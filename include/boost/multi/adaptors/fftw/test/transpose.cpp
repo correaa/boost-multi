@@ -9,7 +9,7 @@
 #include <boost/multi/array.hpp>
 
 #include <algorithm>   // for generate
-#include <chrono>      // for operator-, duration, system...
+#include <chrono>      // for operator-, duration, system...  // NOLINT(build/c++11)
 #include <complex>     // for operator==, complex
 #include <functional>  // for invoke
 #include <iostream>    // for operator<<, basic_os...

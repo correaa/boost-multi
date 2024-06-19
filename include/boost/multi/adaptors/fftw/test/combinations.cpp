@@ -11,7 +11,7 @@
 
 #include <algorithm>  // for generate, for_each
 #include <array>      // for array
-#include <chrono>     // for operator-, duration
+#include <chrono>     // for operator-, duration  // NOLINT(build/c++11)
 #include <complex>    // for complex, operator==
 #include <iostream>   // for operator<<, basic_os...
 #include <numeric>    // for iota
