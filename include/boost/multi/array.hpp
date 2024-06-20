@@ -461,7 +461,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		if constexpr(D == 1) {
 			return std::move(ref::operator[](idx));
 		} else {
-			return ref::operator[](idx).moved();
+			return ref::operator[](idx).element_moved();
 		}  // NOLINT(readability/braces)
 	}
 	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> typename static_array::reference { return ref::operator[](idx); }
