@@ -808,7 +808,7 @@ constexpr auto operator*(extensions_t<1> const& extensions_1d, extensions_t<1> c
 
 }  // end namespace boost::multi
 
-namespace boost::multi {
+namespace boost::multi::detail {
 
 	template<class Tuple>
 	struct convertible_tuple : Tuple {
@@ -826,17 +826,15 @@ namespace boost::multi {
 		/*explicit*/ operator array_type() const& noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		/*explicit*/ operator array_type() && noexcept {return to_array();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-		[[deprecated("dangling conversion")]]
-		operator std::ptrdiff_t const*() const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-			#ifdef __clang__
-				#pragma clang diagnostic push
-				#pragma clang diagnostic ignored "-Wreturn-stack-address"
-			#endif
-			return to_array().data();
-			#ifdef __clang__
-				#pragma clang diagnostic pop
-			#endif
-		}
+		#ifdef __clang__
+			#pragma clang diagnostic push
+			#pragma clang diagnostic ignored "-Wreturn-stack-address"
+		#endif
+		[[deprecated("This is here for nominal compatiblity with Boost.MultiArray, this would be a dangling conversion")]]
+		operator std::ptrdiff_t const*() const &&;  /*{ return to_array().data(); }*/ // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		#ifdef __clang__
+			#pragma clang diagnostic pop
+		#endif
 
 		template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Tuple>), int> =0>
 		friend constexpr auto get(convertible_tuple const& self) -> typename std::tuple_element<Index, Tuple>::type {
@@ -857,10 +855,10 @@ namespace boost::multi {
 			return std::get<Index>(static_cast<Array const&>(self));
 		}
 	};
-}  // end namespace boost::multi
+}  // end namespace boost::multi::detail
 
-template<class Tuple> struct std::tuple_size<boost::multi::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
-template<class Array> struct std::tuple_size<boost::multi::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
+template<class Tuple> struct std::tuple_size<boost::multi::detail::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
+template<class Array> struct std::tuple_size<boost::multi::detail::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
 
 #ifdef __clang__
 #  pragma clang diagnostic pop

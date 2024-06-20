@@ -3,6 +3,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+// Test explicitly calls deprecated function
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnositc ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
+// #  pragma GCC diagnostic push
+// #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+#endif
+
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -29,15 +38,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-// Test explicitly calls deprecated function
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnositc ignored "-Wdeprecated-declarations"
-#elif defined(__GNUC__)
-// #  pragma GCC diagnostic push
-// #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
-#endif
-
 #include <boost/multi/array.hpp>  // for operator!=, implicit...
 // IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
 
@@ -45,12 +45,6 @@
 #include <boost/concept_check.hpp>               // for Assignable, CopyCons...
 #include <boost/multi_array.hpp>                 // for multi_array
 #include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
-
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-// #  pragma GCC diagnostic pop
-#endif
 
 #include <cstddef>  // for ptrdiff_t
 #include <vector>   // for vector
