@@ -3,44 +3,41 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #elif defined(_MSC_VER)
-#  pragma warning(push)
-#  pragma warning(disable : 4285)  // Recursive return type for fancy_ptr if infix notationis applied
+	#pragma warning(push)
+	#pragma warning(disable : 4285)  // Recursive return type for fancy_ptr if infix notationis applied
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
 
 #if defined(__clang__)
-#  pragma clang diagnostic pop
+	#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic pop
+	#pragma GCC diagnostic pop
 #endif
 
-#include <boost/multi/array.hpp>     // for array, array_iterator, static_array
+#include <boost/multi/array.hpp>  // for array, array_iterator, static_array
 
-#include <cstddef>                   // for size_t, nullptr_t, ptrdiff_t
-#include <iterator>                  // for random_access_iterator_tag
-#include <memory>                    // for allocator
-#include <type_traits>               // for decay_t
+#include <cstddef>      // for size_t, nullptr_t, ptrdiff_t
+#include <iterator>     // for random_access_iterator_tag
+#include <memory>       // for allocator
+#include <type_traits>  // for decay_t
 
 namespace fancy {
 
@@ -165,7 +162,7 @@ namespace boost::multi {
 
 template<class It, class T>
 auto copy(It first, It last, fancy::ptr<T> dest) {
-	return copy(first, last, multi::array_iterator<T, 1, fancy::ptr<T>>{dest});
+	return copy(first, last, multi::array_iterator<T, 1, fancy::ptr<T>>{ dest });
 	//  std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
 	//  return dest;
 }
@@ -190,17 +187,13 @@ auto copy(It /*first*/, It /*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> 
 
 }  // end namespace boost::multi
 
-////////////////////////////////////////////////////////////////////////////////
-// user code
-////////////////////////////////////////////////////////////////////////////////
-
 BOOST_AUTO_TEST_CASE(multi_fancy) {
 	namespace multi = boost::multi;
 
-	multi::array<double, 2, fancy::allocator<double>> arr({5, 5});
+	multi::array<double, 2, fancy::allocator<double>> arr({ 5, 5 });
 	BOOST_REQUIRE( arr.size() == 5 );
 	BOOST_REQUIRE( arr[1][1] == arr[2][2] );
 
-	multi::array<double, 2, fancy::allocator<double>> const arr2({0, 0});
+	multi::array<double, 2, fancy::allocator<double>> const arr2({ 0, 0 });
 	BOOST_REQUIRE( arr2.size() == 0 );
 }
