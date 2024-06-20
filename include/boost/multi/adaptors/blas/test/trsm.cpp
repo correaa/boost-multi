@@ -9,7 +9,7 @@
 
 #include <boost/multi/array.hpp>
 
-#include <config.hpp>
+// #include <config.hpp>
 
 namespace multi = boost::multi;
 
