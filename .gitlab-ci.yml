@@ -452,10 +452,7 @@ clang++-oldoldstable:
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
-    # - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
-    # - wget -O cmake-install.sh https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-x86_64.sh --no-verbose
-    - wget -O cmake-install.sh https://cmake.org/files/v3.17/cmake-3.17.0-rc1-Linux-x86_64.sh --no-verbose
+    - wget -O cmake-install.sh https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-x86_64.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
     - mkdir build && cd build 
     - clang++ --version
