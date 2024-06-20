@@ -228,6 +228,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_double) {
 	BOOST_TEST( dot(x, y) == 14.0F );
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_double_equal) {
+	multi::array<double, 1> const x = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> const y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
+
+	using blas::dot;
+	BOOST_TEST( dot(x, y) == dot(x, y) );
+}
+
 BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_float, *boost::unit_test::disabled()) {
 	multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
