@@ -521,7 +521,6 @@ nvhpc:
   tags:
     - non-shared
     - large-disk-space
-  interruptible: true
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
