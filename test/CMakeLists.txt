@@ -848,11 +848,13 @@ else()
 	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
 	/wd4514  # unreferenced inline function has been removed
 	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
+	/wd4625  # copy constructor was implicitly defined as deleted
 	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
 	/wd4710  # function not inlined
 	/wd4711  # function selected for automatic inline expansion
 	/wd4866  # compiler may not enforce left-to-right evaluation order for call
-	/wd4820  # 'bytes' bytes padding added after construct 'member_name'
+	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
+	/wd5026  # move constructor was implicitly defined as deleted
 	>
 	)
 
