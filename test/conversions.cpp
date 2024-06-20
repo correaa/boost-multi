@@ -3,10 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-#include <complex>
-
 // Suppress warnings from boost.test
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -14,14 +10,12 @@
 #  pragma clang diagnostic ignored "-Wundef"
 #  pragma clang diagnostic ignored "-Wconversion"
 #  pragma clang diagnostic ignored "-Wsign-conversion"
-// #  pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  pragma GCC diagnostic ignored "-Wundef"
 #  pragma GCC diagnostic ignored "-Wconversion"
 #  pragma GCC diagnostic ignored "-Wsign-conversion"
-// #  pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable : 4244)
@@ -41,6 +35,10 @@
 #  pragma warning(pop)
 #  pragma warning(disable : 4244)
 #endif
+
+#include <boost/multi/array.hpp>
+
+#include <complex>
 
 namespace multi = boost::multi;
 

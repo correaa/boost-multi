@@ -9,7 +9,6 @@
 	#pragma clang diagnostic ignored "-Wundef"
 	#pragma clang diagnostic ignored "-Wconversion"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
-//  #pragma clang diagnostic ignored "-Wfloat-equal"
 	#pragma clang diagnostic ignored "-Wunknown-pragmas"
 	#pragma clang diagnostic ignored "-Wunused-variable"
 #elif defined(__GNUC__)
@@ -18,7 +17,6 @@
 	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
-//  #pragma GCC diagnostic ignored "-Wfloat-equal"
 	#pragma GCC diagnostic ignored "-Wunknown-pragmas"
 	#pragma GCC diagnostic ignored "-Wunused-variable"
 #endif

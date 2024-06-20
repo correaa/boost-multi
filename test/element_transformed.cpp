@@ -37,11 +37,11 @@
 
 #include <boost/multi/array.hpp>  // for transform_ptr, array, subarray
 
-#include <complex>      // for complex, operator*, operator+
-#include <numeric>      // for inner_product
+#include <complex>  // for complex, operator*, operator+
+#include <numeric>  // for inner_product
 // IWYU pragma: no_include <type_traits>  // for declval  // in utility
-#include <utility>      // for declval, forward
-#include <vector>       // for vector
+#include <utility>  // for declval, forward
+#include <vector>   // for vector
 
 namespace multi = boost::multi;
 
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 
-	BOOST_REQUIRE_CLOSE( real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0})), std::norm(arr[0]) + std::norm(arr[1]), 1E-6);
+	BOOST_REQUIRE_CLOSE(real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), std::norm(arr[0]) + std::norm(arr[1]), 1E-6);
 	BOOST_REQUIRE_CLOSE(imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), 0.0, 1E-6);
 
 	BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0}) == std::norm(arr[0]) + std::norm(arr[1]) );
@@ -88,12 +88,11 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return)
 	multi::array<complex, 1> arr = { 1.0 + 2.0 * I, 3.0 + 4.0 * I };
 
 	// g++ -std=20 needs the transformation (lambda) to be noexcept
-	// NOLINTNEXTLINE(readability-const-return-type) a way to disable assignment
-	auto&& conjd_arr = arr.element_transformed([](auto const& cee) noexcept -> auto const { return std::conj(cee); });  // `const` allows this idiom. it needs -Wno-nonportable-cfstrings and -Wignored-qualifiers in clang
+	auto&& conjd_arr = arr.element_transformed([](auto const& cee) noexcept /* a const return would be unmovable */ { return std::conj(cee); });
 	BOOST_REQUIRE( conjd_arr[0] == std::conj(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
-	// conjd_arr[0] = 5.0 + 4.0*I;  // this doesn't compile, good! otherwise it would be misleading (see above)
+	// conjd_arr[0] = 5.0 + 4.0*I;  // this compiles, but classes the implement operator= naively can be misleading here
 	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 }
 
@@ -261,11 +260,11 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing legacy types
 	int carr[5][3] = {
-		{ 00,  10,  20},
-		{100, 110, 120},
-		{200, 210, 220},
-		{300, 310, 320},
-		{400, 410, 420},
+		{  00,  10,  20 },
+		{ 100, 110, 120 },
+		{ 200, 210, 220 },
+		{ 300, 310, 320 },
+		{ 400, 410, 420 },
 	};
 
 	using index_t = std::vector<int>::size_type;
@@ -284,5 +283,5 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 	auto const& const_indirect_v = indirect_v;
 
 	BOOST_REQUIRE(  const_indirect_v[1][2] ==  111110 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) testing legacy type
-	                                                    //  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
+	                                                //  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
 }
