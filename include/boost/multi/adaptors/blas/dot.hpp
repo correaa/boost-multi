@@ -107,8 +107,8 @@ struct dot_ref : private Ptr {
 #endif
 	auto operator+() const -> decay_type {return decay();}
 
-	auto operator==(dot_ref const& other) const -> bool {return decay() == other.decay();}
-	auto operator!=(dot_ref const& other) const -> bool {return decay() != other.decay();}
+	// friend auto operator==(dot_ref const& self, dot_ref const& other) -> bool {return self.decay() == other.decay();}
+	// friend auto operator!=(dot_ref const& self, dot_ref const& other) -> bool {return self.decay() != other.decay();}
 
 	template<class Other>
 	auto operator==(Other const& other) const
