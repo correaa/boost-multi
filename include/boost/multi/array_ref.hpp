@@ -323,19 +323,19 @@ public:
 		return *this;
 	}
 
-	BOOST_MULTI_HD constexpr explicit operator bool() const {return base();}
+	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
-	BOOST_MULTI_HD constexpr auto dereference() const -> Ref {return Ref{this->layout(), this->base_};}
+	BOOST_MULTI_HD constexpr auto dereference() const -> Ref { return Ref{ this->layout(), this->base_ }; }
 
-	BOOST_MULTI_HD constexpr auto  operator* () const -> Ref {return Ref{ref_};}
+	BOOST_MULTI_HD constexpr auto operator*() const -> Ref { return Ref{ ref_ }; }
 
-	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return std::addressof(ref_);}
+	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* { return std::addressof(ref_); }
 	// BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
 	// BOOST_MULTI_HD constexpr auto operator->()       -> Ref* {return  this;}
 
-	BOOST_MULTI_HD constexpr auto  operator[](difference_type n) const -> Ref {return *(*this + n);}
+	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> Ref { return *(*this + n); }
 
-	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool {return distance_to(other) > 0;}
+	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool { return distance_to(other) > 0; }
 
 	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, Layout const& lyt) : ref_{lyt, base} {}
 
