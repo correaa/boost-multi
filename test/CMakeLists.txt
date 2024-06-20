@@ -118,7 +118,7 @@ else()
 	-Wfree-nonheap-object -Whsa
 	# -Wif-not-aligned # (gcc 8, not in 7)
 	-Wignored-attributes # -Wignored-qualifiers
-	-Wno-ignored-qualifiers
+	-Wignored-qualifiers
 	-Wimplicit-fallthrough #=3  # -Wimplicit-fallthrough=<0,5>
 	# -Winaccessible-base # (gcc 12, not in 11)
 	# -Winfinite-recursion # (gcc 12, not in 9)
@@ -845,6 +845,14 @@ else()
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
 	/Wall /EHsc # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
+	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
+	/wd4514  # unreferenced inline function has been removed
+	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
+	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
+	/wd4710  # function not inlined
+	/wd4711  # function selected for automatic inline expansion
+	/wd4866  # compiler may not enforce left-to-right evaluation order for call
+	/wd4820  # 'bytes' bytes padding added after construct 'member_name'
 	>
 	)
 

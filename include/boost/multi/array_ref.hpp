@@ -121,7 +121,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_t::strides_type;
 
-	auto strides() const { return convertible_tuple<strides_type>(layout_t::strides()); }
+	auto strides() const { return detail::convertible_tuple<strides_type>(layout_t::strides()); }
 
 	using typename layout_t::difference_type;
 
@@ -147,13 +147,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using          layout_t::sizes;
 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
-	static constexpr auto num_dimensions() {return dimensionality;}  // TODO(correaa) move to layout
+	static constexpr auto num_dimensions() { return dimensionality; }
 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
-	auto index_bases() const -> std::ptrdiff_t const*;  // = delete;  this function is not implemented, it can give a linker error  // TODO(correaa) move to layout
+	auto index_bases() const -> std::ptrdiff_t const*;  // = delete;  this function is not implemented, it can give a linker error
 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
-	constexpr auto shape() const {return convertible_tuple(this->sizes());}
+	constexpr auto shape() const { return detail::convertible_tuple(this->sizes()); }
 
 	using layout_t::is_compact;
 
