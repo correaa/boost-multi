@@ -10,6 +10,7 @@
 #include <boost/multi/detail/serialization.hpp>  // IWYU pragma: export  // for archive_traits
 #include <boost/multi/detail/tuple_zip.hpp>      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
 #include <boost/multi/detail/types.hpp>          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <algorithm>                             // for max
 #include <array>                                 // for array
@@ -506,8 +507,8 @@ struct layout_t<0, SSize>
 	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
 
  private:
-	sub_type    sub_    = {};  // TODO(correaa)  use  [[no_unique_address]] in C++20
-	stride_type stride_ = {};  // TODO(correaa)  use  [[no_unique_address]] in C++20
+	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_    = {};  // TODO(correaa)  use  [[no_unique_address]] in C++20
+	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_ = {};  // TODO(correaa)  use  [[no_unique_address]] in C++20
 	offset_type offset_ =  0;
 	nelems_type nelems_ =  1;  // TODO(correaa) : or std::numeric_limits<nelems_type>::max(); ?
 

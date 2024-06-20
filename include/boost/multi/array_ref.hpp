@@ -102,19 +102,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using rank = typename layout_t::rank;
 
-	using          layout_t::rank_v;
+	using layout_t::rank_v;
 
-	// using typename layout_t::dimensionality_type;  // needed by MSVC
-	using dimensionality_type = typename layout_t::dimensionality_type;  // needed by MSVC
-
-	using                                Layout::dimensionality;
-// #else
-//  static constexpr auto dimensionality = layout_t::dimensionality;
-// #endif
-
-	// using          layout_t::num_dimensions;
-
-	[[deprecated("this is from BMA")]] static constexpr auto num_dimensions() {return dimensionality;}
+	using dimensionality_type = typename layout_t::dimensionality_type;
+	using                                layout_t::dimensionality;
 
 	using typename layout_t::stride_type;
 	using          layout_t::stride     ;
@@ -129,10 +120,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using typename layout_t::index_extension;
 
 	using typename layout_t::strides_type;
-	// using          layout_t::strides     ;
 
 	auto strides() const { return convertible_tuple<strides_type>(layout_t::strides()); }
-	[[deprecated("BMA backward compatible")]] auto index_bases() const -> std::ptrdiff_t const*;  // = delete;
 
 	using typename layout_t::difference_type;
 
@@ -157,7 +146,14 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using typename layout_t::sizes_type;
 	using          layout_t::sizes;
 
-	[[deprecated("from BMA")]] constexpr auto shape() const {return convertible_tuple(this->sizes());}
+	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
+	static constexpr auto num_dimensions() {return dimensionality;}  // TODO(correaa) move to layout
+
+	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
+	auto index_bases() const -> std::ptrdiff_t const*;  // = delete;  this function is not implemented, it can give a linker error  // TODO(correaa) move to layout
+
+	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
+	constexpr auto shape() const {return convertible_tuple(this->sizes());}
 
 	using layout_t::is_compact;
 
@@ -217,7 +213,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) {return self.origin();}
 
  protected:
+	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
+	
 	template<class, ::boost::multi::dimensionality_type, typename> friend struct array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
