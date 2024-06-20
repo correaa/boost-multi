@@ -845,12 +845,14 @@ else()
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
 	/Wall /EHsc # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
-	/wd4710  # function not inlined
-	/wd4820  # 'bytes' bytes padding added after construct 'member_name'
 	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
 	/wd4514  # unreferenced inline function has been removed
-	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
 	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
+	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
+	/wd4710  # function not inlined
+	/wd4711  # function selected for automatic inline expansion
+	/wd4866  # compiler may not enforce left-to-right evaluation order for call
+	/wd4820  # 'bytes' bytes padding added after construct 'member_name'
 	>
 	)
 
