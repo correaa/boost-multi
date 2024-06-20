@@ -9,14 +9,12 @@
 	#pragma clang diagnostic ignored "-Wundef"
 	#pragma clang diagnostic ignored "-Wconversion"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -47,10 +45,10 @@ template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(arra
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	multi::array<int, 2> arr = {
-		{10, 20, 30},
-		{40, 50, 60},
-		{70, 80, 90},
-		{10, 20, 30},
+		{ 10, 20, 30 },
+		{ 40, 50, 60 },
+		{ 70, 80, 90 },
+		{ 10, 20, 30 },
 	};
 	BOOST_REQUIRE(  arr[2] ==  arr[2] );
 	BOOST_REQUIRE( &arr[2] == &arr[2] );
@@ -182,10 +180,10 @@ BOOST_AUTO_TEST_CASE(span_like) {
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 	multi::array<double, 2> arr = {
-		{1.0, 2.0, 3.0},
-		{4.0, 5.0, 6.0},
-		{7.0, 8.0, 9.0},
-		{1.0, 2.0, 3.0},
+		{ 1.0, 2.0, 3.0 },
+		{ 4.0, 5.0, 6.0 },
+		{ 7.0, 8.0, 9.0 },
+		{ 1.0, 2.0, 3.0 },
 	};
 	{
 		auto rowP = &arr[2];

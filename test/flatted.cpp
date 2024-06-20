@@ -1,37 +1,34 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2024 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
-// Suppress warnings from boost.test
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
-#  pragma clang diagnostic ignored "-Wfloat-equal"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
-#  pragma GCC diagnostic ignored "-Wfloat-equal"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
 #include <boost/test/unit_test.hpp>
 
+#include <boost/multi/array.hpp>
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_flatted_3d) {
-	multi::array<double, 3> arr({13, 4, 5});
+	multi::array<double, 3> arr({ 13, 4, 5 });
 
 	BOOST_REQUIRE( arr.size() == 13 );
 	// BOOST_REQUIRE( arr.rotated().is_flattable() );
@@ -47,7 +44,7 @@ BOOST_AUTO_TEST_CASE(array_flatted_3d) {
 }
 
 BOOST_AUTO_TEST_CASE(array_flatted_3d_bis) {
-	multi::array<double, 3> const arr({13, 4, 5});
+	multi::array<double, 3> const arr({ 13, 4, 5 });
 	BOOST_REQUIRE( arr.size() == 13 );
 	// BOOST_REQUIRE( arr.is_flattable() );
 	BOOST_REQUIRE( arr.flatted().size() == 52 );
