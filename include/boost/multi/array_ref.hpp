@@ -3062,6 +3062,7 @@ class array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
 	mutable multi::array_ref<T, 0, Ptr> ref_;
 
  public:
+	constexpr array_ptr(array_ptr const& other) = default;  // : ref_(other.ref_) {}
 	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : ref_(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
 
