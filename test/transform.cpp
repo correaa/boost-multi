@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	}
 }
 
-#if !defined(__NVCC__) && (__GNUC_MINOR__ > 7)
+#if !defined(__NVCC__) && defined(__GNU_MINOR__) && (__GNUC_MINOR__ > 7)
 BOOST_AUTO_TEST_CASE(transformed_to_string) {
 	namespace multi = boost::multi;
 
