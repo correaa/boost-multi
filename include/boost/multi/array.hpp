@@ -706,8 +706,19 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	using ref::operator==;
 	using ref::operator!=;
 
-	static_array(typename static_array::extensions_type extensions, typename static_array::element const& elem, allocator_type const& alloc)  // 2
-	: array_alloc{alloc}, ref(static_array::allocate(typename static_array::layout_t{extensions}.num_elements()), extensions) {
+	static_array(
+		typename static_array::extensions_type const& extensions,
+		typename static_array::element const& elem, allocator_type const& alloc
+	)
+	: array_alloc{ alloc },
+	  ref(
+		  static_array::allocate(
+			  static_cast<typename multi::allocator_traits<allocator_type>::size_type>(
+				typename static_array::layout_t{ extensions }.num_elements()
+			)
+		  ),
+		  extensions
+	  ) {
 		uninitialized_fill(elem);
 	}
 
