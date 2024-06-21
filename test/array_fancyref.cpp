@@ -82,7 +82,7 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	auto operator!=(ptr const& /*other*/) const noexcept -> bool { return false; }
 	//  explicit operator T*() const{return &value;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	auto operator->() const noexcept -> ptr const& { return *this; }
+	// auto operator->() const noexcept -> ptr const& { return *this; }
 	// NOLINTNEXTLINE(fuchsia-trailing-return): this class simulates pointer
 	//  friend auto to_address(ptr const& pointer) -> ptr {return pointer;}
 	explicit operator bool() const noexcept { return false; }

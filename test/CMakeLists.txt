@@ -438,8 +438,7 @@ else()
 	# -Wfixed-point-overflow (clang 11, not in clang 9)
 	-Wflag-enum
 	-Wflexible-array-extensions
-	-Wfloat-conversion -Wfloat-equal
-	-Wfloat-overflow-conversion -Wfloat-zero-conversion
+	-Wfloat-conversion -Wfloat-equal -Wfloat-overflow-conversion -Wfloat-zero-conversion
 	-Wfor-loop-analysis
 	-Wformat -Wformat-extra-args
 	# -Wformat-insufficient-args (clang 13, not in clang 11)
