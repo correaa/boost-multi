@@ -30,6 +30,8 @@
 	#pragma clang diagnostic pop
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+	#pragma warning(pop)
 #endif
 
 #include <boost/multi/array.hpp>  // for array, array_iterator, static_array
