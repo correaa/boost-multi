@@ -213,4 +213,9 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	d2D.element_transformed(std::mem_fn(&employee::age));
 	BOOST_REQUIRE( d2D.element_transformed(std::mem_fn(&employee::age)) == d2D.element_transformed(&employee::age) );
 }
+
+#if defined(_MSC_VER)
+	#pragma warning(pop)
+#endif
+
 #endif
