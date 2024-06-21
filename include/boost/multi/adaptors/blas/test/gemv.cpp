@@ -4,15 +4,13 @@
 
 #include <boost/mpl/list.hpp>
 
-#include "../../../adaptors/blas/gemv.hpp"
-#include "../../../array.hpp"
+#include <boost/multi/adaptors/blas/gemv.hpp>
+#include <boost/multi/array.hpp>
 
-#include "../../../utility.hpp"
-
-#include "../../blas/axpy.hpp"
-#include "../../blas/dot.hpp"
-#include "../../blas/gemm.hpp"
-#include "../../blas/nrm2.hpp"
+#include <boost/multi/adaptors/blas/axpy.hpp>
+#include <boost/multi/adaptors/blas/dot.hpp>
+#include <boost/multi/adaptors/blas/gemm.hpp>
+#include <boost/multi/adaptors/blas/nrm2.hpp>
 
 #include <random>
 

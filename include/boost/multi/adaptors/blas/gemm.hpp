@@ -5,10 +5,10 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_GEMM_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_GEMM_HPP
 
-#include "../blas/core.hpp"
-#include "../blas/gemv.hpp"
-#include "../blas/numeric.hpp"
-#include "../blas/operations.hpp"
+#include <boost/multi/adaptors/blas/core.hpp>
+#include <boost/multi/adaptors/blas/gemv.hpp>
+#include <boost/multi/adaptors/blas/numeric.hpp>
+#include <boost/multi/adaptors/blas/operations.hpp>
 
 namespace boost::multi::blas {
 

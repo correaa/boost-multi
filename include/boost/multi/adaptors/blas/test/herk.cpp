@@ -3,12 +3,26 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
+#include <boost/test/tools/fpc_tolerance.hpp>        // for tolerance
 
 #include <boost/multi/adaptors/blas/gemm.hpp>
 #include <boost/multi/adaptors/blas/herk.hpp>
 #include <boost/multi/adaptors/blas/nrm2.hpp>
 
+#include "boost/multi/adaptors/blas/filling.hpp"     // for filling
+#include "boost/multi/adaptors/blas/numeric.hpp"     // for involuted, under...
+#include "boost/multi/adaptors/blas/operations.hpp"  // for H, T, (anonymous)
+
 #include <boost/multi/array.hpp>
+
+#include <cmath>                                     // for sqrt
+#include <complex>                                   // for operator*, opera...
+#include <iostream>                                  // for operator<<, basi...
+#include <iterator>                                  // for size
+#include <limits>                                    // for numeric_limits
+#include <string>                                    // for char_traits, bas...
+#include <type_traits>                               // for is_same
+#include <utility>                                   // for move
 
 namespace multi = boost::multi;
 

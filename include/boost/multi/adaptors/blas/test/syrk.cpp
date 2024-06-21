@@ -9,6 +9,8 @@
 
 #include <boost/multi/array.hpp>
 
+#include <complex>                                   // for operator*, complex
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_blas_syrk_real) {
