@@ -16,7 +16,7 @@
 
 #ifndef BOOST_MULTI_NO_UNIQUE_ADDRESS
 	#if defined(_MSC_VER)
-		#define BOOST_MULTI_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+		#define BOOST_MULTI_NO_UNIQUE_ADDRESS // [[msvc::no_unique_address]]
 	#else
 		#define BOOST_MULTI_NO_UNIQUE_ADDRESS
 	#endif
