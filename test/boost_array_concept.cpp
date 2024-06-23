@@ -8,8 +8,8 @@
 	#pragma clang diagnostic push
 	#pragma clang diagnositc ignored "-Wdeprecated-declarations"
 #elif defined(__GNUC__)
-// #  pragma GCC diagnostic push
-// #  pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnositc ignored "-Wdeprecated-declarations"
 #endif
 
 #if defined(__clang__)
@@ -35,6 +35,12 @@
 #endif
 
 #include <boost/test/unit_test.hpp>
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
 
 #include <boost/multi/array.hpp>  // for operator!=, implicit...
 // IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
@@ -283,3 +289,9 @@ BOOST_AUTO_TEST_CASE(concepts_const_iterator) {
 	BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<MAIt>));
 	//  BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<MAIt>));
 }
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
