@@ -110,14 +110,30 @@ struct dot_ref : private Ptr {
 	// friend auto operator==(dot_ref const& self, dot_ref const& other) -> bool {return self.decay() == other.decay();}
 	// friend auto operator!=(dot_ref const& self, dot_ref const& other) -> bool {return self.decay() != other.decay();}
 
-	template<class Other>
-	auto operator==(Other const& other) const
-	->decltype(decay()==other) {
-		return decay()==other; }
-	template<class Other>
-	auto operator!=(Other const& other) const
-	->decltype(decay()!=other) {
-		return decay()!=other; }
+	friend auto operator==(dot_ref const& self, dot_ref const& other) -> bool {
+		return self.decay() == other.decay();
+	}
+	friend auto operator!=(dot_ref const& self, dot_ref const& other) -> bool {
+		return self.decay() != other.decay();
+	}
+
+	template<class Other>  // , class = std::enable_if_t<!std::is_same_v<dot_ref, Other> > >
+	friend auto operator==(dot_ref const& self, Other const& other) -> bool {
+		return self.decay() == other;
+	}
+	template<class Other>  // , class = std::enable_if_t<!std::is_same_v<dot_ref, Other> > >
+	friend auto operator!=(dot_ref const& self, Other const& other) -> bool {
+		return self.decay() != other;
+	}
+	template<class Other, class = std::enable_if_t<!std::is_same_v<dot_ref, Other> > >
+	friend auto operator==(Other const& other, dot_ref const& self) -> bool {
+		return other == self.decay();
+	}
+	template<class Other, class = std::enable_if_t<!std::is_same_v<dot_ref, Other> > >
+	friend auto operator!=(Other const& other, dot_ref const& self) -> bool {
+		return other != self.decay();
+	}
+
 };
 
 template<class Context, class X, class Y> [[nodiscard]]

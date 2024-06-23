@@ -4,6 +4,7 @@
 
 #include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance
 #include <boost/test/unit_test.hpp>
+#include <boost/test/tools/fpc_tolerance.hpp>        // for tolerance
 
 #include <boost/multi/adaptors/blas/gemm.hpp>
 #include <boost/multi/adaptors/blas/herk.hpp>

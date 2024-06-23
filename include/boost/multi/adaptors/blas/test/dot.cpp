@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_double) {
 	multi::array<double, 1> const x = { 1.0, 2.0, 3.0 };  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<double, 1> const y = { 1.0, 2.0, 3.0 };  // NOLINT(readability-identifier-length) BLAS naming
 
-	double res = NAN;
+	double res = std::numeric_limits<float>::quiet_NaN();
 
 	blas::dot(x, y, multi::array_ref<double, 0>(res));
 	BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0) );
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context_float, *boost::unit_test::di
 		{ 5.0F,  6.0F,  7.0F,  8.0F },
 		{ 9.0F, 10.0F, 11.0F, 12.0F },
 	};
-	float res = std::numeric_limits<double>::quiet_NaN();
+	auto res = std::numeric_limits<float>::quiet_NaN();
 
 	blas::context ctxt;
 	blas::dot_n(&ctxt, begin(CA[1]), size(CA[1]), begin(CA[2]), &res);
@@ -234,8 +234,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_double) {
 	multi::array<double, 1> const y = { 1.0, 2.0, 3.0 };  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::dot;
-	BOOST_TEST( 14.0 == dot(x, y) );
-	BOOST_TEST( dot(x, y) == 14.0F );
+
+	BOOST_REQUIRE( dot(x, y) == 14.0F );
+	BOOST_REQUIRE( 14.0 == dot(x, y) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_double_equal) {
@@ -243,7 +244,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_double_equal) {
 	multi::array<double, 1> const y = { 1.0, 2.0, 3.0 };  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::dot;
-	BOOST_TEST( dot(x, y) == dot(x, y) );
+	BOOST_REQUIRE( dot(x, y) == dot(x, y) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_float, *boost::unit_test::disabled()) {
@@ -251,8 +252,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_float, *boost::unit_test::disabled()
 	multi::array<float, 1> const y = { 1.0F, 2.0F, 3.0F };  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::dot;
-	BOOST_TEST( 14.0F == dot(x, y) );
-	BOOST_TEST( dot(x, y) == 14.0F );
+	BOOST_REQUIRE( 14.0F == dot(x, y) );
+	BOOST_REQUIRE( 14.0F == +dot(x, y) );
+	BOOST_REQUIRE( dot(x, y) == 14.0F );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real_double) {
@@ -265,11 +267,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real_double) {
 	double const res1 = blas::dot(cA[1], cA[2]);
 	BOOST_REQUIRE( res1 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
 
-	double res2 = NAN;
+	auto res2 = std::numeric_limits<double>::quiet_NaN();
 	blas::dot(cA[1], cA[2], res2);
 	BOOST_REQUIRE( res2 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
 
-	double       res_nan = NAN;
+	auto         res_nan = std::numeric_limits<double>::quiet_NaN();
 	double const res3    = blas::dot(cA[1], cA[2], res_nan);
 	BOOST_REQUIRE( res3 == res2 );
 
@@ -288,11 +290,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real_float, *boost::unit_test::disabled
 	float const res1 = blas::dot(cA[1], cA[2]);
 	BOOST_REQUIRE( res1 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0F) );
 
-	float res2 = NAN;
+	auto res2 = std::numeric_limits<float>::quiet_NaN();
 	blas::dot(cA[1], cA[2], res2);
 	BOOST_REQUIRE( res2 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0F) );
 
-	float       res_nan = NAN;
+	auto        res_nan = std::numeric_limits<float>::quiet_NaN();
 	float const res3    = blas::dot(cA[1], cA[2], res_nan);
 
 	BOOST_REQUIRE( res3 == res2 );
@@ -313,7 +315,7 @@ BOOST_AUTO_TEST_CASE(inq_case) {
 	auto res  = dot(x, y);
 	auto res2 = dot(hermitized(x), y);
 
-	BOOST_REQUIRE(res == res2);
+	BOOST_REQUIRE(+res == +res2);
 
 	auto res3 = dot(blas::conj(x), y);  // conjugation doesn't do anything for real array
 	BOOST_REQUIRE(res3 == res);
