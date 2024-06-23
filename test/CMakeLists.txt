@@ -841,6 +841,7 @@ else()
 	-Wformat=2
 	-Wshadow
 	-Wuninitialized
+	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
 	/Wall /EHsc # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
