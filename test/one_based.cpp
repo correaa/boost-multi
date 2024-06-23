@@ -31,7 +31,10 @@
 
 #include <boost/multi/array.hpp>
 
-#include <array>
+#include <algorithm>                 // for equal
+#include <array>                     // for array
+#include <iterator>                  // for size, begin, end
+#include <type_traits>               // for is_assignable_v
 
 namespace multi = boost::multi;
 
