@@ -2,14 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>            // for operator<<, BOOST_PP_I...
 
-#include <boost/multi/adaptors/blas.hpp>
-#include <boost/multi/array.hpp>
+#include <boost/multi/array.hpp>               // for array, layout_t, impli...
 
-#include <boost/multi/adaptors/complex.hpp>
+#include <cmath>                               // for sqrt, NAN
 
-#include <complex>
+#include "boost/multi/adaptors/blas/dot.hpp"   // for dot, dot_ref, dot_ptr
+#include "boost/multi/adaptors/blas/nrm2.hpp"  // for nrm2, nrm2_ptr, nrm2_ref
+#include "boost/multi/adaptors/complex.hpp"    // for complex, operator*
 
 namespace multi = boost::multi;
 

@@ -4,12 +4,12 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_HERK_HPP
 #pragma once
 
-#include "../blas/copy.hpp" 
-#include "../blas/core.hpp"
-#include "../blas/filling.hpp"
-#include "../blas/operations.hpp"
-#include "../blas/side.hpp"
-#include "../blas/syrk.hpp" // fallback to real case
+#include <boost/multi/adaptors/blas/copy.hpp>
+#include <boost/multi/adaptors/blas/core.hpp>
+#include <boost/multi/adaptors/blas/filling.hpp>
+#include <boost/multi/adaptors/blas/operations.hpp>
+#include <boost/multi/adaptors/blas/side.hpp>
+#include <boost/multi/adaptors/blas/syrk.hpp> // fallback to real case
 
 namespace boost::multi::blas {
 

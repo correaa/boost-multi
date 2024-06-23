@@ -2,25 +2,24 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>
-
-#include <boost/multi/adaptors/blas/dot.hpp>
-#include <boost/multi/array.hpp>
+#include <boost/test/unit_test.hpp>  // for BOOST_PP_IIF_1
 
 #include <boost/multi/adaptors/blas/core.hpp>        // for context, dot
+#include <boost/multi/adaptors/blas/dot.hpp>         // for dot_ref, dot, dot_n
 #include <boost/multi/adaptors/blas/numeric.hpp>     // for involuter, conj
 #include <boost/multi/adaptors/blas/operations.hpp>  // for C, hermitized
+#include <boost/multi/array.hpp>                     // for array, static_array
 
-#include <algorithm>                                 // for for_each, transform
-#include <functional>                                // for plus
-#include <iterator>                                  // for begin, end
-#include <limits>                                    // for numeric_limits
-#include <memory>                                    // for allocator
-#include <utility>                                   // for forward
-
-#include <complex>
-#include <numeric>
-#include <type_traits>
+#include <algorithm>    // for for_each, transform
+#include <cmath>        // for NAN
+#include <complex>      // for complex, operator*
+#include <functional>   // for plus
+#include <iterator>     // for begin, end
+#include <limits>       // for numeric_limits
+#include <memory>       // for allocator
+#include <numeric>      // for inner_product
+#include <type_traits>  // for is_same
+#include <utility>      // for forward
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
@@ -81,11 +80,9 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_float, *boost::unit_test::disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_float, *boost::unit_test::disabled()) {
-	multi::array<float, 1> const x = { 1.0F, 2.0F, 3.0F };  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<float, 1> const y = { 1.0F, 2.0F, 3.0F };  // NOLINT(readability-identifier-length) BLAS naming
-
-	auto res = std::numeric_limits<float>::quiet_NaN();
-
+	multi::array<float, 1> const x   = { 1.0F, 2.0F, 3.0F };  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<float, 1> const y   = { 1.0F, 2.0F, 3.0F };  // NOLINT(readability-identifier-length) BLAS naming
+	float                        res = NAN;
 	blas::dot(x, y, multi::array_ref<float, 0>(res));
 	BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 }

@@ -84,7 +84,7 @@ FixNamespaceComments: true
 #  - BOOST_FOREACH
 #IfMacros:
 #  - KJ_IF_MAYBE
-#IncludeBlocks:   Regroup
+IncludeBlocks:   Regroup
 #IncludeCategories:
 #  - Regex:           '^<ext/.*\.h>'
 #    Priority:        2
@@ -102,6 +102,25 @@ FixNamespaceComments: true
 #    Priority:        3
 #    SortPriority:    0
 #    CaseSensitive:   false
+IncludeCategories:
+  # Specific external headers in <> to put first
+  - Regex: '<boost/test/unit_test\.hpp>'
+    Priority:        1
+  # Headers in <> for THIS specific library.
+  - Regex:           '<(boost\/multi)\/'
+    Priority:        2
+  # Headers in <> without extension.
+  - Regex:           '<([A-Za-z0-9\Q/-_\E])+>'
+    Priority:        6
+  # Headers in <> from specific external libraries.
+  - Regex:           '<(catch2|boost)\/'
+    Priority:        5
+  # Headers in <> with extension.
+  - Regex:           '<([A-Za-z0-9.\Q/-_\E])+>'
+    Priority:        4
+  # Headers in "" with extension.
+  - Regex:           '"([A-Za-z0-9.\Q/-_\E])+"'
+    Priority:        3
 #IncludeIsMainRegex: '([-_](test|unittest))?$'
 #IncludeIsMainSourceRegex: ''
 #IndentAccessModifiers: true  # false
