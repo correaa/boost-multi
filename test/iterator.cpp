@@ -235,9 +235,9 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 
 BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
 	multi::array<std::string, 2> arr = {
-		{"00", "01"}, // std::string NOLINT(fuchsia-default-arguments-calls) std::string has a default constructor
-		{"10", "11"}, // std::string NOLINT(fuchsia-default-arguments-calls)
-		{"20", "21"}  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"00", "01"},  // std::string NOLINT(fuchsia-default-arguments-calls) std::string has a default constructor
+		{"10", "11"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"20", "21"}   // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
 
 	BOOST_REQUIRE( arr[1][0] == "10" );

@@ -2,19 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance
-#include <boost/test/unit_test.hpp>
-#include <boost/test/tools/fpc_tolerance.hpp>        // for tolerance
-
-#include <boost/multi/adaptors/blas/gemm.hpp>
-#include <boost/multi/adaptors/blas/herk.hpp>
-#include <boost/multi/adaptors/blas/nrm2.hpp>
+#include <boost/test/unit_test.hpp>  // for operator<<, BOOS...
 
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
+#include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
+#include <boost/multi/adaptors/blas/herk.hpp>        // for herk
+#include <boost/multi/adaptors/blas/nrm2.hpp>        // for nrm2_ref, nrm2
 #include <boost/multi/adaptors/blas/numeric.hpp>     // for involuted, under...
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
+#include <boost/multi/array.hpp>                     // for array, layout_t
 
-#include <boost/multi/array.hpp>
+#include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance
 
 #include <cmath>        // for sqrt
 #include <complex>      // for operator*, opera...
