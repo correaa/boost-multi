@@ -5,10 +5,10 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_TRSM_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_TRSM_HPP
 
-#include "../blas/core.hpp"
-#include "../blas/filling.hpp"
-#include "../blas/operations.hpp" // uplo
-#include "../blas/side.hpp"
+#include <boost/multi/adaptors/blas/core.hpp>
+#include <boost/multi/adaptors/blas/filling.hpp>
+#include <boost/multi/adaptors/blas/operations.hpp>
+#include <boost/multi/adaptors/blas/side.hpp>
 
 namespace boost::multi::blas {
 
