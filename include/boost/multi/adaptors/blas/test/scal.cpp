@@ -8,14 +8,16 @@
 
 #include <boost/multi/array.hpp>
 
+#include <complex>  // for complex, operator*
+
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_n) {
 	multi::array<double, 2> arr = {
-		{1.0,  2.0,  3.0,  4.0},
-		{5.0,  6.0,  7.0,  8.0},
-		{9.0, 10.0, 11.0, 12.0},
+		{ 1.0,  2.0,  3.0,  4.0 },
+		{ 5.0,  6.0,  7.0,  8.0 },
+		{ 9.0, 10.0, 11.0, 12.0 },
 	};
 	BOOST_REQUIRE( (arr[0][2] == 3.0) && (arr[2][2] == 11.0) );
 
@@ -25,9 +27,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_n) {
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it) {
 	multi::array<double, 2> arr = {
-		{1.0,  2.0,  3.0,  4.0},
-		{5.0,  6.0,  7.0,  8.0},
-		{9.0, 10.0, 11.0, 12.0},
+		{ 1.0,  2.0,  3.0,  4.0 },
+		{ 5.0,  6.0,  7.0,  8.0 },
+		{ 9.0, 10.0, 11.0, 12.0 },
 	};
 	BOOST_REQUIRE( arr[0][2] ==  3.0 );
 	BOOST_REQUIRE( arr[2][2] == 11.0 );
@@ -39,9 +41,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it) {
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real) {
 	multi::array<double, 2> arr = {
-		{1.0,  2.0,  3.0,  4.0},
-		{5.0,  6.0,  7.0,  8.0},
-		{9.0, 10.0, 11.0, 12.0},
+		{ 1.0,  2.0,  3.0,  4.0 },
+		{ 5.0,  6.0,  7.0,  8.0 },
+		{ 9.0, 10.0, 11.0, 12.0 },
 	};
 	BOOST_REQUIRE( arr[0][2] ==  3.0 );
 	BOOST_REQUIRE( arr[2][2] == 11.0 );
@@ -58,9 +60,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real) {
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real_2D) {
 	multi::array<double, 2> arr = {
-		{1.0,  2.0,  3.0,  4.0},
-		{5.0,  6.0,  7.0,  8.0},
-		{9.0, 10.0, 11.0, 12.0},
+		{ 1.0,  2.0,  3.0,  4.0 },
+		{ 5.0,  6.0,  7.0,  8.0 },
+		{ 9.0, 10.0, 11.0, 12.0 },
 	};
 	BOOST_REQUIRE( arr[0][2] ==  3.0 );
 	BOOST_REQUIRE( arr[2][2] == 11.0 );
@@ -73,10 +75,11 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real_2D) {
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_complex_2D) {
 	auto const I = std::complex<double>(0.0, 1.0);  // NOLINT(readability-identifier-length) blas conventional name
+
 	multi::array<std::complex<double>, 2> arr = {
-		{1.0 + 0.0*I,  2.0 + 0.0*I,  3.0 + 0.0*I,  4.0 + 0.0*I},
-		{5.0 + 0.0*I,  6.0 + 0.0*I,  7.0 + 0.0*I,  8.0 + 0.0*I},
-		{9.0 + 0.0*I, 10.0 + 0.0*I, 11.0 + 0.0*I, 12.0 + 0.0*I},
+		{ 1.0 + 0.0 * I,  2.0 + 0.0 * I,  3.0 + 0.0 * I,  4.0 + 0.0 * I },
+		{ 5.0 + 0.0 * I,  6.0 + 0.0 * I,  7.0 + 0.0 * I,  8.0 + 0.0 * I },
+		{ 9.0 + 0.0 * I, 10.0 + 0.0 * I, 11.0 + 0.0 * I, 12.0 + 0.0 * I },
 	};
 	BOOST_REQUIRE( arr[0][2] ==  3.0 );
 	BOOST_REQUIRE( arr[2][2] == 11.0 );

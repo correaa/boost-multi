@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/fpc_tolerance.hpp>        // for tolerance
 
@@ -9,20 +10,20 @@
 #include <boost/multi/adaptors/blas/herk.hpp>
 #include <boost/multi/adaptors/blas/nrm2.hpp>
 
-#include "boost/multi/adaptors/blas/filling.hpp"     // for filling
-#include "boost/multi/adaptors/blas/numeric.hpp"     // for involuted, under...
-#include "boost/multi/adaptors/blas/operations.hpp"  // for H, T, (anonymous)
+#include <boost/multi/adaptors/blas/filling.hpp>     // for filling
+#include <boost/multi/adaptors/blas/numeric.hpp>     // for involuted, under...
+#include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
 
 #include <boost/multi/array.hpp>
 
-#include <cmath>                                     // for sqrt
-#include <complex>                                   // for operator*, opera...
-#include <iostream>                                  // for operator<<, basi...
-#include <iterator>                                  // for size
-#include <limits>                                    // for numeric_limits
-#include <string>                                    // for char_traits, bas...
-#include <type_traits>                               // for is_same
-#include <utility>                                   // for move
+#include <cmath>        // for sqrt
+#include <complex>      // for operator*, opera...
+#include <iostream>     // for operator<<, basi...
+#include <iterator>     // for size
+#include <limits>       // for numeric_limits
+#include <string>       // for char_traits, bas...
+#include <type_traits>  // for is_same
+#include <utility>      // for move
 
 namespace multi = boost::multi;
 
@@ -50,15 +51,15 @@ template<class M> auto print(M const& mat, std::string const& msg = "") -> declt
 BOOST_AUTO_TEST_CASE(multi_blas_herk) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
-	auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	auto const I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
 
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<complex, 2> const a = {
-		{1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I},
-		{9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I},
+		{ 1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I },
+		{ 9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I },
 	};
 	{
-		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional name in BLAS
+		multi::array<complex, 2> c({ 2, 2 }, { 9999.0, 0.0 });  // NOLINT(readability-identifier-length) conventional name in BLAS
 		blas::herk(a, c);
 		BOOST_REQUIRE( c[1][0] == complex(50.0, -49.0) );
 		BOOST_REQUIRE( c[0][1] == complex(50.0, +49.0) );
@@ -74,14 +75,14 @@ BOOST_AUTO_TEST_CASE(inq_case) {
 	namespace blas = multi::blas;
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<double, 2> const a = {
-		{0.0,  1.0,  2.0},
-		{3.0,  4.0,  5.0},
-		{6.0,  7.0,  8.0},
-		{9.0, 10.0, 11.0},
+		{ 0.0,  1.0,  2.0 },
+		{ 3.0,  4.0,  5.0 },
+		{ 6.0,  7.0,  8.0 },
+		{ 9.0, 10.0, 11.0 },
 	};
 	BOOST_REQUIRE( (+blas::gemm(1.0, a, blas::T(a)))[1][2] == 86.0 );
 	{
-		multi::array<double, 2> c({4, 4});  // NOLINT(readability-identifier-length) conventional name in BLAS
+		multi::array<double, 2> c({ 4, 4 });  // NOLINT(readability-identifier-length) conventional name in BLAS
 		blas::herk(1.0, a, c);
 		BOOST_REQUIRE( c[1][2] == (+blas::gemm(1.0, a, blas::T(a)))[1][2] );
 		//  BOOST_REQUIRE( c[2][1] == (+blas::gemm(1., a, blas::T(a)))[2][1] );
@@ -98,11 +99,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_real) {
 	namespace blas = multi::blas;
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<double, 2> const a = {
-		{1.0, 3.0, 4.0},
-		{9.0, 7.0, 1.0},
+		{ 1.0, 3.0, 4.0 },
+		{ 9.0, 7.0, 1.0 },
 	};
 	{
-		multi::array<double, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 2> c({ 2, 2 }, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::herk(1.0, a, c);
 		BOOST_REQUIRE( c[0][1] == 34.0 );
 	}
@@ -112,7 +113,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case) {
 	namespace blas = multi::blas;
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<double, 2> const a = {
-		{1.0, 2.0, 3.0},
+		{ 1.0, 2.0, 3.0 },
 	};
 	multi::array<double, 2> b = blas::herk(a);  // NOLINT(readability-identifier-length) BLAS naming
 
@@ -124,7 +125,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case_scale, *boost::unit_test::tolerance
 	namespace blas = multi::blas;
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<double, 2> const a = {
-		{1.0, 2.0, 3.0},
+		{ 1.0, 2.0, 3.0 },
 	};
 
 	multi::array<double, 2> b = blas::herk(0.1, a);  // NOLINT(readability-identifier-length) BLAS naming
@@ -139,7 +140,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case) {
 	using complex = std::complex<double>;
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> const a = {
-		{{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}},
+		{ { 1.0, 0.0 }, { 2.0, 0.0 }, { 3.0, 0.0 } },
 	};
 	multi::array<complex, 2> b = blas::herk(1.0, a);  // NOLINT(readability-identifier-length) BLAS naming
 	BOOST_REQUIRE( size(b) == 1 );
@@ -152,7 +153,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case_scale, *boost::unit_te
 	using complex = std::complex<double>;
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> const a = {
-		{{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}},
+		{ { 1.0, 0.0 }, { 2.0, 0.0 }, { 3.0, 0.0 } },
 	};
 	multi::array<complex, 2> b = blas::herk(0.1, a);  // NOLINT(readability-identifier-length) BLAS naming
 	BOOST_REQUIRE( size(b) == 1 );
@@ -163,10 +164,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case) {
 	namespace blas = multi::blas;
 
 	using complex = std::complex<double>;
-	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	auto const I  = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<complex, 2> const a = {
-		{1.0 + 2.0 * I, 2.0 + 3.0 * I, 3.0 + 4.0 * I},
+		{ 1.0 + 2.0 * I, 2.0 + 3.0 * I, 3.0 + 4.0 * I },
 	};
 	multi::array<complex, 2> b = blas::herk(a);  // NOLINT(readability-identifier-length) BLAS naming
 	BOOST_REQUIRE( size(b) == 1 );
@@ -178,10 +179,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case) {
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_out_param) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
-	auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	auto const I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
 
-	multi::array<complex, 2> const a = {{1.0 + 2.0 * I}, {2.0 + 3.0 * I}, {3.0 + 4.0 * I}};  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<complex, 2>       b({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> const a = { { 1.0 + 2.0 * I }, { 2.0 + 3.0 * I }, { 3.0 + 4.0 * I } };  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2>       b({ 1, 1 });                                                      // NOLINT(readability-identifier-length) BLAS naming
 	BOOST_REQUIRE( size(b) == 1 );
 
 	blas::herk(blas::filling::upper, 1.0, blas::H(a), 0.0, b);
@@ -193,13 +194,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_out_param) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized) {
 	using complex = std::complex<double>;
-	auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) conventional name in BLAS
+	auto const I  = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 	// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 	multi::array<complex, 2> const a = {
-		{1.0 + 2.0 * I},
-		{2.0 + 3.0 * I},
-		{3.0 + 4.0 * I},
+		{ 1.0 + 2.0 * I },
+		{ 2.0 + 3.0 * I },
+		{ 3.0 + 4.0 * I },
 	};
 
 	namespace blas = multi::blas;
@@ -215,12 +216,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized) {
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
-	auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	auto const I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> const arr = {
-		{1.0 + 2.0 * I},
-		{2.0 + 3.0 * I},
-		{3.0 + 4.0 * I},
+		{ 1.0 + 2.0 * I },
+		{ 2.0 + 3.0 * I },
+		{ 3.0 + 4.0 * I },
 	};
 	auto arr2 = blas::herk(1.0, blas::hermitized(arr));
 	static_assert(std::is_same<decltype(arr2), multi::array<complex, 2>>{});
@@ -233,21 +234,21 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto) {
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
-	auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	auto const I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> const arr = {
-		{1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I},
-		{9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I},
+		{ 1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I },
+		{ 9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I },
 	};
 
 	{
-		multi::array<complex, 2> arr2({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
-		blas::herk(blas::filling::lower, 1.0, arr, 0.0, arr2);  // c†=c=aa†=(aa†)†, `c` in lower triangular
+		multi::array<complex, 2> arr2({ 2, 2 }, { 9999.0, 0.0 });  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
+		blas::herk(blas::filling::lower, 1.0, arr, 0.0, arr2);     // c†=c=aa†=(aa†)†, `c` in lower triangular
 		BOOST_REQUIRE(( arr2[1][0] == complex{50.0, -49.0} ));
 		BOOST_REQUIRE( arr2[0][1] == 9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
+		multi::array<complex, 2> c({ 2, 2 }, { 9999.0, 0.0 });  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
 		static_assert(blas::is_conjugated<decltype(blas::H(c))>{});
 
 		blas::herk(blas::filling::lower, 1.0, arr, 0.0, blas::H(c));  // c†=c=aa†=(aa†)†, `c` in upper triangular
@@ -256,31 +257,31 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		BOOST_REQUIRE( blas::H(c)[0][1] == 9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({3, 3}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
+		multi::array<complex, 2> c({ 3, 3 }, { 9999.0, 0.0 });           // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
 		herk(blas::filling::lower, 1.0, blas::T(arr), 0.0, blas::T(c));  // c†=c=aT(aT)† not supported
 		BOOST_REQUIRE(( transposed(c)[1][0] == complex{52.0, -90.0} ));
 		BOOST_REQUIRE( transposed(c)[0][1] == 9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({3, 3}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
+		multi::array<complex, 2> c({ 3, 3 }, { 9999.0, 0.0 });                          // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
 		blas::herk(blas::filling::lower, 1.0, blas::T(arr), 0.0, blas::H(blas::T(c)));  // c†=c=aT(aT)† not supported
 		BOOST_REQUIRE(( blas::H(blas::T(c))[1][0] == complex{52.0, -90.0} ));
 		BOOST_REQUIRE( blas::H(blas::T(c))[0][1] == 9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
-		blas::herk(blas::filling::upper, 1.0, arr, 0.0, c);  // c†=c=aa†=(aa†)†, `c` in upper triangular
+		multi::array<complex, 2> c({ 2, 2 }, { 9999.0, 0.0 });  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
+		blas::herk(blas::filling::upper, 1.0, arr, 0.0, c);     // c†=c=aa†=(aa†)†, `c` in upper triangular
 		BOOST_REQUIRE(( c[0][1] == complex{50.0, +49.0} ));
 		BOOST_REQUIRE( c[1][0] == 9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
-		blas::herk(1., arr, c);  // c†=c=aa†=(aa†)†
+		multi::array<complex, 2> c({ 2, 2 }, { 9999.0, 0.0 });  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
+		blas::herk(1., arr, c);                                 // c†=c=aa†=(aa†)†
 		BOOST_REQUIRE(( c[0][1] == complex{50.0, +49.0} ));
 		BOOST_REQUIRE(( c[1][0] == complex{50.0, -49.0} ));
 	}
 	{
-		multi::array<complex, 2> c({3, 3}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
+		multi::array<complex, 2> c({ 3, 3 }, { 9999.0, 0.0 });        // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
 		blas::herk(blas::filling::lower, 1.0, blas::H(arr), 0.0, c);  // c†=c=aa†=(aa†)†, `c` in lower triangular
 		BOOST_REQUIRE(( c[1][0] == complex{52.0, 90.0} ));
 		BOOST_REQUIRE( c[0][1] == 9999.0 );
@@ -291,18 +292,18 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_square) {
 	namespace blas = multi::blas;
 
 	using complex  = std::complex<double>;
-	auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	auto const I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
 	auto const nan = std::numeric_limits<double>::quiet_NaN();
 
 	// NOLINTNEXTLINE(readability-identifier-length) lapack conventional name
 	multi::array<complex, 2> const A = {
-		{12.9388 + I * 0.0, 9.80028 + I * -0.00011091, 9.66966 + I * -0.0114817},
-		{    nan + I * nan,         8.44604 + I * 0.0,  3.78646 + I * 0.0170734},
-		{    nan + I * nan,             nan + I * nan,        7.70655 + I * 0.0},
+		{ 12.9388 + I * 0.0, 9.80028 + I * -0.00011091, 9.66966 + I * -0.0114817 },
+		{     nan + I * nan,         8.44604 + I * 0.0,  3.78646 + I * 0.0170734 },
+		{     nan + I * nan,             nan + I * nan,        7.70655 + I * 0.0 },
 	};
 
 	// NOLINTNEXTLINE(readability-identifier-length) lapack conventional name
-	multi::array<complex, 2> C({3, 3}, complex{0.0, 0.0});
+	multi::array<complex, 2> C({ 3, 3 }, complex{ 0.0, 0.0 });
 
-	blas::herk(boost::multi::blas::filling::upper, complex{1.0, 0.0}, A, complex{0.0, 0.0}, C);
+	blas::herk(boost::multi::blas::filling::upper, complex{ 1.0, 0.0 }, A, complex{ 0.0, 0.0 }, C);
 }

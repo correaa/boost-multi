@@ -6,7 +6,7 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #pragma once
 
-#include "../../adaptors/complex.hpp"
+#include <boost/multi/adaptors/complex.hpp>
 
 #include <boost/multi/array_ref.hpp>
 
@@ -14,9 +14,9 @@
 
 #include <boost/multi/adaptors/blas/complex_traits.hpp>
 
-#include "../../detail/pointer_traits.hpp"
+#include <boost/multi/detail/pointer_traits.hpp>
 
-#include "numeric/is_complex.hpp"
+#include <boost/multi/adaptors/blas/numeric/is_complex.hpp>
 
 #include <boost/multi/adaptors/complex.hpp>
 
