@@ -36,12 +36,12 @@
 
 namespace multi = boost::multi;
 
-inline auto what_is(multi::array<double, 2> const& /*arr*/) { return std::string{ "real" }; }                   // std::string NOLINT(fuchsia-default-arguments-calls)
-inline auto what_is(multi::array<std::complex<double>, 2> const& /*arr*/) { return std::string{ "complex" }; }  // std::string NOLINT(fuchsia-default-arguments-calls)
+inline auto what_is(multi::array<double, 2> const& /*arr*/) { return std::string{"real"}; }                   // NOLINT(fuchsia-default-arguments-calls)
+inline auto what_is(multi::array<std::complex<double>, 2> const& /*arr*/) { return std::string{"complex"}; }  // NOLINT(fuchsia-default-arguments-calls)
 
 BOOST_AUTO_TEST_CASE(multi_array_overload) {
-	multi::array<double, 2> const               real_A({ 10, 20 });
-	multi::array<std::complex<double>, 2> const cplx_A({ 10, 20 });
+	multi::array<double, 2> const               real_A({10, 20});
+	multi::array<std::complex<double>, 2> const cplx_A({10, 20});
 
 	std::string const real_str    = what_is(real_A);
 	std::string const complex_str = what_is(cplx_A);

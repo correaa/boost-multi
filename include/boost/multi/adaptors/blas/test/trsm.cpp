@@ -52,12 +52,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 		BOOST_REQUIRE_CLOSE((+blas::gemm(1.0, A, B))[0][0], B_cpy[0][0], 0.00001);
 	}
 	{
+		// clang-format off
 		// NOLINTNEXLINE(readability-identifier-length) BLAS naming
-		multi::array<double, 2> B = {
-			{
-                                                                                                                                                                                                                                                                                                          3.0,
-			 },
-		};
+		multi::array<double, 2> B = {{3.0, }, };
 
 		auto const B_cpy = B;
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
@@ -161,7 +158,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
 		{ 2.0 - 2.0 * I, 7.0 - 2.0 * I, 1.0 - 1.0 * I },
 		{ 3.0 + 1.0 * I, 4.0 + 8.0 * I, 2.0 + 7.0 * I }
 	};
-	blas::trsm(blas::side::left, blas::filling::lower, 2. + 1. * I, blas::H(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+
+	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	blas::trsm(blas::side::left, blas::filling::lower, 2. + 1. * I, blas::H(A), B);
 	BOOST_REQUIRE_CLOSE(real(B[1][2]), 2.33846, 0.0001);
 	BOOST_REQUIRE_CLOSE(imag(B[1][2]), -0.0923077, 0.0001);
 }
@@ -182,7 +181,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular) {
 		{ 2. - 2. * I, 7. - 2. * I },
 		{ 3. + 1. * I, 4. + 8. * I }
 	};
-	blas::trsm(blas::side::left, blas::filling::lower, 2.0 + 1.0 * I, blas::H(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	blas::trsm(blas::side::left, blas::filling::lower, 2.0 + 1.0 * I, blas::H(A), B);
 	BOOST_REQUIRE_CLOSE(real(B[2][0]), -4.16471, 0.0001);
 	BOOST_REQUIRE_CLOSE(imag(B[2][0]), 8.25882, 0.0001);
 }

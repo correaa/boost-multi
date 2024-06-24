@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 		{2, 2, 4, 4},
 	};
 
-	boost::multi::array<int, 1, std::allocator<int>> aaa = { 1, 2, 3 };
+	boost::multi::array<int, 1, std::allocator<int>> aaa = {1, 2, 3};
 
 	constexpr auto rowOddSum = [](auto const& arr) {
 		return std::ranges::find_if(arr, [](auto const& row) { return (accumulate(row) & 1) == 1; });
@@ -90,17 +90,9 @@ BOOST_AUTO_TEST_CASE(range_find) {
 		auto a1     = a[1];
 		auto a1_val = +a[1];
 
-		// [[maybe_unused]] auto const& _90 = static_cast<const boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&>(a1_val);
-		// [[maybe_unused]] auto const& _91 = static_cast<const boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&>(std::as_const(a1_val));
-
-		// static_assert( std::convertible_to<const boost::multi::array<int,1,std::allocator<int>>&, const boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&> );
-		// static_assert( std::equality_comparable_with<boost::multi::array<int,1,std::allocator<int>>&,boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&> );
-
 		bool const res = eto(a1_val, a1);
 		BOOST_REQUIRE( res );
-		// std::ranges::equal_to&,boost::multi::array<int,1,std::allocator<int>>&,boost::multi::subarray<int,1,const int *,boost::multi::layout_t<1,boost::multi::size_type>>&
 	}
-
 	{
 		auto&&     a1     = a[1];
 		auto const needle = std::ranges::find(a, a1);
@@ -108,12 +100,11 @@ BOOST_AUTO_TEST_CASE(range_find) {
 		BOOST_REQUIRE( *needle == a1 );
 		BOOST_REQUIRE( *needle == a[1] );
 	}
-
-	{
+	[] {
 		auto const needle = std::ranges::find(a, a[1]);
 		BOOST_REQUIRE(needle != a.end());
 		BOOST_REQUIRE( *needle == a[1] );
-	}
+	}();
 #endif
 }
 

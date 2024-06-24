@@ -44,14 +44,14 @@ BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
 	multi::array<int, 1> const uu = { 2, 2, 2 };
 
 	BOOST_REQUIRE(     tt <  uu   );
-	BOOST_REQUIRE( !  (tt >  uu)  );
+	BOOST_REQUIRE(   !(tt >  uu)  );
 	BOOST_REQUIRE(     tt <= uu   );
-	BOOST_REQUIRE( !  (tt >= uu)  );
-	BOOST_REQUIRE( !  (tt == uu)  );
+	BOOST_REQUIRE(   !(tt >= uu)  );
+	BOOST_REQUIRE(   !(tt == uu)  );
 	BOOST_REQUIRE(    (tt != uu)  );
-	BOOST_REQUIRE( !  (uu <  tt)  );
+	BOOST_REQUIRE(   !(uu <  tt)  );
 	BOOST_REQUIRE(    (uu >  tt)  );
-	BOOST_REQUIRE( !  (uu <= tt)  );
+	BOOST_REQUIRE(   !(uu <= tt)  );
 	BOOST_REQUIRE(    (uu >= tt)  );
 }
 
@@ -62,11 +62,11 @@ BOOST_AUTO_TEST_CASE(sort_2D) {
 		{2, 2, 2},
 		{1, 1, 1},
 	};
-	BOOST_REQUIRE(! std::ranges::is_sorted(A));
+	BOOST_REQUIRE( !std::ranges::is_sorted(A) );
 
 	std::ranges::sort(A);
 
-	BOOST_REQUIRE(  std::ranges::is_sorted(A));
+	BOOST_REQUIRE(  std::ranges::is_sorted(A) );
 
 	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
 }
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(sort_strings) {
 		{'A', 'l', 'e', 'x', ' ', ' '},
 		{'B', 'j', 'a', 'r', 'n', 'e'},
 	};
-	BOOST_REQUIRE(! std::ranges::is_sorted(A));
+	BOOST_REQUIRE( !std::ranges::is_sorted(A) );
 
 	std::ranges::sort(A);
 
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(sort_strings) {
 	));
 
 	std::ranges::sort(~A);
-	BOOST_REQUIRE(  std::ranges::is_sorted(~A));
+	BOOST_REQUIRE(std::ranges::is_sorted(~A));
 
 	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
 }
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
 		{100.0, 11.0, 12.0, 13.0, 14.0},
 		{ 50.0,  6.0,  7.0,  8.0,  9.0},
 	};
-	BOOST_REQUIRE( ! std::is_sorted(begin(d2D), end(d2D) ) );
+	BOOST_REQUIRE( !std::is_sorted(begin(d2D), end(d2D) ) );
 
 	std::stable_sort(begin(d2D), end(d2D));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D), end(d2D) ) );
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
 		}
 	));
 
-	BOOST_REQUIRE( ! std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
+	BOOST_REQUIRE( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
 
 	std::stable_sort(begin(d2D.rotated()), end(d2D.rotated()));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
@@ -153,11 +153,11 @@ BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort) {
 
 	auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], { 4, 5 });  // NOLINT(readability-container-data-pointer) test access
 
-	BOOST_REQUIRE( ! std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
+	BOOST_REQUIRE( !std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
 	std::stable_sort(begin(d2D_ref), end(d2D_ref));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D_ref), end(d2D_ref) ) );
 
-	BOOST_REQUIRE( ! std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
+	BOOST_REQUIRE( !std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
 	std::stable_sort(begin(d2D_ref.rotated()), end(d2D_ref.rotated()));
 	BOOST_REQUIRE( std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
 }
@@ -165,11 +165,12 @@ BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort) {
 BOOST_AUTO_TEST_CASE(lexicographical_compare) {
 	multi::array<char, 1> const name1 = { 'a', 'b', 'c' };
 	multi::array<char, 1> const name2 = { 'a', 'c', 'c' };
-	BOOST_REQUIRE(name1 != name2 );
-	BOOST_REQUIRE(name1 < name2);
-	BOOST_REQUIRE(name1 <= name2);
-	BOOST_REQUIRE(!(name1 > name2));
-	BOOST_REQUIRE(!(name1 > name2));
+
+	BOOST_REQUIRE(  name1 != name2 );
+	BOOST_REQUIRE(  name1 <  name2);
+	BOOST_REQUIRE(  name1 <= name2);
+	BOOST_REQUIRE(!(name1 >  name2));
+	BOOST_REQUIRE(!(name1 >  name2));
 }
 
 BOOST_AUTO_TEST_CASE(lexicographical_compare_offset) {
