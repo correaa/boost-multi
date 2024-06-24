@@ -90,7 +90,12 @@ constexpr auto home(Array&& arr)
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
+template<
+	typename T,
+	dimensionality_type D,
+	typename ElementPtr = T*,
+	class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type> >
+>
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
@@ -242,7 +247,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	template<
 		class ArrayTypes,
-		typename = std::enable_if_t<! std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
+		typename = std::enable_if_t<!std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
 		decltype(multi::detail::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
