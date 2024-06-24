@@ -111,11 +111,14 @@ For example, `array_ref` has all the methods available to `subarray`, and `array
 
 ### class `multi::subarray<T, D, P = T*, ...>`
 
-An instance of this class represents a part (or a whole) of another `subarray` (including an `array`).
-These have reference semantics, and in essence, they behave like language-references.
+An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
+A subarray is part (or a whole) of another `subarray` (including an `array`).
+
+These have reference semantics, and they behave like language-references as much as possible.
 As references, they cannot be rebinded or resized; assignments are always "deep".
 They are characterized by a size that does not change.
-They are usually the result of indexing over other `subarray`s and `array`s (generally of higher dimensions); therefore, the library doesn't expose constructors for this class.
+They are usually the result of indexing over other `subarray`s and `array`s (generally of higher dimensions);
+therefore, the library doesn't expose constructors for this class.
 The whole object can be invalidated if the original array is destroyed.
 
 | Member types      |                           |
