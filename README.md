@@ -109,10 +109,11 @@ When using the library, it is simpler to start from `array`, and other types are
 however, it is convenient for documentation to present the classes in a different order since the classes `subarray`, `array_ref`, `static_array`, and `array` have a *is-a* relationship (from left to right). 
 For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref`.
 
-### class `multi::subarray<T, D, P = T*, ...>`
+### class `multi::subarray<T, D, P = T* >`
 
-An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
 A subarray is part (or a whole) of another `subarray` (including an `array`).
+An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
+(`T`, `D`, `P` initials are used in this sense across the documentation, unless indicated otherwise.)
 
 These have reference semantics, and they behave like language-references as much as possible.
 As references, they cannot be rebinded or resized; assignments are always "deep".
@@ -123,16 +124,16 @@ The whole object can be invalidated if the original array is destroyed.
 
 | Member types      |                           |
 |---                |---                        |
-| `value_type`      | `multi::array<T, D - 1, ...>` or, for `D == 1`, `iterator_traits<P>::value_type` (usually `T`)   
-| `reference`       | `multi::subarray<T, D-1, P, ...>` or, for `D == 1`, `pointer_traits<P>::reference` (usually `T&`) 
-| `const_reference` | `multi::const_subarray<T, D-1, ...>` or, for `D == 1`, `pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
+| `value_type`      | `multi::array<T, D - 1, P >` or, for `D == 1`, `iterator_traits<P>::value_type` (usually `T`)   
+| `reference`       | `multi::subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::reference` (usually `T&`) 
+| `const_reference` | `multi::const_subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
 | `index`           | Describe indexing type in the leading dimension
 | `size_type`       | Describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
 | `difference_type` | Describe index differences in leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
-| `pointer`         | `multi::subarray_ptr<T, D-1, P, ...> or, for `D == 1, `P` (usually `T*`)
-| `const_pointer`   | `multi::const_subarray_ptr<T, D-1, ...>` or, for `D == 1, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
-| `iterator`        | `multi::array_iterator_t<T, D-1, P, ...>`
-| `const_iterator`  | `multi::const_array_iterator_t<T, D-1, P, ...>`
+| `pointer`         | `multi::subarray_ptr<T, D-1, P > or, for `D == 1, `P` (usually `T*`)
+| `const_pointer`   | `multi::const_subarray_ptr<T, D-1, P >` or, for `D == 1, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
+| `iterator`        | `multi::array_iterator_t<T, D-1, P >`
+| `const_iterator`  | `multi::const_array_iterator_t<T, D-1, P >`
 
 | Member fuctions   |    |
 |---                |--- |
@@ -209,7 +210,7 @@ For example, if `S` is 3D, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D arra
 A reference `subarray` can be invalidated when its origin array is invalidated or destroyed.
 For example, if the `array` from which it originates is destroyed or resized.
 
-### class `multi::array_ref<T, D, P = T*, ...>`
+### class `multi::array_ref<T, D, P = T* >`
 
 A D-dimensional view of the contiguous pre-existing memory buffer.
 This class doesn't manage the elements it contains, and it has reference semantics (it can't be rebound, assignments are deep, and have the same size restrictions as `subarray`)
@@ -246,7 +247,7 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 
 An `array_ref` can be invalidated if the original buffer is deallocated.
 
-### class `multi::static_array<T, D, Alloc = std::allocator<T>, ...>`
+### class `multi::static_array<T, D, Alloc = std::allocator<T> >`
 
 A D-dimensional array that manages an internal memory buffer.
 This class owns the elements it contains; it has restricted value semantics because assignments are restricted to sources with equal sizes.
@@ -290,7 +291,7 @@ For most uses, a `multi::array` should be preferred instead.
 | Relational fuctions   |  same as for `array_ref`  |
 |---                |--- |
 
-### class `multi::array<T, D, Alloc = std::allocator<T>, ...>`
+### class `multi::array<T, D, Alloc = std::allocator<T> >`
 
 An array of integer positive dimension D has value semantics if element type T has value semantics.
 It supports stateful and polymorphic allocators, the default for the special type `multi::pmr::static_array`.
@@ -330,12 +331,12 @@ It supports stateful and polymorphic allocators, the default for the special typ
 | `clear`           | Erases all elements from the container. The array is resized to zero size. |
 | `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with `reextent({e1, e2, ...}, val)`.
 
-### class `multi::subarray<T, D, ...>::(const_)iterator`
+### class `multi::subarray<T, D, P >::(const_)iterator`
 
 A random-access iterator to subarrays of dimension `D - 1`, generaly used to interact with or implement algorithms.
 They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
 They can be dereferenced by `operator*` and index access `operator[]`, returning objects of lower dimension `subarray<T, D, ... >::reference` (see above).
-Note that this is the same type for all related arrays, for example, `multi::array<T, D, ...>::(const_)iterator`.
+Note that this is the same type for all related arrays, for example, `multi::array<T, D, P >::(const_)iterator`.
 
 `iterator` can be invalidated when its original array is invalidated, destroyed or resized.
 An `iterator` that stems from `static_array` becomes invalid only if the original array was destroyed or out-of-scope. 
