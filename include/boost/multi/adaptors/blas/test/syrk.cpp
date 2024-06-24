@@ -4,15 +4,12 @@
 
 #include <boost/test/unit_test.hpp>  // for operator<<, BOOS...
 
-#include <boost/multi/adaptors/blas/syrk.hpp>  // for syrk
-#include <boost/multi/array.hpp>               // for array, layout_t
-
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/operations.hpp>  // for transposed, T
+#include <boost/multi/adaptors/blas/syrk.hpp>        // for syrk
+#include <boost/multi/array.hpp>                     // for array, layout_t
 
 #include <complex>  // for operator*, complex
-
-#include <complex>                                   // for operator*, complex
 
 namespace multi = boost::multi;
 

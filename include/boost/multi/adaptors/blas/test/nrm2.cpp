@@ -2,34 +2,34 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>            // for operator<<, BOOST_PP_I...
+#include <boost/test/unit_test.hpp>  // for operator<<, BOOST_PP_I...
 
+#include <boost/multi/adaptors/blas/core.hpp>  // for context
+#include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref, operator==
+#include <boost/multi/adaptors/blas/nrm2.hpp>  // for nrm2, nrm2_ref
+#include <boost/multi/adaptors/complex.hpp>    // for complex, operator*
 #include <boost/multi/array.hpp>               // for array, layout_t, impli...
 
-#include <cmath>                               // for sqrt, NAN
-
-#include "boost/multi/adaptors/blas/dot.hpp"   // for dot, dot_ref, dot_ptr
-#include "boost/multi/adaptors/blas/nrm2.hpp"  // for nrm2, nrm2_ptr, nrm2_ref
-#include "boost/multi/adaptors/complex.hpp"    // for complex, operator*
+#include <cmath>  // for sqrt, NAN
 
 namespace multi = boost::multi;
 
 using complex = multi::complex<double>;
-constexpr complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
+constexpr complex I{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imaginary unit
 
 BOOST_AUTO_TEST_CASE(multi_blas_nrm2) {
 	namespace blas = multi::blas;
 
 	// NOLINTNEXTLINE(readability-identifier-length) blas conventional name
 	multi::array<double, 2> const A = {
-		{1.0,  2.0,  3.0,  4.0},
-		{5.0,  6.0,  7.0,  8.0},
-		{9.0, 10.0, 11.0, 12.0},
+		{ 1.0,  2.0,  3.0,  4.0 },
+		{ 5.0,  6.0,  7.0,  8.0 },
+		{ 9.0, 10.0, 11.0, 12.0 },
 	};
 	BOOST_REQUIRE( blas::nrm2(A[1]) == std::sqrt(blas::dot(A[1], A[1])) );
 
 	{
-		multi::array<complex, 1> const x = {1.0 + 1.0 * I, 3.0 + 2.0 * I, 3.0 + 4.0 * I};  // NOLINT(readability-identifier-length) blas conventional name
+		multi::array<complex, 1> const x = { 1.0 + 1.0 * I, 3.0 + 2.0 * I, 3.0 + 4.0 * I };  // NOLINT(readability-identifier-length) blas conventional name
 		BOOST_REQUIRE( blas::dot(x, x) == (1.0 + 1.0*I)*(1.0 + 1.0*I) + (3.0 + 2.0*I)*(3.0 + 2.0*I) + (3.0 + 4.0*I)*(3.0 + 4.0*I) );
 		using std::sqrt;
 		BOOST_REQUIRE( blas::nrm2(x) == sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) );
@@ -39,9 +39,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_nrm2) {
 BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real) {
 	namespace blas                   = multi::blas;
 	multi::array<double, 2> const cA = {
-		{1.0,  2.0,  3.0,  4.0},
-		{5.0,  6.0,  7.0,  8.0},
-		{9.0, 10.0, 11.0, 12.0},
+		{ 1.0,  2.0,  3.0,  4.0 },
+		{ 5.0,  6.0,  7.0,  8.0 },
+		{ 9.0, 10.0, 11.0, 12.0 },
 	};
 
 	double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
-	multi::array<double, 1> const X = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> const X = { 1.1, 2.1, 3.1, 4.1 };  // NOLINT(readability-identifier-length) BLAS naming
 
 	double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
 
