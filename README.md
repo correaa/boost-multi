@@ -124,11 +124,12 @@ The whole object can be invalidated if the original array is destroyed.
 | Member types      |                           |
 |---                |---                        |
 | `value_type`      | `multi::array<T, D - 1, ...>` or, for `D == 1`, `iterator_traits<P>::value_type` (usually `T`)   
-| `size_type`       | `multi::size_t` (usually signed size) 
-| `difference_type` | `multi::diffptr_t` (usually signed size) 
 | `reference`       | `multi::subarray<T, D-1, P, ...>` or, for `D == 1`, `pointer_traits<P>::reference` (usually `T&`) 
 | `const_reference` | `multi::const_subarray<T, D-1, ...>` or, for `D == 1`, `pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
-| `pointer`         | `multi::subarray_ptr<T, D-1, ...> or, for `D == 1, `P` (usually `T*`)
+| `index`           | Describe indexing type in the leading dimension
+| `size_type`       | Describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
+| `difference_type` | Describe index differences in leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
+| `pointer`         | `multi::subarray_ptr<T, D-1, P, ...> or, for `D == 1, `P` (usually `T*`)
 | `const_pointer`   | `multi::const_subarray_ptr<T, D-1, ...>` or, for `D == 1, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
 | `iterator`        | `multi::array_iterator_t<T, D-1, P, ...>`
 | `const_iterator`  | `multi::const_array_iterator_t<T, D-1, P, ...>`
