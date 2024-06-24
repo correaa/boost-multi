@@ -71,9 +71,9 @@ BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 	static_assert(std::decay_t<decltype(A3_ref)>::rank_v == decltype(A2)::rank_v + 1);
 
 	BOOST_REQUIRE( num_elements(A3_ref) == num_elements(A2) );
-	BOOST_REQUIRE( size(A3_ref)==2 );
-	BOOST_REQUIRE( size(A3_ref[0])==2 );
-	BOOST_REQUIRE( size(A3_ref[0][0])==6 );
+	BOOST_REQUIRE( size(A3_ref) == 2 );
+	BOOST_REQUIRE( size(A3_ref[0]) == 2 );
+	BOOST_REQUIRE( size(A3_ref[0][0]) == 6 );
 	BOOST_REQUIRE( &A3_ref[1][1][0] == &A2[3][0] );
 }
 

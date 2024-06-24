@@ -47,13 +47,13 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 
 	multi::range<int> const irng{ 5, 12 };
 
-	BOOST_REQUIRE( irng.contains(6) );
-	BOOST_REQUIRE( ! irng.contains(12) );
+	BOOST_REQUIRE(  irng.contains(6) );
+	BOOST_REQUIRE( !irng.contains(12) );
 
 	BOOST_REQUIRE( * irng.begin()      ==  5 );
 	BOOST_REQUIRE( *(irng.begin() + 1) ==  6 );
 
-	BOOST_REQUIRE(   irng.first()      ==  5 );
+	BOOST_REQUIRE(   irng.first()       ==  5 );
 	BOOST_REQUIRE(   irng.last()       == 12 );
 
 	BOOST_REQUIRE(   irng.front()      ==  5 );

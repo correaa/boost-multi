@@ -49,9 +49,9 @@ BOOST_AUTO_TEST_CASE(comparison_complex) {
 
 		BOOST_REQUIRE( arr[1] == arr2[1] );
 		BOOST_REQUIRE( arr == arr2 );
-		BOOST_REQUIRE( ! (arr != arr2) );
+		BOOST_REQUIRE( !(arr != arr2) );
 		BOOST_REQUIRE( arr2 == arr );
-		BOOST_REQUIRE( ! (arr2 != arr) );
+		BOOST_REQUIRE( !(arr2 != arr) );
 	}
 	{
 		multi::array<double, 2> const arr = {
@@ -66,9 +66,9 @@ BOOST_AUTO_TEST_CASE(comparison_complex) {
 
 		BOOST_REQUIRE( arr[1][1] == arr2[1][1] );
 		BOOST_REQUIRE( arr == arr2 );
-		BOOST_REQUIRE( ! (arr != arr2) );
+		BOOST_REQUIRE( !(arr != arr2) );
 		BOOST_REQUIRE( arr2 == arr );
-		BOOST_REQUIRE( ! (arr2 != arr) );
+		BOOST_REQUIRE( !(arr2 != arr) );
 		BOOST_REQUIRE( std::equal(arr[1].begin(), arr[1].end(), begin(arr2[1]), end(arr2[1])) );
 	}
 }
@@ -99,21 +99,21 @@ BOOST_AUTO_TEST_CASE(comparisons_equality) {
 	multi::array_cref<double, 3> cref(data_elements(arr), extensions(arr));
 
 	BOOST_REQUIRE( arr ==  arr );
-	BOOST_REQUIRE( ! (arr !=  arr) );
+	BOOST_REQUIRE( !(arr !=  arr) );
 	BOOST_REQUIRE( ref ==  arr );
-	BOOST_REQUIRE( ! (ref !=  arr) );
+	BOOST_REQUIRE( !(ref !=  arr) );
 	BOOST_REQUIRE( ref == cref );
-	BOOST_REQUIRE( ! (ref != cref) );
+	BOOST_REQUIRE( !(ref != cref) );
 
 	BOOST_REQUIRE( arr[0] ==  arr[2] );
 	BOOST_REQUIRE( ref[0] ==  arr[2] );
 	BOOST_REQUIRE( ref[0] == cref[2] );
 
-	BOOST_REQUIRE( ! ( arr[0] != arr[2]) );
-	BOOST_REQUIRE( ! ( ref[0] != ref[2]) );
+	BOOST_REQUIRE( !( arr[0] != arr[2]) );
+	BOOST_REQUIRE( !( ref[0] != ref[2]) );
 
-	BOOST_REQUIRE( ! ( arr[0] != arr[2]) );
-	BOOST_REQUIRE( ! ( ref[0] != ref[2]) );
+	BOOST_REQUIRE( !( arr[0] != arr[2]) );
+	BOOST_REQUIRE( !( ref[0] != ref[2]) );
 }
 
 BOOST_AUTO_TEST_CASE(comparisons_ordering) {

@@ -52,12 +52,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 		BOOST_REQUIRE_CLOSE((+blas::gemm(1.0, A, B))[0][0], B_cpy[0][0], 0.00001);
 	}
 	{
+		// clang-format off
 		// NOLINTNEXLINE(readability-identifier-length) BLAS naming
-		multi::array<double, 2> B = {
-			{
-                                                                                                                                                                                                                                                                                                          3.0,
-			 },
-		};
+		multi::array<double, 2> B = {{3.0, }, };
 
 		auto const B_cpy = B;
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
