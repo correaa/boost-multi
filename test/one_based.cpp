@@ -142,5 +142,5 @@ BOOST_AUTO_TEST_CASE(one_base_2D_ref) {
 	 BOOST_REQUIRE( extensions(Ar2.reindexed(0, 0)) == extensions(Ar) );
 	 BOOST_REQUIRE( Ar2.reindexed(0, 0) == Ar );
 
-	 static_assert( ! std::is_assignable_v<decltype(Ar2.reindexed(0, 0)[0][0]), double> );
+	 static_assert( !std::is_assignable_v<decltype(Ar2.reindexed(0, 0)[0][0]), double> );
 }

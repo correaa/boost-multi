@@ -192,8 +192,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 
 		syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_REQUIRE( c[1][0]==complex(18.0, -21.0) );
-		BOOST_REQUIRE( c[0][1]==9999.0 );
+		BOOST_REQUIRE( c[1][0] == complex(18.0, -21.0) );
+		BOOST_REQUIRE( c[0][1] == 9999.0 );
 	}
 	{
 		multi::array<complex, 2> c({ 3, 3 }, 9999.0);  // NOLINT(readability-identifier-length)  // NOLINT(fuchsia-default-arguments-calls)

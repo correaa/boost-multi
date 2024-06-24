@@ -66,40 +66,40 @@ BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug) {
 BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 	{
 		multi::array<double, 1> const arr(multi::extensions_t<1>{ multi::iextension{ 10 } });
-		BOOST_REQUIRE( size(arr)==10 );
+		BOOST_REQUIRE( size(arr) == 10 );
 	}
 	{
 		multi::array<int, 1> arr(multi::extensions_t<1>{ multi::iextension{ 10 } }, int{});
-		BOOST_REQUIRE( size(arr)==10 );
-		BOOST_REQUIRE( arr[5]== int{} );
+		BOOST_REQUIRE( size(arr) == 10 );
+		BOOST_REQUIRE( arr[5] == int{} );
 	}
 	{
 		multi::array<int, 1> arr(multi::extensions_t<1>{ multi::iextension{ 10 } }, int{});
-		BOOST_REQUIRE( size(arr)==10 );
-		BOOST_REQUIRE( arr[5]== int{} );
+		BOOST_REQUIRE( size(arr) == 10 );
+		BOOST_REQUIRE( arr[5] == int{} );
 	}
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	{
 		multi::array arr(multi::extensions_t<1>({ 0, 10 }), int{});
-		BOOST_REQUIRE( size(arr)==10 );
-		BOOST_REQUIRE( arr[5]== int{} );
+		BOOST_REQUIRE( size(arr) == 10 );
+		BOOST_REQUIRE( arr[5] == int{} );
 	}
 	{
 		// clang-format off
 		multi::array arr({{0, 10}}, int{});
 		// clang-format on
-		BOOST_REQUIRE( size(arr)==10 );
-		BOOST_REQUIRE( arr[5]== int{} );
+		BOOST_REQUIRE( size(arr) == 10 );
+		BOOST_REQUIRE( arr[5] == int{} );
 	}
 	{
 		multi::array arr({ 10 }, int{});
-		BOOST_REQUIRE( size(arr)==10 );
-		BOOST_REQUIRE( arr[5]== int{} );
+		BOOST_REQUIRE( size(arr) == 10 );
+		BOOST_REQUIRE( arr[5] == int{} );
 	}
 	{
 		multi::array arr(10, int{});
-		BOOST_REQUIRE( size(arr)==10 );
-		BOOST_REQUIRE( arr[5]== int{} );
+		BOOST_REQUIRE( size(arr) == 10 );
+		BOOST_REQUIRE( arr[5] == int{} );
 	}
 #endif
 }
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 BOOST_AUTO_TEST_CASE(multi_constructors_2d_ctad) {
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	multi::array arr({ 10, 20 }, int{});
-	BOOST_REQUIRE( size(arr)==10 );
+	BOOST_REQUIRE( size(arr) == 10 );
 	BOOST_REQUIRE( arr[5][6] == int{} );
 #endif
 }
@@ -125,42 +125,48 @@ BOOST_AUTO_TEST_CASE(multi_constructors) {
 		// multi::array<double, 1> arr({10}, {}); assert(size(arr)==10); // error ambiguous
 	} {
 		multi::array<int, 1> arr = { 10 };
-		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
+		BOOST_REQUIRE( size(arr) == 1 );
+		BOOST_REQUIRE( arr[0] == 10 );
 	}
 	{
 		multi::array<std::size_t, 1> arr = { 10 };
-		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
+		BOOST_REQUIRE( size(arr) == 1 );
+		BOOST_REQUIRE( arr[0] == 10 );
 	}
 	{
 		multi::array<int, 1> arr = { 10 };
-		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
+		BOOST_REQUIRE( size(arr) == 1 );
+		BOOST_REQUIRE( arr[0] == 10 );
 	}
 	{
 		multi::array<int, 1> arr({ 10 });
-		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
+		BOOST_REQUIRE( size(arr) == 1 );
+		BOOST_REQUIRE( arr[0] == 10 );
 	}
 	{
 		multi::array<std::size_t, 1> arr({ 10 });
-		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
+		BOOST_REQUIRE( size(arr) == 1 );
+		BOOST_REQUIRE( arr[0] == 10 );
 	}
 	{
 		multi::array<int, 1> arr({ 10 });
-		BOOST_REQUIRE( size(arr)==1 && arr[0]==10 );
+		BOOST_REQUIRE( size(arr) == 1 );
+		BOOST_REQUIRE( arr[0] == 10 );
 		//}{ multi::array<std::size_t, 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 		//}{ multi::array<int        , 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 		//}{ multi::array<double     , 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 	}
 	{
 		multi::array<std::size_t, 1> const arr({ 0, 10 });
-		BOOST_REQUIRE( size(arr)==2 );
+		BOOST_REQUIRE( size(arr) == 2 );
 	}
 	{
 		multi::array<int, 1> const arr({ 0, 10 });
-		BOOST_REQUIRE( size(arr)==2 );
+		BOOST_REQUIRE( size(arr) == 2 );
 	}
 	{
 		multi::array<double, 1> const arr({ 0, 10 });
-		BOOST_REQUIRE( size(arr)==2 );
+		BOOST_REQUIRE( size(arr) == 2 );
 	}
 	{
 		using T = multi::array<std::string, 3>;

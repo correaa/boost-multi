@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	SoA(1, 1) = SoA(0, 0);
 	BOOST_REQUIRE( SoA(1, 1).mass == SoA(0, 0).mass);
 	BOOST_REQUIRE( SoA(1, 1) == SoA(0, 0));
-	BOOST_REQUIRE( ! (SoA(1, 1) != SoA(0, 0)));
+	BOOST_REQUIRE( !(SoA(1, 1) != SoA(0, 0)));
 }
 
 struct employee_dummy {
