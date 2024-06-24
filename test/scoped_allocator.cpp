@@ -45,9 +45,11 @@ class allocator1 {
 	using value_type = T;
 
 	allocator1() noexcept = delete;
-	// NOLINTNEXTLINE(runtime/explicit)
-	allocator1(int* heap) : heap_{ heap } { assert(heap_); }                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
-	template<class U> allocator1(allocator1<U> const& other) noexcept : heap_{ other.heap_ } {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) allocator conversions are not explicit
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	allocator1(int* heap) : heap_{heap} { assert(heap_); }  // NOLINT(runtime/explicit)  // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
+
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class U> allocator1(allocator1<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
 
 	auto allocate(std::size_t n) {
 		if(n == 0) {
@@ -88,17 +90,19 @@ class allocator2 {
 	using value_type = T;
 
 	allocator2() noexcept = default;
-	// NOLINTNEXTLINE(runtime/explicit)
-	allocator2(std::int64_t* heap) : heap_{ heap } { assert(heap_); }                            // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
-	template<class U> allocator2(allocator2<U> const& other) noexcept : heap_{ other.heap_ } {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709) allocator conversions are not explicit
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	allocator2(std::int64_t* heap) : heap_{heap} { assert(heap_); }  // NOLINT(runtime/explicit) // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
+
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class U> allocator2(allocator2<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
 
 	auto allocate(std::size_t n) {
 		if(n == 0) {
 			return static_cast<value_type*>(nullptr);
 		}
-		if(heap_ == nullptr) {
+		if(heap_ == nullptr) {  // this cuts branches with UB (null deref) for the sanitizer
 			throw std::bad_alloc{};
-		}  // this cuts branches with UB (null deref) for the sanitizer
+		}
 		++*heap_;
 		return static_cast<value_type*>(::operator new(n * sizeof(value_type)));
 	}
@@ -141,7 +145,7 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_vector) {
 					allocator2<int>>>;
 
 		// OuterCont cont({&heap1, &heap2});  // gives ambiguous construction in libc++
-		OuterCont cont({ &heap1, allocator2<int>{ &heap2 } });
+		OuterCont cont({&heap1, allocator2<int>{&heap2}});
 
 		cont.resize(2);
 
@@ -174,8 +178,8 @@ BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector) {
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
 			multi::extensions_t<2>
 #endif
-			{ 3, 4 },
-			{ &heap1, allocator2<int>{ &heap2 } }  // without allocator2<>{...} gives ambiguous construction in libc++
+			{3, 4},
+			{&heap1, allocator2<int>{&heap2}}  // without allocator2<>{...} gives ambiguous construction in libc++
 		);
 
 		cont[1][2].resize(10);

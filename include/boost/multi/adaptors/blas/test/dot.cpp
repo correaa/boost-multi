@@ -104,8 +104,8 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_double) {  // if you 
 	complex res{ 0.0, 0.0 };
 	blas::dot(x, y, res);
 	// an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
-	BOOST_REQUIRE_EQUAL(real(res), real(std::inner_product(begin(x), end(x), begin(y), complex{ 0.0, 0.0 }, std::plus<>{}, [](auto const& alpha, auto const& omega) { return alpha * std::conj(omega); })));
-	BOOST_REQUIRE_EQUAL(imag(res), imag(std::inner_product(begin(x), end(x), begin(y), complex{ 0.0, 0.0 }, std::plus<>{}, [](auto const& alpha, auto const& omega) { return alpha * std::conj(omega); })));
+	BOOST_REQUIRE_EQUAL(real(res), real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * std::conj(omega); })));
+	BOOST_REQUIRE_EQUAL(imag(res), imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * std::conj(omega); })));
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_float) {  // if you get a segfaut here, your system may require -DRETURN_BY_STACK
@@ -126,8 +126,8 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_float) {  // if you g
 	blas::dot(x, y, res);
 
 	// // an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
-	BOOST_REQUIRE_EQUAL(real(res), real(std::inner_product(begin(x), end(x), begin(y), complex{ 0.0F, 0.0F }, std::plus<>{}, [](auto const& alpha, auto const& omega) { return alpha * std::conj(omega); })));
-	BOOST_REQUIRE_EQUAL(imag(res), imag(std::inner_product(begin(x), end(x), begin(y), complex{ 0.0F, 0.0F }, std::plus<>{}, [](auto const& alpha, auto const& omega) { return alpha * std::conj(omega); })));
+	BOOST_REQUIRE_EQUAL(real(res), real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * std::conj(omega); })));
+	BOOST_REQUIRE_EQUAL(imag(res), imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * std::conj(omega); })));
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C) {
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C) {
 
 	complex res{ 0.0, 0.0 };
 	blas::dot(blas::C(x), y, res);
-	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) { return conj(alpha) * omega;}) );
+	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C_float) {
@@ -384,25 +384,25 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_float) {
 
 	auto c1 = complex{ 0.0F, 0.0F };
 	blas::dot(A[1], A[2], c1);
-	BOOST_TEST_REQUIRE( c1 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0F, 0.0F}) );
+	BOOST_TEST_REQUIRE( c1 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );
 
 	auto const c2 = +blas::dot(A[1], A[2]);
-	BOOST_TEST_REQUIRE( c2 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0F, 0.0F}) );
+	BOOST_TEST_REQUIRE( c2 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );
 
 	complex const c3 = blas::dot(A[1], A[2]);
-	BOOST_TEST_REQUIRE( c3 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0F, 0.0F}) );
+	BOOST_TEST_REQUIRE( c3 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );
 
 	complex const c4 = blas::dot(A[1], blas::C(A[2]));
-	BOOST_TEST_REQUIRE( c4 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0F, 0.0F}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * conj(omega);}) );
+	BOOST_TEST_REQUIRE( c4 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * conj(omega);}) );
 
 	complex const c5 = blas::dot(blas::C(A[1]), A[2]);
-	BOOST_TEST_REQUIRE( c5 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0F, 0.0F}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
+	BOOST_TEST_REQUIRE( c5 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
 
 	complex const c6 = blas::dot(blas::conj(A[1]), A[2]);
-	BOOST_TEST_REQUIRE( c6 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0F, 0.0F}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
+	BOOST_TEST_REQUIRE( c6 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
 
 	complex const c7 = blas::dot(blas::C(A[1]), A[2]);
-	BOOST_TEST_REQUIRE( c7 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0F, 0.0F}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
+	BOOST_TEST_REQUIRE( c7 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
 }
 
 BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second_double) {
