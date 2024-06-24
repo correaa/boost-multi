@@ -308,7 +308,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 		};
 		// NOLINTEND(fuchsia-default-arguments-calls)
 
-		BOOST_REQUIRE( num_elements(B3)==12 && B3[1][0][1] == "101" );
+		BOOST_REQUIRE( num_elements(B3) == 12 );
+		BOOST_REQUIRE( B3[1][0][1] == "101" );
 	}
 }
 
@@ -320,7 +321,7 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 
 	BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
 	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1);
-	BOOST_REQUIRE( num_elements(arr)==3 );
+	BOOST_REQUIRE( num_elements(arr) == 3 );
 	BOOST_REQUIRE( arr[1] == 20 );
 
 	static_assert(typename decltype(arr)::rank{} == 1);
@@ -331,9 +332,10 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_a) {
 
 	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-	BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>::value==1 );
-	BOOST_REQUIRE( num_elements(arr)==3 );
+	BOOST_REQUIRE( size(arr) == 3 );
+	BOOST_REQUIRE( num_elements(arr) == 3 );
+	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_REQUIRE( num_elements(arr) == 3 );
 	BOOST_REQUIRE( arr[1] == 20 );
 
 	static_assert(typename decltype(arr)::rank{} == 1);
@@ -370,8 +372,8 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_d) {
 	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
 	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
-	BOOST_REQUIRE( num_elements(arr)==1 );
-	BOOST_REQUIRE( arr[0]==90 );
+	BOOST_REQUIRE( num_elements(arr) == 1 );
+	BOOST_REQUIRE( arr[0] == 90 );
 	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
 }
 

@@ -56,7 +56,11 @@ template<class M> auto print(M const& arr, std::string const& msg) -> decltype(a
 	}
 	return cout << '}' << '\n';
 }
-template<class M> auto print(M const& arr, char const* msg) -> decltype(auto) { return print(arr, std::string{ msg }); }  // NOLINT(fuchsia-default-arguments-calls)
+
+template<class M>
+auto print(M const& arr, char const* msg) -> decltype(auto) {
+	return print(arr, std::string{ msg });  // NOLINT(fuchsia-default-arguments-calls)
+}
 
 template<class M>
 auto randomize(M&& arr) -> M&& {
@@ -209,7 +213,8 @@ BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_trivial_imperfect, *boost::unit_te
 
 	auto AA = +Adec;
 
-	for(auto i = 0; i != AA.size(); ++i) {                                                                                             // NOLINT(altera-id-dependent-backward-branch)
+	// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
+	for(auto i = 0; i != AA.size(); ++i) {
 		for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops)
 			AA[i][j] = 0.0;
 		}

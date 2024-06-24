@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 
 	multi::array<double, 2> arr3 = arr.reinterpret_array_cast<double>(2);
 
-	BOOST_REQUIRE(( sizes(arr3)==decltype(sizes(arr3)){100, 2} ));
+	BOOST_REQUIRE(( sizes(arr3) == decltype(sizes(arr3)){100, 2} ));
 	BOOST_REQUIRE_CLOSE(arr3[5][0], real(arr[5]), 1E-6);
 	BOOST_REQUIRE_CLOSE(arr3[5][1], imag(arr[5]), 1E-6);
 #endif
@@ -205,10 +205,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[5][7][2] == &std::get<2>(arr[5][7]) );
 	}
 	{
-		multi::array<vector3, 2> const arr({
-			                                   4, 5
-                                                                                                                                                                                                      },
-		                                   vector3{ { 1.0, 2.0, 3.0 } });
+		multi::array<vector3, 2> const arr({4, 5}, vector3{ { 1.0, 2.0, 3.0 } });
 
 		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
 		BOOST_REQUIRE( decltype(arr.reinterpret_array_cast<double>(3))::dimensionality == 3 );

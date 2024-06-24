@@ -60,10 +60,10 @@ BOOST_AUTO_TEST_CASE(equality_1D) {
 	multi::array<int, 1> arr2 = { 10, 20, 30 };
 
 	BOOST_REQUIRE(    arr == arr2  );
-	BOOST_REQUIRE( ! (arr != arr2) );
+	BOOST_REQUIRE( !(arr != arr2) );
 
 	BOOST_REQUIRE(    arr() == arr2()  );
-	BOOST_REQUIRE( ! (arr() != arr2()) );
+	BOOST_REQUIRE( !(arr() != arr2()) );
 }
 
 BOOST_AUTO_TEST_CASE(equality_2D) {
@@ -77,13 +77,13 @@ BOOST_AUTO_TEST_CASE(equality_2D) {
 	};
 
 	BOOST_REQUIRE( arr == arr2 );
-	BOOST_REQUIRE( ! (arr != arr2) );
+	BOOST_REQUIRE( !(arr != arr2) );
 
 	BOOST_REQUIRE( arr() == arr2() );
-	BOOST_REQUIRE( ! (arr() != arr2()) );
+	BOOST_REQUIRE( !(arr() != arr2()) );
 
 	BOOST_REQUIRE( arr[0] == arr2[0] );
-	BOOST_REQUIRE( ! (arr[0] != arr2[0]) );
+	BOOST_REQUIRE( !(arr[0] != arr2[0]) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_copy_move) {
@@ -176,8 +176,8 @@ BOOST_AUTO_TEST_CASE(assignments) {
 		multi::array_ref<int, 2>(vec.data(), { 5, 7 }) = arr();  // arr() is a subarray
 
 		BOOST_REQUIRE( vec[9] == val );
-		BOOST_REQUIRE( ! vec.empty() );
-		BOOST_REQUIRE( ! is_empty(arr) );
+		BOOST_REQUIRE( !vec.empty() );
+		BOOST_REQUIRE( !is_empty(arr) );
 	}
 	{
 		std::vector<int> vec(5 * 7L, 99);  // NOLINT(fuchsia-default-arguments-calls)

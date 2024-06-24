@@ -36,8 +36,10 @@ auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identi
 // #ifdef _MULTI_USING_BLAS_MKL
 // #include <mkl/mkl_service.h>  // for mkl_free_buffers
 // struct Fixture {
-//   Fixture()   {mkl_disable_fast_mm(); }  // this is reported to solve memory leaks, but it doesn't with BLA_VENDOR=Intel10_64ilp (non seq) and INTEL_MKL_VERSION 20200004
-//   ~Fixture()  { mkl_free_buffers(); }  // this is reported to solve memory leaks, but it doesn't with BLA_VENDOR=Intel10_64ilp (non seq) and INTEL_MKL_VERSION 20200004
+//   Fixture()   {
+//     mkl_disable_fast_mm();  // reported to solve memory leaks, but it doesn't with BLA_VENDOR=Intel10_64ilp (non seq) and INTEL_MKL_VERSION 20200004
+//   }
+//   ~Fixture()  { mkl_free_buffers(); }
 // };
 
 // BOOST_GLOBAL_FIXTURE(Fixture);
