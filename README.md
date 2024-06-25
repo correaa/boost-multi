@@ -1126,7 +1126,7 @@ The rule will only apply to this library's containers (`multi::array`, etc), and
 
 ## Type Requirements
 
-Thelibrary design tries to impose the minimum possible requirements over the types that parameterize the arrays.
+The library design tries to impose the minimum possible requirements over the types that parameterize the arrays.
 Array operations assume that the contained type (element type) are regular (i.e. different element represent disjoint entities that behave like values).
 Pointer-like random access types can be used as substitutes of built-in pointers.
 (Therefore pointers to special memory and fancy-pointers are supported.)
@@ -1182,6 +1182,7 @@ int main() {
 }
 }
 ```
+([live](https://godbolt.org/z/oeTss3s35))
 
 (See also, examples of interactions with the CUDA Thrust library to see more uses of special pointer types to handle special memory.)
 
@@ -1192,7 +1193,7 @@ These are useful to create "projections" or "views" of data elements.
 In the following example a "transforming pointer" is used to create a conjugated view of the elements.
 In combination with a transposed view, it can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
 We can adapt the library type `boost::transform_iterator` to save coding, but other libraries can be used also.
-The hermitized view is read-only, but with additional work a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
+The hermitized view is read-only, but with additional work, a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
 
 ```cpp
 constexpr auto conj = [](auto const& c) {return std::conj(c);};
@@ -1226,14 +1227,14 @@ To simplify this boilerplate, the library provides the `.element_transformed(F)`
 In this example, the original array is transformed into a transposed array with duplicated elements.
 
 ```cpp
-    multi::array<double, 2> A = {
-        {1.0, 2.0},
-        {3.0, 4.0},
-    };
+	multi::array<double, 2> A = {
+		{1.0, 2.0},
+		{3.0, 4.0},
+	};
 
-    auto const scale = [](auto x) { return x * 2.0; };
+	auto const scale = [](auto x) { return x * 2.0; };
 
-    auto B = + A.transposed().element_transformed(scale);
+	auto B = + A.transposed().element_transformed(scale);
 	assert( B[1][0] == A[0][1] * 2 );
 ```
 
