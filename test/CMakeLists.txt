@@ -117,7 +117,7 @@ else()
 	-Wframe-address  # -Wframe-larger-than=<byte-size>
 	-Wfree-nonheap-object -Whsa
 	# -Wif-not-aligned # (gcc 8, not in 7)
-	-Wignored-attributes # -Wignored-qualifiers
+	-Wignored-attributes
 	-Wignored-qualifiers
 	-Wimplicit-fallthrough #=3  # -Wimplicit-fallthrough=<0,5>
 	# -Winaccessible-base # (gcc 12, not in 11)
@@ -153,6 +153,7 @@ else()
 	-Wnon-template-friend -Wnon-virtual-dtor
 	-Wnonnull -Wnonnull-compare
 	-Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
+	-Wnrvo
 	-Wnull-dereference
 	-Wodr
 	-Wold-style-cast  # TODO(correaa) fix this
@@ -474,7 +475,7 @@ else()
 	#-Wignored-pragma-intrinsic
 	#-Wignored-pragma-optimize
 	#-Wignored-pragmas (other compilers need pragmas)
-	-Wno-ignored-qualifiers  # turns out that returning const types is not really ignored by the compiler and prevents certain misleading syntaxes
+	-Wignored-qualifiers  # turns out that returning const types is not really ignored by the compiler and prevents certain misleading syntaxes
 	# -Wignored-reference-qualifiers (clang 15, not in clang 13)
 	-Wimplicit -Wimplicit-atomic-properties
 	# -Wimplicit-const-int-float-conversion (clang 11, not in clang 9)

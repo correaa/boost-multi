@@ -110,7 +110,8 @@ template<typename ComplexRef>
 struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 	using decay_type = decltype(+std::declval<ComplexRef>());
 
-	// explicit constexpr operator decay_type() const { return std::conj(c_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	// explicit constexpr operator decay_type() const {return std::conj(c_); }  // NOSONAR(cpp:S1709)
 
 	friend constexpr auto operator==(decay_type const& other, Conjd const& self) -> bool { return std::conj(self.c_) == other; }
 	friend constexpr auto operator!=(decay_type const& other, Conjd const& self) -> bool { return std::conj(self.c_) != other; }
