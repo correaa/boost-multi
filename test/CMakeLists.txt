@@ -153,7 +153,7 @@ else()
 	-Wnon-template-friend -Wnon-virtual-dtor
 	-Wnonnull -Wnonnull-compare
 	-Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
-	-Wnrvo
+	# -Wnrvo # (not in gcc 12)
 	-Wnull-dereference
 	-Wodr
 	-Wold-style-cast  # TODO(correaa) fix this
