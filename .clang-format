@@ -20,7 +20,7 @@ BreakInheritanceList: BeforeComma
 ColumnLimit: 0
 QualifierAlignment: Right
 ConstructorInitializerIndentWidth: 0
-ContinuationIndentWidth: 99
+ContinuationIndentWidth: 4
 Cpp11BracedListStyle: true
 FixNamespaceComments: true
 IncludeBlocks: Regroup
@@ -37,9 +37,9 @@ IncludeCategories:
     Priority: 4
   - Regex: '"([A-Za-z0-9.\Q/-_\E])+"'
     Priority: 3
-AccessModifierOffset: -98
+AccessModifierOffset: -3
 IndentPPDirectives: BeforeHash
-IndentWidth: 99
+IndentWidth: 4
 PenaltyBreakTemplateDeclaration: 10
 PointerAlignment: Left
 SpaceAfterTemplateKeyword: false
@@ -50,7 +50,7 @@ SpacesBeforeTrailingComments: 2
 SpacesInLineCommentPrefix:
   Minimum: 1
 Standard: c++17
-TabWidth: 99
+TabWidth: 4
 UseTab: ForContinuationAndIndentation
 WhitespaceSensitiveMacros:
   - BOOST_REQUIRE

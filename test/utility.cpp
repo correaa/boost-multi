@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 
 	BOOST_REQUIRE(( multi::extensions(arr) == (decltype(multi::extensions(arr))({3, 4, 5})) ));
 	BOOST_REQUIRE(( multi::extensions(arr) ==  decltype(multi::extensions(arr))({3, 4, 5})  ));
-//  BOOST_REQUIRE(( multi::extensions(arr) ==  decltype(multi::extensions(arr)) {3, 4, 5}   ));  // MSVC: compiler may not enforce left-to-right evaluation order in braced initializer list
+	BOOST_REQUIRE(( multi::extensions(arr) ==  decltype(multi::extensions(arr)) {3, 4, 5}   ));
 
 #ifndef _MSC_VER  // problem with 14.3 c++17
 	using multi::data_elements;

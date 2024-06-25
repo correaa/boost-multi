@@ -61,11 +61,12 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		multi::array<v3d, 2> positions_;
 
 	 public:  // NOLINT(whitespace/indent) nested class
-		// NOLINTNEXTLINE(runtime/explicit)
-		explicit particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
+		// NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
+		explicit particles_soa(multi::array<particle, 2> const& AoS)  // NOLINTNEXTLINE(runtime/explicit)
 		: masses_{AoS.member_cast<int>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
 
-		struct reference {                                                                                                 // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) // NOSONAR
+		// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // NOSONAR
+		struct reference {
 			int& mass;      // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 			v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
@@ -138,8 +139,13 @@ struct employee {
 	short       salary;  // NOLINT(google-runtime-int)
 	std::size_t age;
 
+	// clang-format off
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	char padding_[(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string) - (offsetof(employee_dummy, age) + sizeof(age)))] = {};
+	char padding_[
+		((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string)
+		- (offsetof(employee_dummy, age) + sizeof(age))
+	] = {};
+	// clang-format on
 };
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)

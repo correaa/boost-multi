@@ -1636,7 +1636,9 @@ BOOST_AUTO_TEST_CASE(blas_context_gemm) {
 
 	static constexpr complex I{ 0, 1 };
 
-	auto rand = [d = std::normal_distribution<>{}, g = std::mt19937{}]() mutable { return d(g) + d(g) * I; };  // NOLINT(cert-msc32-c, cert-msc51-cpp): test purposes
+	auto rand = [d = std::normal_distribution<>{}, g = std::mt19937{}]() mutable {  // NOLINT(cert-msc32-c, cert-msc51-cpp) for test purposes
+		return d(g) + d(g) * I;
+	};
 
 	multi::array<complex, 2> A({ 30, 40 });
 	multi::array<complex, 2> B({ 40, 50 });
