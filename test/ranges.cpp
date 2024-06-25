@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(range_find) {
 		BOOST_REQUIRE( *needle == a1 );
 		BOOST_REQUIRE( *needle == a[1] );
 	}
-	[] {
+	[&] {
 		auto const needle = std::ranges::find(a, a[1]);
 		BOOST_REQUIRE(needle != a.end());
 		BOOST_REQUIRE( *needle == a[1] );
