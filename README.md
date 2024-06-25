@@ -1282,7 +1282,7 @@ In this example, we replace the values of the first row for which the sum of the
 		{2, 2, 0, 4},
 	};
 
-	auto const row = std::ranges::find_if(arr, [](auto const& r) { return accumulate(r) %2 == 1; });
+	auto const row = std::ranges::find_if(arr, [](auto const& r) { return accumulate(r) % 2 == 1; });
 	if(row != arr.end()) std::ranges::fill(*row, 9);
 
 	assert(arr[1][0] == 9 );
