@@ -1150,7 +1150,6 @@ Since `array_ref` does not manage the memory associated with it, the reference c
 `array`s manage their memory behind the scenes through allocators, which can be specified at construction.
 It can handle special memory, as long as the underlying types behave coherently, these include [fancy pointers](https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers) (and fancy references).
 Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
-Another use of fancy pointer is to create by-element "projections".
 
 #### Allocators and Fancy Pointers
 
@@ -1188,15 +1187,15 @@ int main() {
 
 #### Transformed views
 
-Another kind of fancy-pointer is one that transforms the underlying values.
+Another kind of use of the internal pointer-like type is to transform underlying values.
 These are useful to create "projections" or "views" of data elements.
 In the following example a "transforming pointer" is used to create a conjugated view of the elements.
-In combination with transposed view, it can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
+In combination with a transposed view, it can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
 We can adapt the library type `boost::transform_iterator` to save coding, but other libraries can be used also.
 The hermitized view is read-only, but with additional work a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
 
 ```cpp
-constexpr auto conj = [](auto const& c) -> auto const {return std::conj(c);};
+constexpr auto conj = [](auto const& c) {return std::conj(c);};
 
 template<class T> struct conjr : boost::transform_iterator<decltype(conj), T*> {
 	template<class... As> conjr(As const&... as) : boost::transform_iterator<decltype(conj), T*>{as...} {}
@@ -1211,7 +1210,7 @@ auto hermitized(Array2D const& arr) {
 }
 
 int main() {
-    using namespace std::complex_literals;
+	using namespace std::complex_literals;
 	multi::array A = {
 		{ 1.0 + 2.0i,  3.0 +  4.0i},
 		{ 8.0 + 9.0i, 10.0 + 11.0i}
@@ -1224,7 +1223,7 @@ int main() {
 ```
 
 To simplify this boilerplate, the library provides the `.element_transformed(F)` method that will apply a transformation `F` to each element of the array.
-In this example the original arrays is transformed into a transposed array with duplicated elements.
+In this example, the original array is transformed into a transposed array with duplicated elements.
 
 ```cpp
     multi::array<double, 2> A = {
@@ -1234,13 +1233,13 @@ In this example the original arrays is transformed into a transposed array with 
 
     auto const scale = [](auto x) { return x * 2.0; };
 
-    auto B = + A.rotated().element_transformed(scale);
+    auto B = + A.transposed().element_transformed(scale);
 	assert( B[1][0] == A[0][1] * 2 );
 ```
 
-([live](https://godbolt.org/z/b7E56Mjc8))
+([live](https://godbolt.org/z/TYavYEG1T))
 
-Since `elements_transformed` is a reference (transformed view) to the original data, it is important to understand the semantics of evaluation and possible allocations incurred.
+Since `element_transformed` is a reference-like object (transformed view) to the original data, it is important to understand the semantics of evaluation and possible allocations incurred.
 As mentioned in other sections using `auto` and/or `+` appropriately can lead to simple and efficient expressions.
 
 | Construction    | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes |
