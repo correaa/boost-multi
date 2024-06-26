@@ -115,7 +115,7 @@ A subarray is part (or a whole) of another `subarray` (including an `array`).
 An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
 (`T`, `D`, `P` initials are used in this sense across the documentation, unless indicated otherwise.)
 
-These have reference semantics, and they behave like language-references as much as possible.
+These have reference semantics, and they behave like "language references" as much as possible.
 As references, they cannot be rebinded or resized; assignments are always "deep".
 They are characterized by a size that does not change.
 They are usually the result of indexing over other `subarray`s and `array`s (generally of higher dimensions);
@@ -127,9 +127,11 @@ The whole object can be invalidated if the original array is destroyed.
 | `value_type`      | `multi::array<T, D - 1, P >` or, for `D == 1`, `iterator_traits<P>::value_type` (usually `T`)   
 | `reference`       | `multi::subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::reference` (usually `T&`) 
 | `const_reference` | `multi::const_subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
-| `index`           | Describe indexing type in the leading dimension
-| `size_type`       | Describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
-| `difference_type` | Describe index differences in leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
+| `index`           | indexing type in the leading dimension (usually `std::diffptr_t`)
+| `size_type`       | describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
+| `index_range`     | describe ranges of indices, constructible from braced indices types or from an `extension_type`. Can be continuous (e.g. `{2, 14}`) or strided (e.g. `{2, 14, /*every*/ 3}`)
+| `extesion_type`   | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to `{0, 10}`). 
+| `difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
 | `pointer`         | `multi::subarray_ptr<T, D-1, P > or, for `D == 1, `P` (usually `T*`)
 | `const_pointer`   | `multi::const_subarray_ptr<T, D-1, P >` or, for `D == 1, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
 | `iterator`        | `multi::array_iterator_t<T, D-1, P >`
@@ -137,7 +139,7 @@ The whole object can be invalidated if the original array is destroyed.
 
 | Member fuctions   |    |
 |---                |--- |
-| (constructors)    | Not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements. |
+| (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements. |
 | `operator=`       | assigns the elements from the source, sizes must match.
 
 It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
@@ -162,9 +164,9 @@ Lexicographical order applies naturaly if the extensions of `A` and `B` are diff
 |`back`             | access last element  (undefined result if array is empty).
 |`operator()`       | When used with zero arguments, it returns a `subarray` representing the whole array. When used with one argument, access a specified element by index (return a `reference`) or by range (return a `subarray` of equal dimension). For more than one, arguments are positional and reproduce expected array access syntax from Fortran or Matlab: |
 
-- `subarray::operator()(i, j, k, ...)`, as in `S(i, j, k)` for indices `i`, `j`, `k` is a synonym for `A`[i][j][k]`, the number of indices can be lower than the total dimension (e.g., `S` can be 4D).
+- `subarray::operator()(i, j, k, ...)`, as in `S(i, j, k)` for indices `i`, `j`, `k` is a synonym for `A[i][j][k]`, the number of indices can be lower than the total dimension (e.g., `S` can be 4D).
 Each index argument lowers the dimension by one.
-- `subarray::operator()(ii, jj, kk)`, the arguments can be indices or ranges.
+- `subarray::operator()(ii, jj, kk)`, the arguments can be indices or ranges of indices (`index_range` member type).
 This function allows positional-aware ranges. Each index argument lowers the rank by one.
 A special range is given by `multi::_`, which means "the whole range" (also spelled `multi::all`).
 For example, if `S` is 3D, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D array where the first index is fixed at 3, with sizes `6` by `2` referring the subblock in the second and third dimension. Note that `S(3, {2, 8}, {3, 5})` is not equivalent to `S[3]({2, 8})({3, 5})`.
@@ -187,7 +189,7 @@ For example, if `S` is 3D, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D arra
 | `sizes`           | returns a tuple with the sizes in each dimension
 | `extensions`      | returns a tuple with the extensions in each dimension
 | `size`            | returns the number of subarrays contained in the first dimension |
-| `extension`       | returns a contiguous range describing the set of valid indices
+| `extension`       | returns a contiguous index range describing the set of valid indices
 | `num_elements`    | returns the total number of elements
 
 | Creating views        | (this operations do not copy elements or allocate)    |
