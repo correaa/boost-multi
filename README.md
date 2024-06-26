@@ -147,10 +147,13 @@ these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `m
 | Relational fuctions       |    |
 |---                        |--- |
 | `operator==`/`operator!=` | Tells if elements of two `subarray` are equal (and if extensions of the subarrays are the same)
-| `operator<`/`operator<=`  | Less-than lexicographical comparison (requires elements to be comparable)
-| `operator>`/`operator>=`  | Less-than lexicographical comparison (requires elements to be comparable)
+| `operator<`/`operator<=`  | Less-than/less-or-equal      lexicographical comparison (requires elements to be comparable)
+| `operator>`/`operator>=`  | Greater-than/grater-or-equal lexicographical comparison (requires elements to be comparable)
 
 It is important to note that, in this library, comparisons are always "deep".
+Lexicographical order is defined recursively starting from the first dimension index, and from left to right.
+For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or ..., etc.
+Lexicographical order applies naturaly if the extensions of `A` and `B` are different; however their dimensionalities must match.
 
 | Element access    |    |
 |---                |--- |
