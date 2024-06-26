@@ -48,15 +48,15 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 	std::vector<complex>       vec(100, 0.);  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 	std::vector<complex> const cvec(100);     // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 
-	multi::array_ref<complex, 2>           A2D(vec.data(), multi::extensions_t<2>{ 10, 10 });
-	multi::array_ref<complex, 2, complex*> B2D(vec.data(), { 10, 10 });
+	multi::array_ref<complex, 2>           A2D(vec.data(), multi::extensions_t<2>{10, 10});
+	multi::array_ref<complex, 2, complex*> B2D(vec.data(), {10, 10});
 
 	static_assert(multi::array_ref<complex, 2>::rank::value == 2, "!");
 
 	BOOST_REQUIRE( &A2D[3][4] == &B2D[3][4] );
 
-	multi::array_ref<complex, 2, complex const*> const D2D(cvec.data(), { 10, 10 });
-	multi::array_cref<complex, 2>                      F2D(vec.data(), { 10, 10 });
+	multi::array_ref<complex, 2, complex const*> const D2D(cvec.data(), {10, 10});
+	multi::array_cref<complex, 2>                      F2D(vec.data(), {10, 10});
 
 	BOOST_REQUIRE( D2D.layout() == F2D.layout() );
 
@@ -72,7 +72,8 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 
 #ifndef _MSC_VER  // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
 BOOST_AUTO_TEST_CASE(arrays_1D_from_carray) {
-	int                       a_c_array[] = { 10, 20, 30 };            // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+	int                       a_c_array[] = {10, 20, 30};
 	multi::array<int, 1>      an_array_value(a_c_array);            // ok, it is a copy
 	multi::array_cref<int, 1> an_array_const_reference(a_c_array);  // ok, it is read only reference
 	multi::array_ref<int, 1>  an_array_reference(a_c_array);        // ok, it is a reference
@@ -83,7 +84,8 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_const_carray) {
-	int const                 a_c_array[] = { 10, 20, 30 };         // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+	int const                 a_c_array[] = {10, 20, 30};
 	multi::array<int, 1>      an_array_value(a_c_array);            // ok, it is a copy
 	multi::array_cref<int, 1> an_array_const_reference(a_c_array);  // ok, it is read only reference
 
@@ -96,7 +98,7 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_const_carray) {
 #endif
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_init_list) {
-	std::initializer_list<int> const il = { 10, 20, 30 };
+	std::initializer_list<int> const il = {10, 20, 30};
 	multi::array<int, 1>             an_array_value(il);            // ok, it is a copy
 	multi::array_cref<int, 1>        an_array_const_reference(il);  // ok, it is read only
 
@@ -108,7 +110,7 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_init_list) {
 }
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_auto_init_list) {
-	auto                      il = { 10, 20, 30 };
+	auto                      il = {10, 20, 30};
 	multi::array<int, 1>      an_array_value(il);            // ok, it is a copy
 	multi::array_cref<int, 1> an_array_const_reference(il);  // ok, it is read only
 
@@ -120,7 +122,7 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_auto_init_list) {
 }
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_init_list) {
-	multi::array<int, 1> an_array_value({ 10, 20, 30 });  // ok, it is a copy
+	multi::array<int, 1> an_array_value({10, 20, 30});  // ok, it is a copy
 
 	//  multi::array_cref<double, 1> an_array_const_reference({10, 20, 30});  // not ok, constructor disable because memcheck detects use after scope
 	//  multi::array_ref <double, 1> an_array_reference      ({10, 20, 30});  // not allowed, the init list elems are const

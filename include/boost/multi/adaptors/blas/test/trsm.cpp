@@ -205,7 +205,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column) {
 		{ 2. - 2. * I },
 		{ 3. + 1. * I }
 	};
-	blas::trsm(blas::side::left, blas::filling::lower, 2.0 + 1.0 * I, blas::H(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+
+	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	blas::trsm(blas::side::left, blas::filling::lower, 2.0 + 1.0 * I, blas::H(A), B);
+
 	BOOST_REQUIRE_CLOSE(real(B[2][0]), -4.16471, 0.0001);
 	BOOST_REQUIRE_CLOSE(imag(B[2][0]), 8.25882, 0.0001);
 }
@@ -228,7 +231,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu) {
 		{ 2.0 - 2.0 * I },
 		{ 3.0 + 1.0 * I }
 	};
-	blas::trsm(blas::side::left, blas::filling::lower, 2.0 + 1.0 * I, blas::H(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+
+	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	blas::trsm(blas::side::left, blas::filling::lower, 2.0 + 1.0 * I, blas::H(A), B);
 	BOOST_REQUIRE_CLOSE(real(B[2][0]), -4.16471, 0.0001);
 	BOOST_REQUIRE_CLOSE(imag(B[2][0]), 8.25882, 0.0001);
 }
@@ -243,7 +248,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> B = {
-			{ 1.0, 2.0, 3.0 },
+			{1.0, 2.0, 3.0},
 		};
 		BOOST_REQUIRE( B.size() == 1 );
 		auto const B_cpy = B;
@@ -253,9 +258,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 	{
 		multi::array<double, 2> B = {
 			// NOLINT(readability-identifier-length) BLAS naming
-			{ 1.0 },
-			{ 2.0 },
-			{ 3.0 },
+			{1.0},
+			{2.0},
+			{3.0},
 		};
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::lower, 1.0, A, blas::T(B));
@@ -275,28 +280,28 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex) {
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<complex, 2> B = {
-			{ { 1.0, 0.0 }, { 2.0, 0.0 }, { 3.0, 0.0 } },
+			{{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}},
 		};
 		auto const B_cpy = B;
-		blas::trsm(blas::side::left, blas::filling::lower, { 1.0, 0.0 }, A, B);
+		blas::trsm(blas::side::left, blas::filling::lower, {1.0, 0.0}, A, B);
 		BOOST_REQUIRE( B[0][1] == B_cpy[0][1]/A[0][0] );
 	}
 	multi::array<complex, 2> B1 = {
-		{ { 1.0, 0.0 } },
-		{ { 2.0, 0.0 } },
-		{ { 3.0, 0.0 } },
+		{{1.0, 0.0}},
+		{{2.0, 0.0}},
+		{{3.0, 0.0}},
 	};
 	multi::array<complex, 2> B2 = {
-		{ { 1.0, 0.0 } },
-		{ { 2.0, 0.0 } },
-		{ { 3.0, 0.0 } },
+		{{1.0, 0.0}},
+		{{2.0, 0.0}},
+		{{3.0, 0.0}},
 	};
 
-	blas::trsm(blas::side::left, blas::filling::lower, { 1.0, 0.0 }, A, blas::H(B1));
+	blas::trsm(blas::side::left, blas::filling::lower, {1.0, 0.0}, A, blas::H(B1));
 
 	{
 		auto const B_cpy = B2;
-		blas::trsm(blas::side::right, blas::filling::upper, { 1.0, 0.0 }, blas::H(A), B2);
+		blas::trsm(blas::side::right, blas::filling::upper, {1.0, 0.0}, blas::H(A), B2);
 		//  BOOST_REQUIRE( (+blas::gemm(1., A, blas::H(B)))[0][1] == blas::H(B_cpy)[0][1] );
 		BOOST_REQUIRE( (+blas::gemm(1., B2, blas::H(A)))[1][0] == B_cpy[1][0] );
 	}
@@ -308,17 +313,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const A = {
-		{ 1.0, 3.0, 40.0 },
-		{ NAN, 7.0,  1.0 },
-		{ NAN, NAN,  8.0 }
+		{1.0, 3.0, 40.0},
+		{NAN, 7.0,  1.0},
+		{NAN, NAN,  8.0}
 	};
 	auto const A_cpy = triangular(blas::filling::upper, A);
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> B = {
-			{ 1.0, 3.0, 4.0, 8.0 },
-			{ 2.0, 7.0, 1.0, 9.0 },
-			{ 3.0, 4.0, 2.0, 1.0 },
+			{1.0, 3.0, 4.0, 8.0},
+			{2.0, 7.0, 1.0, 9.0},
+			{3.0, 4.0, 2.0, 1.0},
 		};
 		auto const              B_cpy = +B;
 		multi::array<double, 2> BT    = +~B;
@@ -337,13 +342,15 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> B = {
-			{ 1.0, 3.0, 4.0, 8.0 },
-			{ 2.0, 7.0, 1.0, 9.0 },
-			{ 3.0, 4.0, 2.0, 1.0 },
+			{1.0, 3.0, 4.0, 8.0},
+			{2.0, 7.0, 1.0, 9.0},
+			{3.0, 4.0, 2.0, 1.0},
 		};
 		multi::array<double, 2> AT = ~A;
 		multi::array<double, 2> BT = ~B;
-		blas::trsm(blas::side::left, blas::filling::upper, 1.0, blas::T(AT), B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+
+		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		blas::trsm(blas::side::left, blas::filling::upper, 1.0, blas::T(AT), B);
 		BOOST_REQUIRE_CLOSE(B[1][2], 0.107143, 0.001);
 
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, blas::T(AT), blas::T(BT));
@@ -352,9 +359,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 	{
 		multi::array<double, 2> B = {
 			// NOLINT(readability-identifier-length) BLAS naming
-			{ 1.0 },
-			{ 2.0 },
-			{ 3.0 },
+			{1.0},
+			{2.0},
+			{3.0},
 		};
 		auto const B_cpy = +B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
@@ -364,9 +371,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> B = {
-			{ 1.0 },
-			{ 2.0 },
-			{ 3.0 },
+			{1.0},
+			{2.0},
+			{3.0},
 		};
 		auto const B_cpy = +B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1.2, A, B);
@@ -376,9 +383,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> B = {
-			{ 1.0 },
-			{ 2.0 },
-			{ 3.0 },
+			{1.0},
+			{2.0},
+			{3.0},
 		};
 		multi::array<double, 2> BT = rotated(B);
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, blas::T(BT));
@@ -389,48 +396,48 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
-	complex const I{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
+	complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> const A = {
-		{ 1.0 + 4.0 * I, 3.0 + 0.0 * I, 4.0 - 10.0 * I },
-		{ 0.0 + 0.0 * I, 7.0 - 3.0 * I,  1.0 + 0.0 * I },
-		{ 0.0 + 0.0 * I, 0.0 + 0.0 * I,  8.0 - 2.0 * I },
+		{1.0 + 4.0 * I, 3.0 + 0.0 * I, 4.0 - 10.0 * I},
+		{0.0 + 0.0 * I, 7.0 - 3.0 * I,  1.0 + 0.0 * I},
+		{0.0 + 0.0 * I, 0.0 + 0.0 * I,  8.0 - 2.0 * I},
 	};
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> B = {
-		{ 1.0 + 1.0 * I, 2.0 + 1.0 * I, 3.0 + 1.0 * I },
-		{ 5.0 + 3.0 * I, 9.0 + 3.0 * I, 1.0 - 1.0 * I },
+		{1.0 + 1.0 * I, 2.0 + 1.0 * I, 3.0 + 1.0 * I},
+		{5.0 + 3.0 * I, 9.0 + 3.0 * I, 1.0 - 1.0 * I},
 	};
 
 	using multi::blas::filling;
 	using multi::blas::hermitized;
 	using multi::blas::trsm;
-	blas::trsm(blas::side::left, blas::filling::upper, { 1.0, 0.0 }, A, blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
+	blas::trsm(blas::side::left, blas::filling::upper, {1.0, 0.0}, A, blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 	BOOST_REQUIRE_CLOSE(imag(B[1][2]), -0.147059, 0.001);
 }
 
 BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
-	complex const I{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
+	complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> const A = {
-		{ 1.0 + 4.0 * I, 3.0 + 0.0 * I, 4.0 - 10.0 * I },
-		{ 0.0 + 0.0 * I, 7.0 - 3.0 * I,  1.0 + 0.0 * I },
-		{ 0.0 + 0.0 * I, 0.0 + 0.0 * I,  8.0 - 2.0 * I },
+		{1.0 + 4.0 * I, 3.0 + 0.0 * I, 4.0 - 10.0 * I},
+		{0.0 + 0.0 * I, 7.0 - 3.0 * I,  1.0 + 0.0 * I},
+		{0.0 + 0.0 * I, 0.0 + 0.0 * I,  8.0 - 2.0 * I},
 	};
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> B = {
-		{ 1.0 + 1.0 * I, 2.0 + 1.0 * I, 3.0 + 1.0 * I },
-		{ 5.0 + 3.0 * I, 9.0 + 3.0 * I, 1.0 - 1.0 * I },
+		{1.0 + 1.0 * I, 2.0 + 1.0 * I, 3.0 + 1.0 * I},
+		{5.0 + 3.0 * I, 9.0 + 3.0 * I, 1.0 - 1.0 * I},
 	};
 
 	using multi::blas::trsm;
 
-	blas::trsm(blas::side::left, { 1.0, 0.0 }, blas::U(A), blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
+	blas::trsm(blas::side::left, {1.0, 0.0}, blas::U(A), blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 	BOOST_REQUIRE_CLOSE(imag(B[1][2]), -0.147059, 0.001);
 }
