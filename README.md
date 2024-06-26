@@ -1,7 +1,7 @@
 <!--
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
-# [Boost.]Multi
+# [Boost.] Multi
 
 > **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal.**
 
@@ -13,7 +13,7 @@ Multidimensional array data structures are fundamental to several branches of co
 This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
 featuring logical access recursively across dimensions and to elements through indices and iterators.
 
-The data structure is stride-based, which makes it compatible with low-level C-libraries.
+The data structure is stride-based, which makes it compatible with low-level C libraries.
 
 The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
 
@@ -52,7 +52,7 @@ git clone https://gitlab.com/correaa/boost-multi.git
 ```
 
 Although installation is not necessary, the library can still be installed with CMake.
-The header (and cmake) files will typically end up in `/usr/local/include/multi` and `/usr/local/share/multi`.
+The header (and CMake) files will install in the chosen prefix location (by default in `/usr/local/include/multi` and `/usr/local/share/multi`.)
 
 ```bash
 cd boost-multi
@@ -61,7 +61,7 @@ cmake ..  # --install-prefix=$HOME/.local
 cmake --install .  # or sudo ...
 ```
 
-_Testing_ the library requires Boost.Test library, installed for example via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
+_Testing_ the library requires the Boost.Test library, installed for example via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
 A CMake build system is provided to compile and run basic tests.
 
 ```bash
@@ -385,20 +385,20 @@ assert( num_elements(C) == 3*4*5 );   // 60 elements with unspecified values
 ```
 
 Arrays can be passed by value or by reference.
-Most of the time, arguments should be passed through generic parameters to also allow functions work with parts (subblocks, slices, etc.) of an array.
-Usually, the most useful functions work on the _concept_ of an array rather than on a concrete type, for example:
+Most of the time, arguments should be passed through generic parameters to also allow functions to work with parts (subblocks, slices, etc.) of an array.
+The most useful functions work on the _concept_ of an array rather than on a concrete type, for example:
 
 ```cpp
 template<class ArrayDouble2D>  // instead of the overspecific argument std::array<double, 2>
-auto element_1_1(ArrayDouble2D const& m) -> double const& {return m[1][1];}
+auto element_1_1(ArrayDouble2D const& m) -> double const& { return m[1][1]; }
 ...
 assert( &element_1_1(A) == &A[1][1] );
 ```
 
-The function expects any array or subarray of dimension 2 and return an element with type `double`.
+The function expects any array or subarray of dimension 2 and returns an element with type `double`.
 
 The generic function template arguments that are not intended to be modified are passed by `const&`; otherwise, they are passed by forward-reference `&&`.
-In this way, the functions can be applied on subblocks of larger matrices.
+In this way, the functions can be applied to subblocks of larger matrices.
 
 ```cpp
 assert( &element_1_1(C3D[0]) == &C3D[0][1][1] );
@@ -477,7 +477,7 @@ Since the sorted array is a reference to the original data, the original C-array
 (Note that `std::sort` cannot be applied directly to a multidimensional C-array or to other libraries, such as Boost.MultiArray.
 The arrays implemented by this library are, to the best of my knowledge, the only ones that support all STL algorithms directly.)
 
-If we want to order the matrix in a per-column basis, we need to "view" the matrix as range of columns.
+If we want to order the matrix on a per-column basis, we need to "view" the matrix as a range of columns.
 This is done in the bidimensional case, by accessing the matrix as a range of columns:
 
 ```cpp
@@ -491,17 +491,17 @@ The `rotate` operation rotates indices, providing a new logical view of the orig
 In this case, the original array will be transformed by sorting the matrix into:
 
 > ```
-> 1 2 3 4 30  
-> 6 7 8 9 50  
-> 11 12 13 14 100  
-> 16 17 18 19 150 
+> 1 2 3 4 30
+> 6 7 8 9 50
+> 11 12 13 14 100
+> 16 17 18 19 150
 > ```
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
 ## Initialization
 
-`array_ref` is initialized from a preexisting contiguous range, the index extensions should compatible with the total number of elements.
+`array_ref` is initialized from a preexisting contiguous range, the index extensions should be compatible with the total number of elements.
 
 ```cpp
 double* dp = new double[12];
@@ -511,11 +511,11 @@ multi::array_ref<double, 2> B({2, 6}, dp);
 delete[] dp;
 ```
 
-Array references do not own memory and, just as language references, can not be rebinded (resized or "reseated") to refer to a different memory location.
-Since `array_ref` is an array reference, it can "dangle" if the the original memory is deallocated.
+Array references do not own memory and, just as language references, can not be rebinded (i.e. resized or "reseated") to refer to a different memory location.
+Since `array_ref` is an array reference, it can "dangle" if the original memory is deallocated.
 
-Array objects (`multi::array`), in constrast, own the elements it contains and can be resized;
-`array` is initialized by specifying the index extensions (and optionally a default value).
+Array objects (`multi::array`), in contrast, own the elements they contain and can be resized later.
+An `array` is initialized by specifying the index extensions and, optionally, a default value).
 
 ```cpp
 multi::array<double, 1> A1({3}      , 11.0);  // {11.0, 11.0, 11.0}
@@ -531,16 +531,16 @@ multi::array<double, 1> A1 = {1.0, 2.0, 3.0};
 assert( num_elements(A1)==3 );
 
 multi::array<double, 2> A2 {
-	 { 1.0, 2.0, 3.0},
-	 { 4.0, 5.0, 6.0}
+	{ 1.0, 2.0, 3.0},
+	{ 4.0, 5.0, 6.0}
 };
 
 assert( num_elements(A2) == 2*3);
 
 multi::array<double, 3> const A3 = {
-    {{ 1.2,  0.0}, { 2.4, 1.0}},
-    {{11.2,  3.0}, {34.4, 4.0}},
-    {{15.2, 99.0}, {32.4, 2.0}}
+	{{ 1.2,  0.0}, { 2.4, 1.0}},
+	{{11.2,  3.0}, {34.4, 4.0}},
+	{{15.2, 99.0}, {32.4, 2.0}}
 };
 
 assert( A3.num_elements() == 3 * 2 * 2 );
@@ -550,8 +550,8 @@ In all cases, constness (`const` declaration) is honored in the expected way.
 
 ## Copy and assigment
 
-The library offer value semantics for the `multi::array<T, D>` family of classes.
-Constructing or assigning from an existing array generates a copy of the original object, that is, and object that is independent but equal in value.
+The library offers value semantics for the `multi::array<T, D>` family of classes.
+Constructing or assigning from an existing array generates a copy of the original object, that is, an object that is independent but equal in value.
 
 ```cpp
 auto B2 = A2;  // same as multi::array<double, 2> B2 = A2; (A2 is defined above)
@@ -571,14 +571,14 @@ Sometimes it is necessary to generate copies from views or subblocks.
 ```cpp
 multi::array<double, 3> C2 = A2( {0, 2}, {0, 2} );
 ```
-or equivalently,:
+or equivalently,
 ```cpp
 auto C2 = + A2( {0, 2}, {0, 2} );
 ```
 Note the use of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
-Due to limitations of the language, omiting the `+` will create effectively another reference  non-indepdent view of the left-hand-side, which is generally undesired.
+Due to limitations of the language, omitting the `+`` will create effectively another reference non-independent view of the left-hand side, which is generally undesired.
 
-Subviews can also assigned, but only if the shape of the left-hand side (LHS) and right-hand side (RHS) match.
+Subviews can also assigned, but only if the shapes of the left-hand side (LHS) and right-hand side (RHS) match.
 Otherwise, the behavior is undefined (in debug mode, the program will fail with an `assert`).
 
 ```cpp
@@ -620,7 +620,7 @@ B[1] = A[2].element_moved();  // 10 *elements* of the third row of A is moved in
 
 ## Change sizes (extents)
 
-Arrays can change their size while _preserving elements_ with the `rextent` method.
+Arrays can change their size while _preserving elements_ with the `reextent` method.
 
 ```cpp
 multi::array<double, 2> A {
@@ -635,10 +635,10 @@ assert( A[0][0] == 1.0 );
 
 Arrays can be emptied (to zero-size) with `.clear()` (equivalent to `.rextent({0, 0, ...})`).
 
-The main purpose of `rextent` is element preservation.
+The main purpose of `reextent` is element preservation.
 Allocations are not amortized; 
 except for trivial cases, all calls to reextend allocate and deallocate memory.
-If element preservation is not desired, a simple assignment (move) from a new array expresses the intention better and it is more efficient since it doesn't need to copy preexisiting elements.
+If element preservation is not desired, a simple assignment (move) from a new array expresses the intention better and it is more efficient since it doesn't need to copy preexisting elements.
 
 ```cpp
 A = multi::array<double, 2>({4, 4});  // like A.rextent({4, 4}) but elements are not preserved.
@@ -649,7 +649,7 @@ An alternative syntax, `.rextent({...}, value)` sets _new_ (not preexisting) ele
 Subarrays or views cannot change their size or be emptied (e.g. `A[1].rextent({4})` or `A[1].clear()` will not compile).
 For the same reason, subarrays cannot be assigned from an array or another subarray of a different size.
 
-Changing the size of arrays by `rextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
+Changing the size of arrays by `reextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
 
 ## Iteration
 
@@ -657,11 +657,11 @@ Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator-b
 `begin(A)/end(A)` (or equivalently `A.begin()/A.end()`) gives iterators that are linear and random access in the leading dimension.
 
 Other non-leading dimensions can be obtained by "rotating" indices first.
-`A.rotated().begin()/.end()` gives access to a range of subarrays in second dimension number (first dimension is put at the end).
+`A.rotated().begin()/.end()` gives access to a range of subarrays in the second dimension number (the first dimension is put at the end).
 
 `cbegin/cend` give constant (read-only) access.
 
-As an example, this function allows printing arrays of arbitrary dimension into a linear comma-separated form.
+As an example, this function allows printing arrays of arbitrary dimensionality into a linear comma-separated form.
 
 ```cpp
 void flat_print(double const& d) { cout<<d; };  // terminating overload
@@ -676,7 +676,7 @@ void flat_print(Array const& ma) {
 	cout << "}";
 }
 ...
-print(A);
+flat_print(A);
 ```
 > ```
 > {{{1.2, 1.1}, {2.4, 1}}, {{11.2, 3}, {34.4, 4}}, {{15.2, 99}, {32.4, 2}}}
@@ -720,8 +720,8 @@ auto row2_ptr = &A[2];  // A[2] is a row of A (not an element)
 assert( row2_ptr == &*(A.begin() + 2) );
 ```
 
-The expression `A[2]` above is technically a C++ temporary object, and therefore it doesn't have a C++ address (taking `std::addressof` gives a compilation error). 
-However, in the library's abstraction, `A[2]` references an existing part of the original array, i.e. it is a "library reference", whose "library address" can be obtained operator `&`. 
+The expression `A[2]` above is technically a C++ temporary object, and therefore it doesn't have a C++ address (taking `std::addressof` gives a compilation error).
+However, in the library's abstraction, `A[2]` references an existing part of the original array, i.e. it is a "library reference", whose "library address" can be obtained with the `&` operator. 
 The case is an illustration that, in the library, operator `&` is, for subarrays, different than the `std::addressof` operator; the latter may not be defined and even not compile for some expressions.
 
 Comparing these markers/pointers with different provenance, i.e., originating from different arrays, is generally undefined.
@@ -1318,11 +1318,11 @@ for example, lexicographical sorting on rows can be performed with the `std::ran
 		{'A', 'l', 'e', 'x', ' ', ' '},
 		{'B', 'j', 'a', 'r', 'n', 'e'},
 	};
-	assert(not std::ranges::is_sorted(A));
+	assert(!std::ranges::is_sorted(A));
 
-	std::ranges::sort(A);
+	std::ranges::sort(A);  // will sort on rows
 
-	assert(    std::ranges::is_sorted(A));
+	assert( std::ranges::is_sorted(A));
 
 	assert(
 		A == multi::array<char, 2>{
