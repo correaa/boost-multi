@@ -167,9 +167,11 @@ Lexicographical order applies naturaly if the extensions of `A` and `B` are diff
 - `subarray::operator()(i, j, k, ...)`, as in `S(i, j, k)` for indices `i`, `j`, `k` is a synonym for `A[i][j][k]`, the number of indices can be lower than the total dimension (e.g., `S` can be 4D).
 Each index argument lowers the dimension by one.
 - `subarray::operator()(ii, jj, kk)`, the arguments can be indices or ranges of indices (`index_range` member type).
-This function allows positional-aware ranges. Each index argument lowers the rank by one.
+This function allows positional-aware ranges.
+Each index argument lowers the rank by one.
 A special range is given by `multi::_`, which means "the whole range" (also spelled `multi::all`).
-For example, if `S` is 3D, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D array where the first index is fixed at 3, with sizes `6` by `2` referring the subblock in the second and third dimension. Note that `S(3, {2, 8}, {3, 5})` is not equivalent to `S[3]({2, 8})({3, 5})`.
+For example, if `S` is a 3D of sizes 10-by-10-by-10, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D array where the first index is fixed at 3, with sizes 6-by-2 referring the subblock in the second and third dimension.
+Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3, 5})` (2-by-10).
 - `operator()()` (no arguments) gives the same array but always as a subarray (for consistency), `S()` is equivalent to `S(S.extension())` and, in turn to`S(multi::_)` or `S(multi::all)`.
 
 | Structure access  | (Generally used for interfacing with C-libraries)   |
