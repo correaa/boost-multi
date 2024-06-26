@@ -156,6 +156,7 @@ It is important to note that, in this library, comparisons are always "deep".
 Lexicographical order is defined recursively starting from the first dimension index, and from left to right.
 For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or ..., etc.
 Lexicographical order applies naturaly if the extensions of `A` and `B` are different; however their dimensionalities must match.
+(See sort examples).
 
 | Element access    |    |
 |---                |--- |
@@ -172,7 +173,7 @@ Each index argument lowers the rank by one.
 A special range is given by `multi::_`, which means "the whole range" (also spelled `multi::all`).
 For example, if `S` is a 3D of sizes 10-by-10-by-10, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D array where the first index is fixed at 3, with sizes 6-by-2 referring the subblock in the second and third dimension.
 Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3, 5})` (2-by-10).
-- `operator()()` (no arguments) gives the same array but always as a subarray (for consistency), `S()` is equivalent to `S(S.extension())` and, in turn to`S(multi::_)` or `S(multi::all)`.
+- `operator()()` (no arguments) gives the same array but always as a subarray type (for consistency), `S()` is equivalent to `S(S.extension())` and, in turn to `S(multi::_)` or `S(multi::all)`.
 
 | Structure access  | (Generally used for interfacing with C-libraries)   |
 |---                |--- |
@@ -196,7 +197,7 @@ Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3,
 
 | Creating views        | (this operations do not copy elements or allocate)    |
 |---                    |---  |
-| `broadcasted`         | returns an infinite view of the array of higher dimensions obtained by repeating elements. This returns a special kind of subarray with a degenerate layout and no size operation
+| `broadcasted`         | returns a view of dimensionality `D + 1` obtained by infinite repetition of the original array. (This returns a special kind of subarray with a degenerate layout and no size operation.)
 | `dropped`             | returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
 | `element_transformed` | creates a view of the array, where each element is transformed according to a function |
 | `elements`            | a flatted view of all the elements rearranged in a canonical way. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range.
