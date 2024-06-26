@@ -192,7 +192,8 @@ BOOST_AUTO_TEST_CASE(concepts_array) {
 	BOOST_CONCEPT_ASSERT((boost::UnaryFunction<MA, MA::reference, MA::index>));
 	BOOST_CONCEPT_ASSERT((boost::BinaryFunction<MA, typename MA::element_ref, typename MA::index, typename MA::index>));
 
-	// BOOST_CONCEPT_ASSERT((boost::AdaptableGenerator<MA, boost::multi::subarray<int, 2>>));  // needs result_type TODO(correaa) add to array?, should result_type be array<T, D-1>? or subarray?
+	// vvv needs result_type TODO(correaa) add to array?, should result_type be array<T, D-1>? or subarray?
+	// BOOST_CONCEPT_ASSERT((boost::AdaptableGenerator<MA, boost::multi::subarray<int, 2>>));
 	// BOOST_CONCEPT_ASSERT((boost::AdaptableUnaryFunction<MA, MA::reference, MA::index>));
 	// BOOST_CONCEPT_ASSERT((boost::AdaptableBinaryFunction<MA, typename MA::element_ref, typename MA::index, typename MA::index>));
 
@@ -228,7 +229,8 @@ BOOST_AUTO_TEST_CASE(concepts_array_1D) {
 	BOOST_CONCEPT_ASSERT((boost::UnaryFunction<MA, MA::reference, MA::index>));
 	// BOOST_CONCEPT_ASSERT((boost::BinaryFunction<MA, typename MA::element_ref, typename MA::index, typename MA::index>));
 
-	// BOOST_CONCEPT_ASSERT((boost::AdaptableGenerator<MA, boost::multi::subarray<int, 2>>));  // needs result_type TODO(correaa) add to array?, should result_type be array<T, D-1>? or subarray?
+	// vvv--- needs result_type TODO(correaa) add to array?, should result_type be array<T, D-1>? or subarray?
+	// BOOST_CONCEPT_ASSERT((boost::AdaptableGenerator<MA, boost::multi::subarray<int, 2>>));
 	// BOOST_CONCEPT_ASSERT((boost::AdaptableUnaryFunction<MA, MA::reference, MA::index>));
 	// BOOST_CONCEPT_ASSERT((boost::AdaptableBinaryFunction<MA, typename MA::element_ref, typename MA::index, typename MA::index>));
 

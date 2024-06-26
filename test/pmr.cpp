@@ -59,7 +59,8 @@ BOOST_AUTO_TEST_CASE(pmr_dummy) {
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	{
-		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";
 
 		std::pmr::monotonic_buffer_resource mbr{ std::data(buffer), std::size(buffer) };
 		static_assert(std::size(buffer) > 6 * sizeof(double));
@@ -73,7 +74,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		//  BOOST_TEST( arr[1][2] != 0.0 );
 	}
 	{
-		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";
 
 		std::pmr::monotonic_buffer_resource mbr(std::data(buffer), std::size(buffer));
 		static_assert(std::size(buffer) > 6 * sizeof(double));
@@ -84,7 +86,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		BOOST_TEST( A[1][2] == 0.0 );
 	}
 	{
-		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";
 
 		std::pmr::monotonic_buffer_resource mbr(std::data(buffer), std::size(buffer));
 		static_assert(std::size(buffer) > 6 * sizeof(double));
@@ -95,7 +98,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		BOOST_TEST( arr[1][2] == double{} );
 	}
 	{
-		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";
 
 		std::pmr::monotonic_buffer_resource mbr{ std::data(buffer), std::size(buffer) };
 		static_assert(std::size(buffer) > 6 * sizeof(double));

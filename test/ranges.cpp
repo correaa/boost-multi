@@ -84,9 +84,6 @@ BOOST_AUTO_TEST_CASE(range_find) {
 
 		auto a2 = a();
 
-		[[maybe_unused]] auto const& _84 = static_cast<boost::multi::subarray<int, 2, int const*, boost::multi::layout_t<2, boost::multi::size_type>> const&>(a);
-		[[maybe_unused]] auto const& _85 = static_cast<boost::multi::subarray<int, 2, int const*, boost::multi::layout_t<2, boost::multi::size_type>> const&>(std::as_const(a));
-
 		auto a1     = a[1];
 		auto a1_val = +a[1];
 
@@ -95,6 +92,7 @@ BOOST_AUTO_TEST_CASE(range_find) {
 	}
 	{
 		auto&&     a1     = a[1];
+
 		auto const needle = std::ranges::find(a, a1);
 		BOOST_REQUIRE(needle != a.end());
 		BOOST_REQUIRE( *needle == a1 );

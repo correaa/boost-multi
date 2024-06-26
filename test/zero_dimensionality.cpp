@@ -61,7 +61,8 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 		BOOST_REQUIRE( doub == 51 );
 	}
 	{
-		multi::static_array<double, 0> a0 = multi::static_array<double, 0>{ 45.0 };  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
+		// vvv--- TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
+		multi::static_array<double, 0> a0 = multi::static_array<double, 0>{ 45.0 };
 		BOOST_REQUIRE( num_elements(a0) == 1 );
 		BOOST_REQUIRE( a0 == 45.0 );
 

@@ -57,12 +57,14 @@ void resize_copy_2(std::vector<int> const& source, DynamicArray& darr) {
 
 template<class DynamicArray>  // e.g. std::vector or multi::array
 void resize_copy_3(std::vector<int> const& source, DynamicArray& darr) {
-	darr = std::decay_t<decltype(darr)>(source.begin(), source.end());  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls,-warnings-as-errors)
+	darr = std::decay_t<decltype(darr)>(source.begin(), source.end());  // testing std::vector vs multi:array
 }
 
 template<class It, class DynamicArray>  // e.g. std::vector or multi::array
 void resize_copy_4(It first, It last, DynamicArray& darr) {
-	darr = DynamicArray(first, last);  // or std::decay_t<decltype(da)>(source.begin(), source.end())  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls,-warnings-as-errors) testing std::vector vs multi:array
+	darr = DynamicArray(first, last);  // or std::decay_t<decltype(da)>(source.begin(), source.end())
 }
 
 template<class It, class DynamicArray>  // e.g. std::vector or multi::array

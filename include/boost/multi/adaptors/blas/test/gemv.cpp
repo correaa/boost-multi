@@ -223,7 +223,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	auto const B = [](auto array) {
-		auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable { return complex{gauss(gen), gauss(gen)}; };  // NOLINT(cert-msc32-c,cert-msc51-cpp) test purposes
+		// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp) test purposes
+		auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable {return complex{gauss(gen), gauss(gen)}; };
 		std::generate(array.elements().begin(), array.elements().end(), rand);
 		return array;
 	}(multi::array<complex, 2>({3, 3}));

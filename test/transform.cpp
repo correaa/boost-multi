@@ -64,7 +64,7 @@ class involuted {
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{ ref } {}
+	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{ref} {}
 
 	auto operator=(involuted&&) -> involuted& = delete;
 	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return) simulate reference
@@ -77,7 +77,9 @@ class involuted {
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
 	// constexpr auto operator&() & { return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_}; }  // NOLINT(runtime/operator)
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
-	// constexpr auto operator&() const& { return involuter<Involution, decltype(&std::declval<decay_type const&>())>{Involution{}, &r_}; }  // NOLINT(runtime/operator)
+	// constexpr auto operator&() const& {  // NOLINT(runtime/operator)
+	//  return involuter<Involution, decltype(&std::declval<decay_type const&>())>{Involution{}, &r_};
+	// }
 
 	auto operator==(involuted const& other) const { return r_ == other.r_; }
 	auto operator!=(involuted const& other) const { return r_ == other.r_; }
@@ -113,13 +115,13 @@ class involuter {
 	using value_type        = typename std::iterator_traits<It>::value_type;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
 
-	constexpr explicit involuter(It it) : it_{ std::move(it) } {}
-	constexpr involuter(Involution /*stateless*/, It it) : it_{ std::move(it) } {}  // f_{std::move(f)}{}
+	constexpr explicit involuter(It it) : it_{std::move(it)} {}
+	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}  // f_{std::move(f)}{}
 	template<class Other>
-	explicit involuter(involuter<Involution, Other> const& other) : it_{ other.it_ } {}
+	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
-	constexpr auto operator*() const { return reference{ Involution{}, *it_ }; }
-	constexpr auto operator->() const { return pointer{ &*it_ }; }
+	constexpr auto operator*() const { return reference{Involution{}, *it_}; }
+	constexpr auto operator->() const { return pointer{&*it_}; }
 
 	constexpr auto operator==(involuter const& other) const { return it_ == other.it_; }
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
@@ -133,8 +135,8 @@ class involuter {
 		return *this;
 	}
 
-	constexpr auto operator+(difference_type n) const { return involuter{ it_ + n }; }
-	constexpr auto operator-(difference_type n) const { return involuter{ it_ - n }; }
+	constexpr auto operator+(difference_type n) const { return involuter{it_ + n}; }
+	constexpr auto operator-(difference_type n) const { return involuter{it_ - n}; }
 };
 
 template<class Ref> using negated = involuted<std::negate<>, Ref>;
@@ -172,8 +174,10 @@ struct conjugate<> : private basic_conjugate_t {
 #endif
 template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRef> {
 	explicit conjd(ComplexRef ref) : test::involuted<conjugate<>, ComplexRef>(conjugate<>{}, ref) {}
-	auto        real() const { return underlying(*this).real(); }
-	auto        imag() const { return negated<decltype(underlying(std::declval<test::involuted<conjugate<>, ComplexRef> const&>()).imag())>{ std::negate<>{}, underlying(*this).imag() }; }
+	auto real() const { return underlying(*this).real(); }
+	auto imag() const {
+		return negated<decltype(underlying(std::declval<test::involuted<conjugate<>, ComplexRef> const&>()).imag())>{std::negate<>{}, underlying(*this).imag()};
+	}
 	friend auto real(conjd const& self) -> decltype(auto) {
 		using std::real;
 		return real(static_cast<typename conjd::decay_type>(self));
@@ -198,8 +202,8 @@ class indirect_real {
 	P impl_;
 
  public:
-	explicit indirect_real(P const& ptr) : impl_{ ptr } {}
-	auto operator+(std::ptrdiff_t n) const { return indirect_real{ impl_ + n }; }
+	explicit indirect_real(P const& ptr) : impl_{ptr} {}
+	auto operator+(std::ptrdiff_t n) const { return indirect_real{impl_ + n}; }
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): extra real part as reference
 	auto operator*() const -> decltype(auto) { return reinterpret_cast<std::array<double, 2>&>(*impl_)[0]; }
 
@@ -216,9 +220,9 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	namespace multi = boost::multi;
 	{
 		using complex = std::complex<double>;
-		complex cee{ 1.0, 2.0 };
+		complex cee{1.0, 2.0};
 
-		auto&& zee = test::conjd<complex&>{ cee };
+		auto&& zee = test::conjd<complex&>{cee};
 		BOOST_REQUIRE(( zee == complex{1.0, -2.0} ));
 
 		BOOST_REQUIRE_CLOSE(real(zee), +1.0, 1E-6);
@@ -237,14 +241,14 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		BOOST_REQUIRE( val = -100 );
 	}
 	{
-		multi::array<double, 1> arr = { 0.0, 1.0, 2.0, 3.0, 4.0 };
+		multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
 		auto&&                  ref = arr.static_array_cast<double, double const*>();
 		BOOST_REQUIRE_CLOSE(ref[2], arr[2], 1E-6);
 	}
 
 	{
-		multi::array<double, 1> const arr      = { +0.0, +1.0, +2.0, +3.0, +4.0 };
-		multi::array<double, 1>       neg      = { -0.0, -1.0, -2.0, -3.0, -4.0 };
+		multi::array<double, 1> const arr      = {+0.0, +1.0, +2.0, +3.0, +4.0};
+		multi::array<double, 1>       neg      = {-0.0, -1.0, -2.0, -3.0, -4.0};
 		auto&&                        negd_arr = arr.static_array_cast<double, test::negater<double*>>();
 		BOOST_REQUIRE( negd_arr[2] == neg[2] );
 	}
@@ -276,7 +280,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			{10.0, 11.0, 12.0, 13.0, 14.0},
 			{15.0, 16.0, 17.0, 18.0, 19.0},
 		};
-		auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{ test::neg, &zee[0][0] }, { 4, 5 });
+		auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]}, {4, 5});
 
 		d2DC[1][1] = -66.0;
 		BOOST_REQUIRE_CLOSE(zee[1][1], 66.0, 1E-6);
@@ -285,10 +289,10 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			using complex = std::complex<double>;
 
 			multi::array<complex, 2> d2D = {
-				{ { 0.0, 3.0 },  { 1.0, 9.0 },  { 2.0, 4.0 },  { 3.0, 0.0 },  { 4.0, 0.0 }},
-				{ { 5.0, 0.0 },  { 6.0, 3.0 },  { 7.0, 5.0 },  { 8.0, 0.0 },  { 9.0, 0.0 }},
-				{ { 1.0, 4.0 },  { 9.0, 1.0 }, { 12.0, 0.0 }, { 13.0, 0.0 }, { 14.0, 0.0 }},
-				{{ 15.0, 0.0 }, { 16.0, 0.0 }, { 17.0, 0.0 }, { 18.0, 0.0 }, { 19.0, 0.0 }},
+				{ {0.0, 3.0},  {1.0, 9.0},  {2.0, 4.0},  {3.0, 0.0},  {4.0, 0.0}},
+				{ {5.0, 0.0},  {6.0, 3.0},  {7.0, 5.0},  {8.0, 0.0},  {9.0, 0.0}},
+				{ {1.0, 4.0},  {9.0, 1.0}, {12.0, 0.0}, {13.0, 0.0}, {14.0, 0.0}},
+				{{15.0, 0.0}, {16.0, 0.0}, {17.0, 0.0}, {18.0, 0.0}, {19.0, 0.0}},
 			};
 
 			auto&& d2Dreal = d2D.reinterpret_array_cast<double>();
@@ -306,7 +310,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		{
 			using complex = std::complex<double>;
 
-			auto const I = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imaginary unit
+			auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 
 			multi::array<complex, 2> arr = {
 				{1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I},

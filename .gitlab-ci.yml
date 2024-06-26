@@ -957,7 +957,7 @@ qmcpack:
   tags:
     - non-shared
     - docker
-    - high-bandwidth
+    # - high-bandwidth
   interruptible: true
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev

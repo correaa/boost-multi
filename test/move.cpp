@@ -183,8 +183,12 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_move) {
 BOOST_AUTO_TEST_CASE(multi_array_move_array) {
 	multi::array<std::vector<int>, 2> arr({10, 10}, std::vector<int>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	auto                              arr2 = std::move(arr);
-	BOOST_REQUIRE( arr .   empty() );     // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
-	BOOST_REQUIRE( arr .is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
+
+	// NOLINTNEXTLINE(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
+	BOOST_REQUIRE( arr .   empty() );
+
+	// NOLINTNEXTLINE(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
+	BOOST_REQUIRE( arr .is_empty() );
 	BOOST_REQUIRE( arr2.size() == 10 );
 }
 

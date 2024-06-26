@@ -42,7 +42,7 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
-	multi::array<int, 1> A1 = { 0, 10, 20, 30, 40, 50 };
+	multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
 	auto&& A2_ref = A1.partitioned(2);
 
@@ -126,7 +126,7 @@ template<class T> class propagate_const<T&> {
 	T& r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
  public:
-	explicit propagate_const(T& other) : r_{ other } {}
+	explicit propagate_const(T& other) : r_{other} {}
 	propagate_const(propagate_const const&) = delete;
 	propagate_const(propagate_const&&)      = delete;
 
@@ -148,8 +148,8 @@ template<class T> class propagate_const<T const&> {
 	T const& r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
  public:
-	explicit propagate_const(T const& other) : r_{ other } {}
-	auto operator=(T const& other) -> propagate_const& = delete;
+	explicit propagate_const(T const& other) : r_{other} {}
+	auto     operator=(T const& other) -> propagate_const& = delete;
 	explicit operator T const&() const noexcept { return r_; }
 };
 
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		{990, 990,  600, 601, 610, 611, 620, 621, 990},
 	};
 
-	multi::iextension const encoded_3x2_range = { 2, 8 };
+	multi::iextension const encoded_3x2_range = {2, 8};
 
 	auto&& arrRPU = arr.rotated()(encoded_3x2_range).partitioned(3).unrotated();
 
@@ -192,15 +192,15 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 
 	class walker_ref {
 		using raw_source_reference = decltype(std::declval<multi::array<int, 2>&>()[0]);
-		using internal_array_type  = decltype(std::declval<raw_source_reference>()({ 2, 8 }).partitioned(3));
+		using internal_array_type  = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
 
-	 public:                                                                                                                                // NOLINT(whitespace/indent) bug in cpplint
+	 public:                                 // NOLINT(whitespace/indent) bug in cpplint
 		propagate_const<int&> prop1;         // NOLINT(misc-non-private-member-variables-in-classes)
 		propagate_const<int&> prop2;         // NOLINT(misc-non-private-member-variables-in-classes)
 		internal_array_type   slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)
 		propagate_const<int&> prop3;         // NOLINT(misc-non-private-member-variables-in-classes)
 
-		explicit walker_ref(raw_source_reference&& row) : prop1{ row[0] }, prop2{ row[1] }, slater_array{ row({ 2, 8 }).partitioned(3) }, prop3{ std::move(row)[8] } {}
+		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{std::move(row)[8]} {}
 	};
 
 	auto&& wr = walker_ref(arr[5]);
@@ -215,20 +215,20 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	multi::array<double, 3> arr = {
 		{
-                                                                                                                                                                                                       { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
-                                                                                                                                                                                                       { 6.0, 7.0, 8.0, 9.0, 10.0, 11.0 },
-                                                                                                                                                                                                       { 12.0, 13.0, 14.0, 15.0, 16.0, 17.0 },
-                                                                                                                                                                                                       { 18.0, 19.0, 20.0, 21.0, 22.0, 23.0 },
+         {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+         {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+         {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+         {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
 		 },
 		{
-                                                                                                                                                                                                       { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
-                                                                                                                                                                                                       { 6.0, 7.0, 8.0, 9.0, 10.0, 11.0 },
-                                                                                                                                                                                                       { 12.0, 13.0, 14.0, 15.0, 16.0, 17.0 },
-                                                                                                                                                                                                       { 18.0, 19.0, 20.0, 21.0, 22.0, 23.0 },
+         {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+         {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+         {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+         {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
 		 }
 	};
 
-	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{ { strds... } }; }, arr.layout().strides());
+	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());
 	// auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.strides());
 
 	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) && arr.num_elements() == arr.nelems() );  // contiguous c-ordering
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
-	multi::array<double, 1> arr = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0 };
+	multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0};
 	BOOST_REQUIRE( size(arr.partitioned(3)) == 3 );
 	BOOST_REQUIRE( arr.partitioned(3)[1] == decltype(+arr.partitioned(3)[1])({4.0, 5.0, 6.0, 7.0}) );
 	BOOST_REQUIRE( &arr.partitioned(3)[1][2] == &arr[6] );
@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_2D) {
-	multi::array<double, 2> arr({ 100, 53 });
+	multi::array<double, 2> arr({100, 53});
 	BOOST_REQUIRE( size(arr.partitioned(20)) == 20 );
 	BOOST_REQUIRE( &arr.partitioned(20)[1][2] == &arr[7] );
 
