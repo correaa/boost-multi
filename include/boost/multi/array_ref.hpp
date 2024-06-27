@@ -66,7 +66,7 @@ void boost::unit_test::make_test_case(boost::function<void ()> const& f, boost::
 namespace boost::multi {
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
-struct subarray;
+class subarray;
 
 template<class T, dimensionality_type D, class... Ts>
 constexpr auto is_subarray_aux(subarray<T, D, Ts...> const&) -> std::true_type;
@@ -345,7 +345,7 @@ public:
 	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, Layout const& lyt) : ref_{lyt, base} {}
 
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
-	friend struct subarray;
+	friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto base() const -> typename Ref::element_ptr {return ref_.base();}
 
@@ -467,7 +467,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> lyt, index stride)
 	: ptr_{base, lyt}, stride_{stride} {}
 
-	template<class, dimensionality_type, class, class> friend struct subarray;
+	template<class, dimensionality_type, class, class> friend class subarray;
 
 	template<class... As>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, As... args) const -> decltype(auto) {return this->operator[](idx)(args...); }
@@ -540,7 +540,7 @@ struct cursor_t {
 	strides_type strides_;
 	element_ptr  base_;
 
-	template<class, dimensionality_type, class, class> friend struct subarray;
+	template<class, dimensionality_type, class, class> friend class subarray;
 	template<class, dimensionality_type, class> friend struct cursor_t;
 
 	BOOST_MULTI_HD constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
@@ -839,15 +839,17 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 };
 
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-struct subarray : const_subarray<T, D, ElementPtr, Layout> {
-	using const_subarray = const_subarray<T, D, ElementPtr, Layout>;
+class subarray : public const_subarray<T, D, ElementPtr, Layout> {
+ private:
+	using const_rebind = const_subarray<T, D, ElementPtr, Layout>;
 
+ public:
 	using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = subarray;
 
 	using array_types<T, D, ElementPtr, Layout>::rank_v;
 
-	friend struct subarray<typename types::element, D + 1, typename types::element_ptr >;
+	friend class subarray<typename types::element, D + 1, typename types::element_ptr >;
 
 	using types::layout;
 	using typename types::element_type;
@@ -861,7 +863,7 @@ struct subarray : const_subarray<T, D, ElementPtr, Layout> {
 	subarray() = default;
 
 	BOOST_MULTI_HD constexpr subarray(layout_type const& layout, ElementPtr const& base)
-	: const_subarray(layout, base) {}
+	: const_rebind(layout, base) {}
 
 	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {  // allows assigment in temporaries // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
 		operator=(other); return *this;
@@ -889,7 +891,7 @@ struct subarray : const_subarray<T, D, ElementPtr, Layout> {
 
  protected:
 	// using types::types;
-	BOOST_MULTI_HD constexpr explicit subarray(std::nullptr_t nil) : const_subarray(nil) {}
+	BOOST_MULTI_HD constexpr explicit subarray(std::nullptr_t nil) : const_rebind(nil) {}
 
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
 
@@ -1314,7 +1316,7 @@ struct subarray : const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto operator|(typename subarray::size_type n) const& -> decltype(auto) { return                  partitioned(n); }
 
  private:
-	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend class subarray;
 
 	// BOOST_MULTI_HD constexpr auto paren_aux()      & -> subarray       {return *this;}
 	// BOOST_MULTI_HD constexpr auto paren_aux()     && -> subarray       {return this->operator()();}
@@ -2033,7 +2035,7 @@ struct subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  
 
 	subarray(subarray const&) = default;
 
-	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend class subarray;
 	template<typename, ::boost::multi::dimensionality_type, class Alloc>                friend struct static_array;  // TODO(correaa) check if this is necessary
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
