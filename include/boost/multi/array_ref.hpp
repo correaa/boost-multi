@@ -824,8 +824,24 @@ BOOST_MULTI_HD constexpr auto ref(It begin, It end)
 
 template<typename, ::boost::multi::dimensionality_type, class Alloc> struct static_array;  // this might be needed by MSVC 14.3 in c++17 mode
 
+/*! A reference to a subarray with read-only access */
+
+template<
+	typename T, multi::dimensionality_type D, 
+	typename ElementPtr = std::add_pointer<T>,
+	class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type> >
+>
+class const_subarray : public array_types<T, D, ElementPtr, Layout> {
+ protected:
+	using array_types<T, D, ElementPtr, Layout>::array_types;
+//  BOOST_MULTI_HD constexpr const_subarray(Layout const& layout, ElementPtr const& base)
+//  : array_types<T, D, ElementPtr, Layout>{layout, base} {}
+};
+
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-struct subarray : array_types<T, D, ElementPtr, Layout> {
+struct subarray : const_subarray<T, D, ElementPtr, Layout> {
+	using const_subarray = const_subarray<T, D, ElementPtr, Layout>;
+
 	using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = subarray;
 
@@ -845,7 +861,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 	subarray() = default;
 
 	BOOST_MULTI_HD constexpr subarray(layout_type const& layout, ElementPtr const& base)
-	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
+	: const_subarray(layout, base) {}
 
 	auto operator=(subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) -> subarray& {  // allows assigment in temporaries // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
 		operator=(other); return *this;
@@ -873,7 +889,7 @@ struct subarray : array_types<T, D, ElementPtr, Layout> {
 
  protected:
 	// using types::types;
-	BOOST_MULTI_HD constexpr explicit subarray(std::nullptr_t nil) : types{nil} {}
+	BOOST_MULTI_HD constexpr explicit subarray(std::nullptr_t nil) : const_subarray(nil) {}
 
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
 
