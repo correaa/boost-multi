@@ -96,8 +96,8 @@ BOOST_AUTO_TEST_CASE(array_partitioned) {
 
 	BOOST_REQUIRE(( A2.sizes() == decltype(A2.sizes()){6, 2} ));
 
-	BOOST_REQUIRE( std::get<0>(sizes(A2)) == 6 );
-	BOOST_REQUIRE( std::get<1>(sizes(A2)) == 2 );
+	BOOST_REQUIRE( std::get<0>(A2.sizes()) == 6 );
+	BOOST_REQUIRE( std::get<1>(A2.sizes()) == 2 );
 
 	BOOST_REQUIRE( size(A2.partitioned(3)) == 3 );
 
