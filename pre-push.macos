@@ -2,6 +2,7 @@
 # -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 # sudo apt install ccache clang clang-tidy cmake cppcheck g++ git lcov libblas-dev pkg-config libfftw3-dev libboost-test-dev libboost-timer-dev make ninja-build valgrind
 # sudo dnf install boost-devel blas-devel ccache clang clang-tools-extra cmake cppcheck fftw-devel git lcov libasan liblas-devel libubsan ninja-build valgrind
+# brew install iwyu cpplint
 # install circle # mkdir -p $HOME/bin && wget https://www.circle-lang.org/linux/build_latest.tgz -P $HOME/tmp/ && tar -zxvf $HOME/tmp/build_latest.tgz --directory $HOME/bin/ && $HOME/bin/circle --version
 # install nvc++  # ($ echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list) && sudo apt-get updatesudo apt-get update && sudo apt-get install nvhpc-22-7
 #                # sudo yum-config-manager --add-repo https://developer.download.nvidia.com/hpc-sdk/rhel/nvhpc.repo && sudo yum install -y nvhpc-cuda-multi-23.1
