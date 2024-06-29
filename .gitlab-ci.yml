@@ -181,12 +181,13 @@ g++-7:
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
-    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - cmake --version
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-`arch`.sh --skip-license --prefix=/usr
     - cmake --version
     - g++-7 --version
     - mkdir build && cd build
-    - CXX=g++-7 CXXFLAGS="-DBOOST_TEST_MAIN -DBOOST_TEST_DYN_LINK" cmake .. -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_BUILD_TYPE=Debug
+    - CXX=g++-7 CXXFLAGS="-DBOOST_TEST_MAIN -DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
@@ -778,13 +779,13 @@ circle:
   stage: build
   tags:
     - non-shared
-    - docker
+    - x86_64  # for circle executable
   # interruptible: false
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
-    - tar -zxvf build_???.tgz
+    - tar -zxvf build_*.tgz
     - cd ..
     - ls
     - ./build_latest/circle --version
@@ -798,7 +799,7 @@ circle-latest:
   allow_failure: true
   tags:
     - non-shared
-    - docker
+    - x86_64  # for circle executable
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-12 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
