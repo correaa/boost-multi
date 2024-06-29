@@ -892,6 +892,7 @@ inq rocm:
   tags:
     - non-shared
     - large-disk-space
+    - x86_64  # for image
   interruptible: true
   script:
     - apt-get -qq update
