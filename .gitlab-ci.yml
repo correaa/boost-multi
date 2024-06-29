@@ -64,13 +64,13 @@ arm64:
   image: arm64v8/debian:latest
   tags:
     - non-shared
-    - arm
+    - arm  # for image
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ cmake make libblas-dev liblapack-dev libboost-test-dev libboost-timer-dev libboost-serialization-dev pkg-config libfftw3-dev tar wget
     - mkdir build && cd build
     - c++ --version
-    - CXXFLAGS="-arch arm64" cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
