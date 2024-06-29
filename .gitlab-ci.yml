@@ -779,13 +779,13 @@ circle:
   stage: build
   tags:
     - non-shared
-    - docker
+    - x86_64  # for circle executable
   # interruptible: false
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
-    - tar -zxvf build_???.tgz
+    - tar -zxvf build_*.tgz
     - cd ..
     - ls
     - ./build_latest/circle --version
@@ -799,7 +799,7 @@ circle-latest:
   allow_failure: true
   tags:
     - non-shared
-    - docker
+    - x86_64  # for circle executable
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-12 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
