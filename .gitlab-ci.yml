@@ -42,19 +42,20 @@ g++-m32:
   image: debian:latest
   tags:
     - non-shared
-    - high-bandwidth
+    - high-bandwidth  # for boost source download
+    - x86_64  # for g++-multilib in image
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake make tar wget
     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
-    - tar -xf boost_1_84_0.tar.gz 
+    - tar -xf boost_1_84_0.tar.gz
     - cd boost_1_84_0
     - ./bootstrap.sh
     - ./b2 cxxflags=-m32 --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
     - cd ..
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-m32"
+    - cmake .. -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
@@ -64,7 +65,7 @@ arm64:
   image: arm64v8/debian:latest
   tags:
     - non-shared
-    - arm
+    - arm  # for image
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ cmake make libblas-dev liblapack-dev libboost-test-dev libboost-timer-dev libboost-serialization-dev pkg-config libfftw3-dev tar wget
@@ -180,14 +181,14 @@ g++-7:
     - docker
   interruptible: true
   script:
+    - arch
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - cmake --version
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
-    - sh ./cmake-3.27.0-rc3-linux-`arch`.sh --skip-license --prefix=/usr
+    - sh ./cmake-*.sh --skip-license --prefix=/usr
     - cmake --version
     - g++-7 --version
     - mkdir build && cd build
-    - CXX=g++-7 CXXFLAGS="-DBOOST_TEST_MAIN -DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - CXX=g++-7 cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
   needs: ["g++"]
@@ -357,7 +358,9 @@ clang++-m32:
   stage: build
   image: debian:latest
   tags:
-    - high-bandwidth
+    - non-shared
+    - high-bandwidth  # for boost source download
+    - x86_64  # for g++-multilib in image
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib cmake make tar wget
@@ -369,7 +372,7 @@ clang++-m32:
     - cd ..
     - mkdir build && cd build
     - c++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-m32"
+    - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -438,12 +441,13 @@ clang++-oldoldstable:
     - docker
   interruptible: true
   script:
+    - arch
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - wget -O cmake-install.sh https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-x86_64.sh --no-verbose
+    - wget -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
     - mkdir build && cd build 
     - clang++ --version
-    - CXX=clang++ CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
+    - CXX=clang++ CXXFLAGS="-DBOOST_TEST_DYN_LINK" cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -454,6 +458,7 @@ oneapi:
   tags:
     - non-shared
     - large-disk-space
+    - x86_64
   interruptible: true
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -505,12 +510,12 @@ nvhpc:
   tags:
     - non-shared
     - large-disk-space
+    - x86_64
   script:
-    - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake .. -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
 
@@ -753,7 +758,8 @@ rocm:
   tags:
     - non-shared
     - docker
-    - high-bandwidth
+    - high-bandwidth  # for download rocm extras
+    - x86_64  # for rocm image
   interruptible: true
   script:
     - apt-get -qq update
@@ -780,9 +786,9 @@ circle:
   tags:
     - non-shared
     - x86_64  # for circle executable
-  # interruptible: false
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
     - tar -zxvf build_*.tgz
@@ -802,7 +808,8 @@ circle-latest:
     - x86_64  # for circle executable
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-12 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-12 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
     - tar -zxvf build_*.tgz
@@ -885,6 +892,7 @@ inq rocm:
   tags:
     - non-shared
     - large-disk-space
+    - x86_64  # for image
   interruptible: true
   script:
     - apt-get -qq update

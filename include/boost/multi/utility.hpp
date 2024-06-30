@@ -308,8 +308,11 @@ constexpr auto dimensionality(T const&/*, void* = nullptr*/) {return 0;}
 template<class T, std::size_t N>
 constexpr auto dimensionality(T const(&array)[N]) {return 1 + dimensionality(array[0]);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
-template<class T>
-constexpr auto sizes(T const& /*unused*/) noexcept -> tuple<> {return {};}
+template<class T, class Ret = decltype(std::declval<T const&>().sizes())>
+constexpr auto sizes(T const& arr) noexcept -> Ret {return arr.sizes();}
+
+// template<class T>
+constexpr auto sizes(...) noexcept -> tuple<> {return {};}
 
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&array)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
