@@ -20,6 +20,7 @@ if((NOT
 		STREQUAL
 		"icpc"
 	   )
+	AND (NOT ENABLE_CIRCLE)
 )
 	find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 #   link_libraries("-lboost_unit_test_framework")
