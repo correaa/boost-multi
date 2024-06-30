@@ -42,12 +42,12 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 	multi::array<double, 3> arr({ 3, 4, 5 });
 
-	BOOST_REQUIRE( std::get<0>(sizes(arr)) == 3 );
-	BOOST_REQUIRE( std::get<1>(sizes(arr)) == 4 );
-	BOOST_REQUIRE( std::get<2>(sizes(arr)) == 5 );
+	BOOST_REQUIRE( std::get<0>(arr.sizes()) == 3 );
+	BOOST_REQUIRE( std::get<1>(arr.sizes()) == 4 );
+	BOOST_REQUIRE( std::get<2>(arr.sizes()) == 5 );
 
 	auto&& RA = rotated(arr);
-	BOOST_REQUIRE(( sizes(RA) == decltype(sizes(RA)){4, 5, 3} ));
+	BOOST_REQUIRE(( sizes(RA) == decltype(RA.sizes()){4, 5, 3} ));
 	BOOST_REQUIRE(  &arr[0][1][2] == &RA[1][2][0] );
 
 	auto&& UA = unrotated(arr);

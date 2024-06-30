@@ -108,8 +108,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
 		{ 2.0, -1.0, 1.0, 1.0, 9.0, 3.0 },
 		{ 9.0,  3.0, 9.0, 3.0, 9.0, 3.0 }
 	};
-	BOOST_REQUIRE( sizes(blas::real_doubled(arr)) == sizes(B_real_doubled) );
-	BOOST_REQUIRE(       blas::real_doubled(arr)  ==       B_real_doubled  );
+	BOOST_REQUIRE( blas::real_doubled(arr).sizes() == B_real_doubled.sizes() );
+	BOOST_REQUIRE( blas::real_doubled(arr)         == B_real_doubled         );
 }
 
 #if defined(CUDA_FOUND) and CUDA_FOUND

@@ -1118,4 +1118,29 @@ BOOST_AUTO_TEST_CASE(array_fill_constructor_1D) {
 
 	BOOST_REQUIRE( arr[0] == 10 );
 	BOOST_REQUIRE( arr[1] == 10 );
+
+	BOOST_REQUIRE( std::get<0>(arr().sizes()) ==  3 );
+	BOOST_REQUIRE( std::get<0>(sizes(arr())) ==  3 );
+
+	// BOOST_REQUIRE( std::get<1>(sizes(arr())) == 10 );
+
+	// BOOST_REQUIRE( std::get<0>(sizes(arr)) ==  3 );
+	// BOOST_REQUIRE( std::get<1>(sizes(arr)) == 10 );
+}
+
+template<class T> void what(T&&) = delete;
+
+BOOST_AUTO_TEST_CASE(array_fill_constructor_2D) {
+	multi::array<int, 2> arr({3, 4}, 10);
+
+	BOOST_REQUIRE( std::get<0>(arr().sizes()) ==  3 );
+	BOOST_REQUIRE( std::get<0>(sizes(arr())) ==  3 );
+
+	BOOST_REQUIRE( std::get<1>(arr().sizes()) ==  4 );
+	BOOST_REQUIRE( std::get<1>(sizes(arr())) ==  4 );
+
+	// BOOST_REQUIRE( std::get<1>(sizes(arr())) == 10 );
+
+	// BOOST_REQUIRE( std::get<0>(sizes(arr)) ==  3 );
+	// BOOST_REQUIRE( std::get<1>(sizes(arr)) == 10 );
 }
