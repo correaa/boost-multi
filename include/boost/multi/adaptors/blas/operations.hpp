@@ -10,11 +10,14 @@
 
 namespace boost::multi::blas {
 
-template<class M> auto transposed(M const& array) -> decltype(auto){return rotated(array);}
+// template<class M> auto transposed(M&& arr) -> decltype(auto) {return rotated(std::forward<M>(arr));}
+
+template<class A>
+auto transposed(A&& arr) -> decltype(auto) {return std::forward<A>(arr).rotated();}
 
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element_type>
-auto conjugated_transposed(A&& array) -> decltype(auto) {
-	return transposed(blas::conj(std::forward<A>(array)));
+auto conjugated_transposed(A&& arr) -> decltype(auto) {
+	return transposed(blas::conj(std::forward<A>(arr)));
 }
 
 template<class A> auto identity(A&& array) -> decltype(auto) {return std::forward<A>(array);}
@@ -36,9 +39,6 @@ auto hermitized(A&& array, std::false_type /*false*/) -> decltype(auto) {
 
 template<class A>
 auto hermitized(A&& array) -> decltype(auto) {return conjugated_transposed(std::forward<A>(array));}
-
-template<class A>
-auto transposed(A&& array) -> decltype(auto) {return rotated(std::forward<A>(array));}
 
 namespace operators {
 
