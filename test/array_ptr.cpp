@@ -158,6 +158,8 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	}
 }
 
+template<class... T> void what(T&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(span_like) {
 	std::vector<int> vec = { 00, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
@@ -174,6 +176,8 @@ BOOST_AUTO_TEST_CASE(span_like) {
 	BOOST_REQUIRE(  aCRef[0] == 20     );
 
 	auto&& aRef = *aP;
+	what(aP, aRef);
+	(*aP)[0] = 990;
 	aRef[0]     = 990;
 	BOOST_REQUIRE( vec[2] == 990 );
 }

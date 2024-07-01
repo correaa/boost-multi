@@ -39,6 +39,33 @@
 
 namespace multi = boost::multi;
 
+template<class T> void what(T&&...) = delete;
+
+BOOST_AUTO_TEST_CASE(multi_2d_const) {
+	multi::array<int, 2> const arr = {
+		{10, 20},
+		{30, 40},
+	};
+
+	BOOST_REQUIRE( arr.rotated()[1][1] == 40 );
+	static_assert( !std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)> );
+}
+
+BOOST_AUTO_TEST_CASE(multi_2d) {
+	multi::array<int, 2> arr = {
+		{10, 20},
+		{30, 40},
+	};
+
+	BOOST_REQUIRE( arr.rotated()[1][1] == 40 );
+
+	// what(arr.rotated()[0][0]);
+
+	static_assert( std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)> );
+
+	// arr.rotated()[1][1] = 50;
+}
+
 BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 	multi::array<double, 3> arr({ 3, 4, 5 });
 

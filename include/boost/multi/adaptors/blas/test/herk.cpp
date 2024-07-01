@@ -230,6 +230,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto) {
 	BOOST_TEST( std::sqrt(real(blas::herk(blas::H(arr))[0][0])) == blas::nrm2(rotated(arr)[0]) );
 }
 
+template<class... T> void what(T&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
@@ -248,7 +250,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
-		static_assert(blas::is_conjugated<decltype(blas::H(c))>{});
+		static_assert(blas::is_conjugated<decltype(blas::H(c))>::value);
+
+		// what(/*blas::H(*/ blas::conj(c) /*)*/);
+		what(c(), /*blas::H(*/ blas::transposed(c) /*)*/);
+		what(/*blas::H(*/ blas::hermitized(c) /*)*/);
 
 		blas::herk(blas::filling::lower, 1.0, arr, 0.0, blas::H(c));  // c†=c=aa†=(aa†)†, `c` in upper triangular
 

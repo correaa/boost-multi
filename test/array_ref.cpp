@@ -1067,7 +1067,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 	BOOST_REQUIRE( deduce_element_ref(aref) == 3 );
 	// BOOST_REQUIRE( deduce_element_ref(asub) == 3 );
 
-	auto deduce_element_sub = []<class T, class Ptr>(multi::subarray<T, 2, Ptr> const& a) {
+	auto deduce_element_sub = []<class T, class Ptr>(multi::const_subarray<T, 2, Ptr> const& a) {
 		return std::accumulate(a.diagonal().begin(), a.diagonal().end(), T{0});
 	};  // NOLINT(readability/braces) cpplint 1.6.1 gets confused
 
