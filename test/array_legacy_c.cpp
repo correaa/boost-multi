@@ -95,16 +95,16 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		//      BOOST_REQUIRE( sizeof(d2D)==sizeof(double*)+7*sizeof(std::size_t) );
 		//  #endif
 		BOOST_REQUIRE( d2D.is_compact() );
-		BOOST_REQUIRE( rotated(d2D).is_compact() );
+		BOOST_REQUIRE( d2D.rotated().is_compact() );
 		BOOST_REQUIRE( d2D[3].is_compact() );
-		BOOST_REQUIRE( !rotated(d2D)[2].is_compact() );
+		BOOST_REQUIRE( !(d2D.rotated()[2].is_compact()) );
 	}
 	{
 		multi::array<complex, 2> d2D({ 5, 3 });
 		BOOST_REQUIRE( d2D.is_compact() );
-		BOOST_REQUIRE( rotated(d2D).is_compact() );
+		BOOST_REQUIRE( d2D.rotated().is_compact() );
 		BOOST_REQUIRE( d2D[3].is_compact() );
-		BOOST_REQUIRE( !rotated(d2D)[2].is_compact() );
+		BOOST_REQUIRE( ! d2D.rotated()[2].is_compact() );
 	}
 }
 

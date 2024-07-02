@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized) {
 	BOOST_REQUIRE( size(b) == 1 );
 	BOOST_REQUIRE( b[0][0] == std::norm(1.0 + 2.0*I) + std::norm(2.0 + 3.0*I) + std::norm(3.0 + 4.0*I) );
 
-	BOOST_TEST( std::sqrt(real(blas::herk(blas::H(a))[0][0])) == blas::nrm2(rotated(a)[0]) );
+	BOOST_TEST( std::sqrt(real(blas::herk(blas::H(a))[0][0])) == blas::nrm2(a.rotated()[0]) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto) {
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto) {
 	BOOST_REQUIRE( size(arr2) == 1 );
 	BOOST_REQUIRE( arr2[0][0] == std::norm(1.0 + 2.0*I) + std::norm(2.0 + 3.0*I) + std::norm(3.0 + 4.0*I) );
 
-	BOOST_TEST( std::sqrt(real(blas::herk(blas::H(arr))[0][0])) == blas::nrm2(rotated(arr)[0]) );
+	BOOST_TEST( std::sqrt(real(blas::herk(blas::H(arr))[0][0])) == blas::nrm2(arr.rotated()[0]) );
 }
 
 template<class... T> void what(T&&...) = delete;
