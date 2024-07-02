@@ -175,6 +175,12 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 	static_assert(decltype(+arrRPU)::rank{} == 3);
 	static_assert(decltype(+arrRPU)::rank_v == 3);
 
+	//what(arrRPU, sizes(arrRPU));
+	BOOST_REQUIRE( std::get<0>(arrRPU.sizes()) == 7 );
+	BOOST_REQUIRE( std::get<1>(arrRPU.sizes()) == 3 );
+	BOOST_REQUIRE( std::get<2>(arrRPU.sizes()) == 2 );
+
+	BOOST_REQUIRE(( arrRPU.sizes() == decltype(arrRPU.sizes()){7, 3, 2} ));
 	BOOST_REQUIRE(( sizes(arrRPU) == decltype(sizes(arrRPU)){7, 3, 2} ));
 	BOOST_REQUIRE( arrRPU[4].num_elements() == 3*2L );
 

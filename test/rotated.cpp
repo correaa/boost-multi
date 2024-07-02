@@ -90,7 +90,12 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d) {
 	multi::array<double, 4> original({ 14, 14, 7, 4 });
 
 	auto&& unrotd = original.unrotated();
-	BOOST_REQUIRE(( sizes(unrotd) == decltype(sizes(unrotd)){4, 14, 14, 7} ));
+	BOOST_TEST( std::get<0>(unrotd.sizes()) ==  4 );
+	BOOST_TEST( std::get<1>(unrotd.sizes()) == 14 );
+	BOOST_TEST( std::get<2>(unrotd.sizes()) == 14 );
+	BOOST_TEST( std::get<3>(unrotd.sizes()) ==  7 );
+
+	BOOST_REQUIRE(( unrotd.sizes() == decltype(unrotd.sizes()){4, 14, 14, 7} ));
 	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd[3][0][1][2] );
 
 	auto&& unrotd2 = original.unrotated().unrotated();
