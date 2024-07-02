@@ -1294,9 +1294,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto unrotated()      & ->    const_subarray           { return unrotated_aux_(); }
-	BOOST_MULTI_HD constexpr auto unrotated()     && ->    const_subarray           { return unrotated_aux_(); }
-	BOOST_MULTI_HD constexpr auto unrotated() const& -> basic_const_array /*const*/ { return unrotated_aux_(); }  // NOLINT(readability-const-return-type)
+	// BOOST_MULTI_HD constexpr auto unrotated()      & ->    const_subarray           { return unrotated_aux_(); }
+	// BOOST_MULTI_HD constexpr auto unrotated()     && ->    const_subarray           { return unrotated_aux_(); }
+	BOOST_MULTI_HD constexpr auto unrotated() const -> const_subarray { return unrotated_aux_(); }  // NOLINT(readability-const-return-type)
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray const& self) { return           self .unrotated(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray      & self) { return           self .unrotated(); }
@@ -1314,9 +1314,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto paren_aux_() const {return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_);}
 
  public:
-	BOOST_MULTI_HD constexpr auto operator()()      & ->    const_subarray           {return paren_aux_();}
-	BOOST_MULTI_HD constexpr auto operator()()     && ->    const_subarray           {return paren_aux_();}
-	BOOST_MULTI_HD constexpr auto operator()() const& -> basic_const_array /*const*/ {return paren_aux_();}  // NOLINT(readability-redundant-access-specifiers,readability-const-return-type)
+	// BOOST_MULTI_HD constexpr auto operator()()      & ->    const_subarray           {return paren_aux_();}
+	// BOOST_MULTI_HD constexpr auto operator()()     && ->    const_subarray           {return paren_aux_();}
+	BOOST_MULTI_HD constexpr auto operator()() const -> const_subarray {return paren_aux_();}  // NOLINT(readability-redundant-access-specifiers,readability-const-return-type)
 
  protected:
 	template<class... As>
@@ -1804,8 +1804,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto rotated() &  -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::unrotated;
-	BOOST_MULTI_HD constexpr auto unrotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
-	BOOST_MULTI_HD constexpr auto unrotated() &  -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
+	BOOST_MULTI_HD constexpr auto unrotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }
+	BOOST_MULTI_HD constexpr auto unrotated() &  -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::transposed;
 	BOOST_MULTI_HD constexpr auto transposed() && -> subarray { return std::as_const(*this).transposed(); }
