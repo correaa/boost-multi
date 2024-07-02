@@ -61,8 +61,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
 	BOOST_REQUIRE( imag(*base(conjd_array)) == +3.0 );
 
 	//  BOOST_TEST_REQUIRE( base(Bconj)->imag() == +3 );
-	BOOST_REQUIRE( conjd_array[0][1] == rotated(conjd_array)[1][0] );
-	BOOST_REQUIRE( rotated(conjd_array)[1][0] == conjd_array[0][1] );
+	BOOST_REQUIRE( conjd_array[0][1] == conjd_array.rotated()[1][0] );
+	BOOST_REQUIRE( conjd_array.rotated()[1][0] == conjd_array[0][1] );
 
 	//  BOOST_REQUIRE( base(Bconj) == -3.0*I );
 	static_assert(blas::is_complex_array<decltype(conjd_array)>{});

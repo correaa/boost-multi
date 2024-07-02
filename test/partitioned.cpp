@@ -153,6 +153,8 @@ template<class T> class propagate_const<T const&> {
 	explicit operator T const&() const noexcept { return r_; }
 };
 
+template<class... T> void what(T&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 	// arr[walker][encoded_property]  // 7 walkers
 	multi::array<int, 2> arr = {
@@ -167,7 +169,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 
 	multi::iextension const encoded_3x2_range = {2, 8};
 
-	auto&& arrRPU = arr.rotated()(encoded_3x2_range).partitioned(3).unrotated();
+	auto&& arrRPU = arr.rotated().sliced(2, 8).partitioned(3).unrotated();
 
 	static_assert(decltype(+arrRPU)::rank::value == 3);
 	static_assert(decltype(+arrRPU)::rank{} == 3);
@@ -192,7 +194,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 
 	class walker_ref {
 		using raw_source_reference = decltype(std::declval<multi::array<int, 2>&>()[0]);
-		using internal_array_type  = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
+		using internal_array_type  = decltype(std::declval<raw_source_reference>().sliced(2, 8).partitioned(3));
 
 	 public:                                 // NOLINT(whitespace/indent) bug in cpplint
 		propagate_const<int&> prop1;         // NOLINT(misc-non-private-member-variables-in-classes)
@@ -200,7 +202,11 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		internal_array_type   slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)
 		propagate_const<int&> prop3;         // NOLINT(misc-non-private-member-variables-in-classes)
 
-		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{std::move(row)[8]} {}
+		explicit walker_ref(raw_source_reference&& row)
+		: prop1{row[0]}
+		, prop2{row[1]}
+		, slater_array{row.sliced(2, 8).partitioned(3)}
+		, prop3{std::move(row)[8]} {}
 	};
 
 	auto&& wr = walker_ref(arr[5]);
@@ -209,6 +215,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 
 	BOOST_REQUIRE( wr.slater_array[2][1] == 521 );
 
+	// what( wr , wr.slater_array, wr.slater_array[2][1] );
 	wr.slater_array[2][1] = 99990;
 }
 

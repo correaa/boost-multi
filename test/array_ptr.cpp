@@ -176,8 +176,8 @@ BOOST_AUTO_TEST_CASE(span_like) {
 	BOOST_REQUIRE(  aCRef[0] == 20     );
 
 	auto&& aRef = *aP;
-	what(aP, aRef);
-	(*aP)[0] = 990;
+	// what(aP, aRef);
+	// (*aP)[0] = 990;
 	aRef[0]     = 990;
 	BOOST_REQUIRE( vec[2] == 990 );
 }

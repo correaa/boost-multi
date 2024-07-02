@@ -253,8 +253,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		static_assert(blas::is_conjugated<decltype(blas::H(c))>::value);
 
 		// what(/*blas::H(*/ blas::conj(c) /*)*/);
-		what(c(), /*blas::H(*/ blas::transposed(c) /*)*/);
-		what(/*blas::H(*/ blas::hermitized(c) /*)*/);
+		// what(c(), /*blas::H(*/ blas::transposed(c) /*)*/);
+		// what(/*blas::H(*/ blas::hermitized(c) /*)*/);
 
 		blas::herk(blas::filling::lower, 1.0, arr, 0.0, blas::H(c));  // c†=c=aa†=(aa†)†, `c` in upper triangular
 
