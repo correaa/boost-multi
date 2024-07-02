@@ -175,8 +175,8 @@ BOOST_AUTO_TEST_CASE(fill) {
 
 	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 80;}) );
 
-	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 80);
-	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& elem) { return elem == 80;}) );
+	fill(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), 80);
+	BOOST_REQUIRE( all_of(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), [](auto&& elem) { return elem == 80;}) );
 
 	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 80);
 	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) { return elem == 80;}) );

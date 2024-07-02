@@ -491,9 +491,9 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	}
 
  public:
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) const& -> decltype(auto) { return apply_impl_(          *this , tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl)     && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl)      & -> decltype(auto) { return apply_impl_(          *this , tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) const -> decltype(auto) { return apply_impl_(          *this , tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+	// template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl)     && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+	// template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl)      & -> decltype(auto) { return apply_impl_(          *this , tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
 
  private:
 	ptr_type ptr_;
@@ -1282,9 +1282,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// BOOST_MULTI_HD constexpr auto rotated()      & ->    const_subarray { return rotated_aux_(); }
 	BOOST_MULTI_HD constexpr auto rotated() const -> const_subarray { return rotated_aux_(); }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(const_subarray const& self) { return           self .rotated(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(const_subarray      & self) { return           self .rotated(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(const_subarray     && self) { return std::move(self).rotated(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(const_subarray const& self) { return           self .rotated(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(const_subarray      & self) { return           self .rotated(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto rotated(const_subarray     && self) { return std::move(self).rotated(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto unrotated_aux_() const {
@@ -1298,9 +1298,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// BOOST_MULTI_HD constexpr auto unrotated()     && ->    const_subarray           { return unrotated_aux_(); }
 	BOOST_MULTI_HD constexpr auto unrotated() const -> const_subarray { return unrotated_aux_(); }  // NOLINT(readability-const-return-type)
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray const& self) { return           self .unrotated(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray      & self) { return           self .unrotated(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray     && self) { return std::move(self).unrotated(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray const& self) { return           self .unrotated(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray      & self) { return           self .unrotated(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray     && self) { return std::move(self).unrotated(); }
 
 	constexpr auto operator|(typename const_subarray::size_type n)      & -> decltype(auto) { return                  partitioned(n); }
 	constexpr auto operator|(typename const_subarray::size_type n)     && -> decltype(auto) { return std::move(*this).partitioned(n); }
@@ -1878,6 +1878,18 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class A1 = irange, class A2 = irange, class A3 = irange>                                                constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                          && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2, arg3);}                 // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>                constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
 
+
+ private:
+	template<class Self, typename Tuple, std::size_t ... I>
+	static BOOST_MULTI_HD constexpr auto apply_impl_(Self&& self, Tuple const& tuple, std::index_sequence<I...>/*012*/) -> decltype(auto) {
+		return std::forward<Self>(self)(std::get<I>(tuple)...);
+	}
+
+ public:
+	using const_subarray<T, D, ElementPtr, Layout>::apply;
+	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl)     && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl)      & -> decltype(auto) { return apply_impl_(          *this , tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+
 	using const_subarray<T, D, ElementPtr, Layout>::partitioned;
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size)      & -> subarray<T, D+1, typename subarray::element_ptr> { return std::as_const(*this).partitioned(size); }
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size)     && -> subarray<T, D+1, typename subarray::element_ptr> { return std::as_const(*this).partitioned(size); }
@@ -1888,6 +1900,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	auto operator~ (subarray& self) { return self.transposed(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
 	auto operator~ (subarray&& self) { return std::move(self).transposed(); }
+
+
 };
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
@@ -2022,8 +2036,9 @@ template<class Element, dimensionality_type D, typename... Ts>
 using iterator = array_iterator<Element, D, Ts...>;
 
 template<typename T, typename ElementPtr, class Layout>
-struct const_subarray<T, 0, ElementPtr, Layout>
-: array_types<T, 0, ElementPtr, Layout> {
+class const_subarray<T, 0, ElementPtr, Layout>
+: public array_types<T, 0, ElementPtr, Layout> {
+ public:
 	using types = array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
 
@@ -2081,6 +2096,12 @@ struct const_subarray<T, 0, ElementPtr, Layout>
 	constexpr auto   rotated() const { return operator()(); }
 	constexpr auto unrotated() const { return operator()(); }
 	constexpr auto transposed() const = delete;
+
+	template<class Tuple>
+	constexpr auto apply(Tuple const&) const {
+		static_assert(std::tuple_size_v<Tuple> == 0);
+		return operator()();
+	}
 
 	BOOST_MULTI_HD constexpr auto operator&() const& {return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
@@ -2449,17 +2470,17 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	BOOST_MULTI_HD constexpr auto range(index_range const& rng)     && {return std::move(*this).sliced(rng.front(), rng.last());}
 	BOOST_MULTI_HD constexpr auto range(index_range const& rng) const& {return                  sliced(rng.front(), rng.last());}
 
-	BOOST_MULTI_HD constexpr auto operator()() const& -> basic_const_array {return {this->layout(), this->base()};}
-	BOOST_MULTI_HD constexpr auto operator()()     && -> const_subarray       {return *this;}
-	BOOST_MULTI_HD constexpr auto operator()()      & -> const_subarray       {return *this;}
+	BOOST_MULTI_HD constexpr auto operator()() const -> const_subarray {return *this;}  // const_subarray(this->base(), this->layout());}
+	// BOOST_MULTI_HD constexpr auto operator()()     && -> const_subarray       {return *this;}
+	// BOOST_MULTI_HD constexpr auto operator()()      & -> const_subarray       {return *this;}
 
-	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng)      & {return                  range(rng);}
-	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng)     && {return std::move(*this).range(rng);}
-	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& {return                  range(rng);}
+	// BOOST_MULTI_HD constexpr auto operator()(index_range const& rng)      & {return                  range(rng);}
+	// BOOST_MULTI_HD constexpr auto operator()(index_range const& rng)     && {return std::move(*this).range(rng);}
+	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const {return                  range(rng);}
 
-	BOOST_MULTI_HD constexpr auto operator()(index idx)      & -> decltype(auto) {return                  operator[](idx);}
-	BOOST_MULTI_HD constexpr auto operator()(index idx)     && -> decltype(auto) {return std::move(*this).operator[](idx);}
-	BOOST_MULTI_HD constexpr auto operator()(index idx) const& -> decltype(auto) {return                  operator[](idx);}
+	// BOOST_MULTI_HD constexpr auto operator()(index idx)      & -> decltype(auto) {return                  operator[](idx);}
+	// BOOST_MULTI_HD constexpr auto operator()(index idx)     && -> decltype(auto) {return std::move(*this).operator[](idx);}
+	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) {return operator[](idx);}
 
  protected:
 	BOOST_MULTI_HD constexpr auto paren_aux_()      & {return operator()();}

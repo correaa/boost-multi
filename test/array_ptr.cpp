@@ -43,8 +43,6 @@ namespace multi = boost::multi;
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
 template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
 
-template<class... T> void what(T&&...) = delete;
-
 BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	multi::array<int, 2> arr = {
 		{ 10, 20, 30 },
@@ -59,8 +57,8 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	BOOST_REQUIRE( arr[2].base() == arr[2]({0, 2}).base() );
 	BOOST_REQUIRE( arr[2].layout() != arr[2]({0, 2}).layout() );
 
-	what( arr[2], &arr[2], arr[2]({0, 2}), &(arr[2]({0, 2})) );
-	BOOST_REQUIRE(    &arr[2] != &(arr[2]({0, 2}))  );
+	// what( arr[2], arr[2].sliced(0, 2), &(arr[2].sliced(0, 2)) );
+	BOOST_REQUIRE(    &arr[2] != &(arr[2].sliced(0, 2))  );
 
 	BOOST_REQUIRE( !( &arr[2] == &std::as_const(arr)[2]({0, 2})) );
 	BOOST_REQUIRE( &arr[2] == &fwd_array(arr[2]) );
@@ -166,8 +164,6 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		BOOST_REQUIRE( v1[8] == 40 );
 	}
 }
-
-template<class... T> void what(T&&...) = delete;
 
 BOOST_AUTO_TEST_CASE(span_like) {
 	std::vector<int> vec = { 00, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)

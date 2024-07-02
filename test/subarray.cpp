@@ -31,7 +31,7 @@
 
 #include <boost/multi/array.hpp>  // for implicit_cast, explicit_cast
 
-// #include <utility>                   // for as_const
+#include <utility>  // for as_const
 
 namespace multi = boost::multi;
 
@@ -46,6 +46,6 @@ BOOST_AUTO_TEST_CASE(subarray_assignment) {
 	auto A2 = A[2];
 	BOOST_REQUIRE( A2[1][1] == 99 );
 
-//  what(constA2, A2);
-//  A2[1][1] = 88;
+	//  what(constA2, A2);
+	//  A2[1][1] = 88;
 }

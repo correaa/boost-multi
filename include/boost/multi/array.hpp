@@ -1282,11 +1282,11 @@ struct array : static_array<T, D, Alloc> {
 		this->deallocate();
 		this->layout_mutable() = typename array::layout_t{extensions};
 		this->base_            = this->static_::array_alloc::allocate(
-			           static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
-                                                                                                                                                                                                                                                                                                                                                                                                            typename array::layout_t{extensions}.num_elements()
-                                                                                                                                                                                                                                                                                                         ),
-			           this->data_elements()  // used as hint
-		           );
+            static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
+                typename array::layout_t{extensions}.num_elements()
+            ),
+            this->data_elements()  // used as hint
+        );
 		if constexpr(!(std::is_trivially_default_constructible_v<typename array::element_type> || multi::force_element_trivial_default_construction<typename array::element_type>)) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
 		}
