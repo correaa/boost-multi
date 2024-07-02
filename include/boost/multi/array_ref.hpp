@@ -868,21 +868,21 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		operator=(std::move(other)); return *this;
 	}
 
-#if defined(__NVCOMPILER)
-#pragma diagnostic push
-#pragma diag_suppress = conversion_function_not_usable
-#elif defined(__NVCC__)
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = conversion_function_not_usable
-#endif
-	BOOST_MULTI_HD constexpr operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
-		return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
-	}
-#ifdef __NVCOMPILER
-#pragma diagnostic pop
-#elif defined(__NVCC__)
-#pragma nv_diagnostic pop
-#endif
+// #if defined(__NVCOMPILER)
+// #pragma diagnostic push
+// #pragma diag_suppress = conversion_function_not_usable
+// #elif defined(__NVCC__)
+// #pragma nv_diagnostic push
+// #pragma nv_diag_suppress = conversion_function_not_usable
+// #endif
+//  BOOST_MULTI_HD constexpr operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
+//      return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
+//  }
+// #ifdef __NVCOMPILER
+// #pragma diagnostic pop
+// #elif defined(__NVCC__)
+// #pragma nv_diagnostic pop
+// #endif
 
  protected:
 	// using types::types;
@@ -1259,9 +1259,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// BOOST_MULTI_HD constexpr auto transposed()      & -> const_subarray { return transposed_aux_(); }
 	// BOOST_MULTI_HD constexpr auto transposed()     && -> const_subarray { return transposed_aux_(); }
 
-	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray const& self) -> basic_const_array { return           self .transposed(); }
-	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray      & self) ->    const_subarray { return           self .transposed(); }
-	friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray     && self) ->    const_subarray { return std::move(self).transposed(); }
+	// friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray const& self) -> basic_const_array { return           self .transposed(); }
+	// friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray      & self) ->    const_subarray { return           self .transposed(); }
+	// friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray     && self) ->    const_subarray { return std::move(self).transposed(); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
 	auto operator~ (const_subarray const& self) -> const_subarray {return self.transposed();}
@@ -2325,12 +2325,12 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	constexpr auto front()      & ->       reference {return *begin();}
 	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
 
-	template<class ElementPtr2,
-		std::enable_if_t<std::is_same_v<ElementPtr2, typename const_subarray::element_const_ptr>, int> = 0
-	>
-	constexpr operator subarray<T, 1, ElementPtr2, Layout>&& () const & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
-		return std::move(reinterpret_cast<subarray<T, 1, ElementPtr2, Layout> const&>(*this));  // NOLINT([ppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
-	}
+	// template<class ElementPtr2,
+	//  std::enable_if_t<std::is_same_v<ElementPtr2, typename const_subarray::element_const_ptr>, int> = 0
+	// >
+	// constexpr operator subarray<T, 1, ElementPtr2, Layout>&& () const & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
+	//  return std::move(reinterpret_cast<subarray<T, 1, ElementPtr2, Layout> const&>(*this));  // NOLINT([ppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
+	// }
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, const_subarray* = nullptr>

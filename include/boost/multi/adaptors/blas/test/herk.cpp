@@ -265,8 +265,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		// NOLINTNEXTLINE(readability-identifier-length) : conventional one-letter operation BLASs
 		multi::array<complex, 2> c({3, 3}, {9999.0, 0.0});
 		herk(blas::filling::lower, 1.0, blas::T(arr), 0.0, blas::T(c));  // c†=c=aT(aT)† not supported
-		BOOST_REQUIRE(( transposed(c)[1][0] == complex{52.0, -90.0} ));
-		BOOST_REQUIRE( transposed(c)[0][1] == 9999.0 );
+		BOOST_REQUIRE(( c.transposed()[1][0] == complex{52.0, -90.0} ));
+		BOOST_REQUIRE(  c.transposed()[0][1] == 9999.0                );
 	}
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) : conventional one-letter operation BLASs

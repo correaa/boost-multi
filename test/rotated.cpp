@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 		BOOST_REQUIRE( &     arr[1][0] == &(arr.rotated() )[0][1] );
 
 		BOOST_REQUIRE( arr.transposed()[0][1] == 10 );
-		BOOST_REQUIRE( transposed(arr)[0][1] == 10 );
+		BOOST_REQUIRE( arr.transposed()[0][1] == 10 );
 		BOOST_REQUIRE( (~arr)[0][1] == 10 );
 		BOOST_REQUIRE( &arr[1][0] == &arr.transposed()[0][1] );
 
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 	}
 	{
 		multi::array<double, 3> arr({ 11, 13, 17 });
-		BOOST_REQUIRE( & arr[3][5][7] == &   arr.transposed()[5][3][7] );
-		BOOST_REQUIRE( & arr[3][5][7] == & transposed(arr)   [5][3][7] );
+		BOOST_REQUIRE( & arr[3][5][7] == &   arr   .transposed()[5][3][7] );
+		BOOST_REQUIRE( & arr[3][5][7] == &   arr   .transposed()[5][3][7] );
 		BOOST_REQUIRE( & arr[3][5][7] == & (~arr)            [5][3][7] );
 		BOOST_REQUIRE( & arr[3][5][7] == &   arr[3].transposed()[7][5] );
 		BOOST_REQUIRE( & arr[3][5][7] == & (~arr[3])            [7][5] );

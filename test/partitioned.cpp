@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		{990, 990,  600, 601, 610, 611, 620, 621, 990},
 	};
 
-	multi::iextension const encoded_3x2_range = {2, 8};
+	// multi::iextension const encoded_3x2_range = {2, 8};
 
 	auto&& arrRPU = arr.rotated().sliced(2, 8).partitioned(3).unrotated();
 
