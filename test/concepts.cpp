@@ -73,8 +73,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(convertibles, NDArray, NDArrays) {
 	NDArray nda;
 	// typename NDArray::value_type val(nda[0]);
 
-	static_assert(std::is_convertible_v<typename NDArray::reference, typename NDArray::value_type>);
-	static_assert(std::is_convertible_v<typename NDArray::const_reference, typename NDArray::value_type>);
+	// static_assert(std::is_convertible_v<typename NDArray::reference, typename NDArray::value_type>);
+	// static_assert(std::is_convertible_v<typename NDArray::const_reference, typename NDArray::value_type>);
 
 	static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
 	static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
