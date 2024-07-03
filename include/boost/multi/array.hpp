@@ -191,7 +191,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::dropped;
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
-	static_array(static_array&& other) noexcept : static_array{other.element_moved()} {}
+	static_array(static_array&& other) noexcept : static_array(other.element_moved()) {}
 
 	constexpr static_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}, ref{std::exchange(other.base_, nullptr), other.extensions()} {
