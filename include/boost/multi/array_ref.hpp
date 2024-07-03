@@ -341,9 +341,9 @@ public:
 
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
-	BOOST_MULTI_HD constexpr auto dereference() const -> Ref { return Ref{ this->layout(), this->base_ }; }
+	// BOOST_MULTI_HD constexpr auto dereference() const { return Ref(this->layout(), this->base_); }
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> Ref { return Ref{ ref_ }; }
+	BOOST_MULTI_HD constexpr auto operator*() const { return Ref(ref_.layout(), base()); }
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* { return std::addressof(ref_); }
 	// BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
@@ -1761,12 +1761,19 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
 class subarray : public const_subarray<T, D, ElementPtr, Layout> {
-	subarray(const_subarray<T, D, ElementPtr, Layout>&& other)
+	BOOST_MULTI_HD constexpr subarray(const_subarray<T, D, ElementPtr, Layout>&& other)
 	: subarray(other.layout(), other.mutable_base()) {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
+	template<class, class> friend struct subarray_ptr;
+	template<class, multi::dimensionality_type, class> friend struct array_iterator;
+
+// protected:
+	subarray(subarray const&) = default;
 
  public:
+	subarray(subarray&&) = default;
+
 	using ptr = subarray_ptr<subarray, Layout>;
 
 	// NOLINTNEXTLINE(runtime/operator)
@@ -1820,6 +1827,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::operator=;
 
+	auto operator=(subarray const& other) -> subarray& {
+		const_subarray<T, D, ElementPtr, Layout>::operator=(other);
+		return *this;
+	}
 	// template<
 	//  class Range,
 	//  class = decltype( static_cast<Range>(std::declval<const_subarray<T, D, ElementPtr, Layout> const&>()) )
