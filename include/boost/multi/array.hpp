@@ -516,14 +516,18 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		std::conditional_t<
 			D == 1,
 			typename std::iterator_traits<typename static_array::element_ptr>::reference,
-			void>>;
+			void
+		>
+	>;
 	using const_reference = std::conditional_t<
 		(D > 1),
-		subarray<typename static_array::element_type, D - 1, typename static_array::element_const_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
+		const_subarray<typename static_array::element_type, D - 1, typename static_array::element_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
 		std::conditional_t<
 			D == 1,
 			decltype(*std::declval<typename static_array::element_const_ptr>()),
-			void>>;
+			void
+		>
+	>;
 
 	using iterator       = multi::array_iterator<T, D, typename static_array::element_ptr>;
 	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;

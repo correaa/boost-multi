@@ -419,9 +419,9 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using value_type = typename subarray<element, D-1, element_ptr>::decay_type;
 
-	using pointer   = subarray<element, D-1, element_ptr>*;
-	using reference = subarray<element, D-1, element_ptr>;
-	using const_reference [[deprecated("not friendly with std::ranges concepts")]] = subarray<element, D-1, element_const_ptr>;  // TODO(correaa) should be const_subarray (base of subarray)
+	using pointer         =       subarray<element, D - 1, element_ptr>*;
+	using reference       =       subarray<element, D - 1, element_ptr>;
+	using const_reference = const_subarray<element, D - 1, element_ptr>;  // TODO(correaa) should be const_subarray (base of subarray)
 
 	using iterator_category = std::random_access_iterator_tag;
 
