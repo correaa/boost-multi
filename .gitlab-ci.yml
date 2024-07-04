@@ -443,7 +443,7 @@ clang++-oldoldstable:
   script:
     - arch
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - wget -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
+    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
     - mkdir build && cd build 
     - clang++ --version
@@ -525,6 +525,7 @@ nvhpc-22.7:
   tags:
     - non-shared
     - large-disk-space
+    - x86_64
   interruptible: true
   script:
     - nvidia-smi
@@ -542,6 +543,7 @@ nvhpc-24.5 c++20 par:
   tags:
     - non-shared
     - large-disk-space
+    - x86_64
   interruptible: true
   script:
     - nvidia-smi
@@ -624,14 +626,15 @@ cuda-11.4.3:
   tags:
     - non-shared
     - nvidia-gpu
+    - x86_64
   interruptible: true
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
     - apt-get -qq update
     - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
-    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
+    - sh ./cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
@@ -820,7 +823,7 @@ circle-latest:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle"]
+#  needs: ["circle"]
 
 inq:
   stage: test
