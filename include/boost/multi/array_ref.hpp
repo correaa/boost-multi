@@ -287,12 +287,14 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 : boost::multi::iterator_facade<
 	subarray_ptr<T, D, ElementPtr, Layout>, void, std::random_access_iterator_tag,
 	subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type
-> {  //, boost::multi::totally_ordered2<subarray_ptr<Ref, Layout>, void>
-private:
+> {
+ private:
 	using Ref = subarray<T, D, ElementPtr, Layout>;
-	mutable Ref ref_;
+	// mutable Ref ref_;
+	Layout layout_;
+	ElementPtr base_;
 
-public:
+ public:
 	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	using pointer = Ref const*;
@@ -304,20 +306,20 @@ public:
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
-	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : ref_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
+	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : base_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
 	BOOST_MULTI_HD constexpr subarray_ptr() : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
 
 	template<typename, multi::dimensionality_type, typename, class> friend struct subarray_ptr;
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, layout_t<typename Ref::rank{} - 1>      lyt) : ref_{lyt, base} {}
-	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, index_extensions<typename Ref::rank{}> exts) : ref_{base, exts} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, layout_t<typename Ref::rank{} - 1>      lyt) : base_{base}, layout_{lyt} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, index_extensions<typename Ref::rank{}> exts) : base_{base}, layout_(exts) {}
 
 	template<typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout
 		, decltype(multi::detail::implicit_cast<typename Ref::element_ptr>(std::declval<OtherEPtr>()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
-	: ref_(other->layout(), other->base()) {}
+	: base_{other->base_}, layout_{other->layout()} {}
 
 	template<class Array>
 	// cppcheck-suppress noExplicitConstructor ; no information loss, allows comparisons
@@ -327,31 +329,32 @@ public:
 	subarray_ptr(subarray_ptr const&) noexcept = default;
 	subarray_ptr(subarray_ptr     &&) noexcept = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
 
-	BOOST_MULTI_HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
-		if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
-			return *this;
-		}
-		this->ref_.base_ = other.ref_.base_;
-		this->ref_.layout_mutable() = other.ref_.layout();
-		return *this;
-	}
+	BOOST_MULTI_HD constexpr auto operator=(subarray_ptr const& other) -> subarray_ptr& = default;
+	// BOOST_MULTI_HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
+	//  if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
+	//      return *this;
+	//  }
+	//  this->ref_.base_ = other.ref_.base_;
+	//  this->ref_.layout_mutable() = other.ref_.layout();
+	//  return *this;
+	// }
 
-	BOOST_MULTI_HD constexpr auto operator=(subarray_ptr&& other) noexcept  // TODO(correaa) remove move constructor to remove this move assignment
-	-> subarray_ptr& {
-		if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
-			return *this;
-		}
-		operator=(other);
-		return *this;
-	}
+	// BOOST_MULTI_HD constexpr auto operator=(subarray_ptr&& other) noexcept  // TODO(correaa) remove move constructor to remove this move assignment
+	// -> subarray_ptr& {
+	//  if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
+	//      return *this;
+	//  }
+	//  operator=(other);
+	//  return *this;
+	// }
 
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
 	// BOOST_MULTI_HD constexpr auto dereference() const { return Ref(this->layout(), this->base_); }
 
-	BOOST_MULTI_HD constexpr auto operator*() const { return Ref(ref_.layout(), base()); }
+	BOOST_MULTI_HD constexpr auto operator*() const { return Ref(layout_, base_); }
 
-	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* { return std::addressof(ref_); }
+	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* { return reinterpret_cast<Ref*>(const_cast<subarray_ptr*>(this)); }  // std::addressof(ref_); }
 	// BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
 	// BOOST_MULTI_HD constexpr auto operator->()       -> Ref* {return  this;}
 
@@ -359,40 +362,41 @@ public:
 
 	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool { return distance_to(other) > 0; }
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, Layout const& lyt) : ref_{lyt, base} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{base} {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend struct const_subarray;
 
-	BOOST_MULTI_HD constexpr auto base() const -> typename Ref::element_ptr {return ref_.base();}
+	BOOST_MULTI_HD constexpr auto base() const -> typename Ref::element_ptr {return base_;}  // ref_.base();}
 
 	friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) {return self.base();}
 
 	constexpr auto operator==(subarray_ptr const& other) const -> bool {
-		return (this->ref_.base_ == other.ref_.base_) && (this->ref_.layout() == other.ref_.layout());
+		return (base_ == other.base_) && (layout_ == other.layout_);
 	}
 
 	template<typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherL, 
 		std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL>>, int> =0>
 	friend BOOST_MULTI_HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL> const& other) -> bool {
-		return self.base() == other->base() && self->layout() == other->layout();
+		return self.base_ == other.base_ && self.layout_ == other.layout_;
 	}
 
 	template<typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherL, 
 		std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL>>, int> =0>
 	friend BOOST_MULTI_HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL> const& other) -> bool {
-		return self.base() != other->base() || self->layout() != other->layout();
+		return self.base_ != other.base_ || self.layout_ != other.layout_;
 	}
 
  protected:
-	BOOST_MULTI_HD constexpr void increment() {ref_.base_ += Ref::nelems();}
-	BOOST_MULTI_HD constexpr void decrement() {ref_.base_ -= Ref::nelems();}
+	BOOST_MULTI_HD constexpr void increment() {base_ += layout_.nelems();}
+	BOOST_MULTI_HD constexpr void decrement() {base_ -= layout_.nelems();}
 
-	BOOST_MULTI_HD constexpr void advance(difference_type n) {ref_.base_ += ref_.nelems()*n;}
+	BOOST_MULTI_HD constexpr void advance(difference_type n) { base_ += layout_.nelems()*n; }
 	BOOST_MULTI_HD constexpr auto distance_to(subarray_ptr const& other) const -> difference_type {
-		assert( Ref::nelems() == other.Ref::nelems() && Ref::nelems() != 0 );
-		assert( (other.base() - base())%Ref::nelems() == 0);
-		assert( ref_.layout() == other.ref_.layout() );
-		return (other.base() - base())/Ref::nelems();
+		assert( layout_.nelems() == other.layout_.nelems() );
+		// assert( Ref::nelems() == other.Ref::nelems() && Ref::nelems() != 0 );
+		// assert( (other.base() - base())%Ref::nelems() == 0);
+		assert( layout_ == other.layout_ );
+		return (other.base_ - base_)/layout_.nelems();
 	}
 
  public:
