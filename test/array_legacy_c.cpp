@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		BOOST_REQUIRE( d2D.is_compact() );
 		BOOST_REQUIRE( d2D.rotated().is_compact() );
 		BOOST_REQUIRE( d2D[3].is_compact() );
-		BOOST_REQUIRE( ! d2D.rotated()[2].is_compact() );
+		BOOST_REQUIRE( !d2D.rotated()[2].is_compact() );
 	}
 }
 
