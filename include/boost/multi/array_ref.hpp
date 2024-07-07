@@ -842,7 +842,7 @@ struct elements_range_t {
 };
 
 template<class It>
-BOOST_MULTI_HD constexpr auto ref(It begin, It end)
+[[deprecated("remove")]] BOOST_MULTI_HD constexpr auto ref(It begin, It end)
 ->multi::subarray<typename It::element, It::rank_v, typename It::element_ptr> {
 	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
@@ -1385,7 +1385,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
 
  private:
-	BOOST_MULTI_HD constexpr explicit const_subarray(iterator begin, iterator end)
+	[[deprecated("remove")]] BOOST_MULTI_HD constexpr explicit const_subarray(iterator begin, iterator end)
 	: const_subarray(
 		layout_type{begin->layout(), begin.stride(), 0, begin.stride() * (end - begin)},
 		begin.base()
@@ -2609,7 +2609,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	}
 
  private:
-	BOOST_MULTI_HD constexpr explicit const_subarray(iterator begin, iterator end)
+	[[deprecated("remove")]] BOOST_MULTI_HD constexpr explicit const_subarray(iterator begin, iterator end)
 	: const_subarray {
 		layout_type{ {}/*begin->layout()*/, begin.stride(), 0, begin.stride()*(end - begin)},
 		begin.base()

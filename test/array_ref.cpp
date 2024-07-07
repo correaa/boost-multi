@@ -664,38 +664,38 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 	}
 }
 
-BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	int d2D[4][5] = {
-		{10, 20},
-		{20, 30},
-	};
-	multi::array_ref<int, 2> d2R(&d2D[0][0], {4, 5});
+// BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
+//  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+//  int d2D[4][5] = {
+//      {10, 20},
+//      {20, 30},
+//  };
+//  multi::array_ref<int, 2> d2R(&d2D[0][0], {4, 5});
 
-	auto&& d2B     = d2R();
-	auto&& d2B_ref = multi::ref(d2B.begin(), d2B.end());
+//  auto&& d2B     = d2R();
+//  auto&& d2B_ref = multi::ref(d2B.begin(), d2B.end());
 
-	BOOST_REQUIRE(  d2B[0][0]    ==  d2B_ref[0][0] );
-	BOOST_REQUIRE( &d2B[0][0]    == &d2B_ref[0][0] );
+//  BOOST_REQUIRE(  d2B[0][0]    ==  d2B_ref[0][0] );
+//  BOOST_REQUIRE( &d2B[0][0]    == &d2B_ref[0][0] );
 
-	BOOST_REQUIRE(  d2B.base()   ==  d2B_ref.base() );
-	BOOST_REQUIRE(  d2B.layout() ==  d2B_ref.layout() );
+//  BOOST_REQUIRE(  d2B.base()   ==  d2B_ref.base() );
+//  BOOST_REQUIRE(  d2B.layout() ==  d2B_ref.layout() );
 
-	BOOST_REQUIRE( &d2R() == &multi::ref(d2B.begin(), d2B.end()) );
-}
+//  BOOST_REQUIRE( &d2R() == &multi::ref(d2B.begin(), d2B.end()) );
+// }
 
-BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
-	double d1D[5] = {1.0, 2.0, 3.0, 4.0, 5.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+// BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
+	// double d1D[5] = {1.0, 2.0, 3.0, 4.0, 5.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 
-	multi::array_ref<double, 1> d1R(&d1D[0], {5});
+	// multi::array_ref<double, 1> d1R(&d1D[0], {5});
 
-	auto&& d1B     = d1R();
-	auto&& d1B_ref = multi::ref(d1B.begin(), d1B.end());
+	// auto&& d1B     = d1R();
+	// auto&& d1B_ref = multi::ref(d1B.begin(), d1B.end());
 
-	BOOST_REQUIRE( d1B.base()   == d1B_ref.base() );
-	BOOST_REQUIRE( d1B.layout() == d1B_ref.layout() );
-	BOOST_REQUIRE( &d1R() == &multi::ref(d1B.begin(), d1B.end()) );
-}
+	// BOOST_REQUIRE( d1B.base()   == d1B_ref.base() );
+	// BOOST_REQUIRE( d1B.layout() == d1B_ref.layout() );
+	// BOOST_REQUIRE( &d1R() == &multi::ref(d1B.begin(), d1B.end()) );
+//}
 
 BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	{
