@@ -276,14 +276,20 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	template<class T2, ::boost::multi::dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
 
-template<class Ref, class Layout>
+template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
+struct subarray_ptr;
+
+template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
+using const_subarray_ptr = subarray_ptr<T, D, ElementPtr, Layout>;
+
+template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
 struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
-//: private Ref  // TODO(correaa) : remove inheritance from Ref??
 : boost::multi::iterator_facade<
-	subarray_ptr<Ref, Layout>, void, std::random_access_iterator_tag,
-	Ref const&, typename Layout::difference_type
+	subarray_ptr<T, D, ElementPtr, Layout>, void, std::random_access_iterator_tag,
+	subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type
 > {  //, boost::multi::totally_ordered2<subarray_ptr<Ref, Layout>, void>
 private:
+	using Ref = subarray<T, D, ElementPtr, Layout>;
 	mutable Ref ref_;
 
 public:
@@ -301,16 +307,16 @@ public:
 	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : ref_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
 	BOOST_MULTI_HD constexpr subarray_ptr() : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
 
-	template<class, class> friend struct subarray_ptr;
+	template<typename, multi::dimensionality_type, typename, class> friend struct subarray_ptr;
 
 	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, layout_t<typename Ref::rank{} - 1>      lyt) : ref_{lyt, base} {}
 	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, index_extensions<typename Ref::rank{}> exts) : ref_{base, exts} {}
 
-	template<class Ref2//,
-		, decltype(multi::detail::implicit_cast<typename Ref::element_ptr>(std::declval<typename Ref2::element_ptr>()))* = nullptr
+	template<typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout
+		, decltype(multi::detail::implicit_cast<typename Ref::element_ptr>(std::declval<OtherEPtr>()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<Ref2, Layout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
+	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
 	: ref_(other->layout(), other->base()) {}
 
 	template<class Array>
@@ -355,8 +361,7 @@ public:
 
 	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, Layout const& lyt) : ref_{lyt, base} {}
 
-	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
-	friend struct const_subarray;
+	template<typename, multi::dimensionality_type, typename, class> friend struct const_subarray;
 
 	BOOST_MULTI_HD constexpr auto base() const -> typename Ref::element_ptr {return ref_.base();}
 
@@ -366,13 +371,16 @@ public:
 		return (this->ref_.base_ == other.ref_.base_) && (this->ref_.layout() == other.ref_.layout());
 	}
 
-	template<class RR, class LL, std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<RR, LL>>, int> =0>  // TODO(correaa) improve this
-	friend BOOST_MULTI_HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {
+	template<typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherL, 
+		std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL>>, int> =0>
+	friend BOOST_MULTI_HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL> const& other) -> bool {
 		return self.base() == other->base() && self->layout() == other->layout();
 	}
-	template<class RR, class LL, std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<RR, LL>>, int> =0>
-	friend BOOST_MULTI_HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<RR, LL> const& other) -> bool {
-		return self.base() == other->base() && self->layout() == other->layout();
+
+	template<typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherL, 
+		std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL>>, int> =0>
+	friend BOOST_MULTI_HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL> const& other) -> bool {
+		return self.base() != other->base() || self->layout() != other->layout();
 	}
 
  protected:
@@ -428,7 +436,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr static dimensionality_type rank_v = D;
 	using rank = std::integral_constant<dimensionality_type, D>;  // TODO(correaa) make rank a function for compat with mdspan?
 
-	using ptr_type = subarray_ptr<subarray<element, D-1, element_ptr>, layout_t<D-1>>;
+	using ptr_type = subarray_ptr<element, D-1, element_ptr, layout_t<D-1>>;
 
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;
@@ -893,7 +901,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// TODO(correaa) vvv consider making it explicit (seems that in C++23 it can prevent auto s = a[0];)
 	const_subarray(const_subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
 
-	template<class, class> friend struct subarray_ptr;
+	template<typename, multi::dimensionality_type, typename, class> friend struct subarray_ptr;
 
  public:
 	using element           = typename types::element;
@@ -1383,8 +1391,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	friend BOOST_MULTI_HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
  public:
-	using ptr = subarray_ptr<const_subarray, Layout>;
-	using const_ptr = subarray_ptr<basic_const_array, Layout>;
+	using       ptr = subarray_ptr<T, D, ElementPtr, Layout>;
+	using const_ptr = subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
 
 	using pointer = ptr;
 	using const_pointer = const_ptr;
@@ -1765,7 +1773,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	: subarray(other.layout(), other.mutable_base()) {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
-	template<class, class> friend struct subarray_ptr;
+	template<typename, multi::dimensionality_type, typename, class> friend struct subarray_ptr;
+
 	template<class, multi::dimensionality_type, class> friend struct array_iterator;
 
 // protected:
@@ -1774,12 +1783,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
  public:
 	subarray(subarray&&) = default;
 
-	using ptr = subarray_ptr<subarray, Layout>;
+	using ptr = subarray_ptr<T, D, ElementPtr, Layout>;
 
 	// NOLINTNEXTLINE(runtime/operator)
-	BOOST_MULTI_HD constexpr auto operator&()     && { return subarray_ptr<subarray, Layout>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&()     && { return subarray_ptr<T, D, ElementPtr, Layout>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 	// NOLINTNEXTLINE(runtime/operator)
-	BOOST_MULTI_HD constexpr auto operator&()      & { return subarray_ptr<subarray, Layout>(this->base_, this->layout()); } // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&()      & { return subarray_ptr<T, D, ElementPtr, Layout>(this->base_, this->layout()); } // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 
 	using const_subarray<T, D, ElementPtr, Layout>::operator&;
 //  // NOLINTNEXTLINE(runtime/operator)
@@ -2099,7 +2108,9 @@ class const_subarray<T, 0, ElementPtr, Layout>
 		return operator()();
 	}
 
-	BOOST_MULTI_HD constexpr auto operator&() const& {return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&() const& {
+		return /*TODO(correaa) add const*/ subarray_ptr<T, 0, ElementPtr, Layout>(this->base_, this->layout());
+	}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	constexpr auto broadcasted() const& {
 		multi::layout_t<1> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
@@ -2201,7 +2212,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
  protected:
-	template<class, class> friend struct subarray_ptr;
+	template<typename, multi::dimensionality_type, typename, class> friend struct subarray_ptr;
 	template<class, dimensionality_type D, class> friend struct array_iterator;
 
  public:
@@ -2219,7 +2230,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	// // NOLINTNEXTLINE(runtime/operator)
 	// BOOST_MULTI_HD constexpr auto operator&()      & { return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()}; } // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 	// NOLINTNEXTLINE(runtime/operator)
-	BOOST_MULTI_HD constexpr auto operator&() const& {return subarray_ptr<basic_const_array, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&() const& {return const_subarray_ptr<T, 1, ElementPtr, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	BOOST_MULTI_HD constexpr void assign(std::initializer_list<typename const_subarray::value_type> values) const {assert( values.size() == static_cast<std::size_t>(this->size()) );
 		assign(values.begin(), values.end());
@@ -3199,9 +3210,8 @@ constexpr auto ref(
 
 template<class T, dimensionality_type D, typename Ptr = T*>
 struct array_ptr
-: subarray_ptr<subarray<T, D, Ptr>
-, typename array_ref<T, D, Ptr>::layout_t> {
-	using basic_ptr = subarray_ptr<subarray<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>;
+: subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t> {
+	using basic_ptr = subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t>;
 
 	constexpr array_ptr(Ptr data, multi::extensions_t<D> extensions)
 	: basic_ptr{data, multi::layout_t<D>{extensions}} {}

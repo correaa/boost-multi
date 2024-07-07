@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	};
 	BOOST_REQUIRE(  arr[2] ==  arr[2] );
 	BOOST_REQUIRE( &arr[2] == &arr[2] );
-	BOOST_REQUIRE( ! (&arr[2] == &(arr[2]({0, 2}))) );
+	BOOST_REQUIRE( !(&arr[2] == &(arr[2]({0, 2}))) );
 
 	BOOST_REQUIRE( arr[2].base() == arr[2]({0, 2}).base() );
 	BOOST_REQUIRE( arr[2].layout() != arr[2]({0, 2}).layout() );
