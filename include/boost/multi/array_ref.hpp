@@ -294,6 +294,8 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	Layout layout_;
 	ElementPtr base_;
 
+	template<typename, multi::dimensionality_type, typename, class> friend struct subarray_ptr;
+
  public:
 	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
