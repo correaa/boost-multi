@@ -474,6 +474,7 @@ oneapi-2022.2:
   tags:
     - non-shared
     - large-disk-space
+    - x86_64
   interruptible: true
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -492,6 +493,7 @@ oneapi-latest c++20:
     - non-shared
     - large-disk-space
     - high-bandwidth
+    - x86_64
   interruptible: true
   script:
     # - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
