@@ -105,6 +105,9 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 
 		multi::array_ptr<double, 2> const arrP{ &arr };
 
+		static_assert( std::is_trivially_copy_assignable_v<multi::array_ptr<double, 2>> );
+		static_assert( std::is_trivially_copyable_v<multi::array_ptr<double, 2>> );
+
 		BOOST_REQUIRE( arrP->extensions() == multi::extensions(arr) );
 		BOOST_REQUIRE( extensions(*arrP) == multi::extensions(arr) );
 
