@@ -289,8 +289,6 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type
 > {
  private:
-	using Ref = subarray<T, D, ElementPtr, Layout>;
-	// mutable Ref ref_;
 	Layout layout_;
 	ElementPtr base_;
 
@@ -299,25 +297,27 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	using pointer = Ref const*;
-	using element_type = typename Ref::decay_type;
+	using pointer         = subarray<T, D, ElementPtr, Layout>*;
+	using element_type    = typename subarray<T, D, ElementPtr, Layout>::decay_type;
 	using difference_type = typename Layout::difference_type;
 
-	using value_type = element_type;
-	using reference = Ref;
+	using value_type        = element_type;
+	using reference         = subarray<T, D, ElementPtr, Layout>;
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
 	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : base_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
-	BOOST_MULTI_HD constexpr subarray_ptr() : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
+	subarray_ptr() = default;
+
+	// BOOST_MULTI_HD constexpr subarray_ptr() : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
 
 	template<typename, multi::dimensionality_type, typename, class> friend struct subarray_ptr;
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, layout_t<typename Ref::rank{} - 1>      lyt) : base_{base}, layout_{lyt} {}
-	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, index_extensions<typename Ref::rank{}> exts) : base_{base}, layout_(exts) {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<typename reference::rank{} - 1>      lyt) : base_{base}, layout_{lyt} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, index_extensions<typename reference::rank{}> exts) : base_{base}, layout_(exts) {}
 
 	template<typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout
-		, decltype(multi::detail::implicit_cast<typename Ref::element_ptr>(std::declval<OtherEPtr>()))* = nullptr
+		, decltype(multi::detail::implicit_cast<typename reference::element_ptr>(std::declval<OtherEPtr>()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
@@ -332,43 +332,22 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	subarray_ptr(subarray_ptr     &&) noexcept = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
 
 	BOOST_MULTI_HD constexpr auto operator=(subarray_ptr const& other) -> subarray_ptr& = default;
-	// BOOST_MULTI_HD constexpr auto operator=(subarray_ptr const& other) noexcept -> subarray_ptr& {
-	//  if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
-	//      return *this;
-	//  }
-	//  this->ref_.base_ = other.ref_.base_;
-	//  this->ref_.layout_mutable() = other.ref_.layout();
-	//  return *this;
-	// }
-
-	// BOOST_MULTI_HD constexpr auto operator=(subarray_ptr&& other) noexcept  // TODO(correaa) remove move constructor to remove this move assignment
-	// -> subarray_ptr& {
-	//  if(this == std::addressof(other)) {  // lints(cert-oop54-cpp)
-	//      return *this;
-	//  }
-	//  operator=(other);
-	//  return *this;
-	// }
 
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
-	// BOOST_MULTI_HD constexpr auto dereference() const { return Ref(this->layout(), this->base_); }
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return reference(layout_, base_); }
 
-	BOOST_MULTI_HD constexpr auto operator*() const { return Ref(layout_, base_); }
+	BOOST_MULTI_HD constexpr auto operator->() const -> reference* { return reinterpret_cast<reference*>(const_cast<subarray_ptr*>(this)); }
 
-	BOOST_MULTI_HD constexpr auto operator->() const -> Ref* { return reinterpret_cast<Ref*>(const_cast<subarray_ptr*>(this)); }  // std::addressof(ref_); }
-	// BOOST_MULTI_HD constexpr auto operator->() const -> Ref* {return  const_cast<subarray_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
-	// BOOST_MULTI_HD constexpr auto operator->()       -> Ref* {return  this;}
-
-	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> Ref { return *(*this + n); }
+	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
 
 	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool { return distance_to(other) > 0; }
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename Ref::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{base} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{base} {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend struct const_subarray;
 
-	BOOST_MULTI_HD constexpr auto base() const -> typename Ref::element_ptr {return base_;}  // ref_.base();}
+	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr {return base_;}
 
 	friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) {return self.base();}
 
