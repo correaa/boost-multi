@@ -384,6 +384,12 @@ BOOST_AUTO_TEST_CASE(layout_BB) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_layout_with_offset) {
+	static_assert( std::is_trivially_default_constructible_v< multi::layout_t<0> > );
+	static_assert( std::is_trivially_default_constructible_v< multi::layout_t<1> > );
+	static_assert( std::is_trivially_default_constructible_v< multi::layout_t<2> > );
+
+	static_assert( std::is_trivially_copyable_v< multi::layout_t<2> > );
+
 	{
 		multi::layout_t<1> const l1(multi::iextension(2, 5));
 		BOOST_REQUIRE( l1.extension().first()  == 2 );
