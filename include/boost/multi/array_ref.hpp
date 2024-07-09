@@ -1847,10 +1847,16 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::operator=;
 
-	auto operator=(subarray const& other) -> subarray& {
+	auto operator=(subarray const& other) & -> subarray& {
 		const_subarray<T, D, ElementPtr, Layout>::operator=(other);
 		return *this;
 	}
+
+	auto operator=(subarray const& other) && -> subarray& {
+		const_subarray<T, D, ElementPtr, Layout>::operator=(other);
+		return *this;
+	}
+
 	// template<
 	//  class Range,
 	//  class = decltype( static_cast<Range>(std::declval<const_subarray<T, D, ElementPtr, Layout> const&>()) )
@@ -2606,6 +2612,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	template<
 		class Range,
 		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
+		std::enable_if_t<! is_subarray<std::decay_t<Range>>::value, int> =0,
 		class = decltype(Range{std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()})
 	>
 	constexpr explicit operator Range() const {
