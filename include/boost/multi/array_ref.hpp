@@ -339,7 +339,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	subarray_ptr(subarray_ptr const&) = default;
 	subarray_ptr(subarray_ptr     &&) = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
 
-	BOOST_MULTI_HD constexpr auto operator=(subarray_ptr const& other) -> subarray_ptr& = default;
+	auto operator=(subarray_ptr const& other) -> subarray_ptr& = default;
 
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
@@ -1390,14 +1390,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
 
  private:
-	[[deprecated("remove")]] BOOST_MULTI_HD constexpr explicit const_subarray(iterator begin, iterator end)
-	: const_subarray(
-		layout_type{begin->layout(), begin.stride(), 0, begin.stride() * (end - begin)},
-		begin.base()
-	) {
-		assert(begin.stride() == end.stride());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-	}
+	// [[deprecated("remove")]] BOOST_MULTI_HD constexpr explicit const_subarray(iterator begin, iterator end)
+	// : const_subarray(
+	//  layout_type{begin->layout(), begin.stride(), 0, begin.stride() * (end - begin)},
+	//  begin.base()
+	// ) {
+	//  assert(begin.stride() == end.stride());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	//  assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	// }
 
 	friend BOOST_MULTI_HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
