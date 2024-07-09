@@ -279,10 +279,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
 struct subarray_ptr;
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
+template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D> >
 using const_subarray_ptr = subarray_ptr<T, D, ElementPtr, Layout>;
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
+template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D> >
 struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
 : boost::multi::iterator_facade<
 	subarray_ptr<T, D, ElementPtr, Layout>, void, std::random_access_iterator_tag,
@@ -306,7 +306,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
-	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : base_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
+	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
 	subarray_ptr() = default;
 
 	// BOOST_MULTI_HD constexpr subarray_ptr() : subarray_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
@@ -314,7 +314,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	template<typename, multi::dimensionality_type, typename, class> friend struct subarray_ptr;
 
 	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<typename reference::rank{} - 1>      lyt) : base_{base}, layout_{lyt} {}
-	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, index_extensions<typename reference::rank{}> exts) : base_{base}, layout_(exts) {}
+	// BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, index_extensions<typename reference::rank{}> exts) : base_{base}, layout_(exts) {}
 
 	template<typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout
 		, decltype(multi::detail::implicit_cast<typename reference::element_ptr>(std::declval<OtherEPtr>()))* = nullptr
