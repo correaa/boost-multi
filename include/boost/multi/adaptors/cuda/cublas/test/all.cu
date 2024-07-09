@@ -693,7 +693,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_conj_zero) {
 	{
 		multi::array<complex, 1, Alloc> yy = { 1.1 + I * 0.0, 2.1 + I * 0.0, 3.1 + I * 0.0, 6.7 + I * 0.0 };  // NOLINT(readability-identifier-length) BLAS naming
 		using blas::operators::operator*;
-		std::transform(begin(transposed(A)), end(transposed(A)), begin(yy), [&x](auto const& Ac) { return blas::dot(Ac, x); });
+	
+		std::transform(begin(blas::transposed(A)), end(blas::transposed(A)), begin(yy), [&x](auto const& Ac) { return blas::dot(Ac, x); });
 
 		BOOST_REQUIRE_CLOSE(static_cast<complex>(y[0]).real(), static_cast<complex>(yy[0]).real(), 1e-7);
 		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
@@ -1110,7 +1111,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
 		using blas::operators::operator+=;
 		C += 2.0 * (~A * B);
 
-		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa = 2.0, bb = 1.0](auto const& Ar, auto&& Cr) {
+		std::transform(begin(blas::transposed(A)), end(blas::transposed(A)), begin(C_copy), begin(C_copy), [&B, aa = 2.0, bb = 1.0](auto const& Ar, auto&& Cr) {
 			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
 		});
 
@@ -1139,7 +1140,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 		auto                            C_copy = C;
 		blas::gemm({ 1.0, 0.0 }, blas::T(A), blas::T(B), { 0.0, 0.0 }, C);
 
-		std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)),
+		std::transform(B.begin(), B.end(), C_copy.transposed().begin(), C_copy.transposed().begin(),
 		               [&A, aa = 1.0, bb = 0.0](auto const& Br, auto&& Cc) { return blas::gemv(aa, blas::T(A), Br, bb, std::move(Cc)); }
 		);
 
@@ -1154,7 +1155,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 		// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
 		//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
 		// );
-		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa = 1.0, bb = 0.0](auto const& Ac, auto&& Cr) {
+		std::transform(A.transposed().begin(), A.transposed().end(), C_copy.begin(), C_copy.begin(), [&B, aa = 1.0, bb = 0.0](auto const& Ac, auto&& Cr) {
 			return blas::gemv(aa, B, Ac, bb, std::move(Cr));
 		});
 
@@ -1166,7 +1167,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 		auto                            C_copy = C;
 		C += blas::gemm(1.0 + I * 0.0, blas::T(A), blas::T(B));
 
-		std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)),
+		std::transform(begin(B), end(B), C_copy.transposed().begin(), C_copy.transposed().begin(),
 		               [&A, aa = 1.0, bb = 1.0](auto const& Br, auto&& Cc) { return blas::gemv(aa, blas::T(A), Br, bb, std::move(Cc)); }
 		);
 
@@ -1180,7 +1181,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 		using blas::operators::operator+=;
 		C += ~A * ~B;
 
-		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa = 1.0, bb = 1.0](auto const& Ar, auto&& Cr) {
+		std::transform(A.transposed().begin(), A.transposed().end(), C_copy.begin(), C_copy.begin(), [&B, aa = 1.0, bb = 1.0](auto const& Ar, auto&& Cr) {
 			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
 		});
 
@@ -1194,7 +1195,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 		using blas::operators::operator+=;
 		C += 2.0 * (~A * ~B);
 
-		std::transform(begin(transposed(A)), end(transposed(A)), begin(C_copy), begin(C_copy), [&B, aa = 2.0, bb = 1.0](auto const& Ar, auto&& Cr) {
+		std::transform(A.transposed().begin(), A.transposed().end(), begin(C_copy), begin(C_copy), [&B, aa = 2.0, bb = 1.0](auto const& Ar, auto&& Cr) {
 			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
 		});
 

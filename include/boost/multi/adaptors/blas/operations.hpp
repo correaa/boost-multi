@@ -17,7 +17,7 @@ auto transposed(A&& arr) -> decltype(auto) {return std::forward<A>(arr).rotated(
 
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element_type>
 auto conjugated_transposed(A&& arr) -> decltype(auto) {
-	return transposed(blas::conj(std::forward<A>(arr)));
+	return blas::transposed(blas::conj(std::forward<A>(arr)));
 }
 
 template<class A> auto identity(A&& array) -> decltype(auto) {return std::forward<A>(array);}
@@ -86,8 +86,8 @@ namespace operators {
 
 } // end namespace operators
 
-template<class A> auto T(A&& array) -> decltype(auto) {return transposed(std::forward<A>(array));}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
-template<class A> auto N(A&& array) -> decltype(auto) {return identity  (std::forward<A>(array));}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
+template<class A> auto T(A&& array) -> decltype(auto) {return blas::transposed(std::forward<A>(array));}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
+template<class A> auto N(A&& array) -> decltype(auto) {return identity        (std::forward<A>(array));}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
 
 } // end namespace boost::multi::blas
 

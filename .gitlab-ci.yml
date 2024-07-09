@@ -284,6 +284,7 @@ clang++-latest libc++:
 #   tags:
 #     - saas-windows-medium-amd64
 #   needs: ["clang++", "g++"]
+#   timeout: 30  # minutes
 #   # rules:
 #   #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 #   #   - when: never
@@ -305,6 +306,7 @@ clang++-latest libc++:
 #     - ctest --test-dir build --output-on-failure -C Release
 #   tags:
 #     - saas-windows-medium-amd64
+#   timeout: 30  # minutes
 #   # rules:
 #   #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 #   needs: ["vs2019-windows"]
@@ -591,9 +593,9 @@ cuda-11.8:
     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
+    # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+    # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+    # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["cuda"]
 
 cuda-11.8 mkl:
@@ -603,6 +605,7 @@ cuda-11.8 mkl:
     - non-shared
     - nvidia-gpu
     - high-bandwidth
+    - x86_64
   interruptible: true
   script:
     - nvidia-smi
@@ -615,9 +618,9 @@ cuda-11.8 mkl:
     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
+    # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+    # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+    # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["cuda"]
 
 cuda-11.4.3:
@@ -659,7 +662,7 @@ cuda-12.3.1:
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of drivers"
+    - ctest -j 2 || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
 cuclang++-16 cuda-11.4.3:

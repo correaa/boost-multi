@@ -124,7 +124,7 @@ else()
 
       add_subdirectory(include/boost/multi/adaptors/blas)
       # # add_subdirectory(include/boost/multi/adaptors/complex)
-      # add_subdirectory(include/boost/multi/adaptors/cuda)
+      add_subdirectory(include/boost/multi/adaptors/cuda)
       # add_subdirectory(include/boost/multi/adaptors/fftw)
 
       find_package(LAPACK)

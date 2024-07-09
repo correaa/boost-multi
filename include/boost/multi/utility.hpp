@@ -389,6 +389,10 @@ template<class Element, class T, std::enable_if_t<has_extensions<T>::value, int>
 	}
 }
 
+template<class Arr2D>
+auto transposed(Arr2D&& arr)
+->decltype(arr.transposed()) {
+	return arr.transposed(); }
 
 // template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>::value && !has_extensions<BoostMultiArray>::value, int> =0>
 // constexpr auto extensions(BoostMultiArray const& array) {
