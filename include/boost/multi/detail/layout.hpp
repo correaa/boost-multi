@@ -507,17 +507,20 @@ struct layout_t<0, SSize>
 	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
 
  private:
-	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_    = {};  // TODO(correaa)  use  [[no_unique_address]] in C++20
-	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_ = {};  // TODO(correaa)  use  [[no_unique_address]] in C++20
-	offset_type offset_ =  0;
-	nelems_type nelems_ =  1;  // TODO(correaa) : or std::numeric_limits<nelems_type>::max(); ?
+	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_   ;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // = {};
+	offset_type offset_;
+	nelems_type nelems_;
 
 	template<dimensionality_type, typename> friend struct layout_t;
 
  public:
 	layout_t() = default;
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/) {}
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
+
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/)
+	: offset_{0}, nelems_{1} {}
+	
+	// BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
 
 	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
@@ -616,15 +619,16 @@ struct layout_t
 	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
 
  private:
-	sub_type    sub_    = {};
-	stride_type stride_ =  1;  // or std::numeric_limits<stride_type>::max()?
-	offset_type offset_ =  0;
-	nelems_type nelems_ =  0;
+	sub_type    sub_    ;  // = {};
+	stride_type stride_ ;  // =  1;  // or std::numeric_limits<stride_type>::max()?
+	offset_type offset_ ;  // =  0;
+	nelems_type nelems_ ;  // =  0;
 
 	template<dimensionality_type, typename> friend struct layout_t;
 
  public:
 	layout_t() = default;
+
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions) :
 		sub_{
 			std::apply(
@@ -709,6 +713,7 @@ struct layout_t
 		// BOOST_MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
 		// return nelems_ == 0?0:nelems_/stride_;
+		assert(stride_ != 0);
 		return nelems_/stride_;
 	}
 
