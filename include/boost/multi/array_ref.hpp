@@ -1551,18 +1551,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		class = decltype(Range(std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()))>
 	constexpr explicit operator Range() const { return Range(begin(), end()); }  // NOLINT(fuchsia-default-arguments-calls) for example std::vector(it, ti, alloc = {})
 
-	template<class Array> constexpr void swap(Array&& other) && noexcept {
-		assert( std::move(*this).extension() == std::forward<Array>(other).extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		elements().swap(other.elements());
-	//  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
-	}
-	template<class A> constexpr void swap(A&& other) & noexcept {return swap(std::forward<A>(other));}
-
-	friend constexpr void swap(const_subarray&& self, const_subarray&& other) noexcept {std::move(self).swap(std::move(other));}
-
-	template<class Array> constexpr void swap(const_subarray const& self, Array&& other) noexcept {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
-	template<class Array> constexpr void swap(Array&& other, const_subarray const& self) noexcept {self.swap(std::forward<Array>(other));}
-
 	template<class TT, class... As>
 	friend constexpr auto operator==(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
 		return (self.extension() == other.extension()) && (self.elements() == other.elements());
@@ -1840,6 +1828,28 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		const_subarray<T, D, ElementPtr, Layout>::operator=(other);
 		return *this;
 	}
+
+	constexpr void swap(subarray&& other) && noexcept {
+		assert(this->extension() == other.extension());
+		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
+	}
+	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
+
+	template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) noexcept { std::move(self).swap(std::forward<A>(other)); }
+	template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept { std::move(self).swap(std::forward<A>(other)); }
+
+	template<class Array> constexpr void swap(Array&& other) && noexcept {
+		assert( std::move(*this).extension() == other.extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		this->elements().swap(std::forward<Array>(other).elements());
+	//  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
+	}
+	template<class A> constexpr void swap(A&& other) & noexcept {return swap(std::forward<A>(other));}
+
+	// friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
+
+	// template<class Array> constexpr void swap(subarray& self, Array&& other) noexcept {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
+	template<class Array> constexpr void swap(Array&& other, subarray& self) noexcept {self.swap(std::forward<Array>(other));}
+
 
 	// template<
 	//  class Range,
@@ -2783,15 +2793,6 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
 	friend constexpr auto operator<=(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(self, other) || self == other; }
 	friend constexpr auto operator>=(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(other, self) || self == other; }  // NOLINT(readability-suspicious-call-argument)
-
-	constexpr void swap(const_subarray&& other) && noexcept {
-		assert(this->extension() == other.extension());
-		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
-	}
-	friend constexpr void swap(const_subarray&& self, const_subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
-
-	template<class A, typename = std::enable_if_t<!std::is_base_of_v<const_subarray, std::decay_t<A>>>> friend constexpr void swap(const_subarray&& self, A&& other) noexcept { std::move(self).swap(std::forward<A>(other)); }
-	template<class A, typename = std::enable_if_t<!std::is_base_of_v<const_subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, const_subarray&& self) noexcept { std::move(self).swap(std::forward<A>(other)); }
 
  private:
 	template<class A1, class A2>
