@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(multi_reversed_3d) {
 
 template<class Array>
 auto flatted_last(Array&& arr) {
-	return reversed(flatted(reversed(std::forward<Array>(arr)).transposed()));
+	return reversed(reversed(std::forward<Array>(arr)).transposed().flatted());
 }
 
 template<class Array>
