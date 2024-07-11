@@ -10,9 +10,6 @@
 
 #include <complex>  // for complex, operator*
 
-#include <complex>                               // for operator*, operator+
-#include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
-
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 

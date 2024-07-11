@@ -58,13 +58,27 @@ BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
-	multi::array<double, 2> A2 = {
-		{ 0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
-		{ 6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
+	multi::array<int, 2> A2 = {
+		{ 00,  10,  20,  30,  40,  50},
+		{ 60,  70,  80,  90, 100, 110},
 
-		{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-		{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		{120, 130, 140, 150, 160, 170},
+		{180, 190, 200, 210, 220, 230},
 	};
+
+	BOOST_REQUIRE((
+		A2.partitioned(2) == multi::array<int, 3>{
+			{
+				{ 00,  10,  20,  30,  40,  50},
+				{ 60,  70,  80,  90, 100, 110},
+			},
+			{
+				{120, 130, 140, 150, 160, 170},
+				{180, 190, 200, 210, 220, 230},
+			},
+		}
+	));
+
 	auto&& A3_ref = A2.partitioned(2);
 
 	static_assert(std::decay_t<decltype(A3_ref)>::rank{} == decltype(A2)::rank{} + 1);
@@ -75,6 +89,8 @@ BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 	BOOST_REQUIRE( size(A3_ref[0]) == 2 );
 	BOOST_REQUIRE( size(A3_ref[0][0]) == 6 );
 	BOOST_REQUIRE( &A3_ref[1][1][0] == &A2[3][0] );
+
+	A3_ref[0][0][0] = 99;
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned) {
@@ -228,17 +244,17 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	multi::array<double, 3> arr = {
 		{
-         {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
-         {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
-         {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-         {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-		 },
+			{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+			{6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+			{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+			{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		},
 		{
-         {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
-         {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
-         {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-         {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-		 }
+			{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+			{6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+			{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+			{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		},
 	};
 
 	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());
