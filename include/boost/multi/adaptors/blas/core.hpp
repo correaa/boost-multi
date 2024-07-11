@@ -18,7 +18,7 @@
 
 // #include "../../config/MARK.hpp"
 
-#include "../blas/traits.hpp"
+#include <boost/multi/adaptors/blas/traits.hpp>  // IWYU pragma: export
 
 #if ! defined(NDEBUG)
 	#include<stdexcept>

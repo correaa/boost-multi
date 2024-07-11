@@ -35,8 +35,6 @@
 
 namespace multi = boost::multi;
 
-template<class... T> void what(T&&...) = delete;
-
 BOOST_AUTO_TEST_CASE(subarray_assignment) {
 	multi::array<int, 3> A({3, 4, 5}, 99);
 
@@ -48,4 +46,19 @@ BOOST_AUTO_TEST_CASE(subarray_assignment) {
 
 	//  what(constA2, A2);
 	//  A2[1][1] = 88;
+}
+
+BOOST_AUTO_TEST_CASE(subarray_base) {
+	multi::array<int, 3> A({3, 4, 5}, 99);
+
+	auto&& Asub = A();
+	*Asub.base() = 88;
+
+	BOOST_REQUIRE( A[0][0][0] == 88 );
+
+	*A().base() = 77;
+
+	BOOST_REQUIRE( A[0][0][0] == 77 );
+
+	// *std::as_const(Asub).base() = 66;  // should not compile, read-only
 }
