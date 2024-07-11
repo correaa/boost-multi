@@ -1935,7 +1935,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
-	constexpr auto reinterpret_array_cast() && { return reinterpret_array_cast<T2, P2>(); }
+	constexpr auto reinterpret_array_cast() && {
+		// static_assert( sizeof(T)%sizeof(T2) == 0,
+		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+
+		return subarray<T2, D, P2>(
+			this->layout().scale(sizeof(T), sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
+			reinterpret_pointer_cast<P2>(this->base_)  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
+		);
+	}
 
 	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
 	// constexpr auto reinterpret_array_cast()      & {return this->template reinterpret_array_cast_aux_<T2, P2>();}
