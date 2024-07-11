@@ -952,8 +952,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
 	BOOST_MULTI_FRIEND_CONSTEXPR auto size (const_subarray const& self) noexcept -> typename const_subarray::size_type  {return self.size ();}  // needed by nvcc
 
-	template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray     && self) {return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
-	template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray const& self) {return           self .template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
+//  template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray     && self) {return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
+//  template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray const& self) {return           self .template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
 
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) {return D;}
 
@@ -1731,35 +1731,19 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
 	constexpr auto reinterpret_array_cast() const& {return reinterpret_array_cast_aux_<T2, P2>().as_const();}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
-	constexpr auto reinterpret_array_cast()      & {return reinterpret_array_cast_aux_<T2, P2>();}
+	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	// constexpr auto reinterpret_array_cast()      & {return reinterpret_array_cast_aux_<T2, P2>();}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
-	constexpr auto reinterpret_array_cast()     && {return reinterpret_array_cast_aux_<T2, P2>();}
-
-	template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(multi::size_type count) & -> subarray<std::decay_t<T2>, D + 1, P2> {
-		// static_assert( sizeof(T)%sizeof(T2) == 0,
-		//  "error: reinterpret_array_cast is limited to integral stride values");
-
-		assert( count > 0 );
-		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return subarray<std::decay_t<T2>, D + 1, P2>(
-			layout_t<D + 1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
-			reinterpret_pointer_cast<P2>(this->base_)  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
-		);
-	}
+	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
+	// constexpr auto reinterpret_array_cast()     && {return reinterpret_array_cast_aux_<T2, P2>();}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(multi::size_type count)     && -> subarray<std::decay_t<T2>, D + 1, P2> {return reinterpret_array_cast<T2, P2>(count);}
-
-	template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2 const> >
-	constexpr auto reinterpret_array_cast(size_type count) const& -> subarray<std::decay_t<T2>, D + 1, P2> {
+	constexpr auto reinterpret_array_cast(size_type count) const& {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-		return subarray<std::decay_t<T2>, D + 1, P2>(
+		return const_subarray<T2, D + 1, P2>(
 			layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
 			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		);
@@ -1924,6 +1908,52 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::partitioned;
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size)      & -> subarray<T, D+1, typename subarray::element_ptr> { return std::as_const(*this).partitioned(size); }
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size)     && -> subarray<T, D+1, typename subarray::element_ptr> { return std::as_const(*this).partitioned(size); }
+
+	using const_subarray<T, D, ElementPtr, Layout>::reinterpret_array_cast;
+	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
+	// constexpr auto reinterpret_array_cast() & {
+	//  assert(this->layout().stride() * static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0);
+
+	//  return subarray<T2, 1, P2>{
+	//    typename subarray::layout_type{this->layout().sub(), this->layout().stride() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2)), this->layout().offset() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2)), this->layout().nelems() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2))},
+	//    reinterpret_pointer_cast<P2>(this->base_)
+    //     };
+	// }
+
+	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
+	// constexpr auto reinterpret_array_cast() && { return this->reinterpret_array_cast(); }
+
+	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
+	constexpr auto reinterpret_array_cast() & {
+		// static_assert( sizeof(T)%sizeof(T2) == 0,
+		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+
+		return subarray<T2, D, P2>(
+			this->layout().scale(sizeof(T), sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
+			reinterpret_pointer_cast<P2>(this->base_)  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
+		);
+	}
+
+	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
+	constexpr auto reinterpret_array_cast() && { return reinterpret_array_cast<T2, P2>(); }
+
+	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
+	// constexpr auto reinterpret_array_cast()      & {return this->template reinterpret_array_cast_aux_<T2, P2>();}
+
+	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
+	// constexpr auto reinterpret_array_cast()     && {return this->template reinterpret_array_cast_aux_<T2, P2>();}
+
+	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2> >
+	constexpr auto reinterpret_array_cast(size_type count) & {
+		static_assert( sizeof(T)%sizeof(T2) == 0,
+			"error: reinterpret_array_cast is limited to integral stride values");
+
+		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
+		return subarray<T2, D + 1, P2>(
+			layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+		);
+	}
 };
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
@@ -2129,6 +2159,14 @@ class const_subarray<T, 0, ElementPtr, Layout>
 		return /*TODO(correaa) add const*/ subarray_ptr<T, 0, ElementPtr, Layout>(this->base_, this->layout());
 	}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
+	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
+	constexpr auto reinterpret_array_cast()  const& {
+		return const_subarray<T2, 0, P2>{
+			typename const_subarray::layout_type{this->layout()},
+			reinterpret_pointer_cast<P2>(this->base_)
+		};
+	}
+
 	constexpr auto broadcasted() const& {
 		multi::layout_t<1> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
 		return subarray<T, 1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
@@ -2210,14 +2248,14 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
 
-	template<class T2>
-	friend constexpr auto reinterpret_array_cast(const_subarray&& self) {
-		return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
-	}
-	template<class T2>
-	friend constexpr auto reinterpret_array_cast(const_subarray const& self) {
-		return self.template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
-	}
+	// template<class T2>
+	// friend constexpr auto reinterpret_array_cast(const_subarray&& self) {
+	//  return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
+	// }
+	// template<class T2>
+	// friend constexpr auto reinterpret_array_cast(const_subarray const& self) {
+	//  return self.template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
+	// }
 
  public:
 	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
@@ -2823,29 +2861,9 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	constexpr auto reinterpret_array_cast()  const& {
 		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
 
-		return subarray<std::decay_t<T2>, 1, P2>{
+		return const_subarray<T2, 1, P2>{
 			layout_type{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
 			reinterpret_pointer_cast<P2>(this->base_)
-		};
-	}
-
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
-	constexpr auto reinterpret_array_cast()  & {
-		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
-
-		return subarray<std::decay_t<T2>, 1, P2>{
-			layout_type{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
-			reinterpret_pointer_cast<P2>(this->base_)
-		};
-	}
-
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
-	constexpr auto reinterpret_array_cast() && {
-		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
-
-		return subarray<std::decay_t<T2>, 1, P2>{
-			layout_type{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
-			reinterpret_pointer_cast<P2>(this->base())
 		};
 	}
 
@@ -2860,21 +2878,21 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 		}.rotated();
 	}
 
-	// TODO(correaa) : rename to reinterpret_pointer_cast?
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(size_type n)& {  // -> subarray<std::decay_t<T2>, 2, P2> {
-		// static_assert( sizeof(T)%sizeof(T2)== 0,
-		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
+	// // TODO(correaa) : rename to reinterpret_pointer_cast?
+	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
+	// constexpr auto reinterpret_array_cast(size_type n)& {  // -> subarray<std::decay_t<T2>, 2, P2> {
+	//  // static_assert( sizeof(T)%sizeof(T2)== 0,
+	//  //  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
-		return subarray<std::decay_t<T2>, 2, P2>(
-			layout_t<2>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n),
-			reinterpret_pointer_cast<P2>(this->base())
-		).rotated();
-	}
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(size_type n)&& -> subarray<std::decay_t<T2>, 2, P2> {
-		return this->reinterpret_array_cast<T2, P2>(n);
-	}
+	//  return subarray<std::decay_t<T2>, 2, P2>(
+	//    layout_t<2>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n),
+	//    reinterpret_pointer_cast<P2>(this->base())
+	//  ).rotated();
+	// }
+	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
+	// constexpr auto reinterpret_array_cast(size_type n)&& -> subarray<std::decay_t<T2>, 2, P2> {
+	//  return this->reinterpret_array_cast<T2, P2>(n);
+	// }
 
 	template<class TT = typename const_subarray::element_type>
 	constexpr auto fill(TT const& value) & -> decltype(auto) {
