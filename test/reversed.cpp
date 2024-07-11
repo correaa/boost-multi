@@ -50,7 +50,7 @@ auto flatted_last(Array&& arr) {
 
 template<class Array>
 auto partitioned_last(Array&& arr, multi::size_type n) {
-	return reversed( (partitioned(reversed(std::forward<Array>(arr)), n).transposed() ).transposed());
+	return reversed( reversed(std::forward<Array>(arr)).partitioned(n).transposed().transposed());
 }
 
 BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
