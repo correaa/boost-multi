@@ -6,7 +6,7 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
 #pragma once
 
-#include <boost/multi/adaptors/blas/core.hpp>
+#include <boost/multi/adaptors/blas/core.hpp>  // IWYU pragma: export
 #include <boost/multi/adaptors/blas/operations.hpp>
 
 #include<type_traits>
