@@ -1346,6 +1346,8 @@ struct array : static_array<T, D, Alloc> {
 		return std::move(*this);
 	}
 
+	template<class... Ts> static void what(Ts&&...) = delete;
+
 	auto reextent(typename array::extensions_type const& extensions) & -> array& {
 		if(extensions == this->extensions()) {
 			return *this;
