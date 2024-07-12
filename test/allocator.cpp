@@ -234,7 +234,11 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d) {
 		return std::forward<decltype(row)>(row);
 	});
 
-	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
+	BOOST_TEST( AA[9][19].size() == 9 + 19 );
+
+	BOOST_TEST( std::size(AA[9][19]) == 9 + 19 );
+	BOOST_TEST( size(AA[9][19]) == 9 + 19 );
+
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99 );
 }
 
@@ -247,7 +251,10 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init) {
 		return std::forward<decltype(row)>(row);
 	});
 
-	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
+	BOOST_TEST( AA[9][19].size() == 9 + 19 );
+	BOOST_TEST( std::size(AA[9][19]) == 9 + 19 );
+	BOOST_TEST( size(AA[9][19]) == 9 + 19 );
+
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99 );
 }
 #endif
