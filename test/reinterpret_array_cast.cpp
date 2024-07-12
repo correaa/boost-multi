@@ -184,6 +184,10 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	BOOST_REQUIRE(( arr3.sizes() == decltype(arr3.sizes()){100, 2} ));
 	BOOST_REQUIRE_CLOSE(arr3[5][0], real(arr[5]), 1E-6);
 	BOOST_REQUIRE_CLOSE(arr3[5][1], imag(arr[5]), 1E-6);
+
+	arr.reinterpret_array_cast<double>(2)[0][0] = 99.9;
+	arr().reinterpret_array_cast<double>(2)[0][0] = 99.9;
+
 #endif
 }
 

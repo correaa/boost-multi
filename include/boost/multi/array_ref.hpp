@@ -1979,6 +1979,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		);
 	}
+
+	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2> >
+	constexpr auto reinterpret_array_cast(size_type count) && { return this->reinterpret_array_cast<T2, P2>(count); }
 };
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
@@ -2608,29 +2611,26 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	->decltype(paren_(*this, std::forward<Args>(args)...)) {
 		return paren_(*this, std::forward<Args>(args)...); }
 
-	using partitioned_type       =       subarray<T, 2, element_ptr>;
-	using partitioned_const_type = const_subarray<T, 2, element_ptr>;
-
  protected:
-	BOOST_MULTI_HD constexpr auto partitioned_aux_(size_type size) const -> partitioned_type {
+	BOOST_MULTI_HD constexpr auto partitioned_aux_(size_type size) const {
 		assert( size != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert( (this->layout().nelems() % size) == 0 );  // TODO(correaa) remove assert? truncate left over? (like mathematica) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/size, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= size;  // TODO(correaa) : don't use mutation
-		return {new_layout, types::base_};
+		return subarray<T, 2, element_ptr>(new_layout, types::base_);
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto partitioned(size_type size) const& -> partitioned_const_type {return partitioned_aux_(size);}
+	BOOST_MULTI_HD constexpr auto partitioned(size_type size) const& -> const_subarray<T, 2, element_ptr> {return partitioned_aux_(size);}
 
  private:
-	BOOST_MULTI_HD constexpr auto chunked_aux_(size_type size) const -> partitioned_type {
+	BOOST_MULTI_HD constexpr auto chunked_aux_(size_type size) const {
 		assert( this->size() % size == 0 );
 		return partitioned_aux_(this->size()/size);
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
-	BOOST_MULTI_HD constexpr auto chunked(size_type size) const& -> partitioned_const_type {return chunked_aux_(size);}
+	BOOST_MULTI_HD constexpr auto chunked(size_type size) const& -> const_subarray<T, 2, element_ptr> {return chunked_aux_(size);}
 	// BOOST_MULTI_HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux_(size);}
 	// BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux_(size);}
 
