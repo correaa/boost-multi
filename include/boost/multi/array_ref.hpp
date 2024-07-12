@@ -1355,10 +1355,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  public:
 	// vvv DO NOT remove default parameter `= irange` : the default template parameters below help interpret the expression `{first, last}` syntax as index ranges
-	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                        const& -> decltype(auto) {return                  paren_aux_(arg1);}  // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                               const& -> decltype(auto) {return                  paren_aux_(arg1, arg2);}  // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                      const& -> decltype(auto) {return                  paren_aux_(arg1, arg2, arg3);}  // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const& -> decltype(auto) {return                  paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange>                                                                        BOOST_MULTI_HD constexpr auto operator()(A1 arg1)                                        const& -> decltype(auto) {return                  paren_aux_(arg1);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange>                                                     BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2)                               const& -> decltype(auto) {return                  paren_aux_(arg1, arg2);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                  BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                      const& -> decltype(auto) {return                  paren_aux_(arg1, arg2, arg3);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>  BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const& -> decltype(auto) {return                  paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
 
 	// template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                             & -> decltype(auto) {return                  paren_aux_(arg1);}  // NOLINT(whitespace/line_length) pattern line
 	// template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                                    & -> decltype(auto) {return                  paren_aux_(arg1, arg2);}  // NOLINT(whitespace/line_length) pattern line
@@ -1371,14 +1371,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>                constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
 
  private:
-	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
-	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/)      & -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
-	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/)     && -> decltype(auto) {return std::move(*this).operator()(std::get<I>(tuple)...);}
+	template<typename Tuple, std::size_t ... I> BOOST_MULTI_HD constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
+	// template<typename Tuple, std::size_t ... I> constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/)      & -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
+	// template<typename Tuple, std::size_t ... I> constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/)     && -> decltype(auto) {return std::move(*this).operator()(std::get<I>(tuple)...);}
 
  public:
 	template<typename Tuple> constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	template<typename Tuple> constexpr auto apply(Tuple const& tuple)     && -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	template<typename Tuple> constexpr auto apply(Tuple const& tuple)      & -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	// template<typename Tuple> constexpr auto apply(Tuple const& tuple)     && -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	// template<typename Tuple> constexpr auto apply(Tuple const& tuple)      & -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
 	using       iterator = array_iterator<element, D, element_ptr      >;
 	using const_iterator = array_iterator<element, D, element_const_ptr>;
@@ -1891,15 +1891,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                      const -> decltype(auto) {return                  paren_aux_(arg1, arg2, arg3);}  // NOLINT(whitespace/line_length) pattern line
 	// template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const -> decltype(auto) {return                  paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
 
-	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                             & -> decltype(auto) {return                  this->paren_aux_(arg1);}  // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                                    & -> decltype(auto) {return                  this->paren_aux_(arg1, arg2);}  // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                           & -> decltype(auto) {return                  this->paren_aux_(arg1, arg2, arg3);}  // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)      & -> decltype(auto) {return                  this->paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange>                                                                       BOOST_MULTI_HD constexpr auto operator()(A1 arg1)                                             & -> decltype(auto) {return                  this->paren_aux_(arg1);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange>                                                    BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2)                                    & -> decltype(auto) {return                  this->paren_aux_(arg1, arg2);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                 BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                           & -> decltype(auto) {return                  this->paren_aux_(arg1, arg2, arg3);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)      & -> decltype(auto) {return                  this->paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
 
-	template<class A1 = irange>                                                                                      constexpr auto operator()(A1 arg1)                                            && -> decltype(auto) {return std::move(*this).paren_aux_(arg1);}                             // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange>                                                                       BOOST_MULTI_HD constexpr auto operator()(A1 arg1)                                            && -> decltype(auto) {return std::move(*this).paren_aux_(arg1);}                             // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange>                                                    BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2)                                   && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2);}                       // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange, class A3 = irange>                                                constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                          && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2, arg3);}                 // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>                constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                 BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                          && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2, arg3);}                 // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...);}  // NOLINT(whitespace/line_length) pattern line
 
 
  private:
@@ -2161,7 +2161,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	using decay_type = typename types::element;
 
-	constexpr auto operator()() const -> element_ref {return *(this->base_);}
+	BOOST_MULTI_HD constexpr auto operator()() const& -> element_ref {return *(this->base_);}
 
 	constexpr operator element_ref ()                            && {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_ref ()                             & {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
@@ -2172,15 +2172,15 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	constexpr auto sliced() const& = delete;
 	constexpr auto partitioned() const& = delete;
 
-	constexpr auto reindexed() const& { return operator()(); }
-	constexpr auto   rotated() const& { return operator()(); }
-	constexpr auto unrotated() const& { return operator()(); }
+	BOOST_MULTI_HD constexpr auto reindexed() const& { return operator()(); }
+	BOOST_MULTI_HD constexpr auto   rotated() const& { return operator()(); }
+	BOOST_MULTI_HD constexpr auto unrotated() const& { return operator()(); }
 
 	auto transposed() const& = delete;
 	auto flatted() const& = delete;
 
 	template<class Tuple>
-	constexpr auto apply(Tuple const&) const {
+	BOOST_MULTI_HD constexpr auto apply(Tuple const&) const {
 		static_assert(std::tuple_size_v<Tuple> == 0);
 		return operator()();
 	}
@@ -2568,7 +2568,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
 	// BOOST_MULTI_HD constexpr auto operator()(index_range const& rng)      & {return                  range(rng);}
 	// BOOST_MULTI_HD constexpr auto operator()(index_range const& rng)     && {return std::move(*this).range(rng);}
-	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const {return                  range(rng);}
+	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& {return                  range(rng);}
 
 	// BOOST_MULTI_HD constexpr auto operator()(index idx)      & -> decltype(auto) {return                  operator[](idx);}
 	// BOOST_MULTI_HD constexpr auto operator()(index idx)     && -> decltype(auto) {return std::move(*this).operator[](idx);}
@@ -2592,22 +2592,22 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	constexpr auto paren_aux_(intersecting_range<index> const& rng) const& -> decltype(auto) {return                  paren_aux_(intersection(this->extension(), rng));}
 
  public:
-	constexpr auto operator()(intersecting_range<index> const& isrange)      & -> decltype(auto) {return                  paren_aux_(isrange);}
-	constexpr auto operator()(intersecting_range<index> const& isrange)     && -> decltype(auto) {return std::move(*this).paren_aux_(isrange);}
-	constexpr auto operator()(intersecting_range<index> const& isrange) const& -> decltype(auto) {return                  paren_aux_(isrange);}
+	// constexpr auto operator()(intersecting_range<index> const& isrange)      & -> decltype(auto) {return                  paren_aux_(isrange);}
+	// constexpr auto operator()(intersecting_range<index> const& isrange)     && -> decltype(auto) {return std::move(*this).paren_aux_(isrange);}
+	BOOST_MULTI_HD constexpr auto operator()(intersecting_range<index> const& isrange) const& -> decltype(auto) {return                  paren_aux_(isrange);}
+
+	// template<class... Args>
+	// constexpr auto operator()(Args&&... args) &
+	// ->decltype(paren_(*this, std::forward<Args>(args)...)) {
+	//  return paren_(*this, std::forward<Args>(args)...); }
+
+	// template<class... Args>
+	// constexpr auto operator()(Args&&... args) &&
+	// ->decltype(paren_(std::move(*this), std::forward<Args>(args)...)) {
+	//  return paren_(std::move(*this), std::forward<Args>(args)...); }
 
 	template<class... Args>
-	constexpr auto operator()(Args&&... args) &
-	->decltype(paren_(*this, std::forward<Args>(args)...)) {
-		return paren_(*this, std::forward<Args>(args)...); }
-
-	template<class... Args>
-	constexpr auto operator()(Args&&... args) &&
-	->decltype(paren_(std::move(*this), std::forward<Args>(args)...)) {
-		return paren_(std::move(*this), std::forward<Args>(args)...); }
-
-	template<class... Args>
-	constexpr auto operator()(Args&&... args) const&
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... args) const&
 	->decltype(paren_(*this, std::forward<Args>(args)...)) {
 		return paren_(*this, std::forward<Args>(args)...); }
 
