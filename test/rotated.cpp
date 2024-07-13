@@ -210,6 +210,7 @@ BOOST_AUTO_TEST_CASE(miguel) {
 
 #if(__cplusplus >= 202002L)
 	#if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
+
 auto meshgrid(auto const& x, auto const& y) {
 	return std::pair{ x.broadcasted().rotated(), y.broadcasted() };
 }
@@ -221,7 +222,8 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 		multi::array<typename Y1D::element_type, 2>(std::views::repeat(y, x.size()))
 	};
 
-	std::ranges::fill(ret.first.rotated(), x);
+	std::fill(ret.first.rotated().begin(), ret.first.rotated().end(), x);
+	// std::ranges::fill(ret.first.rotated(), x);
 
 	return ret;
 }
