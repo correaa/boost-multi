@@ -6,6 +6,7 @@
 	// #pragma clang diagnostic ignored "-Wundef"
 	// #pragma clang diagnostic ignored "-Wconversion"
 	// #pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
 	#pragma clang diagnostic ignored "-Wenum-constexpr-conversion"
 #elif defined(__GNUC__)
 	// #pragma GCC diagnostic push
