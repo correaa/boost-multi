@@ -5,6 +5,16 @@
 
 #if defined(__clang__)
 	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#endif
+
+#if defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif
+
+#if defined(__clang__)
+	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wundef"
 	#pragma clang diagnostic ignored "-Wconversion"
@@ -15,6 +25,7 @@
 	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
+	#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
 #endif
 
 #ifndef BOOST_TEST_MODULE
@@ -36,6 +47,10 @@
 #include <functional>                // for __cpp_lib_ranges  // IWYU pragma: keep
 #include <iterator>                  // for begin, end
 #include <vector>                    // for vector
+
+#if defined(__cpp_lib_ranges)
+#include<concepts>
+#endif
 
 namespace multi = boost::multi;
 
@@ -64,11 +79,37 @@ BOOST_AUTO_TEST_CASE(sort_2D) {
 	};
 	BOOST_REQUIRE( !std::ranges::is_sorted(A) );
 
-	std::ranges::sort(A);
+	using it = boost::multi::array_iterator<int, 2, int*>;
+
+	static_assert(std::forward_iterator<it>);
+
+	using In = it;
+	using Out = it;
+
+	static_assert(std::indirectly_readable<In>);
+
+	*A.begin() = A[0];
+
+	// const_cast<const std::iter_reference_t<Out>&&>(*A.begin()) = A[0];  // std::forward<T>(t);
+	// const_cast<const std::iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
+    //             std::forward<T>(t);
+
+	static_assert(std::indirectly_writable<Out, multi::subarray<int, 1> >);
+    static_assert(std::indirectly_writable<Out, std::iter_rvalue_reference_t<In>>);
+	static_assert(std::indirectly_movable<In, Out>);
+	static_assert(std::indirectly_writable<Out, std::iter_value_t<In>>);
+	static_assert(std::movable<std::iter_value_t<In>>);
+	static_assert(std::constructible_from<std::iter_value_t<In>, std::iter_rvalue_reference_t<In>>);
+	static_assert(std::assignable_from<std::iter_value_t<In>&, std::iter_rvalue_reference_t<In>>);
+
+	static_assert(std::indirectly_movable_storable<it, it>);
+	static_assert(std::indirectly_swappable<it>);
+	static_assert(std::permutable<it>);
+
+	std::sort(A.begin(), A.end());
+	// std::ranges::sort(A);
 
 	BOOST_REQUIRE(  std::ranges::is_sorted(A) );
-
-	static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
 }
 
 BOOST_AUTO_TEST_CASE(sort_strings) {

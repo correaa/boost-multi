@@ -1782,6 +1782,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
+	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const&) const&& -> subarray const&& {  // for std::indirectly_writable
+		throw std::runtime_error("test for rnage");
+		// assert(this->extension() == other.extension());
+		// this->elements() = other.elements();
+		return std::move(*this);
+	}
+
 	constexpr auto operator=(subarray const& other) & -> subarray& {
 		assert(this->extension() == other.extension());
 		this->elements() = other.elements();
@@ -2716,6 +2723,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	friend BOOST_MULTI_HD /*constexpr*/ auto cbegin(const_subarray const& self) {return self.cbegin();}
 	BOOST_MULTI_FRIEND_CONSTEXPR auto cend  (const_subarray const& self) {return self.cend()  ;}
 
+	// fix mutation
 	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other) && -> const_subarray& {operator=(          other ); return *this;}
 	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other)  & -> const_subarray& {
 		assert(other.extensions() == this->extensions());
@@ -2723,6 +2731,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 		return *this;
 	}
 
+	// fix mutation
 	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...>     && other) && -> const_subarray& {operator=(std::move(other)); return *this;}
 	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...>     && other)  & -> const_subarray& {
 		assert(this->extensions() == other.extensions());
