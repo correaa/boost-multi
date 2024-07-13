@@ -1,6 +1,27 @@
 // Copyright 2020-2024 Alfredo A. Correa
 
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	// #pragma clang diagnostic ignored "-Wold-style-cast"
+	// #pragma clang diagnostic ignored "-Wundef"
+	// #pragma clang diagnostic ignored "-Wconversion"
+	// #pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic ignored "-Wenum-constexpr-conversion"
+#elif defined(__GNUC__)
+	// #pragma GCC diagnostic push
+	// #pragma GCC diagnostic ignored "-Wold-style-cast"
+	// #pragma GCC diagnostic ignored "-Wundef"
+	// #pragma GCC diagnostic ignored "-Wconversion"
+	// #pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
 #include <boost/test/unit_test.hpp>  // for BOOST_PP_IIF_1, BOOST_...
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+	// #pragma GCC diagnostic pop
+#endif
 
 #include <boost/multi/adaptors/blas/axpy.hpp>  // for operator-
 #include <boost/multi/adaptors/blas/core.hpp>  // for gemv, context, dot, nrm2

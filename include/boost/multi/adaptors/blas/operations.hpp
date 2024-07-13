@@ -13,14 +13,18 @@ namespace boost::multi::blas {
 // template<class M> auto transposed(M&& arr) -> decltype(auto) {return rotated(std::forward<M>(arr));}
 
 template<class A>
+[[deprecated("use blas::T to avoid conflict with multi::transposed")]]
 auto transposed(A&& arr) -> decltype(auto) {return std::forward<A>(arr).rotated();}
+
+template<class A> auto identity(A&& array) -> decltype(auto) {return std::forward<A>(array);}
+
+template<class A> auto T(A&& arr) -> decltype(auto) {return std::forward<A>(arr).rotated();}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
+template<class A> auto N(A&& arr) -> decltype(auto) {return std::forward<A>(arr)          ;}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
 
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element_type>
 auto conjugated_transposed(A&& arr) -> decltype(auto) {
-	return blas::transposed(blas::conj(std::forward<A>(arr)));
+	return blas::T(blas::conj(std::forward<A>(arr)));
 }
-
-template<class A> auto identity(A&& array) -> decltype(auto) {return std::forward<A>(array);}
 
 // template<class A, typename D=std::decay_t<A>, typename E=typename D::element_type>
 // auto conjugated(A&& array) -> decltype(auto) {
@@ -81,13 +85,10 @@ namespace operators {
 
 	template<class A>
 	auto operator~(A&& array)
-	->decltype(blas::transposed(std::forward<A>(array))) {
-		return blas::transposed(std::forward<A>(array)); }
+	->decltype(blas::T(std::forward<A>(array))) {
+		return blas::T(std::forward<A>(array)); }
 
 } // end namespace operators
-
-template<class A> auto T(A&& array) -> decltype(auto) {return blas::transposed(std::forward<A>(array));}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
-template<class A> auto N(A&& array) -> decltype(auto) {return identity        (std::forward<A>(array));}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
 
 } // end namespace boost::multi::blas
 

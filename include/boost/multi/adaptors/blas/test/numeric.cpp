@@ -90,14 +90,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
 	BOOST_REQUIRE( conj_arr[2][1] == std::conj(arr[2][1]) );
 	BOOST_REQUIRE( blas::conj(arr)[2][1] == std::conj(arr[2][1]) );
 
-	BOOST_REQUIRE( blas::transposed(arr)[1][2] == arr[2][1] );
-	BOOST_REQUIRE( blas::transposed(arr) == ~arr );
+	BOOST_REQUIRE( blas::T(arr)[1][2] == arr[2][1] );
+	BOOST_REQUIRE( blas::T(arr) == ~arr );
 
-	BOOST_REQUIRE( blas::conj(arr)[1][2]             == blas::hermitized(arr)[2][1] );
-	BOOST_REQUIRE( blas::conj(blas::transposed(arr)) == blas::hermitized(arr) );
+	BOOST_REQUIRE( blas::conj(arr)[1][2]    == blas::hermitized(arr)[2][1] );
+	BOOST_REQUIRE( blas::conj(blas::T(arr)) == blas::hermitized(arr) );
 
 	BOOST_REQUIRE( blas::hermitized(arr)[2][1] == blas::conj(arr)[1][2] );
-	BOOST_REQUIRE( blas::hermitized(arr)       == blas::conj(blas::transposed(arr)) );
+	BOOST_REQUIRE( blas::hermitized(arr)       == blas::conj(blas::T(arr)) );
 
 	BOOST_REQUIRE( blas::real(arr)[2][1] == std::real(arr[2][1]) );
 	BOOST_REQUIRE( blas::imag(arr)[2][1] == std::imag(arr[2][1]) );
