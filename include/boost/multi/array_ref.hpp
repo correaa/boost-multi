@@ -235,7 +235,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
 	
-	template<class, ::boost::multi::dimensionality_type, typename> friend struct array_iterator;
+	template<class, ::boost::multi::dimensionality_type, typename, bool> friend struct array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
 	BOOST_MULTI_HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
@@ -410,10 +410,10 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> subarray_ptr& {advance(n); return *this;}
 };
 
-template<class Element, dimensionality_type D, typename ElementPtr>
+template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false>
 struct array_iterator;
 
-template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr>
+template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst>
 struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 : boost::multi::iterator_facade<
 	array_iterator<Element, D, ElementPtr>, void, std::random_access_iterator_tag,
@@ -455,7 +455,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
 	BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
 
-	template<class, dimensionality_type, class> friend struct array_iterator;
+	template<class, dimensionality_type, class, bool> friend struct array_iterator;
 
 	template<
 		class EElement, typename PPtr,
@@ -1636,7 +1636,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
-	template<class, multi::dimensionality_type, class> friend struct array_iterator;
+	template<class, multi::dimensionality_type, class, bool> friend struct array_iterator;
 
 // protected:
 	subarray(subarray const&) = default;
@@ -1872,12 +1872,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return this->range(irng).rotated().paren_aux_(args...).unrotated();
 	}
 	template<class... As>
-	constexpr auto paren_aux_(index_range irng, As... args) && {
+	BOOST_MULTI_HD constexpr auto paren_aux_(index_range irng, As... args) && {
 		return std::move(*this).range(irng).rotated().paren_aux_(args...).unrotated();
 	}
 
-	template<class... As>    constexpr auto paren_aux_(intersecting_range<index> inr, As... args)      & -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
-	template<class... As>    constexpr auto paren_aux_(intersecting_range<index> inr, As... args)     && -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args)      & -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args)     && -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
 
  public:
 	using const_subarray<T, D, ElementPtr, Layout>::operator();
@@ -2020,7 +2020,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr explicit array_iterator(Other const& other)
 	: data_{other.data_}, stride_{other.stride_} {}
 
-	template<class, dimensionality_type, class> friend struct array_iterator;
+	template<class, dimensionality_type, class, bool> friend struct array_iterator;
 
 	constexpr explicit array_iterator(std::nullptr_t nil)  : data_{nil} {}
 	constexpr explicit array_iterator(Ptr const& ptr) : data_{ptr} {}
@@ -2305,7 +2305,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
  protected:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<class, dimensionality_type D, class> friend struct array_iterator;
+	template<class, dimensionality_type D, class, bool> friend struct array_iterator;
 
  public:
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type {return 1;}
@@ -2656,7 +2656,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	auto flatted() const& = delete;
 
 	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr      >;
-	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_const_ptr>;
+	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr>;
 	using    move_iterator =                 array_iterator<element_type, 1,                 element_move_ptr >;
 
 	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
