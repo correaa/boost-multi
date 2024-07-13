@@ -918,7 +918,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using element           = typename types::element;
 	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;
-	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
 	using element_ref       = typename types::element_ref;
 	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
 
@@ -1049,7 +1048,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 
- private:
+ protected:
 	constexpr auto taked_aux_(difference_type n) const {
 		assert( n <= this->size() );
 		typename types::layout_t const new_layout(
@@ -1063,10 +1062,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  public:
 	constexpr auto taked(difference_type n) const& -> basic_const_array { return taked_aux_(n); }
-	constexpr auto taked(difference_type n)     && -> const_subarray    { return taked_aux_(n); }
-	constexpr auto taked(difference_type n)      & -> const_subarray    { return taked_aux_(n); }
+	// constexpr auto taked(difference_type n)     && -> const_subarray    { return taked_aux_(n); }
+	// constexpr auto taked(difference_type n)      & -> const_subarray    { return taked_aux_(n); }
 
- private:
+ protected:  // TODO(correaa) replace by friendship
 	constexpr auto dropped_aux_(difference_type n) const {
 		assert( n <= this->size() );
 		typename types::layout_t const new_layout{
@@ -1142,7 +1141,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
 	}
 
- private:
+ protected:
 	constexpr auto strided_aux_(difference_type diff) const {
 		typename types::layout_t const new_layout{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return const_subarray(new_layout, types::base_);
@@ -1272,7 +1271,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto transposed() const -> const_subarray { return transposed_aux_(); }
+	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }
 	// BOOST_MULTI_HD constexpr auto transposed()      & -> const_subarray { return transposed_aux_(); }
 	// BOOST_MULTI_HD constexpr auto transposed()     && -> const_subarray { return transposed_aux_(); }
 
@@ -1347,7 +1346,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using       iterator = array_iterator<element, D, element_ptr      >;
 	using const_iterator = array_iterator<element, D, element_const_ptr>;
-	using  move_iterator = array_iterator<element, D, element_move_ptr >;
+	// using  move_iterator = array_iterator<element, D, element_move_ptr >;
 
 	// using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	// using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
@@ -1410,21 +1409,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	/*fd*/ constexpr auto cend()             const& {return end()  ;}
 	friend constexpr auto cbegin(const_subarray const& self) {return self.cbegin();}
 	friend constexpr auto cend  (const_subarray const& self) {return self.cend()  ;}
-
-	       constexpr auto mbegin()                & { return move_iterator{begin()}; }
-	       constexpr auto mend()                  & { return move_iterator{end()  }; }
-	friend constexpr auto mbegin(const_subarray   & self) { return self.mbegin(); }
-	friend constexpr auto mend  (const_subarray   & self) { return self.mend()  ; }
-
-	constexpr auto mbegin()               && {return mbegin();}
-	constexpr auto mend()                 && {return mend()  ;}
-	friend constexpr auto mbegin(const_subarray     && self) {return std::move(self).mbegin();}
-	friend constexpr auto mend  (const_subarray     && self) {return std::move(self).mend()  ;}
-
-	constexpr auto mbegin()           const& -> const_iterator {return begin();}
-	constexpr auto mend()             const& -> const_iterator {return end()  ;}
-	friend constexpr auto mbegin(const_subarray const& self) {return self.mbegin();}
-	friend constexpr auto mend  (const_subarray const& self) {return self.mend()  ;}
 
 	using       cursor = cursor_t<typename const_subarray::element_ptr      , D, typename const_subarray::strides_type>;
 
@@ -1597,9 +1581,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return rebind<element, element_const_ptr>{this->layout(), this->base()};
 	}
 
-	constexpr auto element_moved()  & {return rebind<element, element_move_ptr>{this->layout(), element_move_ptr{this->base_}};}
-	constexpr auto element_moved() && {return element_moved();}
-
  private:
 	template<class T2, class P2>
 	constexpr auto reinterpret_array_cast_aux_() const -> rebind<T2, P2> {
@@ -1676,8 +1657,28 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
+	// constexpr auto mbegin()                & { return move_iterator{begin()}; }
+	// constexpr auto mend()                  & { return move_iterator{end()  }; }
+
+	// constexpr auto mbegin()               && { return mbegin(); }
+	// constexpr auto mend()                 && { return mend()  ; }
+
+	// constexpr auto mbegin()           const& -> const_iterator {return begin();}
+	// constexpr auto mend()             const& -> const_iterator {return end()  ;}
+
+	using const_subarray<T, D, ElementPtr, Layout>::strided;
+	constexpr auto strided(difference_type diff) && -> subarray { return this->strided_aux_(diff);}
+	constexpr auto strided(difference_type diff)  & -> subarray { return this->strided_aux_(diff);}
+
+	using const_subarray<T, D, ElementPtr, Layout>::taked;
+	constexpr auto taked(difference_type count)  && -> subarray {return this->taked_aux_(count);}
+	constexpr auto taked(difference_type count)   & -> subarray {return this->taked_aux_(count);}
+
+	using const_subarray<T, D, ElementPtr, Layout>::dropped;
+	constexpr auto dropped(difference_type count) && -> subarray { return this->dropped_aux_(count); }
+	constexpr auto dropped(difference_type count)  & -> subarray { return this->dropped_aux_(count); }
+
 	using const_subarray<T, D, ElementPtr, Layout>::rotated;
-	// BOOST_MULTI_HD constexpr auto rotated() const& { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
 	BOOST_MULTI_HD constexpr auto rotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
 	BOOST_MULTI_HD constexpr auto rotated() &  -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
 
@@ -1685,12 +1686,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto unrotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }
 	BOOST_MULTI_HD constexpr auto unrotated() &  -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }
 
-	BOOST_MULTI_HD constexpr auto transposed() const& {return const_subarray<T, D, ElementPtr, Layout>::transposed();}
-	BOOST_MULTI_HD constexpr auto transposed() && -> subarray { return std::as_const(*this).transposed(); }
-	BOOST_MULTI_HD constexpr auto transposed() &  -> subarray { return std::as_const(*this).transposed(); }
+	using const_subarray<T, D, ElementPtr, Layout>::transposed;
+	BOOST_MULTI_HD constexpr auto transposed() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }
+	BOOST_MULTI_HD constexpr auto transposed() &  -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
-	auto operator~ (subarray const& self) { return self.transposed(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
+	// auto operator~ (subarray const& self) { return self.transposed(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
 	auto operator~ (subarray& self) { return self.transposed(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
@@ -1752,10 +1753,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// template<class Array> constexpr void swap(subarray& self, Array&& other) noexcept {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
 	template<class Array> constexpr void swap(Array&& other, subarray& self) noexcept {self.swap(std::forward<Array>(other));}
 
-	// mutation
 	template<
 		class Range,
-		class = std::enable_if_t<! std::is_base_of_v<const_subarray, Range>>,
+		class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>,
 		class = std::enable_if_t<! is_subarray<Range>::value>,
 		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename subarray::size_type>(), std::declval<typename subarray::iterator>()))
 	>
@@ -1969,6 +1969,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type count) && { return this->reinterpret_array_cast<T2, P2>(count); }
+
+	using element_move_ptr  = multi::move_ptr<typename subarray::element, typename subarray::element_ptr>;
+
+	constexpr auto element_moved()  & {return subarray<T, D, typename subarray::element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_});}
+	constexpr auto element_moved() && {return element_moved();}
 };
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
@@ -2158,6 +2163,11 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	constexpr auto operator[](IndexType const&) const& = delete;
 	constexpr auto sliced() const& = delete;
 	constexpr auto partitioned() const& = delete;
+
+	constexpr auto strided(difference_type) const& = delete;
+
+	constexpr auto taked(difference_type) const& = delete;
+	constexpr auto dropped(difference_type) const& = delete;
 
 	BOOST_MULTI_HD constexpr auto reindexed() const& { return operator()(); }
 	BOOST_MULTI_HD constexpr auto   rotated() const& { return operator()(); }
@@ -2447,7 +2457,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 		return const_subarray{new_layout, types::base_};
 	}
 
- private:
+ protected:
 	BOOST_MULTI_HD constexpr auto taked_aux_(difference_type count) const {
 		assert( count <= this->size() );  // calculating size is expensive that is why
 		typename types::layout_t const new_layout{
@@ -2461,10 +2471,8 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
  public:
 	constexpr auto taked(difference_type count) const& -> basic_const_array {return taked_aux_(count);}
-	constexpr auto taked(difference_type count)     && -> const_subarray    {return taked_aux_(count);}
-	constexpr auto taked(difference_type count)      & -> const_subarray    {return taked_aux_(count);}
 
- private:
+ protected:
 	BOOST_MULTI_HD constexpr auto dropped_aux_(difference_type count) const -> const_subarray {
 		assert( count <= this->size() );
 		typename types::layout_t const new_layout{
@@ -2477,9 +2485,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	}
 
  public:
-	constexpr auto dropped(difference_type count) const& -> basic_const_array { return dropped_aux_(count); }
-	constexpr auto dropped(difference_type count)     && ->          const_subarray { return dropped_aux_(count); }
-	constexpr auto dropped(difference_type count)      & ->          const_subarray { return dropped_aux_(count); }
+	constexpr auto dropped(difference_type count) const& -> const_subarray { return dropped_aux_(count); }
 
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
@@ -2526,7 +2532,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 		return blocked(ext.first(), ext.last());
 	}
 
- private:
+ protected:
 	constexpr auto strided_aux_(difference_type diff) const -> const_subarray {
 		auto const new_layout = typename types::layout_t{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
@@ -2534,8 +2540,6 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
  public:
 	constexpr auto strided(difference_type diff) const& -> basic_const_array { return strided_aux_(diff);}
-	// constexpr auto strided(difference_type diff)     && ->    const_subarray { return strided_aux_(diff);}
-	// constexpr auto strided(difference_type diff)      & ->    const_subarray { return strided_aux_(diff);}
 
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
 	// BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)     && -> const_subarray { return sliced(first, last).strided(stride); }
@@ -2633,16 +2637,13 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	friend constexpr auto reversed(const_subarray      & self) -> const_subarray {return           self .reversed();}
 	friend constexpr auto reversed(const_subarray     && self) -> const_subarray {return std::move(self).reversed();}
 
-	friend constexpr auto   rotated(const_subarray const& self) -> decltype(auto) {return self.  rotated();}
-	friend constexpr auto unrotated(const_subarray const& self) -> decltype(auto) {return self.unrotated();}
+	// friend constexpr auto   rotated(const_subarray const& self) -> decltype(auto) {return self.  rotated();}
+	// friend constexpr auto unrotated(const_subarray const& self) -> decltype(auto) {return self.unrotated();}
 
 	// constexpr auto   rotated()      & -> decltype(auto) {return operator()();}
 	// constexpr auto   rotated()     && -> decltype(auto) {return operator()();}
-	BOOST_MULTI_HD constexpr auto   rotated() const { return operator()(); }
-
-	BOOST_MULTI_HD constexpr auto unrotated() const { return operator()(); }
-	// BOOST_MULTI_HD constexpr auto unrotated()     && -> decltype(auto) {return operator()();}
-	// BOOST_MULTI_HD constexpr auto unrotated()      & -> decltype(auto) {return operator()();}
+	BOOST_MULTI_HD constexpr auto   rotated() const& { return operator()(); }
+	BOOST_MULTI_HD constexpr auto unrotated() const& { return operator()(); }
 
 	auto transposed() const& = delete;
 	auto flatted() const& = delete;
@@ -2856,8 +2857,8 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), p2);
 	}
 
-	constexpr auto element_moved()  & {return subarray<typename const_subarray::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base_}};}
-	constexpr auto element_moved() && {return element_moved();}
+	// constexpr auto element_moved()  & {return subarray<typename subarray::element, D, element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_});}
+	// constexpr auto element_moved() && {return element_moved();}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto reinterpret_array_cast()  const& {

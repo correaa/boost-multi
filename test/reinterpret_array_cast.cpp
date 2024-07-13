@@ -70,6 +70,8 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 #endif
 }
 
+template<class... Ts> void what(Ts&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
 	struct vec3 {
 		double x;
