@@ -891,6 +891,42 @@ inq cuda:
   timeout: 2 hours 30 minutes
   needs: ["cuda", "inq"]
 
+inq cuda 12.0:
+  allow_failure: false
+  stage: test
+  image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+  interruptible: true
+  before_script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
+  script:
+    - nvidia-smi
+    # - export CUDA_VISIBLE_DEVICES=0,1
+    - __nvcc_device_query
+    - export PREFIX=`mktemp -d`
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git checkout $CI_COMMIT_SHA
+    - cd ../..
+    - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61  # =75  # =80
+    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - cmake --install .
+    - export OMPI_ALLOW_RUN_AS_ROOT=1
+    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - export OMPI_MCA_btl_vader_single_copy_mechanism=none
+    - export OMPI_MCA_rmaps_base_oversubscribe=1
+    - ctest -j 2 --output-on-failure --timeout 2400
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
+  timeout: 2 hours 30 minutes
+  needs: ["cuda", "inq"]
+
+
 inq rocm:
   stage: test
   image: rocm/dev-ubuntu-22.04
