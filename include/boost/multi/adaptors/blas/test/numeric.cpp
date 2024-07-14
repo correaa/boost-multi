@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
 	static_assert(blas::is_conjugated<decltype(conjd_array)>{});
 
 	BOOST_REQUIRE( conjd_array[0][0] == 1.0 + 3.0*I );
-	BOOST_REQUIRE( imag(*base(conjd_array)) == +3.0 );
+	BOOST_REQUIRE( imag(*conjd_array.base()) == +3.0 );
 
 	//  BOOST_TEST_REQUIRE( base(Bconj)->imag() == +3 );
 	BOOST_REQUIRE( conjd_array[0][1] == conjd_array.rotated()[1][0] );
