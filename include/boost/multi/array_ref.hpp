@@ -221,9 +221,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
-	friend /*constexpr*/ auto  base(array_types & self) -> element_ptr  {return self.base_;}
-	friend /*constexpr*/ auto  base(array_types && self) -> element_ptr  {return std::move(self).base_;}
-	friend /*constexpr*/ auto  base(array_types const& self) -> element_const_ptr  {return self.base_;}
+	// friend /*constexpr*/ auto  base(array_types & self) -> element_ptr  {return self.base_;}
+	// friend /*constexpr*/ auto  base(array_types && self) -> element_ptr  {return std::move(self).base_;}
+	// friend /*constexpr*/ auto  base(array_types const& self) -> element_const_ptr  {return self.base_;}
 
 	    BOOST_MULTI_HD constexpr auto layout()           const        -> layout_t const& {return *this;}
 	friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
@@ -1625,16 +1625,35 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	// constexpr auto reinterpret_array_cast()     && {return reinterpret_array_cast_aux_<T2, P2>();}
 
+	// template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2> >
+	// constexpr auto reinterpret_array_cast(size_type count) const& {
+	//  static_assert( sizeof(T)%sizeof(T2) == 0,
+	//      "error: reinterpret_array_cast is limited to integral stride values");
+
+	//  assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
+	//  return const_subarray<T2, D + 1, P2>(
+	//      layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+	//      static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+	//  );
+	// }
+
 	template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type count) const& {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-		return const_subarray<T2, D + 1, P2>(
-			layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-		);
+		if constexpr(std::is_pointer_v<ElementPtr>) {
+			return const_subarray<T2, D + 1, P2>(
+				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+				static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			);
+		} else {
+			return const_subarray<T2, D + 1, P2>(
+				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+				reinterpret_cast<P2 const&>(this->base_)  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			);
+		}
 	}
 
 	template<class Archive>
