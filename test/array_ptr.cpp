@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		static_assert( std::is_trivially_copy_assignable_v<multi::array_ptr<double, 2>> );
 		static_assert( std::is_trivially_copyable_v<multi::array_ptr<double, 2>> );
 
-	#ifndef _MSVER
+	#ifndef _MSC_VER
 		static_assert( std::is_trivially_default_constructible_v<multi::layout_t<0>> );
 		static_assert( std::is_trivially_default_constructible_v<multi::layout_t<1>> );
 		static_assert( std::is_trivially_default_constructible_v<multi::layout_t<2>> );
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		static_assert( std::is_trivially_copyable_v<multi::layout_t<1>> );
 		static_assert( std::is_trivially_copyable_v<multi::layout_t<2>> );
 
-	#ifndef _MSVER
+	#ifndef _MSC_VER
 		static_assert( std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>> );
 	#endif
 		static_assert( std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>> );
