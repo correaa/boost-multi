@@ -628,7 +628,11 @@ struct layout_t
 
  private:
 	sub_type    sub_    ;  // = {};
+#ifndef _MSC_VER 
 	stride_type stride_ ;  // =  1;  // or std::numeric_limits<stride_type>::max()?
+#else
+	stride_type stride_ = 1;
+#endif
 	offset_type offset_ ;  // =  0;
 	nelems_type nelems_ ;  // =  0;
 
