@@ -1898,7 +1898,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args) && -> decltype(auto) {return operator[](idx).paren_aux_(args...);}
 
 	template<class... As>
-	constexpr auto paren_aux_(index_range irng, As... args)  & {
+	BOOST_MULTI_HD constexpr auto paren_aux_(index_range irng, As... args)  & {
 		return this->range(irng).rotated().paren_aux_(args...).unrotated();
 	}
 	template<class... As>
