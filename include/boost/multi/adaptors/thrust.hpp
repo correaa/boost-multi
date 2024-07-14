@@ -163,13 +163,13 @@ namespace thrust {
 
 // template<class It> struct iterator_system;  // not needed in cuda 12.0, doesn't work on cuda 12.5
 
-template<class T, boost::multi::dimensionality_type D, class Pointer>
-struct iterator_system<boost::multi::array_iterator<T, D, Pointer>>{
-	using type = typename ::thrust::iterator_system<typename boost::multi::array_iterator<T, D, Pointer>::element_ptr>::type;
+template<class T, boost::multi::dimensionality_type D, class Pointer, bool IsConst>
+struct iterator_system<boost::multi::array_iterator<T, D, Pointer, IsConst>>{
+	using type = typename ::thrust::iterator_system<typename boost::multi::array_iterator<T, D, Pointer, IsConst>::element_ptr>::type;
 };
 
 template<typename Pointer, class LayoutType>
-struct iterator_system<boost::multi::elements_iterator_t<Pointer, LayoutType>> {
+struct iterator_system<boost::multi::elements_iterator_t<Pointer, LayoutType>> {  // TODO(correaa) might need changes for IsConst templating
 	using type = typename ::thrust::iterator_system<typename boost::multi::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
 };
 

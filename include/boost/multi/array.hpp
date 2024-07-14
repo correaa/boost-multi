@@ -549,7 +549,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	>;
 
 	using iterator       = multi::array_iterator<T, D, typename static_array::element_ptr>;
-	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;
+	using const_iterator = multi::array_iterator<T, D, typename static_array::element_ptr, true>;
 
 	friend auto get_allocator(static_array const& self) -> allocator_type { return self.get_allocator(); }
 

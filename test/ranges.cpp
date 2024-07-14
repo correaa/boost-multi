@@ -55,8 +55,6 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 
 	boost::multi::array<int, 1, std::allocator<int>> aaa = {1, 2, 3};
 
-	multi::what<multi::array<int, 2>::const_iterator>();
-
 	constexpr auto rowOddSum = [](auto const& arr) {
 		return std::ranges::find_if(arr, [](auto const& row) { return (accumulate(row) & 1) == 1; });
 	};

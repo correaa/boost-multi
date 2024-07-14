@@ -572,6 +572,14 @@ struct layout_t<0, SSize>
 			== std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
 		;
 	}
+
+	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) {
+		return
+			   std::tie(self .sub_, self .stride_, self .offset_, self .nelems_)
+			!= std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
+		;
+	}
+
 	constexpr auto operator< (layout_t const& other) const -> bool {
 		return std::tie(offset_, nelems_) < std::tie(other.offset_, other.nelems_);
 	}
@@ -688,6 +696,14 @@ struct layout_t
 			== std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
 		;
 	}
+
+	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) -> bool {
+		return 
+			   std::tie(self .sub_, self .stride_, self .offset_, self. nelems_)
+			!= std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
+		;
+	}
+
 	constexpr BOOST_MULTI_HD auto operator< (layout_t const& other) const -> bool {
 		return
 			   std::tie(      sub_,       stride_,       offset_,       nelems_)

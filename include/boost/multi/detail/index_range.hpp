@@ -40,7 +40,7 @@ class iterator_facade {
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 
-	friend constexpr auto operator!=(self_type const& self, self_type const& other) { return !(self == other); }
+	// friend constexpr auto operator!=(self_type const& self, self_type const& other) { return !(self == other); }
 
 	friend constexpr auto operator<=(self_type const& self, self_type const& other) { return (self < other) || (self == other); }
 	friend constexpr auto operator>(self_type const& self, self_type const& other) { return !(self <= other); }
@@ -126,6 +126,8 @@ class range {
 		const_iterator() = default;
 
 		constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
+		constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
+
 		constexpr auto operator<(const_iterator const& other) const -> bool { return curr_ < other.curr_; }
 
 		constexpr auto operator++() -> const_iterator& {

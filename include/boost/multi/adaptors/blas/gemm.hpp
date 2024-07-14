@@ -303,7 +303,10 @@ template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable
 auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(readability-identifier-length) BLAS naming
 ->gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/>
 {
-	return {ctxtp, s, begin(a), end(a), begin(b)};
+	return
+		gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/>
+			(ctxtp, s, a.begin(), a.end(), b.begin())
+		;
 }
 
 #if defined __NVCC__

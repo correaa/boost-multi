@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk) {
 		BOOST_REQUIRE( c[1][0] == complex(50.0, -49.0) );
 		BOOST_REQUIRE( c[0][1] == complex(50.0, +49.0) );
 
-		multi::array<complex, 2> const c_copy = blas::herk(1., a);
+		multi::array<complex, 2> const c_copy = blas::herk(1.0, a);
 		BOOST_REQUIRE( c == c_copy );
 
 		BOOST_REQUIRE( +blas::gemm(1.0, a, blas::H(a)) == blas::herk(a) );
@@ -79,6 +79,7 @@ BOOST_AUTO_TEST_CASE(inq_case) {
 		{6.0,  7.0,  8.0},
 		{9.0, 10.0, 11.0},
 	};
+
 	BOOST_REQUIRE( (+blas::gemm(1.0, a, blas::T(a)))[1][2] == 86.0 );
 	{
 		multi::array<double, 2> c({4, 4});  // NOLINT(readability-identifier-length) conventional name in BLAS
