@@ -181,8 +181,8 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	BOOST_REQUIRE(d2D_names_copy_members       == d2D_names);
 
 	multi::array<std::string, 2> d2D_names_copy{d2D_names};
-	BOOST_REQUIRE(d2D_names == d2D_names_copy);
-	BOOST_REQUIRE(base(d2D_names) != base(d2D_names_copy));
+	BOOST_REQUIRE( d2D_names == d2D_names_copy);
+	BOOST_REQUIRE( d2D_names.base() != d2D_names_copy.base() );
 	#endif
 }
 #endif
