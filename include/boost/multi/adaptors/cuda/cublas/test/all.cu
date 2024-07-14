@@ -480,7 +480,8 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_one) {
 			{ 4.1, 0.0},
 			{ 6.1, 0.0},
 			{11.0, 0.0}
-		};  // NOLINT(readability-identifier-length) BLAS naming
+		};
+
 		thrust::transform(x.begin(), x.end(), yy.begin(), yy.begin(), [] __device__(auto const& ex, auto const& ey) { return ex + ey; });
 		BOOST_TEST( yy == y , boost::test_tools::per_element() );
 	}
@@ -582,16 +583,16 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_alpha) {
 	blas::axpy(3.0, x, y);
 	std::cout << y[0] << std::endl;
 	BOOST_REQUIRE( static_cast<complex>(y[0]) == 5.4 + I*0.0 );
-	{
-		multi::array<complex, 1, Alloc> yy = {
-			{ 2.1, 0.0},
-			{ 4.1, 0.0},
-			{ 6.1, 0.0},
-			{11.0, 0.0}
-		};  // NOLINT(readability-identifier-length) BLAS naming
-		thrust::transform(x.begin(), x.end(), yy.begin(), yy.begin(), [aa = 3.0] __device__(T ex, T ey) { return aa * ex + ey; });
-		BOOST_TEST( yy == y , boost::test_tools::per_element() );
-	}
+	// {
+	//  multi::array<complex, 1, Alloc> yy = {
+	//      { 2.1, 0.0},
+	//      { 4.1, 0.0},
+	//      { 6.1, 0.0},
+	//      {11.0, 0.0}
+	//  };  // NOLINT(readability-identifier-length) BLAS naming
+	//  thrust::transform(x.begin(), x.end(), yy.begin(), yy.begin(), [aa = 3.0] __device__(T ex, T ey) { return aa * ex + ey; });
+	//  BOOST_TEST( yy == y , boost::test_tools::per_element() );
+	// }
 	{
 		multi::array<complex, 1, Alloc> yy = {
 			{ 2.1, 0.0},

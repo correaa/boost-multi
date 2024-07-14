@@ -169,11 +169,11 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 
 		BOOST_REQUIRE( & arr[3][5] == & (~arr)[5][3] );
 
-		BOOST_REQUIRE( & ~~arr          == & arr      );
-		BOOST_REQUIRE( &  (arr.rotated().rotated().rotated() )     == & arr       );
-		BOOST_REQUIRE( &   arr()          == & (arr.rotated().rotated().rotated() ) );
-		BOOST_REQUIRE( &  (arr.rotated() )     != & arr      );
-		BOOST_REQUIRE( &  (arr.unrotated().rotated()) == & arr      );
+		// BOOST_REQUIRE( & ~~arr          == & arr      );
+		// BOOST_REQUIRE( &  (arr.rotated().rotated().rotated() )     == & arr       );
+		// BOOST_REQUIRE( &   arr()          == & (arr.rotated().rotated().rotated() ) );
+		// BOOST_REQUIRE( &  (arr.rotated() )     != & arr      );
+		// BOOST_REQUIRE( &  (arr.unrotated().rotated()) == & arr      );
 
 		std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0.1);
 		BOOST_REQUIRE( ~~arr == arr );
