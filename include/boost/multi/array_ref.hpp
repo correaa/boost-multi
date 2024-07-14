@@ -1184,7 +1184,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using index_range = typename const_subarray::index_range;
 
-	constexpr auto range(index_range irng) const& -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
+	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 	// constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
 	// constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
@@ -1343,11 +1343,11 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray {return paren_aux_();}  // NOLINT(readability-redundant-access-specifiers,readability-const-return-type)
 
  public:
-	template<class... As>    constexpr auto paren_aux_(index_range rng, As... args) const& {return range(rng).rotated().paren_aux_(args...).unrotated();}
+	template<class... As>  BOOST_MULTI_HD  constexpr auto paren_aux_(index_range rng, As... args) const& {return range(rng).rotated().paren_aux_(args...).unrotated();}
 
 	// template<class... As>    constexpr auto paren_aux_(intersecting_range<index> inr, As... args)      & -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
 	// template<class... As>    constexpr auto paren_aux_(intersecting_range<index> inr, As... args)     && -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
-	template<class... As>    constexpr auto paren_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
+	template<class... As> BOOST_MULTI_HD   constexpr auto paren_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
 
 	// template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args)      & -> decltype(auto) {return operator[](idx).paren_aux_(args...);}
 	// template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args)     && -> decltype(auto) {return operator[](idx).paren_aux_(args...);}
@@ -1882,8 +1882,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last)  & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::sliced(first, last) ; }
 
 	using const_subarray<T, D, ElementPtr, Layout>::range;
-	constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
-	constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
+	BOOST_MULTI_HD constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
+	BOOST_MULTI_HD constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
  public:
 	using const_subarray<T, D, ElementPtr, Layout>::paren_aux_;
