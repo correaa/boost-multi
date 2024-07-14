@@ -100,7 +100,7 @@ struct transform_ptr {
 	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* =nullptr>
 	constexpr explicit transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}
 
-	constexpr auto functor() const -> UF {return f_;}
+	// constexpr auto functor() const -> UF {return f_;}
 	constexpr auto base() const -> Ptr const& {return p_;}
 	constexpr auto operator*() const -> reference {  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
 		// invoke allows for example to use .transformed( &member) instead of .transformed( std::mem_fn(&member) )
@@ -197,13 +197,13 @@ auto has_get_allocator_aux(T const& cont) -> decltype(cont.get_allocator(), std:
 
 template<class T> struct has_get_allocator : decltype(has_get_allocator_aux(std::declval<T>())) {};
 
-template<class T1, class T2, typename Ret = T1>  // std::common_type_t<T1, T2>>
-auto common(T1 const& val1, T2 const& val2) -> Ret {
-	return val1 == val2?
-		val1:
-		Ret{}
-	;
-}
+// template<class T1, class T2, typename Ret = T1>  // std::common_type_t<T1, T2>>
+// auto common(T1 const& val1, T2 const& val2) -> Ret {
+//  return val1 == val2?
+//      val1:
+//      Ret{}
+//  ;
+// }
 
 template<class T>
        auto has_num_elements_aux(T const& /*array*/)->decltype(std::declval<T const&>().num_elements() + 1, std::true_type {});
