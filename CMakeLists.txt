@@ -39,6 +39,8 @@ if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE)
 
 else()
 
+message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
+
   project(
     multi
     HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi"
@@ -47,8 +49,6 @@ else()
     LANGUAGES CXX)
 
   message(STATUS "Boost.Multi: standalone mode ON")
-
-  message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
   # include_directories(${PROJECT_SOURCE_DIR}/include)  # workaround for vscode to detect headers https://stackoverflow.com/a/68139743/225186
 
