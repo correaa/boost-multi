@@ -1986,12 +1986,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		);
 	}
 
-	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
-	// constexpr auto reinterpret_array_cast()      & {return this->template reinterpret_array_cast_aux_<T2, P2>();}
-
-	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
-	// constexpr auto reinterpret_array_cast()     && {return this->template reinterpret_array_cast_aux_<T2, P2>();}
-
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type count) & {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
@@ -2005,7 +1999,16 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(size_type count) && { return this->reinterpret_array_cast<T2, P2>(count); }
+	constexpr auto reinterpret_array_cast(size_type count) && {
+		static_assert( sizeof(T)%sizeof(T2) == 0,
+			"error: reinterpret_array_cast is limited to integral stride values");
+
+		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
+		return subarray<T2, D + 1, P2>(
+			layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+			static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+		);
+	}
 
 	using element_move_ptr  = multi::move_ptr<typename subarray::element, typename subarray::element_ptr>;
 
