@@ -3032,7 +3032,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
-	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
+	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}  // cpcheck-suppress internalAstError ; bug in cppcheck 2.13.0
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
