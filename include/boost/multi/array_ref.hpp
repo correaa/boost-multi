@@ -1891,6 +1891,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto paren_aux_() &  {return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_);}
 	BOOST_MULTI_HD constexpr auto paren_aux_() && {return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_);}
 
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx)  & -> decltype(auto) { return operator[](idx); }
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx) && -> decltype(auto) { return operator[](idx); }
+
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args)  & -> decltype(auto) {return operator[](idx).paren_aux_(args...);}
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args) && -> decltype(auto) {return operator[](idx).paren_aux_(args...);}
+
 	template<class... As>
 	constexpr auto paren_aux_(index_range irng, As... args)  & {
 		return this->range(irng).rotated().paren_aux_(args...).unrotated();

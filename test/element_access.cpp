@@ -195,6 +195,9 @@ BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range) {
 	arr().elements() = { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 	BOOST_REQUIRE( arr[2] == 7 );
 	BOOST_REQUIRE( arr.elements()[2] == 7 );
+
+	arr(2) = 9;
+	BOOST_REQUIRE( arr[2] == 9 );
 }
 
 BOOST_AUTO_TEST_CASE(elements_from_init_list_2D) {
