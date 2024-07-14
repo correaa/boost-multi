@@ -106,8 +106,8 @@ BOOST_AUTO_TEST_CASE(sort_2D) {
 	static_assert(std::indirectly_swappable<it>);
 	static_assert(std::permutable<it>);
 
-	std::sort(A.begin(), A.end());
-	// std::ranges::sort(A);
+	// std::sort(A.begin(), A.end());
+	std::ranges::sort(A);
 
 	BOOST_REQUIRE(  std::ranges::is_sorted(A) );
 }
