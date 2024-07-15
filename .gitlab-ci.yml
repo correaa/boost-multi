@@ -12,9 +12,12 @@ image: debian:stable
 workflow:
   auto_cancel:
     on_new_commit: interruptible
-  # rules:
-  #   - if: $CI_COMMIT_TAG
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+# https://stackoverflow.com/a/78636529/225186
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
