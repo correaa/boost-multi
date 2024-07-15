@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real) {
 	};
 
 	double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
-	blas::nrm2(rotated(cA)[1], n);
+	blas::nrm2(cA.rotated()[1], n);
 
 	// BOOST_REQUIRE( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );  // TODO(correaa) nrm2 is returning a pointer?
 	BOOST_REQUIRE( n == std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );

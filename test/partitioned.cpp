@@ -58,13 +58,27 @@ BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
-	multi::array<double, 2> A2 = {
-		{ 0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
-		{ 6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
+	multi::array<int, 2> A2 = {
+		{ 00,  10,  20,  30,  40,  50},
+		{ 60,  70,  80,  90, 100, 110},
 
-		{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-		{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		{120, 130, 140, 150, 160, 170},
+		{180, 190, 200, 210, 220, 230},
 	};
+
+	BOOST_REQUIRE((
+		A2.partitioned(2) == multi::array<int, 3>{
+			{
+				{ 00,  10,  20,  30,  40,  50},
+				{ 60,  70,  80,  90, 100, 110},
+			},
+			{
+				{120, 130, 140, 150, 160, 170},
+				{180, 190, 200, 210, 220, 230},
+			},
+		}
+	));
+
 	auto&& A3_ref = A2.partitioned(2);
 
 	static_assert(std::decay_t<decltype(A3_ref)>::rank{} == decltype(A2)::rank{} + 1);
@@ -75,6 +89,8 @@ BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 	BOOST_REQUIRE( size(A3_ref[0]) == 2 );
 	BOOST_REQUIRE( size(A3_ref[0][0]) == 6 );
 	BOOST_REQUIRE( &A3_ref[1][1][0] == &A2[3][0] );
+
+	A3_ref[0][0][0] = 99;
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned) {
@@ -153,6 +169,8 @@ template<class T> class propagate_const<T const&> {
 	explicit operator T const&() const noexcept { return r_; }
 };
 
+template<class... T> void what(T&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 	// arr[walker][encoded_property]  // 7 walkers
 	multi::array<int, 2> arr = {
@@ -165,14 +183,20 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		{990, 990,  600, 601, 610, 611, 620, 621, 990},
 	};
 
-	multi::iextension const encoded_3x2_range = {2, 8};
+	// multi::iextension const encoded_3x2_range = {2, 8};
 
-	auto&& arrRPU = arr.rotated()(encoded_3x2_range).partitioned(3).unrotated();
+	auto&& arrRPU = arr.rotated().sliced(2, 8).partitioned(3).unrotated();
 
 	static_assert(decltype(+arrRPU)::rank::value == 3);
 	static_assert(decltype(+arrRPU)::rank{} == 3);
 	static_assert(decltype(+arrRPU)::rank_v == 3);
 
+	//what(arrRPU, sizes(arrRPU));
+	BOOST_REQUIRE( std::get<0>(arrRPU.sizes()) == 7 );
+	BOOST_REQUIRE( std::get<1>(arrRPU.sizes()) == 3 );
+	BOOST_REQUIRE( std::get<2>(arrRPU.sizes()) == 2 );
+
+	BOOST_REQUIRE(( arrRPU.sizes() == decltype(arrRPU.sizes()){7, 3, 2} ));
 	BOOST_REQUIRE(( sizes(arrRPU) == decltype(sizes(arrRPU)){7, 3, 2} ));
 	BOOST_REQUIRE( arrRPU[4].num_elements() == 3*2L );
 
@@ -192,7 +216,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 
 	class walker_ref {
 		using raw_source_reference = decltype(std::declval<multi::array<int, 2>&>()[0]);
-		using internal_array_type  = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
+		using internal_array_type  = decltype(std::declval<raw_source_reference>().sliced(2, 8).partitioned(3));
 
 	 public:                                 // NOLINT(whitespace/indent) bug in cpplint
 		propagate_const<int&> prop1;         // NOLINT(misc-non-private-member-variables-in-classes)
@@ -200,7 +224,11 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		internal_array_type   slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)
 		propagate_const<int&> prop3;         // NOLINT(misc-non-private-member-variables-in-classes)
 
-		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{std::move(row)[8]} {}
+		explicit walker_ref(raw_source_reference&& row)
+		: prop1{row[0]}
+		, prop2{row[1]}
+		, slater_array{row.sliced(2, 8).partitioned(3)}
+		, prop3{std::move(row)[8]} {}
 	};
 
 	auto&& wr = walker_ref(arr[5]);
@@ -209,23 +237,24 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 
 	BOOST_REQUIRE( wr.slater_array[2][1] == 521 );
 
+	// what( wr , wr.slater_array, wr.slater_array[2][1] );
 	wr.slater_array[2][1] = 99990;
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	multi::array<double, 3> arr = {
 		{
-         {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
-         {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
-         {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-         {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-		 },
+			{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+			{6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+			{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+			{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		},
 		{
-         {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
-         {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
-         {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-         {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-		 }
+			{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+			{6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+			{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+			{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		},
 	};
 
 	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());

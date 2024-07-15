@@ -17,18 +17,18 @@ using core::syrk;
 template<class A2D, class C2D>
 auto syrk(filling c_side, typename A2D::element alpha, A2D const& a, typename A2D::element beta, C2D&& c) {  // NOLINT(readability-identifier-length) BLAS naming
 	//->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
-	assert(size(c) == size(rotated(c)));
+	assert( c.size() == std::get<1>(c.sizes()) );
 	if(stride(a) == 1) {
 		if(stride(c) == 1) {
-			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'N', size(c), size(a), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(rotated(c)));
+			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'N', size(c), size(a), &alpha, a.base(), a.rotated().stride(), &beta, c.base(), c.rotated().size());
 		} else {
-			syrk(c_side == filling::upper ? 'L' : 'U', 'N', size(c), size(rotated(a)), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(c));
+			syrk(c_side == filling::upper ? 'L' : 'U', 'N', size(c), a.rotated().size(), &alpha, a.base(), a.rotated().stride(), &beta, c.base(), stride(c));
 		}
 	} else {
 		if(stride(c) == 1) {
-			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(rotated(c)));
+			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'T', size(c), a.rotated().size(), &alpha, a.base(), stride(a), &beta, c.base(), c.rotated().stride());
 		} else {
-			syrk(c_side == filling::upper ? 'L' : 'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(c));
+			syrk(c_side == filling::upper ? 'L' : 'U', 'T', size(c), a.rotated().size(), &alpha, a.base(), stride(a), &beta, c.base(), stride(c));
 		}
 	}
 	return std::forward<C2D>(c);

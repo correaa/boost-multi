@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			d2Dreal[2][1] = 12.0;
 			BOOST_REQUIRE( d2D[2][1] == complex(12.0, 1.0) );
 
-			auto&& d2DrealT = rotated(d2D).reinterpret_array_cast<double>();
+			auto&& d2DrealT = d2D.rotated().reinterpret_array_cast<double>();
 			BOOST_REQUIRE_CLOSE(d2DrealT[2][1], 7.0, 1E-6);
 
 			multi::array<double, 2> const d2Dreal_copy = d2D.template reinterpret_array_cast<double>();

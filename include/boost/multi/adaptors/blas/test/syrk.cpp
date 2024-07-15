@@ -24,9 +24,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_real) {
 		namespace blas = multi::blas;
 
 		using blas::filling;
-		using blas::transposed;
 
-		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 
 		BOOST_REQUIRE( c[2][1] ==   19.0 );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
@@ -36,9 +35,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_real) {
 		namespace blas = multi::blas;
 
 		using blas::filling;
-		using blas::transposed;
 
-		syrk(filling::upper, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(filling::upper, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 
 		BOOST_REQUIRE( c[1][2] ==   19.0 );
 		BOOST_REQUIRE( c[2][1] == 9999.0 );
@@ -123,9 +121,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex_real_case) {
 		namespace blas = multi::blas;
 
 		using blas::filling;
-		using blas::transposed;
 
-		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+		syrk(filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( real(c[2][1]) ==   19.0 );
 		BOOST_REQUIRE( real(c[1][2]) == 9999.0 );
@@ -201,9 +198,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 		namespace blas = multi::blas;
 
 		using blas::filling;
-		using blas::transposed;
 
-		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+		syrk(filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( c[2][1] == complex(-3.0, -34.0) );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
@@ -214,9 +210,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex) {
 		namespace blas = multi::blas;
 
 		using blas::filling;
-		using blas::transposed;
 
-		syrk(filling::lower, 1.0, rotated(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+		syrk(filling::lower, 1.0, a.rotated(), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_REQUIRE( c[2][1] == complex(-3.0, -34.0) );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
@@ -254,7 +249,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real) {
 
 		using multi::blas::filling;
 
-		syrk(filling::lower, 1.0, rotated(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(filling::lower, 1.0, a.rotated(), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 
 		BOOST_REQUIRE( c[2][1] == 19.0 );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
@@ -265,9 +260,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real) {
 		namespace blas = multi::blas;
 
 		using blas::filling;
-		using blas::transposed;
 
-		syrk(filling::lower, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 
 		BOOST_REQUIRE( c[2][1] == 19.0 );
 		BOOST_REQUIRE( c[1][2] == 9999.0 );
@@ -278,9 +272,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real) {
 		namespace blas = multi::blas;
 
 		using blas::filling;
-		using blas::transposed;
 
-		syrk(filling::upper, 1.0, transposed(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in upper triangular
+		syrk(filling::upper, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in upper triangular
 
 		BOOST_REQUIRE( c[1][2] == 19.0 );
 		BOOST_REQUIRE( c[2][1] == 9999.0 );
@@ -288,10 +281,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real) {
 	{
 		multi::array<double, 2> c({ 2, 2 }, 9999.0);  // NOLINT(readability-identifier-length)
 
-		using multi::blas::filling;
-		using multi::blas::transposed;
+		namespace blas = multi::blas;
 
-		syrk(filling::upper, 1.0, a, 0.0, transposed(c));  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
+		syrk(blas::filling::upper, 1.0, a, 0.0, blas::T(c));  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
 
 		BOOST_REQUIRE( c[0][1] == 9999.0 );
 		BOOST_REQUIRE( c[1][0] == 34.0 );

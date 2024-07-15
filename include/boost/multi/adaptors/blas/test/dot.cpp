@@ -467,7 +467,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second_double) {
 	// TODO(correaa) MKL gives an error here
 	// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
 
-	std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
+	std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {
 		return std::transform(
 				   begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto const& Ce) {
 					   return std::complex<double>{1.0, 0.0} * blas::dot(Ar, blas::C(Bc)) + 0.0 * Ce;
@@ -520,7 +520,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second_float) {
 	// TODO(correaa) MKL gives an error here
 	// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
 
-	std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
+	std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {
 		return std::transform(
 				   begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto const& Ce) {
 					   return complex{1.0F, 0.0F} * blas::dot(Ar, blas::C(Bc)) + 0.0F * Ce;

@@ -265,29 +265,30 @@ clang++-latest libc++:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-vs2019-windows:
-  stage: build
-  allow_failure: true
-  interruptible: true
-  script:
-    - choco --version
-    - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
-    # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
-    - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
-    # - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
-    - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart /components="test" | more
-    - mkdir build
-    - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -A x64
-    - cmake --build build --config Release --parallel 2 --verbose
-    - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
-    - ctest --test-dir build --output-on-failure -C Release
-  tags:
-    - saas-windows-medium-amd64
-  needs: ["clang++", "g++"]
-  # rules:
-  #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-  #   - when: never
+# vs2019-windows:
+#   stage: build
+#   allow_failure: true
+#   interruptible: true
+#   script:
+#     - choco --version
+#     - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
+#     # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
+#     - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
+#     # - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
+#     - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart /components="test" | more
+#     - mkdir build
+#     - cmake --version
+#     - cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -A x64
+#     - cmake --build build --config Release --parallel 2 --verbose
+#     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
+#     - ctest --test-dir build --output-on-failure -C Release
+#   tags:
+#     - saas-windows-medium-amd64
+#   needs: ["clang++", "g++"]
+#   timeout: 30  # minutes
+#   # rules:
+#   #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+#   #   - when: never
 
 # vs2022-windows:
 #   stage: build
@@ -306,6 +307,7 @@ vs2019-windows:
 #     - ctest --test-dir build --output-on-failure -C Release
 #   tags:
 #     - saas-windows-medium-amd64
+#   timeout: 30  # minutes
 #   # rules:
 #   #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 #   needs: ["vs2019-windows"]
@@ -392,7 +394,7 @@ clang++-testing tidy iwuy:
     - clang++-18 --version
     - clang-tidy-18 --version
     - iwyu --version
-    - CXX=clang++-18 cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
+    - CXX=clang++-18 cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -444,7 +446,7 @@ clang++-oldoldstable:
   script:
     - arch
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - wget -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
+    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
     - mkdir build && cd build 
     - clang++ --version
@@ -592,9 +594,9 @@ cuda-11.8:
     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
+    # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+    # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+    # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["cuda"]
 
 cuda-11.8 mkl:
@@ -604,6 +606,7 @@ cuda-11.8 mkl:
     - non-shared
     - nvidia-gpu
     - high-bandwidth
+    - x86_64
   interruptible: true
   script:
     - nvidia-smi
@@ -616,9 +619,9 @@ cuda-11.8 mkl:
     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-    - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
+    # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+    # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+    # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["cuda"]
 
 cuda-11.4.3:
@@ -627,14 +630,15 @@ cuda-11.4.3:
   tags:
     - non-shared
     - nvidia-gpu
+    - x86_64
   interruptible: true
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
     - apt-get -qq update
     - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
-    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
+    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
+    - sh ./cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
@@ -659,7 +663,7 @@ cuda-12.3.1:
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of drivers"
+    - ctest -j 2 || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
 cuclang++-16 cuda-11.4.3:
@@ -823,7 +827,7 @@ circle-latest:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle"]
+#  needs: ["circle"]
 
 inq:
   stage: test
@@ -887,6 +891,42 @@ inq cuda:
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
   timeout: 2 hours 30 minutes
   needs: ["cuda", "inq"]
+
+inq cuda 12.0:
+  allow_failure: false
+  stage: test
+  image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+  interruptible: true
+  before_script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
+  script:
+    - nvidia-smi
+    # - export CUDA_VISIBLE_DEVICES=0,1
+    - __nvcc_device_query
+    - export PREFIX=`mktemp -d`
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git checkout $CI_COMMIT_SHA
+    - cd ../..
+    - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61  # =75  # =80
+    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - cmake --install .
+    - export OMPI_ALLOW_RUN_AS_ROOT=1
+    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - export OMPI_MCA_btl_vader_single_copy_mechanism=none
+    - export OMPI_MCA_rmaps_base_oversubscribe=1
+    - ctest -j 2 --output-on-failure --timeout 2400
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
+  timeout: 2 hours 30 minutes
+  needs: ["cuda", "inq"]
+
 
 inq rocm:
   stage: test

@@ -166,6 +166,8 @@ BOOST_AUTO_TEST_CASE(array_move_clear) {
 	BOOST_REQUIRE( arr[4][3] == 660 );
 }
 
+
+
 BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 	multi::array<int, 1> arr(multi::extensions_t<1>{ multi::iextension{ 10 } }, 40);
 	BOOST_REQUIRE( size(arr) == 10 );

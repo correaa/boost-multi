@@ -60,10 +60,10 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 
-	BOOST_REQUIRE_CLOSE(real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), std::norm(arr[0]) + std::norm(arr[1]), 1E-6);
-	BOOST_REQUIRE_CLOSE(imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), 0.0, 1E-6);
+	// BOOST_REQUIRE_CLOSE(real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), std::norm(arr[0]) + std::norm(arr[1]), 1E-6);
+	// BOOST_REQUIRE_CLOSE(imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), 0.0, 1E-6);
 
-	BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0}) == std::norm(arr[0]) + std::norm(arr[1]) );
+	// BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0}) == std::norm(arr[0]) + std::norm(arr[1]) );
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {

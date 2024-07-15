@@ -30,7 +30,6 @@
 #endif
 
 #include <boost/multi/array.hpp>
-
 #include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
 
 #include <algorithm>  // for transform, is_sorted
@@ -50,7 +49,7 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(static_array_allocator) {
-	multi::array<int, 2>                             ma({ 2, 3 }, 99);
+	multi::array<int, 2>                             ma({2, 3}, 99);
 	multi::static_array<int, 2, std::allocator<int>> sma(ma(), std::allocator<int>{});
 	BOOST_REQUIRE( sma == ma );
 }
@@ -61,7 +60,7 @@ BOOST_AUTO_TEST_CASE(empty_stride) {
 	BOOST_REQUIRE(ma.stride() != 0);
 	BOOST_REQUIRE(size(ma) == 0);
 
-	multi::array<double, 2> ma0({ 0, 0 }, 0.0);
+	multi::array<double, 2> ma0({0, 0}, 0.0);
 	BOOST_REQUIRE(ma0.size() == 0);
 	BOOST_REQUIRE(ma0.stride() != 0);
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
@@ -69,12 +68,48 @@ BOOST_AUTO_TEST_CASE(empty_stride) {
 #endif
 }
 
+BOOST_AUTO_TEST_CASE(std_vector_of_arrays_check_size) {
+	multi::array<int, 2> ma;
+	BOOST_REQUIRE( ma.size() == 0 );
+	BOOST_REQUIRE( ma.num_elements() == 0 );
+
+	std::vector<multi::array<int, 2>> va(1);
+
+	BOOST_REQUIRE( va[0].size() == 0 );
+}
+
+BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_emplaceback_ctor) {
+	std::vector<multi::array<int, 2>> va;
+
+	va.emplace_back(multi::extensions_t<2>{3, 3}, 3);
+	va.emplace_back(multi::extensions_t<2>{2, 2}, 2);
+	va.emplace_back(multi::extensions_t<2>{1, 1}, 1);
+	va.emplace_back(multi::extensions_t<2>{0, 0}, 0);
+}
+
+BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_emplaceback) {
+	std::vector<multi::array<int, 2>> va;
+
+	va.emplace_back(multi::array<int, 2>({2, 2}, 2));
+	va.emplace_back(multi::array<int, 2>({1, 1}, 1));
+	va.emplace_back(multi::array<int, 2>({0, 0}, 0));
+}
+
+BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_pushback) {
+	std::vector<multi::array<int, 2>> va;
+
+	va.push_back(multi::array<int, 2>({2, 2}, 2));
+	va.push_back(multi::array<int, 2>({1, 1}, 1));
+	va.push_back(multi::array<int, 2>({0, 0}, 0));
+}
+
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	std::vector<multi::array<int, 2>> va;
+
 	std::transform(
-		begin(multi::iextension(3)), end(multi::iextension(3)),
+		multi::iextension(3).begin(), multi::iextension(3).end(),
 		std::back_inserter(va),
-		[](auto idx) { return multi::array<int, 2>({ idx, idx }, static_cast<int>(idx)); }
+		[](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
 	);
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
@@ -89,11 +124,11 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces)
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-                  // NOXXXLINT(fuchsia-default-arguments-calls)
+				  // NOXXXLINT(fuchsia-default-arguments-calls)
 	std::vector<multi::array<int, 2>> const wa = {
-		multi::array<int, 2>({ 0, 0 }, 0),
-		multi::array<int, 2>({ 1, 1 }, 1),
-		multi::array<int, 2>({ 2, 2 }, 2),
+		multi::array<int, 2>({0, 0}, 0),
+		multi::array<int, 2>({1, 1}, 1),
+		multi::array<int, 2>({2, 2}, 2),
 	};
 #else
 	std::vector<multi::array<int, 2>> const wa = {
@@ -114,7 +149,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	std::transform(
 		begin(iex), end(iex),
 		begin(ua),
-		[](auto idx) { return multi::array<int, 2>({ idx, idx }, static_cast<int>(idx)); }
+		[](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
 	);
 	BOOST_REQUIRE( ua == va );
 }
@@ -124,7 +159,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 	std::transform(
 		begin(multi::iextension(3)), end(multi::iextension(3)),
 		std::back_inserter(va),
-		[](auto idx) { return multi::array<std::string, 2>({ idx, idx }, std::to_string(idx)); }
+		[](auto idx) { return multi::array<std::string, 2>({idx, idx}, std::to_string(idx)); }
 	);
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
@@ -140,9 +175,9 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	std::vector<multi::array<std::string, 2>> const wa = {
 		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
-		multi::array<std::string, 2>({ 0, 0 }, "0"s),
-		multi::array<std::string, 2>({ 1, 1 }, "1"s),
-		multi::array<std::string, 2>({ 2, 2 }, "2"s),
+		multi::array<std::string, 2>({0, 0}, "0"s),
+		multi::array<std::string, 2>({1, 1}, "1"s),
+		multi::array<std::string, 2>({2, 2}, "2"s),
 	};
 #else
 	std::vector<multi::array<std::string, 2>> const wa = {
@@ -165,7 +200,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 	std::transform(
 		begin(iex), end(iex),
 		begin(ua),
-		[](auto idx) { return multi::array<std::string, 2>({ idx, idx }, std::to_string(idx)); }
+		[](auto idx) { return multi::array<std::string, 2>({idx, idx}, std::to_string(idx)); }
 	);
 
 	BOOST_REQUIRE( ua == va );
@@ -174,12 +209,12 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 // TODO(correaa) make this code work with nvcc compiler (non device function called from device host through adl uninitialized_fill)
 #if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
 BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
-	multi::array<multi::array<std::string, 2>, 1> arr(multi::extensions_t<1>(multi::iextension{ 10 }), multi::array<std::string, 2>{});
+	multi::array<multi::array<std::string, 2>, 1> arr(multi::extensions_t<1>(multi::iextension{10}), multi::array<std::string, 2>{});
 	BOOST_REQUIRE( size(arr) == 10 );
 
 	std::transform(
 		begin(extension(arr)), end(extension(arr)), begin(arr),
-		[](auto idx) { return multi::array<std::string, 2>({ idx, idx }, std::to_string(idx)); }
+		[](auto idx) { return multi::array<std::string, 2>({idx, idx}, std::to_string(idx)); }
 	);
 
 	BOOST_REQUIRE( size(arr[0]) == 0 );
@@ -191,28 +226,35 @@ BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
 }
 
 BOOST_AUTO_TEST_CASE(array_3d_of_array_2d) {
-	multi::array<multi::array<int, 3>, 2> AA({ 10, 20 }, multi::array<int, 3>{});
+	multi::array<multi::array<int, 3>, 2> AA({10, 20}, multi::array<int, 3>{});
 	std::transform(extension(AA).begin(), extension(AA).end(), AA.begin(), AA.begin(), [](auto idx, auto&& row) -> decltype(row) {
 		std::transform(extension(row).begin(), extension(row).end(), row.begin(), [idx](auto jdx) {
-			return multi::array<int, 3>({ idx + jdx, idx + jdx, idx + jdx }, 99);
+			return multi::array<int, 3>({idx + jdx, idx + jdx, idx + jdx}, 99);
 		});
 		return std::forward<decltype(row)>(row);
 	});
 
-	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
+	BOOST_TEST( AA[9][19].size() == 9 + 19 );
+
+	// BOOST_TEST( std::size(AA[9][19]) == 9 + 19 );  // doesn't work on nvhpc 22.11
+	// BOOST_TEST( size(AA[9][19]) == 9 + 19 );
+
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99 );
 }
 
 BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init) {
-	multi::array<multi::array<int, 3>, 2> AA({ 10, 20 });
+	multi::array<multi::array<int, 3>, 2> AA({10, 20});
 	std::transform(extension(AA).begin(), extension(AA).end(), AA.begin(), AA.begin(), [](auto idx, auto&& row) -> decltype(row) {
 		std::transform(extension(row).begin(), extension(row).end(), row.begin(), [idx](auto jdx) {
-			return multi::array<int, 3>({ idx + jdx, idx + jdx, idx + jdx }, 99);
+			return multi::array<int, 3>({idx + jdx, idx + jdx, idx + jdx}, 99);
 		});
 		return std::forward<decltype(row)>(row);
 	});
 
-	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
+	BOOST_TEST( AA[9][19].size() == 9 + 19 );
+	// BOOST_TEST( std::size(AA[9][19]) == 9 + 19 );  // doesn't work on nvhpc 22.11
+	BOOST_TEST( size(AA[9][19]) == 9 + 19 );
+
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99 );
 }
 #endif
@@ -226,18 +268,18 @@ BOOST_AUTO_TEST_CASE(const_elements) {
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 BOOST_AUTO_TEST_CASE(pmr) {
 	std::array<char, 13> buffer = {
-		{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C' }
-	};
+		{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}
+    };
 
-	std::pmr::monotonic_buffer_resource pool{ std::data(buffer), std::size(buffer) };
+	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Aarr({ 2, 2 }, 'x', &pool);
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Aarr({2, 2}, 'x', &pool);
 	Aarr[0][0] = 'x';
 	Aarr[0][1] = 'y';
 	Aarr[1][0] = 'z';
 	Aarr[1][1] = '&';
 
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Barr({ 3, 2 }, 'o', &pool);
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Barr({3, 2}, 'o', &pool);
 
 	BOOST_REQUIRE(( buffer != std::array<char, 13>{{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}} ));
 
@@ -257,14 +299,14 @@ BOOST_AUTO_TEST_CASE(pmr2) {
 	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
 	// clang-format on
 
-	std::pmr::monotonic_buffer_resource pool{ std::data(buffer), std::size(buffer) };
+	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
 	#ifndef _MSC_VER
-	multi::pmr::array<char, 2> Aarr({ 2, 2 }, 'a', &pool);
-	multi::pmr::array<char, 2> Barr({ 3, 2 }, 'b', &pool);
+	multi::pmr::array<char, 2> Aarr({2, 2}, 'a', &pool);
+	multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
 	#else
-	multi::pmr::array<char, 2> Aarr(multi::extensions_t<2>{ 2, 2 }, 'a', &pool);
-	multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{ 3, 2 }, 'b', &pool);
+	multi::pmr::array<char, 2> Aarr(multi::extensions_t<2>{2, 2}, 'a', &pool);
+	multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
 	#endif
 
 	#if defined(__GLIBCXX__)
@@ -280,12 +322,12 @@ BOOST_AUTO_TEST_CASE(pmr2) {
 
 BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 	std::array<int, 12> buffer{
-		{ 4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999 }
-	};
+		{4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999}
+    };
 
-	std::pmr::monotonic_buffer_resource pool{ static_cast<void*>(std::data(buffer)), 12 * sizeof(int) };
+	std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(int)};
 
-	multi::pmr::array<int, 2> Aarr({ 2, 2 }, &pool);
+	multi::pmr::array<int, 2> Aarr({2, 2}, &pool);
 
 	BOOST_TEST( buffer[0] == 4 );
 	BOOST_TEST( buffer[1] == 5 );
@@ -305,7 +347,7 @@ BOOST_AUTO_TEST_CASE(static_allocator) {
 
 	auto* pp = sa.allocate(10);
 
-	new (std::next(pp, 8)) T{ 42 };
+	new (std::next(pp, 8)) T{42};
 
 	BOOST_REQUIRE( *std::next(pp, 8) == 42 );
 	// (pp + 8)->~double();
@@ -314,7 +356,7 @@ BOOST_AUTO_TEST_CASE(static_allocator) {
 
 #if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L)
 constexpr auto f() {
-	std::vector<int> v = { 1, 2, 3 };
+	std::vector<int> v = {1, 2, 3};
 	return v.size();
 }
 
@@ -325,9 +367,9 @@ BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
 
 constexpr auto g() {
 	multi::array<int, 2> arr = {
-		{ 4, 5, 6 },
-		{ 1, 2, 3 },
-		{ 7, 8, 9 },
+		{4, 5, 6},
+		{1, 2, 3},
+		{7, 8, 9},
 	};
 	std::sort(arr.begin(), arr.end());
 	for(auto it = arr.diagonal().begin(); it != arr.diagonal().end(); ++it) {
@@ -362,7 +404,7 @@ BOOST_AUTO_TEST_CASE(static_allocator_on_vector_int) {
 	BOOST_REQUIRE( xx[3] == 51 );
 
 	{
-		std::vector<std::vector<int, multi::detail::static_allocator<int, 32>>> const VV = { vv, xx, vv };  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<std::vector<int, multi::detail::static_allocator<int, 32>>> const VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_REQUIRE( VV.size() == 3 );
 	}
 }
@@ -393,7 +435,7 @@ BOOST_AUTO_TEST_CASE(static_allocator_on_vector_string) {
 	// BOOST_REQUIRE( xx[3] == cat );
 
 	{
-		std::vector<std::vector<std::string, multi::detail::static_allocator<std::string, 32>>> const VV = { vv, xx, vv };  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<std::vector<std::string, multi::detail::static_allocator<std::string, 32>>> const VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_REQUIRE( VV.size() == 3 );
 		// swap(VV[0], VV[1]);
 		// std::sort(VV.begin(), VV.end());
@@ -411,7 +453,7 @@ using small_array = multi::static_array<T, D, multi::detail::static_allocator<T,
 
 #if !defined(_MSC_VER) || (_MSC_VER > 193030706)  // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
 BOOST_AUTO_TEST_CASE(small_array_int) {
-	small_array<int, 2, 4UL * 4UL> vv({ 4, 4 }, 42);
+	small_array<int, 2, 4UL * 4UL> vv({4, 4}, 42);
 
 	BOOST_REQUIRE( vv[3][3] == 42 );
 
@@ -444,7 +486,7 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 	BOOST_REQUIRE( xx.base() != vv.base() );
 	// BOOST_REQUIRE( ww.empty() );
 
-	small_array<int, 2, 4UL * 4UL> yy({ 4, 4 });
+	small_array<int, 2, 4UL * 4UL> yy({4, 4});
 	yy = vv;
 
 	BOOST_REQUIRE( yy == vv );
@@ -453,7 +495,7 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 	BOOST_REQUIRE( vv.size() == 4 );  // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move,hicpp-invalid-access-moved)
 
 	{
-		std::vector<small_array<int, 2, 4UL * 4UL>> VV = { vv, xx, vv };  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<small_array<int, 2, 4UL * 4UL>> VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_REQUIRE( VV.size() == 3 );
 		swap(VV[0], VV[1]);
 		std::sort(VV.begin(), VV.end());

@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real) {
 	BOOST_REQUIRE( arr[1][3] == 8.0 );
 	BOOST_REQUIRE( arr[2][3] == 8.0 );
 
-	multi::array<double, 1> AR3 = blas::copy(rotated(arr)[3]);  // dcopy
+	multi::array<double, 1> AR3 = blas::copy(arr.rotated()[3]);  // dcopy
 	BOOST_REQUIRE( AR3[1] == arr[1][3] );
 }
 
@@ -64,8 +64,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy_row) {
 		{ 7.0, 8.0, 9.0 },
 	};
 	multi::array<double, 1> y(multi::extensions_t<1>{ multi::iextension{ 3 } });  // NOLINT(readability-identifier-length) BLAS naming
-	blas::copy(rotated(arr)[0], y);
-	BOOST_REQUIRE( y == rotated(arr)[0] );
+	blas::copy(arr.rotated()[0], y);
+	BOOST_REQUIRE( y == arr.rotated()[0] );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex) {

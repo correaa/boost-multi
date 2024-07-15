@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real) {
 		BOOST_REQUIRE( c[2][1] == 103.0 );
 	}
 	{
-		multi::array<double, 2> c({ size(a), size(rotated(b)) }, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 2> c({ a.size(), b.rotated().size() }, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm(2.0, blas::H(a), blas::H(b), 0.0, c);
 		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real) {
 		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
 	{
-		multi::array<double, 2> c({ size(a), size(rotated(b)) }, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 2> c({ a.size(), b.rotated().size() }, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		c = blas::gemm(2.0, blas::H(a), blas::H(b));
 		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real) {
 		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
 	{
-		multi::array<double, 2> c({ size(a), size(rotated(b)) }, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 2> c({ a.size(), b.rotated().size() }, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm_n(2.0, begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0.0, begin(c));
 		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
