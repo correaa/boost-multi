@@ -382,15 +382,16 @@ clang++-m32:
 
 clang++-testing tidy iwuy:
   stage: build
-  image: debian:unstable  # clang 18 as of Apr 2024
+  image: debian:testing  # clang 18 as of Apr 2024
   tags:
     - non-shared
     - docker
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-18 clang-tidy-18 cmake iwyu make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-18 clang-tidy-18 cmake iwyu make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - pwd
     - mkdir build && cd build
+    - clang++ --version
     - clang++-18 --version
     - clang-tidy-18 --version
     - iwyu --version
