@@ -65,6 +65,8 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 #endif
 }
 
+template<class T> void what(T&&) = delete;
+
 BOOST_AUTO_TEST_CASE(range_find) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 	namespace multi = boost::multi;

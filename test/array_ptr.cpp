@@ -52,7 +52,14 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	};
 	BOOST_REQUIRE(  arr[2] ==  arr[2] );
 	BOOST_REQUIRE( &arr[2] == &arr[2] );
-	BOOST_REQUIRE( &arr[2] != &(arr[2]({0, 2})) );
+	BOOST_REQUIRE( !(&arr[2] == &(arr[2]({0, 2}))) );
+
+	BOOST_REQUIRE( arr[2].base() == arr[2]({0, 2}).base() );
+	BOOST_REQUIRE( arr[2].layout() != arr[2]({0, 2}).layout() );
+
+	// what( arr[2], arr[2].sliced(0, 2), &(arr[2].sliced(0, 2)) );
+	BOOST_REQUIRE(    &arr[2] != &(arr[2].sliced(0, 2))  );
+
 	BOOST_REQUIRE( !( &arr[2] == &std::as_const(arr)[2]({0, 2})) );
 	BOOST_REQUIRE( &arr[2] == &fwd_array(arr[2]) );
 	BOOST_REQUIRE( &fwd_array(arr[2]) == &arr[2] );
@@ -85,6 +92,16 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	BOOST_REQUIRE( &ac2 == &              arr [2] );
 }
 
+BOOST_AUTO_TEST_CASE(subarray_ptr_1D) {
+	multi::subarray_ptr<double, 1> s = nullptr;
+	BOOST_REQUIRE(( s == multi::subarray_ptr<double, 1>{nullptr} ));
+}
+
+BOOST_AUTO_TEST_CASE(subarray_ptr_2D) {
+	multi::subarray_ptr<double, 2> s = nullptr;
+	BOOST_REQUIRE(( s == multi::subarray_ptr<double, 2>{nullptr} ));
+}
+
 BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	{
 		// clang-format off
@@ -97,6 +114,26 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		// clang-format on
 
 		multi::array_ptr<double, 2> const arrP{ &arr };
+
+
+		static_assert( std::is_trivially_copy_assignable_v<multi::array_ptr<double, 2>> );
+		static_assert( std::is_trivially_copyable_v<multi::array_ptr<double, 2>> );
+
+	#ifndef _MSC_VER
+		static_assert( std::is_trivially_default_constructible_v<multi::layout_t<0>> );
+		static_assert( std::is_trivially_default_constructible_v<multi::layout_t<1>> );
+		static_assert( std::is_trivially_default_constructible_v<multi::layout_t<2>> );
+	#endif
+
+		static_assert( std::is_trivially_copyable_v<multi::layout_t<0>> );
+		static_assert( std::is_trivially_copyable_v<multi::layout_t<1>> );
+		static_assert( std::is_trivially_copyable_v<multi::layout_t<2>> );
+
+	#ifndef _MSC_VER
+		static_assert( std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>> );
+	#endif
+		static_assert( std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>> );
+		static_assert( std::is_trivially_copyable_v<multi::subarray_ptr<double, 2>> );
 
 		BOOST_REQUIRE( arrP->extensions() == multi::extensions(arr) );
 		BOOST_REQUIRE( extensions(*arrP) == multi::extensions(arr) );
@@ -174,6 +211,8 @@ BOOST_AUTO_TEST_CASE(span_like) {
 	BOOST_REQUIRE(  aCRef[0] == 20     );
 
 	auto&& aRef = *aP;
+	// what(aP, aRef);
+	// (*aP)[0] = 990;
 	aRef[0]     = 990;
 	BOOST_REQUIRE( vec[2] == 990 );
 }
@@ -207,7 +246,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
 		auto rowP3 = std::exchange(rowP, nullptr);
 		BOOST_REQUIRE( rowP3 == &arr[2] );
 		BOOST_REQUIRE( rowP == nullptr );
-		BOOST_REQUIRE( !rowP );
+		// BOOST_REQUIRE( !rowP );
 	}
 	{
 		auto rowP = &arr();

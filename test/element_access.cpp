@@ -159,6 +159,8 @@ BOOST_AUTO_TEST_CASE(empty_elements) {
 	BOOST_REQUIRE( !(arr1.elements() != arr2.elements()) );
 }
 
+template<class... T> void what(T&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
 	multi::array<int, 1> arr = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 	BOOST_REQUIRE( arr.size() == 10 );
@@ -193,6 +195,9 @@ BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range) {
 	arr().elements() = { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 	BOOST_REQUIRE( arr[2] == 7 );
 	BOOST_REQUIRE( arr.elements()[2] == 7 );
+
+	arr(2) = 9;
+	BOOST_REQUIRE( arr[2] == 9 );
 }
 
 BOOST_AUTO_TEST_CASE(elements_from_init_list_2D) {
@@ -211,7 +216,20 @@ BOOST_AUTO_TEST_CASE(front_back_2D) {
 	BOOST_REQUIRE(  arr.front()[2] ==  arr[0][2] );
 	BOOST_REQUIRE( &arr.front()[2] == &arr[0][2] );
 
-	BOOST_REQUIRE(  arr.back ()[2] ==  arr[2][2] );
+	BOOST_REQUIRE(  (arr.begin() + 2)->base() ==  arr[2].base() );
+	BOOST_REQUIRE(  (*(arr.begin() + 2)).base() ==  arr[2].base() );
+	BOOST_REQUIRE(  (*(arr.end() - 1)).base() ==  arr[2].base() );
+
+	// auto const prv = std::prev(arr.end());
+	// BOOST_REQUIRE(  (*(prv)).base() ==  arr[2].base() );  // TODO(correaa) investigate why this fails in NVCC
+
+	// BOOST_REQUIRE(  (*(std::prev(arr.end()))).base() ==  arr[2].base() );  // TODO(correaa) investigate why this fails in NVCC
+	// BOOST_REQUIRE(  (*(std::prev(arr.end(), 1))).base() ==  arr[2].base() );  // TODO(correaa) investigate why this fails in NVCC
+
+	BOOST_REQUIRE(  arr.back ().base() ==  arr[2].base() );
+	BOOST_REQUIRE(  arr.back () ==  arr[2] );
+
+	BOOST_TEST(  arr.back ()[2] ==  arr[2][2] );
 	BOOST_REQUIRE( &arr.back ()[2] == &arr[2][2] );
 }
 
@@ -280,4 +298,15 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
 	multi::array<double, 1> const arr2 = { 1.0, 2.0, 3.0 };
 
 	std::move(arr1) = arr2;  // this compiles TODO(correaa) should it?
+}
+
+BOOST_AUTO_TEST_CASE(range_2) {
+	multi::array<int, 3> arr3({3, 4, 5}, 99);
+	multi::array<int, 3> brr3({2, 2, 5}, 88);
+
+	// what(arr3, arr3({0, 2}, {0, 2}));
+	// what(arr3, arr3.range({0, 2}), arr3.paren_aux_({0, 2}), arr3({0, 2}), arr3({0, 2}, {0, 2}));
+	arr3({0, 2}, {0, 2}) = brr3;
+
+	BOOST_TEST( arr3[0][0][0] == 88 );  // should not compile
 }

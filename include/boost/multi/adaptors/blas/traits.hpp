@@ -9,7 +9,7 @@
 #include<complex>
 #include<type_traits>
 
-namespace boost::multi::blas {
+namespace boost::multi::blas {  // TODO(correaa) include in blas/detail?
 
 // TODO(correaa) : create a BinaryDouble concept?
 

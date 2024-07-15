@@ -27,6 +27,18 @@
 
 namespace multi = boost::multi;
 
+BOOST_AUTO_TEST_CASE(array_flatted_2d) {
+	multi::array<int, 2> arr = {
+		{0, 1, 2},
+		{3, 4, 5},
+	};
+
+	BOOST_REQUIRE( arr.flatted()[1] == 1 );
+	BOOST_REQUIRE( arr.flatted()[4] == 4 );
+
+	arr.flatted()[4] = 44;
+}
+
 BOOST_AUTO_TEST_CASE(array_flatted_3d) {
 	multi::array<double, 3> arr({ 13, 4, 5 });
 

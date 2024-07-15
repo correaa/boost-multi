@@ -97,6 +97,8 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 
 }  // end namespace minimalistic
 
+template<class... T> void what(T&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 	std::array<double, 400> buffer{};
 	BOOST_REQUIRE( buffer.size() == 400 );
@@ -120,11 +122,11 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 	{
 		auto&& REF = *CCP;
 		(void)REF;
-		static_assert(std::is_same<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<double>>{}, "!");
+		static_assert( std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<double>> );
 	}
 	{
 		auto const& REF = *CCP;
 		(void)REF;
-		static_assert(std::is_same<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<double const>>{}, "!");
+		static_assert( std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<double const>> );
 	}
 }

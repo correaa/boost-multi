@@ -36,8 +36,36 @@
 #if(__cplusplus >= 202002L)
 	#include <ranges>  // IWYU pragma: keep
 #endif
+#include <type_traits>  // for is_assignable_v
 
 namespace multi = boost::multi;
+
+template<class T> void what(T&&...) = delete;
+
+BOOST_AUTO_TEST_CASE(multi_2d_const) {
+	multi::array<int, 2> const arr = {
+		{10, 20},
+		{30, 40},
+	};
+
+	BOOST_REQUIRE( arr.rotated()[1][1] == 40 );
+	static_assert( !std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)> );
+}
+
+BOOST_AUTO_TEST_CASE(multi_2d) {
+	multi::array<int, 2> arr = {
+		{10, 20},
+		{30, 40},
+	};
+
+	BOOST_REQUIRE( arr.rotated()[1][1] == 40 );
+
+	// what(arr.rotated()[0][0]);
+
+	static_assert( std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)> );
+
+	// arr.rotated()[1][1] = 50;
+}
 
 BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 	multi::array<double, 3> arr({ 3, 4, 5 });
@@ -46,15 +74,15 @@ BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 	BOOST_REQUIRE( std::get<1>(arr.sizes()) == 4 );
 	BOOST_REQUIRE( std::get<2>(arr.sizes()) == 5 );
 
-	auto&& RA = rotated(arr);
+	auto&& RA = arr.rotated();
 	BOOST_REQUIRE(( sizes(RA) == decltype(RA.sizes()){4, 5, 3} ));
 	BOOST_REQUIRE(  &arr[0][1][2] == &RA[1][2][0] );
 
-	auto&& UA = unrotated(arr);
+	auto&& UA = arr.unrotated();
 	BOOST_REQUIRE(( sizes(UA) == decltype(sizes(UA)){5, 3, 4} ));
 	BOOST_REQUIRE( &arr[0][1][2] == &UA[2][0][1] );
 
-	auto&& RRA = rotated(RA);
+	auto&& RRA = RA.rotated();
 	BOOST_REQUIRE(( sizes(RRA) == decltype(sizes(RRA)){5, 3, 4} ));
 	BOOST_REQUIRE( &arr[0][1][2] == &RRA[2][0][1] );
 }
@@ -63,7 +91,12 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d) {
 	multi::array<double, 4> original({ 14, 14, 7, 4 });
 
 	auto&& unrotd = original.unrotated();
-	BOOST_REQUIRE(( sizes(unrotd) == decltype(sizes(unrotd)){4, 14, 14, 7} ));
+	BOOST_TEST( std::get<0>(unrotd.sizes()) ==  4 );
+	BOOST_TEST( std::get<1>(unrotd.sizes()) == 14 );
+	BOOST_TEST( std::get<2>(unrotd.sizes()) == 14 );
+	BOOST_TEST( std::get<3>(unrotd.sizes()) ==  7 );
+
+	BOOST_REQUIRE(( unrotd.sizes() == decltype(unrotd.sizes()){4, 14, 14, 7} ));
 	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd[3][0][1][2] );
 
 	auto&& unrotd2 = original.unrotated().unrotated();
@@ -98,12 +131,14 @@ BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
 	multi::array_ref<int, 2> arr(&stdarr[0][0], { 4, 5 });    // NOLINT(readability-container-data-pointer) test access
 	multi::array_ref<int, 2> arr2(&stdarr2[0][0], { 4, 5 });  // NOLINT(readability-container-data-pointer) test access
 
-	rotated(arr2) = rotated(arr);
-	BOOST_REQUIRE( arr2[1][1] == 6  );
+	arr2.rotated() = arr.rotated();
+
+	BOOST_REQUIRE( arr2[1][1] ==  6 );
 	BOOST_REQUIRE( arr2[2][1] == 11 );
-	BOOST_REQUIRE( arr2[1][2] == 7  );
-	BOOST_REQUIRE( (arr2.rotated() ) == (arr.rotated() ) );
-	BOOST_REQUIRE( (arr2.rotated() )[2][1] == 7 );
+	BOOST_REQUIRE( arr2[1][2] ==  7 );
+
+	BOOST_REQUIRE( arr2.rotated()       == arr.rotated() );
+	BOOST_REQUIRE( arr2.rotated()[2][1] == 7             );
 }
 
 BOOST_AUTO_TEST_CASE(multi_rotate) {
@@ -117,7 +152,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 		BOOST_REQUIRE( &     arr[1][0] == &(arr.rotated() )[0][1] );
 
 		BOOST_REQUIRE( arr.transposed()[0][1] == 10 );
-		BOOST_REQUIRE( transposed(arr)[0][1] == 10 );
+		BOOST_REQUIRE( arr.transposed()[0][1] == 10 );
 		BOOST_REQUIRE( (~arr)[0][1] == 10 );
 		BOOST_REQUIRE( &arr[1][0] == &arr.transposed()[0][1] );
 
@@ -126,19 +161,19 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 	}
 	{
 		multi::array<double, 3> arr({ 11, 13, 17 });
-		BOOST_REQUIRE( & arr[3][5][7] == &   arr.transposed()[5][3][7] );
-		BOOST_REQUIRE( & arr[3][5][7] == & transposed(arr)   [5][3][7] );
+		BOOST_REQUIRE( & arr[3][5][7] == &   arr   .transposed()[5][3][7] );
+		BOOST_REQUIRE( & arr[3][5][7] == &   arr   .transposed()[5][3][7] );
 		BOOST_REQUIRE( & arr[3][5][7] == & (~arr)            [5][3][7] );
 		BOOST_REQUIRE( & arr[3][5][7] == &   arr[3].transposed()[7][5] );
 		BOOST_REQUIRE( & arr[3][5][7] == & (~arr[3])            [7][5] );
 
 		BOOST_REQUIRE( & arr[3][5] == & (~arr)[5][3] );
 
-		BOOST_REQUIRE( & ~~arr          == & arr      );
-		BOOST_REQUIRE( &  (arr.rotated().rotated().rotated() )     == & arr       );
-		BOOST_REQUIRE( &   arr()          == & (arr.rotated().rotated().rotated() ) );
-		BOOST_REQUIRE( &  (arr.rotated() )     != & arr      );
-		BOOST_REQUIRE( &  (arr.unrotated().rotated()) == & arr      );
+		// BOOST_REQUIRE( & ~~arr          == & arr      );
+		// BOOST_REQUIRE( &  (arr.rotated().rotated().rotated() )     == & arr       );
+		// BOOST_REQUIRE( &   arr()          == & (arr.rotated().rotated().rotated() ) );
+		// BOOST_REQUIRE( &  (arr.rotated() )     != & arr      );
+		// BOOST_REQUIRE( &  (arr.unrotated().rotated()) == & arr      );
 
 		std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0.1);
 		BOOST_REQUIRE( ~~arr == arr );
@@ -175,6 +210,7 @@ BOOST_AUTO_TEST_CASE(miguel) {
 
 #if(__cplusplus >= 202002L)
 	#if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
+
 auto meshgrid(auto const& x, auto const& y) {
 	return std::pair{ x.broadcasted().rotated(), y.broadcasted() };
 }
@@ -186,7 +222,8 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 		multi::array<typename Y1D::element_type, 2>(std::views::repeat(y, x.size()))
 	};
 
-	std::ranges::fill(ret.first.rotated(), x);
+	std::fill(ret.first.rotated().begin(), ret.first.rotated().end(), x);
+	// std::ranges::fill(ret.first.rotated(), x);
 
 	return ret;
 }

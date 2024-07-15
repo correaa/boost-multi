@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
 
 	using multi::fftw::dft_forward;
 
-	multi::fftw::dft_forward({false, false}, rotated(in), rotated(out));
+	multi::fftw::dft_forward({false, false}, in.rotated(), out.rotated());
 	BOOST_REQUIRE( in == out );
 }
 
