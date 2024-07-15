@@ -2119,7 +2119,7 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
 	constexpr auto operator<(array_iterator const& other) const -> bool { 
-		assert(other.stride_ == stride_); ;
+		assert(other.stride_ == stride_);
 		assert((ptr_ - other.ptr_)%stride_ == 0);
 		return (ptr_ - other.ptr_)/stride_ < 0;
 		// return distance_to_(other) > 0;
