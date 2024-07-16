@@ -91,11 +91,6 @@ static constexpr auto is_subarray_of_dim_aux(...                                
 template<class A> struct is_subarray_of_dim: decltype(is_subarray_of_dim_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 };
 
-template<class Array>
-constexpr auto home(Array&& arr)
-->decltype(std::forward<A>(arr).home()) {
-	return std::forward<A>(arr).home(); }
-
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
 template<
@@ -1779,20 +1774,20 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
 
-	template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) noexcept { std::move(self).swap(std::forward<A>(other)); }
-	template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept { std::move(self).swap(std::forward<A>(other)); }
+	// template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) noexcept { std::move(self).swap(std::forward<A>(other)); }
+	// template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept { std::move(self).swap(std::forward<A>(other)); }
 
-	template<class Array> constexpr void swap(Array&& other) && noexcept {
-		assert( std::move(*this).extension() == other.extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		this->elements().swap(std::forward<Array>(other).elements());
-	//  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
-	}
-	template<class A> constexpr void swap(A&& other) & noexcept {return swap(std::forward<A>(other));}
+	// template<class Array> constexpr void swap(Array&& other) && noexcept {
+	// 	assert( std::move(*this).extension() == other.extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	// 	this->elements().swap(std::forward<Array>(other).elements());
+	// //  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
+	// }
+	// template<class A> constexpr void swap(A&& other) & noexcept {return swap(std::forward<A>(other));}
 
 	// friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
 
 	// template<class Array> constexpr void swap(subarray& self, Array&& other) noexcept {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
-	template<class Array> constexpr void swap(Array&& other, subarray& self) noexcept {self.swap(std::forward<Array>(other));}
+	// template<class Array> constexpr void swap(Array&& other, subarray& self) noexcept {self.swap(std::forward<Array>(other));}
 
 	template<
 		class Range,
