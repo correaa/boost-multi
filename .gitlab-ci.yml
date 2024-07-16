@@ -383,9 +383,9 @@ clang++-m32:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-testing tidy iwuy:
+clang++-latest tidy iwuy:
   stage: build
-  image: debian:testing  # clang 18 as of Apr 2024
+  image: debian:latest  # clang 18 as of Apr 2024
   tags:
     - non-shared
     - docker
