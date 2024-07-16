@@ -533,17 +533,14 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
  private:
 	ptr_type ptr_;
-	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?
+	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?  // TODO(correaa) remove to make type trivial
 
-	BOOST_MULTI_HD constexpr void decrement_() {ptr_->base_ -= stride_;}
-	BOOST_MULTI_HD constexpr void advance_(difference_type n) {assert(stride_ != 0); ptr_->base_ += stride_*n;}
+	BOOST_MULTI_HD constexpr void decrement_() { ptr_.base_ -= stride_; }
+	BOOST_MULTI_HD constexpr void advance_(difference_type n) { ptr_.base_ += stride_*n; }
 
  public:
-	BOOST_MULTI_HD constexpr auto base()              const&       -> element_ptr {return ptr_.base();}
-	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr {return self.base();}
-
-	BOOST_MULTI_HD constexpr auto stride()              const&       -> stride_type {return      stride_;}
-	friend constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
+	BOOST_MULTI_HD constexpr auto base() const -> element_ptr {return ptr_.base_;}
+	BOOST_MULTI_HD constexpr auto stride() const -> stride_type {return stride_;}
 
 	#if defined(__clang__)
 	#pragma clang diagnostic push
@@ -551,8 +548,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 	#endif
 
-	constexpr auto operator++() -> array_iterator& {ptr_->base_ += stride_; return *this;}
-	constexpr auto operator--() -> array_iterator& {decrement_(); return *this;}
+	constexpr auto operator++() -> array_iterator& { ptr_.base_ += stride_; return *this; }
+	constexpr auto operator--() -> array_iterator& { ptr_.base_ -= stride_; return *this; }
 
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
