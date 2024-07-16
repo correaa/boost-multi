@@ -288,7 +288,7 @@ vs2019-windows:
   tags:
     - saas-windows-medium-amd64
   needs: ["clang++", "g++"]
-  timeout: 30  # minutes
+  timeout: 30 minutes
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - when: never
