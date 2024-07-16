@@ -91,11 +91,6 @@ static constexpr auto is_subarray_of_dim_aux(...                                
 template<class A> struct is_subarray_of_dim: decltype(is_subarray_of_dim_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 };
 
-template<class Array>
-constexpr auto home(Array&& arr)
-->decltype(std::forward<A>(arr).home()) {
-	return std::forward<A>(arr).home(); }
-
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
 template<
