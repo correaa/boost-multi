@@ -289,6 +289,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
+	template<typename, multi::dimensionality_type, typename, bool> friend struct array_iterator;
 
 	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
