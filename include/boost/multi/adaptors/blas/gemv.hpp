@@ -24,12 +24,12 @@ auto gemv_n(Context ctxt, typename MIt::element a, MIt m_first, Size count, XIt 
 	assert( x_first.base() != y_first.base() );
 
 	if constexpr(! is_conjugated<MIt>::value) {
-		if     (m_first .stride()==1) {ctxt->gemv('N', count, (*m_first).size(), &a, m_first.base()            , (*m_first).stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
-		else if((*m_first).size()==1) {ctxt->gemv('T', (*m_first).size(), count, &a, m_first.base()            , m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
-		else                          {throw gemv_stride_error{"not BLAS-implemented L29"};}  // LCOV_EXCL_LINE
+		if     (m_first .stride()==1) {ctxt->gemv('N', count, (*m_first).size(), &a, m_first.base()            , m_first->stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
+		else if((*m_first).stride()==1) {ctxt->gemv('T', (*m_first).size(), count, &a, m_first.base()            , m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
+		else                          {throw gemv_stride_error{"not BLAS-implemented"};}  // LCOV_EXCL_LINE
 	} else {
 		if     ((*m_first).stride()==1) {ctxt->gemv('C', (*m_first).size(), count, &a, underlying(m_first.base()), m_first. stride(), x_first.base(), x_first.stride(), &b, y_first.base(), y_first.stride());}
-		else                          {throw gemv_stride_error{"not BLAS-implemented L32"};}  // LCOV_EXCL_LINE
+		else                          {throw gemv_stride_error{"not BLAS-implemented"};}  // LCOV_EXCL_LINE
 	}
 
 	struct {
