@@ -317,7 +317,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	template<bool OtherIsConst, std::enable_if_t<OtherIsConst == false, int> = 0>
 	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
-	: layout_{other->layout()}, base_{other->base_} {}
+	: layout_{other.layout_}, base_{other.base_} {}
 
 	template<
 		typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout, bool OtherIsConst,
@@ -349,7 +349,15 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return reference(layout_, base_); }
 
-	BOOST_MULTI_HD constexpr auto operator->() const -> reference* { return reinterpret_cast<reference*>(const_cast<subarray_ptr*>(this)); }
+	// [[deprecated("doesn't work on msvc")]]
+	// BOOST_MULTI_HD constexpr auto operator->() const -> reference* {
+	//  // static_assert( sizeof(*this) == sizeof(reference) );
+	//  return std::addressof(reinterpret_cast<reference&>(const_cast<subarray_ptr&>(*this)));
+	// }
+
+	// BOOST_MULTI_HD constexpr auto operator->() -> reference* { 
+	//  return std::addressof(reinterpret_cast<reference&>(*this));
+	// }
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
 
@@ -493,7 +501,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
 		// assert( this->stride_ == other.stride_ );
 		// assert( this->ptr_->layout() == other.ptr_->layout() );
-		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && ( this->ptr_->layout() == other.ptr_->layout() );
+		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && ( (*(this->ptr_)).layout() == (*(other.ptr_)).layout() );
 	}
 
 	BOOST_MULTI_HD constexpr auto operator!=(array_iterator const& other) const -> bool {
@@ -505,7 +513,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	// }
 
 	BOOST_MULTI_HD constexpr auto operator< (array_iterator const& other) const -> bool {
-		assert(ptr_->layout() == other.ptr_->layout());
+		assert((*ptr_).layout() == (*(other.ptr_)).layout());
 		assert(stride_ != 0);
 		return
 			   ((0 < stride_) && (ptr_.base() - other.ptr_.base() < 0))
@@ -1779,8 +1787,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept { std::move(self).swap(std::forward<A>(other)); }
 
 	// template<class Array> constexpr void swap(Array&& other) && noexcept {
-	// 	assert( std::move(*this).extension() == other.extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-	// 	this->elements().swap(std::forward<Array>(other).elements());
+	//  assert( std::move(*this).extension() == other.extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	//  this->elements().swap(std::forward<Array>(other).elements());
 	// //  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	// }
 	// template<class A> constexpr void swap(A&& other) & noexcept {return swap(std::forward<A>(other));}
@@ -3366,8 +3374,8 @@ struct array_ptr
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  // NOSONAR
 
-	constexpr auto operator*() const {
-		return array_ref<T, D, Ptr>((*this)->extensions(), this->base());
+	constexpr auto operator*() const -> array_ref<T, D, Ptr> {
+		return array_ref<T, D, Ptr>((*static_cast<subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t> const&>(*this)).extensions(), this->base());
 	}
 };
 
