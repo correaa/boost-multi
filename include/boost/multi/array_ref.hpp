@@ -431,10 +431,10 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	array_iterator<Element, D, ElementPtr, IsConst>, void, std::random_access_iterator_tag,
 	subarray<Element, D-1, ElementPtr> const&, typename layout_t<D-1>::difference_type
 >
-, multi::decrementable<array_iterator<Element, D, ElementPtr>>
-, multi::incrementable<array_iterator<Element, D, ElementPtr>>
-, multi::affine<array_iterator<Element, D, ElementPtr>, multi::difference_type>
-, multi::totally_ordered2<array_iterator<Element, D, ElementPtr>, void> {
+, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst>>
+, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst>>
+, multi::affine<array_iterator<Element, D, ElementPtr, IsConst>, multi::difference_type>
+, multi::totally_ordered2<array_iterator<Element, D, ElementPtr, IsConst>, void> {
 	~array_iterator() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	constexpr auto operator=(array_iterator&&)  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
@@ -2192,7 +2192,7 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 		return this->ptr_ == other.ptr_;
 	}
 
-	template<bool OtherIsConst, std::enable_if_t<OtherIsConst == true, int> =0>
+	template<bool OtherIsConst, std::enable_if_t<OtherIsConst != IsConst, int> =0>
 	constexpr auto operator==(array_iterator<Element, 1, Ptr, OtherIsConst> const& other) const -> bool {
 		assert(this->stride_ == other.stride_);
 		return this->ptr_ == other.ptr_;
