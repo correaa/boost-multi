@@ -43,7 +43,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 
 	if(a_count == 0) { return c_first; }
 
-	if      ((*a_first).stride()==1 && (*b_first).stride()==1 && (*c_first)stride()==1) {
+	if      ((*a_first).stride()==1 && (*b_first).stride()==1 && (*c_first).stride()==1) {
 		if     ( a_count==1 && (*b_first).size()==1 ) {CTXT->gemm('N', 'N', (*b_first).size(), a_count, (*a_first).size(), &alpha, base(b_first), (*b_first).size(), base(a_first), (*a_first).size()  , &beta, base(c_first), (*c_first).size()  );}
 		else if( a_count==1                         ) {CTXT->gemm('N', 'N', (*b_first).size(), a_count, (*a_first).size(), &alpha, base(b_first), b_first. stride(), base(a_first), (*a_first).size()  , &beta, base(c_first), (*c_first).size()  );}
 		else                                          {CTXT->gemm('N', 'N', (*b_first).size(), a_count, (*a_first).size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
@@ -89,7 +89,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 
 	if      ((*a_first).stride()==1 && (*b_first).stride()==1 && (*c_first).stride()==1) {
 	                            {CTXT->gemm('C', 'N', (*c_first).size(), a_count, (*a_first).size(), &alpha, underlying(base(b_first)), (*b_first).stride(), base(a_first), (*a_first).size()  , &beta, base(c_first), c_first.stride());}
-	}else if((*a_firs).stride()==1 && b_first. stride()==1 && (*c_first).stride()==1){
+	}else if((*a_first).stride()==1 && b_first. stride()==1 && (*c_first).stride()==1){
 		if  (a_count==1)        {CTXT->gemm('C', 'N', a_count, (*c_first).size(), (*a_first).size(), &alpha, underlying(base(b_first)), (*b_first).stride(), base(a_first), (*a_first).size()  , &beta, base(c_first), c_first.stride());}
 		else                    {CTXT->gemm('C', 'N', (*c_first).size(), a_count, (*a_first).size(), &alpha, underlying(base(b_first)), (*b_first).stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}
 	}else if((*a_first).stride()==1 && b_first. stride()==1 && c_first. stride()==1){
