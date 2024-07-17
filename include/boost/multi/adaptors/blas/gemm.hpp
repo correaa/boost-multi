@@ -285,7 +285,7 @@ class gemm_range {
 
 	auto size() const -> size_type {return a_end_ - a_begin_;}
 
-	auto extensions() const -> typename decay_type::extensions_type {return size()*b_begin_->extensions();}
+	auto extensions() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
 	friend auto extensions(gemm_range const& self) {return self.extensions();}
 
 	auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
