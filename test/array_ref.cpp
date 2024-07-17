@@ -803,8 +803,8 @@ BOOST_AUTO_TEST_CASE(as_span) {
 	};
 
 	auto print_me2 = [](multi::array_ptr<int, 1> const& ptr) {
-		std::cout << "ptr->size(): " << ptr->size() << '\n';  // (4)
-		std::for_each(ptr->begin(), ptr->end(), [](auto const& elem) { std::cout << elem << ' '; });
+		std::cout << "ptr->size(): " << (*ptr).size() << '\n';  // (4)
+		std::for_each((*ptr).begin(), (*ptr).end(), [](auto const& elem) { std::cout << elem << ' '; });
 		std::cout << "\n\n";
 	};
 
