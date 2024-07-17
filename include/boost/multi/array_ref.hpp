@@ -498,6 +498,13 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr auto operator+ (difference_type n) const -> array_iterator {array_iterator ret{*this}; ret += n; return ret;}
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> subarray<element, D-1, element_ptr> {return *((*this) + n);}
 
+	template<bool OtherIsConst, std::enable_if_t<(IsConst != OtherIsConst), int> =0>
+	BOOST_MULTI_HD constexpr auto operator==(array_iterator<Element, D, ElementPtr, OtherIsConst> const& other) const -> bool {
+		// assert( this->stride_ == other.stride_ );
+		// assert( this->ptr_->layout() == other.ptr_->layout() );
+		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && ( (*(this->ptr_)).layout() == (*(other.ptr_)).layout() );
+	}
+
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
 		// assert( this->stride_ == other.stride_ );
 		// assert( this->ptr_->layout() == other.ptr_->layout() );
