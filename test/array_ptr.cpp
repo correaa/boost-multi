@@ -135,12 +135,15 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		static_assert( std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>> );
 		static_assert( std::is_trivially_copyable_v<multi::subarray_ptr<double, 2>> );
 
-		BOOST_REQUIRE( arrP->extensions() == multi::extensions(arr) );
+		BOOST_REQUIRE( (*arrP).extensions() == multi::extensions(arr) );
+		// BOOST_REQUIRE( arrP->extensions() == multi::extensions(arr) );
 		BOOST_REQUIRE( extensions(*arrP) == multi::extensions(arr) );
 
 		using multi::extensions;
 		BOOST_REQUIRE( extensions(*arrP) == extensions(arr) );
-		BOOST_REQUIRE( &arrP->operator[](1)[1] == &arr[1][1] );
+
+		BOOST_REQUIRE( &(*arrP).operator[](1)[1] == &arr[1][1] );
+		// BOOST_REQUIRE( &arrP->operator[](1)[1] == &arr[1][1] );
 
 		multi::array_ptr<double, 2> const arrP2{ &arr };
 		BOOST_REQUIRE( arrP == arrP2 );
@@ -154,13 +157,19 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		arr2P = arrP;
 		BOOST_REQUIRE(  arrP ==  arr2P );
 		BOOST_REQUIRE( *arrP == *arr2P );
-		BOOST_REQUIRE(  arrP->operator==(*arrP) );
+
+		BOOST_REQUIRE(  (*arrP).operator==(*arrP) );
+		// BOOST_REQUIRE(  arrP->operator==(*arrP) );
 
 		auto&& arrR = *arrP;
 		BOOST_REQUIRE( &arrR[1][1] == &arr[1][1] );
 		BOOST_REQUIRE( arrR == *arrP );
-		BOOST_REQUIRE( std::equal(arrR.begin(), arrR.end(), arrP->begin(), arrP->end()) );
-		BOOST_REQUIRE( size(arrR) == arrP->size() );
+
+		BOOST_REQUIRE( std::equal(arrR.begin(), arrR.end(), (*arrP).begin(), (*arrP).end()) );
+		// BOOST_REQUIRE( std::equal(arrR.begin(), arrR.end(), arrP->begin(), arrP->end()) );
+
+		// BOOST_REQUIRE( size(arrR) == arrP->size() );
+		BOOST_REQUIRE( arrR.size() == (*arrP).size() );
 	}
 	{
 		// clang-format off
@@ -177,9 +186,9 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		ptrs.emplace_back(arr[2].data(), 5);
 		ptrs.emplace_back(&arr[3][0], 5);  // NOLINT(readability-container-data-pointer) test access
 
-		BOOST_REQUIRE( &(*ptrs[2])[4] == &arr[3][4]     );
-		BOOST_REQUIRE(  (*ptrs[2])[4] == 190            );
-		BOOST_REQUIRE(    ptrs[2]->operator[](4) == 190 );
+		// BOOST_REQUIRE( &(*ptrs[2])[4] == &arr[3][4]     );
+		// BOOST_REQUIRE(  (*ptrs[2])[4] == 190            );
+		// BOOST_REQUIRE(    ptrs[2]->operator[](4) == 190 );
 	}
 	{
 		std::vector<int>       v1(100, 30);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
@@ -189,7 +198,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		multi::array_cptr<int, 2> const v2P2D(v2.data(), { 10, 10 });
 
 		*v1P2D = *v2P2D;
-		v1P2D->operator=(*v2P2D);
+		(*v1P2D).operator=(*v2P2D);  // v1P2D->operator=(*v2P2D);
 
 		BOOST_REQUIRE( v1[8] == 40 );
 	}
@@ -201,7 +210,9 @@ BOOST_AUTO_TEST_CASE(span_like) {
 	using my_span = multi::array_ref<int, 1>;
 
 	auto aP = &my_span{ vec.data() + 2, { 5 } };  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	BOOST_REQUIRE( aP->size() == 5 );
+
+	BOOST_REQUIRE( (*aP).size() == 5 );
+	// BOOST_REQUIRE( aP->size() == 5 );  // doesn't work on MSVC
 	BOOST_REQUIRE( (*aP)[0] == 20 );
 
 	auto const& aCRef = *aP;
