@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv, T, fp_types) {
 	multi::array<T, 1> const x = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
 	{
 		multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
-		blas::gemv_n(1.0, begin(a), size(a), begin(x), 0.0, begin(y));
+		blas::gemv_n(1.0, a.begin(), a.size(), x.begin(), 0.0, y.begin());
 		BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.0001);
 		if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
 			BOOST_REQUIRE_CLOSE(y[2], +blas::dot(a[2], x), 0.0001);
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(multi_blas_gemv, T, fp_types) {
 	{
 		multi::array<T, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<T, 2> const aT = ~a;
-		blas::gemv_n(1.0, begin(~aT), size(~aT), begin(x), 0.0, begin(y));
+		blas::gemv_n(1.0, (~aT).begin(), (~aT).size(), x.begin(), 0.0, y.begin());
 		BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.0001);
 
 		if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot

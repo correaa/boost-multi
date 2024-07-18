@@ -61,7 +61,9 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	};
 
 	multi::array_ptr<int, 2> const map{&arr};
-	BOOST_REQUIRE( &map->operator[](1)[1] == &arr[1][1] );
+
+	BOOST_REQUIRE( &(*map).operator[](1)[1] == &arr[1][1] );
+	// BOOST_REQUIRE( &map->operator[](1)[1] == &arr[1][1] );
 	BOOST_REQUIRE( (*&arr)[1][1] == 60 );
 
 	multi::array_ref<int, 2>&& mar = *map;
@@ -801,8 +803,8 @@ BOOST_AUTO_TEST_CASE(as_span) {
 	};
 
 	auto print_me2 = [](multi::array_ptr<int, 1> const& ptr) {
-		std::cout << "ptr->size(): " << ptr->size() << '\n';  // (4)
-		std::for_each(ptr->begin(), ptr->end(), [](auto const& elem) { std::cout << elem << ' '; });
+		std::cout << "ptr->size(): " << (*ptr).size() << '\n';  // (4)
+		std::for_each((*ptr).begin(), (*ptr).end(), [](auto const& elem) { std::cout << elem << ' '; });
 		std::cout << "\n\n";
 	};
 

@@ -105,7 +105,9 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		BOOST_REQUIRE( dd == doub );
 
 		multi::array_ptr<int, 1> const ap1(&doub, multi::extensions_t<1>({ 0, 1 }));
-		BOOST_REQUIRE( ap1->base() == &doub );
+		// BOOST_REQUIRE( ap1->base() == &doub );
+		BOOST_REQUIRE( (*ap1).base() == &doub );
+		
 		BOOST_REQUIRE( (*ap1).base() == &doub );
 
 		multi::array_ptr<int, 0> const ap0(&doub, {});

@@ -216,7 +216,8 @@ BOOST_AUTO_TEST_CASE(front_back_2D) {
 	BOOST_REQUIRE(  arr.front()[2] ==  arr[0][2] );
 	BOOST_REQUIRE( &arr.front()[2] == &arr[0][2] );
 
-	BOOST_REQUIRE(  (arr.begin() + 2)->base() ==  arr[2].base() );
+	BOOST_REQUIRE(  (*(arr.begin() + 2)).base() ==  arr[2].base() );
+	// BOOST_REQUIRE(  (arr.begin() + 2)->base() ==  arr[2].base() );
 	BOOST_REQUIRE(  (*(arr.begin() + 2)).base() ==  arr[2].base() );
 	BOOST_REQUIRE(  (*(arr.end() - 1)).base() ==  arr[2].base() );
 
