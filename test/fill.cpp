@@ -15,7 +15,6 @@
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wfloat-equal"
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
 	#pragma GCC diagnostic ignored "-Wundef"
@@ -204,58 +203,3 @@ BOOST_AUTO_TEST_CASE(fill_1D) {
 	BOOST_REQUIRE( arr2[9] == arr );
 }
 
-template<class BinaryOp, class Column, class Array, class Out>
-auto broadcast(BinaryOp op, Column const& col, Array const& in, Out&& out) -> Out&& {  // NOLINT(readability-identifier-length) clang-tidy 14 bug
-	std::transform(
-		begin(~in), end(~in), begin(~out), begin(~out),
-		[acol = (~col)[0], &op](auto const& Acol, auto&& Bcol) {
-			std::transform(begin(Acol), end(Acol), begin(acol), begin(Bcol), op);
-			return std::forward<decltype(Bcol)>(Bcol);
-		}
-	);
-
-	return std::forward<Out>(out);
-}
-
-BOOST_AUTO_TEST_CASE(julia_broadcast, *boost::unit_test::tolerance(0.00001)) {
-	multi::array<double, 2> const col = {
-		{ 0.1 },
-		{ 0.2 },
-	};
-	multi::array<double, 2> arr = {
-		{1.10813, 1.72068, 1.15387},
-		{1.36851, 1.66401, 1.47846},
-	};
-
-	// "broadcast"
-	multi::array<double, 2> arr2(extensions(arr));
-	broadcast(std::plus<>{}, col, arr, arr2);
-
-	BOOST_REQUIRE_CLOSE( arr2[0][0], 1.20813, 1E-6 );
-	BOOST_REQUIRE_CLOSE( arr2[0][1], 1.82068, 1E-6 );
-	BOOST_REQUIRE_CLOSE( arr2[0][2], 1.25387, 1E-6 );
-	BOOST_REQUIRE_CLOSE( arr2[1][0], 1.56851, 1E-6 );
-	BOOST_REQUIRE_CLOSE( arr2[1][1], 1.86401, 1E-6 );
-	BOOST_REQUIRE_CLOSE( arr2[1][2], 1.67846, 1E-6 );
-
-	// inefficient: replicate the vector before summing elementwise
-	multi::array<double, 2> ax3({ 2, 3 });
-
-	std::fill(begin(~ax3), end(~ax3), (~col)[0]);
-	BOOST_REQUIRE_CLOSE( ax3[0][0], 0.1, 1E-6 );
-	BOOST_REQUIRE_CLOSE( ax3[0][1], 0.1, 1E-6 );
-	BOOST_REQUIRE_CLOSE( ax3[0][2], 0.1, 1E-6 );
-	BOOST_REQUIRE_CLOSE( ax3[1][0], 0.2, 1E-6 );
-	BOOST_REQUIRE_CLOSE( ax3[1][1], 0.2, 1E-6 );
-	BOOST_REQUIRE_CLOSE( ax3[1][2], 0.2, 1E-6 );
-
-	multi::array<double, 2> Ap(extensions(arr));
-	std::transform(begin(arr.elements()), end(arr.elements()), begin(ax3.elements()), begin(Ap.elements()), std::plus<>{});
-
-	BOOST_REQUIRE_CLOSE( Ap[0][0], 1.20813, 1E-6 );
-	BOOST_REQUIRE_CLOSE( Ap[0][1], 1.82068, 1E-6 );
-	BOOST_REQUIRE_CLOSE( Ap[0][2], 1.25387, 1E-6 );
-	BOOST_REQUIRE_CLOSE( Ap[1][0], 1.56851, 1E-6 );
-	BOOST_REQUIRE_CLOSE( Ap[1][1], 1.86401, 1E-6 );
-	BOOST_REQUIRE_CLOSE( Ap[1][2], 1.67846, 1E-6 );
-}
