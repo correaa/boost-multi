@@ -354,7 +354,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		// static_assert( sizeof(*this) == sizeof(reference) );
 		struct proxy {
 			reference r_;
-			auto operator->() && -> reference* {return std::addressof(r_);}
+			auto operator->() && -> reference* {return std::addressof(this->r_);}
 		};
 		return proxy{operator*()};
 	}
