@@ -35,7 +35,7 @@
 // IWYU pragma: no_include <algorithm>  // for copy
 #include <complex>  // for complex
 // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
-#include <utility>  // for move
+// #include <utility>  // for move
 #include <vector>   // for vector, allocator
 
 namespace multi = boost::multi;
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		multi::array_ptr<int, 1> const ap1(&doub, multi::extensions_t<1>({ 0, 1 }));
 		// BOOST_REQUIRE( ap1->base() == &doub );
 		BOOST_REQUIRE( (*ap1).base() == &doub );
-		
+
 		BOOST_REQUIRE( (*ap1).base() == &doub );
 
 		multi::array_ptr<int, 0> const ap0(&doub, {});
