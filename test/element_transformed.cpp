@@ -5,6 +5,7 @@
 
 #if defined(__clang__)
 	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
 	#pragma clang diagnostic ignored "-Wconversion"
 	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
 	#pragma clang diagnostic ignored "-Wignored-qualifiers"
