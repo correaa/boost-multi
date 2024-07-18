@@ -7,10 +7,10 @@
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wunknown-warning-option"
 	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
+    #pragma clang diagnostic ignored "-Wextra-semi-stmt"
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wswitch-default"
+    #pragma clang diagnostic ignored "-Wswitch-default"
 	#pragma clang diagnostic ignored "-Wundef"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
