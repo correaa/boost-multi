@@ -12,9 +12,12 @@ image: debian:stable
 workflow:
   auto_cancel:
     on_new_commit: interruptible
-  # rules:
-  #   - if: $CI_COMMIT_TAG
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+# https://stackoverflow.com/a/78636529/225186 
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -265,30 +268,30 @@ clang++-latest libc++:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-# vs2019-windows:
-#   stage: build
-#   allow_failure: true
-#   interruptible: true
-#   script:
-#     - choco --version
-#     - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
-#     # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
-#     - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
-#     # - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
-#     - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart /components="test" | more
-#     - mkdir build
-#     - cmake --version
-#     - cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -A x64
-#     - cmake --build build --config Release --parallel 2 --verbose
-#     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
-#     - ctest --test-dir build --output-on-failure -C Release
-#   tags:
-#     - saas-windows-medium-amd64
-#   needs: ["clang++", "g++"]
-#   timeout: 30  # minutes
-#   # rules:
-#   #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-#   #   - when: never
+vs2019-windows:
+  stage: build
+  allow_failure: true
+  interruptible: true
+  script:
+    - choco --version
+    - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
+    # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
+    - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
+    # - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
+    - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart /components="test" | more
+    - mkdir build
+    - cmake --version
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -A x64
+    - cmake --build build --config Release --parallel 2 --verbose
+    - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
+    - ctest --test-dir build --output-on-failure -C Release
+  tags:
+    - saas-windows-medium-amd64
+  needs: ["clang++", "g++"]
+  timeout: 30 minutes
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - when: never
 
 # vs2022-windows:
 #   stage: build
@@ -380,21 +383,20 @@ clang++-m32:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-testing tidy iwuy:
+clang++-latest tidy iwuy:
   stage: build
-  image: debian:unstable  # clang 18 as of Apr 2024
+  image: debian:latest  # clang 18 as of Apr 2024
   tags:
     - non-shared
     - docker
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang-18 clang-tidy-18 cmake iwyu make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake iwyu make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - pwd
     - mkdir build && cd build
-    - clang++-18 --version
-    - clang-tidy-18 --version
+    - clang++ --version
     - iwyu --version
-    - CXX=clang++-18 cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls"
+    - CXX=clang++ cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]

@@ -729,11 +729,11 @@ struct layout_t
 
 	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
 	       constexpr auto size()        const        noexcept -> size_type {
-	//  if(nelems_ == 0) {return 0;}
+		if(nelems_ == 0) {return 0;}
 		// BOOST_MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
 		// return nelems_ == 0?0:nelems_/stride_;
-		assert(stride_ != 0);
+		// assert(stride_ != 0);
 		return nelems_/stride_;
 	}
 
