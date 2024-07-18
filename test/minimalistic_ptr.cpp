@@ -110,8 +110,8 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 	(*CCP)[1][1] = 9;
 	BOOST_REQUIRE( &(*CCP)[1][1] == &buffer[21] );
 
-	auto&& CC2 = (*CCP).static_array_cast<double, minimalistic::ptr2<double>>();
-	// auto&& CC2 = CCP->static_array_cast<double, minimalistic::ptr2<double>>();
+	// auto&& CC2 = (*CCP).static_array_cast<double, minimalistic::ptr2<double>>();
+	auto&& CC2 = CCP->static_array_cast<double, minimalistic::ptr2<double>>();
 	BOOST_REQUIRE( &CC2[1][1] == &(*CCP)[1][1] );
 
 	static_assert(std::is_convertible<double*, double const*>{}, "!");

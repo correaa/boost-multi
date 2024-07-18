@@ -162,19 +162,19 @@ BOOST_AUTO_TEST_CASE(iterator_interface) {
 	BOOST_REQUIRE( &((*arr.begin())[1][0]) == &arr[0][1][0] );
 
 	BOOST_REQUIRE( &((*arr.begin()).operator[](1)[0]) == &arr[0][1][0] );
-	// BOOST_REQUIRE( &(arr.begin()->operator[](1)[0]) == &arr[0][1][0] );
+	BOOST_REQUIRE( &(  arr.begin()->operator[](1)[0]) == &arr[0][1][0] );
 
 	BOOST_REQUIRE( &((*arr.begin()).operator[](1).begin()[0]) == &arr[0][1][0] );      // NOLINT(readability-container-data-pointer) test access
-	// BOOST_REQUIRE( &(arr.begin()->operator[](1).begin()[0]) == &arr[0][1][0] );      // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( &(  arr.begin()->operator[](1).begin()[0]) == &arr[0][1][0] );      // NOLINT(readability-container-data-pointer) test access
 
 	BOOST_REQUIRE( &((*(arr.begin()+1)).operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
-	// BOOST_REQUIRE( &((arr.begin()+1)->operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( &(  (arr.begin()+1)->operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
 
 	BOOST_REQUIRE( &((*(begin(arr)+1)).operator[](1).begin()[0]) == &arr[1][1][0] );   // NOLINT(readability-container-data-pointer) test access
-	// BOOST_REQUIRE( &((begin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );   // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( &((  begin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );   // NOLINT(readability-container-data-pointer) test access
 
 	BOOST_REQUIRE( &((*(cbegin(arr)+1)).operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
-	// BOOST_REQUIRE( &((cbegin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( &((  cbegin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
 }
 
 BOOST_AUTO_TEST_CASE(iterator_semantics) {
@@ -254,14 +254,16 @@ BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
 	BOOST_REQUIRE( std::is_sorted(begin(arr.rotated()), end(arr.rotated())) );  // sorted by cols
 
 	BOOST_REQUIRE( (*begin( arr           )).size() == arr[0].size() );
-	// BOOST_REQUIRE( begin( arr           )->size() == arr[0].size() );
+	BOOST_REQUIRE(   begin( arr           )->size() == arr[0].size() );
+
 	BOOST_REQUIRE( (*begin( arr.rotated() )).size() == arr.size() );
-	// BOOST_REQUIRE( begin( arr.rotated() )->size() == arr.size() );
+	BOOST_REQUIRE(   begin( arr.rotated() )->size() == arr.size() );
 
 	BOOST_REQUIRE( &((*begin( arr           )).operator[](1)) == &(arr[0][1]) );
-	// BOOST_REQUIRE( &(begin( arr           )->operator[](1)) == &(arr[0][1]) );
+	BOOST_REQUIRE( &(  begin( arr           )->operator[](1)) == &(arr[0][1]) );
+
 	BOOST_REQUIRE( &((*begin( arr.rotated() )).operator[](1)) == &(arr[1][0]) );
-	// BOOST_REQUIRE( &(begin( arr.rotated() )->operator[](1)) == &(arr[1][0]) );
+	BOOST_REQUIRE( &(  begin( arr.rotated() )->operator[](1)) == &(arr[1][0]) );
 }
 
 BOOST_AUTO_TEST_CASE(index_range_iteration) {
@@ -293,6 +295,8 @@ BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D) {
 		{1000, 2000}
 	};
 	BOOST_REQUIRE( (*arr.begin())[1] == 20 );
+	BOOST_REQUIRE( arr.begin()->operator[](1) == 20 );
+
 	auto rbegin = std::make_reverse_iterator(arr.end());
 
 	BOOST_TEST( (*rbegin)[1] == 2000 );
