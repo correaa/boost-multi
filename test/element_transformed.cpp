@@ -38,9 +38,7 @@
 #include <boost/multi/array.hpp>  // for transform_ptr, array, subarray
 
 #include <complex>  // for complex, operator*, operator+
-#include <numeric>  // for inner_product
-// IWYU pragma: no_include <type_traits>  // for declval  // in utility
-#include <utility>  // for declval, forward
+#include <utility>  // for declval, forward  // IWYU pragma: no_include <type_traits>  // for declval  // in utility
 #include <vector>   // for vector
 
 namespace multi = boost::multi;
