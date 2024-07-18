@@ -349,11 +349,15 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return reference(layout_, base_); }
 
-	// [[deprecated("doesn't work on msvc")]]
-	// BOOST_MULTI_HD constexpr auto operator->() const -> reference* {
-	//  // static_assert( sizeof(*this) == sizeof(reference) );
-	//  return std::addressof(reinterpret_cast<reference&>(const_cast<subarray_ptr&>(*this)));
-	// }
+	// [[deprecated("->() is experimental on msvc")]]
+	BOOST_MULTI_HD constexpr auto operator->() const {
+		// static_assert( sizeof(*this) == sizeof(reference) );
+		struct proxy {
+			reference r_;
+			auto operator->() && -> reference* {return std::addressof(this->r_);}
+		};
+		return proxy{operator*()};
+	}
 
 	// BOOST_MULTI_HD constexpr auto operator->() -> reference* { 
 	//  return std::addressof(reinterpret_cast<reference&>(*this));

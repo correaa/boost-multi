@@ -199,11 +199,11 @@ BOOST_AUTO_TEST_CASE(assignments) {
 		make_ref(vec.data()) = *Bp;
 
 		auto&& mref = make_ref(vec.data());
-		mref        = (*Bp).sliced(0, 5);
-		// mref        = Bp->sliced(0, 5);
+		// mref        = (*Bp).sliced(0, 5);
+		mref        = Bp->sliced(0, 5);
 
-		make_ref(vec.data()) = (*Bp).sliced(0, 5);
-		// make_ref(vec.data()) = Bp->sliced(0, 5);
+		// make_ref(vec.data()) = (*Bp).sliced(0, 5);
+		make_ref(vec.data()) = Bp->sliced(0, 5);
 
 		BOOST_REQUIRE( vec[9] == 33 );
 	}

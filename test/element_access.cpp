@@ -14,10 +14,10 @@
 	#pragma clang diagnostic ignored "-Wundef"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
+	#pragma GCC diagnostic ignored "-Wundef"
 #elif defined(_MSC_VER)
 	#pragma warning(push)
 	#pragma warning(disable : 4244)
@@ -220,9 +220,10 @@ BOOST_AUTO_TEST_CASE(front_back_2D) {
 	BOOST_REQUIRE( &arr.front()[2] == &arr[0][2] );
 
 	BOOST_REQUIRE(  (*(arr.begin() + 2)).base() ==  arr[2].base() );
-	// BOOST_REQUIRE(  (arr.begin() + 2)->base() ==  arr[2].base() );
-	BOOST_REQUIRE(  (*(arr.begin() + 2)).base() ==  arr[2].base() );
+	BOOST_REQUIRE(    (arr.begin() + 2)->base() ==  arr[2].base() );
+
 	BOOST_REQUIRE(  (*(arr.end() - 1)).base() ==  arr[2].base() );
+	BOOST_REQUIRE(    (arr.end() - 1)->base() ==  arr[2].base() );
 
 	// auto const prv = std::prev(arr.end());
 	// BOOST_REQUIRE(  (*(prv)).base() ==  arr[2].base() );  // TODO(correaa) investigate why this fails in NVCC
