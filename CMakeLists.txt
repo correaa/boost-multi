@@ -129,7 +129,7 @@ message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
       find_package(LAPACK)
       if(LAPACK_FOUND)
-      #  add_subdirectory(include/boost/multi/adaptors/lapack)
+        add_subdirectory(include/boost/multi/adaptors/lapack)
       endif()
 
       # add_subdirectory(include/boost/multi/adaptors/thrust)
