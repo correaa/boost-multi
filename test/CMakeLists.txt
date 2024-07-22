@@ -22,7 +22,7 @@ else()
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 
-	find_package(Boost COMPONENTS headers unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
+	find_package(Boost COMPONENTS boost unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
 
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
@@ -902,7 +902,7 @@ else()
 			# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
 
 			target_link_libraries(${TEST_EXE} PRIVATE multi)
-			target_link_libraries     (${TEST_EXE} PRIVATE multi Boost::headers   )
+			target_link_libraries     (${TEST_EXE} PRIVATE multi Boost::boost   )
 			if(TBB_FOUND)
 				target_link_libraries     (${TEST_EXE} PRIVATE TBB::tbb)
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
