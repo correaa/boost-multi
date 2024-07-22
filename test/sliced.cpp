@@ -4,29 +4,32 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wold-style-cast"
-#  pragma clang diagnostic ignored "-Wundef"
-#  pragma clang diagnostic ignored "-Wconversion"
-#  pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic ignored "-Wswitch-default"
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-#  pragma GCC diagnostic ignored "-Wundef"
-#  pragma GCC diagnostic ignored "-Wconversion"
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#  define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #if defined(__clang__)
-#  pragma clang diagnostic pop
+	#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#  pragma GCC diagnostic pop
+	#pragma GCC diagnostic pop
 #endif
 
 #include <boost/multi/array.hpp>
@@ -45,9 +48,9 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced) {
 	multi::array<int, 4> arr({10, 20, 30, 40}, 99);
 	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
-	static_assert( decltype( arr.sliced(0, 5) )::rank::value == 4);
-	static_assert( decltype( arr.sliced(0, 5) )::rank{} == 4);
-	static_assert( decltype( arr.sliced(0, 5) )::rank_v == 4);
+	static_assert(decltype(arr.sliced(0, 5))::rank::value == 4);
+	static_assert(decltype(arr.sliced(0, 5))::rank{} == 4);
+	static_assert(decltype(arr.sliced(0, 5))::rank_v == 4);
 
 	BOOST_REQUIRE(  arr.sliced( 0, 5)[1][2][3][4] ==  arr[1][2][3][4] );
 	BOOST_REQUIRE( &arr.sliced( 0, 5)[1][2][3][4] == &arr[1][2][3][4] );

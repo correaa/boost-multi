@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>  // for BOOST_PP_IIF_1
+#include <boost/test/included/unit_test.hpp>  // for BOOST_PP_IIF_1
 
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range

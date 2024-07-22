@@ -1,6 +1,6 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-#include<boost/test/unit_test.hpp>
+#include<boost/test/included/unit_test.hpp>
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/adaptors/blas/traits.hpp>

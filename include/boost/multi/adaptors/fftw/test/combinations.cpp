@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/tools/fpc_tolerance.hpp>
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 

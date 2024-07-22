@@ -5,10 +5,13 @@
 
 #if defined(__clang__)
 	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wconversion"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic ignored "-Wswitch-default"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
@@ -21,7 +24,7 @@
 	#define BOOST_TEST_MAIN
 #endif
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #if defined(__clang__)
 	#pragma clang diagnostic pop
@@ -31,10 +34,10 @@
 
 #include <boost/multi/array.hpp>
 
-#include <algorithm>                 // for equal
-#include <array>                     // for array
-#include <iterator>                  // for size, begin, end
-#include <type_traits>               // for is_assignable_v
+#include <algorithm>    // for equal
+#include <array>        // for array
+#include <iterator>     // for size, begin, end
+#include <type_traits>  // for is_assignable_v
 
 namespace multi = boost::multi;
 
@@ -74,38 +77,50 @@ BOOST_AUTO_TEST_CASE(one_based_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(one_based_2D) {
-	multi::array<int, 2> const Ac({{ 0, 10 }, { 0, 20 }}, 0);
+	multi::array<int, 2> const Ac({
+									  {0, 10},
+                                      {0, 20}
+    },
+								  0);
 	BOOST_REQUIRE( Ac.size() == 10 );
 
-	 multi::array<int, 2> Af({{1, 1 + 10}, {1, 1 + 20}}, 0);
-	 Af[1][1] = 10;
-	 Af[2][2] = 20;
-	 Af[3][3] = 30;
-	 Af[10][20] = 990;
+	multi::array<int, 2> Af({
+								{1, 1 + 10},
+                                {1, 1 + 20}
+    },
+							0);
+	Af[1][1]   = 10;
+	Af[2][2]   = 20;
+	Af[3][3]   = 30;
+	Af[10][20] = 990;
 
-	 BOOST_REQUIRE( Af[1][1] = 10 );
-	 BOOST_REQUIRE( Af[10][20] == 990 );
-	 BOOST_REQUIRE( *Af.data_elements() == 10 );
-	 BOOST_REQUIRE( Af.data_elements()[Af.num_elements()-1] == 990 );
-	 BOOST_REQUIRE( size(Af) == 10 );
+	BOOST_REQUIRE( Af[1][1] = 10 );
+	BOOST_REQUIRE( Af[10][20] == 990 );
+	BOOST_REQUIRE( *Af.data_elements() == 10 );
+	BOOST_REQUIRE( Af.data_elements()[Af.num_elements()-1] == 990 );
+	BOOST_REQUIRE( size(Af) == 10 );
 
-	 BOOST_REQUIRE( extension(Af).first()  ==  1 );
-	 BOOST_REQUIRE( extension(Af).last() == 11 );
+	BOOST_REQUIRE( extension(Af).first()  ==  1 );
+	BOOST_REQUIRE( extension(Af).last() == 11 );
 
-	 auto Af1 = multi::array<int, 2>({10, 10}, 0).reindex(1, 1);
+	auto Af1 = multi::array<int, 2>({10, 10}, 0).reindex(1, 1);
 
-	 BOOST_REQUIRE( size(Af1) == 10 );
-	 BOOST_REQUIRE( Af1[10][10] == 0 );
+	BOOST_REQUIRE( size(Af1) == 10 );
+	BOOST_REQUIRE( Af1[10][10] == 0 );
 
-	 multi::array<int, 2> B({{0, 10}, {0, 20}}, 0);
-	 B[0][0] = 10;
-	 B[1][1] = 20;
-	 B[2][2] = 30;
-	 B[9][19] = 990;
+	multi::array<int, 2> B({
+							   {0, 10},
+                               {0, 20}
+    },
+						   0);
+	B[0][0]  = 10;
+	B[1][1]  = 20;
+	B[2][2]  = 30;
+	B[9][19] = 990;
 
-	 BOOST_REQUIRE( size(B) == 10 );
-	 BOOST_REQUIRE( B != Af );
-	 BOOST_REQUIRE( std::equal(begin(Af.reindexed(0, 0)), end(Af.reindexed(0, 0)), begin(B), end(B)) );
+	BOOST_REQUIRE( size(B) == 10 );
+	BOOST_REQUIRE( B != Af );
+	BOOST_REQUIRE( std::equal(begin(Af.reindexed(0, 0)), end(Af.reindexed(0, 0)), begin(B), end(B)) );
 	//  BOOST_REQUIRE( std::equal(begin(Af), end(Af), begin(B.reindexed(1, 1)), end(B.reindexed(1, 1)) ) );
 	//  BOOST_REQUIRE( std::equal(begin(Af), end(Af), begin(B.reindexed(0, 1)), end(B.reindexed(0, 1)) ) );
 
@@ -128,19 +143,22 @@ BOOST_AUTO_TEST_CASE(one_base_2D_ref) {
 
 	BOOST_REQUIRE( arr[0][0] == 10 );
 
-	 multi::array_ref<int, 2> const& Ar = *multi::array_ptr<int, 2>(&arr[0][0], {3, 5});
-	 BOOST_REQUIRE( &Ar[1][3] == &arr[1][3] );
+	multi::array_ref<int, 2> const& Ar = *multi::array_ptr<int, 2>(&arr[0][0], {3, 5});
+	BOOST_REQUIRE( &Ar[1][3] == &arr[1][3] );
 
-	 multi::array_ref<int, 2> const& Ar2 = *multi::array_ptr<int, 2>(&arr[0][0], {{1, 1+3}, {1, 1+5}});
-	 BOOST_REQUIRE( sizes(Ar) == sizes(Ar2) );
-	 BOOST_REQUIRE( &Ar2[1][1] == &arr[0][0] );
-	 BOOST_REQUIRE( &Ar2[2][4] == &arr[1][3] );
+	multi::array_ref<int, 2> const& Ar2 = *multi::array_ptr<int, 2>(&arr[0][0], {
+																					{1, 1 + 3},
+                                                                                    {1, 1 + 5}
+    });
+	BOOST_REQUIRE( sizes(Ar) == sizes(Ar2) );
+	BOOST_REQUIRE( &Ar2[1][1] == &arr[0][0] );
+	BOOST_REQUIRE( &Ar2[2][4] == &arr[1][3] );
 
-	 BOOST_REQUIRE( Ar2.extensions() != Ar.extensions() );
-	 BOOST_REQUIRE( !(Ar2 == Ar) );
-	 BOOST_REQUIRE( Ar2 != Ar );
-	 BOOST_REQUIRE( extensions(Ar2.reindexed(0, 0)) == extensions(Ar) );
-	 BOOST_REQUIRE( Ar2.reindexed(0, 0) == Ar );
+	BOOST_REQUIRE( Ar2.extensions() != Ar.extensions() );
+	BOOST_REQUIRE( !(Ar2 == Ar) );
+	BOOST_REQUIRE( Ar2 != Ar );
+	BOOST_REQUIRE( extensions(Ar2.reindexed(0, 0)) == extensions(Ar) );
+	BOOST_REQUIRE( Ar2.reindexed(0, 0) == Ar );
 
-	 static_assert( !std::is_assignable_v<decltype(Ar2.reindexed(0, 0)[0][0]), double> );
+	static_assert(!std::is_assignable_v<decltype(Ar2.reindexed(0, 0)[0][0]), double>);
 }
