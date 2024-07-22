@@ -87,8 +87,6 @@ BOOST_AUTO_TEST_CASE(range_find) {
 	{
 		std::ranges::equal_to eto;
 
-		auto a2 = a();
-
 		auto a1     = a[1];
 		auto a1_val = +a[1];
 
