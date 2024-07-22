@@ -37,6 +37,7 @@
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
 	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wshadow"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
