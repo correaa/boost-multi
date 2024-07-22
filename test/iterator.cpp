@@ -8,7 +8,6 @@
 	#pragma clang diagnostic ignored "-Wunknown-warning-option"
 	#pragma clang diagnostic ignored "-Wconversion"
 	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	// #pragma clang diagnostic ignored "-Wfloat-equal"
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wundef"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
@@ -19,7 +18,6 @@
 	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	// #pragma GCC diagnostic ignored "-Wfloat-equal"
 #elif defined(_MSC_VER)
 	#pragma warning(push)
 	#pragma warning(disable : 4244)
@@ -29,7 +27,7 @@
 	#define BOOST_TEST_MAIN
 #endif
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #if defined(__clang__)
 	#pragma clang diagnostic pop
@@ -57,9 +55,9 @@ template<class Array> auto take(Array&& array) -> auto& { return std::forward<Ar
 BOOST_AUTO_TEST_CASE(iterator_1d) {
 	{
 		multi::array<double, 1> arr(multi::extensions_t<1>{ multi::iextension{ 100 } }, 99.0);
-		BOOST_REQUIRE( size(arr) == 100 );
-		BOOST_REQUIRE( begin(arr) < end(arr) );
-		BOOST_REQUIRE( end(arr) - begin(arr) == size(arr) );
+		BOOST_REQUIRE( arr.size() == 100 );
+		BOOST_REQUIRE( arr.begin() < arr.end() );
+		BOOST_REQUIRE( arr.end() - arr.begin() == arr.size() );
 
 		multi::array<double, 1>::const_iterator const cbarr = arr.cbegin();
 		multi::array<double, 1>::iterator             barr  = arr.begin();
@@ -78,8 +76,8 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 	}
 	{
 		multi::array<double, 1> arr(multi::extensions_t<1>{ multi::iextension{ 100 } }, 99.0);
-		BOOST_REQUIRE( size(arr) == 100 );
-		BOOST_REQUIRE( begin(arr) < end(arr) );
+		BOOST_REQUIRE( arr.size() == 100 );
+		BOOST_REQUIRE( arr.begin() < arr.end() );
 
 		auto                                          arr2 = arr.begin();
 		multi::array<double, 1>::const_iterator const cbb  = arr2;
@@ -88,8 +86,8 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 	}
 	{
 		multi::array<double, 1> arr(multi::extensions_t<1>{ multi::iextension{ 100 } }, 99.0);
-		BOOST_REQUIRE( size(arr) == 100 );
-		BOOST_REQUIRE( begin(arr) < end(arr) );
+		BOOST_REQUIRE( arr.size() == 100 );
+		BOOST_REQUIRE( arr.begin() < arr.end() );
 
 		auto const arrend  = arr.end();
 		auto const arrlast = arrend - 1;
@@ -102,8 +100,7 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 	{
 		multi::array<double, 2> const arr({ 120, 140 }, 99.0);
 
-		BOOST_REQUIRE(      arr.size() == 120 );
-		BOOST_REQUIRE( size(arr)       == 120 );
+		BOOST_REQUIRE( arr.size() == 120 );
 		BOOST_REQUIRE( arr.cbegin() < arr.cend() );
 		BOOST_REQUIRE( arr.cend() - arr.cbegin() == arr.size() );
 
@@ -128,7 +125,7 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 	{
 		std::vector<double>         vec(10000);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		multi::array_ref<double, 2> arr(vec.data(), { 100, 100 });
-		BOOST_REQUIRE(size(arr) == 100);
+		BOOST_REQUIRE(arr.size() == 100);
 		begin(arr)[4][3] = 2.0;
 	}
 }
@@ -216,7 +213,7 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	BOOST_REQUIRE( it3 == it );
 
 	static_assert(std::is_same<multi::array<double, 3>::iterator::element_ptr, double*>{}, "!");
-	
+
 	// cit = it3;
 	// BOOST_REQUIRE( cit == it3 );  // TODO(correaa)
 	// BOOST_REQUIRE( it3 == cit );  // TODO(correaa)
