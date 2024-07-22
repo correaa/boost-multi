@@ -8,10 +8,13 @@
 
 	#if defined(__clang__)
 		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wconversion"
+		#pragma clang diagnostic ignored "-Wextra-semi-stmt"
 		#pragma clang diagnostic ignored "-Wold-style-cast"
 		#pragma clang diagnostic ignored "-Wundef"
-		#pragma clang diagnostic ignored "-Wconversion"
 		#pragma clang diagnostic ignored "-Wsign-conversion"
+		#pragma clang diagnostic ignored "-Wswitch-default"
 	#elif defined(__GNUC__)
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wold-style-cast"
@@ -58,7 +61,7 @@ BOOST_AUTO_TEST_CASE(extensions_3D) {
 	BOOST_REQUIRE( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
 
 	multi::extensions_t<3> const exts({0, 10}, {0, 20}, {0, 30});
-	BOOST_REQUIRE( 20 == second_finish(exts                                                     ) );
+	BOOST_REQUIRE( 20 == second_finish(exts) );
 }
 
 BOOST_AUTO_TEST_CASE(extensions_to_linear) {
@@ -293,9 +296,9 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 	BOOST_REQUIRE( size(A2) == 3 );
 
 	multi::array<int, 2> B2(
-#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
 		multi::extensions_t<2>
-#endif
+	#endif
 		{4, 4}
 	);
 
@@ -304,10 +307,10 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 
 	multi::array<int, 2> B2copy = B2({0, 2}, {0, 2});
 
-	// auto B2copy2 = 
+	// auto B2copy2 =
 	B2({0, 2}, {0, 2}).decay();
 
-#if 0
+	#if 0
 	BOOST_REQUIRE( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
 
 	// clang-format off
@@ -318,10 +321,10 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 	// clang-format on
 
 	BOOST_REQUIRE( &B2blk[1][1][1][1] == &B2[3][3] );
-#endif
+	#endif
 }
 
-#if 0
+	#if 0
 BOOST_AUTO_TEST_CASE(layout_BB) {
 	{
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
@@ -1067,7 +1070,7 @@ BOOST_AUTO_TEST_CASE(layout_2D_iteration) {
 	//  BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 	//  BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 }
-#endif
+	#endif
 
 #else
 
