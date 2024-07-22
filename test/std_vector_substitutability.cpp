@@ -4,36 +4,39 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#pragma clang diagnostic ignored "-Wundef"
-#pragma clang diagnostic ignored "-Wconversion"
-#pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
+	#pragma clang diagnostic ignored "-Wold-style-cast"
+	#pragma clang diagnostic ignored "-Wundef"
+	#pragma clang diagnostic ignored "-Wsign-conversion"
+	#pragma clang diagnostic ignored "-Wswitch-default"
 #elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wundef"
-#pragma GCC diagnostic ignored "-Wconversion"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#pragma GCC diagnostic ignored "-Wundef"
+	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #ifndef BOOST_TEST_MODULE
-#define BOOST_TEST_MAIN
+	#define BOOST_TEST_MAIN
 #endif
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #if defined(__clang__)
-#pragma clang diagnostic pop
+	#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#pragma GCC diagnostic pop
+	#pragma GCC diagnostic pop
 #endif
 
-#include <boost/multi/array.hpp>     // for array, layout_t, operator==, imp...
+#include <boost/multi/array.hpp>  // for array, layout_t, operator==, imp...
 
-#include <algorithm>                 // for equal
-#include <type_traits>               // for decay_t
-#include <vector>                    // for vector
+#include <algorithm>    // for equal
+#include <type_traits>  // for decay_t
+#include <vector>       // for vector
 
 // workaround for libc++ and boost test
 // namespace boost::unit_test::ut_detail {

@@ -21,7 +21,7 @@
 	#define BOOST_TEST_MAIN
 #endif
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include <boost/multi/array.hpp>  // for static_array, array
 

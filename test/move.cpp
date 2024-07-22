@@ -14,17 +14,17 @@
 	#pragma clang diagnostic ignored "-Wswitch-default"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wundef"
 	#pragma GCC diagnostic ignored "-Wconversion"
+	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
+	#pragma GCC diagnostic ignored "-Wundef"
 #endif
 
 #ifndef BOOST_TEST_MODULE
 	#define BOOST_TEST_MAIN
 #endif
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #if defined(__clang__)
 	#pragma clang diagnostic pop
@@ -39,6 +39,7 @@
 #include <memory>     // for unique_ptr, make_unique, allocat...
 // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
 // IWYU pragma: no_include <map>
+// IWYU pragma: no_include <set>
 #include <utility>  // for move
 #include <vector>   // for vector, operator==, vector<>::va...
 

@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>  // for operator<<, BOOST_PP_I...
+#include <boost/test/included/unit_test.hpp>  // for operator<<, BOOST_PP_I...
 
 #include <boost/multi/adaptors/blas/core.hpp>  // for context
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref, operator==

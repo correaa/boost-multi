@@ -1,6 +1,6 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-#include <boost/test/unit_test.hpp>  // for operator<<, BOOST_PP_I...
+#include <boost/test/included/unit_test.hpp>  // for operator<<, BOOST_PP_I...
 
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray

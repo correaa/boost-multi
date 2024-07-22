@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>  // for operator<<, BOOST_P...
+#include <boost/test/included/unit_test.hpp>  // for operator<<, BOOST_P...
 
 #include <boost/multi/adaptors/blas/axpy.hpp>     // for axpy, operator-
 #include <boost/multi/adaptors/blas/core.hpp>     // for context

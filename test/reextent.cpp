@@ -28,7 +28,7 @@
 	#define BOOST_TEST_MAIN
 #endif
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #if defined(__clang__)
 	#pragma clang diagnostic pop
