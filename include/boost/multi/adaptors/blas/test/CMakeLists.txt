@@ -95,7 +95,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-	target_link_libraries     (${TEST_EXE} PRIVATE Boost::unit_test_framework   )
+	target_link_libraries     (${TEST_EXE} PRIVATE Boost::headers)   # unit_test_framework   )
 	# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
 
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
