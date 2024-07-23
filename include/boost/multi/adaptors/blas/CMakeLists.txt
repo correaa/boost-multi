@@ -44,7 +44,7 @@ endif()
 # endif()
 
 if(BLAS_FOUND)
-	find_package(Boost COMPONENTS headers unit_test_framework)
+	find_package(Boost COMPONENTS boost)  # headers unit_test_framework)
 	if(Boost_unit_test_framework_FOUND)
 		add_subdirectory(test)
 	else()
