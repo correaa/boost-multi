@@ -22,7 +22,7 @@ if((NOT
 	   )
 	AND (NOT ENABLE_CIRCLE)
 )
-	find_package(Boost REQUIRED COMPONENTS boost)  # headers unit_test_framework)
+	find_package(Boost REQUIRED)  # COMPONENTS boost)  # headers unit_test_framework)
 #   link_libraries("-lboost_unit_test_framework")
 
 	find_package(BLAS REQUIRED)
@@ -95,8 +95,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-	target_link_libraries     (${TEST_EXE} PRIVATE Boost::boost)  # headers)   # unit_test_framework   )
-	# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
+	# target_link_libraries     (${TEST_EXE} PRIVATE Boost::boost)  # headers)   # unit_test_framework   )
+	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
 
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
