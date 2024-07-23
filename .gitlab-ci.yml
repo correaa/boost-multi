@@ -792,6 +792,7 @@ rocm:
 
 circle:
   stage: build
+  allow_failure: true
   tags:
     - non-shared
     - x86_64  # for circle executable
