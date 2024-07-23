@@ -1233,7 +1233,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	constexpr auto diagonal()     & -> const_subarray<T, D-1, typename const_subarray::element_ptr> {
 		using boost::multi::detail::get;
-		auto square_size = std::min(get<0>(this->sizes()), get<1>(this->sizes()));
+		auto square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();  // TODO(correaa) : don't use mutation
 		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // TODO(correaa) : don't use mutation
@@ -1242,7 +1242,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>
 	constexpr auto diagonal() const& -> const_subarray<T, D-1, typename const_subarray::element_const_ptr> {
-		auto square_size = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
+		auto square_size = (std::min)(std::get<0>(this->sizes()), std::get<1>(this->sizes()));  // paren for MSVC macros
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();
 		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
@@ -2637,7 +2637,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	constexpr auto celements() const  -> const_elements_range {return elements_aux_();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
-		return {std::min(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};
+		return {(std::min)(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};  // paren for MSVC macros
 	}
 
 	/*[[gnu::pure]]*/ constexpr auto blocked(index first, index last)& -> const_subarray {

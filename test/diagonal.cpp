@@ -7,7 +7,12 @@
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wunknown-warning-option"
 	#pragma clang diagnostic ignored "-Wconversion"
+	#pragma clang diagnostic ignored "-Wdeprecated-copy-with-dtor"
     #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+	#pragma clang diagnostic ignored "-Wnonportable-system-include-path"
+	#pragma clang diagnostic ignored "-Wcovered-switch-default"
+	#pragma clang diagnostic ignored "-Wshadow-field"
+	#pragma clang diagnostic ignored "-Wswitch-enum"
 	#pragma clang diagnostic ignored "-Wold-style-cast"
 	#pragma clang diagnostic ignored "-Wsign-conversion"
     #pragma clang diagnostic ignored "-Wswitch-default"
