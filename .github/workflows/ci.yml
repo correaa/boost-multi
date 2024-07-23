@@ -471,6 +471,7 @@ jobs:
             addrmd: "64"
             os: windows-2019
 
+    timeout-minutes: 120
     runs-on: ${{matrix.os}}
 
     steps:
@@ -518,6 +519,7 @@ jobs:
             addrmd: "64"
             os: windows-2022
 
+    timeout-minutes: 120
     runs-on: ${{matrix.os}}
 
     steps:
