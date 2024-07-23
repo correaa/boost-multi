@@ -69,10 +69,10 @@ class fnv1a_t {
 
  public:
 	using result_type = fnv1a_size;
-	static constexpr auto min() {
+	static constexpr auto (min)() {  // paren for MSVC macros
 		return (std::numeric_limits<result_type>::min)();
 	}
-	static constexpr auto max() {
+	static constexpr auto (max)() {
 		return (std::numeric_limits<result_type>::max)();
 	}
 
