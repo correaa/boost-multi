@@ -1224,7 +1224,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// }
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
 		return const_subarray<T, D+1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
@@ -2313,7 +2313,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<1> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		multi::layout_t<1> const new_layout{this->layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
 		return subarray<T, 1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
@@ -2508,7 +2508,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
  public:
 	constexpr auto broadcasted() const& {
-		multi::layout_t<2> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		multi::layout_t<2> const new_layout{this->layout(), 0, 0, (std::numeric_limits<size_type>::max)()};
 		return const_subarray<T, 2, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
