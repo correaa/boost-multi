@@ -69,8 +69,8 @@ class fnv1a_t {
 
  public:
 	using result_type = fnv1a_size;
-	static constexpr auto min() { return std::numeric_limits<result_type>::min(); }
-	static constexpr auto max() { return std::numeric_limits<result_type>::max(); }
+	static constexpr auto min() { return (std::numeric_limits<result_type>::min)(); }
+	static constexpr auto max() { return (std::numeric_limits<result_type>::max)(); }
 	void                  operator()(unsigned char const* key, std::ptrdiff_t len) noexcept { h_ = fnv1a(key, len, h_); }
 	template<class T, std::enable_if_t<std::is_fundamental_v<T>, int> = 0>
 	auto operator()(T const& value) noexcept -> decltype(auto) {
