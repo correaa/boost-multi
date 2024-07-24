@@ -6,8 +6,8 @@ on:
   push:
     branches:
       - '**'        # matches every branch
-  pull_request:
-    branches: [ "master" ]
+  # pull_request:
+  #   branches: [ "master" ]
 
 # on:
 #   push:
