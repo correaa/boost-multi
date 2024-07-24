@@ -14,7 +14,7 @@
 	#pragma clang diagnostic ignored "-Wundef"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+	#pragma GCC diagnostic ignored "-Wpragmas"
 	#pragma GCC diagnostic ignored "-Wcast-function-type"
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
