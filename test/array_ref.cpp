@@ -16,7 +16,8 @@
 	#pragma GCC diagnostic push
 	#if (__GNUC__ > 7)
 		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif  #pragma GCC diagnostic ignored "-Wconversion"
+	#endif
+	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
 	#pragma GCC diagnostic ignored "-Wundef"
