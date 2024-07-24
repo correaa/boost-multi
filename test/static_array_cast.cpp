@@ -10,7 +10,9 @@
 	#pragma clang diagnostic ignored "-Wundef"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wcast-function-type"
+	#if (__GNUC__ > 7)
+		#pragma GCC diagnostic ignored "-Wcast-function-type"
+	#endif
 	#pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
