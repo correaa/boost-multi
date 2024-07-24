@@ -14,8 +14,9 @@
 	#pragma clang diagnostic ignored "-Wswitch-default"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#pragma GCC diagnostic ignored "-Wconversion"
+	#if (__GNUC__ > 7)
+		#pragma GCC diagnostic ignored "-Wcast-function-type"
+	#endif  #pragma GCC diagnostic ignored "-Wconversion"
 	#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#pragma GCC diagnostic ignored "-Wsign-conversion"
 	#pragma GCC diagnostic ignored "-Wundef"
