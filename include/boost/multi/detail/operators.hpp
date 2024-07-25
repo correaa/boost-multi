@@ -45,7 +45,7 @@ struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 
 	// friend auto operator< (totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return     self.self() < other.self() ;}
-	friend auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(other.self() < self.self()); }
+	friend constexpr auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(other.self() < self.self()); }
 	// friend auto operator!=(totally_ordered2 const& self, totally_ordered2 const& other) {return    (s.self() < o.self()) or     (o.self() < s.self());}
 
 	friend auto operator<=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(other.self() < self.self()); }

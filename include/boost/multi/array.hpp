@@ -148,7 +148,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
 
-	auto uninitialized_default_construct() {
+	constexpr auto uninitialized_default_construct() {
 		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> &&  ! multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 			return adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
 		}
@@ -296,13 +296,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value)  // fill constructor
 	: static_array(extension, value, allocator_type{}) {}
 
-	explicit static_array(typename static_array::extensions_type extensions, allocator_type const& alloc)
+	constexpr explicit static_array(typename static_array::extensions_type extensions, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_default_construct();
 		assert(this->stride() != 0);
 	}
 
-	explicit static_array(typename static_array::extensions_type extensions)
+	constexpr explicit static_array(typename static_array::extensions_type extensions)
 	: static_array(extensions, allocator_type{}) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
@@ -1430,9 +1430,9 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	~array() {
-		assert(this->stride() != 0);
-	}
+	// ~array() {
+	//  assert(this->stride() != 0);
+	// }
 };
 
 #if defined(__cpp_deduction_guides)
