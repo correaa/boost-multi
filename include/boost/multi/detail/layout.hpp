@@ -789,11 +789,18 @@ struct layout_t
 		return *this;
 	}
 
+	template<class TT>
+	constexpr static void ce_swap(TT& t1, TT& t2) {
+		TT tmp = std::move(t1);
+		t1 = std::move(t2);
+		t2 = tmp;
+	}
+
 	constexpr auto transpose() -> layout_t& {
-		using std::swap;
-		swap(stride_, sub_.stride_);
-		swap(offset_, sub_.offset_);
-		swap(nelems_, sub_.nelems_);
+		// using std::swap;
+		ce_swap(stride_, sub_.stride_);
+		ce_swap(offset_, sub_.offset_);
+		ce_swap(nelems_, sub_.nelems_);
 		return *this;
 	}
 	constexpr auto reverse() -> layout_t& {
