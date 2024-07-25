@@ -43,6 +43,7 @@
 
 namespace multi = boost::multi;
 
+#ifndef _MSC_VER  // MSVC 14.40 is not constexpr ready?
 BOOST_AUTO_TEST_CASE(constexpr_ptr_access) {
 	static constexpr auto f = []
 	{
@@ -54,6 +55,7 @@ BOOST_AUTO_TEST_CASE(constexpr_ptr_access) {
 	}();
 	static_assert(f);
 }
+#endif
 
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
 template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
