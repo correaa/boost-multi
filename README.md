@@ -2062,8 +2062,8 @@ Like in FORTRAN, for simple types (e.g., numeric), Multi arrays are not initiali
 | Declaration/Construction    | `real, dimension(5) :: numbers` (at top)         | `multi::array<double, 1> numbers(5);` (at scope) |
 | Element assignment (second) | `numbers(2) = 99.0`                              | `numbers[1] = 99.0;`                             |
 | Element access (printing)   | `Print *, numbers(2)`                            | `std::cout << numbers[1] << '\n';`               |
-| Initialization              | `real, dimension(5) :: numbers = (/ 1.0, 2.0 /)` | `multi::array<double, 1> numbers = {1.0, 2.0}`   |
-| Assignment.                 | `DATA numbers / 10.0 20.0 /`                     | `numbers = {10.0, 20.0}`                         |
+| Initialization              | `real, dimension(5) :: numbers = (/ 1.0, 2.0 /)` | `multi::array<double, 1> numbers = {1.0, 2.0};`  |
+| Assignment.                 | `DATA numbers / 10.0 20.0 /`                     | `numbers = {10.0, 20.0};`                        |
 
 
 Unlike FORTRAN, Multi doesn't provide algebraic operators, using algorithms is encoraged instead.
