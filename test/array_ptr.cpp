@@ -43,6 +43,18 @@
 
 namespace multi = boost::multi;
 
+BOOST_AUTO_TEST_CASE(constexpr_ptr_access) {
+	static constexpr auto f = []
+	{
+		int buffer[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+		multi::array_ref<int, 2> arr({3, 3}, &buffer[0]);
+		auto p = &arr;
+
+		return (p->base() == &buffer[0]);
+	}();
+	static_assert(f);
+}
+
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
 template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
 
