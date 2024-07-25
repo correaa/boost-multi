@@ -2049,3 +2049,46 @@ Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://
 | Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                                                        | no | no |
 | Compatibility with Thrust or GPUs | **yes**, via flatten views (loop fusion), thrust-pointers/-refs | no                                                   | no          | no |
 | Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq)  | (?) , experience from Kokkos incarnation             | **yes** (?) | [**yes**](https://eigen.tuxfamily.org/index.php?title=Main_Page#Projects_using_Eigen) |
+
+# Appendix: Multi for FORTRAN programmers
+
+This table summarizes simple cases translated from FORTRAN to C++ using the library.
+The library strives to give a familiar feeling for those that use arrays in FORTRAN.
+The most notable difference is that in FORTRAN array indices start at `1` by default, while in Multi they start at `0` by default (following C++ converions).
+Like in FORTRAN, for simple types (e.g. numeric), Multi arrays are not initialized automatically, such needs to explicit
+
+|                            | FORTRAN                                          | C++ Multi                                        |
+---                         | ---                                              | ---                                              |
+Declaration/Construction    | `real, dimension(5) :: numbers` (at top)         | `multi::array<double, 1> numbers(5);` (at scope) |
+Element assignment (second) | `numbers(2) = 99.0`                              | `numbers[1] = 99.0`                              |
+Element access (printing)   | `Print *, numbers(2)`                            | `std::cout << numbers[1] << '\n';`               |
+Initialization              | `real, dimension(5) :: numbers = (/ 1.0, 2.0 /)` | `multi::array<double, 1> numbers = {1.0, 2.0}`   |
+Assignment.                 | `DATA numbers / 10.0 20.0 /`                     | `numbers = {10.0, 20.0}`                               |
+
+
+Another difference is that, unlike FORTRAN, Multi doesn't provide algebraic operators, using algorithms is encoraged instead.
+For example a FORTRAN statement like `A = A + B` (one-dimensional arrays) is translated as
+
+```cpp
+std::transform(A.begin(), A.end(), B.begin(), A.begin(), std::plus<>{});  // valid for 1D arrays only
+```
+
+Note that this is correct only valid for one-dimensional arrays;
+more generally in dimensionality we can write:
+
+```cpp
+std::transform(A.elements().begin(), A.elements().end(), B.elements().begin(), A.elements().begin(), std::plus<>{});  // valid for arbitrary dimension
+
+std::ranges::transform(A.elements(), B.elements(), A.elements().begin(), std::plus<>{});  // alternative using C++20 ranges
+```
+
+A FORTRAN statement like `C = 2.0*C` is rewritten as `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) {return 2.0*e;});`.
+
+
+
+
+
+
+
+
+
