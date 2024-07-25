@@ -291,7 +291,7 @@ vs2019-windows:
   timeout: 30 minutes
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - when: never
+      when: never
 
 # vs2022-windows:
 #   stage: build
@@ -730,12 +730,12 @@ culang++-19 cuda-12.1.1 tidy:
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 19
-    - apt-get install --no-install-recommends -y clang-tidy-19
+    - ./llvm.sh 18
+    - apt-get install --no-install-recommends -y clang-tidy-18
     - mkdir build && cd build
-    - clang++-19 --version
-    - clang-tidy-19 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-19 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19
+    - clang++-18 --version
+    - clang-tidy-18 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-18 -DCMAKE_CXX_COMPILER=clang++-18
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]

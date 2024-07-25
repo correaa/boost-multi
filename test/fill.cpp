@@ -27,7 +27,7 @@
 	#define BOOST_TEST_MAIN
 #endif
 
-#include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance
+// #include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance
 #include <boost/test/unit_test.hpp>
 
 #if defined(__clang__)
@@ -43,13 +43,13 @@
 #include <algorithm>    // for fill, all_of, transform
 #include <cstddef>      // for ptrdiff_t
 #include <cstdint>      // for uint64_t
-#include <functional>   // for plus
+// #include <functional>   // for plus
 #include <iterator>     // for begin, end, size, next
 #include <limits>       // for numeric_limits
 #include <numeric>      // for accumulate
 #include <random>       // for uniform_int_distribution
 #include <type_traits>  // for enable_if_t, is_same_v
-#include <utility>      // for forward
+// #include <utility>      // for forward
 
 namespace {
 
