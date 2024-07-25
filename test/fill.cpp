@@ -30,7 +30,6 @@
 	#define BOOST_TEST_MAIN
 #endif
 
-// #include <boost/test/tools/fpc_tolerance.hpp>  // for tolerance iwyu-clang-macos wants to remove this
 #include <boost/test/included/unit_test.hpp>
 
 #if defined(__clang__)
