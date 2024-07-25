@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
 
 		multi::array_ref<int, 2> arr({3, 3}, &buffer[0]);  // // TODO(correaa) think how to handle references to arrays (UB)
 
-		return arr.rotated()[1].end() != arr.rotated()[1].begin();
+		return (arr.rotated()[1].end() != arr.rotated()[1].begin());
 	}();
 	BOOST_REQUIRE(f);
 }
