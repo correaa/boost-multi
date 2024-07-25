@@ -40,6 +40,7 @@
 
 namespace multi = boost::multi;
 
+#ifndef _MSC_VER  // msvc 14.40 gets confused with constexpr
 BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
 	constexpr auto f = [] {
 		std::array<int,
@@ -54,6 +55,7 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
 	}();
 	BOOST_REQUIRE(f);
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
 	constexpr auto f = [] {
