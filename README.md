@@ -2084,11 +2084,7 @@ std::ranges::transform(A.elements(), B.elements(), A.elements().begin(), std::pl
 
 A FORTRAN statement like `C = 2.0*C` is rewritten as `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) {return 2.0*e;});`.
 
+It is possible to use C++ operator overloading (implemented as free functions), however this can become compliced beyond simple cases.
+With algorithms such as `transform` one can have complete control over the operations (and memory alloctions in case they are necessary) and even over parallelization.
 
-
-
-
-
-
-
-
+[(live)](https://godbolt.org/z/P3zx5xh86)
