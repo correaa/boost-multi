@@ -55,7 +55,6 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
 	}();
 	BOOST_REQUIRE(f);
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
 	constexpr auto f = [] {
@@ -94,6 +93,8 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
 //  BOOST_REQUIRE(f);
 // }
 // #endif
+
+#endif
 
 BOOST_AUTO_TEST_CASE(multi_2d_const) {
 	multi::array<int, 2> const arr = {
