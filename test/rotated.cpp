@@ -43,7 +43,61 @@
 
 namespace multi = boost::multi;
 
-template<class T> void what(T&&...) = delete;
+#ifndef _MSC_VER  // msvc 14.40 gets confused with constexpr
+BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
+	constexpr auto f = [] {
+		std::array<int,
+			//  9  // produces UB: cannot refer to element 10 of array of 9 elements in a constant expression
+			12  // ok
+		> buffer = {{0, 1, 2, 3, 4, 5, 6, 7, 8}};  // , 10, 11};
+
+		multi::array_ref<int, 2> arr({3, 3}, &buffer[0]);  // // TODO(correaa) think how to handle references to arrays (UB)
+
+		auto const& arrrot1 = arr.rotated()[1];
+		return (arrrot1.end() != arrrot1.begin());
+	}();
+	BOOST_REQUIRE(f);
+}
+
+BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
+	constexpr auto f = [] {
+		std::array<int,
+			12 + 3  // (3 + 1)*4 - 1
+		> buffer = {};
+
+		multi::array_ref<int, 2> arr({3, 4}, &buffer[0]);  // // TODO(correaa) think how to handle references to arrays (UB)
+
+		return arr.diagonal().end() != arr.diagonal().begin();
+	}();
+	BOOST_REQUIRE(f);
+}
+
+BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
+	constexpr auto f = [] {
+		std::array<int,
+			60 + 18 // 3*4*5 + (4-1)*5 + (5 - 1)    60 + 15 + 4 = 79
+		> buffer = {};
+
+		multi::array_ref<int, 3> arr({3, 4, 5}, &buffer[0]);  // // TODO(correaa) think how to handle references to arrays (UB)
+
+		return arr.diagonal().diagonal().end() != arr.diagonal().diagonal().begin();
+	}();
+	BOOST_REQUIRE(f);
+}
+
+// vvv this exposes UB and need for extra buffer
+// #if __cplusplus >= 202002L
+// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end) {
+//  constexpr auto f = [] {
+//      multi::array<int, 2> arr(multi::array<int, 2>::extensions_type{3, 3});
+
+//      return arr.rotated()[1].end() != arr.rotated()[1].begin();
+//  }();
+//  BOOST_REQUIRE(f);
+// }
+// #endif
+
+#endif
 
 BOOST_AUTO_TEST_CASE(multi_2d_const) {
 	multi::array<int, 2> const arr = {
@@ -52,7 +106,7 @@ BOOST_AUTO_TEST_CASE(multi_2d_const) {
 	};
 
 	BOOST_REQUIRE( arr.rotated()[1][1] == 40 );
-	static_assert( !std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)> );
+	static_assert(!std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)>);
 }
 
 BOOST_AUTO_TEST_CASE(multi_2d) {
@@ -65,13 +119,13 @@ BOOST_AUTO_TEST_CASE(multi_2d) {
 
 	// what(arr.rotated()[0][0]);
 
-	static_assert( std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)> );
+	static_assert(std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)>);
 
 	// arr.rotated()[1][1] = 50;
 }
 
 BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
-	multi::array<double, 3> arr({ 3, 4, 5 });
+	multi::array<double, 3> arr({3, 4, 5});
 
 	BOOST_REQUIRE( std::get<0>(arr.sizes()) == 3 );
 	BOOST_REQUIRE( std::get<1>(arr.sizes()) == 4 );
@@ -91,7 +145,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_rotate_4d) {
-	multi::array<double, 4> original({ 14, 14, 7, 4 });
+	multi::array<double, 4> original({14, 14, 7, 4});
 
 	auto&& unrotd = original.unrotated();
 	BOOST_TEST( std::get<0>(unrotd.sizes()) ==  4 );
@@ -108,7 +162,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_rotate_4d_op) {
-	multi::array<double, 4> original({ 14, 14, 7, 4 });
+	multi::array<double, 4> original({14, 14, 7, 4});
 
 	auto&& unrotd = (original.unrotated());
 	BOOST_REQUIRE(( sizes(unrotd) == decltype(sizes(unrotd)){4, 14, 14, 7} ));
@@ -131,8 +185,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
 
 	std::array<std::array<int, 5>, 4> stdarr2 = {};
 
-	multi::array_ref<int, 2> arr(&stdarr[0][0], { 4, 5 });    // NOLINT(readability-container-data-pointer) test access
-	multi::array_ref<int, 2> arr2(&stdarr2[0][0], { 4, 5 });  // NOLINT(readability-container-data-pointer) test access
+	multi::array_ref<int, 2> arr(&stdarr[0][0], {4, 5});    // NOLINT(readability-container-data-pointer) test access
+	multi::array_ref<int, 2> arr2(&stdarr2[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 
 	arr2.rotated() = arr.rotated();
 
@@ -163,7 +217,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 		BOOST_REQUIRE( arr[1][0] == 100 );
 	}
 	{
-		multi::array<double, 3> arr({ 11, 13, 17 });
+		multi::array<double, 3> arr({11, 13, 17});
 		BOOST_REQUIRE( & arr[3][5][7] == &   arr   .transposed()[5][3][7] );
 		BOOST_REQUIRE( & arr[3][5][7] == &   arr   .transposed()[5][3][7] );
 		BOOST_REQUIRE( & arr[3][5][7] == & (~arr)            [5][3][7] );
@@ -205,7 +259,7 @@ BOOST_AUTO_TEST_CASE(multi_transposed) {
 }
 
 BOOST_AUTO_TEST_CASE(miguel) {
-	multi::array<double, 2> G2D({ 41, 35 });
+	multi::array<double, 2> G2D({41, 35});
 	auto const&             G3D = G2D.rotated().partitioned(7).sliced(0, 3).unrotated();
 
 	BOOST_REQUIRE( &G3D[0][0][0] == &G2D[0][0] );
@@ -215,13 +269,13 @@ BOOST_AUTO_TEST_CASE(miguel) {
 	#if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 
 auto meshgrid(auto const& x, auto const& y) {
-	return std::pair{ x.broadcasted().rotated(), y.broadcasted() };
+	return std::pair{x.broadcasted().rotated(), y.broadcasted()};
 }
 
 template<class X1D, class Y1D>
 auto meshgrid_copy(X1D const& x, Y1D const& y) {
 	auto ret = std::pair{
-		multi::array<typename X1D::element_type, 2>({ x.size(), y.size() }),
+		multi::array<typename X1D::element_type, 2>({x.size(), y.size()}),
 		multi::array<typename Y1D::element_type, 2>(std::views::repeat(y, x.size()))
 	};
 
@@ -232,8 +286,8 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 }
 
 BOOST_AUTO_TEST_CASE(matlab_meshgrid) {
-	auto const x = multi::array{ 1, 2, 3 };
-	auto const y = multi::array{ 1, 2, 3, 4, 5 };
+	auto const x = multi::array{1, 2, 3};
+	auto const y = multi::array{1, 2, 3, 4, 5};
 
 	auto const& [X, Y] = meshgrid(x, y);
 
