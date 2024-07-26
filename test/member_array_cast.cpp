@@ -3,43 +3,42 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wswitch-default"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wundef"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wswitch-default"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>  // for array, transform_ptr, static_array
 
 #include <array>       // for array, operator==
 #include <cstddef>     // for offsetof, size_t
-#include <functional>  // for _Mem_fn, mem_fn
 #include <iterator>    // for size
 #include <memory>      // for addressof  // IWYU pragma: keep
 #include <string>      // for operator""s, allocator, char_traits
@@ -53,6 +52,10 @@
 
 namespace multi = boost::multi;
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	using v3d = std::array<double, 3>;
 
@@ -106,29 +109,29 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 	AoS[1][1] = particle{99, v3d{{1.0, 2.0}}};
 
 	auto&& masses = AoS.member_cast<int>(&particle::mass);
-	BOOST_REQUIRE(size(masses) == 2);
-	BOOST_REQUIRE(masses[1][1] == 99 );
+	BOOST_TEST(size(masses) == 2);
+	BOOST_TEST(masses[1][1] == 99 );
 
 	multi::array<int, 2> masses_copy = masses;
-	BOOST_REQUIRE(&masses_copy[1][1] != &masses[1][1]);
+	BOOST_TEST(&masses_copy[1][1] != &masses[1][1]);
 
 	particles_soa SoA{AoS};
 
-	BOOST_REQUIRE( SoA(1, 1).mass == 99 );
+	BOOST_TEST( SoA(1, 1).mass == 99 );
 
 	particle const p11 = SoA(1, 1);
-	BOOST_REQUIRE(p11.mass == 99 );
+	BOOST_TEST(p11.mass == 99 );
 
 	auto autop11 = +SoA(1, 1);
-	BOOST_REQUIRE(autop11.mass == 99 );
+	BOOST_TEST(autop11.mass == 99 );
 
 	SoA(1, 1).mass = 88;
-	BOOST_REQUIRE( SoA(1, 1).mass == 88 );
+	BOOST_TEST( SoA(1, 1).mass == 88 );
 
 	SoA(1, 1) = SoA(0, 0);
-	BOOST_REQUIRE( SoA(1, 1).mass == SoA(0, 0).mass);
-	BOOST_REQUIRE( SoA(1, 1) == SoA(0, 0));
-	BOOST_REQUIRE( !(SoA(1, 1) != SoA(0, 0)));
+	BOOST_TEST( SoA(1, 1).mass == SoA(0, 0).mass);
+	BOOST_TEST( SoA(1, 1) == SoA(0, 0));
+	BOOST_TEST( !(SoA(1, 1) != SoA(0, 0)));
 }
 
 struct employee_dummy {
@@ -165,30 +168,30 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 	};
 
 	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
-	BOOST_REQUIRE(size(d1D_names) == size(d1D));
-	BOOST_REQUIRE(d1D_names[1] == d1D[1].name);
-	BOOST_REQUIRE(&d1D_names[1] == &d1D[1].name);
+	BOOST_TEST(size(d1D_names) == size(d1D));
+	BOOST_TEST(d1D_names[1] == d1D[1].name);
+	BOOST_TEST(&d1D_names[1] == &d1D[1].name);
 
 	multi::array<employee, 2> d2D = {
 		{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
 		{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
 	};
-	BOOST_REQUIRE(d2D[0][0].name == "Al");
-	BOOST_REQUIRE(d2D[0][0].salary == 1430);
-	BOOST_REQUIRE(d2D[0][0].age == 35);
+	BOOST_TEST(d2D[0][0].name == "Al");
+	BOOST_TEST(d2D[0][0].salary == 1430);
+	BOOST_TEST(d2D[0][0].age == 35);
 
 	auto&& d2D_names = d2D.member_cast<std::string>(&employee::name);
-	BOOST_REQUIRE(size(d2D_names) == size(d2D));
-	BOOST_REQUIRE(d2D_names[1][1] == "David");
+	BOOST_TEST(size(d2D_names) == size(d2D));
+	BOOST_TEST(d2D_names[1][1] == "David");
 
 	#if !(defined(__clang__) && defined(__CUDACC__))
 	multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(&employee::name);
-	BOOST_REQUIRE(d2D_names_copy_members[1][1] == "David");
-	BOOST_REQUIRE(d2D_names_copy_members       == d2D_names);
+	BOOST_TEST(d2D_names_copy_members[1][1] == "David");
+	BOOST_TEST(d2D_names_copy_members       == d2D_names);
 
 	multi::array<std::string, 2> d2D_names_copy{d2D_names};
-	BOOST_REQUIRE( d2D_names == d2D_names_copy);
-	BOOST_REQUIRE( d2D_names.base() != d2D_names_copy.base() );
+	BOOST_TEST( d2D_names == d2D_names_copy);
+	BOOST_TEST( d2D_names.base() != d2D_names_copy.base() );
 	#endif
 }
 #endif
@@ -207,11 +210,11 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 	// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
 	multi::array<int, 2> ids = recs.element_transformed(&record::id);
 
-	BOOST_REQUIRE( ids[1][1] == 4 );
-	BOOST_REQUIRE( ids == recs.member_cast<int>(&record::id) );
+	BOOST_TEST( ids[1][1] == 4 );
+	BOOST_TEST( ids == recs.member_cast<int>(&record::id) );
 
 	// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
-	// BOOST_REQUIRE( recs[1][1].id == 5 );
+	// BOOST_TEST( recs[1][1].id == 5 );
 }
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
@@ -226,7 +229,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 
 	// multi::array<std::size_t, 2> d2D_ages_copy =
 	d2D.element_transformed(std::mem_fn(&employee::age));
-	BOOST_REQUIRE( d2D.element_transformed(std::mem_fn(&employee::age)) == d2D.element_transformed(&employee::age) );
+	BOOST_TEST( d2D.element_transformed(std::mem_fn(&employee::age)) == d2D.element_transformed(&employee::age) );
 }
 
 	#if defined(_MSC_VER)
@@ -234,3 +237,4 @@ BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
 	#endif
 
 #endif
+return boost::report_errors();}
