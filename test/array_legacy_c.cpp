@@ -63,6 +63,8 @@ void fftw_plan_dft(
 
 }  // end namespace fake
 
+constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& { return std::move(array)[2]; }
+
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
 
@@ -79,8 +81,8 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 
 	multi::array<std::complex<double>, 2> out(extensions(in));
 
-	BOOST_REQUIRE( dimensionality(out) == dimensionality(in) );
-	BOOST_REQUIRE( sizes(out) == sizes(in) );
+	BOOST_TEST( dimensionality(out) == dimensionality(in) );
+	BOOST_TEST( sizes(out) == sizes(in) );
 
 	static_assert(sizeof(complex) == sizeof(fake::fftw_complex), "!");
 	fake::fftw_plan_dft(
@@ -102,28 +104,27 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		};
 
 		//  #if __has_cpp_attribute(no_unique_address) >=201803L and not defined(__NVCC__) and not defined(__PGI)
-		//      BOOST_REQUIRE( sizeof(d2D)==sizeof(double*)+7*sizeof(std::size_t) );
+		//      BOOST_TEST( sizeof(d2D)==sizeof(double*)+7*sizeof(std::size_t) );
 		//  #endif
-		BOOST_REQUIRE( d2D.is_compact() );
-		BOOST_REQUIRE( d2D.rotated().is_compact() );
-		BOOST_REQUIRE( d2D[3].is_compact() );
-		BOOST_REQUIRE( !(d2D.rotated()[2].is_compact()) );
+		BOOST_TEST( d2D.is_compact() );
+		BOOST_TEST( d2D.rotated().is_compact() );
+		BOOST_TEST( d2D[3].is_compact() );
+		BOOST_TEST( !(d2D.rotated()[2].is_compact()) );
 	}
 	{
 		multi::array<complex, 2> d2D({ 5, 3 });
-		BOOST_REQUIRE( d2D.is_compact() );
-		BOOST_REQUIRE( d2D.rotated().is_compact() );
-		BOOST_REQUIRE( d2D[3].is_compact() );
-		BOOST_REQUIRE( !d2D.rotated()[2].is_compact() );
+		BOOST_TEST( d2D.is_compact() );
+		BOOST_TEST( d2D.rotated().is_compact() );
+		BOOST_TEST( d2D[3].is_compact() );
+		BOOST_TEST( !d2D.rotated()[2].is_compact() );
 	}
 }
 
 #ifndef _MSC_VER  // TODO(correaa) not supported by MSVC 14.3 in c++17 mode
-constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& { return std::move(array)[2]; }
 
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
 	double arr[5] = { 150.0, 16.0, 17.0, 18.0, 19.0 };  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	BOOST_REQUIRE( &f2(arr) == &arr[2] );
+	BOOST_TEST( &f2(arr) == &arr[2] );
 }
 #endif
 
