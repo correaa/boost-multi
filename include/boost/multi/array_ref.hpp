@@ -1838,12 +1838,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const&) const&& -> subarray const&& {  // for std::indirectly_writable
-		throw std::runtime_error("test for rnage");
-		// assert(this->extension() == other.extension());
-		// this->elements() = other.elements();
-		return std::move(*this);
-	}
+	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) const&& -> subarray const&&;  // for std::indirectly_writable
+	// {
+	//  assert(this->extension() == other.extension());
+	//  this->elements() = other.elements();
+	//  return std::move(*this);
+	// }
 
 	constexpr auto operator=(subarray const& other) & -> subarray& {
 		assert(this->extension() == other.extension());
