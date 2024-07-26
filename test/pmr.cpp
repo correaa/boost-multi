@@ -61,6 +61,9 @@ namespace multi = boost::multi;
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
+BOOST_AUTO_TEST_CASE(dummy_test) {
+}
+
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	{
