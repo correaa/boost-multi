@@ -3,47 +3,47 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wdeprecated-copy-with-dtor"
-    #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	#pragma clang diagnostic ignored "-Wnonportable-system-include-path"
-	#pragma clang diagnostic ignored "-Wcovered-switch-default"
-	#pragma clang diagnostic ignored "-Wshadow-field"
-	#pragma clang diagnostic ignored "-Wswitch-enum"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-    #pragma clang diagnostic ignored "-Wswitch-default"
-	#pragma clang diagnostic ignored "-Wundef"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wdeprecated-copy-with-dtor"
+//     #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+//  #pragma clang diagnostic ignored "-Wnonportable-system-include-path"
+//  #pragma clang diagnostic ignored "-Wcovered-switch-default"
+//  #pragma clang diagnostic ignored "-Wshadow-field"
+//  #pragma clang diagnostic ignored "-Wswitch-enum"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//     #pragma clang diagnostic ignored "-Wswitch-default"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>  // for array, layout_t, static_array
 
 #include <algorithm>   // for transform
-#include <functional>  // for plus
+// #include <functional>  // for plus
 #include <numeric>     // for accumulate
 
 namespace multi = boost::multi;
@@ -71,6 +71,10 @@ auto trace_with_accumulate(Array2D const& arr) {
 	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end(), static_cast<typename Array2D::element_type>(0));
 }
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(trace_test) {
 	using int_element = multi::index;
 	multi::array<int_element, 2> arr({5, 5}, 0);
@@ -86,10 +90,10 @@ BOOST_AUTO_TEST_CASE(trace_test) {
 
 	auto tr = trace_with_diagonal(arr);
 
-	BOOST_REQUIRE( tr == 00 + 11 + 22 + 33 + 44 );
+	BOOST_TEST( tr == 00 + 11 + 22 + 33 + 44 );
 
-	BOOST_REQUIRE( trace_with_diagonal(arr) == trace_with_indices(arr) );
-	BOOST_REQUIRE( trace_with_diagonal(arr) == trace_with_accumulate(arr) );
+	BOOST_TEST( trace_with_diagonal(arr) == trace_with_indices(arr) );
+	BOOST_TEST( trace_with_diagonal(arr) == trace_with_accumulate(arr) );
 }
 
 BOOST_AUTO_TEST_CASE(broadcasted) {
@@ -106,15 +110,15 @@ BOOST_AUTO_TEST_CASE(broadcasted) {
 
 	{
 		auto const& arr_instance = a3D[0];
-		BOOST_REQUIRE( &arr_instance[3][1] == &arr[3][1] );
+		BOOST_TEST( &arr_instance[3][1] == &arr[3][1] );
 	}
 	{
 		auto const& arr_instance = a3D[99];
-		BOOST_REQUIRE( &arr_instance[3][1] == &arr[3][1] );
+		BOOST_TEST( &arr_instance[3][1] == &arr[3][1] );
 	}
 	{
 		auto const& arr_instance = a3D[-99];
-		BOOST_REQUIRE( &arr_instance[3][1] == &arr[3][1] );
+		BOOST_TEST( &arr_instance[3][1] == &arr[3][1] );
 	}
 	{
 		auto const& a3D_self = a3D();
@@ -149,3 +153,5 @@ BOOST_AUTO_TEST_CASE(broadcast_0D) {
 	std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) { return ve; });
 	BOOST_TEST( arr[3] == 2 );
 }
+
+return boost::report_errors();}
