@@ -22,10 +22,6 @@
 //  #pragma GCC diagnostic ignored "-Wundef"
 // #endif
 
-// #include <boost/multi/array.hpp>
-
-// #include <algorithm>  // for std::ranges::fold_left
-
 // #ifndef BOOST_TEST_MODULE
 //  #define BOOST_TEST_MAIN
 // #endif
@@ -38,12 +34,17 @@
 //  #pragma GCC diagnostic pop
 // #endif
 
+#include <boost/multi/array.hpp>
+
+#include <algorithm>  // for std::ranges::fold_left
+
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
 
+namespace multi = boost::multi;
+
 int main() {
 BOOST_AUTO_TEST_CASE(broadcast_as_fill) {
-	namespace multi = boost::multi;
 
 	multi::array<int, 1> b = { 10, 11 };
 
@@ -59,10 +60,10 @@ BOOST_AUTO_TEST_CASE(broadcast_as_fill) {
 	// std::copy  (b.broadcasted().begin(), b.broadcasted().end(), B.begin());   // incorrect, undefined behavior, non-terminating loop (end is not reacheable)
 	// B = b.broadcasted();
 
-	BOOST_REQUIRE( B[0] == b );
-	BOOST_REQUIRE( B[1] == b );
+	BOOST_TEST( B[0] == b );
+	BOOST_TEST( B[1] == b );
 
-	BOOST_REQUIRE( std::all_of(B.begin(), B.end(), [b](auto const& row) { return row == b; }) );
+	BOOST_TEST( std::all_of(B.begin(), B.end(), [b](auto const& row) { return row == b; }) );
 }
 
 return boost::report_errors();}
