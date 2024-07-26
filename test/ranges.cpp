@@ -3,37 +3,37 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wswitch-default"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wundef"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wswitch-default"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>  // for array, subarray, static_array  // IWYU pragma: keep
 
@@ -44,6 +44,10 @@
 #include <type_traits>  // for is_same_v  // IWYU pragma: keep
 #include <utility>      // for pair  // IWYU pragma: keep
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(range_accumulate) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 	namespace multi = boost::multi;
@@ -67,11 +71,9 @@ BOOST_AUTO_TEST_CASE(range_accumulate) {
 
 	auto const result = rowOddSum(values);
 
-	BOOST_REQUIRE( result - values.begin() == 4 );
+	BOOST_TEST( result - values.begin() == 4 );
 #endif
 }
-
-template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(range_find) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -85,7 +87,7 @@ BOOST_AUTO_TEST_CASE(range_find) {
 	};
 	{
 		auto const needle = std::ranges::find_if(a, [](auto const& row) { return row[0] == 9; });
-		BOOST_REQUIRE(needle == a.end());
+		BOOST_TEST(needle == a.end());
 	}
 	{
 		std::ranges::equal_to eto;
@@ -94,20 +96,20 @@ BOOST_AUTO_TEST_CASE(range_find) {
 		auto a1_val = +a[1];
 
 		bool const res = eto(a1_val, a1);
-		BOOST_REQUIRE( res );
+		BOOST_TEST( res );
 	}
 	{
 		auto&&     a1     = a[1];
 
 		auto const needle = std::ranges::find(a, a1);
-		BOOST_REQUIRE(needle != a.end());
-		BOOST_REQUIRE( *needle == a1 );
-		BOOST_REQUIRE( *needle == a[1] );
+		BOOST_TEST(needle != a.end());
+		BOOST_TEST( *needle == a1 );
+		BOOST_TEST( *needle == a[1] );
 	}
 	[&] {
 		auto const needle = std::ranges::find(a, a[1]);
-		BOOST_REQUIRE(needle != a.end());
-		BOOST_REQUIRE( *needle == a[1] );
+		BOOST_TEST(needle != a.end());
+		BOOST_TEST( *needle == a[1] );
 	}();
 #endif
 }
@@ -121,7 +123,7 @@ BOOST_AUTO_TEST_CASE(range_find) {
 
 //  std::ranges::copy_n(X1.begin(), 10, X2.begin());
 
-//  BOOST_REQUIRE( X1 == X2 );
+//  BOOST_TEST( X1 == X2 );
 // }
 
 // BOOST_AUTO_TEST_CASE(range_copy_n) {
@@ -131,6 +133,7 @@ BOOST_AUTO_TEST_CASE(range_find) {
 //  multi::array<int, 2> X2(X1.extensions());
 
 //  std::ranges::copy_n(X1.begin(), 10, X2.begin());
-//  BOOST_REQUIRE( X1 == X2 );
+//  BOOST_TEST( X1 == X2 );
 // }
 // #endif
+return boost::report_errors();}
