@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(one_based_2D) {
 	Af[3][3]   = 30;
 	Af[10][20] = 990;
 
-	BOOST_TEST( Af[1][1] = 10 );
+	BOOST_TEST( Af[1][1] == 10 );
 	BOOST_TEST( Af[10][20] == 990 );
 	BOOST_TEST( *Af.data_elements() == 10 );
 	BOOST_TEST( Af.data_elements()[Af.num_elements()-1] == 990 );
