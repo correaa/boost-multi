@@ -3,48 +3,49 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wfloat-equal"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wundef"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wfloat-equal"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#elif defined(_MSC_VER)
-	#pragma warning(push)
-	#pragma warning(disable : 4244)  // narrowing conversion
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wfloat-equal"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wfloat-equal"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #elif defined(_MSC_VER)
+//  #pragma warning(push)
+//  #pragma warning(disable : 4244)  // narrowing conversion
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#elif defined(_MSC_VER)
-	#pragma warning(pop)
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #elif defined(_MSC_VER)
+//  #pragma warning(pop)
+// #endif
 
 #include <boost/multi/array.hpp>  // for array, extension_t, static_array
 
 #include <algorithm>   // for fill_n
 #include <chrono>      // for high_resolution_clock, operator-  // NOLINT(build/c++11)
+#include <cmath>  // for abs  // IWYU pragma: keep
+// IWYU pragma: no_include <cstdlib>                          // for abs
 #include <cstdint>     // for int64_t
-#include <functional>  // for plus
 #include <iostream>    // for char_traits, basic_ostream, oper...
 #include <iterator>    // for size, data
 
@@ -56,9 +57,10 @@
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(pmr_dummy) {
-}
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
+int main() {
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 	{
@@ -85,8 +87,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({ 2, 3 }, 0.0, &mbr);  // NOLINT(readability-identifier-length)
 
-		BOOST_TEST( A[0][0] == 0.0 );
-		BOOST_TEST( A[1][2] == 0.0 );
+		BOOST_TEST( std::abs( A[0][0] - 0.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( A[1][2] - 0.0 ) < 1E-6 );
 	}
 	{
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
@@ -97,8 +99,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({ 2, 3 }, {}, &mbr);
 
-		BOOST_TEST( arr[0][0] == double{} );
-		BOOST_TEST( arr[1][2] == double{} );
+		BOOST_TEST( std::abs( arr[0][0] - double{} ) < 1E-6 );
+		BOOST_TEST( std::abs( arr[1][2] - double{} ) < 1E-6 );
 	}
 	{
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
@@ -109,8 +111,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> arr({ 2, 3 }, 666.0, &mbr);
 
-		BOOST_TEST( arr[0][0] == 666.0 );
-		BOOST_TEST( arr[1][2] == 666.0 );
+		BOOST_TEST( std::abs( arr[0][0] - 666.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( arr[1][2] - 666.0 ) < 1E-6 );
 	}
 }
 
@@ -146,3 +148,4 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	#endif
 
 #endif
+return boost::report_errors();}
