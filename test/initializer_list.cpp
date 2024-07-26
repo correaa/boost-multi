@@ -3,37 +3,37 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wswitch-default"
-	#pragma clang diagnostic ignored "-Wundef"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wswitch-default"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>  // for array, static_array, num_elements
 
@@ -47,86 +47,100 @@
 
 namespace multi = boost::multi;
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
+
+int main() {
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 	{
 		std::vector<int> const vec = { 10, 20, 30 };  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_REQUIRE( vec[1] == 20 );
+		BOOST_TEST( vec[1] == 20 );
 	}
 	{
 		multi::static_array<int, 1> arr = { 12, 34, 56 };
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 56 );
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == 56 );
 	}
 	{
 		multi::static_array<int, 1> const arr = { 12, 34, 56 };
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == 56 );
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == 56 );
 	}
 	{
 		auto const il = { 12, 34, 56 };
 
 		multi::static_array<int, 1> const arr(il);
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
 		auto const il = { 12, 34, 56 };
 
 		multi::static_array<int, 1> const arr(begin(il), end(il));
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
 		multi::static_array<int, 1> const arr = { 12, 34, 56 };
-		BOOST_TEST_REQUIRE( size(arr) == 3 );
-		BOOST_TEST_REQUIRE( arr[2] == 56 );
-		BOOST_TEST_REQUIRE(( arr == multi::static_array<int, 1>{12, 34, 56} ));
-		BOOST_TEST_REQUIRE(( arr == decltype(arr){12, 34, 56} ));
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == 56 );
+		BOOST_TEST(( arr == multi::static_array<int, 1>{12, 34, 56} ));
+		BOOST_TEST(( arr == decltype(arr){12, 34, 56} ));
 	}
 	{
 		auto const values = { 12, 34, 56 };
 
 		multi::array<int, 1> const arr(values.begin(), values.end());
-		BOOST_TEST_REQUIRE( size(arr) == 3 );
-		BOOST_TEST_REQUIRE( arr[2] == 56 );
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == 56 );
 	}
 	{
 		multi::array<int, 1> const arr = { 12, 34, 56 };
 
-		BOOST_TEST_REQUIRE( size(arr) == 3 );
-		BOOST_TEST_REQUIRE( arr[2] == 56 );
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == 56 );
 
-		BOOST_TEST_REQUIRE(( arr == multi::array<int, 1>{12, 34, 56} ));
-		BOOST_TEST_REQUIRE(( arr == decltype(arr){12, 34, 56} ));
-		BOOST_TEST_REQUIRE(( arr == decltype(arr)::decay_type({12, 34, 56}) ));
+		BOOST_TEST(( arr == multi::array<int, 1>{12, 34, 56} ));
+		BOOST_TEST(( arr == decltype(arr){12, 34, 56} ));
+		BOOST_TEST(( arr == decltype(arr)::decay_type({12, 34, 56}) ));
 	}
 	{
 		std::array<int, 3> const stdarr = {
 			{11, 22, 33},
 		};
 		using multi::num_elements;
-		BOOST_TEST_REQUIRE( num_elements(stdarr) == 3 );
+		BOOST_TEST( num_elements(stdarr) == 3 );
 
 		using std::begin;
 		using std::end;
 		multi::static_array<double, 1> const arr(begin(stdarr), end(stdarr));
-		BOOST_TEST_REQUIRE( size(arr) == 3 );
+		BOOST_TEST( size(arr) == 3 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
+	// #if __cplusplus >= 202002L
+	// static constexpr auto f = []
+	// {
+	//  multi::array<int, 1> arr(3);
+	//  arr[0] = 12; arr[1] = 34; arr[2] = 56;  // TODO(correaa) getting "assignment to object outside its lifetime is not allowed in a constant expression"
+	//  return (arr.size() == 3);
+	// }();
+	// static_assert(f);
+	// #endif
+
 	{
 		multi::static_array const arr = { 12, 34, 56 };
-		BOOST_TEST_REQUIRE( size(arr) == 3 );
-		BOOST_TEST_REQUIRE( arr[2] == 56 );
-		BOOST_TEST_REQUIRE(( arr == multi::static_array{12, 34, 56} ));
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == 56 );
+		BOOST_TEST(( arr == multi::static_array{12, 34, 56} ));
 	}
 	{
 		multi::array arr({ 12, 34, 56 });
-		BOOST_TEST_REQUIRE( size(arr) == 3 );
-		BOOST_TEST_REQUIRE( arr[2] == 56 );
-		BOOST_TEST_REQUIRE(( arr == multi::array({12, 34, 56}) ));
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[2] == 56 );
+		BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
 	}
 #endif
 }
@@ -142,8 +156,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
 		};
 	#pragma GCC diagnostic pop
 		multi::array<double, 1> arr = stdarr;
-		BOOST_REQUIRE( arr.size() == 11 );
-		BOOST_REQUIRE( arr[9] == 9.0 );
+		BOOST_TEST( arr.size() == 11 );
+		BOOST_TEST( arr[9] == 9.0 );
 	}
 #endif
 }
@@ -151,14 +165,14 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
 BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 	{
 		multi::static_array<int, 1> const arr = { 11, 22, 33 };
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( arr[1] == 22 );
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( arr[1] == 22 );
 	}
 	{
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 //      multi::array arr = {{1.1, 2.2, 3.3}};
 //      static_assert( decltype(arr)::dimensionality == 1 , "!");
-//      BOOST_REQUIRE( size(arr)==3 && arr[1] == 2.2 );
+//      BOOST_TEST( size(arr)==3 && arr[1] == 2.2 );
 #endif
 	}
 	{
@@ -166,7 +180,7 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 			{1.1, 2.2, 3.3}
 		};
 		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
-		BOOST_REQUIRE(( arr == decltype(arr){1.1, 2.2, 3.3} ));
+		BOOST_TEST(( arr == decltype(arr){1.1, 2.2, 3.3} ));
 	}
 }
 
@@ -177,9 +191,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 			{11.2, 34.4, 5.6, 1.1},
 			{15.2, 32.4, 5.6, 3.4},
 		};
-		BOOST_REQUIRE( size(arr) == 3 );
-		BOOST_REQUIRE( size(arr[0]) == 4 );
-		BOOST_REQUIRE(( arr == decltype(arr){
+		BOOST_TEST( size(arr) == 3 );
+		BOOST_TEST( size(arr[0]) == 4 );
+		BOOST_TEST(( arr == decltype(arr){
 			{ 1.2,  2.4, 3.6, 8.9},
 			{11.2, 34.4, 5.6, 1.1},
 			{15.2, 32.4, 5.6, 3.4},
@@ -281,7 +295,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 			{2.0 + 1.0 * I, 1.0 + 3.0 * I, 1.0 + 7.0 * I},
 			{3.0 + 4.0 * I, 4.0 + 2.0 * I, 0.0 + 0.0 * I},
 		};
-		BOOST_REQUIRE( arr[1][1] == 4.0 + 2.0*I );
+		BOOST_TEST( arr[1][1] == 4.0 + 2.0*I );
 	}
 }
 
@@ -290,7 +304,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_static_array_initializer_list) {
 		{{ 1.0, 0.0 }, { 2.0, 0.0 }},
 		{{ 3.0, 0.0 }, { 4.0, 0.0 }},
 	};
-	BOOST_REQUIRE( SA[1][1] == 4.0 );
+	BOOST_TEST( SA[1][1] == 4.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
@@ -299,8 +313,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
 		{ { 112, 30 }, { 344, 40 }},
 		{{ 152, 990 }, { 324, 20 }},
 	};
-	BOOST_REQUIRE( arr[1][1][0] == 344 );
-	BOOST_REQUIRE( arr[1][1][1] ==  40 );
+	BOOST_TEST( arr[1][1][0] == 344 );
+	BOOST_TEST( arr[1][1][1] ==  40 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
@@ -314,8 +328,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 		};
 		// NOLINTEND(fuchsia-default-arguments-calls)
 
-		BOOST_REQUIRE( num_elements(B3) == 12 );
-		BOOST_REQUIRE( B3[1][0][1] == "101" );
+		BOOST_TEST( num_elements(B3) == 12 );
+		BOOST_TEST( B3[1][0][1] == "101" );
 	}
 }
 
@@ -325,10 +339,10 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_static) {
 
 	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-	BOOST_REQUIRE( size(arr) == 3 && num_elements(arr) == 3 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1);
-	BOOST_REQUIRE( num_elements(arr) == 3 );
-	BOOST_REQUIRE( arr[1] == 20 );
+	BOOST_TEST( size(arr) == 3 && num_elements(arr) == 3 );
+	BOOST_TEST( multi::rank<decltype(arr)>::value == 1);
+	BOOST_TEST( num_elements(arr) == 3 );
+	BOOST_TEST( arr[1] == 20 );
 
 	static_assert(typename decltype(arr)::rank{} == 1);
 }
@@ -338,11 +352,11 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_a) {
 
 	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-	BOOST_REQUIRE( size(arr) == 3 );
-	BOOST_REQUIRE( num_elements(arr) == 3 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
-	BOOST_REQUIRE( num_elements(arr) == 3 );
-	BOOST_REQUIRE( arr[1] == 20 );
+	BOOST_TEST( size(arr) == 3 );
+	BOOST_TEST( num_elements(arr) == 3 );
+	BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_TEST( num_elements(arr) == 3 );
+	BOOST_TEST( arr[1] == 20 );
 
 	static_assert(typename decltype(arr)::rank{} == 1);
 }
@@ -351,12 +365,12 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_b) {
 	multi::array arr({ 10, 20 });
 	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-	BOOST_REQUIRE( size(arr) == 2 );
-	BOOST_REQUIRE( num_elements(arr) == 2 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
-	BOOST_REQUIRE( num_elements(arr) == 2 );
-	BOOST_REQUIRE( arr[1] == 20 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_TEST( size(arr) == 2 );
+	BOOST_TEST( num_elements(arr) == 2 );
+	BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_TEST( num_elements(arr) == 2 );
+	BOOST_TEST( arr[1] == 20 );
+	BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
 }
 
 BOOST_AUTO_TEST_CASE(initializer_list_1d_c) {
@@ -364,12 +378,12 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_c) {
 
 	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-	BOOST_REQUIRE( size(arr) == 2 );
-	BOOST_REQUIRE( num_elements(arr) == 2 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
-	BOOST_REQUIRE( num_elements(arr) == 2 );
-	BOOST_REQUIRE( arr[1] == 2 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
+	BOOST_TEST( size(arr) == 2 );
+	BOOST_TEST( num_elements(arr) == 2 );
+	BOOST_TEST( multi::rank<decltype(arr)>{} == 1 );
+	BOOST_TEST( num_elements(arr) == 2 );
+	BOOST_TEST( arr[1] == 2 );
+	BOOST_TEST( multi::rank<decltype(arr)>{} == 1 );
 }
 
 BOOST_AUTO_TEST_CASE(initializer_list_1d_d) {
@@ -377,10 +391,10 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_d) {
 
 	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
-	BOOST_REQUIRE( num_elements(arr) == 1 );
-	BOOST_REQUIRE( arr[0] == 90 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_TEST( num_elements(arr) == 1 );
+	BOOST_TEST( arr[0] == 90 );
+	BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
 }
 
 BOOST_AUTO_TEST_CASE(initializer_list_1d_e) {
@@ -388,11 +402,11 @@ BOOST_AUTO_TEST_CASE(initializer_list_1d_e) {
 
 	static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-	BOOST_REQUIRE( size(arr) == 1 );
-	BOOST_REQUIRE( num_elements(arr) == 1 );
-	BOOST_REQUIRE( multi::rank<decltype(arr)>::value == 1 );
-	BOOST_REQUIRE( num_elements(arr) == 1 );
-	BOOST_REQUIRE( arr[0] == 90 );
+	BOOST_TEST( size(arr) == 1 );
+	BOOST_TEST( num_elements(arr) == 1 );
+	BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
+	BOOST_TEST( num_elements(arr) == 1 );
+	BOOST_TEST( arr[0] == 90 );
 }
 
 BOOST_AUTO_TEST_CASE(initializer_list_2d) {
@@ -401,16 +415,16 @@ BOOST_AUTO_TEST_CASE(initializer_list_2d) {
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
-		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
-		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
+		BOOST_TEST( multi::rank<decltype(arr)>{} == 2 );
+		BOOST_TEST( num_elements(arr) == 6 );
 	}
 	{
 		multi::array const arr({
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 		});
-		BOOST_TEST_REQUIRE( multi::rank<decltype(arr)>{} == 2 );
-		BOOST_TEST_REQUIRE( num_elements(arr) == 6 );
+		BOOST_TEST( multi::rank<decltype(arr)>{} == 2 );
+		BOOST_TEST( num_elements(arr) == 6 );
 	}
 }
 #endif
@@ -420,9 +434,9 @@ BOOST_AUTO_TEST_CASE(partially_formed) {
 	multi::array<int, 2> arr2({ 10, 10 }, {});
 	multi::array<int, 2> arr3({ 10, 10 }, 0);
 
-	BOOST_REQUIRE( arr1[0][0] == 0);
-	BOOST_REQUIRE( arr2[0][0] == 0);
-	BOOST_REQUIRE( arr3[0][0] == 0);
+	BOOST_TEST( arr1[0][0] == 0);
+	BOOST_TEST( arr2[0][0] == 0);
+	BOOST_TEST( arr3[0][0] == 0);
 }
 
 BOOST_AUTO_TEST_CASE(partially_formed_int_1) {
@@ -430,9 +444,9 @@ BOOST_AUTO_TEST_CASE(partially_formed_int_1) {
 	multi::array<int, 2> arr2({ 10, 10 }, { 1 });
 	multi::array<int, 2> arr3({ 10, 10 }, 1);
 
-	BOOST_REQUIRE( arr1[0][0] == 1);
-	BOOST_REQUIRE( arr2[0][0] == 1);
-	BOOST_REQUIRE( arr3[0][0] == 1);
+	BOOST_TEST( arr1[0][0] == 1);
+	BOOST_TEST( arr2[0][0] == 1);
+	BOOST_TEST( arr3[0][0] == 1);
 }
 
 BOOST_AUTO_TEST_CASE(partially_formed_int_0) {
@@ -440,7 +454,9 @@ BOOST_AUTO_TEST_CASE(partially_formed_int_0) {
 	multi::array<int, 2> arr2({ 10, 10 }, {});
 	multi::array<int, 2> arr3({ 10, 10 }, 0);
 
-	BOOST_REQUIRE( arr1[0][0] == 0);
-	BOOST_REQUIRE( arr2[0][0] == 0);
-	BOOST_REQUIRE( arr3[0][0] == 0);
+	BOOST_TEST( arr1[0][0] == 0);
+	BOOST_TEST( arr2[0][0] == 0);
+	BOOST_TEST( arr3[0][0] == 0);
 }
+
+return boost::report_errors();}
