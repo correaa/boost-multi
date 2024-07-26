@@ -3,47 +3,44 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if 0
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wconversion"
-    #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-    #pragma clang diagnostic ignored "-Wswitch-default"
-	#pragma clang diagnostic ignored "-Wundef"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#elif defined(_MSC_VER)
-	#pragma warning(push)
-	#pragma warning(disable : 4244)
-#endif
+// #if 0
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+//  #pragma clang diagnostic ignored "-Wconversion"
+//     #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//     #pragma clang diagnostic ignored "-Wswitch-default"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #elif defined(_MSC_VER)
+//  #pragma warning(push)
+//  #pragma warning(disable : 4244)
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#elif defined(_MSC_VER)
-	#pragma warning(pop)
-#endif
-#endif
-
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(ArG) ); std::invoke([]
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #elif defined(_MSC_VER)
+//  #pragma warning(pop)
+// #endif
+// #endif
 
 #include <boost/multi/array.hpp>  // for array, apply, operator==
 
@@ -94,7 +91,10 @@ class fnv1a_t {
 	explicit operator result_type() const& noexcept { return h_; }
 };
 
-int main() {((void)0
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
+
+int main() {
 
 BOOST_AUTO_TEST_CASE(fill_1d_a) {
 	namespace multi = boost::multi;
@@ -216,4 +216,4 @@ BOOST_AUTO_TEST_CASE(fill_1D) {
 	BOOST_TEST( arr2[9] == arr );
 }
 
-); return boost::report_errors();}
+return boost::report_errors();}

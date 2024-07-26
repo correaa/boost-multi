@@ -3,41 +3,42 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wundef"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>  // for array, subarray, static_array
 
 #include <array>        // for array  // IWYU Pragma: keep   // bug iwyu 0.22
 #include <complex>      // for complex, operator*, operator+
+#include <cmath>                              // for abs    // IWYU pragma: keep
+// IWYU pragma: no_include <cstdlib>                           // for abs
 #include <cstddef>      // for ptrdiff_t
-#include <functional>   // for negate
 #include <iterator>     // for iterator_traits
 #include <memory>       // for pointer_traits
 #include <type_traits>  // for decay_t, conditional_t, true_type
@@ -219,6 +220,10 @@ class indirect_real {
 
 }  // namespace test
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
+
+int main() {
 BOOST_AUTO_TEST_CASE(transformed_array) {
 	namespace multi = boost::multi;
 	{
@@ -226,34 +231,32 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		complex cee{1.0, 2.0};
 
 		auto&& zee = test::conjd<complex&>{cee};
-		BOOST_REQUIRE(( zee == complex{1.0, -2.0} ));
+		BOOST_TEST(( zee == complex{1.0, -2.0} ));
 
-		BOOST_REQUIRE_CLOSE(real(zee), +1.0, 1E-6);
-		BOOST_REQUIRE_CLOSE(imag(zee), -2.0, 1E-6);
-		// BOOST_REQUIRE_CLOSE( zee.real(), +1.0, 1E-6);
-		// BOOST_REQUIRE_CLOSE( zee.imag(), -2.0, 1E-6);
+		BOOST_TEST( std::abs( real(zee) - +1.0 ) < 1E-6);
+		BOOST_TEST( std::abs( imag(zee) - -2.0 ) < 1E-6);
 	}
 	{
 		int val = 50;
 
 		auto&& negd_a = test::involuted<test::neg_t, int&>(test::neg, val);
-		BOOST_REQUIRE( negd_a == -50 );
+		BOOST_TEST( negd_a == -50 );
 
 		negd_a = 100;
-		BOOST_REQUIRE( negd_a == 100 );
-		BOOST_REQUIRE( val = -100 );
+		BOOST_TEST( negd_a == 100 );
+		BOOST_TEST( val = -100 );
 	}
 	{
 		multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
 		auto&&                  ref = arr.static_array_cast<double, double const*>();
-		BOOST_REQUIRE_CLOSE(ref[2], arr[2], 1E-6);
+		BOOST_TEST( std::abs(ref[2] - arr[2]) < 1E-6 );
 	}
 
 	{
 		multi::array<double, 1> const arr      = {+0.0, +1.0, +2.0, +3.0, +4.0};
 		multi::array<double, 1>       neg      = {-0.0, -1.0, -2.0, -3.0, -4.0};
 		auto&&                        negd_arr = arr.static_array_cast<double, test::negater<double*>>();
-		BOOST_REQUIRE( negd_arr[2] == neg[2] );
+		BOOST_TEST( negd_arr[2] == neg[2] );
 	}
 	{
 		multi::array<double, 2> const arr = {
@@ -270,8 +273,8 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		};
 		// auto&& negd_arr = arr.static_array_cast<double, test::negater<double*>>();  // not compile, ok, read only
 		auto&& negd_arr = arr.static_array_cast<double, test::negater<double const*>>();
-		BOOST_REQUIRE( negd_arr[1][1] == neg[1][1] );
-		BOOST_REQUIRE( negd_arr[1][1] == -6.0 );
+		BOOST_TEST( negd_arr[1][1] == neg[1][1] );
+		BOOST_TEST( negd_arr[1][1] == -6.0 );
 		// negd_arr2[1][1] = 3.0;  // can't compile, ok, read-only
 	}
 	{
@@ -286,7 +289,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]}, {4, 5});
 
 		d2DC[1][1] = -66.0;
-		BOOST_REQUIRE_CLOSE(zee[1][1], 66.0, 1E-6);
+		BOOST_TEST( std::abs( zee[1][1] - 66.0) < 1E-6 );
 #endif
 		{
 			using complex = std::complex<double>;
@@ -299,16 +302,16 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			};
 
 			auto&& d2Dreal = d2D.reinterpret_array_cast<double>();
-			BOOST_REQUIRE_CLOSE(d2Dreal[2][1], 9.0, 1E-6);
+			BOOST_TEST( std::abs( d2Dreal[2][1] - 9.0) < 1E-6 );
 
 			d2Dreal[2][1] = 12.0;
-			BOOST_REQUIRE( d2D[2][1] == complex(12.0, 1.0) );
+			BOOST_TEST( d2D[2][1] == complex(12.0, 1.0) );
 
 			auto&& d2DrealT = d2D.rotated().reinterpret_array_cast<double>();
-			BOOST_REQUIRE_CLOSE(d2DrealT[2][1], 7.0, 1E-6);
+			BOOST_TEST( std::abs( d2DrealT[2][1] -  7.0) < 1E-6);
 
 			multi::array<double, 2> const d2Dreal_copy = d2D.template reinterpret_array_cast<double>();
-			BOOST_REQUIRE( d2Dreal_copy == d2Dreal );
+			BOOST_TEST( d2Dreal_copy == d2Dreal );
 		}
 		{
 			using complex = std::complex<double>;
@@ -320,7 +323,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 				{9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I},
 			};
 			auto conjd_arr = arr.static_array_cast<complex, test::conjr<complex*>>();
-			BOOST_REQUIRE( conjd_arr[1][2] == conj(arr[1][2]) );
+			BOOST_TEST( conjd_arr[1][2] == conj(arr[1][2]) );
 		}
 	}
 }
@@ -335,8 +338,9 @@ BOOST_AUTO_TEST_CASE(transformed_to_string) {
 	};
 	multi::array<std::string, 2> BB = AA.element_transformed([](int ee) noexcept { return std::to_string(ee); });
 
-	BOOST_REQUIRE( BB[1][1] == "4" );
+	BOOST_TEST( BB[1][1] == "4" );
 }
 #endif
+return boost::report_errors();}
 
 #undef BOOST_MULTI_DECLRETURN
