@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
 BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
 	constexpr auto f = [] {
 		std::array<int,
-			60 + 18 // 3*4*5 + (4-1)*5 + (5 - 1)    60 + 15 + 4 = 79
+			60 + 18  // 3*4*5 + (4-1)*5 + (5 - 1) or 60 + 15 + 4 = 79
 		> buffer = {};
 
 		multi::array_ref<int, 3> arr({3, 4, 5}, &buffer[0]);  // // TODO(correaa) think how to handle references to arrays (UB)
