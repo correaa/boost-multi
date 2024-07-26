@@ -340,8 +340,8 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	BOOST_MULTI_HD constexpr subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout>* other)
 	: subarray_ptr(other->base(), other->layout()) {}
 
-	BOOST_MULTI_HD subarray_ptr(subarray_ptr const&) = default;
-	BOOST_MULTI_HD subarray_ptr(subarray_ptr     &&) = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
+	subarray_ptr(subarray_ptr const&) = default;
+	subarray_ptr(subarray_ptr     &&) = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
 
 	auto operator=(subarray_ptr const& other) -> subarray_ptr& = default;
 
