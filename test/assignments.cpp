@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(range_assignment) {
 		multi::array<int, 1> vec(ext.begin(), ext.end());
 
 		BOOST_TEST( ext.size() == vec.size() );
-		BOOST_TEST( vec[1] = 10 );
+		BOOST_TEST( vec[1] == 1L );
 	}
 	{
 		multi::array<int, 1> vec(multi::extensions_t<1>{ multi::iextension{ 10 } });
