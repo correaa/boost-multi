@@ -51,7 +51,6 @@ template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(arra
 #define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
 
 int main() {
-
 namespace multi = boost::multi;
 
 #ifndef _MSC_VER  // MSVC 14.40 is not constexpr ready?
