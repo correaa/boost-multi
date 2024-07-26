@@ -52,7 +52,7 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 	// = default;  // this copies the internal buffer
 	{}
 
-	[[deprecated("don't move dynamic container with static_allocator")]]
+	// [[deprecated("don't move dynamic container with static_allocator")]]
 	static_allocator(static_allocator&& /*other*/)  // this is called *by the elements* during move construction of a vector
 	// = delete;
 	// {throw std::runtime_error("don't move dynamic container with static_allocator");}  // this is called *by the elements* during move construction of a vector
