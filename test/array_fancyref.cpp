@@ -203,10 +203,10 @@ BOOST_AUTO_TEST_CASE(multi_fancy) {
 	namespace multi = boost::multi;
 
 	multi::array<double, 2, fancy::allocator<double>> arr({ 5, 5 });
-	BOOST_REQUIRE( arr.size() == 5 );
-	BOOST_REQUIRE( arr[1][1] == arr[2][2] );
+	BOOST_TEST( arr.size() == 5 );
+	BOOST_TEST( arr[1][1] == arr[2][2] );
 
 	multi::array<double, 2, fancy::allocator<double>> const arr2({ 0, 0 });
-	BOOST_REQUIRE( arr2.size() == 0 );
+	BOOST_TEST( arr2.size() == 0 );
 }
 return boost::report_errors();}
