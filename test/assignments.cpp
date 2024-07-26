@@ -124,13 +124,13 @@ BOOST_AUTO_TEST_CASE(range_assignment) {
 	{
 		auto const ext = multi::make_extension_t(10L);
 
-		multi::array<multi::extensions_t<1>::size_type, 1> vec(ext.begin(), ext.end());
+		multi::array<multi::size_t, 1> vec(ext.begin(), ext.end());
 
 		BOOST_TEST( ext.size() == vec.size() );
 		BOOST_TEST( vec[1] == 1L );
 	}
 	{
-		multi::array<multi::extensions_t<1>::size_type, 1> vec(multi::extensions_t<1>{ multi::iextension{ 10 } });
+		multi::array<multi::size_t, 1> vec(multi::extensions_t<1>{ multi::iextension{ 10 } });
 
 		auto const ext = extension(vec);
 
