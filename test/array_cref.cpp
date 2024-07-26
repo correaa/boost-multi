@@ -46,7 +46,7 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
 BOOST_AUTO_TEST_CASE(array_cref) {

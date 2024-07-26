@@ -88,11 +88,11 @@ BOOST_AUTO_TEST_CASE(convertibles_1D) {
 
 	static_assert(std::is_convertible_v<NDRef, NDArray>);
 
-	static_assert(std::is_convertible_v<typename NDRef::reference, typename NDRef::value_type>);
-	static_assert(std::is_convertible_v<typename NDRef::const_reference, typename NDRef::value_type>);
+	static_assert( std::is_convertible<typename NDRef::reference, typename NDRef::value_type>::value );
+	static_assert( std::is_convertible<typename NDRef::const_reference, typename NDRef::value_type>::value );
 
-	static_assert(std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type>);
-	static_assert(std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference>);
+	static_assert( std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type> );
+	static_assert( std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference> );
 }
 
 BOOST_AUTO_TEST_CASE(convertibles_2D) {
