@@ -56,3 +56,4 @@ WhitespaceSensitiveMacros:
   - BOOST_REQUIRE
   - BOOST_TEST
   - BOOST_TEST_REQUIRE
+  - BOOST_AUTO_TEST_CASE
