@@ -3,37 +3,37 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wswitch-default"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wundef"
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wundef"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wswitch-default"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wundef"
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>
 
@@ -41,10 +41,14 @@
 
 namespace multi = boost::multi;
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(multi_array_sliced_empty) {
 	multi::array<double, 2> const arr({0, 0}, 99.0);
-	BOOST_REQUIRE( arr.sliced(0, 0).is_empty() );
-	// BOOST_REQUIRE( arr.sliced(1, 1).is_empty() );  // this results in offsetting nullptr
+	BOOST_TEST( arr.sliced(0, 0).is_empty() );
+	// BOOST_TEST( arr.sliced(1, 1).is_empty() );  // this results in offsetting nullptr
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced) {
@@ -55,28 +59,28 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced) {
 	static_assert(decltype(arr.sliced(0, 5))::rank{} == 4);
 	static_assert(decltype(arr.sliced(0, 5))::rank_v == 4);
 
-	BOOST_REQUIRE(  arr.sliced( 0, 5)[1][2][3][4] ==  arr[1][2][3][4] );
-	BOOST_REQUIRE( &arr.sliced( 0, 5)[1][2][3][4] == &arr[1][2][3][4] );
+	BOOST_TEST(  arr.sliced( 0, 5)[1][2][3][4] ==  arr[1][2][3][4] );
+	BOOST_TEST( &arr.sliced( 0, 5)[1][2][3][4] == &arr[1][2][3][4] );
 
-	BOOST_REQUIRE(  arr.sliced( 0, 5)[1] ==  arr[1] );
-	BOOST_REQUIRE( &arr.sliced( 0, 5)[1] == &arr[1] );
+	BOOST_TEST(  arr.sliced( 0, 5)[1] ==  arr[1] );
+	BOOST_TEST( &arr.sliced( 0, 5)[1] == &arr[1] );
 
-	BOOST_REQUIRE(  arr.sliced( 0,  0).empty() );
-	BOOST_REQUIRE(  arr.sliced( 1,  1).empty() );
-	BOOST_REQUIRE(  arr.sliced( 0, 10).size() == 10 );
+	BOOST_TEST(  arr.sliced( 0,  0).empty() );
+	BOOST_TEST(  arr.sliced( 1,  1).empty() );
+	BOOST_TEST(  arr.sliced( 0, 10).size() == 10 );
 
-	BOOST_REQUIRE(  arr[1].sliced(0, 5)[2][3][4] ==  arr[1][2][3][4] );
-	BOOST_REQUIRE( &arr[1].sliced(0, 5)[2][3][4] == &arr[1][2][3][4] );
+	BOOST_TEST(  arr[1].sliced(0, 5)[2][3][4] ==  arr[1][2][3][4] );
+	BOOST_TEST( &arr[1].sliced(0, 5)[2][3][4] == &arr[1][2][3][4] );
 
-	BOOST_REQUIRE(  arr[1].sliced(0, 5)[2] ==  arr[1][2] );
-	BOOST_REQUIRE( &arr[1].sliced(0, 5)[2] == &arr[1][2] );
+	BOOST_TEST(  arr[1].sliced(0, 5)[2] ==  arr[1][2] );
+	BOOST_TEST( &arr[1].sliced(0, 5)[2] == &arr[1][2] );
 
-	BOOST_REQUIRE( arr[1].sliced(0,  0).is_empty() );
-	BOOST_REQUIRE( arr[1].sliced(1,  1).is_empty() );
-	BOOST_REQUIRE( arr[1].sliced(0, 20).size() == 20 );
+	BOOST_TEST( arr[1].sliced(0,  0).is_empty() );
+	BOOST_TEST( arr[1].sliced(1,  1).is_empty() );
+	BOOST_TEST( arr[1].sliced(0, 20).size() == 20 );
 
-	BOOST_REQUIRE(  (arr.rotated()).sliced(0, 5)[1][2][3][4] ==  (arr.rotated())[1][2][3][4] );
-	BOOST_REQUIRE( &(arr.rotated()).sliced(0, 5)[1][2][3][4] == &(arr.rotated())[1][2][3][4] );
+	BOOST_TEST(  (arr.rotated()).sliced(0, 5)[1][2][3][4] ==  (arr.rotated())[1][2][3][4] );
+	BOOST_TEST( &(arr.rotated()).sliced(0, 5)[1][2][3][4] == &(arr.rotated())[1][2][3][4] );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_stride) {
@@ -86,7 +90,7 @@ BOOST_AUTO_TEST_CASE(multi_array_stride) {
 		{ 90, 100, 110, 120},
 		{130, 140, 150, 160},
 	};
-	BOOST_REQUIRE((
+	BOOST_TEST((
 		arr.strided(2) == multi::array<int, 2>{
 			{ 10,  20,  30,  40},
 			{ 90, 100, 110, 120},
@@ -101,7 +105,7 @@ BOOST_AUTO_TEST_CASE(multi_array_take) {
 		{ 90, 100, 110, 120},
 		{130, 140, 150, 160},
 	};
-	BOOST_REQUIRE((
+	BOOST_TEST((
 		arr.taked(2) == multi::array<int, 2>{
 			{ 10,  20,  30,  40},
 			{ 50,  60,  70,  80},
@@ -116,10 +120,11 @@ BOOST_AUTO_TEST_CASE(drop) {
 		{ 90, 100, 110, 120},
 		{130, 140, 150, 160},
 	};
-	BOOST_REQUIRE((
+	BOOST_TEST((
 		arr.dropped(2) == multi::array<double, 2>{
 			{ 90, 100, 110, 120},
 			{130, 140, 150, 160},
 		}
 	));
 }
+return boost::report_errors();}
