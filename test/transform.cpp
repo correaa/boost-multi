@@ -244,14 +244,13 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 
 		negd_a = 100;
 		BOOST_TEST( negd_a == 100 );
-		BOOST_TEST( val = -100 );
+		BOOST_TEST( val == -100 );
 	}
 	{
 		multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
 		auto&&                  ref = arr.static_array_cast<double, double const*>();
 		BOOST_TEST( std::abs(ref[2] - arr[2]) < 1E-6 );
 	}
-
 	{
 		multi::array<double, 1> const arr      = {+0.0, +1.0, +2.0, +3.0, +4.0};
 		multi::array<double, 1>       neg      = {-0.0, -1.0, -2.0, -3.0, -4.0};

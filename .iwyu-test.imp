@@ -22,6 +22,7 @@
     { "include": ["@<boost/preprocessor/logical/limits/bool_256.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/tools/assertion.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/tools/collection_comparison_op.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
+    { "include": ["@<boost/test/tools/cstring_comparison_op.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/tools/interface.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/tools/fpc_op.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
     { "include": ["@<boost/test/tools/old/interface.hpp>", "private", "<boost/test/unit_test.hpp>", "public"] },
