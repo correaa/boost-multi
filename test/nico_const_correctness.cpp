@@ -3,34 +3,34 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wundef"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>  // for subarray, array, range, operator!=
 
@@ -50,6 +50,39 @@ void print(Array1D const& coll) {
 	std::cout << '\n';
 }
 
+template<class Array1D>
+auto fill_99(Array1D&& col) -> Array1D&& {
+	std::fill(std::begin(col), std::end(col), 99);
+	return std::forward<Array1D>(col);
+}
+
+template<class Array2D>
+void print_2d(Array2D const& coll) {
+	// *(coll.begin()->begin()) = 99;  // doesn't compile "assignment of read-only location"
+
+	std::for_each(std::begin(coll), std::end(coll), [](auto const& row) {
+		std::copy(std::begin(row), std::end(row), std::ostream_iterator<typename Array2D::element_type>(std::cout, ", "));
+		std::cout << '\n';
+	});
+}
+
+template<class Array1D>
+auto fill_2d_99(Array1D&& coll) -> Array1D&& {
+	// for(auto const& row : coll) {  // does not work because it would make it const
+	std::for_each(std::begin(coll), std::end(coll), [](typename std::decay_t<Array1D>::reference row) {
+		std::fill(std::begin(row), std::end(row), 99);
+	});
+	// std::transform(coll.begin(), coll.end(), coll.begin(), [](auto&& row) {
+	//  std::fill(row.begin(), row.end(), 99);
+	//  return std::forward<decltype(row)>(row);
+	// });
+	return std::forward<Array1D>(coll);
+}
+
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(const_views) {
 	multi::array<int, 1> coll1 = { 0, 8, 15, 47, 11, 42 };
 	print(coll1);  // prints "0, 8, 15, 47, 11, 42"
@@ -58,12 +91,6 @@ BOOST_AUTO_TEST_CASE(const_views) {
 
 	auto&& coll1_take3 = coll1({ 0, 3 });
 	print(coll1_take3);  // prints "0, 8, 15"
-}
-
-template<class Array1D>
-auto fill_99(Array1D&& col) -> Array1D&& {
-	std::fill(std::begin(col), std::end(col), 99);
-	return std::forward<Array1D>(col);
 }
 
 BOOST_AUTO_TEST_CASE(mutating_views) {
@@ -85,16 +112,6 @@ BOOST_AUTO_TEST_CASE(mutating_views) {
 	(void)coll2, (void)coll1_take3_const, (void)coll1_take3;
 }
 
-template<class Array2D>
-void print_2d(Array2D const& coll) {
-	// *(coll.begin()->begin()) = 99;  // doesn't compile "assignment of read-only location"
-
-	std::for_each(std::begin(coll), std::end(coll), [](auto const& row) {
-		std::copy(std::begin(row), std::end(row), std::ostream_iterator<typename Array2D::element_type>(std::cout, ", "));
-		std::cout << '\n';
-	});
-}
-
 BOOST_AUTO_TEST_CASE(const_views_2d) {
 	multi::array<int, 2> coll1 = {
 		{0, 8, 15, 47, 11, 42},
@@ -107,19 +124,6 @@ BOOST_AUTO_TEST_CASE(const_views_2d) {
 
 	auto&& coll1_take3 = coll1({ 0, 2 }, { 0, 3 });
 	print_2d(coll1_take3);  // prints "0, 8, 15"
-}
-
-template<class Array1D>
-auto fill_2d_99(Array1D&& coll) -> Array1D&& {
-	// for(auto const& row : coll) {  // does not work because it would make it const
-	std::for_each(std::begin(coll), std::end(coll), [](typename std::decay_t<Array1D>::reference row) {
-		std::fill(std::begin(row), std::end(row), 99);
-	});
-	// std::transform(coll.begin(), coll.end(), coll.begin(), [](auto&& row) {
-	//  std::fill(row.begin(), row.end(), 99);
-	//  return std::forward<decltype(row)>(row);
-	// });
-	return std::forward<Array1D>(coll);
 }
 
 BOOST_AUTO_TEST_CASE(mutating_views_2d) {
@@ -143,3 +147,4 @@ BOOST_AUTO_TEST_CASE(mutating_views_2d) {
 
 	(void)coll2, (void)coll1_take3_const, (void)coll1_take3;
 }
+return boost::report_errors();}
