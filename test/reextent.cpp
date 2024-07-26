@@ -244,8 +244,8 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d) {
 	BOOST_TEST( size(arr) == 0 );
 
 	arr.reextent({ 20, 30 }, 90);
-	BOOST_TEST( arr[1][2] = 90 );
-	BOOST_TEST( arr[11][22] = 90 );
+	BOOST_TEST( arr[1][2] == 90 );
+	BOOST_TEST( arr[11][22] == 90 );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_2d_with_move) {
@@ -258,7 +258,6 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d_with_move) {
 	arr = std::move(arr).reextent({ 3, 2 });
 
 	BOOST_TEST( arr.size() == 3 );
-	BOOST_TEST( arr[1][2] = 10 );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
