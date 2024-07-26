@@ -3,37 +3,37 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wswitch-default"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wundef"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wswitch-default"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>
 
@@ -55,11 +55,15 @@ struct multiplies_bind1st {
 	multi::array<complex, 2> m_;
 };
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(multi_construct_1d) {
 	multi::static_array<int, 1> arr(multi::extensions_t<1>{ multi::iextension{ 10 } }, 10);
 	//  multi::static_array<int, 1> arr(multi::array<int, 1>::extensions_type{10}, 10);
-	BOOST_REQUIRE( size(arr) == 10 );
-	BOOST_REQUIRE( arr[1] == 10 );
+	BOOST_TEST( size(arr) == 10 );
+	BOOST_TEST( arr[1] == 10 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug) {
@@ -72,40 +76,40 @@ BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug) {
 BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 	{
 		multi::array<double, 1> const arr(multi::extensions_t<1>{ multi::iextension{ 10 } });
-		BOOST_REQUIRE( size(arr) == 10 );
+		BOOST_TEST( size(arr) == 10 );
 	}
 	{
 		multi::array<int, 1> arr(multi::extensions_t<1>{ multi::iextension{ 10 } }, int{});
-		BOOST_REQUIRE( size(arr) == 10 );
-		BOOST_REQUIRE( arr[5] == int{} );
+		BOOST_TEST( size(arr) == 10 );
+		BOOST_TEST( arr[5] == int{} );
 	}
 	{
 		multi::array<int, 1> arr(multi::extensions_t<1>{ multi::iextension{ 10 } }, int{});
-		BOOST_REQUIRE( size(arr) == 10 );
-		BOOST_REQUIRE( arr[5] == int{} );
+		BOOST_TEST( size(arr) == 10 );
+		BOOST_TEST( arr[5] == int{} );
 	}
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	{
 		multi::array arr(multi::extensions_t<1>({ 0, 10 }), int{});
-		BOOST_REQUIRE( size(arr) == 10 );
-		BOOST_REQUIRE( arr[5] == int{} );
+		BOOST_TEST( size(arr) == 10 );
+		BOOST_TEST( arr[5] == int{} );
 	}
 	{
 		// clang-format off
 		multi::array arr({{0, 10}}, int{});
 		// clang-format on
-		BOOST_REQUIRE( size(arr) == 10 );
-		BOOST_REQUIRE( arr[5] == int{} );
+		BOOST_TEST( size(arr) == 10 );
+		BOOST_TEST( arr[5] == int{} );
 	}
 	{
 		multi::array arr({ 10 }, int{});
-		BOOST_REQUIRE( size(arr) == 10 );
-		BOOST_REQUIRE( arr[5] == int{} );
+		BOOST_TEST( size(arr) == 10 );
+		BOOST_TEST( arr[5] == int{} );
 	}
 	{
 		multi::array arr(10, int{});
-		BOOST_REQUIRE( size(arr) == 10 );
-		BOOST_REQUIRE( arr[5] == int{} );
+		BOOST_TEST( size(arr) == 10 );
+		BOOST_TEST( arr[5] == int{} );
 	}
 #endif
 }
@@ -113,8 +117,8 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 BOOST_AUTO_TEST_CASE(multi_constructors_2d_ctad) {
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	multi::array arr({ 10, 20 }, int{});
-	BOOST_REQUIRE( size(arr) == 10 );
-	BOOST_REQUIRE( arr[5][6] == int{} );
+	BOOST_TEST( size(arr) == 10 );
+	BOOST_TEST( arr[5][6] == int{} );
 #endif
 }
 
@@ -131,48 +135,48 @@ BOOST_AUTO_TEST_CASE(multi_constructors) {
 		// multi::array<double, 1> arr({10}, {}); assert(size(arr)==10); // error ambiguous
 	} {
 		multi::array<int, 1> arr = { 10 };
-		BOOST_REQUIRE( size(arr) == 1 );
-		BOOST_REQUIRE( arr[0] == 10 );
+		BOOST_TEST( size(arr) == 1 );
+		BOOST_TEST( arr[0] == 10 );
 	}
 	{
 		multi::array<std::size_t, 1> arr = { 10 };
-		BOOST_REQUIRE( size(arr) == 1 );
-		BOOST_REQUIRE( arr[0] == 10 );
+		BOOST_TEST( size(arr) == 1 );
+		BOOST_TEST( arr[0] == 10 );
 	}
 	{
 		multi::array<int, 1> arr = { 10 };
-		BOOST_REQUIRE( size(arr) == 1 );
-		BOOST_REQUIRE( arr[0] == 10 );
+		BOOST_TEST( size(arr) == 1 );
+		BOOST_TEST( arr[0] == 10 );
 	}
 	{
 		multi::array<int, 1> arr({ 10 });
-		BOOST_REQUIRE( size(arr) == 1 );
-		BOOST_REQUIRE( arr[0] == 10 );
+		BOOST_TEST( size(arr) == 1 );
+		BOOST_TEST( arr[0] == 10 );
 	}
 	{
 		multi::array<std::size_t, 1> arr({ 10 });
-		BOOST_REQUIRE( size(arr) == 1 );
-		BOOST_REQUIRE( arr[0] == 10 );
+		BOOST_TEST( size(arr) == 1 );
+		BOOST_TEST( arr[0] == 10 );
 	}
 	{
 		multi::array<int, 1> arr({ 10 });
-		BOOST_REQUIRE( size(arr) == 1 );
-		BOOST_REQUIRE( arr[0] == 10 );
+		BOOST_TEST( size(arr) == 1 );
+		BOOST_TEST( arr[0] == 10 );
 		//}{ multi::array<std::size_t, 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 		//}{ multi::array<int        , 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 		//}{ multi::array<double     , 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 	}
 	{
 		multi::array<std::size_t, 1> const arr({ 0, 10 });
-		BOOST_REQUIRE( size(arr) == 2 );
+		BOOST_TEST( size(arr) == 2 );
 	}
 	{
 		multi::array<int, 1> const arr({ 0, 10 });
-		BOOST_REQUIRE( size(arr) == 2 );
+		BOOST_TEST( size(arr) == 2 );
 	}
 	{
 		multi::array<double, 1> const arr({ 0, 10 });
-		BOOST_REQUIRE( size(arr) == 2 );
+		BOOST_TEST( size(arr) == 2 );
 	}
 	{
 		using T = multi::array<std::string, 3>;
@@ -231,7 +235,7 @@ BOOST_AUTO_TEST_CASE(views_cannot_be_elements2) {
 //    {3.0, 4.0},
 //  };
 // [[maybe_unused]] auto pp = std::unique_ptr<multi::array<double, 1>>(new multi::array<double, 1>{AA[0]});  // NOLINT(modernize-make-unique) testing new
-// BOOST_REQUIRE(pp);
+// BOOST_TEST(pp);
 // }
 
 //  vvv this test gives an error with Windows' GCC
@@ -248,3 +252,5 @@ BOOST_AUTO_TEST_CASE(views_cannot_be_elements2) {
 //  pd1->~D1();  // NOSONAR(cpp:S3432) testing placement new
 //  ::operator delete(buf);
 // }
+
+return boost::report_errors();}

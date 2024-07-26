@@ -59,7 +59,7 @@ using small_array = multi::static_array<T, D, multi::detail::static_allocator<T,
 // https://godbolt.org/z/d8ozWahna
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
 BOOST_AUTO_TEST_CASE(static_array_allocator) {
