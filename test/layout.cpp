@@ -1081,8 +1081,10 @@ return boost::report_errors();}
 
 #else
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 int main() {
-	return 0;
+	return boost::report_errors();}
 }
 
 #endif
