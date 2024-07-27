@@ -15,8 +15,6 @@ namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
-//#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
-// #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
 int main() {
 BOOST_AUTO_TEST_CASE(multi_blas_syrk_real) {
@@ -314,4 +312,3 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_implicit_zero) {
 	}
 }
 return boost::report_errors();}
-

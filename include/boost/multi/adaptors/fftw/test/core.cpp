@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/tools/fpc_tolerance.hpp>
+// #include <boost/test/included/unit_test.hpp>
+// #include <boost/test/tools/fpc_tolerance.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
@@ -65,10 +65,19 @@ template<class T> class randomizer<std::complex<T>> {
 	}
 };
 
-using fftw_fixture = fftw::environment;
-BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
+// using fftw_fixture = fftw::environment;
+// BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
 
-BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+//#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
+// #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
+
+int main() {
+
+fftw::environment env;
+
+BOOST_AUTO_TEST_CASE(fftw_2D_identity_2) { //, *boost::unit_test::tolerance(0.0001)) {
 	using complex = std::complex<double>;
 
 	[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -84,13 +93,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
 
 	multi::fftw::dft_forward({false, false}, in, out);  // out = in;
 
-	BOOST_TEST_REQUIRE( in[2][3].real() == out[2][3].real() );
-	BOOST_TEST_REQUIRE( in[2][3].imag() == out[2][3].imag() );
+	BOOST_TEST( in[2][3].real() == out[2][3].real() );
+	BOOST_TEST( in[2][3].imag() == out[2][3].imag() );
 
-	BOOST_REQUIRE( out == in );
+	BOOST_TEST( out == in );
 }
 
-BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
+BOOST_AUTO_TEST_CASE(fftw_2D_many) {  // , *boost::unit_test::tolerance(0.0001)) {
 	using complex = std::complex<double>;
 
 	auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -107,7 +116,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
 	using multi::fftw::dft_forward;
 
 	multi::fftw::dft_forward({false, false}, in.rotated(), out.rotated());
-	BOOST_REQUIRE( in == out );
+	BOOST_TEST( in == out );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_many1_from_2) {
@@ -127,7 +136,7 @@ BOOST_AUTO_TEST_CASE(fftw_many1_from_2) {
 		return std::forward<decltype(out2_elem)>(out2_elem);
 	});
 
-	BOOST_REQUIRE(out2 == out);
+	BOOST_TEST(out2 == out);
 }
 
 BOOST_AUTO_TEST_CASE(fftw_many2_from_3) {
@@ -147,7 +156,7 @@ BOOST_AUTO_TEST_CASE(fftw_many2_from_3) {
 		return std::forward<decltype(out2_elem)>(out2_elem);
 	});
 
-	BOOST_REQUIRE(out2 == out);
+	BOOST_TEST(out2 == out);
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
@@ -160,7 +169,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
 	multi::array<complex, 2> out(extensions(in));
 	auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
 	pln.execute(in.base(), out.base());
-	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-7 );
+	BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-7 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
@@ -173,7 +182,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
 	multi::array<complex, 2> out(extensions(in));
 	auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
 	pln.execute(in.base(), out.base());
-	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+	BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
@@ -186,7 +195,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
 	multi::array<complex, 2> out(extensions(in));
 	auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
 	pln.execute(in.base(), out.base());
-	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+	BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_dft) {
@@ -197,7 +206,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_dft) {
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::dft_forward({true, true}, in, out);
-	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+	BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
@@ -216,7 +225,7 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
 		multi::array_ref<complex, 3>(data_elements(io), extensions(io)),
 		multi::array_ref<complex, 3>(data_elements(io), extensions(io))
 	);
-	BOOST_REQUIRE( powerin - power(io)/num_elements(io) < 1e-10 );
+	BOOST_TEST( powerin - power(io)/num_elements(io) < 1e-10 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
@@ -245,7 +254,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
 	};
 	multi::array<complex, 2> const in_transpose = in.transposed();
 	in                                          = in.transposed();
-	BOOST_REQUIRE( in != in_transpose );
+	BOOST_TEST( in != in_transpose );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
@@ -259,7 +268,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
 	};
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in                                              = in.transposed();
-	BOOST_REQUIRE( in != in_transpose );
+	BOOST_TEST( in != in_transpose );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
@@ -272,5 +281,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
 	};
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in                                              = in.transposed();
-	BOOST_REQUIRE( in != in_transpose );
+	BOOST_TEST( in != in_transpose );
 }
+return boost::report_errors();}
