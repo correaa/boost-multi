@@ -190,8 +190,8 @@ else()
 	-Wstack-protector  # -Wstack-usage=<byte-size>
 	-Wstrict-aliasing #=3 # -Wstrict-aliasing=<0,3>
 	-Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
-	# -Wstrict-overflow=2
-	-Wstrict-overflow=3  # not compatible with Boost.Test
+	-Wstrict-overflow=2
+	# -Wstrict-overflow=3  # incompatible with index_range operator-
 	# -Wstrict-overflow=4  # not compatible with stl heap
 	# -Wstrict-overflow=5  # not compatible with Boost.Test
 	# -Wstring-compare # (gcc 11, not in 9)
