@@ -4,7 +4,7 @@
 
 // See: https://github.com/llvm/llvm-project/issues/61415
 // Should be fixed in 18, but we know 16 and 17 are broken
-#if !(defined(__clang__) && (__clang_major__ == 16 || __clang_major__ == 17) && __cplusplus > 202002L)
+// #if !(defined(__clang__) && (__clang_major__ == 16 || __clang_major__ == 17) && __cplusplus > 202002L)
 
 	// #if defined(__clang__)
 	//  #pragma clang diagnostic push
@@ -1079,12 +1079,12 @@ BOOST_AUTO_TEST_CASE(layout_2D_iteration) {
 	#endif
 return boost::report_errors();}
 
-#else
+// #else
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
-int main() {
-	return boost::report_errors();}
-}
+// #include <boost/core/lightweight_test.hpp>
+// #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+// int main() {
+//  return boost::report_errors();}
+// }
 
-#endif
+// #endif
