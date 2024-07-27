@@ -1,6 +1,6 @@
 // Copyright 2022-2024 Alfredo A. Correa
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 
@@ -10,6 +10,7 @@
 #include <chrono>     // NOLINT(build/c++11)
 #include <complex>    // for complex
 #include <cstddef>    // for size_t, ptrdiff_t
+#include <iostream>
 #include <random>
 
 template<class T>
@@ -53,9 +54,12 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 namespace multi = boost::multi;
 namespace fftw  = multi::fftw;
 
-using fftw_fixture = fftw::environment;
-BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
+int main() {
+
+fftw::environment env;
 BOOST_AUTO_TEST_CASE(fftw_shift) {
 	class watch : std::chrono::steady_clock {
 		time_point start_ = now();
@@ -65,9 +69,9 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 	};
 
 	multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);
-	BOOST_REQUIRE(arr.size() == 19586);
+	BOOST_TEST(arr.size() == 19586);
 	multi::array<std::complex<double>, 1> res(arr.extensions());
-	BOOST_REQUIRE(res.size() == 19586);
+	BOOST_TEST(res.size() == 19586);
 
 	auto fdft = fftw::plan::forward({true}, arr.base(), arr.layout(), res.base(), res.layout());
 	// fftw::plan fdft({true}, arr.layout(), res.layout(), multi::fftw::forward);
@@ -80,6 +84,7 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 				std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());
 			}
 		);
-		BOOST_TEST_MESSAGE("FFTW shift " << unnamed.elapsed_sec() / repeat << " sec");  // prints  0.000882224 sec
+		std::cout << "FFTW shift " << unnamed.elapsed_sec() / repeat << " sec";  // prints  0.000882224 sec
 	}();
 }
+return boost::report_errors();}
