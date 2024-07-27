@@ -314,8 +314,7 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 
 	multi::array<int, 2> B2copy = B2({0, 2}, {0, 2});
 
-	// auto B2copy2 =
-	B2({0, 2}, {0, 2}).decay();
+	auto B2copy2 = B2({0, 2}, {0, 2}).decay();
 
 	#if 0
 	BOOST_TEST( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
