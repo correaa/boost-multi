@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(multi_array_involution) {
 	BOOST_TEST( cee == -50 );
 
 	cee = 100;
-	BOOST_TEST( doub = -100 );
+	BOOST_TEST( doub == -100 );
 
 	auto m5 = involuted<int, std::negate<>>(50);
 	BOOST_TEST( m5 == -50 );
