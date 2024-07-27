@@ -45,6 +45,12 @@
 #include <tuple>       // for tie, operator==, tuple
 // IWYU pragma: no_include <utility>  // for addressof  std::addressof is in memory
 
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#endif
+
 #if defined(_MSC_VER)
 	#pragma warning(push)
 	#pragma warning(disable : 4324)  // Explicit padding required, for particle example
