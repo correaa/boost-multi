@@ -147,10 +147,12 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wformat-truncation
 					-Wno-unknown-pragmas> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+					# -Weverything
 					-Wextra
 					-Wpedantic
 					-Wmove
 					-Wno-error=\#warnings>
+					-Wno-c++98-compat  # use of constexpr
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
 					-wd161
