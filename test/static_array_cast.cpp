@@ -2,41 +2,41 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wundef"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if (__GNUC__ > 7)
-		#pragma GCC diagnostic ignored "-Wcast-function-type"
-	#endif
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wundef"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>  // TODO(correaa) remove in c++20
 
 #include <algorithm>    // for equal
 #include <cassert>      // for assert
-#include <functional>   // for negate
+#include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for begin, end
 #include <memory>       // for pointer_t...
 #include <numeric>      // for iota
@@ -131,17 +131,21 @@ template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class Ptr> using negater = involuter<Ptr, std::negate<>>;
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(multi_array_involution) {
 	int doub = 50;
 
 	auto&& cee = involuted<int&, std::negate<>>{doub};
-	BOOST_REQUIRE( cee == -50 );
+	BOOST_TEST( cee == -50 );
 
 	cee = 100;
-	BOOST_REQUIRE( doub = -100 );
+	BOOST_TEST( doub = -100 );
 
 	auto m5 = involuted<int, std::negate<>>(50);
-	BOOST_REQUIRE( m5 == -50 );
+	BOOST_TEST( m5 == -50 );
 }
 
 BOOST_AUTO_TEST_CASE(static_array_cast) {
@@ -149,16 +153,16 @@ BOOST_AUTO_TEST_CASE(static_array_cast) {
 
 	auto&& ref = arr.static_array_cast<double, double const*>();
 
-	BOOST_REQUIRE( &ref[2] == &arr[2] );
-	BOOST_REQUIRE( &arr[2] == &ref[2] );
+	BOOST_TEST( &ref[2] == &arr[2] );
+	BOOST_TEST( &arr[2] == &ref[2] );
 
-	BOOST_REQUIRE( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+	BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
-	BOOST_REQUIRE( ref == arr() );
-	BOOST_REQUIRE( arr() == ref );
+	BOOST_TEST( ref == arr() );
+	BOOST_TEST( arr() == ref );
 
-	BOOST_REQUIRE( ref == arr );
-	BOOST_REQUIRE( arr == ref );
+	BOOST_TEST( ref == arr );
+	BOOST_TEST( arr == ref );
 }
 
 BOOST_AUTO_TEST_CASE(static_array_cast_2) {
@@ -167,14 +171,14 @@ BOOST_AUTO_TEST_CASE(static_array_cast_2) {
 
 	auto&& ref = arr.static_array_cast<int, int const*>();
 
-	BOOST_REQUIRE( ref[1][1] == arr[1][1] );
-	BOOST_REQUIRE( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
-	BOOST_REQUIRE( ref[1] == arr[1] );
+	BOOST_TEST( ref[1][1] == arr[1][1] );
+	BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
+	BOOST_TEST( ref[1] == arr[1] );
 
-	BOOST_REQUIRE( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+	BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
-	BOOST_REQUIRE( ref == arr );
-	BOOST_REQUIRE( arr == ref );
+	BOOST_TEST( ref == arr );
+	BOOST_TEST( arr == ref );
 }
 
 BOOST_AUTO_TEST_CASE(static_array_cast_3) {
@@ -184,11 +188,11 @@ BOOST_AUTO_TEST_CASE(static_array_cast_3) {
 
 		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
 
-		BOOST_REQUIRE( neg_arr[2] == arr2[2] );
-		BOOST_REQUIRE( arr2[2] == neg_arr[2] );
-		BOOST_REQUIRE( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );
-		BOOST_REQUIRE( neg_arr == arr2 );
-		BOOST_REQUIRE( arr2 == neg_arr );
+		BOOST_TEST( neg_arr[2] == arr2[2] );
+		BOOST_TEST( arr2[2] == neg_arr[2] );
+		BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );
+		BOOST_TEST( neg_arr == arr2 );
+		BOOST_TEST( arr2 == neg_arr );
 	}
 	{
 		multi::static_array<int, 2> arr({4, 5}, 0);
@@ -199,16 +203,17 @@ BOOST_AUTO_TEST_CASE(static_array_cast_3) {
 
 		auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
 
-		BOOST_REQUIRE( neg_arr[1][1] == arr2[1][1] );
-		BOOST_REQUIRE( arr2[1][1] == neg_arr[1][1] );
+		BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
+		BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
 
-		BOOST_REQUIRE( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
+		BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
 
-		BOOST_REQUIRE( arr2[1] == neg_arr[1] );
-		BOOST_REQUIRE( neg_arr[1] == arr2[1] );
+		BOOST_TEST( arr2[1] == neg_arr[1] );
+		BOOST_TEST( neg_arr[1] == arr2[1] );
 
-		BOOST_REQUIRE( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );
-		BOOST_REQUIRE( neg_arr == arr2 );
-		BOOST_REQUIRE( arr2 == neg_arr );
+		BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );
+		BOOST_TEST( neg_arr == arr2 );
+		BOOST_TEST( arr2 == neg_arr );
 	}
 }
+return boost::report_errors();}
