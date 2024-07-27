@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/included/unit_test.hpp>  // for BOOST_PP_IIF_1
+// #include <boost/test/included/unit_test.hpp>  // for BOOST_PP_IIF_1
 
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
@@ -13,7 +13,8 @@
 #include <boost/multi/array.hpp>                     // for array, subarray
 
 #include <algorithm>  // for min
-#include <cmath>      // for NAN
+#include <cmath>      // for NAN, abs
+// IWYU pragma: no_include <cstdlib>  // for abs
 #include <complex>    // for operator*, opera...
 #include <utility>    // for move
 
@@ -21,6 +22,11 @@
 
 namespace multi = boost::multi;
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
+
+int main() {
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0) {
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A;  // NOLINT(readability-identifier-length) BLAS naming
@@ -97,7 +103,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		BOOST_REQUIRE_CLOSE(B[1][2], 0.107143, 0.001);
-		BOOST_REQUIRE( (+blas::gemm(1., A_cpy, B))[1][2] == B_cpy[1][2] );
+		BOOST_TEST( (+blas::gemm(1., A_cpy, B))[1][2] == B_cpy[1][2] );
 	}
 	{
 		auto const AT     = +~A;
@@ -112,7 +118,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), B);
 		BOOST_REQUIRE_CLOSE(B[1][2], 0.107143, 0.001);
-		BOOST_REQUIRE( (+blas::gemm(1., blas::T(AT_cpy), B))[1][2] == B_cpy[1][2] );
+		BOOST_TEST( (+blas::gemm(1., blas::T(AT_cpy), B))[1][2] == B_cpy[1][2] );
 	}
 	{
 		auto const AT     = +~A;
@@ -127,7 +133,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		auto BT = +~B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), blas::T(BT));
 		BOOST_REQUIRE_CLOSE(blas::T(BT)[1][2], 0.107143, 0.001);
-		BOOST_REQUIRE( (+blas::gemm(1., blas::T(AT_cpy), blas::T(BT)))[1][2] == B[1][2] );
+		BOOST_TEST( (+blas::gemm(1., blas::T(AT_cpy), blas::T(BT)))[1][2] == B[1][2] );
 	}
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -250,10 +256,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 		multi::array<double, 2> B = {
 			{1.0, 2.0, 3.0},
 		};
-		BOOST_REQUIRE( B.size() == 1 );
+		BOOST_TEST( B.size() == 1 );
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::lower, 1.0, A, B);
-		BOOST_REQUIRE( B[0][1] == B_cpy[0][1]/A[0][0] );
+		BOOST_TEST( B[0][1] == B_cpy[0][1]/A[0][0] );
 	}
 	{
 		multi::array<double, 2> B = {
@@ -264,7 +270,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 		};
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::lower, 1.0, A, blas::T(B));
-		BOOST_REQUIRE( blas::T(B)[0][1] == blas::T(B_cpy)[0][1]/A[0][0] );
+		BOOST_TEST( blas::T(B)[0][1] == blas::T(B_cpy)[0][1]/A[0][0] );
 	}
 }
 
@@ -284,7 +290,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex) {
 		};
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::lower, {1.0, 0.0}, A, B);
-		BOOST_REQUIRE( B[0][1] == B_cpy[0][1]/A[0][0] );
+		BOOST_TEST( B[0][1] == B_cpy[0][1]/A[0][0] );
 	}
 	multi::array<complex, 2> B1 = {
 		{{1.0, 0.0}},
@@ -302,10 +308,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex) {
 	{
 		auto const B_cpy = B2;
 		blas::trsm(blas::side::right, blas::filling::upper, {1.0, 0.0}, blas::H(A), B2);
-		//  BOOST_REQUIRE( (+blas::gemm(1., A, blas::H(B)))[0][1] == blas::H(B_cpy)[0][1] );
-		BOOST_REQUIRE( (+blas::gemm(1., B2, blas::H(A)))[1][0] == B_cpy[1][0] );
+		//  BOOST_TEST( (+blas::gemm(1., A, blas::H(B)))[0][1] == blas::H(B_cpy)[0][1] );
+		BOOST_TEST( (+blas::gemm(1., B2, blas::H(A)))[1][0] == B_cpy[1][0] );
 	}
-	BOOST_REQUIRE( B1 == B2 );
+	BOOST_TEST( B1 == B2 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
@@ -327,7 +333,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 		};
 		auto const              B_cpy = +B;
 		multi::array<double, 2> BT    = +~B;
-		BOOST_REQUIRE( BT == ~B );
+		BOOST_TEST( BT == ~B );
 
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		BOOST_REQUIRE_CLOSE(B[1][2], 0.107143, 0.001);
@@ -441,3 +447,4 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized
 	blas::trsm(blas::side::left, {1.0, 0.0}, blas::U(A), blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 	BOOST_REQUIRE_CLOSE(imag(B[1][2]), -0.147059, 0.001);
 }
+return boost::report_errors();}
