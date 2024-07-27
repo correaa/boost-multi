@@ -8,6 +8,7 @@
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
+#include <array>
 #include<cassert>
 #include<complex>
 #include<cstdint>      // int64_t
