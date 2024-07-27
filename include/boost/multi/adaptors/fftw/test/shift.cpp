@@ -10,7 +10,7 @@
 #include <chrono>     // NOLINT(build/c++11)
 #include <complex>    // for complex
 #include <cstddef>    // for size_t, ptrdiff_t
-#include <iostream>
+#include <iostream>                         // for char_traits, basic_ostream
 #include <random>
 
 template<class T>
@@ -58,7 +58,6 @@ namespace fftw  = multi::fftw;
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
-
 fftw::environment env;
 BOOST_AUTO_TEST_CASE(fftw_shift) {
 	class watch : std::chrono::steady_clock {
@@ -84,7 +83,7 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 				std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());
 			}
 		);
-		std::cout << "FFTW shift " << unnamed.elapsed_sec() / repeat << " sec";  // prints  0.000882224 sec
+		std::cout << "FFTW shift " << unnamed.elapsed_sec() / repeat << " sec\n";  // prints  0.000882224 sec
 	}();
 }
 return boost::report_errors();}
