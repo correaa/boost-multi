@@ -220,7 +220,11 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	multi::array<double, 3>::iterator const it3{ it };
 	BOOST_TEST( it3 == it );
 
-	static_assert(std::is_same<multi::array<double, 3>::iterator::element_ptr, double*>{}, "!");
+	static_assert(std::is_same<multi::array<double, 3>::iterator::element_ptr, double*>{});
+
+	// cit = it3;
+	// BOOST_REQUIRE( cit == it3 );  // TODO(correaa)
+	// BOOST_REQUIRE( it3 == cit );  // TODO(correaa)
 
 	// cit = it3;
 	// BOOST_TEST( cit == it3 );  // TODO(correaa)
