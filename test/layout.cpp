@@ -2,60 +2,24 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-	// #if defined(__clang__)
-	//  #pragma clang diagnostic push
-	//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
-	//  #pragma clang diagnostic ignored "-Wconversion"
-	//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-	//  #pragma clang diagnostic ignored "-Wold-style-cast"
-	//  #pragma clang diagnostic ignored "-Wundef"
-	//  #pragma clang diagnostic ignored "-Wsign-conversion"
-	//  #pragma clang diagnostic ignored "-Wswitch-default"
-	// #elif defined(__GNUC__)
-	//  #pragma GCC diagnostic push
-	//  #if (__GNUC__ > 7)
-	//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-	//  #endif
-	//  #pragma GCC diagnostic ignored "-Wconversion"
-	//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-	//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-	//  #pragma GCC diagnostic ignored "-Wundef"
-	// #elif defined(_MSC_VER)
-	//  #pragma warning(push)
-	//  #pragma warning(disable : 4244)  // 'conversion' conversion from 'type1' to 'type2', possible loss of data
-	// #endif
 
-	// #ifndef BOOST_TEST_MODULE
-	//  #define BOOST_TEST_MAIN
-	// #endif
+#include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
 
-	// #include <boost/test/included/unit_test.hpp>
-
-	// #if defined(__clang__)
-	//  #pragma clang diagnostic pop
-	// #elif defined(__GNUC__)
-	//  #pragma GCC diagnostic pop
-	// #elif defined(_MSC_VER)
-	//  #pragma warning(pop)
-	// #endif
-
-	#include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
-
-	// #include <array>     // for array, array<>::value_type
-	// #include <iterator>  // for size
-	// #include <tuple>     // for make_tuple, tuple_element<>::type
+// #include <array>     // for array, array<>::value_type
+// #include <iterator>  // for size
+// #include <tuple>     // for make_tuple, tuple_element<>::type
 // IWYU pragma: no_include <type_traits>
 
 namespace multi = boost::multi;
 
-// namespace {
-// auto second_finish(multi::extensions_t<3> exts) {
-//  return std::get<1>(exts).last();
-// }
-// }  // namespace
+namespace {
+auto second_finish(multi::extensions_t<3> exts) {
+	return std::get<1>(exts).last();
+}
+}  // namespace
 
 #include <boost/core/lightweight_test.hpp>
-// #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
 // See: https://github.com/llvm/llvm-project/issues/61415
@@ -63,40 +27,39 @@ int main() {
 
 // #if !(defined(__clang__) && (__clang_major__ == 16 || __clang_major__ == 17) && __cplusplus > 202002L)
 
-// BOOST_AUTO_TEST_CASE(extensions_3D) {
-//  BOOST_TEST( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
-//  BOOST_TEST( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
-//  BOOST_TEST( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
+BOOST_AUTO_TEST_CASE(extensions_3D) {
+	BOOST_TEST( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
+	BOOST_TEST( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
+	BOOST_TEST( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
 
-//  multi::extensions_t<3> const exts({0, 10}, {0, 20}, {0, 30});
-//  BOOST_TEST( 20 == second_finish(exts) );
-// }
+	multi::extensions_t<3> const exts({0, 10}, {0, 20}, {0, 30});
+	BOOST_TEST( 20 == second_finish(exts) );
+}
 
+BOOST_AUTO_TEST_CASE(extensions_to_linear) {
+	multi::extensions_t<3> exts{4, 5, 3};
+	BOOST_TEST( exts.to_linear(0, 0, 0) ==  0 );
+	BOOST_TEST( exts.to_linear(0, 0, 1) ==  1 );
+	BOOST_TEST( exts.to_linear(0, 0, 2) ==  2 );
+	BOOST_TEST( exts.to_linear(0, 1, 0) ==  3 );
+	BOOST_TEST( exts.to_linear(0, 1, 1) ==  4 );
+	BOOST_TEST( exts.to_linear(0, 1, 2) ==  5 );
+	BOOST_TEST( exts.to_linear(1, 0, 0) == 15 );
 
-// BOOST_AUTO_TEST_CASE(extensions_to_linear) {
-//  multi::extensions_t<3> exts{4, 5, 3};
-//  BOOST_TEST( exts.to_linear(0, 0, 0) ==  0 );
-//  BOOST_TEST( exts.to_linear(0, 0, 1) ==  1 );
-//  BOOST_TEST( exts.to_linear(0, 0, 2) ==  2 );
-//  BOOST_TEST( exts.to_linear(0, 1, 0) ==  3 );
-//  BOOST_TEST( exts.to_linear(0, 1, 1) ==  4 );
-//  BOOST_TEST( exts.to_linear(0, 1, 2) ==  5 );
-//  BOOST_TEST( exts.to_linear(1, 0, 0) == 15 );
+	for(int eye = 0; eye != 4; ++eye) {
+		for(int jay = 0; jay != 5; ++jay) {
+			for(int kay = 0; kay != 3; ++kay) {
+				BOOST_TEST(( exts.from_linear(exts.to_linear(eye, jay, kay)) == decltype(exts.from_linear(exts.to_linear(eye, jay, kay))){eye, jay, kay} ));
+			}
+		}
+	}
 
-//  for(int eye = 0; eye != 4; ++eye) {
-//      for(int jay = 0; jay != 5; ++jay) {
-//          for(int kay = 0; kay != 3; ++kay) {
-//              BOOST_TEST(( exts.from_linear(exts.to_linear(eye, jay, kay)) == decltype(exts.from_linear(exts.to_linear(eye, jay, kay))){eye, jay, kay} ));
-//          }
-//      }
-//  }
+	BOOST_TEST( exts.to_linear(4, 0, 0) == exts.num_elements() );
 
-//  BOOST_TEST( exts.to_linear(4, 0, 0) == exts.num_elements() );
-
-//  for(int idx = 0; idx != exts.num_elements(); ++idx) {
-//      BOOST_TEST( std::apply([&](auto... indices) { return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
-//  }
-// }
+	for(int idx = 0; idx != exts.num_elements(); ++idx) {
+		BOOST_TEST( std::apply([&](auto... indices) { return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
+	}
+}
 
 // BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
 //  multi::array<double, 3> arr(
