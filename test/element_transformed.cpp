@@ -87,7 +87,7 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(ArG) [[maybe_unused]] void* ArG ;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
