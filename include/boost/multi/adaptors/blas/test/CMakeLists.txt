@@ -152,7 +152,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wpedantic
 					-Wmove
 					-Wno-error=\#warnings>
-					-Wno-c++98-compat  # use of constexpr
+					# -Wno-c++98-compat  # use of constexpr
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
 					-wd161

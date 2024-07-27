@@ -6,7 +6,7 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #pragma once
 
-#include <boost/multi/adaptors/complex.hpp>
+// #include <boost/multi/adaptors/complex.hpp>
 
 #include <boost/multi/array_ref.hpp>
 
@@ -14,11 +14,17 @@
 
 #include <boost/multi/adaptors/blas/complex_traits.hpp>
 
-#include <boost/multi/detail/pointer_traits.hpp>
+// #include <boost/multi/detail/pointer_traits.hpp>
 
 #include <boost/multi/adaptors/blas/numeric/is_complex.hpp>
 
-#include <boost/multi/adaptors/complex.hpp>
+// #include <boost/multi/adaptors/complex.hpp>
+
+#include <functional>                                        // for negate
+#include <iterator>                                          // for iterator...
+#include <memory>                                            // for pointer_...
+#include <type_traits>                                       // for decay_t
+#include <utility>                                           // for declval
 
 #if defined(__NVCC__)
 #define BOOST_MULTI_HD __host__ __device__
@@ -58,7 +64,7 @@ auto real_doubled(ComplexArr&& array) {  // produces a real view of complex arra
 
 template<class Ref, class Involution> class involuted;
 
-template<class It, class F, class Reference = involuted<typename std::iterator_traits<It>::reference, F>> class involuter;
+template<class It, class F, class Reference = involuted<typename std::iterator_traits<It>::reference, F>> class involuter;  // IWYU pragma: keep   bug in iwyu 18.1.8?
 
 template<class Ref, class Involution>
 class involuted {
