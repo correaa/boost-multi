@@ -20,9 +20,10 @@
 #include <boost/multi/adaptors/blas/gemm.hpp>  // for operator*, gemm_range
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
+
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
 
-#include <boost/mpl/list.hpp>  // for list
+// #include <boost/mpl/list.hpp>  // for list
 
 #include <algorithm>  // for generate, transform
 #include <cmath>                               // for abs
@@ -38,7 +39,7 @@
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-using fp_types = boost::mpl::list<double, float>;  // old versions of Boost.Test need MPL Type lists explicitly
+// using fp_types = boost::mpl::list<double, float>;  // old versions of Boost.Test need MPL Type lists explicitly
 
 template<class M, class VI, class VO>
 auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identifier-naming,readability-identifier-length) BLAS naming
@@ -160,7 +161,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_float) {
 
 		multi::array<T, 1> w2(multi::extensions_t<1>{multi::iextension{size(a)}});
 		MV(a, x, w2);
-		BOOST_TEST( std::abs(w2[0] - y[0]) < 0.00001);
+		BOOST_TEST_LT( std::abs(w2[0] - y[0]) , 0.00001);
 	}
 	{
 		multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
