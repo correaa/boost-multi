@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 
@@ -11,7 +11,7 @@
 #include <algorithm>   // for generate
 #include <chrono>      // for operator-, duration, system...  // NOLINT(build/c++11)
 #include <complex>     // for operator==, complex
-#include <functional>  // for invoke
+#include <functional>  // for invoke  // IWYU pragma: keep
 #include <iostream>    // for operator<<, basic_os...
 #include <random>      // for linear_congruential_...
 #include <string>      // for operator<<, operator""s
@@ -35,8 +35,11 @@ class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-
 	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }  // NOLINT(cpp:S4963)
 };
 
-using fftw_fixture = multi::fftw::environment;
-BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
+multi::fftw::environment env;
 
 BOOST_AUTO_TEST_CASE(fftw_transpose) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
@@ -61,5 +64,6 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 	multi::array<complex, 2> aux = ~out;
 
 	out = std::move(aux);
-	BOOST_REQUIRE( out[35][79] == in[79][35] );
+	BOOST_TEST( out[35][79] == in[79][35] );
 }
+return boost::report_errors();}
