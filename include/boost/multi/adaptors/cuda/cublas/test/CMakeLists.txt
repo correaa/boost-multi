@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.17)  # for CUDAToolkit
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED)  # COMPONENTS)  # unit_test_framework)
 
 if((NOT
 	CMAKE_CXX_COMPILER_ID
