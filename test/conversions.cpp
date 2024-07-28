@@ -3,43 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
-//  #pragma clang diagnostic ignored "-Wconversion"
-//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-//  #pragma clang diagnostic ignored "-Wswitch-default"
-//  #pragma clang diagnostic ignored "-Wundef"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-//  #pragma GCC diagnostic ignored "-Wundef"
-// #elif defined(_MSC_VER)
-//  #pragma warning(push)
-//  #pragma warning(disable : 4244)
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
-// #if defined(__clang__)
-//  #pragma clang diagnostic pop
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic pop
-// #elif defined(_MSC_VER)
-//  #pragma warning(pop)
-//  #pragma warning(disable : 4244)
-// #endif
+#if defined(_MSC_VER)
+	#pragma warning(push)
+	#pragma warning(disable : 4244)  // allow conversion from double to float in uninitialized_construct algorithms
+#endif
 
 #include <boost/multi/array.hpp>
 
@@ -61,7 +28,7 @@ void gun(multi::array<std::complex<float>, 2> const& /*unused*/) {
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
-// NOLINTBEGIN(fuchsia-default-arguments-calls)  // this is a defect in std::complex, not in the library
+// NOLINTBEGIN(fuchsia-default-arguments-calls)  // std::complex has a constructor with a default argument, not in the library
 BOOST_AUTO_TEST_CASE(complex_conversion_float_to_double) {
 	std::complex<float> const cee{1.0, 2.0};
 
@@ -119,6 +86,24 @@ BOOST_AUTO_TEST_CASE(conversion_in_function_call) {
 	gun(multi::array<std::complex<float>, 2>{ZEE});
 }
 
+BOOST_AUTO_TEST_CASE(float_to_double) {
+	float const dee = 5.0F;
+	// float const eff{dee};  // -Wc++11-narrowing  // NOLINT(bugprone-narrowing-conversions)
+	// float const eff = dee;  // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+	// float const eff(dee);  // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+	auto const eff = static_cast<double>(dee);
+
+	BOOST_TEST( std::abs( eff - 5.0) < 1E-6 );
+
+	multi::array<float, 2> const DEE({10, 10}, dee);
+	// multi::array<float, 2> const EFF(DEE);
+	auto const EFF = static_cast<multi::array<double, 2>>(DEE);  // TODO(correaa) investigate producing intermediate types accessible through interminediate types
+
+	BOOST_TEST( std::abs( EFF[3][4] - 5.0 ) < 1E-6 );
+
+	// multi::array<float, 2> const EFF = DEE;
+}
+
 BOOST_AUTO_TEST_CASE(double_to_float) {
 	double const dee = 5.0;
 	// float const eff{dee};  // -Wc++11-narrowing  // NOLINT(bugprone-narrowing-conversions)
@@ -129,6 +114,7 @@ BOOST_AUTO_TEST_CASE(double_to_float) {
 	BOOST_TEST( std::abs( eff - 5.0F) < 1E-6F );
 
 	multi::array<double, 2> const DEE({10, 10}, dee);
+
 	// multi::array<float, 2> const EFF(DEE);
 	auto const EFF = static_cast<multi::array<float, 2>>(DEE);  // TODO(correaa) investigate producing intermediate types accessible through interminediate types
 
@@ -164,3 +150,7 @@ BOOST_AUTO_TEST_CASE(complex_to_complex_conversion) {
 }
 // NOLINTEND(fuchsia-default-arguments-calls)
 return boost::report_errors();}
+
+#if defined(_MSC_VER)
+	#pragma warning(pop)
+#endif
