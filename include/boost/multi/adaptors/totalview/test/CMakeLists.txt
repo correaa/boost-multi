@@ -40,8 +40,10 @@ target_compile_features(totalview.x PUBLIC cxx_std_17)
 
 target_compile_definitions(totalview.x PRIVATE "BOOST_PP_VARIADICS")
 target_compile_definitions(totalview.x PRIVATE ${Boost_DEFINITIONS})
+
 target_include_directories(totalview.x SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(totalview.x PRIVATE ${Boost_LIBRARIES})
+
 target_link_directories(totalview.x PRIVATE ${Boost_LIBRARY_DIRS})
 
 add_test(NAME totalview.x COMMAND $<TARGET_FILE:totalview.x>)
