@@ -6,10 +6,16 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
 #pragma once
 
-#include <boost/multi/array_ref.hpp>
-
 #include <boost/multi/adaptors/blas/core.hpp>
 #include <boost/multi/adaptors/complex.hpp>
+
+#include <boost/multi/array_ref.hpp>
+
+#include <cassert>                            // for assert
+#include <complex>                             // for complex
+#include <iterator>                            // for iterator_traits, rando...
+#include <type_traits>                         // for enable_if_t, decay_t
+#include <utility>                             // for forward, declval
 
 #define BOOST_MULTI_DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 #define JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing

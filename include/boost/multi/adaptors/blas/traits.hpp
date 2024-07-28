@@ -8,6 +8,7 @@
 
 #include<complex>
 #include<type_traits>
+#include <utility>      // for declval
 
 namespace boost::multi::blas {  // TODO(correaa) include in blas/detail?
 

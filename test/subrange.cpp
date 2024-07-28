@@ -3,31 +3,34 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wundef"
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>
 
@@ -35,6 +38,10 @@
 
 namespace multi = boost::multi;
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(multi_array_range_section) {
 	{
 #ifndef _MSC_VER
@@ -67,20 +74,20 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section) {
 		}
 		{
 			auto&& all = arr({ 0, 10 }, { 0, 20 }, { 0, 30 }, { 0, 40 });
-			BOOST_REQUIRE( &arr[1][2][3][4] == &all[1][2][3][4] );
-			BOOST_REQUIRE( &arr[1][2][3][4] == &arr({0, 10}, {0, 20}, {0, 30}, {0, 40})[1][2][3][4] );
+			BOOST_TEST( &arr[1][2][3][4] == &all[1][2][3][4] );
+			BOOST_TEST( &arr[1][2][3][4] == &arr({0, 10}, {0, 20}, {0, 30}, {0, 40})[1][2][3][4] );
 		}
 		{
 			using multi::_;
 			auto&& all = arr({ 0, 10 }, { 0, 20 });
-			BOOST_REQUIRE( &arr[1][2][3][4] == &all[1][2][3][4] );
+			BOOST_TEST( &arr[1][2][3][4] == &all[1][2][3][4] );
 		}
 		{
-			BOOST_REQUIRE( &arr(0, 0, 0, 0) == &arr[0][0][0][0] );
+			BOOST_TEST( &arr(0, 0, 0, 0) == &arr[0][0][0][0] );
 		}
 		{
 			auto&& sub = arr({ 0, 5 }, { 0, 10 }, { 0, 15 }, { 0, 20 });
-			BOOST_REQUIRE( &sub[1][2][3][4] == &arr[1][2][3][4] );
+			BOOST_TEST( &sub[1][2][3][4] == &arr[1][2][3][4] );
 		}
 	}
 	{
@@ -98,9 +105,9 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section) {
 		};
 
 		arr({ 0, 2 }, { 0, 2 }) = arr2({ 0, 2 }, { 0, 2 });
-		BOOST_REQUIRE( arr != arr2 );
-		BOOST_REQUIRE( arr({0, 2}, {0, 2}) == arr2({0, 2}, {0, 2}) );
-		BOOST_REQUIRE( arr[1][1] == 960 );
+		BOOST_TEST( arr != arr2 );
+		BOOST_TEST( arr({0, 2}, {0, 2}) == arr2({0, 2}, {0, 2}) );
+		BOOST_TEST( arr[1][1] == 960 );
 	}
 }
 
@@ -118,7 +125,7 @@ BOOST_AUTO_TEST_CASE(subrange_assignment) {
 			{ 90, 90, 90 },
 		};
 		arr2({ 0, 3 }, { 0, 3 }) = arr({ 0, 3 }, { 0, 3 });
-		BOOST_REQUIRE( arr2[1][2] == arr[1][2] );
+		BOOST_TEST( arr2[1][2] == arr[1][2] );
 	}
 	{
 		multi::array<int, 2> arr2 = {
@@ -127,8 +134,8 @@ BOOST_AUTO_TEST_CASE(subrange_assignment) {
 			{ 90, 90, 90 },
 		};
 		arr2() = arr({ 0, 3 }, { 0, 3 });
-		BOOST_REQUIRE( arr2[1][2] == arr[1][2] );
-		BOOST_REQUIRE( arr2() == arr({0, 3}, {0, 3}) );
+		BOOST_TEST( arr2[1][2] == arr[1][2] );
+		BOOST_TEST( arr2() == arr({0, 3}, {0, 3}) );
 	}
 	{
 		multi::array<int, 2> arr2 = {
@@ -137,27 +144,27 @@ BOOST_AUTO_TEST_CASE(subrange_assignment) {
 			{ 90, 90, 90 },
 		};
 		arr2 = arr({ 0, 3 }, { 0, 3 });
-		BOOST_REQUIRE( arr2[1][2] == arr[1][2] );
-		BOOST_REQUIRE( arr2 == arr({0, 3}, {0, 3}) );
+		BOOST_TEST( arr2[1][2] == arr[1][2] );
+		BOOST_TEST( arr2 == arr({0, 3}, {0, 3}) );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(subrange_ranges_sliced_1D) {
 	multi::array<double, 1> arr = { 1.0, 2.0, 3.0, 4.0 };
 	auto&&                  Ab  = arr.sliced(1, 3);
-	BOOST_REQUIRE( &Ab[0] == &arr[1] );
+	BOOST_TEST( &Ab[0] == &arr[1] );
 
 	auto&& Ab2 = Ab;
-	BOOST_REQUIRE( &Ab2[0] == &arr[1] );
+	BOOST_TEST( &Ab2[0] == &arr[1] );
 
 	//  auto Abb = Ab;  // not allowed!
 	//  auto Abb = std::move(Ab); (void)Abb;
 
 	auto const& Abc = arr.sliced(1, 3);
-	BOOST_REQUIRE( &Abc[0] == &arr[1] );
+	BOOST_TEST( &Abc[0] == &arr[1] );
 
 	auto Aba = arr.sliced(1, 3);
-	BOOST_REQUIRE( &Aba[0] == &arr[1] );
+	BOOST_TEST( &Aba[0] == &arr[1] );
 }
 
 BOOST_AUTO_TEST_CASE(subrange_ranges_sliced) {
@@ -168,13 +175,13 @@ BOOST_AUTO_TEST_CASE(subrange_ranges_sliced) {
 		{ 3.0, 4.0, 5.0, 6.0 },
 	};
 	auto&& Ab = arr.sliced(0, 3);
-	BOOST_REQUIRE( &Ab[2][2] == &arr[2][2] );
+	BOOST_TEST( &Ab[2][2] == &arr[2][2] );
 
 	auto const& Abc = arr.sliced(0, 3);
-	BOOST_REQUIRE( &Abc[2][2] == &arr[2][2] );
+	BOOST_TEST( &Abc[2][2] == &arr[2][2] );
 
 	auto AB = arr.sliced(0, 3);
-	BOOST_REQUIRE( &AB[2][2] == &arr[2][2] );
+	BOOST_TEST( &AB[2][2] == &arr[2][2] );
 }
 
 BOOST_AUTO_TEST_CASE(subrange_ranges) {
@@ -185,47 +192,47 @@ BOOST_AUTO_TEST_CASE(subrange_ranges) {
 		{ 3.0, 4.0, 5.0, 6.0 },
 	};
 	auto&& Ab = arr({ 0, 3 }, { 0, 3 });
-	BOOST_REQUIRE( &Ab[2][2] == &arr[2][2] );
+	BOOST_TEST( &Ab[2][2] == &arr[2][2] );
 
 	auto const& Abc = arr({ 0, 3 }, { 0, 3 });
-	BOOST_REQUIRE( &Abc[2][2] == &arr[2][2] );
+	BOOST_TEST( &Abc[2][2] == &arr[2][2] );
 
 	auto AB = arr({ 0, 3 }, { 0, 3 });
-	BOOST_REQUIRE( &AB[2][2] == &arr[2][2] );
+	BOOST_TEST( &AB[2][2] == &arr[2][2] );
 }
 
 BOOST_AUTO_TEST_CASE(subrange_1D_issue129) {
 	multi::array<int, 1> arr({ 1024 }, int{});
 	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
-	BOOST_REQUIRE( arr.sliced(0, 512, 2)[  1] ==   2 );
-	BOOST_REQUIRE( arr.sliced(0, 512, 2)[255] == 510 );
+	BOOST_TEST( arr.sliced(0, 512, 2)[  1] ==   2 );
+	BOOST_TEST( arr.sliced(0, 512, 2)[255] == 510 );
 
-	BOOST_REQUIRE( arr.sliced(0, 512)[  1] ==   1 );
-	BOOST_REQUIRE( arr.sliced(0, 512)[511] == 511 );
+	BOOST_TEST( arr.sliced(0, 512)[  1] ==   1 );
+	BOOST_TEST( arr.sliced(0, 512)[511] == 511 );
 
-	BOOST_REQUIRE( arr({0, 512})[  1] ==   1 );
-	BOOST_REQUIRE( arr({0, 512})[511] == 511 );
+	BOOST_TEST( arr({0, 512})[  1] ==   1 );
+	BOOST_TEST( arr({0, 512})[511] == 511 );
 
-	//  BOOST_REQUIRE( arr({0, 512, 2})[  1] ==   2 );  // TODO(correaa) coompilation error
-	//  BOOST_REQUIRE( arr({0, 512, 2})[255] == 510 );  // TODO(correaa) coompilation error
+	//  BOOST_TEST( arr({0, 512, 2})[  1] ==   2 );  // TODO(correaa) coompilation error
+	//  BOOST_TEST( arr({0, 512, 2})[255] == 510 );  // TODO(correaa) coompilation error
 }
 
 BOOST_AUTO_TEST_CASE(subrange_2D_issue129) {
 	multi::array<int, 2> arr({ 66, 1024 }, int{});
 	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
-	BOOST_REQUIRE( arr[0].sliced(0, 512, 2)[  1] ==   2 );
-	BOOST_REQUIRE( arr[0].sliced(0, 512, 2)[255] == 510 );
+	BOOST_TEST( arr[0].sliced(0, 512, 2)[  1] ==   2 );
+	BOOST_TEST( arr[0].sliced(0, 512, 2)[255] == 510 );
 
-	BOOST_REQUIRE( arr[0].sliced(0, 512)[  1] ==   1 );
-	BOOST_REQUIRE( arr[0].sliced(0, 512)[511] == 511 );
+	BOOST_TEST( arr[0].sliced(0, 512)[  1] ==   1 );
+	BOOST_TEST( arr[0].sliced(0, 512)[511] == 511 );
 
-	BOOST_REQUIRE( arr(0, {0, 512})[  1] ==   1 );
-	BOOST_REQUIRE( arr(0, {0, 512})[511] == 511 );
+	BOOST_TEST( arr(0, {0, 512})[  1] ==   1 );
+	BOOST_TEST( arr(0, {0, 512})[511] == 511 );
 
-	// BOOST_REQUIRE( arr(0, {0, 512, 2})[  1] ==   2 );  // TODO(correaa) coompilation error
-	// BOOST_REQUIRE( arr(0, {0, 512, 2})[255] == 510 );  // TODO(correaa) coompilation error
+	// BOOST_TEST( arr(0, {0, 512, 2})[  1] ==   2 );  // TODO(correaa) coompilation error
+	// BOOST_TEST( arr(0, {0, 512, 2})[255] == 510 );  // TODO(correaa) coompilation error
 }
 
 class rng3_t {
@@ -248,22 +255,23 @@ BOOST_AUTO_TEST_CASE(subrange_start_finish) {
 		{ 11.0, 12.0 },
 		{ 13.0, 14.0 },
 	};
-	BOOST_REQUIRE( &arr({2, 5}, 1)[0] == &arr[2][1] );
+	BOOST_TEST( &arr({2, 5}, 1)[0] == &arr[2][1] );
 
 	multi::irange const rng(2, 5);
-	BOOST_REQUIRE( &arr(rng, 1)[0] == &arr[2][1] );
+	BOOST_TEST( &arr(rng, 1)[0] == &arr[2][1] );
 
 	struct : multi::irange {
 		using multi::irange::irange;
 	} const rng2(2, 5);
 
-	BOOST_REQUIRE( &arr(rng2, 1)[0] == &arr[2][1] );
+	BOOST_TEST( &arr(rng2, 1)[0] == &arr[2][1] );
 
 	rng3_t const rng3{ 2, 5 };
 
 	multi::irange const rng4(rng3);
 
-	BOOST_REQUIRE( &arr(rng4, 1)[0] == &arr[2][1] );
+	BOOST_TEST( &arr(rng4, 1)[0] == &arr[2][1] );
 
-	BOOST_REQUIRE( &arr(rng3, 1)[0] == &arr[2][1] );
+	BOOST_TEST( &arr(rng3, 1)[0] == &arr[2][1] );
 }
+return boost::report_errors();}

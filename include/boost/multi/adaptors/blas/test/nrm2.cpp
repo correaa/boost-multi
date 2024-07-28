@@ -2,12 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>  // for operator<<, BOOST_PP_I...
-
 #include <boost/multi/adaptors/blas/core.hpp>  // for context
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref, operator==
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for nrm2, nrm2_ref
 #include <boost/multi/adaptors/complex.hpp>    // for complex, operator*
+
 #include <boost/multi/array.hpp>               // for array, layout_t, impli...
 
 #include <cmath>  // for sqrt, NAN
@@ -17,6 +16,10 @@ namespace multi = boost::multi;
 using complex = multi::complex<double>;
 constexpr complex I{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imaginary unit
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(multi_blas_nrm2) {
 	namespace blas = multi::blas;
 
@@ -26,13 +29,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_nrm2) {
 		{ 5.0,  6.0,  7.0,  8.0 },
 		{ 9.0, 10.0, 11.0, 12.0 },
 	};
-	BOOST_REQUIRE( blas::nrm2(A[1]) == std::sqrt(blas::dot(A[1], A[1])) );
+	BOOST_TEST( blas::nrm2(A[1]) == std::sqrt(blas::dot(A[1], A[1])) );
 
 	{
 		multi::array<complex, 1> const x = { 1.0 + 1.0 * I, 3.0 + 2.0 * I, 3.0 + 4.0 * I };  // NOLINT(readability-identifier-length) blas conventional name
-		BOOST_REQUIRE( blas::dot(x, x) == (1.0 + 1.0*I)*(1.0 + 1.0*I) + (3.0 + 2.0*I)*(3.0 + 2.0*I) + (3.0 + 4.0*I)*(3.0 + 4.0*I) );
+		BOOST_TEST( blas::dot(x, x) == (1.0 + 1.0*I)*(1.0 + 1.0*I) + (3.0 + 2.0*I)*(3.0 + 2.0*I) + (3.0 + 4.0*I)*(3.0 + 4.0*I) );
 		using std::sqrt;
-		BOOST_REQUIRE( blas::nrm2(x) == sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) );
+		BOOST_TEST( blas::nrm2(x) == sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) );
 	}
 }
 
@@ -47,22 +50,22 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real) {
 	double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
 	blas::nrm2(cA.rotated()[1], n);
 
-	// BOOST_REQUIRE( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );  // TODO(correaa) nrm2 is returning a pointer?
-	BOOST_REQUIRE( n == std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );
-	// BOOST_REQUIRE( blas::nrm2(rotated(cA)[1]) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	// BOOST_TEST( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );  // TODO(correaa) nrm2 is returning a pointer?
+	BOOST_TEST( n == std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );
+	// BOOST_TEST( blas::nrm2(rotated(cA)[1]) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 
 	// double n2 = blas::nrm2(rotated(cA)[1]);
-	// BOOST_REQUIRE( n == n2 );
+	// BOOST_TEST( n == n2 );
 
 	// multi::array<double, 1> R(4);
 	// blas::nrm2( rotated(cA)[1], R[2]);
-	// BOOST_REQUIRE( R[2] ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	// BOOST_TEST( R[2] ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 
 	// multi::array<double, 0> R0;
 	// blas::nrm2( rotated(cA)[1], R0);
-	// BOOST_REQUIRE( R0 ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	// BOOST_TEST( R0 ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 
-	// BOOST_REQUIRE( blas::nrm2(rotated(cA)[1]) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	// BOOST_TEST( blas::nrm2(rotated(cA)[1]) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
@@ -71,7 +74,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
 	double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
 
 	multi::blas::nrm2(X, n);
-	BOOST_REQUIRE( n == multi::blas::nrm2(X) );
+	BOOST_TEST( n == multi::blas::nrm2(X) );
 }
 
 // BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case){
@@ -84,8 +87,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
 
 //  using multi::blas::nrm2;
 //  double n;
-//  BOOST_REQUIRE( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
-//  BOOST_REQUIRE( nrm2(rotated(cA)[1])    == n );
+//  BOOST_TEST( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+//  BOOST_TEST( nrm2(rotated(cA)[1])    == n );
 //}
 
 // #if 0
@@ -99,8 +102,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
 
 //  using multi::blas::nrm2;
 //  double n;
-//  BOOST_REQUIRE( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
-//  BOOST_REQUIRE( nrm2(rotated(cA)[1])    == n );
+//  BOOST_TEST( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+//  BOOST_TEST( nrm2(rotated(cA)[1])    == n );
 //}
 
 // BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case_types){
@@ -117,8 +120,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
 
 //      using multi::blas::nrm2;
 //      double n;
-//      BOOST_REQUIRE( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
-//      BOOST_REQUIRE( nrm2(rotated(cA)[1])    == n );
+//      BOOST_TEST( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+//      BOOST_TEST( nrm2(rotated(cA)[1])    == n );
 //  });
 //}
 // #endif
@@ -133,10 +136,11 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
 
 //  using multi::blas::nrm2;
 //  double n;
-//  BOOST_REQUIRE( nrm2(rotated(cA)[1], n)   == std::sqrt( norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) ) );
-//  BOOST_REQUIRE( nrm2(rotated(cA)[1])      == std::sqrt( norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) ) );
+//  BOOST_TEST( nrm2(rotated(cA)[1], n)   == std::sqrt( norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) ) );
+//  BOOST_TEST( nrm2(rotated(cA)[1])      == std::sqrt( norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) ) );
 
 //  using namespace multi::blas::operators;
 //  BOOST_TEST_REQUIRE( (rotated(cA)[1]^-1) == 1/std::sqrt(norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1])) , boost::test_tools::tolerance(1e-15) );
 //  BOOST_TEST_REQUIRE( (rotated(cA)[1]^2) == norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) , boost::test_tools::tolerance(1e-15) );
 //}
+return boost::report_errors();}

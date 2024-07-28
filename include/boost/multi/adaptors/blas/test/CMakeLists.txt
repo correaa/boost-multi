@@ -22,7 +22,7 @@ if((NOT
 	   )
 	AND (NOT ENABLE_CIRCLE)
 )
-	find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+	find_package(Boost REQUIRED)  # COMPONENTS boost)  # headers unit_test_framework)
 #   link_libraries("-lboost_unit_test_framework")
 
 	find_package(BLAS REQUIRED)
@@ -37,7 +37,7 @@ if((NOT
 	link_libraries(${BLAS_LIBRARIES})
 else()
 	find_package(Boost REQUIRED) # cmake cannot detect this component with pgi compiler
-	link_libraries("-lboost_unit_test_framework")
+	# link_libraries("-lboost_unit_test_framework")
 
 	link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
 endif()
@@ -95,8 +95,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-	target_link_libraries     (${TEST_EXE} PRIVATE Boost::unit_test_framework   )
-	# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
+	# target_link_libraries     (${TEST_EXE} PRIVATE Boost::boost)  # headers)   # unit_test_framework   )
+	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
 
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
@@ -147,10 +147,12 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wformat-truncation
 					-Wno-unknown-pragmas> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+					# -Weverything
 					-Wextra
 					-Wpedantic
 					-Wmove
 					-Wno-error=\#warnings>
+					# -Wno-c++98-compat  # use of constexpr
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
 					-wd161

@@ -3,31 +3,34 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wundef"
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array_ref.hpp>  // for array_ptr, array_ref, subarray
 
@@ -97,28 +100,30 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 
 }  // end namespace minimalistic
 
-template<class... T> void what(T&&...) = delete;
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
+int main() {
 BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 	std::array<double, 400> buffer{};
-	BOOST_REQUIRE( buffer.size() == 400 );
+	BOOST_TEST( buffer.size() == 400 );
 
 	using pointer_type = minimalistic::ptr<double>;
 	multi::array_ptr<double, 2, pointer_type> const CCP(pointer_type{ buffer.data() }, { 20, 20 });
 	(*CCP)[2];  // requires operator+
 	(*CCP)[1][1];
 	(*CCP)[1][1] = 9;
-	BOOST_REQUIRE( &(*CCP)[1][1] == &buffer[21] );
+	BOOST_TEST( &(*CCP)[1][1] == &buffer[21] );
 
 	// auto&& CC2 = (*CCP).static_array_cast<double, minimalistic::ptr2<double>>();
 	auto&& CC2 = CCP->static_array_cast<double, minimalistic::ptr2<double>>();
-	BOOST_REQUIRE( &CC2[1][1] == &(*CCP)[1][1] );
+	BOOST_TEST( &CC2[1][1] == &(*CCP)[1][1] );
 
 	static_assert(std::is_convertible<double*, double const*>{}, "!");
 
 	minimalistic::ptr<double> const       pd{ nullptr };
 	minimalistic::ptr<double const> const pcd = pd;
-	BOOST_REQUIRE( pcd == pd );
+	BOOST_TEST( pcd == pd );
 
 	{
 		auto&& REF = *CCP;
@@ -131,3 +136,4 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 		static_assert( std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<double const>> );
 	}
 }
+return boost::report_errors();}

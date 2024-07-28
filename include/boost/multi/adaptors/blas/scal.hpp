@@ -8,6 +8,8 @@
 
 #include <boost/multi/adaptors/blas/core.hpp>
 
+#include <utility>                             // for forward, declval
+
 namespace boost::multi::blas {
 
 using core::scal;

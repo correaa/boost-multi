@@ -49,21 +49,21 @@
 	#define BOOST_MULTI_HD
 #endif
 
-#if defined(__APPLE__) && !defined(__clang__) /*&& defined(__aarch64__)*/ && defined(BOOST_UNIT_TEST_FRAMEWORK_DYN_LINK)
-	#include <boost/test/tools/detail/print_helper.hpp>
-	#include <boost/test/tree/test_unit.hpp>
-	#include <boost/test/unit_test_suite.hpp>
-auto boost::test_tools::tt_detail::print_log_value<char>::operator()(std::ostream&, char) -> void {}
-auto boost::unit_test::test_unit::full_name() const -> std::string { return std::string{}; }
-auto boost::unit_test::ut_detail::normalize_test_case_name(boost::unit_test::basic_cstring<char const> name) -> std::string {
-	return std::string(name.begin(), name.end());
-}
-namespace boost::unit_test {
-// void make_test_case(boost::function<void ()> const& f, boost::unit_test::basic_cstring<char const>, boost::unit_test::basic_cstring<char const>, unsigned long) {
-//  f();
+// #if defined(__APPLE__) && !defined(__clang__) /*&& defined(__aarch64__)*/ && defined(BOOST_UNIT_TEST_FRAMEWORK_DYN_LINK)
+//  #include <boost/test/tools/detail/print_helper.hpp>
+//  #include <boost/test/tree/test_unit.hpp>
+//  #include <boost/test/unit_test_suite.hpp>
+// auto boost::test_tools::tt_detail::print_log_value<char>::operator()(std::ostream&, char) -> void {}
+// auto boost::unit_test::test_unit::full_name() const -> std::string { return std::string{}; }
+// auto boost::unit_test::ut_detail::normalize_test_case_name(boost::unit_test::basic_cstring<char const> name) -> std::string {
+//  return std::string(name.begin(), name.end());
 // }
-}
-#endif
+// namespace boost::unit_test {
+// // void make_test_case(boost::function<void ()> const& f, boost::unit_test::basic_cstring<char const>, boost::unit_test::basic_cstring<char const>, unsigned long) {
+// //  f();
+// // }
+// }
+// #endif
 
 namespace boost::multi {
 
@@ -340,8 +340,8 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	BOOST_MULTI_HD constexpr subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout>* other)
 	: subarray_ptr(other->base(), other->layout()) {}
 
-	BOOST_MULTI_HD subarray_ptr(subarray_ptr const&) = default;
-	BOOST_MULTI_HD subarray_ptr(subarray_ptr     &&) = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
+	subarray_ptr(subarray_ptr const&) = default;
+	subarray_ptr(subarray_ptr     &&) = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
 
 	auto operator=(subarray_ptr const& other) -> subarray_ptr& = default;
 
@@ -1224,7 +1224,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// }
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
 		return const_subarray<T, D+1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
@@ -1233,7 +1233,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	constexpr auto diagonal()     & -> const_subarray<T, D-1, typename const_subarray::element_ptr> {
 		using boost::multi::detail::get;
-		auto square_size = std::min(get<0>(this->sizes()), get<1>(this->sizes()));
+		auto square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();  // TODO(correaa) : don't use mutation
 		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // TODO(correaa) : don't use mutation
@@ -1242,7 +1242,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>
 	constexpr auto diagonal() const& -> const_subarray<T, D-1, typename const_subarray::element_const_ptr> {
-		auto square_size = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
+		auto square_size = (std::min)(std::get<0>(this->sizes()), std::get<1>(this->sizes()));  // paren for MSVC macros
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();
 		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
@@ -1838,12 +1838,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const&) const&& -> subarray const&& {  // for std::indirectly_writable
-		throw std::runtime_error("test for rnage");
-		// assert(this->extension() == other.extension());
-		// this->elements() = other.elements();
-		return std::move(*this);
-	}
+	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) const&& -> subarray const&&;  // for std::indirectly_writable
+	// {
+	//  assert(this->extension() == other.extension());
+	//  this->elements() = other.elements();
+	//  return std::move(*this);
+	// }
 
 	constexpr auto operator=(subarray const& other) & -> subarray& {
 		assert(this->extension() == other.extension());
@@ -2313,7 +2313,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<1> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		multi::layout_t<1> const new_layout{this->layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
 		return subarray<T, 1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
@@ -2508,7 +2508,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
  public:
 	constexpr auto broadcasted() const& {
-		multi::layout_t<2> const new_layout{this->layout(), 0, 0, std::numeric_limits<size_type>::max()};
+		multi::layout_t<2> const new_layout{this->layout(), 0, 0, (std::numeric_limits<size_type>::max)()};
 		return const_subarray<T, 2, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
@@ -2637,7 +2637,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	constexpr auto celements() const  -> const_elements_range {return elements_aux_();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
-		return {std::min(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};
+		return {(std::min)(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};  // paren for MSVC macros
 	}
 
 	/*[[gnu::pure]]*/ constexpr auto blocked(index first, index last)& -> const_subarray {

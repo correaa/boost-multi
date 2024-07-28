@@ -11,7 +11,7 @@ if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE AN
 
 	if(HAVE_BOOST_TEST)
 
-		boost_test_jamfile(FILE Jamfile LINK_LIBRARIES Boost::multi Boost::unit_test_framework Boost::multi_array Boost::iterator)
+		boost_test_jamfile(FILE Jamfile LINK_LIBRARIES Boost::multi Boost::multi_array Boost::iterator)
 
 	endif()
 
@@ -22,7 +22,7 @@ else()
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 
-	find_package(Boost COMPONENTS unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
+	find_package(Boost)  #  COMPONENTS boost unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
 
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
@@ -191,7 +191,7 @@ else()
 	-Wstrict-aliasing #=3 # -Wstrict-aliasing=<0,3>
 	-Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
 	-Wstrict-overflow=2
-	# -Wstrict-overflow=3  # not compatible with Boost.Test
+	# -Wstrict-overflow=3  # incompatible with index_range operator-
 	# -Wstrict-overflow=4  # not compatible with stl heap
 	# -Wstrict-overflow=5  # not compatible with Boost.Test
 	# -Wstring-compare # (gcc 11, not in 9)
@@ -394,7 +394,7 @@ else()
 	# -Wdeprecated-volatile (clang 11, not in clang 9)
 	-Wdeprecated-writable-strings
 	-Wdirect-ivar-access
-	# -Wdisabled-macro-expansion (Boost.Test)
+	-Wdisabled-macro-expansion  # not compatible with Boost.Test
 	-Wdisabled-optimization
 	-Wdiscard-qual
 	-Wdistributed-object-modifiers
@@ -457,7 +457,7 @@ else()
 	# -Wfuture-attribute-extensions (clang 15, not in clang 13)
 	# -Wfuture-compat
 	# -Wgcc-compat
-	# -Wglobal-constructors (Boost.Test)
+	-Wglobal-constructors  # not compatible with Boost.Test
 	# -Wglobal-isel (clang 11, not in clang 9)
 	-Wgnu -Wgnu-alignof-expression -Wgnu-anonymous-struct -Wgnu-array-member-paren-init -Wgnu-auto-type -Wgnu-binary-literal -Wgnu-case-range -Wgnu-complex-integer -Wgnu-compound-literal-initializer -Wgnu-conditional-omitted-operand -Wgnu-designator -Wgnu-empty-initializer -Wgnu-empty-struct -Wgnu-flexible-array-initializer -Wgnu-flexible-array-union-member -Wgnu-folding-constant -Wgnu-imaginary-constant -Wgnu-include-next
 	# -Wgnu-inline-cpp-without-extern (clang 11, not in clang 9)
@@ -770,7 +770,7 @@ else()
 	-Wunused -Wunused-argument
 	# -Wunused-but-set-parameter -Wunused-but-set-variable (clang 13, not in clang 11)
 	-Wunused-command-line-argument -Wunused-comparison -Wunused-const-variable -Wunused-exception-parameter -Wunused-function -Wunused-getter-return-value -Wunused-label -Wunused-lambda-capture -Wunused-local-typedef -Wunused-local-typedefs -Wunused-macros -Wunused-member-function -Wunused-parameter -Wunused-private-field -Wunused-property-ivar -Wunused-result -Wunused-template -Wunused-value -Wunused-variable -Wunused-volatile-lvalue
-	# -Wused-but-marked-unused (Boost.Test)
+	-Wused-but-marked-unused  # not compatible with Boost.Test
 	-Wuser-defined-literals -Wuser-defined-warnings
 	-Wvarargs
 	-Wvariadic-macros
@@ -903,7 +903,8 @@ else()
 			# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
 
 			target_link_libraries(${TEST_EXE} PRIVATE multi)
-			target_link_libraries     (${TEST_EXE} PRIVATE multi Boost::unit_test_framework   )
+			target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+			# target_link_libraries     (${TEST_EXE} PRIVATE multi Boost::boost   )
 			if(TBB_FOUND)
 				target_link_libraries     (${TEST_EXE} PRIVATE TBB::tbb)
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
