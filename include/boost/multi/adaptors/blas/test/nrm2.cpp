@@ -18,8 +18,6 @@ constexpr complex I{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imagi
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
-//#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
-// #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
 int main() {
 BOOST_AUTO_TEST_CASE(multi_blas_nrm2) {
