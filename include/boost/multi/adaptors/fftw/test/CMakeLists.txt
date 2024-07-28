@@ -23,7 +23,7 @@ if((NOT
 )
 #   find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 else()
-	link_libraries("-lboost_unit_test_framework") # -lboost_timer")
+	# link_libraries("-lboost_unit_test_framework") # -lboost_timer")
 endif()
 
 # find_package(PkgConfig REQUIRED)

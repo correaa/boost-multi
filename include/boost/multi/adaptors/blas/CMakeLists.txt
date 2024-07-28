@@ -44,11 +44,11 @@ endif()
 # endif()
 
 if(BLAS_FOUND)
-	find_package(Boost)  # COMPONENTS boost)  # headers unit_test_framework)
+	find_package(Boost)
 	if(Boost_FOUND)
 		add_subdirectory(test)
 	else()
-		message(WARNING "Boost Unit Test Framework not found, BLAS-adaptor tests will not be compiled and run. If you want this feature, install Boost")
+		message(WARNING "Boost Lighttweight Test, BLAS-adaptor tests will not be tested.")
 	endif()
 else()
 	message(WARNING "BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:"

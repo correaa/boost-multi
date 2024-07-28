@@ -19,7 +19,7 @@ project(
 	LANGUAGES CXX
 )
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED)  # COMPONENTS unit_test_framework)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
