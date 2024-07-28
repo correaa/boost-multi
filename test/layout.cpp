@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 
 	auto B2copy2 = B2({0, 2}, {0, 2}).decay();
 
-	#if 0
+	#if 1
 	BOOST_TEST( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
 
 	// clang-format off
