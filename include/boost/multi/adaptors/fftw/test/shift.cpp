@@ -1,16 +1,13 @@
 // Copyright 2022-2024 Alfredo A. Correa
 
-// #include <boost/test/included/unit_test.hpp>
-
 #include <boost/multi/adaptors/fftw.hpp>
-
 #include <boost/multi/array.hpp>
 
 #include <algorithm>  // for for_each, rotate
 #include <chrono>     // NOLINT(build/c++11)
 #include <complex>    // for complex
 #include <cstddef>    // for size_t, ptrdiff_t
-#include <iostream>                         // for char_traits, basic_ostream
+#include <iostream>   // for char_traits, basic_ostream
 #include <random>
 
 template<class T>
@@ -58,32 +55,33 @@ namespace fftw  = multi::fftw;
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
-fftw::environment env;
-BOOST_AUTO_TEST_CASE(fftw_shift) {
-	class watch : std::chrono::steady_clock {
-		time_point start_ = now();
+	fftw::environment env;
+	BOOST_AUTO_TEST_CASE(fftw_shift) {
+		class watch : std::chrono::steady_clock {
+			time_point start_ = now();
 
-	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
-		auto elapsed_sec() const { return std::chrono::duration<double>(now() - start_).count(); }
-	};
+		 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
+			auto elapsed_sec() const { return std::chrono::duration<double>(now() - start_).count(); }
+		};
 
-	multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);
-	BOOST_TEST(arr.size() == 19586);
-	multi::array<std::complex<double>, 1> res(arr.extensions());
-	BOOST_TEST(res.size() == 19586);
+		multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);
+		BOOST_TEST(arr.size() == 19586);
+		multi::array<std::complex<double>, 1> res(arr.extensions());
+		BOOST_TEST(res.size() == 19586);
 
-	auto fdft = fftw::plan::forward({true}, arr.base(), arr.layout(), res.base(), res.layout());
-	// fftw::plan fdft({true}, arr.layout(), res.layout(), multi::fftw::forward);
+		auto fdft = fftw::plan::forward({true}, arr.base(), arr.layout(), res.base(), res.layout());
+		// fftw::plan fdft({true}, arr.layout(), res.layout(), multi::fftw::forward);
 
-	[&, unnamed = watch{}] {
-		auto const repeat = 40;
-		std::for_each(
-			multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto /*idx*/) {
-				fdft.execute(arr.base(), res.base());
-				std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());
-			}
-		);
-		std::cout << "FFTW shift " << unnamed.elapsed_sec() / repeat << " sec\n";  // prints  0.000882224 sec
-	}();
+		[&, unnamed = watch{}] {
+			auto const repeat = 40;
+			std::for_each(
+				multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto /*idx*/) {
+					fdft.execute(arr.base(), res.base());
+					std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());
+				}
+			);
+			std::cout << "FFTW shift " << unnamed.elapsed_sec() / repeat << " sec\n";  // prints  0.000882224 sec
+		}();
+	}
+	return boost::report_errors();
 }
-return boost::report_errors();}

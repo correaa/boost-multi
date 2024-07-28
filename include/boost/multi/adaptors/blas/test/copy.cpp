@@ -1,7 +1,5 @@
 // Copyright 2019-2024 Alfredo A. Correa
 
-// #include <boost/test/included/unit_test.hpp>  // for operator<<, BOOST_PP_I...
-
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
@@ -15,72 +13,77 @@ namespace blas  = multi::blas;
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
-BOOST_AUTO_TEST_CASE(multi_blas_copy_n) {
-	multi::array<double, 1> const x = { 1.0, 2.0, 3.0, 4.0 };  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 1>       y = { 5.0, 6.0, 7.0, 8.0 };  // NOLINT(readability-identifier-length) BLAS naming
-	blas::copy_n(x.begin(), x.size(), y.begin());
-	BOOST_TEST( y == x );
-}
 
-BOOST_AUTO_TEST_CASE(multi_blas_copy) {
-	multi::array<double, 1> const x = { 1.0, 2.0, 3.0, 4.0 };  // NOLINT(readability-identifier-length) BLAS naming
-	{
-		multi::array<double, 1> y = { 5.0, 6.0, 7.0, 8.0 };  // NOLINT(readability-identifier-length) BLAS naming
-		blas::copy(x, y);                                    // segmentation fault in clang-11
+	BOOST_AUTO_TEST_CASE(multi_blas_copy_n) {
+		multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 1>       y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming
+		blas::copy_n(x.begin(), x.size(), y.begin());
 		BOOST_TEST( y == x );
 	}
-	{
-		multi::array<double, 1> y = { 5.0, 6.0, 7.0, 8.0 };  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST( size(y) == size(x) );
-		y() = blas::copy(x);
-		BOOST_TEST( y == x );
+
+	BOOST_AUTO_TEST_CASE(multi_blas_copy) {
+		multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};  // NOLINT(readability-identifier-length) BLAS naming
+		{
+			multi::array<double, 1> y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming
+			blas::copy(x, y);                                  // segmentation fault in clang-11
+			BOOST_TEST( y == x );
+		}
+		{
+			multi::array<double, 1> y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming
+			BOOST_TEST( size(y) == size(x) );
+			y() = blas::copy(x);
+			BOOST_TEST( y == x );
+		}
 	}
+
+	BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real) {
+		namespace blas = multi::blas;
+
+		multi::array<double, 2> arr = {
+			{1.0,  2.0,  3.0,  4.0},
+			{5.0,  6.0,  7.0,  8.0},
+			{9.0, 10.0, 11.0, 12.0},
+		};
+
+		BOOST_TEST( arr[0][2] ==  3.0 );
+		BOOST_TEST( arr[2][2] == 11.0 );
+
+		blas::copy(arr[0], arr[2]);
+		BOOST_TEST( arr[0][2] ==  3.0 );
+		BOOST_TEST( arr[2][2] ==  3.0 );
+
+		blas::copy(arr[1]({0, size(arr[1])}), arr[2]({0, size(arr[1])}));
+		BOOST_TEST( arr[1][3] == 8.0 );
+		BOOST_TEST( arr[2][3] == 8.0 );
+
+		multi::array<double, 1> AR3 = blas::copy(arr.rotated()[3]);  // dcopy
+		BOOST_TEST( AR3[1] == arr[1][3] );
+	}
+
+	BOOST_AUTO_TEST_CASE(multi_blas_copy_row) {
+		multi::array<double, 2> const arr = {
+			{1.0, 2.0, 3.0},
+			{4.0, 5.0, 6.0},
+			{7.0, 8.0, 9.0},
+		};
+		multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{3}});  // NOLINT(readability-identifier-length) BLAS naming
+		blas::copy(arr.rotated()[0], y);
+		BOOST_TEST( y == arr.rotated()[0] );
+	}
+
+	BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex) {
+		using complex = std::complex<double>;
+
+		auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+		multi::array<complex, 2> arr = {
+			{1.0 + 3.0 * I,  2.0 + 4.0 * I,  3.0 + 5.0 * I,  4.0 + 6.0 * I},
+			{5.0 + 0.0 * I,  6.0 + 0.0 * I,  7.0 + 0.0 * I,  8.0 + 0.0 * I},
+			{9.0 + 0.0 * I, 10.0 + 0.0 * I, 11.0 + 0.0 * I, 12.0 + 0.0 * I},
+		};
+		blas::copy(arr[0], arr[2]);
+		BOOST_TEST( arr[0][2] == 3.0 + 5.0*I );
+	}
+
+	return boost::report_errors();
 }
-
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real) {
-	namespace blas = multi::blas;
-
-	multi::array<double, 2> arr = {
-		{ 1.0,  2.0,  3.0,  4.0 },
-		{ 5.0,  6.0,  7.0,  8.0 },
-		{ 9.0, 10.0, 11.0, 12.0 },
-	};
-
-	BOOST_TEST( arr[0][2] ==  3.0 );
-	BOOST_TEST( arr[2][2] == 11.0 );
-
-	blas::copy(arr[0], arr[2]);
-	BOOST_TEST( arr[0][2] ==  3.0 );
-	BOOST_TEST( arr[2][2] ==  3.0 );
-
-	blas::copy(arr[1]({ 0, size(arr[1]) }), arr[2]({ 0, size(arr[1]) }));
-	BOOST_TEST( arr[1][3] == 8.0 );
-	BOOST_TEST( arr[2][3] == 8.0 );
-
-	multi::array<double, 1> AR3 = blas::copy(arr.rotated()[3]);  // dcopy
-	BOOST_TEST( AR3[1] == arr[1][3] );
-}
-
-BOOST_AUTO_TEST_CASE(multi_blas_copy_row) {
-	multi::array<double, 2> const arr = {
-		{ 1.0, 2.0, 3.0 },
-		{ 4.0, 5.0, 6.0 },
-		{ 7.0, 8.0, 9.0 },
-	};
-	multi::array<double, 1> y(multi::extensions_t<1>{ multi::iextension{ 3 } });  // NOLINT(readability-identifier-length) BLAS naming
-	blas::copy(arr.rotated()[0], y);
-	BOOST_TEST( y == arr.rotated()[0] );
-}
-
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex) {
-	using complex                = std::complex<double>;
-	auto const               I   = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
-	multi::array<complex, 2> arr = {
-		{ 1.0 + 3.0 * I,  2.0 + 4.0 * I,  3.0 + 5.0 * I,  4.0 + 6.0 * I },
-		{ 5.0 + 0.0 * I,  6.0 + 0.0 * I,  7.0 + 0.0 * I,  8.0 + 0.0 * I },
-		{ 9.0 + 0.0 * I, 10.0 + 0.0 * I, 11.0 + 0.0 * I, 12.0 + 0.0 * I },
-	};
-	blas::copy(arr[0], arr[2]);
-	BOOST_TEST( arr[0][2] == 3.0 + 5.0*I );
-}
-return boost::report_errors();}
