@@ -330,6 +330,7 @@ int main() {
 			{1.0, 3.0, 1.0},
 			{9.0, 7.0, 1.0},
 		};
+
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> const b = {
 			{11.0, 12.0, 1.0},
