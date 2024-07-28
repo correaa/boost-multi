@@ -342,7 +342,7 @@ class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
-	template<class... As>          constexpr auto _(priority<3>/**/, As&&... args) const BOOST_MULTI_DECLRETURN(                    ::thrust::uninitialized_copy_n(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<3>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(             ::thrust::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As, class OutputIt = std::decay_t<decltype((std::declval<As>(), ...))>,
 		std::enable_if_t<
 			   std::is_trivially_default_constructible_v<typename std::iterator_traits<OutputIt>::value_type>
@@ -619,14 +619,14 @@ class adl_alloc_uninitialized_copy_t {
 inline constexpr adl_alloc_uninitialized_copy_t adl_alloc_uninitialized_copy;
 
 class adl_alloc_uninitialized_copy_n_t {
-	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... args) const BOOST_MULTI_DECLRETURN(                  adl_uninitialized_copy_n(std::forward<As>(args)...) )  // NOLINT(cppcoreguidelines-missing-std-forward)
-	template<class... As>              constexpr auto _(priority<2>/**/,                   As&&... args) const BOOST_MULTI_DECLRETURN(                     alloc_uninitialized_copy_n(std::forward<As>(args)...))
-//  template<class... As>              constexpr auto _(priority<3>/**/,                   As&&... args) const BOOST_MULTI_DECLRETURN(              xtd::alloc_uninitialized_copy_n(std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... args) const BOOST_MULTI_DECLRETURN(                       adl_uninitialized_copy_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
+	template<class... As>              constexpr auto _(priority<2>/**/,                    As&&... args) const BOOST_MULTI_DECLRETURN(                     alloc_uninitialized_copy_n(std::forward<As>(args)...))
+//  template<class... As>              constexpr auto _(priority<3>/**/,                    As&&... args) const BOOST_MULTI_DECLRETURN(                xtd::alloc_uninitialized_copy_n(std::forward<As>(args)...))
 // #if defined(__NVCC__)
 //  there is no thrust alloc uninitialized copy 
 // #endif
-	template<class T, class... As>     constexpr auto _(priority<5>/**/, T&& arg,          As&&... args) const BOOST_MULTI_DECLRETURN(    std::decay_t<T>::alloc_uninitialized_copy_n(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As>     constexpr auto _(priority<6>/**/, T&& arg,          As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).alloc_uninitialized_copy_n(std::forward<As>(args)...))
+	template<class T, class... As>     constexpr auto _(priority<5>/**/, T&& arg,           As&&... args) const BOOST_MULTI_DECLRETURN(    std::decay_t<T>::alloc_uninitialized_copy_n(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As>     constexpr auto _(priority<6>/**/, T&& arg,           As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).alloc_uninitialized_copy_n(std::forward<As>(args)...))
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<6>{}, std::forward<As>(args)...);}

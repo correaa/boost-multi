@@ -1,6 +1,7 @@
 # https://clang-format-configurator.site
 ---
 Language: Cpp
+AccessModifierOffset: -3
 AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: Right
 AlignConsecutiveAssignments:
@@ -14,9 +15,12 @@ AlignConsecutiveDeclarations:
 AlignOperands: AlignAfterOperator
 AlignTrailingComments:
   Kind: Always
+AllowShortLambdasOnASingleLine: Inline
 AllowShortCaseLabelsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: No
 BreakInheritanceList: BeforeComma
+BraceWrapping:
+  BeforeLambdaBody: false
 ColumnLimit: 0
 QualifierAlignment: Right
 ConstructorInitializerIndentWidth: 0
@@ -37,9 +41,9 @@ IncludeCategories:
     Priority: 4
   - Regex: '"([A-Za-z0-9.\Q/-_\E])+"'
     Priority: 3
-AccessModifierOffset: -3
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
+# LambdaBodyIndentation: Signature
 PenaltyBreakTemplateDeclaration: 10
 PointerAlignment: Left
 SpaceAfterTemplateKeyword: false
@@ -56,3 +60,4 @@ WhitespaceSensitiveMacros:
   - BOOST_REQUIRE
   - BOOST_TEST
   - BOOST_TEST_REQUIRE
+  - BOOST_AUTO_TEST_CASE

@@ -220,7 +220,10 @@ constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexTyp
 
 template<class IndexType = std::ptrdiff_t>
 class intersecting_range {
-	range<IndexType> impl_{std::numeric_limits<IndexType>::min(), std::numeric_limits<IndexType>::max()};
+	range<IndexType> impl_{
+		(std::numeric_limits<IndexType>::min)(),  // parent needed for MSVC min/max macros
+		(std::numeric_limits<IndexType>::max)()
+	};
 
 	constexpr intersecting_range() = default;  // MSVC 19.07 needs constexpr to initialize ALL later
 	static constexpr auto make_(IndexType first, IndexType last) -> intersecting_range {

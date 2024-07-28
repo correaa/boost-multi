@@ -441,10 +441,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	static_array(std::initializer_list<typename static_array<T, D>::value_type> values)
-	: static_array{array<T, D>(values.begin(), values.end())} {
-		assert(this->stride() != 0);
-	}  // construct all with default constructor and copy to special memory at the end
+	constexpr static_array(std::initializer_list<typename static_array<T, D>::value_type> values)
+	: static_array{array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> values,

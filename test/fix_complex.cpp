@@ -3,36 +3,45 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wundef"
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic push
+//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
+//  #pragma clang diagnostic ignored "-Wconversion"
+//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
+//  #pragma clang diagnostic ignored "-Wold-style-cast"
+//  #pragma clang diagnostic ignored "-Wsign-conversion"
+//  #pragma clang diagnostic ignored "-Wswitch-default"
+//  #pragma clang diagnostic ignored "-Wundef"
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic push
+//  #if (__GNUC__ > 7)
+//      #pragma GCC diagnostic ignored "-Wcast-function-type"
+//  #endif
+//  #pragma GCC diagnostic ignored "-Wconversion"
+//  #pragma GCC diagnostic ignored "-Wold-style-cast"
+//  #pragma GCC diagnostic ignored "-Wsign-conversion"
+//  #pragma GCC diagnostic ignored "-Wundef"
+// #endif
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
+// #ifndef BOOST_TEST_MODULE
+//  #define BOOST_TEST_MAIN
+// #endif
 
-#include <boost/test/unit_test.hpp>
+// #include <boost/test/included/unit_test.hpp>
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+// #if defined(__clang__)
+//  #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+//  #pragma GCC diagnostic pop
+// #endif
 
 #include <boost/multi/array.hpp>
 
 #include <array>     // for array
 #include <cassert>   // for _LIBCPP_VERSION  // IWYU pragma: keep
+#include <cmath>                              // for abs  // IWYU pragma: keep
+// IWYU pragma: no_include <stdlib.h>                           // for abs
+// IWYU pragma: no_include <cstdlib>                          // for abs
 #include <complex>   // for complex, operator==
 // IWYU pragma: no_include <iosfwd>    // for __GLIBCXX__
 #include <iterator>  // for data
@@ -54,9 +63,13 @@ template<class T>
 inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
 #endif
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 BOOST_AUTO_TEST_CASE(pmr_double) {
 	multi::array<std::complex<double>, 2> Aarr({ 2, 2 }, std::complex<double>(4.0, 5.0));
-	BOOST_REQUIRE(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
+	BOOST_TEST(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
 }
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
@@ -69,15 +82,15 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 
 		multi::pmr::array<double, 2> Aarr({ 2, 2 }, &pool);
 
-		BOOST_REQUIRE_CLOSE( buffer[0], 4.0, 1E-6 );
-		BOOST_REQUIRE_CLOSE( buffer[1], 5.0, 1E-6 );
+		BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 
 	#if defined(__GLIBCXX__)
 		BOOST_TEST         ( &Aarr[0][0] == buffer.data() );
-		BOOST_REQUIRE_CLOSE(  Aarr[0][0], 4.0, 1E-6);
+		BOOST_TEST( std::abs( Aarr[0][0] - 4.0 ) < 1E-6);
 	#elif defined(_LIBCPP_VERSION)
 		BOOST_TEST         ( &Aarr[0][0] == buffer.data() + (buffer.size() - 4) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		BOOST_REQUIRE_CLOSE(  Aarr[0][0], 996.0, 1E-6 );
+		BOOST_TEST( std::abs( Aarr[0][0] - 996.0 ) < 1E-6 );
 	#endif
 	}
 	{
@@ -89,21 +102,21 @@ BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
 		multi::pmr::array<double, 2> Aarr({ 2, 2 }, double{}, &pool);
 
 	#if defined(__GLIBCXX__)
-		BOOST_REQUIRE_CLOSE( buffer[0], 0.0, 1E-6 );
-		BOOST_REQUIRE_CLOSE( buffer[1], 0.0, 1E-6 );
+		BOOST_TEST( std::abs( buffer[0] - 0.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( buffer[1] - 0.0 ) < 1E-6 );
 
 		BOOST_TEST( &Aarr[0][0] == buffer.data() );
 	#elif defined(_LIBCPP_VERSION)
-		BOOST_REQUIRE_CLOSE( buffer[0], 4.0, 1E-6);
-		BOOST_REQUIRE_CLOSE( buffer[1], 5.0, 1E-6 );
-		BOOST_REQUIRE_CLOSE( buffer[buffer.size()-4],  0.0, 1E-6 );
-		BOOST_REQUIRE_CLOSE( buffer[buffer.size()-3],  0.0, 1E-6 );
-		BOOST_REQUIRE_CLOSE( buffer[buffer.size()-5], 11.0, 1E-6 );
+		BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6);
+		BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( buffer[buffer.size()-4] - 0.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( buffer[buffer.size()-3] - 0.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( buffer[buffer.size()-5] - 11.0 ) < 1E-6 );
 
 		BOOST_TEST( &Aarr[0][0] == buffer.data() + (buffer.size() - 4) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	#endif
 
-		BOOST_REQUIRE_CLOSE( Aarr[0][0], 0.0, 1E-6);
+		BOOST_TEST( std::abs( Aarr[0][0] - 0.0 ) < 1E-6);
 	}
 }
 
@@ -116,23 +129,23 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_2) {
 	multi::pmr::array<std::complex<double>, 2> Aarr({ 2, 2 }, &pool);
 
 	#if defined(__GLIBCXX__)
-	BOOST_REQUIRE_CLOSE( buffer[0], 4.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE( buffer[1], 5.0, 1E-6 );
-	BOOST_REQUIRE(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
+	BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
+	BOOST_TEST( Aarr[0][0] == std::complex<double>(4.0, 5.0) );
 	#elif defined(_LIBCPP_VERSION)
-	BOOST_REQUIRE_CLOSE( buffer[buffer.size() - 4], 996.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE( buffer[buffer.size() - 3], 997.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE(Aarr[0][0].real(), 8.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE(Aarr[0][0].imag(), 9.0, 1E-6 );
+	BOOST_TEST( std::abs( buffer[buffer.size() - 4] - 996.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( buffer[buffer.size() - 3] - 997.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( Aarr[0][0].real() - 8.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( Aarr[0][0].imag() - 9.0 ) < 1E-6 );
 	#endif
 	Aarr[0][0] = std::complex<double>{ 40.0, 50.0 };
 
 	#if defined(__GLIBCXX__)
-	BOOST_REQUIRE_CLOSE( buffer[0], 40.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE( buffer[1], 50.0, 1E-6 );
+	BOOST_TEST( std::abs( buffer[0] - 40.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( buffer[1] - 50.0 ) < 1E-6 );
 	#elif defined(_LIBCPP_VERSION)
-	BOOST_REQUIRE_CLOSE( buffer[buffer.size() - 4], 996.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE( buffer[buffer.size() - 3], 997.0, 1E-6 );
+	BOOST_TEST( std::abs( buffer[buffer.size() - 4] - 996.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( buffer[buffer.size() - 3] - 997.0 ) < 1E-6 );
 	#endif
 }
 
@@ -145,15 +158,15 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
 	multi::pmr::array<std::complex<double>, 2> Aarr({ 2, 2 }, &pool);
 
 	#if defined(__GLIBCXX__)
-	BOOST_REQUIRE_CLOSE(Aarr[0][0].real(), 4.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE(Aarr[0][0].imag(), 5.0, 1E-6 );
+	BOOST_TEST( std::abs( Aarr[0][0].real() - 4.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( Aarr[0][0].imag() - 5.0 ) < 1E-6 );
 	#elif defined(_LIBCPP_VERSION)
-	BOOST_REQUIRE_CLOSE(Aarr[0][0].real(), 8.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE(Aarr[0][0].imag(), 9.0, 1E-6 );
+	BOOST_TEST( std::abs( Aarr[0][0].real() - 8.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( Aarr[0][0].imag() - 9.0 ) < 1E-6 );
 	#endif
 
-	BOOST_REQUIRE_CLOSE( buffer[0], 4.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE( buffer[1], 5.0, 1E-6 );
+	BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 
 	#if defined(__GLIBCXX__)
 	BOOST_TEST( static_cast<void*>(buffer.data()) == static_cast<void*>(&Aarr[0][0]) );
@@ -170,15 +183,15 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_3) {
 
 	multi::pmr::array<std::complex<double>, 2> const Aarr({ 2, 2 }, std::complex<double>{ 40.0, 50.0 }, &pool);
 
-	BOOST_REQUIRE_CLOSE( Aarr[0][0].real(), 40.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE( Aarr[0][0].imag(), 50.0, 1E-6 );
+	BOOST_TEST( std::abs( Aarr[0][0].real() - 40.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( Aarr[0][0].imag() - 50.0 ) < 1E-6 );
 
 	#if defined(__GLIBCXX__)
-	BOOST_REQUIRE_CLOSE( buffer[0], 40.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE( buffer[1], 50.0, 1E-6 );
+	BOOST_TEST( std::abs( buffer[0] - 40.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( buffer[1] - 50.0 ) < 1E-6 );
 	#elif defined(_LIBCPP_VERSION)
-	BOOST_REQUIRE_CLOSE( buffer[buffer.size() - 4], 40.0, 1E-6 );
-	BOOST_REQUIRE_CLOSE( buffer[buffer.size() - 3], 50.0, 1E-6 );
+	BOOST_TEST( std::abs( buffer[buffer.size() - 4] - 40.0 ) < 1E-6 );
+	BOOST_TEST( std::abs( buffer[buffer.size() - 3] - 50.0 ) < 1E-6 );
 	#endif
 }
 
@@ -191,20 +204,22 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
 	multi::pmr::array<std::complex<double>, 2> Aarr({ 2, 2 }, &pool);
 
 	if constexpr(multi::force_element_trivial_default_construction<std::complex<double>>) {
-		BOOST_REQUIRE_CLOSE( buffer[0], 4.0, 1E-6 );
-		BOOST_REQUIRE_CLOSE( buffer[1], 5.0, 1E-6 );
+		BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 
 	#if defined(__GLIBCXX__)
-		BOOST_REQUIRE(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
+		BOOST_TEST(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
 	#elif defined(_LIBCPP_VERSION)
-		BOOST_REQUIRE_CLOSE(Aarr[0][0].real(), 8.0, 1E-6 );
-		BOOST_REQUIRE_CLOSE(Aarr[0][0].imag(), 9.0, 1E-6 );
+		BOOST_TEST( std::abs( Aarr[0][0].real() - 8.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( Aarr[0][0].imag() - 9.0 ) < 1E-6 );
 	#endif
 	} else {
-		BOOST_REQUIRE_CLOSE( buffer[0], 0.0, 1E-6 );
-		BOOST_REQUIRE_CLOSE( buffer[1], 0.0, 1E-6);
+		BOOST_TEST( std::abs( buffer[0] - 0.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( buffer[1] - 0.0 ) < 1E-6);
 
-		BOOST_REQUIRE_CLOSE(Aarr[0][0], 0.0, 1E-6);
+		BOOST_TEST( std::abs( Aarr[0][0] - 0.0 ) < 1E-6);
 	}
 }
 #endif
+return boost::report_errors();}
+

@@ -2,24 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>  // for operator<<, BOOST_PP_IIF_1
-
 #include <boost/multi/adaptors/fftw.hpp>  // for initialize_threads, environ...
 #include <boost/multi/array.hpp>          // for array, subarray, layout_t
 
 #include <algorithm>   // for for_each, generate
 #include <chrono>      // for duration, operator-, high_r...  // NOLINT(build/c++11)
 #include <complex>     // for operator==, complex
-#include <functional>  // for invoke
+#include <functional>  // for invoke  // IWYU pragma: keep
 #include <iostream>    // for basic_ostream, operator<<
 #include <random>      // for uniform_real_distribution
 #include <string>      // for char_traits, operator""s
 #include <utility>     // for move, swap
 
 namespace multi = boost::multi;
-
-using fftw_fixture = multi::fftw::environment;
-BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
 
 using complex = std::complex<double>;
 
@@ -40,6 +35,11 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }
 };
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
+multi::fftw::environment env;
 BOOST_AUTO_TEST_CASE(fftw_transpose) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
@@ -64,9 +64,9 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 				watch const unnamed("auxiliary copy           %ws wall, CPU (%p%)\n"s);
 				aux = ~out;
 				out = std::move(aux);
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
+				BOOST_TEST( out[35][79] == in[79][35] );
 			}
-			BOOST_REQUIRE( out == ~in );
+			BOOST_TEST( out == ~in );
 		}
 		{
 			multi::array<complex, 2> out = in;
@@ -78,9 +78,9 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 						std::swap(out[idx][jdx], out[jdx][idx]);
 					});
 				});
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
+				BOOST_TEST( out[35][79] == in[79][35] );
 			}
-			BOOST_REQUIRE( out == ~in );
+			BOOST_TEST( out == ~in );
 		}
 		{
 			multi::array<complex, 2> out = in;
@@ -92,9 +92,10 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 						std::swap(out[idx][jdx], out[jdx][idx]);
 					});
 				});
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
+				BOOST_TEST( out[35][79] == in[79][35] );
 			}
-			BOOST_REQUIRE( out == ~in );
+			BOOST_TEST( out == ~in );
 		}
 	}
 }
+return boost::report_errors();}
