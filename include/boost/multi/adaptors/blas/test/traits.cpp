@@ -2,28 +2,29 @@
 
 // #include<boost/test/included/unit_test.hpp>
 
-#include <boost/multi/array.hpp>
 #include <boost/multi/adaptors/blas/traits.hpp>
+#include <boost/multi/array.hpp>
 
-#include<complex>
+#include <complex>
 
 namespace multi = boost::multi;
-namespace blas = multi::blas;
+namespace blas  = multi::blas;
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_traits_simple_array) {
-	multi::array<double, 2> arr;
-	BOOST_TEST( arr.empty() );
-}
+	BOOST_AUTO_TEST_CASE(multi_adaptors_blas_traits_simple_array) {
+		multi::array<double, 2> arr;
+		BOOST_TEST( arr.empty() );
+	}
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_traits) {
-	static_assert( blas::is_d<double>{} );
-	static_assert( blas::is_s<float >{} );
+	BOOST_AUTO_TEST_CASE(multi_adaptors_blas_traits) {
+		static_assert(blas::is_d<double>{});
+		static_assert(blas::is_s<float>{});
 
-	static_assert( blas::is_c<std::complex<float>>{} );
-	static_assert( blas::is_z<std::complex<double>>{} );
+		static_assert(blas::is_c<std::complex<float>>{});
+		static_assert(blas::is_z<std::complex<double>>{});
+	}
+	return boost::report_errors();
 }
-return boost::report_errors();}

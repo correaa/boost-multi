@@ -2,8 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #include <boost/test/included/unit_test.hpp>  // for operator<<, BOOST_PP_IIF_1
-
 #include <boost/multi/adaptors/fftw.hpp>  // for initialize_threads, environ...
 #include <boost/multi/array.hpp>          // for array, subarray, layout_t
 

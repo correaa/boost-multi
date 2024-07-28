@@ -6,9 +6,20 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_GEMM_HPP
 
 #include <boost/multi/adaptors/blas/core.hpp>
-#include <boost/multi/adaptors/blas/gemv.hpp>
+// #include <boost/multi/adaptors/blas/gemv.hpp>
 #include <boost/multi/adaptors/blas/numeric.hpp>
-#include <boost/multi/adaptors/blas/operations.hpp>
+// #include <boost/multi/adaptors/blas/operations.hpp>
+
+#include <boost/multi/array_ref.hpp>              // for base, size, begin
+
+#include <cassert>                               // for assert
+#include <cstddef>                                // for nullptr_t
+#include <exception>                              // for exception
+#include <iterator>                               // for iterator_traits
+#include <stdexcept>                              // for logic_error
+#include <string>                                 // for to_string, operator""s
+#include <type_traits>                            // for enable_if_t, integr...
+#include <utility>                                // for forward, declval
 
 namespace boost::multi::blas {
 
@@ -167,8 +178,7 @@ auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element
 	}
 }
 
-template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
-class gemm_range;
+// template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType> class gemm_range;
 
 template<class Ext>
 class gemm_reference {  // TODO(correaa) implement this in terms of gemv_range?
