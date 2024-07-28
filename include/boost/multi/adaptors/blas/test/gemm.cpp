@@ -2,20 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/multi/adaptors/blas/core.hpp>        // for context
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
+#include <boost/multi/adaptors/blas/numeric.hpp>     // for involuter, conju...
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
+
 #include <boost/multi/array.hpp>                     // for layout_t, array
 
-#include <cmath>  // for abs  // IWYU pragma: keep
+#include <cmath>  // for abs
 // IWYU pragma: no_include <cstdlib>
 // IWYU pragma: no_include <stdlib.h>  // for abs
-
-#include <boost/multi/adaptors/blas/core.hpp>     // for context
-#include <boost/multi/adaptors/blas/numeric.hpp>  // for involuter, conju...
-
-#include <cmath>     // for abs
 #include <complex>   // for complex, operator*
 #include <iterator>  // for begin, size
+#include <memory>  // for allocator
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
