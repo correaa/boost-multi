@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS gemm"
-#include<boost/test/unit_test.hpp>
+// #include<boost/test/unit_test.hpp>
 
 #include <boost/multi/adaptors/cuda/cublas.hpp>
 
@@ -18,6 +18,12 @@
 
 namespace multi = boost::multi;
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
+
+int main() {
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>;
@@ -37,7 +43,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex) {
 	multi::array<complex, 1> const Y_copy = Y_gpu;
 
 	using blas::operators::operator-;
-	BOOST_REQUIRE_SMALL( +blas::nrm2(Y_copy - multi::array<complex, 1>{ {214.02, 0.0}, {106.43, 0.0}, {188.37, 0.0} }) , 1e-13);
+	BOOST_REQUIRE_CLOSE( +blas::nrm2(Y_copy - multi::array<complex, 1>{ {214.02, 0.0}, {106.43, 0.0}, {188.37, 0.0} }) , 0.0, 1e-13);
 }
 
 BOOST_AUTO_TEST_CASE(cublas_gemv_real) {
@@ -59,7 +65,7 @@ BOOST_AUTO_TEST_CASE(cublas_gemv_real) {
 	multi::array<T, 1> const Y_copy = Y_gpu;
 
 	using blas::operators::operator-;
-	BOOST_REQUIRE_SMALL( +blas::nrm2(Y_copy - multi::array{ 214.02, 106.43, 188.37 }) , 1e-13);
+	BOOST_REQUIRE_CLOSE( +blas::nrm2(Y_copy - multi::array{ 214.02, 106.43, 188.37 }) , 0.0, 1e-13);
 }
 
 BOOST_AUTO_TEST_CASE(cublas_gemm_nh) {
@@ -78,22 +84,24 @@ BOOST_AUTO_TEST_CASE(cublas_gemm_nh) {
 		blas::gemm({1.0, 0.0}, a, a, {0.0, 0.0}, c);  // c=aa†, c†=aa†
 
 		multi::array<complex, 2> const c_copy = c;
-		BOOST_REQUIRE( c_copy[1][0] == 16.0 -  2.0*I );
-		BOOST_REQUIRE( c_copy[0][1] == 14.0 - 38.0*I );
+		BOOST_TEST( c_copy[1][0] == 16.0 -  2.0*I );
+		BOOST_TEST( c_copy[0][1] == 14.0 - 38.0*I );
 	}
 	{
 		auto const c = +blas::gemm(complex{1.0, 0.0}, a, a);  // c=aa†, c†=aa†
 
 		multi::array<complex, 2> const c_copy = c;
-		BOOST_REQUIRE( c_copy[1][0] == 16.0 -  2.0*I );
-		BOOST_REQUIRE( c_copy[0][1] == 14.0 - 38.0*I );
+		BOOST_TEST( c_copy[1][0] == 16.0 -  2.0*I );
+		BOOST_TEST( c_copy[0][1] == 14.0 - 38.0*I );
 	}
 	{
 		multi::thrust::cuda::array<complex, 2> c({2, 2}, {0.0, 0.0});
 		c += blas::gemm(complex{1.0, 0.0}, a, a);  // c=aa†, c†=aa†
 
 		multi::array<complex, 2> const c_copy = c;
-		BOOST_REQUIRE( c_copy[1][0] == 16.0 -  2.0*I );
-		BOOST_REQUIRE( c_copy[0][1] == 14.0 - 38.0*I );
+		BOOST_TEST( c_copy[1][0] == 16.0 -  2.0*I );
+		BOOST_TEST( c_copy[0][1] == 14.0 - 38.0*I );
 	}
 }
+
+return boost::report_errors();}
