@@ -3,14 +3,16 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS all"
-#include<boost/test/unit_test.hpp>
+// #include<boost/test/unit_test.hpp>
 
 #include <boost/multi/adaptors/cuda/cublas.hpp>
 
 #include <boost/multi/adaptors/blas/asum.hpp>
 #include <boost/multi/adaptors/blas/axpy.hpp>
 #include <boost/multi/adaptors/blas/copy.hpp>
+#include <boost/multi/adaptors/blas/dot.hpp>
 #include <boost/multi/adaptors/blas/gemm.hpp>
+#include <boost/multi/adaptors/blas/gemv.hpp>
 #include <boost/multi/adaptors/blas/nrm2.hpp>
 #include <boost/multi/adaptors/blas/scal.hpp>
 #include <boost/multi/adaptors/blas/swap.hpp>
@@ -50,6 +52,12 @@ auto generate_ABx() {
 	return std::make_tuple(std::move(x), std::move(A), std::move(B));
 }
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
+
+int main() {
 BOOST_AUTO_TEST_CASE(cublas_scal_complex_column) {
 	namespace blas = multi::blas;
 	complex const I{0.0, 1.0};
@@ -2049,3 +2057,5 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 }
 #endif
 #endif
+
+return boost::report_errors();}
