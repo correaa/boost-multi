@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS all"
-#include <boost/test/unit_test.hpp>
+// #include <boost/test/unit_test.hpp>
 
 #include <boost/multi/adaptors/cuda/cublas.hpp>
 
@@ -11,6 +11,7 @@
 #include <boost/multi/adaptors/blas/axpy.hpp>
 #include <boost/multi/adaptors/blas/copy.hpp>
 #include <boost/multi/adaptors/blas/gemm.hpp>
+#include <boost/multi/adaptors/blas/gemv.hpp>
 #include <boost/multi/adaptors/blas/nrm2.hpp>
 #include <boost/multi/adaptors/blas/scal.hpp>
 #include <boost/multi/adaptors/blas/swap.hpp>
@@ -50,6 +51,12 @@ auto generate_ABx() {
 	return std::make_tuple(std::move(x), std::move(A), std::move(B));
 }
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
+
+int main() {
 BOOST_AUTO_TEST_CASE(cublas_scal_complex_column) {
 	namespace blas = multi::blas;
 	complex const I{ 0.0, 1.0 };
@@ -64,25 +71,25 @@ BOOST_AUTO_TEST_CASE(cublas_scal_complex_column) {
 			auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex>>();
 			auto xx           = +x2;
 			blas::scal(s, xx);
-			BOOST_REQUIRE(xx == x);
+			BOOST_TEST(xx == x);
 		}
 		{
 			auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex>>();
 			using blas::operators::operator*=;
 			x2 *= s;
-			BOOST_REQUIRE(x == x2);
+			BOOST_TEST(x == x2);
 		}
 		{
 			auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex>>();
 			thrust::transform(x2.begin(), x2.end(), x2.begin(), [s] __device__(T & e) { return s * e; });
 
-			BOOST_REQUIRE(x == x2);
+			BOOST_TEST(x == x2);
 		}
 		{
 			auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex>>();
 			thrust::for_each(x2.begin(), x2.end(), [s] __device__(T & e) { return e *= s; });
 
-			BOOST_REQUIRE(x == x2);
+			BOOST_TEST(x == x2);
 		}
 	}
 }
@@ -98,34 +105,34 @@ BOOST_AUTO_TEST_CASE(cublas_copy_complex) {
 	multi::array<T, 1, Alloc>       y = { 1.0 + I * 9.0, 2.0 + I * 6.0, 3.0 + I * 5.0, 4.0 + I * 3.0 };
 
 	blas::copy(x, y);
-	BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+	BOOST_TEST( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
 	{
 		thrust::copy(begin(x), end(x), begin(y));
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+		BOOST_TEST( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
 	}
 	{
 		blas::copy_n(x.begin(), x.size(), y.begin());
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+		BOOST_TEST( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
 	}
 	{
 		y() = blas::copy(x);
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+		BOOST_TEST( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
 	}
 	{
 		multi::array<T, 1, Alloc> yy = blas::copy(x);
-		BOOST_REQUIRE( static_cast<complex>(yy[0]) == 1.0 + I*8.0 );
+		BOOST_TEST( static_cast<complex>(yy[0]) == 1.0 + I*8.0 );
 	}
 	{
 		y = blas::copy(x);
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
+		BOOST_TEST( static_cast<complex>(y[0]) == 1.0 + I*8.0 );
 	}
 	{
 		{
 			using blas::operators::operator<<;
 			y << x;
-			//  BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
+			//  BOOST_TEST(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
 		}
-		BOOST_REQUIRE(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
+		BOOST_TEST(( static_cast<complex>(y[0]) == 1.0 + I*8.0 ));  // this can't be used with a free operator<<
 	}
 }
 
@@ -141,17 +148,17 @@ BOOST_AUTO_TEST_CASE(cublas_swap_complex) {
 	multi::array<T, 1, Alloc> y = { 1.0 + I * 9.0, 2.0 + I * 6.0, 3.0 + I * 5.0, 4.0 + I * 3.0 };
 
 	blas::swap(x, y);
-	BOOST_REQUIRE( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
+	BOOST_TEST( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
 	{
 		thrust::swap_ranges(begin(x), end(x), begin(y));
 		thrust::swap_ranges(begin(x), end(x), begin(y));
-		BOOST_REQUIRE( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
+		BOOST_TEST( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
 	}
 	{
 		using blas::operator^;
 		(x ^ y);
 		(x ^ y);
-		BOOST_REQUIRE( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
+		BOOST_TEST( static_cast<complex>(x[0]) == 1.0 + I*9.0 );
 	}
 }
 
@@ -169,17 +176,17 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_column) {
 	{
 		double res2;
 		res2 = blas::asum(x);
-		BOOST_REQUIRE( res == res2 );
+		BOOST_TEST( res == res2 );
 	}
 	{
 		double res2 = blas::asum(x);
-		BOOST_REQUIRE( res == res2 );
+		BOOST_TEST( res == res2 );
 	}
 	{
 		auto res2 = std::transform_reduce(
 			x.begin(), x.end(), double{}, std::plus<>{}, [](T const& e) { return std::abs(e.real()) + std::abs(e.imag()); }
 		);
-		BOOST_REQUIRE( res == res2 );
+		BOOST_TEST( res == res2 );
 	}
 	{
 		auto res2 = thrust::transform_reduce(
@@ -187,37 +194,37 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_column) {
 			[] __host__ __device__(T const& e) { return std::abs(e.real()) + std::abs(e.imag()); },
 			double{}, thrust::plus<>{}
 		);
-		BOOST_REQUIRE( res == res2 );
+		BOOST_TEST( res == res2 );
 	}
 	{
 		multi::static_array<double, 0, thrust::cuda::allocator<double>> res2({}, 0.0);
 		res2.assign(&blas::asum(x));
 		res2 = blas::asum(x);
-		BOOST_REQUIRE(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
-		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
-		//  BOOST_REQUIRE( res == res2 );
+		BOOST_TEST(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+		BOOST_TEST(( res == static_cast<double>(res2) ));
+		//  BOOST_TEST( res == res2 );
 	}
 	{
 		multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::asum(x);
-		BOOST_REQUIRE(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
-		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
-		//  BOOST_REQUIRE( res == res2 );
+		BOOST_TEST(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+		BOOST_TEST(( res == static_cast<double>(res2) ));
+		//  BOOST_TEST( res == res2 );
 	}
 	{
 		using blas::operators::operator==;
 		using blas::operators::operator!=;
-		BOOST_REQUIRE( x != 0 );
-		BOOST_REQUIRE( not (x == 0) );
+		BOOST_TEST( x != 0 );
+		BOOST_TEST( not (x == 0) );
 	}
 	{
 		using blas::operators::contains_nan;
-		BOOST_REQUIRE( not contains_nan(x) );
+		BOOST_TEST( not contains_nan(x) );
 	}
 	{
 		using blas::operators::isfinite;
 		using blas::operators::isinf;
-		BOOST_REQUIRE( isfinite(x) );
-		BOOST_REQUIRE( not isinf(x) );
+		BOOST_TEST( isfinite(x) );
+		BOOST_TEST( not isinf(x) );
 	}
 }
 
@@ -232,19 +239,19 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_nans) {
 
 	{
 		using blas::operators::contains_nan;
-		BOOST_REQUIRE( contains_nan(x) );
+		BOOST_TEST( contains_nan(x) );
 	}
 	{
 		using blas::operators::operator==;
 		using blas::operators::operator!=;
-		BOOST_REQUIRE( not (x != 0) );
-		BOOST_REQUIRE( not (x == 0) );
+		BOOST_TEST( not (x != 0) );
+		BOOST_TEST( not (x == 0) );
 	}
 	{
 		using blas::operators::isfinite;
 		using blas::operators::isinf;
-		BOOST_REQUIRE( not isfinite(x) );
-		BOOST_REQUIRE( not isinf(x) );
+		BOOST_TEST( not isfinite(x) );
+		BOOST_TEST( not isinf(x) );
 	}
 }
 
@@ -260,19 +267,19 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_inf) {
 	// double res;
 	{
 		using blas::operators::contains_nan;
-		BOOST_REQUIRE( not contains_nan(x) );
+		BOOST_TEST( not contains_nan(x) );
 	}
 	{
 		using blas::operators::operator==;
 		using blas::operators::operator!=;
-		BOOST_REQUIRE(     (x != 0) );
-		BOOST_REQUIRE( not (x == 0) );
+		BOOST_TEST(     (x != 0) );
+		BOOST_TEST( not (x == 0) );
 	}
 	{
 		using blas::operators::isfinite;
 		using blas::operators::isinf;
-		BOOST_REQUIRE( not isfinite(x) );
-		BOOST_REQUIRE( isinf(x) );
+		BOOST_TEST( not isfinite(x) );
+		BOOST_TEST( isinf(x) );
 	}
 }
 
@@ -290,11 +297,11 @@ BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
 	{
 		double res2;
 		res2 = blas::nrm2(x);
-		BOOST_REQUIRE( res == res2 );
+		BOOST_TEST( res == res2 );
 	}
 	{
 		auto res2 = +blas::nrm2(x);
-		BOOST_REQUIRE( res == res2 );
+		BOOST_TEST( res == res2 );
 	}
 	{
 		auto res2 = sqrt(thrust::transform_reduce(
@@ -302,11 +309,11 @@ BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
 			[] __host__ __device__(T const& e) { return thrust::norm(e); },
 			double{}, thrust::plus<>{}
 		));
-		BOOST_REQUIRE( res == res2 );
+		BOOST_TEST( res == res2 );
 	}
 	{
 		multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::nrm2(x);
-		BOOST_REQUIRE(( res == static_cast<double>(res2) ));
+		BOOST_TEST(( res == static_cast<double>(res2) ));
 	}
 }
 
@@ -326,27 +333,27 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 		{
 			complex res2;
 			res2 = blas::dot(x, y);
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 		{
 			multi::array<complex, 0> res2(complex{ 1.0, 0.0 });
 			res2 = blas::dot(x, y);
-			BOOST_REQUIRE( static_cast<complex>(res2) == res );
+			BOOST_TEST( static_cast<complex>(res2) == res );
 		}
 		{
 			using blas::operators::operator, ;
 			auto res2 = +(x, y);
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 		{
 			auto res2 = +blas::dot(x, y);
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 		{
 			//  auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex> >();
 			//  thrust::for_each(x2.begin(), x2.end(), [s] __device__ (T& e) {return e*=s;});
 			auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{});
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 	}
 	{
@@ -356,17 +363,17 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 			using blas::operators::operator, ;
 			using blas::operators::operator*;
 			auto res2 = +(*x, y);
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 		{
 			auto res2 = +blas::dot(blas::C(x), y);
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 		{
 			//  auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex> >();
 			//  thrust::for_each(x2.begin(), x2.end(), [s] __device__ (T& e) {return e*=s;});
 			auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{}, thrust::plus<>{}, [] __device__(T const& t1, T const& t2) { return conj(t1) * t2; });
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 	}
 	{
@@ -375,21 +382,21 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 		{
 			using blas::operators::operator, ;
 			auto res2 = +(x, blas::C(y));
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 		{
 			auto res2 = +blas::dot(x, blas::C(y));
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 		{
 			//  auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex> >();
 			//  thrust::for_each(x2.begin(), x2.end(), [s] __device__ (T& e) {return e*=s;});
 			auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{}, thrust::plus<>{}, [] __device__(T const& t1, T const& t2) { return t1 * conj(t2); });
-			BOOST_REQUIRE(res == res2);
+			BOOST_TEST(res == res2);
 		}
 		{
-			BOOST_REQUIRE( blas::dot(blas::C(x), x) == pow(blas::nrm2(x), 2.0) );
-			BOOST_REQUIRE( blas::dot(x, blas::C(x)) == pow(blas::nrm2(x), 2.0) );
+			BOOST_TEST( blas::dot(blas::C(x), x) == pow(blas::nrm2(x), 2.0) );
+			BOOST_TEST( blas::dot(x, blas::C(x)) == pow(blas::nrm2(x), 2.0) );
 
 			using blas::operators::operator, ;
 			using blas::operators::operator*;
@@ -397,15 +404,15 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 			using blas::operators::norm;
 			using blas::operators::operator^;
 
-			BOOST_REQUIRE( (*x, x) == pow(abs(x), 2.0) );
-			BOOST_REQUIRE( (*x, x) == pow(abs(x), 2)   );
-			BOOST_REQUIRE( (*x, x) == norm(x)          );
+			BOOST_TEST( (*x, x) == pow(abs(x), 2.0) );
+			BOOST_TEST( (*x, x) == pow(abs(x), 2)   );
+			BOOST_TEST( (*x, x) == norm(x)          );
 
-			BOOST_REQUIRE( (x, *x) == pow(abs(x), 2.0) );
-			BOOST_REQUIRE( (x, *x) == pow(abs(x), 2)   );
-			BOOST_REQUIRE( (x, *x) == norm(x)          );
+			BOOST_TEST( (x, *x) == pow(abs(x), 2.0) );
+			BOOST_TEST( (x, *x) == pow(abs(x), 2)   );
+			BOOST_TEST( (x, *x) == norm(x)          );
 
-			BOOST_REQUIRE( (*x, x) == (x^2)            );
+			BOOST_TEST( (*x, x) == (x^2)            );
 		}
 	}
 	{
@@ -416,21 +423,21 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 		// {
 		//  using blas::operators::operator,;
 		//  auto res2 = +(x, blas::C(y));
-		//  BOOST_REQUIRE(res == res2);
+		//  BOOST_TEST(res == res2);
 		// }
 		// {
 		//  auto res2 = +blas::dot(x, blas::C(y));
-		//  BOOST_REQUIRE(res == res2);
+		//  BOOST_TEST(res == res2);
 		// }
 		// {
 		// //  auto [x2, A2, B2] = generate_ABx<complex, thrust::cuda::allocator<complex> >();
 		// //  thrust::for_each(x2.begin(), x2.end(), [s] __device__ (T& e) {return e*=s;});
 		//  auto res2 = thrust::inner_product(x.begin(), x.end(), y.begin(), T{}, thrust::plus<>{}, [] __device__ (T const& t1, T const& t2) {return t1*conj(t2);});
-		//  BOOST_REQUIRE(res == res2);
+		//  BOOST_TEST(res == res2);
 		// }
 		// {
-		//  BOOST_REQUIRE( blas::dot(blas::C(x), x) == pow(blas::nrm2(x), 2.0) );
-		//  BOOST_REQUIRE( blas::dot(x, blas::C(x)) == pow(blas::nrm2(x), 2.0) );
+		//  BOOST_TEST( blas::dot(blas::C(x), x) == pow(blas::nrm2(x), 2.0) );
+		//  BOOST_TEST( blas::dot(x, blas::C(x)) == pow(blas::nrm2(x), 2.0) );
 
 		//  using blas::operators::operator,;
 		//  using blas::operators::operator*;
@@ -438,15 +445,15 @@ BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 		//  using blas::operators::norm;
 		//  using blas::operators::operator^;
 
-		//  BOOST_REQUIRE( (*x, x) == pow(abs(x), 2.0) );
-		//  BOOST_REQUIRE( (*x, x) == pow(abs(x), 2)   );
-		//  BOOST_REQUIRE( (*x, x) == norm(x)          );
+		//  BOOST_TEST( (*x, x) == pow(abs(x), 2.0) );
+		//  BOOST_TEST( (*x, x) == pow(abs(x), 2)   );
+		//  BOOST_TEST( (*x, x) == norm(x)          );
 
-		//  BOOST_REQUIRE( (x, *x) == pow(abs(x), 2.0) );
-		//  BOOST_REQUIRE( (x, *x) == pow(abs(x), 2)   );
-		//  BOOST_REQUIRE( (x, *x) == norm(x)          );
+		//  BOOST_TEST( (x, *x) == pow(abs(x), 2.0) );
+		//  BOOST_TEST( (x, *x) == pow(abs(x), 2)   );
+		//  BOOST_TEST( (x, *x) == norm(x)          );
 
-		//  BOOST_REQUIRE( (*x, x) == (x^2)            );
+		//  BOOST_TEST( (*x, x) == (x^2)            );
 		// }
 	}
 }
@@ -473,7 +480,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_one) {
 
 	blas::axpy(1.0, x, y);
 	std::cout << y[0] << std::endl;
-	BOOST_REQUIRE( static_cast<complex>(y[0]) == 3.2 + I*0.0 );
+	BOOST_TEST( static_cast<complex>(y[0]) == 3.2 + I*0.0 );
 	{
 		multi::array<complex, 1, Alloc> yy = {
 			{ 2.1, 0.0},
@@ -483,7 +490,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_one) {
 		};
 
 		thrust::transform(x.begin(), x.end(), yy.begin(), yy.begin(), [] __device__(auto const& ex, auto const& ey) { return ex + ey; });
-		BOOST_TEST( yy == y , boost::test_tools::per_element() );
+		BOOST_TEST( yy == y );  // , boost::test_tools::per_element() );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = {
@@ -494,7 +501,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_one) {
 		};
 		using blas::operators::operator+=;
 		yy += x;
-		BOOST_REQUIRE( yy == y );
+		BOOST_TEST( yy == y );
 	}
 }
 
@@ -520,7 +527,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_mone) {
 
 	blas::axpy(-1.0, x, y);
 	std::cout << y[0] << std::endl;
-	BOOST_REQUIRE( static_cast<complex>(y[0]) == 1.0 + I*0.0 );
+	BOOST_TEST( static_cast<complex>(y[0]) == 1.0 + I*0.0 );
 	{
 		multi::array<complex, 1, Alloc> yy = {
 			{ 2.1, 0.0},
@@ -529,7 +536,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_mone) {
 			{11.0, 0.0}
 		};  // NOLINT(readability-identifier-length) BLAS naming
 		thrust::transform(x.begin(), x.end(), yy.begin(), yy.begin(), [] __host__ __device__(T ex, T ey) { return -1.0 * ex + ey; });
-		BOOST_TEST( yy == y , boost::test_tools::per_element() );
+		BOOST_TEST( yy == y );  // boost::test_tools::per_element() );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = {
@@ -540,7 +547,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_mone) {
 		};
 		using blas::operators::operator-=;
 		yy -= x;
-		BOOST_REQUIRE( yy == y );
+		BOOST_TEST( yy == y );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = {
@@ -553,10 +560,10 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_mone) {
 		yy -= x;
 		yy -= y;
 		using blas::operators::norm;
-		BOOST_REQUIRE( norm(yy) == 0 );
+		BOOST_TEST( norm(yy) == 0 );
 		using blas::operators::operator==;
-		BOOST_REQUIRE( operator==(yy, 0) );
-		BOOST_REQUIRE( yy == 0 );
+		BOOST_TEST( operator==(yy, 0) );
+		BOOST_TEST( yy == 0 );
 	}
 }
 
@@ -582,7 +589,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_alpha) {
 
 	blas::axpy(3.0, x, y);
 	std::cout << y[0] << std::endl;
-	BOOST_REQUIRE( static_cast<complex>(y[0]) == 5.4 + I*0.0 );
+	BOOST_TEST( static_cast<complex>(y[0]) == 5.4 + I*0.0 );
 	// {
 	//  multi::array<complex, 1, Alloc> yy = {
 	//      { 2.1, 0.0},
@@ -603,7 +610,7 @@ BOOST_AUTO_TEST_CASE(cublas_axpy_complex_alpha) {
 		using blas::operators::operator+=;
 		using blas::operators::operator*;
 		yy += 3.0 * x;
-		BOOST_REQUIRE( yy == y );
+		BOOST_TEST( yy == y );
 	}
 }
 
@@ -651,15 +658,15 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_conj_complex_zero) {
 			{3.1, 0.0}
 		};  // NOLINT(readability-identifier-length) BLAS naming
 		yy = blas::gemv(1.0, A, x);
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = blas::gemv(1.0, A, x);
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		using blas::operators::operator%;
@@ -670,9 +677,9 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_conj_complex_zero) {
 			{3.1, 0.0}
 		};  // NOLINT(readability-identifier-length) BLAS naming
 		yy = A % x;
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 }
 
@@ -698,34 +705,32 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_conj_zero) {
 		std::transform(begin(A.transposed()), end(A.transposed()), begin(yy), [&x](auto const& Ac) { return blas::dot(Ac, x); });
 
 		BOOST_REQUIRE_CLOSE(static_cast<complex>(y[0]).real(), static_cast<complex>(yy[0]).real(), 1e-7);
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = { 1.1 + I * 0.0, 2.1 + I * 0.0, 3.1 + I * 0.0, 6.7 + I * 0.0 };  // NOLINT(readability-identifier-length) BLAS naming
 		yy                                 = blas::gemv(1.0, blas::T(A), x);
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = blas::gemv(1.0, blas::T(A), x);
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		using blas::operators::operator%;
 
 		multi::array<complex, 1, Alloc> yy = { 1.1 + I * 0.0, 2.1 + I * 0.0, 3.1 + I * 0.0, 6.7 + I * 0.0 };  // NOLINT(readability-identifier-length) BLAS naming
 		yy                                 = ~A % x;
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 }
-
-template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 	namespace blas = multi::blas;
@@ -762,9 +767,9 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 			return blas::dot(*Ac, x); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = {
@@ -773,15 +778,15 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 			{3.1, 0.0}
 		};  // NOLINT(readability-identifier-length) BLAS naming
 		yy = blas::gemv(1.0, blas::J(A), x);
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = blas::gemv(1.0, blas::J(A), x);
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		using blas::operators::operator%;
@@ -793,9 +798,9 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 			{3.1, 0.0}
 		};  // NOLINT(readability-identifier-length) BLAS naming
 		yy = *A % x;
-		BOOST_REQUIRE( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 }
 
@@ -858,16 +863,16 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_trans_one) {
 		std::transform(begin(transposed(A)), end(transposed(A)), begin(yy), begin(yy), [&x, aa = 3.0 + I * 4.0, bb = 1.0](auto const& Ac, complex e) { return aa * blas::dot(Ac, x) + bb * e; });
 
 		BOOST_REQUIRE_CLOSE(static_cast<complex>(y[0]).real(), static_cast<complex>(yy[0]).real(), 1e-7);
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = { 1.1 + I * 0.0, 2.1 + I * 0.0, 3.1 + I * 0.0, 6.7 + I * 0.0 };  // NOLINT(readability-identifier-length) BLAS naming
 		yy += blas::gemv(3.0 + I * 4.0, blas::T(A), x);
 
 		BOOST_REQUIRE_CLOSE(static_cast<complex>(y[0]).real(), static_cast<complex>(yy[0]).real(), 1e-7);
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = { 1.1 + I * 0.0, 2.1 + I * 0.0, 3.1 + I * 0.0, 6.7 + I * 0.0 };  // NOLINT(readability-identifier-length) BLAS naming
@@ -875,8 +880,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_trans_one) {
 		yy += (3.0 + I * 4.0) * ~A % x;
 
 		BOOST_REQUIRE_CLOSE(static_cast<complex>(y[0]).real(), static_cast<complex>(yy[0]).real(), 1e-7);
-		BOOST_REQUIRE( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_REQUIRE( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
+		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
 	}
 }
 
@@ -907,8 +912,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_none) {
 		               [&B, aa = 1.0, bb = 0](auto const& Ar, auto&& Cr) { return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr)); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -922,8 +927,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_none) {
 			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -934,8 +939,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_none) {
 		               [&A, aa = 1.0, bb = 1.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -948,8 +953,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_none) {
 			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 }
 
@@ -977,8 +982,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_second) {
 		               [&A, aa = 1.0, bb = 0.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -992,8 +997,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_second) {
 			return blas::gemv(aa, B, Ac, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1004,8 +1009,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_second) {
 		               [&A, aa = 1.0, bb = 1.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1018,8 +1023,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_second) {
 			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1032,8 +1037,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_second) {
 			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 }
 
@@ -1061,8 +1066,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
 		               [&A, aa = 1.0, bb = 0.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, blas::T(A), Bc, bb, std::move(Cc)); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1076,8 +1081,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
 			return blas::gemv(aa, blas::T(B), Ac, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1088,8 +1093,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
 		               [&A, aa = 1.0, bb = 1.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, blas::T(A), Bc, bb, std::move(Cc)); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1102,8 +1107,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
 			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1116,8 +1121,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_first) {
 			return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 }
 
@@ -1145,8 +1150,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 		               [&A, aa = 1.0, bb = 0.0](auto const& Br, auto&& Cc) { return blas::gemv(aa, blas::T(A), Br, bb, std::move(Cc)); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1160,8 +1165,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 			return blas::gemv(aa, B, Ac, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1172,8 +1177,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 		               [&A, aa = 1.0, bb = 1.0](auto const& Br, auto&& Cc) { return blas::gemv(aa, blas::T(A), Br, bb, std::move(Cc)); }
 		);
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1186,8 +1191,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 	{
 		multi::array<complex, 2, Alloc> C({ 2, 2 }, { 3.0, 0.0 });  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -1200,8 +1205,8 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_both) {
 			return blas::gemv(aa, B, Ar, bb, std::move(Cr));
 		});
 
-		BOOST_REQUIRE( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
-		BOOST_REQUIRE( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
+		BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 	}
 }
 
@@ -1249,14 +1254,14 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second) {
 				), std::move(Cr);
 			});
 		}
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
 	#endif
 	}
 }
@@ -1302,14 +1307,14 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_first) {
 		//      ), std::move(Cr);
 		//  });
 		// }
-		// BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		// BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		// BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		// BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		// BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		// BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		// BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		// BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 
-		// BOOST_TEST_REQUIRE( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
-		// BOOST_TEST_REQUIRE( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
+		// BOOST_TEST( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
+		// BOOST_TEST( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
 	}
 }
 
@@ -1363,21 +1368,21 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_second) {
 			}
 		);
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
 		CC = blas::gemm({ 1.0, 0.0 }, A, blas::H(B));
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
@@ -1385,11 +1390,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_second) {
 		using blas::operators::operator~;
 		CC = A * ~*B;
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 }
 
@@ -1420,21 +1425,21 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_second_plus) {
 			}
 		);
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
 		CC += blas::gemm({ 1.0, 0.0 }, A, blas::H(B));
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
@@ -1442,11 +1447,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_second_plus) {
 		using blas::operators::operator~;
 		CC += A * ~*B;
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 }
 
@@ -1478,11 +1483,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_first) {
 	//          }
 	//      }
 	//  }
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
@@ -1493,21 +1498,21 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_first) {
 			});
 			return std::move(Cr);
 		});
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
 		CC = blas::gemm({ 1.0, 0.0 }, blas::H(A), B);
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
@@ -1515,11 +1520,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_first) {
 		using blas::operators::operator~;
 		CC = ~*A * B;
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 }
 
@@ -1551,11 +1556,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_both) {
 	//          }
 	//      }
 	//  }
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
@@ -1567,22 +1572,22 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_both) {
 	//      });
 	//      return std::move(Cr);
 	//  });
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
 
 		CC = blas::gemm({ 1.0, 0.0 }, blas::H(A), blas::H(B));
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
@@ -1590,11 +1595,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_both) {
 		using blas::operators::operator~;
 		CC = ~*A * ~*B;
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 }
 
@@ -1626,11 +1631,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_herm) {
 	//          }
 	//      }
 	//  }
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
@@ -1642,22 +1647,22 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_herm) {
 	//      });
 	//      return std::move(Cr);
 	//  });
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
 
 		CC = blas::gemm({ 1.0, 0.0 }, blas::T(A), blas::H(B));
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 	{
 		multi::array<complex, 2, Alloc> CC({ 2, 2 }, { 3.0, 0.0 });
@@ -1665,11 +1670,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_trans_herm) {
 		using blas::operators::operator~;
 		CC = ~A * ~*B;
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	}
 }
 
@@ -1702,11 +1707,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_trans) {
 	//           }
 	//       }
 	//   }
-	//   BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//   BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//   BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//   BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
@@ -1718,22 +1723,22 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_trans) {
 	//      });
 	//      return std::move(Cr);
 	//  });
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
 
 	//  CC = blas::gemm({1.0, 0.0}, blas::H(A), blas::T(B));
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
@@ -1741,11 +1746,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_trans) {
 	//  using blas::operators::operator~;
 	//  CC = ~*A * ~B;
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 }
 
@@ -1778,11 +1783,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_herm) {
 	//          }
 	//      }
 	//  }
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
@@ -1794,22 +1799,22 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_herm) {
 	//      });
 	//      return std::move(Cr);
 	//  });
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
 
 	//  CC = blas::gemm({1.0, 0.0}, blas::T(A), blas::H(B));
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
@@ -1817,11 +1822,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_herm) {
 	//  using blas::operators::operator~;
 	//  CC = ~A * ~*B;
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 }
 
@@ -1854,11 +1859,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_conj) {
 	                                                            //           }
 	                                                            //       }
 	                                                            //   }
-	                                                            //   BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	                                                            //   BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	                                                            //   BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	                                                            //   BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
@@ -1870,22 +1875,22 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_conj) {
 	//      });
 	//      return std::move(Cr);
 	//  });
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
 
 	//  CC = blas::gemm({1.0, 0.0}, blas::T(A), blas::H(B));
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 	// {
 	//  multi::array<complex, 2, Alloc> CC({2, 2}, {3.0, 0.0});
@@ -1893,11 +1898,11 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_herm_conj) {
 	//  using blas::operators::operator~;
 	//  CC = ~A * ~*B;
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-	//  BOOST_TEST_REQUIRE( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+	//  BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 	// }
 }
 
@@ -2128,3 +2133,5 @@ BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check
 }
 
 #endif
+
+return boost::report_errors();}

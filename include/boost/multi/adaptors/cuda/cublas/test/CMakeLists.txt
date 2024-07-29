@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.17)  # for CUDAToolkit
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS)  # unit_test_framework)
 
 if((NOT
 	CMAKE_CXX_COMPILER_ID
@@ -65,7 +65,7 @@ include_directories(${CMAKE_BINARY_DIR})
 if(ENABLE_HIP)
 	add_executable(all.hip.x all.hip)
 	#set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE HIP)
-	target_link_libraries(all.hip.x PRIVATE multi roc::hipblas Boost::unit_test_framework)
+	target_link_libraries(all.hip.x PRIVATE multi roc::hipblas)  # Boost::unit_test_framework)
 	target_compile_definitions(all.hip.x PRIVATE BOOST_TEST_DYN_LINK=1)
 
 	add_test(NAME all.hip.x COMMAND ./all.hip.x)
@@ -102,11 +102,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 	
 		#target_compile_options(${TEST_EXE} PRIVATE --expt-relaxed-constexpr)
 
-		target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework)
+		# target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework)
 	
 		target_link_libraries(${TEST_EXE} PRIVATE ${CUDA_LIBRARIES})
 		target_link_libraries(${TEST_EXE} PRIVATE CUDA::cublas)
-		target_link_libraries(${TEST_EXE} PRIVATE multi Boost::unit_test_framework)
+		target_link_libraries(${TEST_EXE} PRIVATE multi)  # Boost::unit_test_framework)
 
 		# target_include_directories(${TEST_EXE} PRIVATE /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/math_libs/include)
 	
