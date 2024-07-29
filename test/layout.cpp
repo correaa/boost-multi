@@ -21,7 +21,6 @@ auto second_finish(multi::extensions_t<3> exts) {
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
-
 BOOST_AUTO_TEST_CASE(extensions_3D) {
 	BOOST_TEST( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
 	BOOST_TEST( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
