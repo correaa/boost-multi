@@ -688,8 +688,6 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_conj_zero) {
 	}
 }
 
-template<class T> void what(T&&) = delete;
-
 BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 	namespace blas = multi::blas;
 	using T = complex;
