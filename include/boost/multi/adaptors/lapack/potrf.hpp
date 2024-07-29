@@ -47,9 +47,9 @@ auto potrf(filling uplo, A2D&& A)  // NOLINT(readability-identifier-length) conv
 	using lapack::flip;
 
 	if(stride(A) == 1) {
-		auto last = potrf(flip(uplo), begin(rotated(A)), end(rotated(A)));
+		auto last = potrf(flip(uplo), A.rotated().begin(), A.rotated().end());
 		using std::distance;
-		return A({0, distance(begin(rotated(A)), last)}, {0, distance(begin(rotated(A)), last)});
+		return A({0, distance(A.rotated().begin(), last)}, {0, distance(A.rotated().begin(), last)});
 	}
 
 	auto last = potrf(uplo, begin(A), end(A));
