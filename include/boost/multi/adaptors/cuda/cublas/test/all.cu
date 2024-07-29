@@ -11,6 +11,7 @@
 #include <boost/multi/adaptors/blas/axpy.hpp>
 #include <boost/multi/adaptors/blas/copy.hpp>
 #include <boost/multi/adaptors/blas/gemm.hpp>
+#include <boost/multi/adaptors/blas/gemv.hpp>
 #include <boost/multi/adaptors/blas/nrm2.hpp>
 #include <boost/multi/adaptors/blas/scal.hpp>
 #include <boost/multi/adaptors/blas/swap.hpp>
