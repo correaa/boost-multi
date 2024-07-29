@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS dot"
-#include<boost/test/unit_test.hpp>
+// #include<boost/test/unit_test.hpp>
 
 #include <boost/multi/adaptors/cuda/cublas.hpp>
 
@@ -21,6 +21,10 @@
 
 namespace multi = boost::multi;
 
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+
+int main() {
 // BOOST_AUTO_TEST_CASE(cublas_dot_out_param_complex_C) {
 //  namespace blas = multi::blas;
 //  using complex = thrust::complex<double>;
@@ -31,7 +35,7 @@ namespace multi = boost::multi;
 
 //  complex res{0.0, 0.0};
 //  blas::dot(blas::C(x), y, res);
-// //  BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
+// //  BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
 // }
 
 BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
@@ -48,11 +52,11 @@ BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
 	{
 		multi::array<complex, 0> res_copy{complex{0.0, 0.0}};
 		res_copy = res;
-		BOOST_REQUIRE(( *res_copy.base() == complex{14.0, 4.0} ));
+		BOOST_TEST(( *res_copy.base() == complex{14.0, 4.0} ));
 	}
 	{
 		multi::array<complex, 0> res_copy{res};
-		BOOST_REQUIRE(( *res_copy.base() == complex{14.0, 4.0} ));
+		BOOST_TEST(( *res_copy.base() == complex{14.0, 4.0} ));
 	}
 }
 
@@ -65,7 +69,7 @@ BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
 //  multi::thrust::cuda::array<complex, 1> const y = {1.0 + 0.0*I, 2.0 + 2.0*I, 3.0 + 0.0*I};  // NOLINT(readability-identifier-length) BLAS naming
 
 //  complex res = blas::dot(blas::C(x), y);
-//  BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
+//  BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
 // }
 
 // BOOST_AUTO_TEST_CASE(blas_dot_functional_mutate_complex_C) {
@@ -78,5 +82,7 @@ BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
 
 //  complex res;
 //  res = blas::dot(blas::C(x), y);
-//  BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
+//  BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
 // }
+
+return boost::report_errors();}
