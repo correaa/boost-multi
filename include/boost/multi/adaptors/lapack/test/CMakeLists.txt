@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.5)
 
 project(
 	boost-multi-adaptors-lapack-test
@@ -9,7 +9,7 @@ project(
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS)
 # add_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 # include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # link_libraries(${Boost_LIBRARIES})
@@ -62,6 +62,6 @@ include(CTest)
 # add_test(NAME geqrf.cpp.x COMMAND ./geqrf.cpp.x)
 
 add_executable(potrf.cpp.x potrf.cpp)
-target_link_libraries(potrf.cpp.x PRIVATE multi-lapack Boost::unit_test_framework)
+target_link_libraries(potrf.cpp.x PRIVATE multi-lapack Boost::boost)
 
 add_test(NAME potrf.cpp.x COMMAND $<TARGET_FILE:potrf.cpp.x>)

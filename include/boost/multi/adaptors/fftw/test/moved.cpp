@@ -17,7 +17,6 @@ template<class M> auto power(M const& array) {
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
-
 	multi::fftw::environment env;
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
