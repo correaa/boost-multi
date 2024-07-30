@@ -64,7 +64,7 @@ auto real_doubled(ComplexArr&& array) {  // produces a real view of complex arra
 
 template<class Ref, class Involution> class involuted;
 
-template<class It, class F, class Reference = involuted<typename std::iterator_traits<It>::reference, F>> class involuter;  // IWYU pragma: keep   bug in iwyu 18.1.8?
+template<class It, class F, class Reference = involuted<typename std::iterator_traits<It>::reference, F>> class involuter;  // IWYU pragma: keep  // bug in iwyu 0.22/18.1.8?
 
 template<class Ref, class Involution>
 class involuted {

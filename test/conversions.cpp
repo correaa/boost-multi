@@ -11,8 +11,8 @@
 #include <boost/multi/array.hpp>
 
 #include <complex>
-#include <cmath>  // for abs  // IWYU pragma: keep
-// IWYU pragma: no_include <cstdlib>                          // for abs
+// #include <cmath>  // for abs  // IWYU pragma: keep
+#include <cstdlib>                          // for abs
 
 namespace multi = boost::multi;
 

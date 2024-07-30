@@ -404,7 +404,7 @@ clang++-m32:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-latest tidy iwuy:
+clang++-latest tidy iwyu:
   stage: build
   image: debian:latest  # clang 18 as of Apr 2024
   tags:
@@ -413,7 +413,6 @@ clang++-latest tidy iwuy:
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake iwyu make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
-    - pwd
     - mkdir build && cd build
     - clang++ --version
     - iwyu --version

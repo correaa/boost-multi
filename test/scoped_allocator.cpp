@@ -3,31 +3,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wundef"
-//  #pragma clang diagnostic ignored "-Wconversion"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wundef"
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
 #include <boost/multi/array.hpp>  // for static_array, array
 
+// IWYU pragma: no_include <algorithm>                        // for max  // bug in iwyu 14.0.6? with GNU stdlib
 #include <cassert>           // for assert
 #include <cstddef>           // for size_t
 #include <cstdint>           // for int64_t, int32_t
