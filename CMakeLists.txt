@@ -56,13 +56,6 @@ message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
   include(CMakeDependentOption)
   include(GNUInstallDirs)
 
-  find_program(MEMORYCHECK_COMMAND valgrind)
-  set(VALGRIND_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
-
-  # must go before `include(CTest)`
-  set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
-  set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")
-
   include(CTest)
 
   option(MULTI_BUILD_PACKAGE "Build package files as well" ON)
@@ -72,7 +65,6 @@ message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
   cmake_dependent_option(MULTI_BUILD_PACKAGE_DEB "Create a DEB" ON "MULTI_BUILD_PACKAGE" OFF)
 
   add_library(multi INTERFACE)
-  #target_compile_features(multi PUBLIC cxx_std_17)
 
   target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
   target_compile_options(multi INTERFACE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>)
