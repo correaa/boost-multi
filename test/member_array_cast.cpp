@@ -5,13 +5,14 @@
 
 #include <boost/multi/array.hpp>  // for array, transform_ptr, static_array
 
+// IWYU pragma: no_include <algorithm>                        // for equal  // bug in iwyu 14.0.6? with GNU stdlib
+// IWYU pragma: no_include <utility>                          // for addressof  // bug in iwyu 14.0.6? with GNU stdlib
 #include <array>     // for array, operator==
 #include <cstddef>   // for offsetof, size_t
 #include <iterator>  // for size
 #include <memory>    // for addressof  // IWYU pragma: keep
 #include <string>    // for operator""s, allocator, char_traits
 #include <tuple>     // for tie, operator==, tuple
-// IxxxxWYU pragma: no_include <utility>  // for addressof  std::addressof is in memory
 
 #if defined(__clang__)
 	#pragma clang diagnostic push
