@@ -10,8 +10,9 @@
 #include <functional>  // for __cpp_lib_ranges  // IWYU pragma: keep
 #include <iterator>    // for begin, end
 #include <vector>      // for vector
-#include <version>     // for __cpp_lib_ranges  // IWYU pragma: keep  // bug in iwyu 0.22/18.1.8 with LLVM stdlib?
-
+#if (!defined(__GNUC__) || (__GNUC__ > 7)) || (!defined(__clang__) || (__clang_major__ > 7))
+	#include <version>     // for __cpp_lib_ranges  // IWYU pragma: keep  // bug in iwyu 0.22/18.1.8 with LLVM stdlib?
+#endif
 #if defined(__cpp_lib_ranges)
 	#include <concepts>
 #endif
