@@ -52,5 +52,5 @@ Checks: '*,
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
 #  -misc-include-cleaner,                                 // using Boost.Test
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
-#  -readability-magic-numbers,                            // all tests use magic numbers
+#  -readability-magic-numbers,                            // many tests use magic numbers
 

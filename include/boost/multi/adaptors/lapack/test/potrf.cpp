@@ -8,6 +8,7 @@
 #include <boost/multi/adaptors/blas/herk.hpp>        // for herk
 #include <boost/multi/adaptors/blas/numeric.hpp>     // for underlying
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, (anonymous)
+
 #include <boost/multi/array.hpp>                     // for array, subarray
 
 #include <algorithm>  // for for_each, generate  // IWYU pragma: keep
@@ -18,6 +19,7 @@
 #include <random>     // for uniform_real_dis...
 #include <string>     // for allocator, opera...
 // IWYU pragma: no_include <tuple>
+// IWYU pragma: no_include <type_traits>  // for add_const<>::type
 #include <utility>  // for forward
 
 namespace multi = boost::multi;

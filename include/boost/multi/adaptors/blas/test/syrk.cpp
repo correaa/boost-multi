@@ -5,6 +5,8 @@
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/operations.hpp>  // for transposed, T
 #include <boost/multi/adaptors/blas/syrk.hpp>        // for syrk
+// UWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas
+
 #include <boost/multi/array.hpp>                     // for array, layout_t
 
 #include <complex>  // for operator*, complex

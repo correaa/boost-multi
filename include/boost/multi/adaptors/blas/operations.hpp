@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/numeric.hpp>
 
