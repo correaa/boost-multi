@@ -5,8 +5,10 @@
 
 #include <boost/multi/array.hpp>  // for transform_ptr, array, subarray
 
+// IWYU pragma: no_include <algorithm>                        // for copy  // for GNU stdlib
+// IWYU pragma: no_include <type_traits>                      // for declval  // for GNU stdlib
 #include <complex>  // for complex, operator*, operator+
-#include <utility>  // for declval, forward  // IWYU pragma: no_include <type_traits>  // for declval  // in utility
+#include <utility>  // for declval, forward
 #include <vector>   // for vector
 
 template<typename ComplexRef> struct Conjd;  // NOLINT(readability-identifier-naming) for testing
