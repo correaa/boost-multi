@@ -13,7 +13,7 @@
 #include <boost/multi/array.hpp>                     // for array, subarray
 
 #include <algorithm>  // for min
-// IWYU pragma: no_include <cmath>  // for abs
+#include <cmath>  // for NAN
 #include <cstdlib>      // for NAN, abs
 #include <complex>  // for operator*, opera...
 
