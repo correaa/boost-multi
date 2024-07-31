@@ -7,6 +7,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+// IWYU pragma: no_include <type_traits>                      // for add_const_t
 #include <utility>      // for as_const
 
 namespace multi = boost::multi;
