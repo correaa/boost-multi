@@ -4,17 +4,17 @@
 
 #include <boost/multi/adaptors/blas/core.hpp>        // for context
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
-#include <boost/multi/adaptors/blas/numeric.hpp>     // for involuter, conju...
+// IWYU pragma: no_include "boost/multi/adaptors/blas/numeric.hpp"     // for involuter, conju...
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
 
 #include <boost/multi/array.hpp>                     // for layout_t, array
 
-#include <cmath>  // for abs
-// IWYU pragma: no_include <cstdlib>
-// IWYU pragma: no_include <stdlib.h>  // for abs
+// IWYU pragma: no_include <cmath>  // for abs
+#include <cstdlib>  // for abs
 #include <complex>   // for complex, operator*
 #include <iterator>  // for begin, size
 #include <memory>  // for allocator
+// IWYU pragma: no_include <exception>  // for exception
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;

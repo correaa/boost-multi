@@ -11,9 +11,8 @@
 // #include <boost/mpl/list.hpp>  // for list
 
 #include <algorithm>  // for generate, transform
-#include <cmath>      // for abs
-// IWYU pragma: no_include <cstdlib>
-// IWYU pragma: no_include <stdlib.h>
+// IWYU pragma: no_include <cmath>  // for abs
+#include <cstdlib>  // for abs
 #include <complex>      // for complex, operator*
 #include <iterator>     // for size, begin
 #include <numeric>      // for inner_product

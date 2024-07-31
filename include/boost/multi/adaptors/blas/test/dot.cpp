@@ -6,16 +6,16 @@
 #include <boost/multi/adaptors/blas/dot.hpp>         // for dot_ref, dot, dot_n
 #include <boost/multi/adaptors/blas/numeric.hpp>     // for involuter, conj
 #include <boost/multi/adaptors/blas/operations.hpp>  // for C, hermitized
-
 #include <boost/multi/array.hpp>                     // for array, static_array
 
-#include <algorithm>    // for for_each, transform
-#include <complex>      // for complex, operator*
-#include <functional>   // for plus  // IWYU pragma: keep
-#include <iterator>     // for begin, end
-#include <limits>       // for numeric_limits
-#include <memory>       // for allocator
-#include <numeric>      // for inner_product
+#include <algorithm>   // for for_each, transform
+#include <complex>     // for complex, operator*
+#include <functional>  // for plus  // IWYU pragma: keep
+#include <iterator>    // for begin, end
+#include <limits>      // for numeric_limits
+#include <memory>      // for allocator
+#include <numeric>     // for inner_product
+// IWYU pragma: no_include <tuple>                                     // for tuple_element<>:...
 #include <type_traits>  // for is_same
 #include <utility>      // for forward
 
@@ -108,7 +108,9 @@ int main() {
 		complex res{0.0, 0.0};
 		blas::dot(x, y, res);
 
-		auto hermitian_product = [](auto alpha, auto omega) { return alpha * std::conj(omega); };
+		auto hermitian_product = [](auto alpha, auto omega) {
+			return alpha * std::conj(omega);
+		};
 
 		// an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
 		BOOST_TEST_EQ(real(res), real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product)));
@@ -150,7 +152,8 @@ int main() {
 
 		complex res{0.0, 0.0};
 		blas::dot(blas::C(x), y, res);
-		BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;}) );
+		BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto alpha, auto omega) {
+																				  return conj(alpha) * omega;}) );
 	}
 
 	BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C_float) {
@@ -163,7 +166,8 @@ int main() {
 		complex res{0.0F, 0.0F};
 		blas::dot(blas::C(x), y, res);
 		BOOST_TEST(
-		res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto const& alpha, auto const& omega) { return conj(alpha) * omega;})
+		res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																		   return conj(alpha) * omega;})
 	);
 	}
 
@@ -178,7 +182,8 @@ int main() {
 
 		complex C;
 		blas::dot(blas::C(A), B, C);
-		BOOST_TEST( C == std::inner_product(begin(A), end(A), begin(B), complex{0.0, 0.0}, std::plus<>{}, [](auto& a, auto& b){ return conj(a) * b;}) );
+		BOOST_TEST( C == std::inner_product(begin(A), end(A), begin(B), complex{0.0, 0.0}, std::plus<>{}, [](auto& a, auto& b){
+																					   return conj(a) * b;}) );
 	}
 #endif
 
@@ -344,7 +349,7 @@ int main() {
 		auto d_arr = dot(blas::C(x), y);
 		BOOST_TEST(d_arr == res);
 
-		static_assert(!std::is_same<decltype(d_arr), double>{});
+		static_assert(!std::is_same_v<decltype(d_arr), double>);
 
 		using blas::C;
 		double const d_doub = dot(C(x), y);
@@ -378,22 +383,26 @@ int main() {
 
 		complex const c4 = blas::dot(A[1], blas::C(A[2]));
 		BOOST_TEST(
-		c4 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return alpha * conj(omega);})
+		c4 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) {
+																						  return alpha * conj(omega);})
 	);
 
 		complex const c5 = blas::dot(blas::C(A[1]), A[2]);
 		BOOST_TEST(
-		c5 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;})
+		c5 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) {
+																					 return conj(alpha) * omega;})
 	);
 
 		complex const c6 = blas::dot(blas::conj(A[1]), A[2]);
 		BOOST_TEST(
-		c6 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;})
+		c6 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) {
+																					 return conj(alpha) * omega;})
 	);
 
 		complex const c7 = blas::dot(blas::C(A[1]), A[2]);
 		BOOST_TEST(
-		c7 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega;})
+		c7 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{}, [](auto alpha, auto omega) {
+																						  return conj(alpha) * omega;})
 	);
 	}
 
@@ -423,23 +432,35 @@ int main() {
 
 		complex const c4 = blas::dot(A[1], blas::C(A[2]));
 		BOOST_TEST(
-		c4 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto al, auto om) { return al * conj(om); })
+		c4 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto al, auto om) {
+																				   return al * conj(om); })
 	);
 
 		complex const c5 = blas::dot(blas::C(A[1]), A[2]);
 		BOOST_TEST(
-		c5 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto al, auto om) { return conj(al) * om; })
+		c5 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto al, auto om) {
+																			  return conj(al) * om; })
 	);
 
 		complex const c6 = blas::dot(blas::conj(A[1]), A[2]);
 		BOOST_TEST(
-		c6 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega; })
+		c6 == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) {
+																			  return conj(alpha) * omega; })
 	);
 
 		complex const c7 = blas::dot(blas::C(A[1]), A[2]);
 		BOOST_TEST(
-		c7 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega; })
-	);
+		c7 ==
+			std::inner_product(
+				begin(A[1]),
+				end(A[1]), begin(A[2]),
+				complex{},
+				std::plus<>{},
+				[](auto alpha, auto omega) {
+					return conj(alpha) * omega;
+				}
+			)
+		);
 	}
 
 	BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second_double) {
@@ -533,7 +554,10 @@ int main() {
 		// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
 
 		std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {
-			std::transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto const& Ce) { return complex{1.0F, 0.0F} * blas::dot(Ar, blas::C(Bc)) + 0.0F * Ce; });
+			std::transform(
+				begin(BT), end(BT), begin(Cr), begin(Cr),
+				[&Ar](auto const& Bc, auto const& Ce) { return complex{1.0F, 0.0F} * blas::dot(Ar, blas::C(Bc)) + 0.0F * Ce; }
+			);
 			return std::forward<decltype(Cr)>(Cr);
 		});
 
