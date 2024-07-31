@@ -12,7 +12,7 @@
 #include <vector>      // for vector
 // IWYU pragma: no_include <version>  // for __cpp_lib_ranges
 #if defined(__cpp_lib_ranges)
-	#include <concepts>
+	#include <concepts>  // IWYU pragma: keep
 #endif
 
 namespace multi = boost::multi;
