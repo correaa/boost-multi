@@ -55,5 +55,6 @@
     { "include": ["@<__assert>", "private", "<cassert>", "public"] },
     { "include": ["@<__fwd/ostream.h>", "private", "<ostream>", "public"] },
     { "include": ["@<__fwd/sstream.h>", "private", "<sstream>", "public"] },
-    { "include": ["@<functional>", "public", "<boost/core/lightweight_test.hpp>", "public"] }
+    { "include": ["@<functional>", "public", "<boost/core/lightweight_test.hpp>", "public"] },
+    { "include": ["@<bits/std_abs.h>", "private", "<cstdlib>", "public"] }
 ]
