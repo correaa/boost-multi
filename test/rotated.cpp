@@ -58,16 +58,16 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
 }
 
 BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
-	constexpr auto f = [] {
+	constexpr auto test = [] {
 		std::array<int,
 			12 + 3  // (3 + 1)*4 - 1
 		> buffer = {};
 
-		multi::array_ref<int, 2> arr({3, 4}, &buffer[0]);  // // TODO(correaa) think how to handle references to arrays (UB)
+		multi::array_ref<int, 2> arr({3, 4}, buffer.data());  // // TODO(correaa) think how to handle references to arrays (UB)
 
 		return arr.diagonal().end() != arr.diagonal().begin();
 	}();
-	BOOST_TEST(f);
+	BOOST_TEST(test);
 }
 
 BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
 			60 + 18  // 3*4*5 + (4-1)*5 + (5 - 1) or 60 + 15 + 4 = 79
 		> buffer = {};
 
-		multi::array_ref<int, 3> arr({3, 4, 5}, &buffer[0]);  // // TODO(correaa) think how to handle references to arrays (UB)
+		multi::array_ref<int, 3> arr({3, 4, 5}, buffer.data());  // // TODO(correaa) think how to handle references to arrays (UB)
 
 		return arr.diagonal().diagonal().end() != arr.diagonal().diagonal().begin();
 	}();
