@@ -40,8 +40,8 @@
 #include <boost/multi/array.hpp>  // for array, subarray, static_array
 
 #include <array>        // for get, array
-#include <complex>      // for complex, real, operator==, imag
 #include <cmath>   // for abs  // IWYU pragma: keep
+#include <complex>      // for complex, real, operator==, imag
 // IWYU pragma: no_include <cstdlib>                          // for abs
 #include <iterator>     // for size, begin, end
 #include <numeric>      // for iota
@@ -56,9 +56,9 @@ template<class T> struct complex_dummy {
 };
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 	struct vec3 {
 		double x;
