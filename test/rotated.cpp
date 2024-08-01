@@ -38,23 +38,23 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 #endif
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 #ifndef _MSC_VER  // msvc 14.40 gets confused with constexpr
 BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
-	constexpr auto f = [] {
+	constexpr auto test = [] {
 		std::array<int,
 			//  9  // produces UB: cannot refer to element 10 of array of 9 elements in a constant expression
 			12  // ok
 		> buffer = {{0, 1, 2, 3, 4, 5, 6, 7, 8}};  // , 10, 11};
 
-		multi::array_ref<int, 2> arr({3, 3}, &buffer[0]);  // // TODO(correaa) think how to handle references to arrays (UB)
+		multi::array_ref<int, 2> arr({3, 3}, buffer.data());  // // TODO(correaa) think how to handle references to arrays (UB)
 
 		auto const& arrrot1 = arr.rotated()[1];
 		return (arrrot1.end() != arrrot1.begin());
 	}();
-	BOOST_TEST(f);
+	BOOST_TEST(test);
 }
 
 BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
-	constexpr auto f = [] {
+	constexpr auto test = [] {
 		std::array<int,
 			60 + 18  // 3*4*5 + (4-1)*5 + (5 - 1) or 60 + 15 + 4 = 79
 		> buffer = {};
@@ -80,18 +80,18 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
 
 		return arr.diagonal().diagonal().end() != arr.diagonal().diagonal().begin();
 	}();
-	BOOST_TEST(f);
+	BOOST_TEST(test);
 }
 
 // vvv this exposes UB and need for extra buffer
 // #if __cplusplus >= 202002L
 // BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end) {
-//  constexpr auto f = [] {
+//  constexpr auto test = [] {
 //      multi::array<int, 2> arr(multi::array<int, 2>::extensions_type{3, 3});
 
 //      return arr.rotated()[1].end() != arr.rotated()[1].begin();
 //  }();
-//  BOOST_TEST(f);
+//  BOOST_TEST(test);
 // }
 // #endif
 
