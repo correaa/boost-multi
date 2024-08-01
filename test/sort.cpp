@@ -109,7 +109,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{100.0, 11.0, 12.0, 13.0, 14.0},
 			{ 50.0,  6.0,  7.0,  8.0,  9.0},
 		};
-		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );. // NOLINT(fuchsia-default-argument-calls)
+		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-argument-calls)
 
 		std::stable_sort(begin(d2D), end(d2D));
 		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );
