@@ -17,9 +17,9 @@ namespace blas  = multi::blas;
 using complex = multi::complex<double>;  // test internal implementation of complex (partially formed complex)
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_blas_axpy_real) {
 		multi::array<double, 2> arr = {
 			{1.0,  2.0,  3.0,  4.0},
