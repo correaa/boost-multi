@@ -81,10 +81,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		BOOST_TEST( !std::ranges::is_sorted(A2D) );
 
-		std::ranges::sort(A2D);
+		std::ranges::sort(A2D);  // NOLINT(fuchsia-default-argument-calls)
 
-		BOOST_TEST(  std::ranges::is_sorted(A2D));
-
+		BOOST_TEST(  std::ranges::is_sorted(A2D));  // NOLINT(fuchsia-default-argument-calls)
 		BOOST_TEST((
 			A2D == multi::array<char, 2>{
 				{'A', 'l', 'e', 'x', ' ', ' '},
@@ -93,8 +92,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		));
 
-		std::ranges::sort(~A2D);
-		BOOST_TEST(std::ranges::is_sorted(~A2D));
+		std::ranges::sort(~A2D);  // NOLINT(fuchsia-default-argument-calls)
+		BOOST_TEST(std::ranges::is_sorted(~A2D));  // NOLINT(fuchsia-default-argument-calls)
 
 		static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
 	}
@@ -102,7 +101,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
 		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );
+		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-argument-calls)
 
 		multi::array<double, 2> d2D = {
 			{150.0, 16.0, 17.0, 18.0, 19.0},
@@ -110,7 +109,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{100.0, 11.0, 12.0, 13.0, 14.0},
 			{ 50.0,  6.0,  7.0,  8.0,  9.0},
 		};
-		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );
+		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );. // NOLINT(fuchsia-default-argument-calls)
 
 		std::stable_sort(begin(d2D), end(d2D));
 		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );
