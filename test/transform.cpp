@@ -34,11 +34,11 @@
 
 #include <boost/multi/array.hpp>  // for array, subarray, static_array
 
-#include <array>        // for array  // IWYU Pragma: keep   // bug iwyu 0.22
+#include <array>        // for array  // IWYU pragma: keep
 #include <complex>      // for complex, operator*, operator+
-#include <cmath>                              // for abs    // IWYU pragma: keep
-// IWYU pragma: no_include <cstdlib>                           // for abs
 #include <cstddef>      // for ptrdiff_t
+#include <cstdlib>                           // for abs
+#include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for iterator_traits
 #include <memory>       // for pointer_traits
 #include <type_traits>  // for decay_t, conditional_t, true_type
@@ -69,8 +69,11 @@ class involuted {
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{ref} {}
+	involuted(involuted const&) = default;
+	involuted(involuted &&) = default;
 
 	auto operator=(involuted&&) -> involuted& = delete;
+	auto operator=(involuted const&) -> involuted& = default;
 	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return) simulate reference
 		r_ = Involution{}(other);
 		return *this;
@@ -102,6 +105,7 @@ class involuted {
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic pop
 #endif
+	~involuted() = default;
 };
 
 template<class Involution, class It>
