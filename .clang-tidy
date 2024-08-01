@@ -14,9 +14,6 @@ CheckOptions:
   - { key: readability-identifier-length.MinimumLoopCounterNameLength      , value: 2          }
   - { key: readability-identifier-length.MinimumParameterNameLength        , value: 2          }
   - { key: readability-identifier-length.MinimumVariableNameLength         , value: 2          }
-  - { key: readability-identifier-naming.MacroDefinitionCase               , value: UPPER_CASE }
-  - { key: readability-identifier-naming.MacroDefinitionPrefix,            , value: BOOST_MULTI_ }
-  - { key: readability-identifier-naming.MacroDefinitionSuffix,            , value: *          }
   - { key: readability-identifier-naming.NamespaceCase                     , value: lower_case }
   - { key: readability-identifier-naming.PrivateMemberPrefix               , value: ''         }
   - { key: readability-identifier-naming.PrivateMemberSuffix               , value: _          }
@@ -35,6 +32,7 @@ Checks: '*,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -fuchsia-overloaded-operator,
+  -fuchsia-trailing-return,
   -llvmlibc-*,
   -modernize-use-nodiscard,
   -readability-magic-numbers

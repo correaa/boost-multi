@@ -58,7 +58,7 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
 namespace boost::multi {
 
@@ -154,7 +154,7 @@ auto mut_trace_generic(Array& arr) -> T {
 	return std::accumulate(diag.begin(), diag.end(), T{0});
 }
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	int arr[4][5] = {
@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	BOOST_TEST( diff == 0 );
 
 	BOOST_TEST( &mar.blocked(2, 4)[2] == &mar[2] );
-	for(auto idx : extension(mar.stenciled({2, 4}))) {
+	for(auto idx : extension(mar.stenciled({2, 4}))) {  // NOLINT(altera-unroll-loops)
 		BOOST_TEST( &mar.stenciled({2, 4})[idx] == &mar[idx] );
 	}
 
