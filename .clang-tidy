@@ -36,7 +36,6 @@ Checks: '*,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -fuchsia-overloaded-operator,
-  -fuchsia-trailing-return,
   -llvmlibc-*,
   -modernize-use-nodiscard,
   -readability-magic-numbers
