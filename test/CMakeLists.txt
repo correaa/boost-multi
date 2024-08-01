@@ -163,7 +163,7 @@ else()
 	-Wpacked -Wpacked-bitfield-compat
 	# -Wpacked-not-aligned # (gcc 8, not 7)
 	# -Wpadded # (disallows structs that need padding for alignment)
-	-Wparentheses
+	-Wno-parentheses
 	#-Wpessimizing-move # (gcc 11, not in gcc 8)
 	-Wplacement-new  #=1  -Wplacement-new=<0,2>
 	-Wpmf-conversions
@@ -878,14 +878,12 @@ else()
 		# target_link_libraries(main PRIVATE multi)
 		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
-		target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi main")
 
-		target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
+		# target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
 		if(NOT DEFINED ENABLE_CIRCLE)
 			target_compile_options(main PRIVATE ${WARNS})
 		else()
-			target_compile_definitions(main PRIVATE "BOOST_TEST_DYN_LINK=1")
 			target_compile_options    (main PRIVATE -Werror -Wall)
 		endif()
 		add_test(NAME main COMMAND $<TARGET_FILE:main>)
@@ -900,9 +898,6 @@ else()
 				set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 			endif()
 
-			# target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
-			# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
-
 			target_link_libraries(${TEST_EXE} PRIVATE multi)
 			target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 			# target_link_libraries     (${TEST_EXE} PRIVATE multi Boost::boost   )
@@ -911,16 +906,16 @@ else()
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
 			endif()
 
-			target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
-			target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_DYN_LINK=1)
-			target_compile_definitions(${TEST_EXE} PUBLIC BOOST_NO_CXX98_FUNCTION_BASE=1)
+			# target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
+			# target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_DYN_LINK=1)
+			# target_compile_definitions(${TEST_EXE} PUBLIC BOOST_NO_CXX98_FUNCTION_BASE=1)
 
-			target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
+			# target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
 			else()
-				target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
+				# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
 				target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
 			endif()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)

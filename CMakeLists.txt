@@ -52,7 +52,6 @@ message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
   message(STATUS "Boost.Multi: standalone mode ON")
 
-
   # include_directories(${PROJECT_SOURCE_DIR}/include)  # workaround for vscode to detect headers https://stackoverflow.com/a/68139743/225186
 
   include(CMakePackageConfigHelpers)
