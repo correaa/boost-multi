@@ -55,12 +55,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(std::indirectly_readable<In>);
 
-		*A.begin() = A2D[0];
-
-		// const_cast<const std::iter_reference_t<Out>&&>(*A.begin()) = A[0];  // std::forward<T>(t);
-		// const_cast<const std::iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
-		//             std::forward<T>(t);
-
 		static_assert(std::indirectly_writable<Out, multi::subarray<int, 1>>);
 		static_assert(std::indirectly_writable<Out, std::iter_rvalue_reference_t<In>>);
 		static_assert(std::indirectly_movable<In, Out>);
