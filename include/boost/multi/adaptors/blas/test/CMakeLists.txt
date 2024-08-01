@@ -165,7 +165,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmain
 					-Wnarrowing
 					-Wnonnull
-					-Wparentheses
+					-Wno-parentheses
 					-Wpointer-sign
 					-Wreorder
 					-Wno-return-type
