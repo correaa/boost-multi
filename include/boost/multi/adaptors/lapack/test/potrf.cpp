@@ -6,7 +6,7 @@
 // IWYU pragma: no_include "boost/multi/adaptors/blas/complex_traits.hpp"  // for blas
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm
 #include <boost/multi/adaptors/blas/herk.hpp>        // for herk
-#include <boost/multi/adaptors/blas/numeric.hpp>     // for underlying
+// IWYU pragma: no_include "boost/multi/adaptors/blas/numeric.hpp"     // for underlying
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, (anonymous)
 
 #include <boost/multi/array.hpp>                     // for array, subarray
@@ -150,7 +150,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
 		for(auto i = 0; i != 4; ++i) {
-			for(auto j = 0; j != 4; ++j) {
+			for(auto j = 0; j != 4; ++j) {  // NOLINT(altera-unroll-loops)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
 				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
 			}
@@ -188,7 +188,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
 
 		for(auto i = 0; i != 4; ++i) {
-			for(auto j = i; j != 4; ++j) {  // NOLINT(altera-id-dependent-backward-branch)  // only compare upper part of the reference array (the other half is garbage)
+			for(auto j = i; j != 4; ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)  // only compare upper part of the reference array (the other half is garbage)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
 				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
 			}
@@ -229,7 +229,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
 		for(auto i = 0; i != AA.size(); ++i) {
-			for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // NOLINT(altera-id-dependent-backward-branch)
+			for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
 				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
 			}
@@ -270,7 +270,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
 		for(auto i = 0; i != AA.size(); ++i) {
-			// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
+			// NOLINTNEXTLINE(altera-unroll-loops,altera-id-dependent-backward-branch)
 			for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // only compare upper part of the reference array (the other half is garbage)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
 				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);

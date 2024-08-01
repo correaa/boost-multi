@@ -3,7 +3,6 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/adaptors/fftw.hpp>
-
 #include <boost/multi/array.hpp>
 
 #include <algorithm>   // for generate
@@ -34,34 +33,35 @@ class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-
 };
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
-multi::fftw::environment env;
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	multi::fftw::environment const env;
 
-BOOST_AUTO_TEST_CASE(fftw_transpose) {
-	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
+	BOOST_AUTO_TEST_CASE(fftw_transpose) {
+		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
-	using complex = std::complex<double>;
+		using complex = std::complex<double>;
 
-	auto const in = std::invoke([] {
-		multi::array<complex, 2> ret({101, 99});  // ({1013, 997});  // ({10137, 9973});
-		std::generate(
-			ret.data_elements(), ret.data_elements() + ret.num_elements(),
-			[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable {
-				return complex{uniform_01(eng), uniform_01(eng)};
-			}
-		);
-		return ret;
-	});
+		auto const in = std::invoke([] {
+			multi::array<complex, 2> ret({101, 99});  // ({1013, 997});  // ({10137, 9973});
+			std::generate(
+				ret.data_elements(), ret.data_elements() + ret.num_elements(),
+				[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable {
+					return complex{uniform_01(eng), uniform_01(eng)};
+				}
+			);
+			return ret;
+		});
 
-	multi::array<complex, 2> out = in;
+		multi::array<complex, 2> out = in;
 
-	watch const unnamed{"transposition with aux   %ws wall, CPU (%p%)\n"s};
+		watch const unnamed{"transposition with aux   %ws wall, CPU (%p%)\n"s};
 
-	multi::array<complex, 2> aux = ~out;
+		multi::array<complex, 2> aux = ~out;
 
-	out = std::move(aux);
-	BOOST_TEST( out[35][79] == in[79][35] );
+		out = std::move(aux);
+		BOOST_TEST( out[35][79] == in[79][35] );
+	}
+	return boost::report_errors();
 }
-return boost::report_errors();}
