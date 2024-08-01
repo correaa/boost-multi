@@ -19,9 +19,9 @@ namespace multi = boost::multi;
 template<class Array> auto take(Array&& array) -> auto& { return std::forward<Array>(array)[0]; }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(iterator_1d) {
 		{
 			multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
