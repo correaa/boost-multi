@@ -79,7 +79,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{'A', 'l', 'e', 'x', ' ', ' '},
 			{'B', 'j', 'a', 'r', 'n', 'e'},
 		};
-		BOOST_TEST( !std::ranges::is_sorted(A2D) );
+		BOOST_TEST( !std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-argument-calls)
 
 		std::ranges::sort(A2D);  // NOLINT(fuchsia-default-argument-calls)
 
@@ -112,7 +112,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-argument-calls)
 
 		std::stable_sort(begin(d2D), end(d2D));
-		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );
+		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-argument-calls)
 
 		BOOST_TEST((
 		d2D == decltype(d2D){
