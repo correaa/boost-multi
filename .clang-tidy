@@ -36,21 +36,18 @@ Checks: '*,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -fuchsia-overloaded-operator,
-  -fuchsia-trailing-return,
   -llvmlibc-*,
-  -misc-include-cleaner,
   -modernize-use-nodiscard,
   -readability-magic-numbers
 '
 ## explanation of the suppressed rules above:
 #  -altera-struct-pack-align,                             // this asks to use non-standard pragmas such as __attribute__((aligned(0))) and _attribute__((packed)), may interfeere with gcc/nvcc compatibility?
-#  -clang-diagnostic-deprecated-declarations              // some test run deprecated functions on purposes
+#  -clang-diagnostic-deprecated-declarations              // some test run deprecated functions on purpose
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -fuchsia-trailing-return,                              // to allow any '-> decltype(auto)', contradicts modernize trailing
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
-#  -misc-include-cleaner,                                 // using Boost.Test
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // many tests use magic numbers
 
