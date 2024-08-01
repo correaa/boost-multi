@@ -1,10 +1,6 @@
-#ifdef COMPILATION  // clang-format off
-${CXX:-c++} -std=c++17 $CXXFLAGS -I../include $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif  // clang-format on
 // Copyright 2019-2024 Alfredo A. Correa
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi interacting with Boost Interprocess"
-#define BOOST_TEST_DYN_LINK
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/test/unit_test.hpp>
 
