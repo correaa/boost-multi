@@ -169,6 +169,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 }
 
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
+	// NOLINTBEGIN(fuchsia-default-arguments-calls)  // string uses default parameter
 	std::vector<multi::array<std::string, 2>> va;
 	std::transform(
 		begin(multi::iextension(3)), end(multi::iextension(3)),
@@ -188,14 +189,12 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	std::vector<multi::array<std::string, 2>> const wa = {
-		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<std::string, 2>({0, 0}, "0"s),
 		multi::array<std::string, 2>({1, 1}, "1"s),
 		multi::array<std::string, 2>({2, 2}, "2"s),
 	};
 #else
 	std::vector<multi::array<std::string, 2>> const wa = {
-		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
 		multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
 		multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
@@ -218,6 +217,8 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 	);
 
 	BOOST_TEST( ua == va );
+
+	// NOLINTEND(fuchsia-default-arguments-calls)  // string uses default parameter
 }
 
 // TODO(correaa) make this code work with nvcc compiler (non device function called from device host through adl uninitialized_fill)
