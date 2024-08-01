@@ -3444,7 +3444,7 @@ class array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
  public:
 	~array_ptr() = default;
 	constexpr array_ptr(array_ptr const&) = default;
-	constexpr array_ptr(array_ptr     &&) = default;
+	constexpr array_ptr(array_ptr     &&) noexcept = default;
 
 	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : ref_(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
@@ -3453,7 +3453,7 @@ class array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
 	constexpr explicit operator Ptr () const {return ref_.base();}
 
 	auto operator=(array_ptr const&) -> array_ptr& = default;
-	auto operator=(array_ptr     &&) -> array_ptr& = default;
+	auto operator=(array_ptr     &&) noexcept -> array_ptr& = default;
 
 	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() == other.ref_.base();}
 	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() != other.ref_.base();}
