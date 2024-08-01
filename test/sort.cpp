@@ -44,7 +44,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{2, 2, 2},
 			{1, 1, 1},
 		};
-		BOOST_TEST( !std::ranges::is_sorted(A2D) );
+		BOOST_TEST( !std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		using it = boost::multi::array_iterator<int, 2, int*>;
 
@@ -70,7 +70,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// std::sort(A.begin(), A.end());
 		std::ranges::sort(A2D);
 
-		BOOST_TEST(  std::ranges::is_sorted(A2D) );
+		BOOST_TEST( std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 	}
 
 	BOOST_AUTO_TEST_CASE(sort_strings) {
