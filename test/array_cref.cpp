@@ -64,8 +64,8 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 	BOOST_TEST( std::get<0>( A2D().sizes() ) == 10 );
 	BOOST_TEST( std::get<1>( A2D().sizes() ) == 10 );
 
-	BOOST_TEST( std::get<0>( sizes(A2D()) ) == 10 );
-	BOOST_TEST( std::get<1>( sizes(A2D()) ) == 10 );
+	BOOST_TEST( std::get<0>( A2D().sizes() ) == 10 );
+	BOOST_TEST( std::get<1>( A2D().sizes() ) == 10 );
 
 	static_assert( multi::array_ref<complex, 2>::rank::value == 2 );
 
