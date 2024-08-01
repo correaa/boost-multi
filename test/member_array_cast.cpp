@@ -9,7 +9,7 @@
 // IWYU pragma: no_include <utility>                          // for addressof  // bug in iwyu 14.0.6? with GNU stdlib
 #include <array>     // for array, operator==
 #include <cstddef>   // for offsetof, size_t
-#include <functional>  // for mem_fn
+#include <functional>  // for mem_fn  // IWYU pragma: keep
 #include <iterator>  // for size
 #include <memory>    // for addressof  // IWYU pragma: keep
 #include <string>    // for operator""s, allocator, char_traits
