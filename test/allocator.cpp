@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_check_size) {
 	BOOST_TEST( ma.size() == 0 );
 	BOOST_TEST( ma.num_elements() == 0 );
 
-	std::vector<multi::array<int, 2>> va(1);
+	std::vector<multi::array<int, 2>> va(1);  // NOLINT(fuchsia-default-arguments-calls) vector
 
 	BOOST_TEST( va[0].size() == 0 );
 }
