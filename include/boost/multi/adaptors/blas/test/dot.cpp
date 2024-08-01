@@ -184,7 +184,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		blas::dot(blas::C(x), y, res);
 		BOOST_TEST(
 			res == std::inner_product(
-				begin(x), end(x), begin(y), complex{}, std::plus{}, // NOLINT(fuchsia-default-arguments-calls)
+				begin(x), end(x), begin(y), complex{}, std::plus{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto const& alpha, auto const& omega) {
 					return conj(alpha) * omega;
 				}

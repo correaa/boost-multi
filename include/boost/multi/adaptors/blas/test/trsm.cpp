@@ -14,8 +14,8 @@
 
 // IWYU pragma: no_include <algorithm>  // for min
 #include <cmath>  // for NAN
-#include <cstdlib>      // for NAN, abs
 #include <complex>  // for operator*, opera...
+#include <cstdlib>      // for NAN, abs
 
 namespace multi = boost::multi;
 
@@ -56,7 +56,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			// clang-format off
-		// NOLINTNEXLINE(readability-identifier-length) BLAS naming
+		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> B = {{3.0, }, };
 
 		auto const B_cpy = B;
@@ -66,8 +66,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_REQUIRE_CLOSE((+blas::gemm(1.0, A, B))[0][0], 2. * B_cpy[0][0], 0.00001);
 	}
 	{
+		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> B = {
-			// NOLINT(readability-identifier-length) BLAS naming
 			{ 3.0, 4.0, 5.0 },
 		};
 		auto const B_cpy = B;
