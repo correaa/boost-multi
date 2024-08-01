@@ -3108,11 +3108,9 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ {return self.sizes();}  // needed by nvcc
 	friend constexpr auto size (array_ref const& self) noexcept /*-> typename array_ref::size_type*/  {return self.size ();}  // needed by nvcc
 
- protected:
 	[[deprecated("references are not copyable, use auto&&")]]
 	array_ref(array_ref const&) = default;  // don't try to use `auto` for references, use `auto&&` or explicit value type
 
- public:
 	#if defined(__NVCC__)
 	array_ref(array_ref&&) noexcept = default;  // this needs to be public in nvcc c++17
 	#else
