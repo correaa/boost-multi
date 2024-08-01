@@ -286,11 +286,9 @@ class adl_uninitialized_copy_t {
 			&& (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
 		) {
 			return std::              copy(first, last, d_first);
-	    } else
+	    }
 	#endif
-		{
-			return std::uninitialized_copy(first, last, d_first);
-		}
+		return std::uninitialized_copy(first, last, d_first);
 	}
 // #if defined(__CUDACC__) || defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if defined(__CUDACC__) || defined(__HIPCC__)
