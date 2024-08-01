@@ -8,7 +8,40 @@
 
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
-#include <boost/multi/detail/adl.hpp>
+namespace boost::multi {
+
+template<class Element>
+inline constexpr bool force_element_trivial = false;
+
+template <class Element>
+inline constexpr bool force_element_trivial_destruction = force_element_trivial<Element>;
+
+template <class Element>
+inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
+
+#ifdef _MULTI_FORCE_TRIVIAL_STD_COMPLEX
+template<class T>
+inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivial_v<T>;
+
+template<class T>
+inline constexpr bool force_element_trivial_destruction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
+
+template<class T>
+inline constexpr bool force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_destructible_v<T>;
+
+template<> inline constexpr bool force_element_trivial                     <std::complex<double>> = true;
+template<> inline constexpr bool force_element_trivial_default_construction<std::complex<double>> = true;
+template<> inline constexpr bool force_element_trivial_destruction         <std::complex<double>> = true;
+
+template<> inline constexpr bool force_element_trivial                     <std::complex<float >> = true;
+template<> inline constexpr bool force_element_trivial_default_construction<std::complex<float >> = true;
+template<> inline constexpr bool force_element_trivial_destruction         <std::complex<float >> = true;
+#endif
+
+}  // end namespace boost::multi
+
+
+#include <boost/multi/detail/adl.hpp>  // TODO(correaa) remove instantiation of force_element_trivial in this header
 #include <boost/multi/detail/layout.hpp>          // IWYU pragma: export
 #include <boost/multi/detail/memory.hpp>          // for pointer_traits
 #include <boost/multi/detail/operators.hpp>       // for random_iterable

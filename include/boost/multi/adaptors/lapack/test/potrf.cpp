@@ -74,10 +74,10 @@ auto randomize(M&& arr) -> M&& {
 }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 #define BOOST_TEST_CLOSE(X, Y, ToL) BOOST_TEST_LT(std::abs((X) - (Y)), (ToL))
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	/*
 	BOOST_AUTO_TEST_CASE(orthogonalization_over_rows, *boost::unit_test::tolerance(0.00001)){
 		auto A = randomize(multi::array<complex, 2>({3, 10}));

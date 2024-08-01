@@ -602,7 +602,8 @@ else()
 	-Woverride-module -Woverriding-method-mismatch -Woverriding-t-option
 	-Wpacked
 	# -Wpadded (ask for aligment)
-	-Wparentheses -Wparentheses-equality
+	# -Wparentheses  # complains about parenthesis in macro definitions
+	-Wparentheses-equality
 	-Wpartial-availability
 	# -Rpass -Rpass-analysis
 	-Wpass-failed
