@@ -246,7 +246,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::index_range irng(0, 5);  // semiopen interval
 		std::ostringstream out;
 		std::copy(irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>{out, ","});
-		BOOST_TEST_EQ(out.str(), std::string{"0,1,2,3,4,"});
+		BOOST_TEST_EQ( out.str(), std::string{"0,1,2,3,4,"} );  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)) == irng.size()*(irng.size()-1)/2 );
 
