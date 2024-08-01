@@ -7,7 +7,7 @@
 
 #include <algorithm>   // for is_sorted, stable_sort
 #include <array>       // for array
-#include <functional>  // for __cpp_lib_ranges  // IWYU pragma: keep
+// #include <functional>  // for __cpp_lib_ranges  // IWYU pragma: keep
 #include <iterator>    // for begin, end
 #include <vector>      // for vector
 // IWYU pragma: no_include <version>  // for __cpp_lib_ranges
@@ -18,9 +18,9 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
 		multi::array<int, 1> const tt = {1, 1, 1};
 		multi::array<int, 1> const uu = {2, 2, 2};
