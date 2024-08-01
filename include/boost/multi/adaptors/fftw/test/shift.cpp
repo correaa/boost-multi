@@ -52,10 +52,10 @@ namespace multi = boost::multi;
 namespace fftw  = multi::fftw;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
-	fftw::environment env;
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	fftw::environment const env;
 	BOOST_AUTO_TEST_CASE(fftw_shift) {
 		class watch : std::chrono::steady_clock {
 			time_point start_ = now();

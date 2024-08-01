@@ -62,16 +62,11 @@ template<class T> class randomizer<std::complex<T>> {
 	}
 };
 
-// using fftw_fixture = fftw::environment;
-// BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
-
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
-// #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
-//  #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
-	fftw::environment env;
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	fftw::environment const env;
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_identity_2) {  //, *boost::unit_test::tolerance(0.0001)) {
 		using complex = std::complex<double>;

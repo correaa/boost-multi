@@ -5,11 +5,11 @@
 
 #include <boost/multi/array.hpp>  // for static_array, array
 
-// IWYU pragma: no_include <algorithm>                        // for max  // bug in iwyu 14.0.6? with GNU stdlib
+// IWYU pragma: no_include <algorithm>  // for max  // bug in iwyu 14.0.6? with GNU stdlib
 #include <cassert>           // for assert
 #include <cstddef>           // for size_t
 #include <cstdint>           // for int64_t, int32_t
-// #include <memory>            // for allocator_traits<>::value_type  // IWYU pragma: keep  // bug in iwyu 0.22
+// IWYU pragma: no_include <memory>  // for allocator_traits<>::value_type
 #include <new>               // for bad_alloc
 #include <scoped_allocator>  // for scoped_allocator_adaptor
 #include <vector>            // for vector

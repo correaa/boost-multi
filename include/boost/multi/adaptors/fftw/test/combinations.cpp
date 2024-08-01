@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/tools/fpc_tolerance.hpp>
-#include <boost/test/included/unit_test.hpp>
+// #include <boost/test/tools/fpc_tolerance.hpp>  // TODO(correaa) use lightweight
+// #include <boost/test/included/unit_test.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 
@@ -25,11 +25,6 @@ namespace multi = boost::multi;
 template<>
 inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 
-namespace utf = boost::unit_test::framework;
-
-using fftw_fixture = multi::fftw::environment;
-BOOST_TEST_GLOBAL_FIXTURE(fftw_fixture);
-
 class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label_;
 	time_point  start_ = now();
@@ -50,7 +45,13 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
 constexpr auto exts                                          = multi::extensions_t<4>({6, 12, 24, 12});
 
-BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)) {
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+multi::fftw::environment const env;
+
+BOOST_AUTO_TEST_CASE(fft_combinations) {  // , *boost::unit_test::tolerance(0.00001)) {
 	using complex = std::complex<double>;
 
 	auto const in = [] {
@@ -80,7 +81,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)) {
 
 	for(auto which : which_cases) {  // NOLINT(altera-unroll-loops)
 		cout << "case ";
-		std::for_each(which.begin(), which.end(), [](auto e) { cout << e << ", "; });
+		std::for_each(which.begin(), which.end(), [](auto elem) { cout << elem << ", "; });
 		// copy(which.begin(), which.end(), std::ostream_iterator<bool>{cout, ", "});
 		cout << "\n";
 
@@ -113,7 +114,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)) {
 	}
 }
 
-BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled()) {
+BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark) {  //, *boost::unit_test::enabled()) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 	using complex  = std::complex<double>;
@@ -122,36 +123,36 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled()) {
 	marray<complex, 4> in(exts);
 	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
 
-	BOOST_REQUIRE(in[0][0][0][0] == 1.2);
+	BOOST_TEST(in[0][0][0][0] == 1.2);
 	std::array<bool, 4> which = {false, true, true, true};
-	[&, unnamed = watch{utf::current_test_case().full_name() + " inplace FTTT"s}] {
+	[&, unnamed = watch{"fftw_4D_power_benchmark inplace FTTT"s}] {
 		fftw::dft(which, in, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name() + " inplace FTTT"s}] {
+	[&, unnamed = watch{"fftw_4D_power_benchmark inplace FTTT"s}] {
 		fftw::dft(which, in, fftw::forward);
 	}();
 	auto in0000 = in[0][0][0][0];
-	BOOST_REQUIRE(in0000 != 1.2);
+	BOOST_TEST(in0000 != 1.2);
 
 	marray<complex, 4> out(exts);
-	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace FTTT"s}] {
+	[&, unnamed = watch{"fftw_4D_power_benchmark outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace FTTT"s}] {
+	[&, unnamed = watch{"fftw_4D_power_benchmark outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace FTTT"s}] {
+	[&, unnamed = watch{"fftw_4D_power_benchmark outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace+alloc FTTT"s}] {
+	[&, unnamed = watch{"fftw_4D_power_benchmark outofplace+alloc FTTT"s}] {
 		marray<complex, 4> out2(exts);
 		fftw::dft(which, in, out2, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name() + " outofplace+alloc FTTT"s}] {
+	[&, unnamed = watch{"fftw_4D_power_benchmark outofplace+alloc FTTT"s}] {
 		marray<complex, 4> out2(exts);
 		fftw::dft(which, in, out2, fftw::forward);
 	}();
-	BOOST_REQUIRE(in0000 == in[0][0][0][0]);
+	BOOST_TEST(in0000 == in[0][0][0][0]);
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
@@ -180,5 +181,8 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 
 	auto io = in;
 	(void)io;
-	BOOST_REQUIRE( io.extensions() == in.extensions() );
+	BOOST_TEST( io.extensions() == in.extensions() );
+}
+
+return boost::report_errors();
 }

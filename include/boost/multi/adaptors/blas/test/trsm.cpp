@@ -2,25 +2,25 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/adaptors/blas/filling.hpp>     // for filling
-#include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
+#include <boost/multi/adaptors/blas/filling.hpp>  // for filling
+#include <boost/multi/adaptors/blas/gemm.hpp>     // for gemm, gemm_range
 // IWYU pragma: no_include "boost/multi/adaptors/blas/numeric.hpp"     // for underlying
 #include <boost/multi/adaptors/blas/operations.hpp>  // for T, H, (anonymous)
 #include <boost/multi/adaptors/blas/side.hpp>        // for side
 #include <boost/multi/adaptors/blas/trsm.hpp>        // for trsm, diagonal
 // IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas
 
-#include <boost/multi/array.hpp>                     // for array, subarray
+#include <boost/multi/array.hpp>  // for array, subarray
 
 // IWYU pragma: no_include <algorithm>  // for min
-#include <cmath>  // for NAN
+#include <cmath>    // for NAN
 #include <complex>  // for operator*, opera...
-#include <cstdlib>      // for NAN, abs
+#include <cstdlib>  // for NAN, abs
 
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void*(CasenamE);
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -83,22 +83,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 	namespace blas = multi::blas;
 
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const A = {
-		// NOLINT(readability-identifier-length) BLAS naming
 		{ 1.0, 3.0, 4.0 },
 		{ NAN, 7.0, 1.0 },
 		{ NAN, NAN, 8.0 }
 	};
 	auto const A_cpy = triangular(blas::filling::upper, A);
 	{
+		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> B = {
-			// NOLINT(readability-identifier-length) BLAS naming
 			{ 1.0, 3.0, 4.0 },
 			{ 2.0, 7.0, 1.0 },
 			{ 3.0, 4.0, 2.0 }
 		};
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+
 		BOOST_REQUIRE_CLOSE(B[1][2], 0.107143, 0.001);
 		BOOST_TEST( (+blas::gemm(1., A_cpy, B))[1][2] == B_cpy[1][2] );
 	}
@@ -146,17 +147,21 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
-	namespace blas                   = multi::blas;
-	using complex                    = std::complex<double>;
-	auto const                     I = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
+	namespace blas = multi::blas;
+
+	using complex = std::complex<double>;
+
+	auto const I = complex{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imag unit
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> const A = {
-		// NOLINT(readability-identifier-length) BLAS naming
 		{ 1.0 + 2.0 * I, 3.0 - 1.0 * I, 4.0 + 9.0 * I },
 		{           NAN, 7.0 + 4.0 * I, 1.0 + 8.0 * I },
 		{           NAN,           NAN, 8.0 + 2.0 * I }
 	};
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> B = {
-		// NOLINT(readability-identifier-length) BLAS naming
 		{ 1.0 - 9.0 * I, 3.0 + 2.0 * I, 4.0 + 3.0 * I },
 		{ 2.0 - 2.0 * I, 7.0 - 2.0 * I, 1.0 - 1.0 * I },
 		{ 3.0 + 1.0 * I, 4.0 + 8.0 * I, 2.0 + 7.0 * I }
@@ -172,20 +177,24 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular) {
 	namespace blas = multi::blas;
 	using complex  = std::complex<double>;
 	complex const                  I{ 0, 1 };  // NOLINT(readability-identifier-length) imag unit
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> const A = {
-		// NOLINT(readability-identifier-length) BLAS naming
 		{ 1.0 + 2.0 * I, 3.0 - 1.0 * I, 4.0 + 9.0 * I },
 		{           NAN, 7.0 + 4.0 * I, 1.0 + 8.0 * I },
 		{           NAN,           NAN, 8.0 + 2.0 * I }
 	};
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> B = {
-		// NOLINT(readability-identifier-length) BLAS naming
-		{ 1. - 9. * I, 3. + 2. * I },
-		{ 2. - 2. * I, 7. - 2. * I },
-		{ 3. + 1. * I, 4. + 8. * I }
+		{ 1.0 - 9.0 * I, 3.0 + 2.0 * I },
+		{ 2.0 - 2.0 * I, 7.0 - 2.0 * I },
+		{ 3.0 + 1.0 * I, 4.0 + 8.0 * I }
 	};
+
 	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	blas::trsm(blas::side::left, blas::filling::lower, 2.0 + 1.0 * I, blas::H(A), B);
+
 	BOOST_REQUIRE_CLOSE(real(B[2][0]), -4.16471, 0.0001);
 	BOOST_REQUIRE_CLOSE(imag(B[2][0]), 8.25882, 0.0001);
 }
@@ -259,8 +268,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 			BOOST_TEST( B[0][1] == B_cpy[0][1]/A[0][0] );
 		}
 		{
+			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 			multi::array<double, 2> B = {
-				// NOLINT(readability-identifier-length) BLAS naming
 				{1.0},
 				{2.0},
 				{3.0},
@@ -360,8 +369,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 			BOOST_REQUIRE_CLOSE((~BT)[1][2], 0.107143, 0.001);
 		}
 		{
+			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 			multi::array<double, 2> B = {
-				// NOLINT(readability-identifier-length) BLAS naming
 				{1.0},
 				{2.0},
 				{3.0},
