@@ -48,7 +48,7 @@ message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
     VERSION 0.80.1
     LANGUAGES CXX)
 
-  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+  # set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
   message(STATUS "Boost.Multi: standalone mode ON")
 
