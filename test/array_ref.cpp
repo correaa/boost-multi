@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 
 	BOOST_TEST( &mar.reindexed(1)[1][0] == &mar[0][0] );
 
-	BOOST_TEST( sizes(mar[0].reindexed(1)) == sizes(mar[0]) );
+	BOOST_TEST( mar[0].reindexed(1).sizes() == mar[0].sizes() );
 	BOOST_TEST( mar[0].reindexed(1).extension().first() == mar[0].extension().first () + 1 );
 	BOOST_TEST( mar[0].reindexed(1).extension().last() == mar[0].extension().last() + 1 );
 
