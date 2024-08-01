@@ -40,7 +40,6 @@ template<> inline constexpr bool force_element_trivial_destruction         <std:
 
 }  // end namespace boost::multi
 
-
 #include <boost/multi/detail/adl.hpp>  // TODO(correaa) remove instantiation of force_element_trivial in this header
 #include <boost/multi/detail/layout.hpp>          // IWYU pragma: export
 #include <boost/multi/detail/memory.hpp>          // for pointer_traits
@@ -374,10 +373,10 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	: subarray_ptr(other->base(), other->layout()) {}
 
 	subarray_ptr(subarray_ptr const&) = default;
-	subarray_ptr(subarray_ptr     &&) = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
+	subarray_ptr(subarray_ptr     &&) noexcept = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
 
 	auto operator=(subarray_ptr const&) -> subarray_ptr& = default;
-	auto operator=(subarray_ptr     &&) -> subarray_ptr& = default;
+	auto operator=(subarray_ptr     &&) noexcept -> subarray_ptr& = default;
 
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
