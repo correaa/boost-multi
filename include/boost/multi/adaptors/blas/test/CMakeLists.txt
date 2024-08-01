@@ -98,9 +98,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 	# target_link_libraries     (${TEST_EXE} PRIVATE Boost::boost)  # headers)   # unit_test_framework   )
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
 
-	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
-	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_MODULE="C++ Unit Tests for Multi BLAS")
 	target_compile_options(
 	  ${TEST_EXE} PRIVATE
 	  $<$<CXX_COMPILER_ID:IntelLLVM>:

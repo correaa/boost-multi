@@ -13,9 +13,9 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_imag) {
 		using complex = std::complex<double>;
 		auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit

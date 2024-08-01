@@ -113,8 +113,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		// an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
-		BOOST_TEST_EQ(real(res), real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{}, hermitian_product)));  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_TEST_EQ(imag(res), imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{}, hermitian_product)));  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST_EQ(
+			real(res),
+			real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{}, hermitian_product))  // NOLINT(fuchsia-default-arguments-calls)
+		);
+		BOOST_TEST_EQ(
+			imag(res),
+			imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{}, hermitian_product))  // NOLINT(fuchsia-default-arguments-calls)
+		);
 	}
 
 	BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_float) {  // if you get a segfaut here, your system may require -DRETURN_BY_STACK
@@ -136,10 +142,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// // an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
 		BOOST_TEST_EQ(
-			real(res), real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{}, [](auto alpha, auto omega) { return alpha * std::conj(omega); }))  // NOLINT(fuchsia-default-arguments-calls)
+			real(res),
+			real(std::inner_product(
+				begin(x), end(x), begin(y), complex{}, std::plus{},  // NOLINT(fuchsia-default-arguments-calls)
+				[](auto alpha, auto omega) { return alpha * std::conj(omega); }
+			))
 		);
 		BOOST_TEST_EQ(
-			imag(res), imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{}, [](auto alpha, auto omega) { return alpha * std::conj(omega); }))  // NOLINT(fuchsia-default-arguments-calls)
+			imag(res),
+			imag(
+				std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{},  // NOLINT(fuchsia-default-arguments-calls)
+				[](auto alpha, auto omega) { return alpha * std::conj(omega); })
+			)
 		);
 	}
 
@@ -152,10 +166,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		complex res{0.0, 0.0};
 		blas::dot(blas::C(x), y, res);
-		BOOST_TEST( 
+		BOOST_TEST(
 			res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto alpha, auto omega) { return conj(alpha) * omega;}
-			) 
+			)
 		);
 	}
 
@@ -169,9 +183,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		complex res{0.0F, 0.0F};
 		blas::dot(blas::C(x), y, res);
 		BOOST_TEST(
-		res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, [](auto const& alpha, auto const& omega) {  // NOLINT(fuchsia-default-arguments-calls)
-																		   return conj(alpha) * omega;})
-	);
+			res == std::inner_product(
+				begin(x), end(x), begin(y), complex{}, std::plus{}, // NOLINT(fuchsia-default-arguments-calls)
+				[](auto const& alpha, auto const& omega) {
+					return conj(alpha) * omega;
+				}
+			)
+		);
 	}
 
 #if defined(CUDA_FOUND) and CUDA_FOUND

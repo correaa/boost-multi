@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/adaptors/blas/core.hpp>  // for context
+// IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // for context
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref, operator==
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for nrm2, nrm2_ref
 #include <boost/multi/adaptors/complex.hpp>    // for complex, operator*
@@ -17,9 +17,9 @@ using complex = multi::complex<double>;
 constexpr complex I{ 0.0, 1.0 };  // NOLINT(readability-identifier-length) imaginary unit
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(multi_blas_nrm2) {
 	namespace blas = multi::blas;
 
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_nrm2) {
 	{
 		multi::array<complex, 1> const x = { 1.0 + 1.0 * I, 3.0 + 2.0 * I, 3.0 + 4.0 * I };  // NOLINT(readability-identifier-length) blas conventional name
 		BOOST_TEST( blas::dot(x, x) == (1.0 + 1.0*I)*(1.0 + 1.0*I) + (3.0 + 2.0*I)*(3.0 + 2.0*I) + (3.0 + 4.0*I)*(3.0 + 4.0*I) );
-		using std::sqrt;
+		using std::sqrt;  // NOLINT(misc-include-cleaner) included in cmath
 		BOOST_TEST( blas::nrm2(x) == sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) );
 	}
 }
