@@ -1738,7 +1738,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	subarray(subarray const&) = default;
 
  public:
-	subarray(subarray&&) = default;
+	subarray(subarray&&) noexcept = default;
 	~subarray() = default;
 
 	using ptr = subarray_ptr<T, D, ElementPtr, Layout>;
