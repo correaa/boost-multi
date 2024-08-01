@@ -12,8 +12,6 @@
 
 #include <boost/multi/array.hpp>                     // for array, layout_t
 
-
-
 #include <cmath>  // for sqrt
 // IWYU pragma: no_include <cstdlib>
 #include <complex>      // for operator*, opera...
