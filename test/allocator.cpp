@@ -47,7 +47,7 @@
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	#include <memory_resource>  // for monotonic_buffer_...
 #endif
-#include <new>      // for operator new
+#include <new>      // for operator new  // NOLINT(misc-include-cleaner)
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
@@ -59,12 +59,12 @@ using small_array = multi::static_array<T, D, multi::detail::static_allocator<T,
 // https://godbolt.org/z/d8ozWahna
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(static_array_allocator) {
-	multi::array<int, 2>                             ma({2, 3}, 99);
-	multi::static_array<int, 2, std::allocator<int>> sma(ma(), std::allocator<int>{});
+	multi::array<int, 2> const                            ma({2, 3}, 99);
+	multi::static_array<int, 2, std::allocator<int>> const sma(ma(), std::allocator<int>{});
 	BOOST_TEST( sma == ma );
 }
 
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(empty_stride) {
 }
 
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays_check_size) {
-	multi::array<int, 2> ma;
+	multi::array<int, 2> const ma;
 	BOOST_TEST( ma.size() == 0 );
 	BOOST_TEST( ma.num_elements() == 0 );
 

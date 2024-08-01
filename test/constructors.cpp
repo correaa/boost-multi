@@ -37,7 +37,7 @@
 
 #include <boost/multi/array.hpp>
 
-#include <algorithm>    // for max  // IWYU pragma: keep  // for GNU stdlib
+// #include <algorithm>    // for max  // IWYU pragma: keep  // for GNU stdlib
 #include <complex>      // for complex  // IWYU pragma: keep  // bug in iwyu 18.1.7
 #include <cstddef>      // for size_t
 #include <iterator>     // for size
@@ -56,9 +56,9 @@ struct multiplies_bind1st {
 };
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(multi_construct_1d) {
 	multi::static_array<int, 1> arr(multi::extensions_t<1>{ multi::iextension{ 10 } }, 10);
 	//  multi::static_array<int, 1> arr(multi::array<int, 1>::extensions_type{10}, 10);

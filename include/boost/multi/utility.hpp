@@ -14,8 +14,6 @@
 #include <memory>       // for allocator<>
 #include <type_traits>  // for std::invoke_result
 
-#include <iterator>  // for std::size (in c++17)
-
 #if defined(__NVCC__)
 #define BOOST_MULTI_HD __host__ __device__
 #else
@@ -311,8 +309,8 @@ constexpr auto dimensionality(T const(&array)[N]) {return 1 + dimensionality(arr
 template<class T, class Ret = decltype(std::declval<T const&>().sizes())>
 constexpr auto sizes(T const& arr) noexcept -> Ret {return arr.sizes();}
 
-// template<class T>
-constexpr auto sizes(...) noexcept -> tuple<> {return {};}
+template<class T, class... Args>
+constexpr auto sizes(T const& /*unused*/, Args const&... /*unused*/) noexcept -> tuple<> {return {};}
 
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&array)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
@@ -390,12 +388,12 @@ template<class Element, class T, std::enable_if_t<has_extensions<T>::value, int>
 }
 
 template<class... Ts> auto what() -> std::tuple<Ts&&...> = delete;
-template<class... Ts> auto what(Ts&&...) -> std::tuple<Ts&&...> = delete;
+template<class... Ts> auto what(Ts&&...) -> std::tuple<Ts&&...> = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)
 
 template<class Arr2D>
 auto transposed(Arr2D&& arr)
-->decltype(arr.transposed()) {
-	return arr.transposed(); }
+->decltype(std::forward<Arr2D>(arr).transposed()) {
+	return std::forward<Arr2D>(arr).transposed(); }
 
 // template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>::value && !has_extensions<BoostMultiArray>::value, int> =0>
 // constexpr auto extensions(BoostMultiArray const& array) {

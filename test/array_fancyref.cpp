@@ -196,9 +196,9 @@ auto copy(It /*first*/, It /*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> 
 }  // end namespace boost::multi
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(multi_fancy) {
 	namespace multi = boost::multi;
 
