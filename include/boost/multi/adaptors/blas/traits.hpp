@@ -8,7 +8,7 @@
 
 #include <complex>
 #include <type_traits>  // for enable_if_t, false_type, is_convertible, true...
-#include <utility>      // for declval
+#include <utility>      // for declval  // IWYU pragma: keep
 
 namespace boost::multi::blas {  // TODO(correaa) include in blas/detail?
 

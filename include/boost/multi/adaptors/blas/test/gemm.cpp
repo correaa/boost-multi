@@ -1961,4 +1961,4 @@ int main() {
 	}
 
 	return boost::report_errors();
-}
+}  // NOLINT(readability/fn_size)

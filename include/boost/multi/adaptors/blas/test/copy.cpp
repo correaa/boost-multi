@@ -13,7 +13,6 @@ namespace blas  = multi::blas;
 #define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
 
 int main() {
-
 	BOOST_AUTO_TEST_CASE(multi_blas_copy_n) {
 		multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<double, 1>       y = {5.0, 6.0, 7.0, 8.0};  // NOLINT(readability-identifier-length) BLAS naming

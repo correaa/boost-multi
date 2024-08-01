@@ -3,6 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/adaptors/blas/scal.hpp>
+// IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
 
 #include <boost/multi/array.hpp>
 

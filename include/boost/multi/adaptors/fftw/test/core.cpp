@@ -71,7 +71,6 @@ template<class T> class randomizer<std::complex<T>> {
 //  #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
 int main() {
-
 	fftw::environment env;
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_identity_2) {  //, *boost::unit_test::tolerance(0.0001)) {
