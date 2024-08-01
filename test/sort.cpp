@@ -68,7 +68,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::permutable<it>);
 
 		// std::sort(A.begin(), A.end());
-		std::ranges::sort(A2D);
+		std::ranges::sort(A2D);  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 	}
