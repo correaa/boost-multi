@@ -9,7 +9,9 @@
 #include <boost/multi/adaptors/blas/filling.hpp>
 #include <boost/multi/adaptors/blas/operations.hpp>
 #include <boost/multi/adaptors/blas/side.hpp>
-#include <boost/multi/adaptors/blas/syrk.hpp> // fallback to real case
+#include <boost/multi/adaptors/blas/syrk.hpp>  // fallback to real case
+
+// IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas
 
 namespace boost::multi::blas {
 
