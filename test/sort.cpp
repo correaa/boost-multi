@@ -39,12 +39,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if defined(__cpp_lib_ranges)
 	BOOST_AUTO_TEST_CASE(sort_2D) {
-		multi::array<int, 2> A = {
+		multi::array<int, 2> A2D = {
 			{3, 3, 3},
 			{2, 2, 2},
 			{1, 1, 1},
 		};
-		BOOST_TEST( !std::ranges::is_sorted(A) );
+		BOOST_TEST( !std::ranges::is_sorted(A2D) );
 
 		using it = boost::multi::array_iterator<int, 2, int*>;
 
@@ -55,7 +55,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(std::indirectly_readable<In>);
 
-		*A.begin() = A[0];
+		*A.begin() = A2D[0];
 
 		// const_cast<const std::iter_reference_t<Out>&&>(*A.begin()) = A[0];  // std::forward<T>(t);
 		// const_cast<const std::iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
@@ -74,33 +74,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::permutable<it>);
 
 		// std::sort(A.begin(), A.end());
-		std::ranges::sort(A);
+		std::ranges::sort(A2D);
 
-		BOOST_TEST(  std::ranges::is_sorted(A) );
+		BOOST_TEST(  std::ranges::is_sorted(A2D) );
 	}
 
 	BOOST_AUTO_TEST_CASE(sort_strings) {
-		auto A = multi::array<char, 2>{
+		auto A2D = multi::array<char, 2>{
 			{'S', 'e', 'a', 'n', ' ', ' '},
 			{'A', 'l', 'e', 'x', ' ', ' '},
 			{'B', 'j', 'a', 'r', 'n', 'e'},
 		};
-		BOOST_TEST( !std::ranges::is_sorted(A) );
+		BOOST_TEST( !std::ranges::is_sorted(A2D) );
 
-		std::ranges::sort(A);
+		std::ranges::sort(A2D);
 
-		BOOST_TEST(  std::ranges::is_sorted(A));
+		BOOST_TEST(  std::ranges::is_sorted(A2D));
 
 		BOOST_TEST((
-		A == multi::array<char, 2>{
-			{'A', 'l', 'e', 'x', ' ', ' '},
-			{'B', 'j', 'a', 'r', 'n', 'e' },
-			{'S', 'e', 'a', 'n', ' ', ' '},
-		}
-	));
+			A2D == multi::array<char, 2>{
+				{'A', 'l', 'e', 'x', ' ', ' '},
+				{'B', 'j', 'a', 'r', 'n', 'e' },
+				{'S', 'e', 'a', 'n', ' ', ' '},
+			}
+		));
 
-		std::ranges::sort(~A);
-		BOOST_TEST(std::ranges::is_sorted(~A));
+		std::ranges::sort(~A2D);
+		BOOST_TEST(std::ranges::is_sorted(~A2D));
 
 		static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
 	}
