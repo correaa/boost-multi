@@ -32,7 +32,6 @@ CheckOptions:
 
 Checks: '*,
   -altera-struct-pack-align,
-  -clang-diagnostic-deprecated-declarations,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -fuchsia-overloaded-operator,
@@ -46,7 +45,6 @@ Checks: '*,
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
-#  -fuchsia-trailing-return,                              // to allow any '-> decltype(auto)', contradicts modernize trailing
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // many tests use magic numbers
