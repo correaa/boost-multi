@@ -4,6 +4,8 @@
 
 #include <boost/multi/adaptors/blas/numeric.hpp>
 #include <boost/multi/adaptors/blas/operations.hpp>
+// IWYU pragma: no_include "boost/multi/adaptors/blas/complex_traits.hpp"  // for blas  // needed by iwyu-clang-macos
+
 #include <boost/multi/array.hpp>
 
 #include <complex>
