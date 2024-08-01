@@ -8,7 +8,7 @@
 #include <boost/multi/adaptors/blas/operations.hpp>  // for T, H, (anonymous)
 #include <boost/multi/adaptors/blas/side.hpp>        // for side
 #include <boost/multi/adaptors/blas/trsm.hpp>        // for trsm, diagonal
-// UWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas
+// IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas
 
 #include <boost/multi/array.hpp>                     // for array, subarray
 
