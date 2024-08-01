@@ -7,8 +7,10 @@
 #pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>
+// IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
 
-#include <utility>                             // for forward, declval
+// IWYU pragma: no_include <type_traits>  // for declval  // needed by iwyu-clang-linux
+#include <utility>  // for forward, declval
 
 namespace boost::multi::blas {
 

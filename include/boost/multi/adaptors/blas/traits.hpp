@@ -6,9 +6,9 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_TRAITS_HPP
 #pragma once
 
-#include<complex>
-#include<type_traits>
-#include <utility>      // for declval
+#include <complex>
+#include <type_traits>  // for enable_if_t, false_type, is_convertible, true...
+#include <utility>      // for declval  // IWYU pragma: keep
 
 namespace boost::multi::blas {  // TODO(correaa) include in blas/detail?
 

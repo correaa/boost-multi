@@ -6,6 +6,7 @@
 #include <boost/multi/adaptors/blas/operations.hpp>  // for transposed, T
 #include <boost/multi/adaptors/blas/syrk.hpp>        // for syrk
 // UWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas
+// IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
 
 #include <boost/multi/array.hpp>                     // for array, layout_t
 

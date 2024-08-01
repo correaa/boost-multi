@@ -8,6 +8,7 @@
 #include <boost/multi/adaptors/blas/nrm2.hpp>        // for nrm2_ref, nrm2
 #include <boost/multi/adaptors/blas/numeric.hpp>     // for involuted, under...
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
+// IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas  // needed for iwyu-clang-macos
 
 #include <boost/multi/array.hpp>                     // for array, layout_t
 

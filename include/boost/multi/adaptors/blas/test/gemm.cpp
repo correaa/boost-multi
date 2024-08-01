@@ -13,7 +13,7 @@
 #include <cstdlib>  // for abs
 #include <complex>   // for complex, operator*
 #include <iterator>  // for begin, size
-#include <memory>  // for allocator
+// IWYU pragma: no_include <memory>  // for allocator
 // IWYU pragma: no_include <exception>  // for exception
 
 namespace multi = boost::multi;
@@ -1961,4 +1961,4 @@ int main() {
 	}
 
 	return boost::report_errors();
-}
+}  // NOLINT(readability/fn_size)
