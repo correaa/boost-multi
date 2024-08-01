@@ -309,8 +309,8 @@ constexpr auto dimensionality(T const(&array)[N]) {return 1 + dimensionality(arr
 template<class T, class Ret = decltype(std::declval<T const&>().sizes())>
 constexpr auto sizes(T const& arr) noexcept -> Ret {return arr.sizes();}
 
-template<class T, class... Args>
-constexpr auto sizes(T const& /*unused*/, Args const&... /*unused*/) noexcept -> tuple<> {return {};}
+template<class T, std::enable_if_t< ! has_dimensionality<T>::value,int> =0>
+constexpr auto sizes(T const& /*unused*/) noexcept {return tuple<>{};}
 
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&array)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility

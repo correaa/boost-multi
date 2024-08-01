@@ -4,7 +4,7 @@
 
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
-#include <boost/multi/adaptors/blas/numeric.hpp>     // for underlying
+// IWYU pragma: no_include "boost/multi/adaptors/blas/numeric.hpp"     // for underlying
 #include <boost/multi/adaptors/blas/operations.hpp>  // for T, H, (anonymous)
 #include <boost/multi/adaptors/blas/side.hpp>        // for side
 #include <boost/multi/adaptors/blas/trsm.hpp>        // for trsm, diagonal
@@ -12,7 +12,7 @@
 
 #include <boost/multi/array.hpp>                     // for array, subarray
 
-#include <algorithm>  // for min
+// IWYU pragma: no_include <algorithm>  // for min
 #include <cmath>  // for NAN
 #include <cstdlib>      // for NAN, abs
 #include <complex>  // for operator*, opera...
@@ -20,10 +20,10 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0) {
 		namespace blas = multi::blas;
 		multi::array<double, 2> const A;  // NOLINT(readability-identifier-length) BLAS naming
