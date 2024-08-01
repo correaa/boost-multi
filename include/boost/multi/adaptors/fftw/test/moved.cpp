@@ -14,10 +14,10 @@ template<class M> auto power(M const& array) {
 }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
 
-int main() {
-	multi::fftw::environment env;
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	multi::fftw::environment const env;
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 		using complex                 = std::complex<double>;

@@ -70,69 +70,75 @@
 // #include <cstddef>  // for ptrdiff_t  // IWYU pragma: keep
 // #include <vector>   // for vector  // IWYU pragma: keep
 
-#include <type_traits>                        // for is_same_v, is_convertib...
+#include <type_traits>  // for is_same_v, is_convertib...
 
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void*(CasenamE);
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-BOOST_AUTO_TEST_CASE(convertibles_1D) {
-	using NDArray = multi::array<double, 1>;
+	BOOST_AUTO_TEST_CASE(convertibles_1D) {
+		using NDArray = multi::array<double, 1>;
 
-	NDArray const nda;
+		NDArray const nda;
 
-	static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
-	static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
+		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
 
-	using NDRef = typename NDArray::ref;
+		using NDRef = typename NDArray::ref;
 
-	static_assert(std::is_convertible_v<NDRef, NDArray>);
+		static_assert(std::is_convertible_v<NDRef, NDArray>);
 
-	static_assert( std::is_convertible_v<typename NDRef::reference, typename NDRef::value_type> );
-	static_assert( std::is_convertible_v<typename NDRef::const_reference, typename NDRef::value_type> );
+#ifndef __NVCC__
+		static_assert(std::is_convertible_v<typename NDRef::reference, typename NDRef::value_type>);
+		static_assert(std::is_convertible_v<typename NDRef::const_reference, typename NDRef::value_type>);
+#else
+		static_assert(std::is_convertible<typename NDRef::reference, typename NDRef::value_type>::value);
+		static_assert(std::is_convertible<typename NDRef::const_reference, typename NDRef::value_type>::value);
+#endif
 
-	static_assert( std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type> );
-	static_assert( std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference> );
+		static_assert(std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference>);
+	}
+
+	BOOST_AUTO_TEST_CASE(convertibles_2D) {
+		using NDArray = multi::array<double, 2>;
+
+		NDArray const nda;
+
+		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
+
+		using NDRef = typename NDArray::ref;
+
+		static_assert(std::is_convertible_v<NDRef, NDArray>);
+
+		static_assert(std::is_convertible_v<typename NDRef::reference, typename NDRef::value_type>);
+		static_assert(std::is_convertible_v<typename NDRef::const_reference, typename NDRef::value_type>);
+
+		static_assert(std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference>);
+	}
+
+	BOOST_AUTO_TEST_CASE(convertibles_3D) {
+		using NDArray = multi::array<double, 3>;
+
+		NDArray const nda;
+
+		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
+
+		using NDRef = typename NDArray::ref;
+
+		static_assert(std::is_convertible_v<NDRef, NDArray>);
+
+		static_assert(std::is_convertible_v<typename NDRef::reference, typename NDRef::value_type>);
+		static_assert(std::is_convertible_v<typename NDRef::const_reference, typename NDRef::value_type>);
+
+		static_assert(std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference>);
+	}
+
+	return boost::report_errors();
 }
-
-BOOST_AUTO_TEST_CASE(convertibles_2D) {
-	using NDArray = multi::array<double, 2>;
-
-	NDArray const nda;
-
-	static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
-	static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
-
-	using NDRef = typename NDArray::ref;
-
-	static_assert(std::is_convertible_v<NDRef, NDArray>);
-
-	static_assert(std::is_convertible_v<typename NDRef::reference, typename NDRef::value_type>);
-	static_assert(std::is_convertible_v<typename NDRef::const_reference, typename NDRef::value_type>);
-
-	static_assert(std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type>);
-	static_assert(std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference>);
-}
-
-BOOST_AUTO_TEST_CASE(convertibles_3D) {
-	using NDArray = multi::array<double, 3>;
-
-	NDArray const nda;
-
-	static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
-	static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
-
-	using NDRef = typename NDArray::ref;
-
-	static_assert(std::is_convertible_v<NDRef, NDArray>);
-
-	static_assert(std::is_convertible_v<typename NDRef::reference, typename NDRef::value_type>);
-	static_assert(std::is_convertible_v<typename NDRef::const_reference, typename NDRef::value_type>);
-
-	static_assert(std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type>);
-	static_assert(std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference>);
-}
-
-return boost::report_errors();}
