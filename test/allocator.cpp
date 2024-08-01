@@ -138,15 +138,15 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces)
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-				  // NOXXXLINT(fuchsia-default-arguments-calls)
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 	std::vector<multi::array<int, 2>> const wa = {
 		multi::array<int, 2>({0, 0}, 0),
 		multi::array<int, 2>({1, 1}, 1),
 		multi::array<int, 2>({2, 2}, 2),
 	};
 #else
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 	std::vector<multi::array<int, 2>> const wa = {
-		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
 		multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
 		multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
