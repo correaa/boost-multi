@@ -3,42 +3,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wconversion"
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-//  #pragma clang diagnostic ignored "-Wundef"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-//  #pragma GCC diagnostic ignored "-Wundef"
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
-// #if defined(__clang__)
-//  #pragma clang diagnostic pop
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic pop
-// #endif
-
 #include <boost/multi/array.hpp>  // for array, subarray, static_array
 
-#include <array>        // for array  // IWYU Pragma: keep   // bug iwyu 0.22
+#include <array>        // for array  // IWYU pragma: keep
 #include <complex>      // for complex, operator*, operator+
-#include <cmath>                              // for abs    // IWYU pragma: keep
-// IWYU pragma: no_include <cstdlib>                           // for abs
 #include <cstddef>      // for ptrdiff_t
+#include <cstdlib>                           // for abs
+#include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for iterator_traits
 #include <memory>       // for pointer_traits
 #include <type_traits>  // for decay_t, conditional_t, true_type
@@ -69,8 +40,11 @@ class involuted {
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{ref} {}
+	involuted(involuted const&) = default;
+	involuted(involuted &&) noexcept = default;
 
 	auto operator=(involuted&&) -> involuted& = delete;
+	auto operator=(involuted const&) -> involuted& = default;
 	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return) simulate reference
 		r_ = Involution{}(other);
 		return *this;
@@ -102,6 +76,7 @@ class involuted {
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic pop
 #endif
+	~involuted() = default;
 };
 
 template<class Involution, class It>
@@ -221,9 +196,9 @@ class indirect_real {
 }  // namespace test
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(transformed_array) {
 	namespace multi = boost::multi;
 	{

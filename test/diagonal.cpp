@@ -3,47 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
-//  #pragma clang diagnostic ignored "-Wconversion"
-//  #pragma clang diagnostic ignored "-Wdeprecated-copy-with-dtor"
-//     #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-//  #pragma clang diagnostic ignored "-Wnonportable-system-include-path"
-//  #pragma clang diagnostic ignored "-Wcovered-switch-default"
-//  #pragma clang diagnostic ignored "-Wshadow-field"
-//  #pragma clang diagnostic ignored "-Wswitch-enum"
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-//     #pragma clang diagnostic ignored "-Wswitch-default"
-//  #pragma clang diagnostic ignored "-Wundef"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-//  #pragma GCC diagnostic ignored "-Wundef"
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
-// #if defined(__clang__)
-//  #pragma clang diagnostic pop
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic pop
-// #endif
-
 #include <boost/multi/array.hpp>  // for array, layout_t, static_array
 
 #include <algorithm>   // for transform
-// #include <functional>  // for plus
+#include <functional>  // for plus  // IWYU pragma: keep
 #include <numeric>     // for accumulate
 
 namespace multi = boost::multi;
@@ -72,9 +35,9 @@ auto trace_with_accumulate(Array2D const& arr) {
 }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE)  /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(trace_test) {
 	using int_element = multi::index;
 	multi::array<int_element, 2> arr({5, 5}, 0);
@@ -146,7 +109,7 @@ BOOST_AUTO_TEST_CASE(broadcast_0D) {
 	BOOST_TEST( &v1D[1] == vv.base() );
 
 	multi::array<int, 1> r1D({4}, 0);
-	std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});
+	std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus{});
 
 	BOOST_TEST( r1D[3] == arr[3] + 2 );
 

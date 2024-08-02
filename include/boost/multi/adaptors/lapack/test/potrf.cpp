@@ -6,7 +6,7 @@
 // IWYU pragma: no_include "boost/multi/adaptors/blas/complex_traits.hpp"  // for blas
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm
 #include <boost/multi/adaptors/blas/herk.hpp>        // for herk
-#include <boost/multi/adaptors/blas/numeric.hpp>     // for underlying
+// IWYU pragma: no_include "boost/multi/adaptors/blas/numeric.hpp"     // for underlying
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, (anonymous)
 
 #include <boost/multi/array.hpp>                     // for array, subarray
@@ -74,10 +74,10 @@ auto randomize(M&& arr) -> M&& {
 }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
-#define BOOST_TEST_CLOSE(X, Y, ToL) BOOST_TEST_LT(std::abs((X) - (Y)), (ToL))
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
+#define BOOST_TEST_CLOSE(X, Y, ToL) BOOST_TEST(std::abs((X) - (Y)) < (ToL))
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	/*
 	BOOST_AUTO_TEST_CASE(orthogonalization_over_rows, *boost::unit_test::tolerance(0.00001)){
 		auto A = randomize(multi::array<complex, 2>({3, 10}));
@@ -150,7 +150,7 @@ int main() {
 		auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
 		for(auto i = 0; i != 4; ++i) {
-			for(auto j = 0; j != 4; ++j) {
+			for(auto j = 0; j != 4; ++j) {  // NOLINT(altera-unroll-loops)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
 				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
 			}
@@ -188,9 +188,9 @@ int main() {
 		print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
 
 		for(auto i = 0; i != 4; ++i) {
-			for(auto j = i; j != 4; ++j) {  // NOLINT(altera-id-dependent-backward-branch)  // only compare upper part of the reference array (the other half is garbage)
+			for(auto j = i; j != 4; ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)  // only compare upper part of the reference array (the other half is garbage)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
-				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
+				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);  // NOLINT(readability-simplify-boolean-expr)
 			}
 		}
 	}
@@ -227,11 +227,10 @@ int main() {
 		print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
 		print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
 
-		// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
-		for(auto i = 0; i != AA.size(); ++i) {
-			for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // NOLINT(altera-id-dependent-backward-branch)
+		for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
+			for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
-				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
+				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);  // NOLINT(readability-simplify-boolean-expr)
 			}
 		}
 	}
@@ -270,7 +269,7 @@ int main() {
 
 		// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
 		for(auto i = 0; i != AA.size(); ++i) {
-			// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
+			// NOLINTNEXTLINE(altera-unroll-loops,altera-id-dependent-backward-branch)
 			for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // only compare upper part of the reference array (the other half is garbage)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
 				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);

@@ -3,51 +3,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
-//  #pragma clang diagnostic ignored "-Wconversion"
-//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wundef"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-//  #pragma clang diagnostic ignored "-Wswitch-default"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-//  #pragma GCC diagnostic ignored "-Wundef"
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
-// #if defined(__clang__)
-//  #pragma clang diagnostic pop
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic pop
-// #endif
-
 #include <boost/multi/array.hpp>  // for array, layout_t, operator==, imp...
 
 #include <algorithm>    // for equal
 #include <type_traits>  // for decay_t
 #include <vector>       // for vector
-
-// workaround for libc++ and boost test
-// namespace boost::unit_test::ut_detail {
-//     auto normalize_test_case_name(const_string name) -> std::string {
-//         // NOLINTNEXTLINE(fuchsia-default-arguments-calls)
-//         return ( name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
-//     }
-// }  // end namespace boost::unit_test::ut_detail
 
 namespace multi = boost::multi;
 
@@ -81,9 +41,9 @@ void resize_copy_5(It first, It last, DynamicArray& darr) {
 // void resize_copy_6   ----> see below test_resize_copy_6
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(test_resize_copy_1) {
 	std::vector<int> const source = {0, 1, 2, 3};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 

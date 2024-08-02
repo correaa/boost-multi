@@ -46,6 +46,7 @@
 #include <complex>    // for complex
 #include <cstddef>    // for size_t
 #include <iterator>   // for size
+#include <memory>     // for std::allocator  // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>  // for decay_t
 #include <utility>  // for move
 #include <vector>   // for vector, allocator
@@ -71,9 +72,9 @@ template<class T>
 auto eye(multi::extensions_t<2> exts) { return eye<T>(exts, std::allocator<T>{}); }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE)
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(equality_1D) {
 	multi::array<int, 1> arr  = { 10, 20, 30 };
 	multi::array<int, 1> arr2 = { 10, 20, 30 };
@@ -140,7 +141,7 @@ BOOST_AUTO_TEST_CASE(range_assignment) {
 }
 
 BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-	multi::array<int, 4> tmp(
+	multi::array<int, 4> const tmp(
 #ifdef _MSC_VER  // problem with 14.3 c++17
 		multi::extensions_t<4>
 #endif

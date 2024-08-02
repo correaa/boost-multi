@@ -98,16 +98,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 	# target_link_libraries     (${TEST_EXE} PRIVATE Boost::boost)  # headers)   # unit_test_framework   )
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
 
-	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_DYN_LINK=1)
-	target_compile_definitions(${TEST_EXE} PRIVATE BOOST_TEST_MODULE="C++ Unit Tests for Multi BLAS")
-	target_compile_options(
-	  ${TEST_EXE} PRIVATE
-	  $<$<CXX_COMPILER_ID:IntelLLVM>:
-	  -Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
-	  -Wno-enum-constexpr-conversion  # for Boost.Test
-	  >
-	)
+	# target_compile_options(
+	#   ${TEST_EXE} PRIVATE
+	#   $<$<CXX_COMPILER_ID:IntelLLVM>:
+	#   -Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
+	#   -Wno-enum-constexpr-conversion  # for Boost.Test
+	#   >
+	# )
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
 
@@ -145,14 +142,20 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra
 					-Wpedantic
 					-Wformat-truncation
-					-Wno-unknown-pragmas> # -Wconversion
+					-Wno-unknown-pragmas
+					-Wparentheses
+					> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					# -Weverything
 					-Wextra
 					-Wpedantic
 					-Wmove
-					-Wno-error=\#warnings>
-					# -Wno-c++98-compat  # use of constexpr
+					-Wno-error=\#warnings
+					> # -Wno-c++98-compat  # use of constexpr
+					$<$<CXX_COMPILER_ID:IntelLLVM>:
+					-Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
+					-Wno-enum-constexpr-conversion  # for Boost.Test
+					>
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
 					-wd161

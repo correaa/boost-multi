@@ -53,9 +53,9 @@ class fnv1a_t {
 };
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(fill_1d_a) {
 		namespace multi = boost::multi;
 

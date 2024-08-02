@@ -3,38 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
-//  #pragma clang diagnostic ignored "-Wconversion"
-//     #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-//     #pragma clang diagnostic ignored "-Wswitch-default"
-//  #pragma clang diagnostic ignored "-Wundef"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-//  #pragma GCC diagnostic ignored "-Wundef"
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
-// #if defined(__clang__)
-//  #pragma clang diagnostic pop
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic pop
-// #endif
-
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
 
@@ -47,7 +15,7 @@
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	#include <memory_resource>  // for monotonic_buffer_...
 #endif
-#include <new>      // for operator new
+#include <new>      // for operator new  // NOLINT(misc-include-cleaner)
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
@@ -59,12 +27,12 @@ using small_array = multi::static_array<T, D, multi::detail::static_allocator<T,
 // https://godbolt.org/z/d8ozWahna
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(static_array_allocator) {
-	multi::array<int, 2>                             ma({2, 3}, 99);
-	multi::static_array<int, 2, std::allocator<int>> sma(ma(), std::allocator<int>{});
+	multi::array<int, 2> const                            ma({2, 3}, 99);
+	multi::static_array<int, 2, std::allocator<int>> const sma(ma(), std::allocator<int>{});
 	BOOST_TEST( sma == ma );
 }
 
@@ -83,11 +51,11 @@ BOOST_AUTO_TEST_CASE(empty_stride) {
 }
 
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays_check_size) {
-	multi::array<int, 2> ma;
+	multi::array<int, 2> const ma;
 	BOOST_TEST( ma.size() == 0 );
 	BOOST_TEST( ma.num_elements() == 0 );
 
-	std::vector<multi::array<int, 2>> va(1);
+	std::vector<multi::array<int, 2>> va(1);  // NOLINT(fuchsia-default-arguments-calls) vector
 
 	BOOST_TEST( va[0].size() == 0 );
 }
@@ -138,15 +106,15 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces)
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-				  // NOXXXLINT(fuchsia-default-arguments-calls)
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 	std::vector<multi::array<int, 2>> const wa = {
 		multi::array<int, 2>({0, 0}, 0),
 		multi::array<int, 2>({1, 1}, 1),
 		multi::array<int, 2>({2, 2}, 2),
 	};
 #else
+	// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 	std::vector<multi::array<int, 2>> const wa = {
-		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
 		multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
 		multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
@@ -169,6 +137,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 }
 
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
+	// NOLINTBEGIN(fuchsia-default-arguments-calls)  // string uses default parameter
 	std::vector<multi::array<std::string, 2>> va;
 	std::transform(
 		begin(multi::iextension(3)), end(multi::iextension(3)),
@@ -188,14 +157,12 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 	std::vector<multi::array<std::string, 2>> const wa = {
-		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<std::string, 2>({0, 0}, "0"s),
 		multi::array<std::string, 2>({1, 1}, "1"s),
 		multi::array<std::string, 2>({2, 2}, "2"s),
 	};
 #else
 	std::vector<multi::array<std::string, 2>> const wa = {
-		// testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
 		multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
 		multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
@@ -218,6 +185,8 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 	);
 
 	BOOST_TEST( ua == va );
+
+	// NOLINTEND(fuchsia-default-arguments-calls)  // string uses default parameter
 }
 
 // TODO(correaa) make this code work with nvcc compiler (non device function called from device host through adl uninitialized_fill)

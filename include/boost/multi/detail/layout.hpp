@@ -5,12 +5,12 @@
 #ifndef BOOST_MULTI_DETAIL_LAYOUT_HPP
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 #include <boost/multi/detail/index_range.hpp>    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
 #include <boost/multi/detail/operators.hpp>      // IWYU pragma: export  // for equality_comparable
 #include <boost/multi/detail/serialization.hpp>  // IWYU pragma: export  // for archive_traits
 #include <boost/multi/detail/tuple_zip.hpp>      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
 #include <boost/multi/detail/types.hpp>          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
-#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <algorithm>                             // for max
 #include <array>                                 // for array
@@ -430,7 +430,7 @@ struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cer
 	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
 };
 
-namespace std {
+namespace std {  // NOLINT(cert-dcl58-cpp)
 
 // clang wants tuple_size to be a class, not a struct with -Wmismatched-tags
 #if !defined(__GLIBCXX__) || (__GLIBCXX__ <= 20190406)

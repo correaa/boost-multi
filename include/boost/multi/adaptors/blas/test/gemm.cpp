@@ -10,8 +10,8 @@
 #include <boost/multi/array.hpp>                     // for layout_t, array
 
 // IWYU pragma: no_include <cmath>  // for abs
-#include <cstdlib>  // for abs
 #include <complex>   // for complex, operator*
+#include <cstdlib>  // for abs
 #include <iterator>  // for begin, size
 // IWYU pragma: no_include <memory>  // for allocator
 // IWYU pragma: no_include <exception>  // for exception
@@ -20,11 +20,11 @@ namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 // #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_T_sub) {
 		namespace blas = multi::blas;
 

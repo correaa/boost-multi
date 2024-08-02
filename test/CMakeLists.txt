@@ -394,7 +394,7 @@ else()
 	# -Wdeprecated-volatile (clang 11, not in clang 9)
 	-Wdeprecated-writable-strings
 	-Wdirect-ivar-access
-	-Wdisabled-macro-expansion  # not compatible with Boost.Test
+	-Wdisabled-macro-expansion
 	-Wdisabled-optimization
 	-Wdiscard-qual
 	-Wdistributed-object-modifiers
@@ -457,7 +457,7 @@ else()
 	# -Wfuture-attribute-extensions (clang 15, not in clang 13)
 	# -Wfuture-compat
 	# -Wgcc-compat
-	-Wglobal-constructors  # not compatible with Boost.Test
+	-Wglobal-constructors
 	# -Wglobal-isel (clang 11, not in clang 9)
 	-Wgnu -Wgnu-alignof-expression -Wgnu-anonymous-struct -Wgnu-array-member-paren-init -Wgnu-auto-type -Wgnu-binary-literal -Wgnu-case-range -Wgnu-complex-integer -Wgnu-compound-literal-initializer -Wgnu-conditional-omitted-operand -Wgnu-designator -Wgnu-empty-initializer -Wgnu-empty-struct -Wgnu-flexible-array-initializer -Wgnu-flexible-array-union-member -Wgnu-folding-constant -Wgnu-imaginary-constant -Wgnu-include-next
 	# -Wgnu-inline-cpp-without-extern (clang 11, not in clang 9)
@@ -602,7 +602,8 @@ else()
 	-Woverride-module -Woverriding-method-mismatch -Woverriding-t-option
 	-Wpacked
 	# -Wpadded (ask for aligment)
-	-Wparentheses -Wparentheses-equality
+	-Wparentheses
+	-Wparentheses-equality
 	-Wpartial-availability
 	# -Rpass -Rpass-analysis
 	-Wpass-failed
@@ -770,7 +771,7 @@ else()
 	-Wunused -Wunused-argument
 	# -Wunused-but-set-parameter -Wunused-but-set-variable (clang 13, not in clang 11)
 	-Wunused-command-line-argument -Wunused-comparison -Wunused-const-variable -Wunused-exception-parameter -Wunused-function -Wunused-getter-return-value -Wunused-label -Wunused-lambda-capture -Wunused-local-typedef -Wunused-local-typedefs -Wunused-macros -Wunused-member-function -Wunused-parameter -Wunused-private-field -Wunused-property-ivar -Wunused-result -Wunused-template -Wunused-value -Wunused-variable -Wunused-volatile-lvalue
-	-Wused-but-marked-unused  # not compatible with Boost.Test
+	-Wused-but-marked-unused
 	-Wuser-defined-literals -Wuser-defined-warnings
 	-Wvarargs
 	-Wvariadic-macros
@@ -877,14 +878,12 @@ else()
 		# target_link_libraries(main PRIVATE multi)
 		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
-		target_compile_definitions(main PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi main")
 
-		target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
+		# target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
 		if(NOT DEFINED ENABLE_CIRCLE)
 			target_compile_options(main PRIVATE ${WARNS})
 		else()
-			target_compile_definitions(main PRIVATE "BOOST_TEST_DYN_LINK=1")
 			target_compile_options    (main PRIVATE -Werror -Wall)
 		endif()
 		add_test(NAME main COMMAND $<TARGET_FILE:main>)
@@ -899,9 +898,6 @@ else()
 				set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 			endif()
 
-			# target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
-			# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
-
 			target_link_libraries(${TEST_EXE} PRIVATE multi)
 			target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 			# target_link_libraries     (${TEST_EXE} PRIVATE multi Boost::boost   )
@@ -910,16 +906,10 @@ else()
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
 			endif()
 
-			target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
-			target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_DYN_LINK=1)
-			target_compile_definitions(${TEST_EXE} PUBLIC BOOST_NO_CXX98_FUNCTION_BASE=1)
-
-			target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
-
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
 			else()
-				target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
+				# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
 				target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
 			endif()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
