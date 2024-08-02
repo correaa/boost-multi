@@ -190,7 +190,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		for(auto i = 0; i != 4; ++i) {
 			for(auto j = i; j != 4; ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)  // only compare upper part of the reference array (the other half is garbage)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
-				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);  // NOLINT(readability-simplify-boolean-exp)
+				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);  // NOLINT(readability-simplify-boolean-expr)
 			}
 		}
 	}
