@@ -46,7 +46,7 @@ template<class T, multi::dimensionality_type D> using marray = multi::array<T, D
 constexpr auto exts                                          = multi::extensions_t<4>({6, 12, 24, 12});
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 multi::fftw::environment const env;

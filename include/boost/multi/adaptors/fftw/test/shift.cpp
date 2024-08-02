@@ -1,4 +1,6 @@
 // Copyright 2022-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
@@ -52,7 +54,7 @@ namespace multi = boost::multi;
 namespace fftw  = multi::fftw;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	fftw::environment const env;

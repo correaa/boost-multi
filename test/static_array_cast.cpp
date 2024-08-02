@@ -103,7 +103,7 @@ template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class Ptr> using negater = involuter<Ptr, std::negate<>>;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(multi_array_involution) {

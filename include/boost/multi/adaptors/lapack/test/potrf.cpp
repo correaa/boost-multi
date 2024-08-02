@@ -74,7 +74,7 @@ auto randomize(M&& arr) -> M&& {
 }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_TEST_CLOSE(X, Y, ToL) BOOST_TEST_LT(std::abs((X) - (Y)), (ToL))
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

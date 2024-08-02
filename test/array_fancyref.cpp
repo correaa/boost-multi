@@ -3,43 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
-//  #pragma clang diagnostic ignored "-Wconversion"
-//     #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-//     #pragma clang diagnostic ignored "-Wswitch-default"
-//  #pragma clang diagnostic ignored "-Wundef"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wundef"
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-// #elif defined(_MSC_VER)
-//  #pragma warning(push)
-//  #pragma warning(disable : 4285)  // Recursive return type for fancy_ptr if infix notationis applied
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
-// #if defined(__clang__)
-//  #pragma clang diagnostic pop
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic pop
-// #elif defined(_MSC_VER)
-//  #pragma warning(pop)
-// #endif
-
 #include <boost/multi/array.hpp>  // for array, array_iterator, static_array
 
 #include <cstddef>      // for size_t, nullptr_t, ptrdiff_t
@@ -170,7 +133,7 @@ namespace boost::multi {
 
 template<class It, class T>
 auto copy(It first, It last, fancy::ptr<T> dest) {
-	return copy(first, last, multi::array_iterator<T, 1, fancy::ptr<T>>{ dest });
+	return copy(first, last, multi::array_iterator<T, 1, fancy::ptr<T>>{dest});
 	//  std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
 	//  return dest;
 }
@@ -187,26 +150,21 @@ auto copy(It /*first*/, It /*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> 
 	return dest;
 }
 
-//  template<class Alloc, class It, class T> // custom copy 2D (aka double strided copy)
-//  auto uninitialized_copy(Alloc&, It first, It last, multi::array_iterator<T, 2, fancy::ptr<T>> const& dest){
-//     std::cerr << "2D uninitialized_copy(...) calls raw copy 2D" << std::endl;
-//    return copy(first, last, dest);
-//  }
-
 }  // end namespace boost::multi
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-BOOST_AUTO_TEST_CASE(multi_fancy) {
-	namespace multi = boost::multi;
+	BOOST_AUTO_TEST_CASE(multi_fancy) {
+		namespace multi = boost::multi;
 
-	multi::array<double, 2, fancy::allocator<double>> arr({ 5, 5 });
-	BOOST_TEST( arr.size() == 5 );
-	BOOST_TEST( arr[1][1] == arr[2][2] );
+		multi::array<double, 2, fancy::allocator<double>> arr({5, 5});
+		BOOST_TEST( arr.size() == 5 );
+		BOOST_TEST( arr[1][1] == arr[2][2] );
 
-	multi::array<double, 2, fancy::allocator<double>> const arr2({ 0, 0 });
-	BOOST_TEST( arr2.size() == 0 );
+		multi::array<double, 2, fancy::allocator<double>> const arr2({0, 0});
+		BOOST_TEST( arr2.size() == 0 );
+	}
+	return boost::report_errors();
 }
-return boost::report_errors();}

@@ -108,7 +108,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					  -fno-common
 					  -Wpedantic
 					  -Wformat-truncation
-					  -Wno-parentheses
+					  -Wparentheses
 					  -fstack-usage> # -Wconversion
 					  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					  -fno-common

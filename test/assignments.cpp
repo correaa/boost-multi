@@ -72,7 +72,7 @@ template<class T>
 auto eye(multi::extensions_t<2> exts) { return eye<T>(exts, std::allocator<T>{}); }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE)
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(equality_1D) {
