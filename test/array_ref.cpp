@@ -3,38 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
-//  #pragma clang diagnostic ignored "-Wconversion"
-//  #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wundef"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-//  #pragma clang diagnostic ignored "-Wswitch-default"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-//  #pragma GCC diagnostic ignored "-Wundef"
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
-// #if defined(__clang__)
-//  #pragma clang diagnostic pop
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic pop
-// #endif
-
 #include <boost/multi/array.hpp>  // for implicit_cast, explicit_cast
 
 #include <algorithm>  // for for_each, equal
@@ -58,7 +26,7 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 namespace boost::multi {
 
@@ -154,7 +122,7 @@ auto mut_trace_generic(Array& arr) -> T {
 	return std::accumulate(diag.begin(), diag.end(), T{0});
 }
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	int arr[4][5] = {
@@ -275,7 +243,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	BOOST_TEST( diff == 0 );
 
 	BOOST_TEST( &mar.blocked(2, 4)[2] == &mar[2] );
-	for(auto idx : extension(mar.stenciled({2, 4}))) {
+	for(auto idx : extension(mar.stenciled({2, 4}))) {  // NOLINT(altera-unroll-loops)
 		BOOST_TEST( &mar.stenciled({2, 4})[idx] == &mar[idx] );
 	}
 
@@ -333,7 +301,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 
 	BOOST_TEST( &mar.reindexed(1)[1][0] == &mar[0][0] );
 
-	BOOST_TEST( sizes(mar[0].reindexed(1)) == sizes(mar[0]) );
+	BOOST_TEST( mar[0].reindexed(1).sizes() == mar[0].sizes() );
 	BOOST_TEST( mar[0].reindexed(1).extension().first() == mar[0].extension().first () + 1 );
 	BOOST_TEST( mar[0].reindexed(1).extension().last() == mar[0].extension().last() + 1 );
 

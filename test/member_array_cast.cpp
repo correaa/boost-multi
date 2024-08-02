@@ -9,6 +9,7 @@
 // IWYU pragma: no_include <utility>                          // for addressof  // bug in iwyu 14.0.6? with GNU stdlib
 #include <array>     // for array, operator==
 #include <cstddef>   // for offsetof, size_t
+#include <functional>  // for mem_fn  // IWYU pragma: keep
 #include <iterator>  // for size
 #include <memory>    // for addressof  // IWYU pragma: keep
 #include <string>    // for operator""s, allocator, char_traits
@@ -26,9 +27,9 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		using v3d = std::array<double, 3>;
 

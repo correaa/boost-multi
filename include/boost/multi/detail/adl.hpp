@@ -44,38 +44,6 @@ namespace adl { \
 }  /* end namespace multi */ \
 }  /* end namespace boost */
 
-namespace boost::multi {
-
-template<class Element>
-inline constexpr bool force_element_trivial = false;
-
-template <class Element>
-inline constexpr bool force_element_trivial_destruction = force_element_trivial<Element>;
-
-template <class Element>
-inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
-
-#ifdef _MULTI_FORCE_TRIVIAL_STD_COMPLEX
-template<class T>
-inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivial_v<T>;
-
-template<class T>
-inline constexpr bool force_element_trivial_destruction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
-
-template<class T>
-inline constexpr bool force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_destructible_v<T>;
-
-template<> inline constexpr bool force_element_trivial                     <std::complex<double>> = true;
-template<> inline constexpr bool force_element_trivial_default_construction<std::complex<double>> = true;
-template<> inline constexpr bool force_element_trivial_destruction         <std::complex<double>> = true;
-
-template<> inline constexpr bool force_element_trivial                     <std::complex<float >> = true;
-template<> inline constexpr bool force_element_trivial_default_construction<std::complex<float >> = true;
-template<> inline constexpr bool force_element_trivial_destruction         <std::complex<float >> = true;
-#endif
-
-}  // end namespace boost::multi
-
 #define BOOST_MULTI_DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 #define BOOST_MULTI_JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
@@ -318,11 +286,9 @@ class adl_uninitialized_copy_t {
 			&& (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
 		) {
 			return std::              copy(first, last, d_first);
-	    } else
+	    }
 	#endif
-		{
-			return std::uninitialized_copy(first, last, d_first);
-		}
+		return std::uninitialized_copy(first, last, d_first);
 	}
 // #if defined(__CUDACC__) || defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if defined(__CUDACC__) || defined(__HIPCC__)

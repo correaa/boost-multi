@@ -10,8 +10,8 @@
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <boost/multi/detail/adl.hpp>
-#include <boost/multi/detail/memory.hpp>
 #include <boost/multi/detail/is_trivial.hpp>
+#include <boost/multi/detail/memory.hpp>
 
 #include <memory>  // for std::allocator_traits
 #include <tuple>  // needed by a deprecated function
@@ -50,7 +50,7 @@ struct array_allocator {
 	using pointer_         = typename allocator_traits::pointer;
 
  protected:
-	constexpr auto alloc() & -> allocator_type& { return alloc_; }
+	constexpr auto alloc() & -> auto& { return alloc_; }
 	constexpr auto alloc() const& -> allocator_type const& { return alloc_; }
 
 	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
@@ -196,7 +196,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr static_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}, ref(std::exchange(other.base_, nullptr), other.extensions()) {
 		std::move(other).layout_mutable() = typename static_array::layout_type(typename static_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
-		assert(other.stride() != 0);
 	}
 
 	constexpr explicit static_array(decay_type&& other) noexcept
@@ -467,9 +466,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto begin() & -> typename static_array::iterator { return ref::begin(); }
 	constexpr auto end() & -> typename static_array::iterator { return ref::end(); }
 
-	// using ref::operator[];
-
- public:
 	using ref::operator[];
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename static_array::const_reference { return ref::operator[](idx); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
@@ -1039,6 +1035,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc> {
+	~array() = default;
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
 		std::is_same_v<
@@ -1343,8 +1340,6 @@ struct array : static_array<T, D, Alloc> {
 		}
 		return std::move(*this);
 	}
-
-	template<class... Ts> static void what(Ts&&...) = delete;
 
 	auto reextent(typename array::extensions_type const& extensions) & -> array& {
 		if(extensions == this->extensions()) {

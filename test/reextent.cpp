@@ -30,9 +30,9 @@ constexpr auto comp_equal(T left, U right) noexcept -> bool {
 }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(array_reextent) {
 		multi::array<int, 2> arr({2, 3});
 		BOOST_TEST( num_elements(arr) == 6 );
@@ -270,7 +270,7 @@ int main() {
 		BOOST_TEST( std::get<1>(Aext[3][5]) == 5 );
 
 		for(int i = 0; i != 3; ++i) {
-			for(int j = 0; j != 5; ++j) {
+			for(int j = 0; j != 5; ++j) {  // NOLINT(altera-unroll-loops)
 				auto [ip, jp] = Aext[i][j];
 				BOOST_TEST(ip == i);
 				BOOST_TEST(jp == j);

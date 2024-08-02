@@ -5,7 +5,6 @@
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/operations.hpp>  // for transposed, T
 #include <boost/multi/adaptors/blas/syrk.hpp>        // for syrk
-// UWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas
 // IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
 
 #include <boost/multi/array.hpp>                     // for array, layout_t
@@ -15,9 +14,9 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_blas_syrk_real) {
 		// NOLINTNEXTLINE(readability-identifier-length)
 		multi::array<double, 2> const a = {

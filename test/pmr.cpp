@@ -10,6 +10,7 @@
 #include <cmath>  // for abs  // IWYU pragma: keep
 // IWYU pragma: no_include <cstdlib>                          // for abs
 #include <cstdint>     // for int64_t
+#include <functional>  // for plus  // IWYU pragma: keep
 #include <iostream>    // for char_traits, basic_ostream, oper...
 #include <iterator>    // for size, data
 
@@ -22,9 +23,9 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(dummy_test) {
 }
 
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		BOOST_TEST( buffer[ 0] == '0' );  // buffer is intact when initializing without value
 		BOOST_TEST( buffer[13] == '3' );
 
-		BOOST_TEST( arr.num_elements() == 2*3 );
+		BOOST_TEST( arr.num_elements() == 2*3L );
 		//  BOOST_TEST( arr[0][0] != 0.0 );
 		//  BOOST_TEST( arr[1][2] != 0.0 );
 	}
@@ -96,7 +97,7 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 
 	auto acc = std::transform_reduce(
 		exts.begin(), exts.end(), int64_t{ 0 },
-		std::plus<>{},
+		std::plus{},
 		[&resp](auto idx) {
 			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
 				multi::extensions_t<2>{ 1000 - idx % 10, 1000 + idx % 10 },  // MSVC needs multi::extensions_t<2>

@@ -7,7 +7,7 @@
 
 #include <algorithm>   // for is_sorted, stable_sort
 #include <array>       // for array
-#include <functional>  // for __cpp_lib_ranges  // IWYU pragma: keep
+// #include <functional>  // for __cpp_lib_ranges  // IWYU pragma: keep
 #include <iterator>    // for begin, end
 #include <vector>      // for vector
 // IWYU pragma: no_include <version>  // for __cpp_lib_ranges
@@ -18,9 +18,9 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* CasenamE;
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-int main() {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
 		multi::array<int, 1> const tt = {1, 1, 1};
 		multi::array<int, 1> const uu = {2, 2, 2};
@@ -39,12 +39,12 @@ int main() {
 
 #if defined(__cpp_lib_ranges)
 	BOOST_AUTO_TEST_CASE(sort_2D) {
-		multi::array<int, 2> A = {
+		multi::array<int, 2> A2D = {
 			{3, 3, 3},
 			{2, 2, 2},
 			{1, 1, 1},
 		};
-		BOOST_TEST( !std::ranges::is_sorted(A) );
+		BOOST_TEST( !std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		using it = boost::multi::array_iterator<int, 2, int*>;
 
@@ -54,12 +54,6 @@ int main() {
 		using Out = it;
 
 		static_assert(std::indirectly_readable<In>);
-
-		*A.begin() = A[0];
-
-		// const_cast<const std::iter_reference_t<Out>&&>(*A.begin()) = A[0];  // std::forward<T>(t);
-		// const_cast<const std::iter_reference_t<Out>&&>(*std::forward<Out>(o)) =
-		//             std::forward<T>(t);
 
 		static_assert(std::indirectly_writable<Out, multi::subarray<int, 1>>);
 		static_assert(std::indirectly_writable<Out, std::iter_rvalue_reference_t<In>>);
@@ -74,33 +68,32 @@ int main() {
 		static_assert(std::permutable<it>);
 
 		// std::sort(A.begin(), A.end());
-		std::ranges::sort(A);
+		std::ranges::sort(A2D);  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(  std::ranges::is_sorted(A) );
+		BOOST_TEST( std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 	}
 
 	BOOST_AUTO_TEST_CASE(sort_strings) {
-		auto A = multi::array<char, 2>{
+		auto A2D = multi::array<char, 2>{
 			{'S', 'e', 'a', 'n', ' ', ' '},
 			{'A', 'l', 'e', 'x', ' ', ' '},
 			{'B', 'j', 'a', 'r', 'n', 'e'},
 		};
-		BOOST_TEST( !std::ranges::is_sorted(A) );
+		BOOST_TEST( !std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 
-		std::ranges::sort(A);
+		std::ranges::sort(A2D);  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(  std::ranges::is_sorted(A));
-
+		BOOST_TEST(  std::ranges::is_sorted(A2D));  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST((
-		A == multi::array<char, 2>{
-			{'A', 'l', 'e', 'x', ' ', ' '},
-			{'B', 'j', 'a', 'r', 'n', 'e' },
-			{'S', 'e', 'a', 'n', ' ', ' '},
-		}
-	));
+			A2D == multi::array<char, 2>{
+				{'A', 'l', 'e', 'x', ' ', ' '},
+				{'B', 'j', 'a', 'r', 'n', 'e' },
+				{'S', 'e', 'a', 'n', ' ', ' '},
+			}
+		));
 
-		std::ranges::sort(~A);
-		BOOST_TEST(std::ranges::is_sorted(~A));
+		std::ranges::sort(~A2D);  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST(std::ranges::is_sorted(~A2D));  // NOLINT(fuchsia-default-arguments-calls)
 
 		static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
 	}
@@ -108,7 +101,7 @@ int main() {
 
 	BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
 		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );
+		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::array<double, 2> d2D = {
 			{150.0, 16.0, 17.0, 18.0, 19.0},
@@ -116,10 +109,10 @@ int main() {
 			{100.0, 11.0, 12.0, 13.0, 14.0},
 			{ 50.0,  6.0,  7.0,  8.0,  9.0},
 		};
-		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );
+		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		std::stable_sort(begin(d2D), end(d2D));
-		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );
+		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST((
 		d2D == decltype(d2D){

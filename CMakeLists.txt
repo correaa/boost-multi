@@ -48,10 +48,9 @@ message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
     VERSION 0.80.1
     LANGUAGES CXX)
 
-  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+  # set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
   message(STATUS "Boost.Multi: standalone mode ON")
-
 
   # include_directories(${PROJECT_SOURCE_DIR}/include)  # workaround for vscode to detect headers https://stackoverflow.com/a/68139743/225186
 
