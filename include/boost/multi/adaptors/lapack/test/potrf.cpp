@@ -190,7 +190,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		for(auto i = 0; i != 4; ++i) {
 			for(auto j = i; j != 4; ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)  // only compare upper part of the reference array (the other half is garbage)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
-				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
+				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);  // NOLINT(readability-simplify-boolean-exp)
 			}
 		}
 	}
@@ -227,8 +227,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
 		print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
 
-		// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
-		for(auto i = 0; i != AA.size(); ++i) {
+		for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
 			for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
 				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
