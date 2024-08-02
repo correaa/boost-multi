@@ -251,7 +251,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)) == irng.size()*(irng.size()-1)/2 );
 
 		auto const sum_of_cubes = [](auto&& acc, auto const& elem) {
-			return acc + elem * elem * elem;
+			return std::forward<decltype(acc)>(acc) + elem * elem * elem;
 		};
 		BOOST_TEST( std::accumulate(begin(irng), end(irng), multi::index_range::value_type{}, sum_of_cubes) > 0 );
 	}

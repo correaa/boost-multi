@@ -2316,7 +2316,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	using decay_type = typename types::element;
 
-	BOOST_MULTI_HD constexpr auto operator()() const& -> element_ref {return *(this->base_);}
+	BOOST_MULTI_HD constexpr auto operator()() const& -> element_ref {return *(this->base_);}  // NOLINT(hicpp-explicit-conversions)
 
 	constexpr operator element_ref ()     && noexcept {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_ref ()      & noexcept {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
