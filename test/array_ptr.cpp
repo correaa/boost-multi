@@ -16,7 +16,7 @@
 template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void*(CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	namespace multi = boost::multi;
