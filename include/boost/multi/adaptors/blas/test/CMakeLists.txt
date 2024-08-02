@@ -143,7 +143,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wpedantic
 					-Wformat-truncation
 					-Wno-unknown-pragmas
-					-Wno-parentheses
+					-Wparentheses
 					> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					# -Weverything
@@ -171,7 +171,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmain
 					-Wnarrowing
 					-Wnonnull
-					-Wno-parentheses
+					-Wparentheses
 					-Wpointer-sign
 					-Wreorder
 					-Wno-return-type

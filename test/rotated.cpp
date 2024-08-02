@@ -38,7 +38,7 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 #endif
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE)
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 #ifndef _MSC_VER  // msvc 14.40 gets confused with constexpr

@@ -1,4 +1,6 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/adaptors/blas/axpy.hpp>  // for operator-
 #include <boost/multi/adaptors/blas/core.hpp>  // for gemv, context, dot, nrm2
@@ -47,7 +49,7 @@ auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identi
 // #endif
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 

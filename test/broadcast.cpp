@@ -8,7 +8,7 @@
 #include <algorithm>  // for std::ranges::fold_left
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) [[maybe_unused]] void* (CasenamE);
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 namespace multi = boost::multi;
 
