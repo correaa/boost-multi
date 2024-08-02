@@ -21,6 +21,8 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 
  public:
 	n_random_complex(n_random_complex const&) = delete;
+	auto operator=(n_random_complex const&) -> n_random_complex& = delete;
+
 	explicit n_random_complex(std::size_t n) : n_{n} {}
 
 	class iterator : public boost::multi::random_access_iterator<iterator, std::complex<T>, std::complex<T>, void> {
