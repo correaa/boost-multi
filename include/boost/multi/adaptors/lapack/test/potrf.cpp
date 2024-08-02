@@ -230,7 +230,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		for(auto i = 0; i != AA.size(); ++i) {  // NOLINT(altera-id-dependent-backward-branch)
 			for(auto j = i; j != std::get<1>(C.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				BOOST_TEST_CLOSE(real(A_gold[i][j]), real(C[i][j]), 0.0000001);
-				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);
+				BOOST_TEST_CLOSE(imag(A_gold[i][j]), imag(C[i][j]), 0.0000001);  // NOLINT(readability-simplify-boolean-expr)
 			}
 		}
 	}
