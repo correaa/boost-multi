@@ -3,6 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 // IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // for context
+// IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref, operator==
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for nrm2, nrm2_ref
 #include <boost/multi/adaptors/complex.hpp>    // for complex, operator*
