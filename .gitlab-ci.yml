@@ -419,7 +419,7 @@ clang++-latest tidy iwyu:
     - iwyu --version
     - CXX=clang++ cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `#-DCMAKE_CXX_CLANG_TIDY=clang-tidy` -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - clang-tidy -format-style=file -header-filter=. -p .
+    - clang-tidy `#-format-style=file` -header-filter=. -p .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
