@@ -163,7 +163,7 @@ else()
 	-Wpacked -Wpacked-bitfield-compat
 	# -Wpacked-not-aligned # (gcc 8, not 7)
 	# -Wpadded # (disallows structs that need padding for alignment)
-	-Wno-parentheses
+	-Wparentheses
 	#-Wpessimizing-move # (gcc 11, not in gcc 8)
 	-Wplacement-new  #=1  -Wplacement-new=<0,2>
 	-Wpmf-conversions
@@ -905,12 +905,6 @@ else()
 				target_link_libraries     (${TEST_EXE} PRIVATE TBB::tbb)
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
 			endif()
-
-			# target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
-			# target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_DYN_LINK=1)
-			# target_compile_definitions(${TEST_EXE} PUBLIC BOOST_NO_CXX98_FUNCTION_BASE=1)
-
-			# target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
