@@ -2082,7 +2082,7 @@ Internal representation (memory ordering) can still be different, and this could
 
 Range notation such as `1:2` is replaced by `{0, 2}`, which takes into account both the difference in the start index and the half-open interval notation in the C++ conventions.
 Stride notation such as `1:10:2` (i.e. from first to tenth included, every 2 elements), is replaced by `{0, 10, 2}`.
-Complete range interval (single `:` notation) is replaced by `multi::_`, which can be used simply as `_` after the declaration `using multi::_;``.
+Complete range interval (single `:` notation) is replaced by `multi::_`, which can be used simply as `_` after the declaration `using multi::_;`.
 
 Unlike FORTRAN, Multi doesn't provide algebraic operators, using algorithms is encouraged instead.
 For example a FORTRAN statement like `A = A + B` (one-dimensional arrays) is translated as
@@ -2108,5 +2108,14 @@ It is possible to use C++ operator overloading (implemented as standalone functi
 Also it can become inefficient is implemented naively.
 
 Algorithms like `transform` offer a high degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
+
+Simple loops can be mapped as well, taking into account indexing differences:
+```
+do i = 1, 5           ! for(int i = 0; i != 5; ++i) {
+	do j = 1, 5       !     for(int j = 0; j != 5; ++j) {
+		D2D(i, j) = 0 !         D2D(i, j) = 0;
+	end do            !     }
+end do                ! }
+```
 
 [(live)](https://godbolt.org/z/77onne46W)
