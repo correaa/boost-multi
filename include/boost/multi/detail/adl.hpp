@@ -601,7 +601,7 @@ inline constexpr adl_alloc_uninitialized_copy_n_t adl_alloc_uninitialized_copy_n
 
 class alloc_uninitialized_move_n_t {
 // TODO(correaa) : fallback to no alloc version
-	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const {return(                 xtd::  alloc_uninitialized_move_n(std::forward<As>(args)...));}
+	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const {return(                             xtd::  alloc_uninitialized_move_n(std::forward<As>(args)...));}
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     alloc_uninitialized_move_n(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).alloc_uninitialized_move_n(std::forward<As>(args)...))
 
