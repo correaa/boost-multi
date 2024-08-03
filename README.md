@@ -2092,7 +2092,7 @@ std::transform(A.begin(), A.end(), B.begin(), A.begin(), std::plus{});  // valid
 ```
 
 Note that this is correct only one-dimensional arrays.
-To be more generally in dimensionality we can write:
+To be more general in dimensionality we can write:
 
 ```cpp
 auto&&      Aelems = A.elements();
@@ -2105,12 +2105,12 @@ std::ranges::transform(Aelems, Belems, Aelems.begin(), std::plus{});  // alterna
 A FORTRAN statement like `C = 2.0*C` is rewritten as `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) {return 2.0*e;});`.
 
 It is possible to use C++ operator overloading (implemented as standalone functions such as `operartor+=` or `operator*=`); however, this possibility can become unwindenly complicated beyond simple cases.
-Also it can become inefficient is implemented naively.
+Also it can become inefficient if implemented naively.
 
 Algorithms like `transform` offer a high degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
 
 Simple loops can be mapped as well, taking into account indexing differences:
-```
+```fortran
 do i = 1, 5           ! for(int i = 0; i != 5; ++i) {
 	do j = 1, 5       !     for(int j = 0; j != 5; ++j) {
 		D2D(i, j) = 0 !         D2D(i, j) = 0;
