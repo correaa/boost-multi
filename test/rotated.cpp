@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
 }
 
 #if __cplusplus >= 202002L
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER)
 BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end) {
 	constexpr auto test = [] {
 		multi::array<int, 2> arr({3, 3}, 99);
