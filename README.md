@@ -2052,39 +2052,61 @@ Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://
 
 # Appendix: Multi for FORTRAN programmers
 
-This table summarizes simple cases translated from FORTRAN to C++ using the library.
+This section summarizes simple cases translated from FORTRAN syntax to C++ using the library.
 The library strives to give a familiar feeling to those who use arrays in FORTRAN.
+Arrays can be indexes arrays using square-brakers or using parenthesis, which would be more familiar to FORTRAN syntax.
 The most significant difference is that in FORTRAN, array indices start at `1` by default, while in Multi, they start at `0` by default, following C++ conventions.
 Like in FORTRAN, for simple types (e.g., numeric), Multi arrays are not initialized automatically; such initialization needs to be explicit.
 
 |                             | FORTRAN                                          | C++ Multi                                            |
 |---                          | ---                                              | ---                                                  |
-| Declaration/Construction    | `real, dimension(5) :: numbers` (at top)         | `multi::array<double, 1> numbers(5);` (at scope).    |
-| Initialization              | `real, dimension(5) :: numbers = (/ 1.0, 2.0 /)` | `multi::array<double, 1> numbers = {1.0, 2.0};`      |
-| Element assignment.         | `numbers(2) = 99.0`                              | `numbers[1] = 99.0;` (or `numbers(1)`)               |
-| Element access (printing)   | `Print *, numbers(2)`                            | `std::cout << numbers[1] << '\n';` (or `numbers(1)`) |
-| Assignment.                 | `DATA numbers / 10.0 20.0 /`                     | `numbers = {10.0, 20.0};`                            |
+| Declaration/Construction 1D | `real, dimension(2) :: numbers` (at top)         | `multi::array<double, 1> numbers(2);` (at scope)     |
+| Initialization (2 elements) | `real, dimension(2) :: numbers = [ 1.0, 2.0 ]`   | `multi::array<double, 1> numbers = { 1.0, 2.0 };`    |
+| Element assignment          | `numbers(2) = 99.0`                              | `numbers(1) = 99.0;` (or `numbers[1]`)               |
+| Element access (print 2nd)  | `Print *, numbers(2)`                            | `std::cout << numbers(1) << '\n';`                   |
+| Initialization              | `DATA numbers / 10.0 20.0 /`                     | `numbers = {10.0, 20.0};`                            |
 
+In the more general case for the dimensionality, we have the following correspondance:
 
-Unlike FORTRAN, Multi doesn't provide algebraic operators, using algorithms is encoraged instead.
+|                              | FORTRAN                                          | C++ Multi                                            |
+|---                           | ---                                              | ---                                                  |
+| Construction 2D (3 by 3)     | `real*8 :: A2D(3,3)` (at top)                    | `multi::array<double, 2> A2D({3, 3});` (at scope)    |
+| Construction 2D (2 by 2)     | `real*8 :: B2D(2,2)` (at top)                    | `multi::array<double, 2> B2D({2, 2});` (at scope)    |
+| Construction 1D (3 elements) | `real*8 :: v1D(3)`   (at top)                    | `multi::array<double, 2> v1D({3});` (at scope)       |
+| Assign the 1st column of A2D | `v1D(:) = A2D(:,1)`                              | `v1( _ ) = A2D( _ , 0 );`                            | 
+| Assign the 1st row of A2D    | `v1D(:) = A2D(1,:)`                              | `v1( _ ) = A2D( 0 , _ );`                            |
+| Assign upper part of A2D     | `B2D(:,:) = A2D(1:2,1:2)`                        | `B2D( _ , _ ) = A2D({0, 2}, {0, 2});`                |
+
+Note that these correspondences are notationally logical.
+Internal representation (memory ordering) can still be different, and this could affect operations that interpret 2D arrays as contiguous elements in memory.
+
+Range notation such as `1:2` is replaced by `{0, 2}`, which takes into account both the difference in the start index and the half-open interval notation in the C++ conventions.
+Stride notation such as `1:10:2` (i.e. from first to tenth included, every 2 elements), is replaced by `{0, 10, 2}`.
+Complete range interval (single `:` notation) is replaced by `multi::_`, which can be used simply as `_` after the declaration `using multi::_;``.
+
+Unlike FORTRAN, Multi doesn't provide algebraic operators, using algorithms is encouraged instead.
 For example a FORTRAN statement like `A = A + B` (one-dimensional arrays) is translated as
 
 ```cpp
-std::transform(A.begin(), A.end(), B.begin(), A.begin(), std::plus<>{});  // valid for 1D arrays only
+std::transform(A.begin(), A.end(), B.begin(), A.begin(), std::plus{});  // valid for 1D arrays only
 ```
 
 Note that this is correct only one-dimensional arrays.
 To be more generally in dimensionality we can write:
 
 ```cpp
-std::transform(A.elements().begin(), A.elements().end(), B.elements().begin(), A.elements().begin(), std::plus<>{});  // valid for arbitrary dimension
+auto&&      Aelems = A.elements();
+auto const& Belems = B.elements();
+std::transform(Aelems.begin(), A.elems.end(), Belems.begin(), Aelems.begin(), std::plus{});  // valid for arbitrary dimension
 
-std::ranges::transform(A.elements(), B.elements(), A.elements().begin(), std::plus<>{});  // alternative using C++20 ranges
+std::ranges::transform(Aelems, Belems, Aelems.begin(), std::plus{});  // alternative using C++20 ranges
 ```
 
 A FORTRAN statement like `C = 2.0*C` is rewritten as `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) {return 2.0*e;});`.
 
-It is possible to use C++ operator overloading (implemented as standalone functions); however, this can become unwindenly complicated beyond simple cases.
-Algorithms like `transform` offer a high degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a level of flexibility that can be invaluable.
+It is possible to use C++ operator overloading (implemented as standalone functions such as `operartor+=` or `operator*=`); however, this possibility can become unwindenly complicated beyond simple cases.
+Also it can become inefficient is implemented naively.
 
-[(live)](https://godbolt.org/z/P3zx5xh86)
+Algorithms like `transform` offer a high degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
+
+[(live)](https://godbolt.org/z/77onne46W)
