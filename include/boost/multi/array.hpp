@@ -278,9 +278,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 			static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t(exts).num_elements()) ,
 			nullptr
 		)
-	)
-	{
-		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
+	) {
+		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type>) {
+			array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
+		} else {  // this workaround allows constexpr arrays for simple types
+		                           adl_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
+		}
 	}
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extensions()), std::enable_if_t<std::is_convertible_v<ValueType, typename static_array::value_type>, int> =0>

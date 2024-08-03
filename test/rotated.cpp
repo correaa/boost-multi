@@ -83,19 +83,19 @@ BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D) {
 	BOOST_TEST(test);
 }
 
-// vvv this exposes UB and need for extra buffer
-// #if __cplusplus >= 202002L
-// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end) {
-//  constexpr auto test = [] {
-//      multi::array<int, 2> arr(multi::array<int, 2>::extensions_type{3, 3});
-
-//      return arr.rotated()[1].end() != arr.rotated()[1].begin();
-//  }();
-//  BOOST_TEST(test);
-// }
-// #endif
-
+#if __cplusplus >= 202002L
+#if defined(__GNUC__) && !defined(__clang__)
+BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end) {
+	constexpr auto test = [] {
+		multi::array<int, 2> arr({3, 3}, 99);
+        return arr.rotated()[1].end() != arr.rotated()[1].begin();
+	}();
+	BOOST_TEST(test);   
+}
 #endif
+#endif
+
+#endif  // MSVC
 
 BOOST_AUTO_TEST_CASE(multi_2d_const) {
 	multi::array<int, 2> const arr = {
