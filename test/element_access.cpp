@@ -284,5 +284,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr3[0][0][0] == 88 );  // should not compile
 	}
 
+	{
+		multi::array<double, 2> const A2D({3, 3}, 11);
+		multi::array<double, 2> B2D({2, 2}, 22);
+		multi::array<double, 1> v1D(3, 33);
+
+		using boost::multi::_;
+		v1D( _ )     = A2D(   _  ,   0   );  // v1D() = A2D( _ , 0);
+		v1D( _ )     = A2D(   0  ,   _   );  // v1D() = A2D( 0 )   ;
+		B2D( _ , _ ) = A2D({0, 2}, {0, 2});  // B2D() = A2D({0, 2}, {0, 2});
+	}
+
 	return boost::report_errors();
 }
