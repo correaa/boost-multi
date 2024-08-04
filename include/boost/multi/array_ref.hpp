@@ -2113,7 +2113,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
 
 template<class Element, typename Ptr, bool IsConst>
-struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inheritance)
+struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
 : boost::multi::iterator_facade<
 	array_iterator<Element, 1, Ptr, IsConst>,
 	Element, std::random_access_iterator_tag,
