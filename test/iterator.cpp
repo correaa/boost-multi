@@ -23,6 +23,10 @@ template<class Array> auto take(Array&& array) -> auto& { return std::forward<Ar
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(iterator_1d) {
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<1>>));
+
 		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 1>>));
 		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 1>>));
 		BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 1>>));
@@ -75,6 +79,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(iterator_2d) {
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<2>>));
+
 		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 2>>));
 		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 2>>));
 		BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>));
