@@ -340,7 +340,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	// cppcheck-suppress noExplicitConstructor
 	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
-
+	
 	subarray_ptr() = default;
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
@@ -507,8 +507,9 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;  // layout_t<D - 1>
 
-	BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
-	BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
+	// BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
+	// BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
+	BOOST_MULTI_HD constexpr array_iterator() : ptr_{}, stride_{} {}  // = default;  // TODO(correaa) make = default, now it is not compiling
 
 	template<class, dimensionality_type, class, bool> friend struct array_iterator;
 
