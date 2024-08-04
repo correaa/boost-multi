@@ -411,7 +411,6 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) {return self.base();}
 
-
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> =0>
 	constexpr auto operator==(OtherSubarrayPtr const& other) const
 	->decltype((base_ == other.base_) && (layout_ == other.layout_)) {
@@ -589,7 +588,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
  private:
 	ptr_type ptr_;
-	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?  // TODO(correaa) remove to make type trivial
+	stride_type stride_;  // = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?  // TODO(correaa) remove to make type trivial
 
 	BOOST_MULTI_HD constexpr void decrement_() { ptr_.base_ -= stride_; }
 	BOOST_MULTI_HD constexpr void advance_(difference_type n) { ptr_.base_ += stride_*n; }
@@ -2155,8 +2154,8 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 
 	template<class, dimensionality_type, class, bool> friend struct array_iterator;
 
-	constexpr explicit array_iterator(std::nullptr_t nil)  : ptr_{nil} {}
-	constexpr explicit array_iterator(Ptr const& ptr) : ptr_{ptr} {}
+	// constexpr explicit array_iterator(std::nullptr_t nil)  : ptr_{nil}, stride_{} {}
+	// constexpr explicit array_iterator(Ptr const& ptr) : ptr_{ptr} {}
 
 	template<
 		class EElement, typename PPtr,
@@ -2195,7 +2194,7 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 	friend struct const_subarray<Element, 1, Ptr>;
 
 	element_ptr ptr_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
-	stride_type stride_ = {1};  // TODO(correaa) change to make it trivially default constructible
+	stride_type stride_;  // = {1};  // = {0};  // TODO(correaa) change to make it trivially default constructible
 
 	// constexpr auto distance_to_(array_iterator const& other) const -> difference_type {
 	//  assert(stride_==other.stride_ && (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -2203,19 +2202,19 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 	// }
 
  public:
-	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator {array_iterator ret{*this}; ret+=n; return ret;}
-	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> array_iterator {array_iterator ret{*this}; ret-=n; return ret;}
+	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret+=n; return ret; }
+	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret-=n; return ret; }
 
 	[[deprecated("use base() for iterator")]]
 	BOOST_MULTI_HD constexpr auto data() const -> element_ptr {return ptr_;}
 
-	BOOST_MULTI_HD constexpr auto base()              const& -> element_ptr {return ptr_;}
+	BOOST_MULTI_HD constexpr auto base()              const -> element_ptr {return ptr_;}
 
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto base(array_iterator const& self) -> element_ptr {return self.base();}
 
 	       BOOST_MULTI_HD constexpr auto stride()              const        -> stride_type {return      stride_;}
-	friend    constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
+	friend    constexpr auto stride(array_iterator const& self) -> stride_type { return self.stride_; }
 
 	#if defined(__clang__)
 	#pragma clang diagnostic push
