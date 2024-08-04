@@ -23,9 +23,13 @@ template<class Array> auto take(Array&& array) -> auto& { return std::forward<Ar
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(iterator_1d) {
-		static_assert(std::is_trivially_default_constructible_v<multi::array<double, 1>::iterator>);
-		static_assert(std::is_trivially_copy_constructible_v   <multi::array<double, 1>::iterator>);
-		static_assert(std::is_trivially_copy_assignable_v      <multi::array<double, 1>::iterator>);
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 1>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 1>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 1>>));
+
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::array<double, 1>::iterator>));
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::array<double, 1>::iterator>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::array<double, 1>::iterator>));
 
 		{
 			multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
@@ -71,11 +75,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(iterator_2d) {
-		static_assert(std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>);
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 2>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 2>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>));
 
-		// static_assert(std::is_trivially_default_constructible_v<multi::array<double, 2>::iterator>);  // TODO(correaa)
-		static_assert(std::is_trivially_copy_constructible_v   <multi::array<double, 2>::iterator>);
-		static_assert(std::is_trivially_copy_assignable_v      <multi::array<double, 2>::iterator>);
+		// BOOST_TEST((std::is_trivially_default_constructible_v<multi::array<double, 2>::iterator>));  // TODO(correaa)
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::array<double, 2>::iterator>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::array<double, 2>::iterator>));
 
 		{
 			multi::array<double, 2> const arr({120, 140}, 99.0);
