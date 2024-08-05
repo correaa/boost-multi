@@ -2112,6 +2112,20 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
 
+/**
+ * @brief An iterator for a 1-dimensional array in the `multi` library.
+ *
+ * This iterator provides a random access iterator interface for iterating over
+ * the elements of a 1-dimensional array. It supports common iterator operations
+ * such as incrementing, decrementing, and dereferencing.
+ *
+ * The iterator is templated on the element type `Element`, the pointer type
+ * `Ptr`, and a boolean flag `IsConst` that indicates whether the iterator is
+ * const or not.
+ *
+ * The iterator is designed to be used in conjunction with the `const_subarray`
+ * class, which provides a view into a 1-dimensional array.
+ */
 template<class Element, typename Ptr, bool IsConst>
 struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inheritance)
 : boost::multi::iterator_facade<
