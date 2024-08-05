@@ -624,17 +624,13 @@ struct layout_t
 	[[deprecated("for compatibility with Boost.MultiArray, use static `dimensionality` instead")]]
 	static constexpr auto num_dimensions() {return dimensionality;}  // NOSONAR(cpp:S1133)
 
-	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
+	friend constexpr auto dimensionality(layout_t const& /*self*/) { return rank_v; }
 
  private:
-	sub_type    sub_    ;  // = {};
-#ifndef _MSC_VER 
+	sub_type    sub_    ;
 	stride_type stride_ ;  // =  1;  // or std::numeric_limits<stride_type>::max()?
-#else
-	stride_type stride_ ;  // = 1;
-#endif
-	offset_type offset_ ;  // =  0;
-	nelems_type nelems_ ;  // =  0;
+	offset_type offset_ ;
+	nelems_type nelems_ ;
 
 	template<dimensionality_type, typename> friend struct layout_t;
 
