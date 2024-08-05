@@ -2053,7 +2053,7 @@ Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://
 # Appendix: Multi for FORTRAN programmers
 
 This section summarizes simple cases translated from FORTRAN syntax to C++ using the library.
-The library strives to give a familiar feeling to those who use arrays in FORTRAN.
+The library strives to give a familiar feeling to those who use arrays in FORTRAN, including the manipulation of arrays with arbitrary dimensionality (e.g. 1D, 2D, 3D, etc.)
 Arrays can be indexes arrays using square-brakers or using parenthesis, which would be more familiar to FORTRAN syntax.
 The most significant difference is that in FORTRAN, array indices start at `1` by default, while in Multi, they start at `0` by default, following C++ conventions.
 Like in FORTRAN, for simple types (e.g., numeric), Multi arrays are not initialized automatically; such initialization needs to be explicit.
@@ -2083,6 +2083,7 @@ Internal representation (memory ordering) can still be different, and this could
 Range notation such as `1:2` is replaced by `{0, 2}`, which takes into account both the difference in the start index and the half-open interval notation in the C++ conventions.
 Stride notation such as `1:10:2` (i.e. from first to tenth included, every 2 elements), is replaced by `{0, 10, 2}`.
 Complete range interval (single `:` notation) is replaced by `multi::_`, which can be used simply as `_` after the declaration `using multi::_;`.
+These rules extend to higher dimesionality, such as 3 dimensions.
 
 Unlike FORTRAN, Multi doesn't provide algebraic operators, using algorithms is encouraged instead.
 For example a FORTRAN statement like `A = A + B` (one-dimensional arrays) is translated as
