@@ -2086,37 +2086,40 @@ Complete range interval (single `:` notation) is replaced by `multi::_`, which c
 These rules extend to higher dimesionality, such as 3 dimensions.
 
 Unlike FORTRAN, Multi doesn't provide algebraic operators, using algorithms is encouraged instead.
-For example a FORTRAN statement like `A = A + B` (one-dimensional arrays) is translated as
+For example a FORTRAN statement like `A = A + B` is translated as this in the one-dimensional case:
 
 ```cpp
 std::transform(A.begin(), A.end(), B.begin(), A.begin(), std::plus{});  // valid for 1D arrays only
 ```
 
-Note that this is correct only one-dimensional arrays.
-To be more general in dimensionality we can write:
+In the general dimensionality case we can write:
 
 ```cpp
 auto&&      Aelems = A.elements();
 auto const& Belems = B.elements();
 std::transform(Aelems.begin(), A.elems.end(), Belems.begin(), Aelems.begin(), std::plus{});  // valid for arbitrary dimension
+```
 
+or
+```
 std::ranges::transform(Aelems, Belems, Aelems.begin(), std::plus{});  // alternative using C++20 ranges
 ```
 
 A FORTRAN statement like `C = 2.0*C` is rewritten as `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) {return 2.0*e;});`.
 
-It is possible to use C++ operator overloading (implemented as standalone functions such as `operartor+=` or `operator*=`); however, this possibility can become unwindenly complicated beyond simple cases.
+It is possible to use C++ operator overloading for functions such as `operartor+=` (`A += B;`) or `operator*=` (`C *= 2.0;`); however, this possibility can become unwindenly complicated beyond simple cases.
 Also it can become inefficient if implemented naively.
-
-Algorithms like `transform` offer a high degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
 
 Simple loops can be mapped as well, taking into account indexing differences:
 ```fortran
-do i = 1, 5           ! for(int i = 0; i != 5; ++i) {
-	do j = 1, 5       !     for(int j = 0; j != 5; ++j) {
-		D2D(i, j) = 0 !         D2D(i, j) = 0;
-	end do            !     }
-end do                ! }
+do i = 1, 5         ! for(int i = 0; i != 5; ++i) {
+  do j = 1, 5       !   for(int j = 0; j != 5; ++j) {
+    D2D(i, j) = 0   !     D2D(i, j) = 0;
+  end do            !   }
+end do              ! }
 ```
+
+However, algorithms like `transform`, `reduce`, `transform_reduce`and `for_each`, and offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
+
 
 [(live)](https://godbolt.org/z/77onne46W)
