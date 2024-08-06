@@ -60,6 +60,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
+	BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_interval) {
+		constexpr auto test = [] {
+			std::array<int,
+					    // 9  // produces UB: cannot refer to element 10 of array of 9 elements in a constant expression
+						12  // ok
+					   >
+				buffer = {
+					{0, 1, 2, 3, 4, 5, 6, 7, 8}
+            };  // , 10, 11};
+
+			multi::array_ref<int, 2> arr({3, 3}, buffer.data());  // // TODO(correaa) think how to handle references to arrays (UB)
+
+			return arr.rotated()[1]({3, 3}).size() == 0;
+		}();
+		BOOST_TEST(test);
+	}   
+
 	BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
 		constexpr auto test = [] {
 			std::array<int,
