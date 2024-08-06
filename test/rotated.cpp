@@ -45,8 +45,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
 		constexpr auto test = [] {
 			std::array<int,
-					   //  9  // produces UB: cannot refer to element 10 of array of 9 elements in a constant expression
-					   12  // ok
+					   // 9  // produces UB: cannot refer to element 10 of array of 9 elements in a constant expression
+						12  // ok
 					   >
 				buffer = {
 					{0, 1, 2, 3, 4, 5, 6, 7, 8}
