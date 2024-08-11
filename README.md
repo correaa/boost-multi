@@ -1784,12 +1784,12 @@ More targeted usage patterns may require locally (non-globally) defined memory r
 
 ## CUDA C++
 
-CUDA is a dialect of C++ that allows writing pieces of code directly for GPU execution, known as "CUDA kernels".
+CUDA is a dialect of C++ that allows writing pieces of code for GPU execution, known as "CUDA kernels".
 CUDA code is generally "low level" (less abstracted) but it can be used in combination with CUDA Thrust or the CUDA runtime library, specially to implement custom algorithms.
-Although code inside kernels has certain restrictions, most Multi expressions can be used. 
+Although code inside kernels has certain restrictions, most Multi features can be used. 
 (Most functions in Multi, except those involving memory allocations, are marked `__device__` to allow this.)
 
-Calling kernels involves a special syntax (`<<< ... >>>`), and they cannot take arguments by reference (or by values that are not trivial, e.g. not entirely contained in the stack).
+Calling kernels involves a special syntax (`<<< ... >>>`), and they cannot take arguments by reference (or by values that are not trivial).
 Since arrays are usually passed by reference (e.g. `multi::array<double, 2>&` or `Array&&`), a different idiom needs to be used.
 (Large arrays are not passed by value to avoid copies, but even if a copy would be fine, kernel arguments cannot allocate memory themselves.)
 Iterators (e.g. `.begin()/.end()`) and "cursors" (e.g. `.home()`) are "trivial to copy" and can be passed by value and represent a "proxy" to an array, including allowing the normal index syntax and other transformations.
@@ -1835,6 +1835,8 @@ int main() {
 }
 ```
 [(live)](https://godbolt.org/z/eKbeosrWa)
+
+Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarely occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()`).
 
 ## SYCL
 
