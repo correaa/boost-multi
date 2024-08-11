@@ -370,7 +370,7 @@ auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, Forward
 		}
 		return current;
 	} catch(...) {
-		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*d_first));
 		}
 		throw;

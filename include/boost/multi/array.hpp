@@ -65,6 +65,7 @@ struct array_allocator {
 	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
 	}
+
 	template<typename It>
 	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
 		#if defined(__clang__) && defined(__CUDACC__)
@@ -74,6 +75,18 @@ struct array_allocator {
 		return adl_copy_n                    (        first, count, d_first);
 		#else
 		return adl_alloc_uninitialized_copy_n(alloc_, first, count, d_first);
+		#endif
+	}
+
+	template<typename It>
+	auto uninitialized_move_n(It first, size_type count, pointer_ d_first) {
+		#if defined(__clang__) && defined(__CUDACC__)
+		if constexpr(! std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && ! multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type> ) {
+			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
+		}
+		return adl_move_n                    (        first, count, d_first);
+		#else
+		return adl_alloc_uninitialized_move_n(alloc_, first, count, d_first);
 		#endif
 	}
 
@@ -158,6 +171,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
 
+	template<typename It> auto uninitialized_move_elements(It first) {
+		return array_alloc::uninitialized_move_n(first, this->num_elements(), this->data_elements());
+	}
+
 	template<class EP, typename It> auto uninitialized_copy_elements(EP&& ep, It first) {
 		return array_alloc::uninitialized_copy_n(std::forward<EP>(ep), first, this->num_elements(), this->data_elements());
 	}
@@ -191,7 +208,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::dropped;
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
-	static_array(static_array&& other) noexcept : static_array(other.element_moved()) {}
+	static_array(static_array&& other) noexcept :
+		array_alloc{other.alloc()},
+		ref{
+			array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+			other.extensions()
+		}
+	{
+		uninitialized_move_elements(other.data_elements());
+	}
 
 	constexpr static_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}, ref(std::exchange(other.base_, nullptr), other.extensions()) {
@@ -326,31 +351,36 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		// #endif
 	}
 
-	template<class TT, class EElementPtr, class LLayout, // class... Args,
-	         std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
-	         class                                                                                                                                          = decltype(adl_copy(std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
-	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr /*mplct*/ static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: static_array(other, allocator_type{}) {}
-
-	template<class TT, class EElementPtr, class LLayout,  // class... Args,
-	         std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
-	         class                                                                                                                                           = decltype(adl_copy(std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
+	template<
+		class TT, class EElementPtr, class LLayout,
+		std::enable_if_t< ! multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout>&>().base()), T>, int> = 0,
+		class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
 	explicit static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)
 	: static_array(other, allocator_type{}) {}
 
-	// template<class TT, class EElementPtr, class LLayout,
-	//          std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout>&>().base()), T>, int> = 0,
-	//          class                                                                                                                                    = decltype(adl_copy(std::declval<multi::subarray<TT, D, EElementPtr, LLayout>&>().begin(), std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
-	// // cppcheck-suppress noExplicitConstructor ; // NOLINTNEXTLINE(runtime/explicit)
-	// /*mplct*/ static_array(multi::subarray<TT, D, EElementPtr, LLayout>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<
+		class TT, class EElementPtr, class LLayout,
+		std::enable_if_t<   multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
+		class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
+	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
+	constexpr /*implicit*/ static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array(other, allocator_type{}) {}
+
+	constexpr static_array(multi::subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array(other, allocator_type{}) {}
+
+	constexpr static_array(multi::const_subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array(other, allocator_type{}) {}
+
+	// template<class TT, class EElementPtr, class LLayout,  // class... Args,
+	//          std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
+	//          class                                                                                                                                           = decltype(adl_copy(std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
+	// explicit static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)
 	// : static_array(other, allocator_type{}) {}
 
-	template<class TT, class EElementPtr, class LLayout,
-	         std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout>&>().base()), T>, int> = 0,
-	         class                                                                                                                                     = decltype(adl_copy(std::declval<multi::subarray<TT, D, EElementPtr, LLayout>&>().begin(), std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
-	explicit static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)
-	: static_array(other, allocator_type{}) {}
+
 
 	// template<typename TT, typename EElementPtr, class LLayout,
 	//          std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout>&&>().base()), T>, int> = 0,
@@ -359,11 +389,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// /*mplct*/ static_array(multi::subarray<TT, D, EElementPtr, LLayout>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	// : static_array(std::move(other), allocator_type{}) {}
 
-	template<typename TT, typename... Args,
-	         std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::const_subarray<TT, D, Args...>&&>().base()), T>, int> = 0,
-	         class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, Args...>&&>().begin(), std::declval<multi::const_subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
-	explicit static_array(multi::const_subarray<TT, D, Args...>&& other)
-	: static_array(std::move(other), allocator_type{}) {}
+	// template<typename TT, typename... Args,
+	//          std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::const_subarray<TT, D, Args...>&&>().base()), T>, int> = 0,
+	//          class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, Args...>&&>().begin(), std::declval<multi::const_subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
+	// explicit static_array(multi::const_subarray<TT, D, Args...>&& other)
+	// : static_array(std::move(other), allocator_type{}) {}
 
 	template<class TT, class... Args,
 	         std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0>

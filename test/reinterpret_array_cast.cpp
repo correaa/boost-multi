@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 #ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 	BOOST_TEST( std::abs( arr.reinterpret_array_cast<double>(3)[8][1] - arr[8].y ) < 1E-6 );
 
-	multi::array<double, 2> A2D = arr.reinterpret_array_cast<double>(3);
+	multi::array<double, 2> A2D{arr.reinterpret_array_cast<double>(3)};
 
 	BOOST_TEST( decltype(A2D)::dimensionality == decltype(arr)::dimensionality + 1 );
 	BOOST_TEST( dimensionality(A2D) == dimensionality(arr) + 1 );
@@ -191,12 +191,12 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	BOOST_TEST( std::abs( arr[0] - complex{1.0, 2.0} ) < 1E-6 );
 
 #ifndef _MSC_VER  // problem with MVSC 14.3 c++17
-	multi::array<double, 1> arr2 = arr.reinterpret_array_cast<double>();
+	multi::array<double, 1> arr2{arr.reinterpret_array_cast<double>()};
 	BOOST_TEST( dimensionality(arr2) == dimensionality(arr) );
 	BOOST_TEST( std::abs( arr2[0] - 1.0 ) < 1E-6 );
 	BOOST_TEST( std::abs( arr2[1] - 1.0 ) < 1E-6 );
 
-	multi::array<double, 2> arr3 = arr.reinterpret_array_cast<double>(2);
+	multi::array<double, 2> arr3{arr.reinterpret_array_cast<double>(2)};
 
 	BOOST_TEST(( arr3.sizes() == decltype(arr3.sizes()){100, 2} ));
 	BOOST_TEST( std::abs( arr3[5][0] - real(arr[5]) ) < 1E-6 );
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 		BOOST_TEST( &arr.reinterpret_array_cast<double>(3)[2][3][1] == &std::get<1>(arr[2][3]) );
 		BOOST_TEST( &arr.reinterpret_array_cast<double>(3)[2][3][2] == &std::get<2>(arr[2][3]) );
 
-		multi::array<double, 3> const arr2 = arr.reinterpret_array_cast<double>(3);
+		multi::array<double, 3> const arr2{arr.reinterpret_array_cast<double>(3)};
 		BOOST_TEST( std::abs( arr2[2][3][0] - std::get<0>(arr[2][3]) ) < 1E-6 );
 		BOOST_TEST( std::abs( arr2[2][3][1] - std::get<1>(arr[2][3]) ) < 1E-6 );
 		BOOST_TEST( std::abs( arr2[2][3][2] - std::get<2>(arr[2][3]) ) < 1E-6 );

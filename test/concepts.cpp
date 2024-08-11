@@ -133,6 +133,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(std::is_convertible_v<NDRef, NDArray>);
 
+		// multi::what<typename NDRef::reference>();
+
 		static_assert(std::is_convertible_v<typename NDRef::reference, typename NDRef::value_type>);
 		static_assert(std::is_convertible_v<typename NDRef::const_reference, typename NDRef::value_type>);
 
