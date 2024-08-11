@@ -2472,7 +2472,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
 	friend constexpr auto size (const_subarray const& self) noexcept -> typename const_subarray::size_type  {return self.size ();}  // needed by nvcc
 
-	constexpr auto operator+() const -> decay_type {return decay();}
+	constexpr auto operator+() const { return decay(); }
 
 	const_subarray(const_subarray&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto

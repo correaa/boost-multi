@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
 	multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0};
 	BOOST_TEST( size(arr.partitioned(3)) == 3 );
-	BOOST_TEST( arr.partitioned(3)[1] == decltype(+arr.partitioned(3)[1])({4.0, 5.0, 6.0, 7.0}) );
+	BOOST_TEST(( arr.partitioned(3)[1] == multi::array<double, 1>{4.0, 5.0, 6.0, 7.0} ));
 	BOOST_TEST( &arr.partitioned(3)[1][2] == &arr[6] );
 
 	BOOST_TEST( size(arr.chunked(3)) == 4 );

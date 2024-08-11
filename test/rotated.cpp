@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end) {
 		multi::array<int, 2> arr({3, 3}, 99);
         return arr.rotated()[1].end() != arr.rotated()[1].begin();
 	}();
-	BOOST_TEST(test);   
+	BOOST_TEST(test);
 }
 #endif
 #endif
@@ -251,8 +251,8 @@ BOOST_AUTO_TEST_CASE(multi_transposed) {
 		{ 4, 10, 12, 7},
 		{14, 16, 36, 1},
 	};
-	multi::array<int, 2> const arr1 = arr0.transposed();
-	multi::array<int, 2> const arr2 = ~arr0;
+	multi::array<int, 2> const arr1{arr0.transposed()};
+	multi::array<int, 2> const arr2{~arr0};
 	BOOST_TEST( arr1 == arr2 );
 }
 

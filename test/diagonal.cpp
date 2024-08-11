@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(broadcasted) {
 		{8, 9, 10},
 	};
 
-	BOOST_TEST( arr.diagonal().begin() != arr.diagonal().end() ); 
+	BOOST_TEST( arr.diagonal().begin() != arr.diagonal().end() );
 	BOOST_TEST( arr.diagonal().end() - arr.diagonal().begin() == 3 );
 }
 

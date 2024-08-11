@@ -58,7 +58,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		watch const unnamed{"transposition with aux   %ws wall, CPU (%p%)\n"s};
 
-		multi::array<complex, 2> aux = ~out;
+		multi::array<complex, 2> aux{~out};
 
 		out = std::move(aux);
 		BOOST_TEST( out[35][79] == in[79][35] );

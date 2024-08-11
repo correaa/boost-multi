@@ -457,7 +457,7 @@ BOOST_AUTO_TEST_CASE(small_array_int) {
 	BOOST_TEST( ww.base() == wwb );
 	BOOST_TEST( vv.base() == vvb );
 
-	auto xx = std::move(ww);
+	auto xx{std::move(ww)};
 
 	BOOST_TEST( vv[3][3] == 51 );
 	BOOST_TEST( xx[3][3] == 42 );

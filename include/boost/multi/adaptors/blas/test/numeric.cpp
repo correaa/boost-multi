@@ -87,7 +87,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		namespace blas = multi::blas;
 		multi::array<complex, 2>       conj_arr{blas::conj(arr)};
-		multi::array<complex, 2> const conj_arr2 = blas::conj(arr);
+		multi::array<complex, 2> const conj_arr2{blas::conj(arr)};
 
 		BOOST_TEST( conj_arr[2][1] == std::conj(arr[2][1]) );
 		BOOST_TEST( blas::conj(arr)[2][1] == std::conj(arr[2][1]) );
