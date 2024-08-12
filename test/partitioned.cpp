@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
 	BOOST_TEST( &arr.partitioned(3)[1][2] == &arr[6] );
 
 	BOOST_TEST( size(arr.chunked(3)) == 4 );
-	BOOST_TEST( arr.chunked(3)[1] == decltype(+arr.chunked(3)[1])({3.0, 4.0, 5.0}) );
+	BOOST_TEST(( arr.chunked(3)[1] == multi::array<double, 1>({3.0, 4.0, 5.0}) ));
 	BOOST_TEST( &arr.chunked(3)[1][2] == &arr[5] );
 }
 
