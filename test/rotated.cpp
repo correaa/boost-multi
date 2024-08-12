@@ -46,7 +46,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		constexpr auto test = [] {
 			std::array<int,
 					   // 9  // produces UB: cannot refer to element 10 of array of 9 elements in a constant expression
-						12  // ok
+					   12  // ok
 					   >
 				buffer = {
 					{0, 1, 2, 3, 4, 5, 6, 7, 8}
@@ -63,8 +63,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_interval) {
 		constexpr auto test = [] {
 			std::array<int,
-					    // 9  // produces UB: cannot refer to element 10 of array of 9 elements in a constant expression
-						12  // ok
+					   // 9  // produces UB: cannot refer to element 10 of array of 9 elements in a constant expression
+					   12  // ok
 					   >
 				buffer = {
 					{0, 1, 2, 3, 4, 5, 6, 7, 8}
@@ -75,7 +75,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return arr.rotated()[1]({3, 3}).size() == 0;
 		}();
 		BOOST_TEST(test);
-	}   
+	}
 
 	BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D) {
 		constexpr auto test = [] {
@@ -195,12 +195,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
 		// clang-format off
-	std::array<std::array<int, 5>, 4> stdarr = {{
-		{{ 0,  1,  2,  3,  4}},
-		{{ 5,  6,  7,  8,  9}},
-		{{10, 11, 12, 13, 14}},
-		{{15, 16, 17, 18, 19}},
-	}};
+		std::array<std::array<int, 5>, 4> stdarr = {{
+			{{ 0,  1,  2,  3,  4}},
+			{{ 5,  6,  7,  8,  9}},
+			{{10, 11, 12, 13, 14}},
+			{{15, 16, 17, 18, 19}},
+		}};
 		// clang-format on
 
 		std::array<std::array<int, 5>, 4> stdarr2 = {};
@@ -275,6 +275,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		multi::array<int, 2> const arr1 = arr0.transposed();
 		multi::array<int, 2> const arr2 = ~arr0;
+		BOOST_TEST( arr1 == arr2 );
+	}
+
+	BOOST_AUTO_TEST_CASE(miguel) {
+		multi::array<double, 2> G2D({41, 35});
+		auto const&             G3D = G2D.rotated().partitioned(7).sliced(0, 3).unrotated();
+
+		BOOST_TEST( &G3D[0][0][0] == &G2D[0][0] );
+	}
+	{
+		multi::array<int, 2> const arr = {
+			{00, 01},
+			{10, 11},
+		};
+		BOOST_TEST(   arr.rotated() [0][1] == 10 );
+		BOOST_TEST( &(arr.rotated())[1][0] == &arr[0][1] );
+		BOOST_TEST( &(~arr)[1][0] == &arr[0][1] );
+	}
+
+	BOOST_AUTO_TEST_CASE(multi_transposed) {
+		multi::array<int, 2> const arr0 = {
+			{ 9, 24, 30, 9},
+			{ 4, 10, 12, 7},
+			{14, 16, 36, 1},
+		};
+		multi::array<int, 2> const arr1{arr0.transposed()};
+		multi::array<int, 2> const arr2{~arr0};
 		BOOST_TEST( arr1 == arr2 );
 	}
 

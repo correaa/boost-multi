@@ -86,7 +86,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(size(masses) == 2);
 		BOOST_TEST(masses[1][1] == 99 );
 
-		multi::array<int, 2> masses_copy = masses;
+		multi::array<int, 2> masses_copy{masses};
 		BOOST_TEST(&masses_copy[1][1] != &masses[1][1]);
 
 		particles_soa SoA{AoS};
@@ -159,7 +159,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(d2D_names[1][1] == "David");
 
 	#if !(defined(__clang__) && defined(__CUDACC__))
-		multi::array<std::string, 2> d2D_names_copy_members = d2D.element_transformed(&employee::name);
+		multi::array<std::string, 2> d2D_names_copy_members{d2D.element_transformed(&employee::name)};
 		BOOST_TEST(d2D_names_copy_members[1][1] == "David");
 		BOOST_TEST(d2D_names_copy_members       == d2D_names);
 
@@ -182,7 +182,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
-		multi::array<int, 2> ids = recs.element_transformed(&record::id);
+		multi::array<int, 2> ids{recs.element_transformed(&record::id)};
 
 		BOOST_TEST( ids[1][1] == 4 );
 		BOOST_TEST( ids == recs.member_cast<int>(&record::id) );

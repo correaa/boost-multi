@@ -1004,7 +1004,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	BOOST_TEST( trace_array_deduce     (arr) == 30 );
 	BOOST_TEST( trace_array_deduce<int>(arr) == 30 );
 
-	multi::array<int, 2> const arr_paren_copy(arr());
+	multi::array<int, 2> const arr_paren_copy{arr()};
 	BOOST_TEST( arr_paren_copy.size() == 3 );
 
 	BOOST_TEST(  trace_generic                       (arr) == 30  );
@@ -1012,7 +1012,7 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	//  BOOST_TEST(( trace_generic<multi::array    <int, 2>&>(arr) == 3 ));  // can't generate element_type
 
 	BOOST_TEST(  trace_generic                       (arr()) == 30  );
-	BOOST_TEST(( trace_generic<multi::array<int, 2> >(arr()) == 30 ));  // this will make a copy
+	BOOST_TEST(( trace_generic<multi::array<int, 2> >(+arr()) == 30 ));  // this will make a copy
 	//  BOOST_TEST(( trace_generic<multi::array<int, 2>&>(arr()) == 3 ));  // can't generate element_type
 
 	BOOST_TEST(( trace_generic<multi::array_ref<int, 2> >(arr) == 30 ));
@@ -1123,4 +1123,6 @@ BOOST_AUTO_TEST_CASE(array_fill_constructor_2D) {
 	// BOOST_TEST( std::get<0>(sizes(arr)) ==  3 );
 	// BOOST_TEST( std::get<1>(sizes(arr)) == 10 );
 }
-return boost::report_errors();}
+
+return boost::report_errors();
+}

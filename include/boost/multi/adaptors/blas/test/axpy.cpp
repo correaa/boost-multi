@@ -71,7 +71,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{9.0, 10.0, 11.0, 12.0},
 		};
 		multi::array<double, 2>       arr = const_arr;
-		multi::array<double, 1> const b   = const_arr[2];  // NOLINT(readability-identifier-length) conventional name in BLAS
+		multi::array<double, 1> const b    {const_arr[2]};  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 		blas::axpy(2.0, b, arr[1]);  // A[1] = 2*b + A[1], A[1]+= a*A[1]
 		BOOST_TEST( arr[1][2] == 2.0*b[2] + const_arr[1][2] );

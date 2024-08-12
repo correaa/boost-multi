@@ -73,7 +73,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<T, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
-			multi::array<T, 2> const aT = ~a;
+			multi::array<T, 2> const aT{~a};
 			blas::gemv_n(1.0, (~aT).begin(), (~aT).size(), x.begin(), 0.0, y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3 ) < 0.0001);
 
@@ -131,7 +131,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<T, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
-			multi::array<T, 2> const aT = ~a;
+			multi::array<T, 2> const aT{~a};
 			blas::gemv_n(1.0, (~aT).begin(), (~aT).size(), x.begin(), 0.0, y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3 ) < 0.0001);
 
@@ -413,7 +413,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
-			multi::array<double, 2> const aT = ~a;
+			multi::array<double, 2> const aT{~a};
 			blas::gemv_n(&ctxt, 1.0, begin(~aT), size(~aT), begin(x), 0.0, begin(y));
 			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
 			BOOST_REQUIRE_CLOSE(y[2], +blas::dot(a[2], x), 0.00001);
