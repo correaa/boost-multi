@@ -35,7 +35,7 @@ auto trace_with_accumulate(Array2D const& arr) {
 }
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE)  /**/
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(trace_test) {
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(broadcasted) {
 		{8, 9, 10},
 	};
 
-	BOOST_TEST( arr.diagonal().begin() != arr.diagonal().end() ); 
+	BOOST_TEST( arr.diagonal().begin() != arr.diagonal().end() );
 	BOOST_TEST( arr.diagonal().end() - arr.diagonal().begin() == 3 );
 }
 

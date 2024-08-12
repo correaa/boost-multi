@@ -318,6 +318,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
  private:
 	Layout layout_;
 	ElementPtr base_;
+	typename std::iterator_traits<ElementPtr>::difference_type offset_;
 
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
@@ -339,17 +340,17 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
-	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
-
+	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
+	
 	subarray_ptr() = default;
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<typename reference::rank{} - 1> lyt) : base_{base}, layout_{lyt} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<typename reference::rank{} - 1> lyt) : layout_{lyt}, base_{base}, offset_{0} {}
 
 	template<bool OtherIsConst, std::enable_if_t< ! OtherIsConst, int> = 0>
 	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
-	: layout_{other.layout_}, base_{other.base_} {}
+	: layout_{other.layout_}, base_{other.base_}, offset_{other.offset_} {}
 
 	template<
 		typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout, bool OtherIsConst,
@@ -357,7 +358,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
-	: layout_{other->layout()}, base_{other->base_} {}
+	: layout_{other.layout_}, base_{other.base_} {}
 
 	template<
 		class ElementPtr2, 
@@ -369,8 +370,8 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	// // cppcheck-suppress noExplicitConstructor ; no information loss, allows comparisons
 	// BOOST_MULTI_HD constexpr subarray_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	// : subarray_ptr(other->data_elements(), other->layout()) {}
-	BOOST_MULTI_HD constexpr explicit subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout>* other)
-	: subarray_ptr(other->base(), other->layout()) {}
+	// BOOST_MULTI_HD constexpr explicit subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout>* other)
+	// : subarray_ptr(other->base(), other->layout()) {}
 
 	subarray_ptr(subarray_ptr const&) = default;
 	subarray_ptr(subarray_ptr     &&) noexcept = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
@@ -410,7 +411,6 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr {return base_;}
 
 	friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) {return self.base();}
-
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> =0>
 	constexpr auto operator==(OtherSubarrayPtr const& other) const
@@ -508,8 +508,9 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;  // layout_t<D - 1>
 
-	BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
-	BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
+	// BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
+	// BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
+	BOOST_MULTI_HD constexpr array_iterator() : ptr_{}, stride_{} {}  // = default;  // TODO(correaa) make = default, now it is not compiling
 
 	template<class, dimensionality_type, class, bool> friend struct array_iterator;
 
@@ -589,7 +590,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
  private:
 	ptr_type ptr_;
-	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?  // TODO(correaa) remove to make type trivial
+	stride_type stride_;  // = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?  // TODO(correaa) remove to make type trivial
 
 	BOOST_MULTI_HD constexpr void decrement_() { ptr_.base_ -= stride_; }
 	BOOST_MULTI_HD constexpr void advance_(difference_type n) { ptr_.base_ += stride_*n; }
@@ -2127,7 +2128,7 @@ template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
  * class, which provides a view into a 1-dimensional array.
  */
 template<class Element, typename Ptr, bool IsConst>
-struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inheritance)
+struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
 : boost::multi::iterator_facade<
 	array_iterator<Element, 1, Ptr, IsConst>,
 	Element, std::random_access_iterator_tag,
@@ -2169,8 +2170,8 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 
 	template<class, dimensionality_type, class, bool> friend struct array_iterator;
 
-	constexpr explicit array_iterator(std::nullptr_t nil)  : ptr_{nil} {}
-	constexpr explicit array_iterator(Ptr const& ptr) : ptr_{ptr} {}
+	// constexpr explicit array_iterator(std::nullptr_t nil)  : ptr_{nil}, stride_{} {}
+	// constexpr explicit array_iterator(Ptr const& ptr) : ptr_{ptr} {}
 
 	template<
 		class EElement, typename PPtr,
@@ -2209,7 +2210,7 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 	friend struct const_subarray<Element, 1, Ptr>;
 
 	element_ptr ptr_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
-	stride_type stride_ = {1};  // TODO(correaa) change to make it trivially default constructible
+	stride_type stride_;  // = {1};  // = {0};  // TODO(correaa) change to make it trivially default constructible
 
 	// constexpr auto distance_to_(array_iterator const& other) const -> difference_type {
 	//  assert(stride_==other.stride_ && (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -2217,19 +2218,19 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 	// }
 
  public:
-	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator {array_iterator ret{*this}; ret+=n; return ret;}
-	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> array_iterator {array_iterator ret{*this}; ret-=n; return ret;}
+	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret+=n; return ret; }
+	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret-=n; return ret; }
 
 	[[deprecated("use base() for iterator")]]
 	BOOST_MULTI_HD constexpr auto data() const -> element_ptr {return ptr_;}
 
-	BOOST_MULTI_HD constexpr auto base()              const& -> element_ptr {return ptr_;}
+	BOOST_MULTI_HD constexpr auto base()              const -> element_ptr {return ptr_;}
 
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto base(array_iterator const& self) -> element_ptr {return self.base();}
 
 	       BOOST_MULTI_HD constexpr auto stride()              const        -> stride_type {return      stride_;}
-	friend    constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}
+	friend    constexpr auto stride(array_iterator const& self) -> stride_type { return self.stride_; }
 
 	#if defined(__clang__)
 	#pragma clang diagnostic push
