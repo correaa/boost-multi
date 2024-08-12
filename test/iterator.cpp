@@ -23,6 +23,22 @@ template<class Array> auto take(Array&& array) -> auto& { return std::forward<Ar
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(iterator_1d) {
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<0>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<0>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<0>>));
+
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<1>>));
+
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 1>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 1>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 1>>));
+
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::array<double, 1>::iterator>));
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::array<double, 1>::iterator>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::array<double, 1>::iterator>));
+
 		{
 			multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
 			BOOST_TEST( arr.size() == 100 );
@@ -67,6 +83,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(iterator_2d) {
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<2>>));
+
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 2>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 2>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>));
+
+		// BOOST_TEST((std::is_trivially_default_constructible_v<multi::array<double, 2>::iterator>));  // TODO(correaa)
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::array<double, 2>::iterator>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::array<double, 2>::iterator>));
+
 		{
 			multi::array<double, 2> const arr({120, 140}, 99.0);
 
@@ -246,7 +274,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::index_range irng(0, 5);  // semiopen interval
 		std::ostringstream out;
 		std::copy(irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>{out, ","});
-		BOOST_TEST_EQ( out.str(), std::string{"0,1,2,3,4,"} );  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST_EQ(out.str(), std::string{"0,1,2,3,4,"});  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)) == irng.size()*(irng.size()-1)/2 );
 

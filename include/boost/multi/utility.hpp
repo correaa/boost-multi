@@ -334,9 +334,6 @@ constexpr auto base(T const* ptr) noexcept {return ptr;}
 template<class T, typename = std::enable_if_t<! std::is_array_v<T>>>
 constexpr auto base(T* ptr) noexcept {return ptr;}
 
-template<class T, std::enable_if_t<std::is_standard_layout_v<T> && std::is_trivial_v<T>, int> =0>
-auto base(T& array) {return &array;}
-
 template<class T>
 constexpr auto corigin(const T& value) {return &value;}
 

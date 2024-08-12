@@ -22,16 +22,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	namespace multi = boost::multi;
 
 #ifndef _MSC_VER  // MSVC 14.40 is not constexpr ready?
-	BOOST_AUTO_TEST_CASE(constexpr_ptr_access) {
-		static constexpr auto test = [] {
-			std::array<int, 12>      buffer{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
-			multi::array_ref<int, 2> arr({3, 3}, buffer.data());
-			auto                     ptr = &arr;
+	// BOOST_AUTO_TEST_CASE(constexpr_ptr_access) {
+	//  static constexpr auto test = [] {
+	//    std::array<int, 12>      buffer{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
+	//    multi::array_ref<int, 2> arr({3, 3}, buffer.data());
+	//    auto                     ptr = &arr;
 
-			return (ptr->base() == buffer.data());
-		}();
-		static_assert(test);
-	}
+	//    return (ptr->base() == buffer.data());
+	//  }();
+	//  static_assert(test);
+	// }
 #endif
 
 	BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {

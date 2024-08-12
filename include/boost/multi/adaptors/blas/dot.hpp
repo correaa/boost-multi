@@ -18,11 +18,11 @@ using core::dotc;
 template<class Context, class XIt, class Size, class YIt, class RPtr>
 auto dot_n(Context&& ctxt, XIt x_first, Size count, YIt y_first, RPtr rp) {
 	if constexpr(! is_complex<typename XIt::value_type>{}) {
-                                                                           std::forward<Context>(ctxt)->dot (count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
+                                                                           std::forward<Context>(ctxt)->dot (count,            x_first.base() , stride(x_first), y_first.base(), stride(y_first), rp);
 	} else {
-		if      constexpr(!is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotu(count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);}
-		else if constexpr(!is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotc(count, underlying(base(y_first)), stride(y_first), base(x_first), stride(x_first), rp);}
-		else if constexpr( is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotc(count, underlying(base(x_first)), stride(x_first), base(y_first), stride(y_first), rp);}
+		if      constexpr(!is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotu(count,            x_first.base() , stride(x_first), y_first.base(), stride(y_first), rp);}
+		else if constexpr(!is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotc(count, underlying(y_first.base()), stride(y_first), x_first.base(), stride(x_first), rp);}
+		else if constexpr( is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotc(count, underlying(x_first.base()), stride(x_first), y_first.base(), stride(y_first), rp);}
 		else if constexpr( is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {static_assert(!sizeof(XIt*), "not implemented in blas");}
 	}
 

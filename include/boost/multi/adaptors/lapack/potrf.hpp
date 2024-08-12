@@ -25,14 +25,14 @@ using ::core::potrf;
 template<class Iterator>
 BOOST_MULTI_NODISCARD("result has information of order of minor through .size() member")
 auto potrf(filling uplo, Iterator first, Iterator last)
-->decltype(potrf(static_cast<char>(uplo), typename std::iterator_traits<Iterator>::difference_type{}, base(first), stride(first), std::declval<int&>()), Iterator{})
+->decltype(potrf(static_cast<char>(uplo), typename std::iterator_traits<Iterator>::difference_type{}, first.base(), stride(first), std::declval<int&>()), Iterator{})
 {
 	assert( stride(first) == stride(last) );
 	assert( first->stride() == 1 );
 //  auto lda = stride(first);
 
 	int info;  // NOLINT(cppcoreguidelines-init-variables)
-	potrf(static_cast<char>(uplo), std::distance(first, last), base(first), stride(first), info);
+	potrf(static_cast<char>(uplo), std::distance(first, last), first.base(), stride(first), info);
 
 	assert( info >= 0 );
 	// if(info > 0) {std::cerr << "warning minor of order " << info << " is not possitive\n";}
