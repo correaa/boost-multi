@@ -2840,7 +2840,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 		class Range,
 		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
 		std::enable_if_t<! is_subarray<std::decay_t<Range>>::value, int> =0,
-		class = decltype(std::declval<Range>().begin(), std::declval<Range>().end() ),
+		class = decltype((void)std::declval<Range>().begin(), std::declval<Range>().end() ),
 		class = decltype(Range{std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()})
 	>
 	constexpr explicit operator Range() const {
