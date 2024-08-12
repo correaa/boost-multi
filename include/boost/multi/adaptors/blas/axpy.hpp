@@ -28,12 +28,12 @@ using core::axpy;
 template<class It1, class Size, class OutIt>
 auto axpy_n(typename It1::value_type alpha, It1 first, Size n, OutIt d_first)
 ->decltype(axpy(n, &alpha, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
-	return axpy(n, &alpha, base(first) , stride(first) , base(d_first) , stride(d_first) ), d_first + n; }
+	return axpy(n, &alpha, first.base(), first.stride(), d_first.base() , stride(d_first) ), d_first + n; }
 
 template<class Context, class It1, class Size, class OutIt>//, class=std::enable_if_t<is_context<decltype(*Context{})>{}>>
 auto axpy_n(Context ctxt, typename It1::value_type alpha, It1 first, Size n, OutIt d_first)
 ->decltype(ctxt->axpy(n, &alpha, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
-	return ctxt->axpy(n, &alpha, base(first) , stride(first) , base(d_first) , stride(d_first) ), d_first + n; }
+	return ctxt->axpy(n, &alpha, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n; }
 
 template<class Context, class X1DIt, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0, *X1DIt{} )>
 auto axpy(Context ctxt, typename X1DIt::element alpha, X1DIt x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
@@ -43,7 +43,7 @@ auto axpy(Context ctxt, typename X1DIt::element alpha, X1DIt x, Y1D&& y)  // NOL
 template<class Context, class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0, size(std::declval<X1D const&>()) )>
 auto axpy(Context ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 ->decltype(                                                        std::forward<Y1D>(y)) { assert(x.size() == y.size() );
-	return axpy_n(ctxt, alpha,   begin(x),   size(y),   begin(y)), std::forward<Y1D>(y); }
+	return axpy_n(ctxt, alpha,   x.begin(),   y.size(),   y.begin()), std::forward<Y1D>(y); }
 
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0 )>
 auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names

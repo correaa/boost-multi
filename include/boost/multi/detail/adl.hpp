@@ -296,8 +296,8 @@ class adl_uninitialized_copy_t {
 #if defined(__CUDACC__) || defined(__HIPCC__)
 	template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const BOOST_MULTI_DECLRETURN(                  ::thrust::uninitialized_copy(                    std::forward<As>(args)...))  // doesn't work with culang 17, cuda 12 ?
 #endif
-	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB   first, As&&... args       ) const BOOST_MULTI_DECLRETURN(                        uninitialized_copy(                 first , std::forward<As>(args)...))
-	template<class TB, class TE, class DB> constexpr auto _(priority<4>/**/, TB   first, TE last, DB d_first) const BOOST_MULTI_DECLRETURN(std::decay_t<DB>      ::uninitialized_copy(                 first , last, d_first            ))
+	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRETURN(                        uninitialized_copy(                 std::forward<TB>(first) , std::forward<As>(args)...))
+	template<class TB, class TE, class DB> constexpr auto _(priority<4>/**/, TB&& first, TE&& last, DB&& d_first) const BOOST_MULTI_DECLRETURN(std::decay_t<DB>      ::uninitialized_copy(                 std::forward<TB>(first) , std::forward<TE>(last), std::forward<DB>(d_first)            ))
 	template<class TB, class... As       > constexpr auto _(priority<5>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRETURN(std::decay_t<TB>      ::uninitialized_copy(std::forward<TB>(first), std::forward<As>(args)...))
 	template<class TB, class... As       > constexpr auto _(priority<6>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRETURN(std::forward<TB>(first).uninitialized_copy(                         std::forward<As>(args)...))
 
