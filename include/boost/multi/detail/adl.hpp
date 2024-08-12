@@ -65,6 +65,8 @@ class adl_copy_n_t {
 };
 inline constexpr adl_copy_n_t adl_copy_n;
 
+// there is no move_n (std::move_n), use copy_n(std::make_move_iterator(first), count) instead
+
 class adl_move_t {
 	template<class... As>           constexpr auto _(priority<0>/**/,                      As&&... args) const BOOST_MULTI_DECLRETURN(              std::    move(                      std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)  // there is no thrust::move algorithm
