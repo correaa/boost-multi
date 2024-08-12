@@ -358,8 +358,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 				{2.0, 7.0, 1.0, 9.0},
 				{3.0, 4.0, 2.0, 1.0},
 			};
-			multi::array<double, 2> AT = ~A;
-			multi::array<double, 2> BT = ~B;
+			multi::array<double, 2> AT{~A};
+			multi::array<double, 2> BT{~B};
 
 			// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 			blas::trsm(blas::side::left, blas::filling::upper, 1.0, blas::T(AT), B);
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 				{2.0},
 				{3.0},
 			};
-			multi::array<double, 2> BT = B.rotated();
+			multi::array<double, 2> BT{B.rotated()};
 			blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, blas::T(BT));
 			BOOST_REQUIRE_CLOSE((~BT)[2][0], 0.375, 0.00001);
 		}

@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			auto&& d2DrealT = d2D.rotated().reinterpret_array_cast<double>();
 			BOOST_TEST( std::abs( d2DrealT[2][1] -  7.0) < 1E-6);
 
-			multi::array<double, 2> const d2Dreal_copy = d2D.template reinterpret_array_cast<double>();
+			multi::array<double, 2> const d2Dreal_copy{d2D.template reinterpret_array_cast<double>()};
 			BOOST_TEST( d2Dreal_copy == d2Dreal );
 		}
 		{
