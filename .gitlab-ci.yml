@@ -312,7 +312,7 @@ vs2019-windows:
   timeout: 30 minutes
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-      when: never
+    - when: never
 
 # vs2022-windows:
 #   stage: build
@@ -1100,6 +1100,7 @@ sonar:
   tags:
     - non-shared
     - docker
+    - x86_64  # for executable
   # cache:
   #   policy: pull-push
   #   key: "${CI_COMMIT_SHORT_SHA}"
