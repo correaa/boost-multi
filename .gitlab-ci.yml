@@ -294,7 +294,8 @@ vs2019-windows:
   allow_failure: true
   interruptible: true
   script:
-    - Install-Module posh-git -Scope CurrentUser -Force -Confirm:$false
+    - Install-Module posh-git
+    # -Scope CurrentUser -Force -Confirm:$false
     - git clone https://github.com/microsoft/vcpkg.git
     - choco --version
     - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
