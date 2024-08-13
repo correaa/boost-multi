@@ -288,12 +288,14 @@ clang++-latest libc++:
 
 vs2019-windows:
   stage: build
+  only:
+    refs:
+      - master
   allow_failure: true
   interruptible: true
   script:
-    - git clone https://github.com/microsoft/vcpkg.git || echo 'no git?'
-    - Install-Module posh-git -Scope CurrentUser -Force || echo 'no install?'
-    - git clone https://github.com/microsoft/vcpkg.git || echo 'no git again?'
+    - Install-Module posh-git -Scope CurrentUser -Force
+    - git clone https://github.com/microsoft/vcpkg.git
     - choco --version
     - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
     # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
@@ -310,9 +312,6 @@ vs2019-windows:
     - saas-windows-medium-amd64
   needs: ["clang++", "g++"]
   timeout: 30 minutes
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - when: never
 
 # vs2022-windows:
 #   stage: build
