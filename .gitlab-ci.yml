@@ -1115,13 +1115,14 @@ sonar:
     - g++ --version
     - mkdir build
     # Download sonar-scanner
-    - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
+    - curl -sSLO ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.1.0.4477-linux-x64.zip'
+    # - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
     - unzip -o sonar-scanner.zip
-    - mv sonar-scanner-5.0.1.3006-linux sonar-scanner
-      # Download build-wrapper
+    - mv sonar-scanner-6.1.0.4477-linux-x64 sonar-scanner
+    # - Download build-wrapper
     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=1 -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - build-wrapper/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/ --verbose
     - cd build
     - ctest -j 1 --output-on-failure -T Test
