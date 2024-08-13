@@ -244,18 +244,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		{
-			multi::array<complex, 2> arr2({2, 2}, {9999.0, 0.0});   // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
-			blas::herk(blas::filling::lower, 1.0, arr, 0.0, arr2);  // c†=c=aa†=(aa†)†, `c` in lower triangular
+			multi::array<complex, 2> arr2({2, 2}, {9999.0, 0.0});   // NOLINT(readability-identifier-length) conventional one-letter operation BLAS
+			blas::herk(blas::filling::lower, 1.0, arr, 0.0, arr2);  // c^dagger = c = a a^dagger = (a a^dagger)^dagger, `c` is lower triangular
 			BOOST_TEST(( arr2[1][0] == complex{50.0, -49.0} ));
 			BOOST_TEST( arr2[0][1] == 9999.0 );
 		}
 		{
-			multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
+			multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLAS
 			static_assert(blas::is_conjugated<decltype(blas::H(c))>::value);
-
-			// what(/*blas::H(*/ blas::conj(c) /*)*/);
-			// what(c(), /*blas::H(*/ blas::transposed(c) /*)*/);
-			// what(/*blas::H(*/ blas::hermitized(c) /*)*/);
 
 			blas::herk(blas::filling::lower, 1.0, arr, 0.0, blas::H(c));  // c†=c=aa†=(aa†)†, `c` in upper triangular
 
