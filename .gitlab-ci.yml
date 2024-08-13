@@ -294,7 +294,7 @@ vs2019-windows:
   allow_failure: true
   interruptible: true
   script:
-    - choco install poshgit
+    - choco install -y poshgit
     # - Install-Module posh-git -Scope CurrentUser -Force
     - git clone https://github.com/microsoft/vcpkg.git
     - choco --version
