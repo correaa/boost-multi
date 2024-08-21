@@ -872,8 +872,8 @@ inq:
     - mkdir build && cd build
     - cmake .. -G Ninja --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
     - cmake --build . || cmake --build . --parallel 1
-    - cmake --install .
     - apt-get -qq --no-install-recommends -y install python3-numpy
+    - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
@@ -907,6 +907,7 @@ inq cuda:
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61  # =75  # =80
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
@@ -942,6 +943,7 @@ inq cuda 12.0:
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61  # =75  # =80
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
