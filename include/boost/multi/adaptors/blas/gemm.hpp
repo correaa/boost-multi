@@ -113,8 +113,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 }
 
 template<class Context, class It2DA, class Size, class It2DB, class It2DC,
-	std::enable_if_t<(is_conjugated<It2DA>{} && !is_conjugated<It2DB>{}), int> =0
->
+	std::enable_if_t<(is_conjugated<It2DA>{} && !is_conjugated<It2DB>{}), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first) // NOLINT(readability-function-cognitive-complexity) : 125
 {
 	assert( (*b_first).size() == (*c_first).size() );          // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
