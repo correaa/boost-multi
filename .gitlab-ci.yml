@@ -861,7 +861,7 @@ inq:
     - large-memory-space
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
@@ -873,6 +873,7 @@ inq:
     - cmake .. -G Ninja --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
     - cmake --build . || cmake --build . --parallel 1
     - cmake --install .
+    - apt-get -qq --no-install-recommends -y install python3-numpy
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
