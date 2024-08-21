@@ -15,19 +15,22 @@
 
 namespace boost::multi::blas {
 
-template<class A, std::enable_if_t<! is_conjugated<A>{}, int> =0> 
+template<class A,
+	std::enable_if_t<! is_conjugated<A>{}, int> =0>   // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto base_aux(A&& array)
 ->decltype((std::forward<A>(array)).base()) {
 	return (std::forward<A>(array)).base(); }
 
-template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
+template<class A,
+	std::enable_if_t<    is_conjugated<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto base_aux(A&& array)
 ->decltype(underlying((std::forward<A>(array)).base())) {
 	return underlying((std::forward<A>(array)).base()); }
 
 using core::herk;
 
-template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex_array<C2D>{}, int> =0>
+template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr,
+	std::enable_if_t<is_complex_array<C2D>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) 74, BLAS naming
 	assert( a.size() == c.size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( c.size() == c.rotated().size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
@@ -65,7 +68,8 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 	return std::forward<C2D>(c);
 }
 
-template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<! is_complex_array<C2D>{}, int> =0>
+template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr,
+	std::enable_if_t<! is_complex_array<C2D>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(syrk(c_side, alpha, a, beta, std::forward<C2D>(c))) {
 	return syrk(c_side, alpha, a, beta, std::forward<C2D>(c)); }
