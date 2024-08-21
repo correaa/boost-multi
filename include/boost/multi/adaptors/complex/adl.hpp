@@ -67,19 +67,19 @@ struct _complex {  // NOLINT(readability-identifier-naming) deprecating this
 
 	template<
 		class T,
-		std::enable_if_t<
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 			sizeof(T) == 2 * sizeof(value_type) &&
 				std::is_assignable<typename T::value_type&, decltype(std::declval<T>().real())>{} && std::is_assignable<typename T::value_type&, decltype(std::declval<T>().imag())>{},
-			int> = 0>
+			int> =0>
 	constexpr explicit operator T const&() const& {
 		return reinterpret_cast<T const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 	template<
 		class T,
-		std::enable_if_t<
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 			sizeof(T) == 2 * sizeof(value_type) &&
-				std::is_assignable<typename T::value_type&, decltype(std::declval<T>().real())>{} &&
-				std::is_assignable<typename T::value_type&, decltype(std::declval<T>().imag())>{},
+				std::is_assignable_v<typename T::value_type&, decltype(std::declval<T>().real())> &&
+				std::is_assignable_v<typename T::value_type&, decltype(std::declval<T>().imag())>,
 			int> = 0>
 	constexpr explicit operator T&() & { return reinterpret_cast<T const&>(*this); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
@@ -116,17 +116,17 @@ struct real_t {
 		return std::forward<Array>(array).template reinterpret_array_cast<_complex<ValueType>>().template member_cast<ValueType>(&_complex<ValueType>::real);
 	}
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
-	         std::enable_if_t<
+	         std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 		         sizeof(T) == 2 * sizeof(ValueType) &&
-			         std::is_assignable<ValueType&, decltype(real(std::declval<T>()))>{} &&
-			         std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{},
+			         std::is_assignable_v<ValueType&, decltype(real(std::declval<T>()))> &&
+			         std::is_assignable_v<ValueType&, decltype(imag(std::declval<T>()))>,
 		         int> = 0>
 	constexpr auto operator()(T& value) const -> ValueType& { return reinterpret_cast<multi::_complex<ValueType>&>(value).real; }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[0]
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
-	         std::enable_if_t<
+	         std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 		         sizeof(T) == 2 * sizeof(ValueType) &&
-			         std::is_assignable<ValueType&, decltype(real(std::declval<T>()))>{} &&
-			         std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{},
+			         std::is_assignable_v<ValueType&, decltype(real(std::declval<T>()))> &&
+			         std::is_assignable_v<ValueType&, decltype(imag(std::declval<T>()))>,
 		         int> = 0>
 	auto operator()(T const& value) const -> ValueType const& {
 		return reinterpret_cast<multi::_complex<ValueType> const&>(value).real;  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[0]
@@ -140,7 +140,7 @@ struct imag_t {
 		return std::forward<Array>(array).template reinterpret_array_cast<_complex<ValueType>>().template member_cast<ValueType>(&_complex<ValueType>::imag);
 	}
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
-	         std::enable_if_t<
+	         std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 		         sizeof(T) == 2 * sizeof(ValueType) &&
 			         std::is_assignable<ValueType&, decltype(real(std::declval<T>()))>{} &&
 			         std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{},
@@ -149,7 +149,7 @@ struct imag_t {
 		return reinterpret_cast<multi::_complex<ValueType>&>(value).imag;  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[1]
 	}
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
-	         std::enable_if_t<
+	         std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 		         sizeof(T) == 2 * sizeof(ValueType) &&
 			         std::is_assignable<ValueType&, decltype(real(std::declval<T>()))>{} &&
 			         std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{},
