@@ -136,10 +136,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
+		// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
 		multi::array<employee, 1> d1D = {
 			{ "Al"s, 1430, 35},
 			{"Bob"s, 3212, 34},
 		};
+		// NOLINTEND(misc-include-cleaner) bug in clang-tidy 18
 
 		auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
 		BOOST_TEST(size(d1D_names) == size(d1D));

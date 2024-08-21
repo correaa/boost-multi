@@ -132,7 +132,8 @@ class axpy_range {
 	auto operator*=(Scale s) & -> axpy_range& {alpha_ *= s; return *this;}  // NOLINT(readability-identifier-length) conventional BLAS naming
 };
 
-template<class Context, class Scalar, class X1D, class=std::enable_if_t<is_context<Context>{}>>
+template<class Context, class Scalar, class X1D,
+	class=std::enable_if_t<is_context<Context>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto axpy(Context&& ctxt, Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conventional BLAS naming
 -> axpy_range<Context, Scalar, typename X1D::const_iterator> {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	return {std::forward<Context>(ctxt), a, begin(x), end(x)};
@@ -160,7 +161,7 @@ class scaled {
 
 namespace operators {
 
-template<class T> struct algebraic_traits {static auto one() {return T{1.0};}};
+template<class T> struct algebraic_traits {static auto one() { return T{1.0}; }};
 
 template<class T> struct algebraic_traits<std  ::complex<T>> {static auto one() {return std  ::complex<T>{T{1}, T{0}};}};
 template<class T> struct algebraic_traits<multi::complex<T>> {static auto one() {return multi::complex<T>{T{1}, T{0}};}};
@@ -168,7 +169,8 @@ template<class T> struct algebraic_traits<multi::complex<T>> {static auto one() 
 template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 
-template<class X, std::enable_if_t<X::dimensionality == 1, int> =0>
+template<class X,
+	std::enable_if_t<X::dimensionality == 1, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto operator*(typename X::element_type a, X const& x) {return scaled{a, x};}  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X += y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS

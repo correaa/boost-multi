@@ -47,10 +47,11 @@ namespace operators {
 
 [[maybe_unused]] constexpr static struct {
 
-	template<class A, std::enable_if_t<std::decay_t<A>::rank::value == 2, int> =0>
+	template<class A, std::enable_if_t<std::decay_t<A>::rank::value == 2, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return hermitized(std::forward<A>(array)); }
 
-	template<class A, std::enable_if_t<std::decay_t<A>::rank::value == 1, int> =0>
+	template<class A, 
+		std::enable_if_t<std::decay_t<A>::rank::value == 1, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
 	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return blas::conj(std::forward<A>(array)); }
 
@@ -65,15 +66,18 @@ auto operator^(A&& array, Op op)
 
 using operators::H;
 
-template<class A, std::enable_if_t<std::decay_t<A>::rank::value == 1, int> =0>
-auto C(A&& array) -> decltype(auto) {return blas::conj(std::forward<A>(array));}  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
+template<class A,
+	std::enable_if_t<std::decay_t<A>::rank::value == 1, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+auto C(A&& array) -> decltype(auto) { return blas::conj(std::forward<A>(array)); }  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
 
-template<class A, std::enable_if_t<std::decay_t<A>::rank::value == 2, int> =0>
+template<class A,
+	std::enable_if_t<std::decay_t<A>::rank::value == 2, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 [[deprecated("use blas::H instead of blas::C for conjugated transposed matrices to avoid confusion, use blas::J for only-conjugation of matrices")]]
-auto C(A&& array) -> decltype(auto) {return hermitized(std::forward<A>(array));}  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
+auto C(A&& array) -> decltype(auto) { return hermitized(std::forward<A>(array)); }  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
 
-template<class A, std::enable_if_t<std::decay_t<A>::rank::value == 2, int> =0>
-auto J(A&& array) -> decltype(auto) {return blas::conj(std::forward<A>(array));}  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
+template<class A,
+	std::enable_if_t<std::decay_t<A>::rank::value == 2, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+auto J(A&& array) -> decltype(auto) { return blas::conj(std::forward<A>(array)); }  // NOLINT(readability-identifier-naming,readability-identifier-length) : conventional one-letter operation BLAS
 
 namespace operators {
 

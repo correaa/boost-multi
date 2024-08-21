@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations) {  // , *boost::unit_test::tolerance(0.00
 		marray<complex, 4> out = in;
 		{
 			auto const  pln = multi::fftw::plan::forward(which, in.base(), in.layout(), out.base(), out.layout());
-			watch const unnamed("cpu_oplac planned %ws wall, CPU (%p%)\n"s);
+			watch const unnamed("cpu_oplac planned %ws wall, CPU (%p%)\n"s);  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 			pln.execute(in.base(), out.base());
 		}
 		{

@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
 
 	// clang-format off
-	std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};
+	std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};  // NOLINT(misc-include-cleaner) bug in clang-tidy 18.1.3
 	// clang-format on
 
 	multi::array_ref<std::string, 1> mar = *multi::array_ptr<std::string, 1>(&stdarr);

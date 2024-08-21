@@ -42,7 +42,7 @@ template<class T> struct complex_dummy {
 
 template<
 	class A, typename Complex = typename std::decay_t<A>::element, typename T = typename multi::blas::complex_traits<Complex>::real_type,
-	class = std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>>
+	class = std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto real(A&& array)
 	-> decltype(std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::real)) {
 	return std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::real);
@@ -50,14 +50,14 @@ auto real(A&& array)
 
 template<
 	class A, class Complex = typename std::decay_t<A>::element_type, typename T = typename complex_traits<Complex>::real_type,
-	class = std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>>
+	class = std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto imag(A&& array)
 	-> decltype(std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::imag)) {
 	return std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::imag);
 }
 
 template<class ComplexArr, class ComplexElem = typename std::decay_t<ComplexArr>::element, typename RealElem = typename ComplexElem::value_type,
-         class = std::enable_if_t<blas::numeric::is_complex_of<ComplexElem, RealElem>::value>>
+	class = std::enable_if_t<blas::numeric::is_complex_of<ComplexElem, RealElem>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto real_doubled(ComplexArr&& array) {  // produces a real view of complex array with the last dimension duplicated and with interleaved real imaginary parts
 	return std::forward<ComplexArr>(array).template reinterpret_array_cast<RealElem>(2).rotated().flatted().unrotated();
 }
@@ -124,11 +124,13 @@ class involuted {
 		return other != self.operator decay_type();
 	}
 
-	template<class DecayType, std::enable_if_t<!std::is_base_of<involuted, DecayType>{}, int> = 0>
+	template<class DecayType,
+		std::enable_if_t<!std::is_base_of_v<involuted, DecayType>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	friend constexpr auto operator==(DecayType const& other, involuted const& self) {
 		return other == self.operator decay_type();
 	}
-	template<class DecayType, std::enable_if_t<!std::is_base_of<involuted, DecayType>{}, int> = 0>
+	template<class DecayType,
+		std::enable_if_t<!std::is_base_of_v<involuted, DecayType>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	friend constexpr auto operator!=(DecayType const& other, involuted const& self) {
 		return other != self.operator decay_type();
 	}
@@ -277,20 +279,22 @@ template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std:
 };
 
 template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type, typename Ptr = typename D::element_ptr,
-         std::enable_if_t<!is_complex_array<A>{}, int> = 0>
+	std::enable_if_t<!is_complex_array<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array) -> A&& {
 	return std::forward<A>(array);
 }
 
 template<
 	class A, class D = std::decay_t<A>, typename Elem = typename D::element_type,
-	typename Ptr = std::decay_t<decltype(std::declval<A&&>().base())>, std::enable_if_t<!is_conjugated<A>{} && is_complex_array<A>{}, int> = 0>
+	typename Ptr = std::decay_t<decltype(std::declval<A&&>().base())>,
+	std::enable_if_t<!is_conjugated<A>{} && is_complex_array<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array) -> decltype(auto) {
 	return std::forward<A>(array).template static_array_cast<Elem, conjugater<Ptr>>();
 }
 
 template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type,
-         typename Ptr = typename decltype(std::declval<A&&>().base())::underlying_type, std::enable_if_t<is_conjugated<A>{}, int> = 0>
+         typename Ptr = typename decltype(std::declval<A&&>().base())::underlying_type,
+		 std::enable_if_t<is_conjugated<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array)
 	-> decltype(std::forward<A>(array).template static_array_cast<Elem, Ptr>()) {
 	return std::forward<A>(array).template static_array_cast<Elem, Ptr>();

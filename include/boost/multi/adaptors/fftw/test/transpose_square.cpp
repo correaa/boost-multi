@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 			multi::array<complex, 2> out = in;
 			multi::array<complex, 2> aux(out.extensions());
 			{
-				watch const unnamed("auxiliary copy           %ws wall, CPU (%p%)\n"s);
+				watch const unnamed("auxiliary copy           %ws wall, CPU (%p%)\n"s);  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 				aux = ~out;
 				out = std::move(aux);
 				BOOST_TEST( out[35][79] == in[79][35] );
