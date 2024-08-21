@@ -90,7 +90,7 @@ template<class Self> struct incrementable : totally_ordered<Self> {  // , self_m
 
 template<class T>
 struct decrementable : weakly_decrementable<T> {
-	template<class U, typename = std::enable_if_t<!std::is_base_of_v<T, U>>>
+	template<class U, typename = std::enable_if_t<!std::is_base_of_v<T, U>>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	friend constexpr auto operator--(U& self, int) -> T {
 		T tmp{self};
 		--self;
@@ -182,13 +182,13 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 template<class T, class D>
 struct addable2 {
 	using difference_type = D;
-	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}>>
+	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	friend constexpr auto operator+(TT&& self, difference_type const& diff) -> T {
 		T tmp{std::forward<TT>(self)};
 		tmp += diff;
 		return tmp;
 	}
-	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}>>
+	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	friend constexpr auto operator+(difference_type const& diff, TT&& self) -> T { return std::forward<TT>(self) + diff; }
 };
 
