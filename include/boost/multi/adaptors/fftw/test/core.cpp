@@ -251,7 +251,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 		multi::array<std::string, 2> in = {
-			{"100.0 + 2.0*I"s,  "9.0 - 1.0*I"s, "2.0 +  4.0*I"s},
+			{"100.0 + 2.0*I"s,  "9.0 - 1.0*I"s, "2.0 +  4.0*I"s},  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 			{  "3.0 + 3.0*I"s,  "7.0 - 4.0*I"s, "1.0 +  9.0*I"s},
 			{  "4.0 + 1.0*I"s,  "5.0 + 3.0*I"s, "2.0 +  4.0*I"s},
 			{  "3.0 - 1.0*I"s,  "8.0 + 7.0*I"s, "2.0 +  1.0*I"s},

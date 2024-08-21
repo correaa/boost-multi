@@ -56,7 +56,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> out = in;
 
-		watch const unnamed{"transposition with aux   %ws wall, CPU (%p%)\n"s};
+		watch const unnamed{"transposition with aux   %ws wall, CPU (%p%)\n"s};  //  NOLINT(misc-include-cleaner) bug in clang-tidy 18
 
 		multi::array<complex, 2> aux{~out};
 

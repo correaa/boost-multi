@@ -95,11 +95,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 		using namespace std::string_literals;  // NOLINT(build/namespaces) ""s
 
+		// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
 		multi::array<std::string, 2> arr = {
 			{"a"s, "b"s, "c"s, "d"s, "e"s},
 			{"f"s, "g"s, "h"s, "f"s, "g"s},
 			{"h"s, "i"s, "j"s, "k"s, "l"s},
 		};
+		// NOLINTEND(misc-include-cleaner) bug in clang-tidy 18
 
 		BOOST_TEST(      size(arr) == 3                                            );
 		BOOST_TEST(           arr.num_elements() == 3*5L                           );

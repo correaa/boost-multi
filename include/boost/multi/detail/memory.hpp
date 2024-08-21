@@ -21,20 +21,20 @@ struct allocator_traits : std::allocator_traits<Alloc> {};
 // https://en.cppreference.com/w/cpp/memory/destroy
 template<
 	class Alloc, class ForwardIt,
-	std::enable_if_t<!has_rank<ForwardIt>::value, int> =0
+	std::enable_if_t<!has_rank<ForwardIt>::value, int> =0  // NOLINT(modernize-use-constraints) TODO(correaa)
 >
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	for(; first != last; ++first) {allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
 
-template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v == 1, int> = 0>
+template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	//  using multi::to_address;
 	std::for_each(first, last, [&](auto& elem) {alloc.destroy(addressof(elem));});
 	// for(; first != last; ++first) {alloc.destroy(to_address(first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
 
-template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v != 1, int> = 0>
+template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v != 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	for(; first != last; ++first) {destroy(alloc, begin(*first), end(*first));} // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
@@ -66,7 +66,7 @@ auto uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size n) ->
 template<
 	class Alloc, class ForwardIt, class Size,
 	typename T = typename std::iterator_traits<ForwardIt>::value_type,
-	typename = std::enable_if_t<! std::is_trivially_default_constructible<T>{}>
+	typename = std::enable_if_t<! std::is_trivially_default_constructible<T>{}>  // NOLINT(modernize-use-constraints) TODO(correaa)
 >
 auto uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n) -> ForwardIt {
 	ForwardIt current = first;  // using std::addressof;
@@ -86,7 +86,7 @@ template<class... Args> auto std_copy(Args&&... args) {
 
 namespace xtd {
 
-template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<! has_rank<MIt>{}> >
+template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<! has_rank<MIt>{}> >  // NOLINT(modernize-use-constraints) TODO(correaa)
 auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, MIt dest) -> MIt {
 	MIt current = dest;
 //  using multi::to_address;

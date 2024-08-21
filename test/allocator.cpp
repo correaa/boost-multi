@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
 #endif
 	using namespace std::string_literals;  // NOLINT(build/namespaces)
 
-	BOOST_TEST( va[1] [0][0] == "1"s );
+	BOOST_TEST( va[1] [0][0] == "1"s );  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 	BOOST_TEST( va[2] [0][0] == "2"s );
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode

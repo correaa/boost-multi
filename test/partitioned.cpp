@@ -108,6 +108,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 BOOST_AUTO_TEST_CASE(array_partitioned) {
 	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
+	// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
 	multi::array<std::string, 2> A2 = {
 		{"s0P0"s, "s1P0"s},
 		{"s0P1"s, "s1P1"s},
@@ -116,6 +117,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned) {
 		{"s0P4"s, "s1P4"s},
 		{"s0P5"s, "s1P5"s},
 	};
+	// NOLINTEND(misc-include-cleaner)
 
 	BOOST_TEST(  size(A2) == 6 );
 
