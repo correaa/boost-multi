@@ -111,12 +111,12 @@ class adl_equal_t {
 inline constexpr adl_equal_t adl_equal;
 
 #ifndef _MSC_VER
-template<class... As, class = std::enable_if_t<sizeof...(As) == 0> > void copy(As...) = delete;
+template<class... As, class = std::enable_if_t<sizeof...(As) == 0> > void copy(As...) = delete;  // NOLINT(modernize-use-constraints) TODO(correaa)
 #endif
 
 class adl_copy_t {
 	template<class InputIt, class OutputIt,
-		class=std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>
+		class=std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	>
 	                               constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first) const BOOST_MULTI_DECLRETURN(std::copy(first, last, d_first))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
@@ -171,7 +171,7 @@ constexpr auto me_to_address(priority<1> /**/, T const& ptr) noexcept
 	return std::pointer_traits<T>::to_address(ptr);
 }
 
-template<class T, std::enable_if_t<std::is_pointer<T>{}, int> =0>
+template<class T, std::enable_if_t<std::is_pointer<T>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto me_to_address(priority<2>/**/, T const& ptr) noexcept -> T {
     static_assert(! std::is_function_v<T>);
     return ptr;
@@ -384,7 +384,9 @@ constexpr auto alloc_uninitialized_copy(std::allocator<T>&/*allocator*/, InputIt
 	return adl_uninitialized_copy(first, last, d_first);
 }
 
-template<class Alloc, class InputIt, class ForwardIt, class=decltype(std::addressof(*std::declval<ForwardIt>())), class=std::enable_if_t<std::is_constructible_v<typename std::iterator_traits<ForwardIt>::value_type, typename std::iterator_traits<InputIt>::reference>>>
+template<class Alloc, class InputIt, class ForwardIt, class=decltype(std::addressof(*std::declval<ForwardIt>())),
+	class=std::enable_if_t<std::is_constructible_v<typename std::iterator_traits<ForwardIt>::value_type, typename std::iterator_traits<InputIt>::reference>>  // NOLINT(modernize-use-constraints) TODO(correaa)
+>
 #if __cplusplus >= 202002L
 constexpr
 #endif

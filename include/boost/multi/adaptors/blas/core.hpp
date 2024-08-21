@@ -386,7 +386,7 @@ using std::max;
 
 #define xsyrk(T) \
 template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
-enable_if_t<                                                                                                                                                                                      \
+enable_if_t<  /* NOLINT(modernize-use-constraints) TODO(correaa) for C++20 */                                                                                                                                                                                    \
 	is_##T<AA>{} && is_##T<CC>{} && is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} &&                                                                                                       \
 	is_convertible_v<AAP, AA*> && is_convertible_v<CCP, CC*>                                                                                                                                     \
 , int> =0>                                                                                                                                                                                        \
@@ -401,7 +401,7 @@ v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 
 #define xherk(T) \
 template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, class Real = typename T::value_type, \
-enable_if_t<                                                                                                                                                                                                                           \
+enable_if_t<  /* NOLINT(modernize-use-constraints) TODO(correaa) for C++20 */                                                                                                                                                                                                                         \
 	is_##T<AA>{} && is_##T<CC>{} && is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} &&                                                                                                                                            \
 	is_convertible_v<AAP, AA*> && is_convertible_v<CCP, CC*>                                                                                                                                                                          \
 , int> =0>                                                                                                                                                                                                                             \
@@ -417,7 +417,7 @@ v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 
 #define xgemm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
-enable_if_t<                                                                                                                                                                                                                            \
+enable_if_t<  /* NOLINT(modernize-use-constraints) TODO(correaa) for C++20 */                                                                                                                                                                                                                            \
 	is_##T<AA>{} && is_##T<BB>{} && is_##T<CC>{} &&                                                                                                                           \
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*> && is_convertible_v<CCP, CC*>                                                                                                                                            \
 , int> =0>                                                                                                                                                                                                                              \
@@ -435,12 +435,12 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 }                                                                                                                                                                                                                        \
 
 // NOLINTNEXTLINE(readability-identifier-length) conventional BLAS name
-xgemm(s) xgemm(d) xgemm(c) xgemm(z)  // NOLINT(readability-function-cognitive-complexity) : 36 of 25
+xgemm(s) xgemm(d) xgemm(c) xgemm(z)  // NOLINT(modernize-use-constraints,readability-function-cognitive-complexity) : 36 of 25
 #undef xgemm
 
 #define xtrsm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,                                                         \
-enable_if_t<                                                                                                                                                                                                      \
+enable_if_t<  /* NOLINT(modernize-use-constraints) TODO(correaa) for C++20 */                                                                                                                                                                                                      \
 	is_##T<AA>{} && is_##T<BB>{} && is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} && is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} &&                                                                 \
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*>                                                                                                                                                     \
 ,int> =0>                                                                                                                                                                                                         \
@@ -546,7 +546,8 @@ template<> struct is_context<context const&> : std::true_type  {};
 
 template<> struct is_context<void*&> : std::true_type {};
 
-template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0>
+template<class TPtr,
+	std::enable_if_t<std::is_convertible_v<TPtr, typename std::pointer_traits<TPtr>::element_type*>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto default_context_of(TPtr const& /*unused*/) -> blas::context* {
 	static blas::context dc;
 	return &dc;

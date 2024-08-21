@@ -43,8 +43,7 @@ auto xbase(It const& it)
 #define CTXT std::forward<Context>(ctxt)
 
 template<class Context, class It2DA, class Size, class It2DB, class It2DC,
-	std::enable_if_t<(!is_conjugated<It2DA>{} && !is_conjugated<It2DB>{}), int> = 0
->
+	std::enable_if_t<(!is_conjugated<It2DA>{} && !is_conjugated<It2DB>{}), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first) // NOLINT(readability-function-cognitive-complexity) : 125
 {
 	assert( (*b_first).size() == (*c_first).size() );          // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
@@ -87,8 +86,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 }
 
 template<class Context, class It2DA, class Size, class It2DB, class It2DC,
-	std::enable_if_t<(!is_conjugated<It2DA>{} && is_conjugated<It2DB>{}), int> =0
->
+	std::enable_if_t<(!is_conjugated<It2DA>{} && is_conjugated<It2DB>{}), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first) // NOLINT(readability-function-cognitive-complexity) : 125
 {
 	assert( (*b_first).size() == (*c_first).size() );          // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
@@ -135,8 +133,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 }
 
 template<class Context, class It2DA, class Size, class It2DB, class It2DC,
-	std::enable_if_t<(is_conjugated<It2DA>{} && is_conjugated<It2DB>{}), int> =0
->
+	std::enable_if_t<(is_conjugated<It2DA>{} && is_conjugated<It2DB>{}), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first) // NOLINT(readability-function-cognitive-complexity) : 125
 {
 	assert( (*b_first).size() == (*c_first).size() );          // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
@@ -309,7 +306,8 @@ class gemm_range {
 	}
 };
 
-template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*std::declval<ContextPtr>())>{}> >
+template<class ContextPtr, class Scalar, class A2D, class B2D,
+	class = std::enable_if_t<is_context<decltype(*std::declval<ContextPtr>())>{}> >  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(readability-identifier-length) BLAS naming
 ->gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/>
 {
@@ -352,7 +350,8 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 #endif
 
 namespace operators {
-	template<class A2D, class B2D, std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>
+	template<class A2D, class B2D,
+		std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	auto operator*(A2D const& A, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
 	->decltype(blas::gemm(1.0, A, B)) {
 		return blas::gemm(1.0, A, B); }

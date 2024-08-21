@@ -34,7 +34,7 @@ void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	// for(; first != last; ++first) {alloc.destroy(to_address(first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
 
-template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v != 1, int> = 0>
+template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v != 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	for(; first != last; ++first) {destroy(alloc, begin(*first), end(*first));} // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
@@ -86,7 +86,7 @@ template<class... Args> auto std_copy(Args&&... args) {
 
 namespace xtd {
 
-template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<! has_rank<MIt>{}> >
+template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<! has_rank<MIt>{}> >  // NOLINT(modernize-use-constraints) TODO(correaa)
 auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, MIt dest) -> MIt {
 	MIt current = dest;
 //  using multi::to_address;
