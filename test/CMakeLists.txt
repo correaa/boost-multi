@@ -47,7 +47,7 @@ else()
 		--restrict
 		-Xcudafe=--display_error_number -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 	>
-	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror # -Wno-unknown-warning (activates -Wunknown-pragmas)
+	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -ftrivial-auto-var-init=pattern -Werror # -Wno-unknown-warning (activates -Wunknown-pragmas)
 	# -WNSObject-attribute  # (gcc 12, not in 11)
 	# -Wabi=13 -Wabi-tag # (maybe important when linking with very old libraries)
 	-Waddress
