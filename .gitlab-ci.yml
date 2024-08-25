@@ -254,14 +254,14 @@ clang++-latest libc++:
     - high-bandwidth
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
-    - wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose # 1.70 doesn't install boost timer well, there is no version 1.72 in sourceforge
-    - tar -xf boost_1_72_0.tar.gz 
-    - cd boost_1_72_0
-    - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-timer install -j4 # libc++ only works with boost test compiled with libc++
-    - cd ..
-    - mkdir build && cd build
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
+    # - wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well
+    # - tar -xf boost_1_72_0.tar.gz 
+    # - cd boost_1_72_0
+    # - ./bootstrap.sh --with-toolset=clang
+    # - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-timer install -j4 # libc++ only works with boost test compiled with libc++
+    # - cd ..
+    # - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
     - cmake --build .
