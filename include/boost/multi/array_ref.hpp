@@ -3463,7 +3463,7 @@ struct array_ptr
 };
 
 template<class T, typename Ptr>
-class array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
+class [[deprecated("no good uses found")]] array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
 	mutable multi::array_ref<T, 0, Ptr> ref_;  // TODO(correaa) implement array_ptr like other cases
 
  public:
