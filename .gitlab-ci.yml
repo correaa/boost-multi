@@ -600,27 +600,27 @@ cuda:
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of drivers"
   needs: ["g++"]
 
-cuda-11.8:
-  stage: build
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-  tags:
-    - non-shared
-    - nvidia-gpu
-  interruptible: true
-  script:
-    - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - mkdir build && cd build
-    - ls /usr/local
-    - ls /usr/local/cuda-11/bin
-    - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-    # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-    # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-    # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["cuda"]
+# cuda-11.8:
+#   stage: build
+#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+#   tags:
+#     - non-shared
+#     - nvidia-gpu
+#   interruptible: true
+#   script:
+#     - nvidia-smi
+#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#     - mkdir build && cd build
+#     - ls /usr/local
+#     - ls /usr/local/cuda-11/bin
+#     - /usr/local/cuda-11/bin/nvcc --version
+#     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#     # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+#     # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+#     # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
+#   needs: ["cuda"]
 
 cuda-11.8 mkl:
   stage: build
@@ -670,24 +670,24 @@ cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda"]
 
-cuda-12.3.1:
-  stage: build
-  allow_failure: false
-  image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
-  tags:
-    - non-shared
-    - nvidia-gpu
-  interruptible: true
-  script:
-    - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - mkdir build && cd build
-    - g++-12 --version
-    - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 || ctest --rerun-failed --output-on-failure
-  needs: ["cuda"]
+# cuda-12.3.1:
+#   stage: build
+#   allow_failure: false
+#   image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
+#   tags:
+#     - non-shared
+#     - nvidia-gpu
+#   interruptible: true
+#   script:
+#     - nvidia-smi
+#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#     - mkdir build && cd build
+#     - g++-12 --version
+#     - /usr/local/cuda/bin/nvcc --version
+#     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 || ctest --rerun-failed --output-on-failure
+#   needs: ["cuda"]
 
 cuclang++-16 cuda-11.4.3:
   stage: build
