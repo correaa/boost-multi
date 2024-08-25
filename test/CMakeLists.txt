@@ -51,17 +51,18 @@ else()
 	>
 	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror # -Wno-unknown-warning (activates -Wunknown-pragmas)
 		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
-	# -WNSObject-attribute  # (gcc 12, not in 11)
+	# -WNSObject-attribute # (gcc 12, not in 11)
 	# -Wabi=13 -Wabi-tag # (maybe important when linking with very old libraries)
 	-Waddress
-	#-Waddress-of-packed-member # (gcc 11, not in gcc 8)
+	#$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Waddress-of-packed-member>
+	-Waddress-of-packed-member # (gcc 11, not in gcc 8)
 	-Wno-aggregate-return # (disallow return classes or structs, seems a C-compatibility warning)
 	-Waggressive-loop-optimizations
 	-Waligned-new=all # (gcc 12, not in 11)
 	# -Walloc-size-larger-than=<bytes> # (gcc 12, not in 11)
-	-Walloc-zero  # -Walloc-size-larger-than=<bytes>
+	-Walloc-zero
 	-Walloca  # -Walloca-larger-than=<number>
-	# -Warith-conversion # (gcc 11, not in gcc 9)
+	-Warith-conversion # (gcc 11, not in gcc 9)
 	-Warray-bounds # -Warray-bounds=<0,2>
 	# -Warray-compare # (gcc 12, not in gcc 9)
 	# -Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
