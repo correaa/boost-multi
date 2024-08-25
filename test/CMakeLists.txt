@@ -75,9 +75,11 @@ else()
 	-Wc++0x-compat -Wc++11-compat -Wc++14-compat -Wc++17-compat
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++17-extensions>
 	-Wc++1z-compat
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++20-compat -Wc++20-extensions -Wc++23-extensions -Wc++2a-compat>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++20-compat -Wc++20-extensions>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++23-extensions>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++2a-compat>
 	#-Wcannot-profile # (gcc 9, not in gcc 8)
-	#-Wcast-align=strict -Wcast-function-type # (gcc 8, not in gcc 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type> # (gcc 8, not in gcc 7)
 	-Wcast-qual
 	#-Wcatch-value  #=<0, 3> # (gcc 8, not in gcc 7)
 	-Wchar-subscripts
