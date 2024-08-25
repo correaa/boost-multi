@@ -3467,9 +3467,9 @@ class array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
 	mutable multi::array_ref<T, 0, Ptr> ref_;  // TODO(correaa) implement array_ptr like other cases
 
  public:
-	~array_ptr() = default;
-	constexpr array_ptr(array_ptr const&) = default;
-	constexpr array_ptr(array_ptr     &&) = default;  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor) TODO(correaa) change the implementation like the other cases
+	~array_ptr()                              = default;
+	constexpr array_ptr(array_ptr const&)     = default;
+	constexpr array_ptr(array_ptr&&) noexcept = default;  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor) TODO(correaa) change the implementation like the other cases
 
 	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : ref_(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
