@@ -54,7 +54,7 @@ else()
 	# -WNSObject-attribute # (gcc 12, not in 11)
 	# -Wabi=13 -Wabi-tag # (maybe important when linking with very old libraries)
 	-Waddress
-	#$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Waddress-of-packed-member>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Waddress-of-packed-member>
 	-Waddress-of-packed-member # (gcc 11, not in gcc 8)
 	-Wno-aggregate-return # (disallow return classes or structs, seems a C-compatibility warning)
 	-Waggressive-loop-optimizations
@@ -62,19 +62,19 @@ else()
 	# -Walloc-size-larger-than=<bytes> # (gcc 12, not in 11)
 	-Walloc-zero
 	-Walloca  # -Walloca-larger-than=<number>
-	-Warith-conversion # (gcc 11, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Warith-conversion>
 	-Warray-bounds # -Warray-bounds=<0,2>
-	# -Warray-compare # (gcc 12, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Warray-compare>
 	# -Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
-	#-Wattribute-alias #=<0,2> # (gcc 12, not in 11, not in 7)
-	#-Wattribute-warning # (gcc 9, not in 8)
+	# -Wattribute-alias #=<0,2> # (gcc 12, not in 11, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wattribute-warning>
 	-Wattributes
 	-Wbool-compare -Wbool-operation
 	# -Wbidi-chars -Wbidi-chars=any # (gcc 12, not in 11)
 	-Wbuiltin-declaration-mismatch -Wbuiltin-macro-redefined
 	#-Wc++-compat
 	-Wc++0x-compat -Wc++11-compat -Wc++14-compat -Wc++17-compat
-	# -Wc++17-extensions # (gcc 12, not in 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++17-extensions>
 	-Wc++1z-compat
 	# -Wc++20-compat -Wc++20-extensions -Wc++23-extensions -Wc++2a-compat # (gcc 11, not in gcc 9)
 	#-Wcannot-profile # (gcc 9, not in gcc 8)
