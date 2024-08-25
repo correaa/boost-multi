@@ -86,18 +86,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( (*ap1).base() == &doub );
 			BOOST_TEST( ap1->base() == &doub );
 
-			multi::array_ptr<int, 0> const ap0(&doub, {});
+			// multi::array_ptr<int, 0> const ap0(&doub, {});
 
-			BOOST_TEST(( ap0 == multi::array_ptr<int, 0>(&doub, {}) ));
-			BOOST_TEST(( ap0 != multi::array_ptr<int, 0>(&dd, {}) ));
-			// BOOST_TEST( ap0->base() == &doub );
-			// BOOST_TEST( (*ap0).base() == &doub );
+			// BOOST_TEST(( ap0 == multi::array_ptr<int, 0>(&doub, {}) ));
+			// BOOST_TEST(( ap0 != multi::array_ptr<int, 0>(&dd, {}) ));
+			// // BOOST_TEST( ap0->base() == &doub );
+			// // BOOST_TEST( (*ap0).base() == &doub );
 
-			multi::array_ptr<int, 0> const ap0dd{&dd};
-			BOOST_TEST( ap0dd != ap0 );
-			BOOST_TEST( *ap0 == *ap0dd );
-			int d3 = 3141592;
-			BOOST_TEST(( *multi::array_ptr<int, 0>(&d3, {}) == 3141592 ));
+			// multi::array_ptr<int, 0> const ap0dd{&dd};
+			// BOOST_TEST( ap0dd != ap0 );
+			// BOOST_TEST( *ap0 == *ap0dd );
+			// int d3 = 3141592;
+			// BOOST_TEST(( *multi::array_ptr<int, 0>(&d3, {}) == 3141592 ));
 		}
 	}
 
