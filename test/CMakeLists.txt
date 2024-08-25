@@ -55,7 +55,6 @@ else()
 	# -Wabi=13 -Wabi-tag # (maybe important when linking with very old libraries)
 	-Waddress
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Waddress-of-packed-member>
-	-Waddress-of-packed-member # (gcc 11, not in gcc 8)
 	-Wno-aggregate-return # (disallow return classes or structs, seems a C-compatibility warning)
 	-Waggressive-loop-optimizations
 	-Waligned-new=all # (gcc 12, not in 11)
@@ -70,13 +69,13 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wattribute-warning>
 	-Wattributes
 	-Wbool-compare -Wbool-operation
-	# -Wbidi-chars -Wbidi-chars=any # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wbidi-chars -Wbidi-chars=any>
 	-Wbuiltin-declaration-mismatch -Wbuiltin-macro-redefined
 	#-Wc++-compat
 	-Wc++0x-compat -Wc++11-compat -Wc++14-compat -Wc++17-compat
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++17-extensions>
 	-Wc++1z-compat
-	# -Wc++20-compat -Wc++20-extensions -Wc++23-extensions -Wc++2a-compat # (gcc 11, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++20-compat -Wc++20-extensions -Wc++23-extensions -Wc++2a-compat>
 	#-Wcannot-profile # (gcc 9, not in gcc 8)
 	#-Wcast-align=strict -Wcast-function-type # (gcc 8, not in gcc 7)
 	-Wcast-qual
