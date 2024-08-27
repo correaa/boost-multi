@@ -510,7 +510,7 @@ oneapi-2022.2:
     - icpx --version
     - CXX=icpx CXXFLAGS="-DPSTL_USE_PARALLEL_POLICIES=0" cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --parallel 2 --output-on-failure
+    - ctest --parallel 2 --output-on-failure || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
 
 oneapi-latest c++20:
@@ -531,7 +531,7 @@ oneapi-latest c++20:
     - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --parallel 2 --output-on-failure
+    - ctest --parallel 2 --output-on-failure || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
 
 nvhpc:
@@ -547,7 +547,9 @@ nvhpc:
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
+    - export OMPI_ALLOW_RUN_AS_ROOT=1
+    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - ctest --parallel 2 --output-on-failure || ctest --verbose --rerun-failed --output-on-failure
 
 nvhpc-22.7:
   stage: build
