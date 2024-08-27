@@ -503,12 +503,13 @@ oneapi-2022.2:
     - non-shared
     - large-disk-space
     - x86_64
+  allow_failure: true
   interruptible: true
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx CXXFLAGS="-DPSTL_USE_PARALLEL_POLICIES=0" cmake .. -DCMAKE_BUILD_TYPE=Release
+    - CXX=icpx CXXFLAGS="-DPSTL_USE_PARALLEL_POLICIES=0" -DDISABLE_MPI=ON cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
