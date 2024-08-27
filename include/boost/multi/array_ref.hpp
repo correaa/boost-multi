@@ -2148,6 +2148,7 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 {
 	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>;
 	using difference_type = typename affine::difference_type;
+	static constexpr dimensionality_type dimensionality = 1;
 
 	array_iterator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 	using layout_type = multi::layout_t<0>;
