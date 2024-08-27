@@ -144,8 +144,8 @@ namespace multi = boost::multi;
 
 namespace {
 void test_single_number(MPI_Comm comm) {
-	int world_rank; MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
-	int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
+	int world_rank; MPI_Comm_rank(comm, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
+	int world_size; MPI_Comm_size(comm, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
 
 	BOOST_TEST(world_size > 1);
 
@@ -170,8 +170,8 @@ void test_single_number(MPI_Comm comm) {
 }
 
 void test_1d(MPI_Comm comm) {
-	int world_rank; MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
-	int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
+	int world_rank; MPI_Comm_rank(comm, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
+	int world_size; MPI_Comm_size(comm, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
 	{
 		if(world_rank == 0) {
 			multi::array<int, 1> const AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
@@ -233,14 +233,19 @@ void test_1d(MPI_Comm comm) {
 auto main() -> int {
 	MPI_Init(nullptr, nullptr);
 
-	test_single_number(MPI_COMM_WORLD);
-	test_1d(MPI_COMM_WORLD);
-
 	int world_rank;  // NOLINT(cppcoreguidelines-init-variables)
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
 	int world_size;  // NOLINT(cppcoreguidelines-init-variables)
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+	std::cout << "size " << world_size << '\n';
+	// int world_rank; MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
+	// int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
+
+	test_single_number(MPI_COMM_WORLD);
+	test_1d(MPI_COMM_WORLD);
+
 
 	{
 		multi::array<int, 1> AA({3}, 99);
