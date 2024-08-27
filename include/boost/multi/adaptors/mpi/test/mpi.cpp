@@ -142,6 +142,7 @@ class message {
 
 namespace multi = boost::multi;
 
+namespace {
 void test_single_number(MPI_Comm comm) {
 	int world_rank; MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
 	int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
@@ -226,6 +227,8 @@ void test_1d(MPI_Comm comm) {
 		}
 	}
 }
+
+}  // namespace
 
 auto main() -> int {
 	MPI_Init(nullptr, nullptr);
