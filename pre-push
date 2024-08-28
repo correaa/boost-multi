@@ -1,5 +1,4 @@
 #!/bin/bash
-# -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 # sudo dpkg --add-architecture i386
 # sudo apt install ccache clang clang-tidy cmake cppcheck g++ git iwyu lcov libblas-dev pkg-config libfftw3-dev libboost-test-dev libboost-timer-dev libopenblas-dev libtbb-dev make ninja-build valgrind libboost-test-dev:i386 libboost-timer-dev:i386
 # sudo dnf install boost-devel blas-devel ccache clang clang-tools-extra cmake cppcheck fftw-devel git lcov libasan liblas-devel libubsan ninja-build valgrind
