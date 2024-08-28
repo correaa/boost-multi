@@ -284,17 +284,21 @@ class adl_uninitialized_copy_t {
 	#if __cplusplus >= 202002L
 		using ValueType = typename std::iterator_traits<FwdIt>::value_type;
 		if(
-			   std::is_constant_evaluated() 
+			   std::is_constant_evaluated()
 			&& (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
 		) {
 			return std::              copy(first, last, d_first);
-	    }
+		}
 	#endif
 		return std::uninitialized_copy(first, last, d_first);
 	}
-// #if defined(__CUDACC__) || defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if defined(__CUDACC__) || defined(__HIPCC__)
-	template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const BOOST_MULTI_DECLRETURN(                  ::thrust::uninitialized_copy(                    std::forward<As>(args)...))  // doesn't work with culang 17, cuda 12 ?
+	template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const -> decltype(::thrust::uninitialized_copy(std::forward<As>(args)...))  // doesn't work with culang 17, cuda 12 ?
+	{
+		{
+			return                   ::thrust::uninitialized_copy(                    std::forward<As>(args)...);
+		}
+	}
 #endif
 	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRETURN(                        uninitialized_copy(                 std::forward<TB>(first) , std::forward<As>(args)...))
 	template<class TB, class TE, class DB> constexpr auto _(priority<4>/**/, TB&& first, TE&& last, DB&& d_first) const BOOST_MULTI_DECLRETURN(std::decay_t<DB>      ::uninitialized_copy(                 std::forward<TB>(first) , std::forward<TE>(last), std::forward<DB>(d_first)            ))
