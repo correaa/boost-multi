@@ -80,8 +80,10 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 
 	static constexpr auto capacity() { return N; }
 
+#ifdef _MSC_VER
 #pragma warning( push )
-#pragma warning( disable : 4068)
+#pragma warning( disable : 4068)  // bug in MSVC 14.2/14.3
+#endif
 	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
 	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
 		assert(n <= N);
@@ -89,7 +91,9 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 		dirty_ = true;
 		return reinterpret_cast<pointer>(buffer_.data());  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
+#ifdef _MSC_VER
 #pragma warning( pop ) 
+#endif
 
 	void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
 		assert(n <= N);
