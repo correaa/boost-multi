@@ -47,34 +47,37 @@ else()
 		--restrict
 		-Xcudafe=--display_error_number -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 	>
-	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror # -Wno-unknown-warning (activates -Wunknown-pragmas)
-	# -WNSObject-attribute  # (gcc 12, not in 11)
+	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror
+		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
+	# -WNSObject-attribute # (gcc 12, not in 11)
 	# -Wabi=13 -Wabi-tag # (maybe important when linking with very old libraries)
 	-Waddress
-	#-Waddress-of-packed-member # (gcc 11, not in gcc 8)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Waddress-of-packed-member>
 	-Wno-aggregate-return # (disallow return classes or structs, seems a C-compatibility warning)
 	-Waggressive-loop-optimizations
 	-Waligned-new=all # (gcc 12, not in 11)
 	# -Walloc-size-larger-than=<bytes> # (gcc 12, not in 11)
-	-Walloc-zero  # -Walloc-size-larger-than=<bytes>
+	-Walloc-zero
 	-Walloca  # -Walloca-larger-than=<number>
-	# -Warith-conversion # (gcc 11, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Warith-conversion>
 	-Warray-bounds # -Warray-bounds=<0,2>
-	# -Warray-compare # (gcc 12, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Warray-compare>
 	# -Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
-	#-Wattribute-alias #=<0,2> # (gcc 12, not in 11, not in 7)
-	#-Wattribute-warning # (gcc 9, not in 8)
+	# -Wattribute-alias #=<0,2> # (gcc 12, not in 11, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wattribute-warning>
 	-Wattributes
 	-Wbool-compare -Wbool-operation
-	# -Wbidi-chars -Wbidi-chars=any # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wbidi-chars -Wbidi-chars=any>
 	-Wbuiltin-declaration-mismatch -Wbuiltin-macro-redefined
 	#-Wc++-compat
 	-Wc++0x-compat -Wc++11-compat -Wc++14-compat -Wc++17-compat
-	# -Wc++17-extensions # (gcc 12, not in 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++17-extensions>
 	-Wc++1z-compat
-	# -Wc++20-compat -Wc++20-extensions -Wc++23-extensions -Wc++2a-compat # (gcc 11, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++20-compat>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++20-extensions -Wc++23-extensions>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++2a-compat>
 	#-Wcannot-profile # (gcc 9, not in gcc 8)
-	#-Wcast-align=strict -Wcast-function-type # (gcc 8, not in gcc 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type> # (gcc 8, not in gcc 7)
 	-Wcast-qual
 	#-Wcatch-value  #=<0, 3> # (gcc 8, not in gcc 7)
 	-Wchar-subscripts
