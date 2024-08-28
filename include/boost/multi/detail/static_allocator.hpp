@@ -80,6 +80,8 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 
 	static constexpr auto capacity() { return N; }
 
+#pragma warning( push )
+#pragma warning( disable : 4068)
 	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
 	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
 		assert(n <= N);
@@ -87,6 +89,8 @@ class static_allocator {  //NOSONAR(cpp:S4963) this allocator has special semant
 		dirty_ = true;
 		return reinterpret_cast<pointer>(buffer_.data());  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
+#pragma warning( pop ) 
+
 	void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
 		assert(n <= N);
 	}

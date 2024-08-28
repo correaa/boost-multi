@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
-find_package(MPI COMPONENTS CXX)
+find_package(MPI)
+
 if(MPI_FOUND AND NOT MPI_DISABLED)
   add_subdirectory(./mpi)
 else()
