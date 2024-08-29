@@ -1094,23 +1094,26 @@ Note that the function `hadamard`, acting on 2D arrays, doesn't use the undefine
 
 ## Uninitialized vs. initialized elements
 
-The library can take advantage of trivial initialization if it is available for specific element types.
-Such types can be primitive types or used defined with trivial default constructor.
-These types are characterized for having trivial default construction, i.e. a constructor that doesn't define or performs any operation, not even setting values.
+If available, the library can take advantage of trivial initialization for the specific element type.
+These types can be primitive or user-defined and come with "trivial default constructors". In simple terms, these constructors are not specified and do nothing, not even set values.
 
-When used in the stack these types can be declared with no initialization (e.g. `double x;`, initial value is not well defined or partially-formed) or with initialization (e.g. `double x{};`, same as `double x = 0.0;`).
-Analogously, `multi::array` does not initialize individual elements of this kind of types, unless specified.
+When used in the stack, these types can be declared with no initialization (e.g., `double x;`, the initial value is not well defined or partially-formed) or with initialization (e.g., `double x{};`, same as `double x = 0.0;`).
+Analogously, `multi::array` does not initialize individual elements of this kind of type unless specified.
 
 For example, after this construction of the array, the values of the six elements of this array are unspecified (partially-formed).
 ```cpp
-multi::array<int, 2> A2({2, 3});
+multi::array<int, 2> A2({2, 3});  // A2 elements have unspecified value
 ```
 
 No behavior of the program should depend on these values. 
-(Address sanitizers and memory checkers can detect this.)
+(Address sanitizers and memory checkers can detect use of uninitialized values.)
 This design is a slight departure from the STL's design, which [eagerly initializes elements in containers](https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/).
 
 If trivial construction is unavailable, the library uses the default initialization.
+```cpp
+multi::array<std::string, 2> A2({2, 3});  // A2 elements have specified value, the empty value std::string{}
+```
+
 For types that afford this partially formed states, elements can be later specified via assignment or assigning algorithms (e.g., copy or transform destination).
 
 Initialization can be enforced by passing a single value argument after the extensions.
@@ -1122,7 +1125,7 @@ This design is particularly advantageous for *numeric* types for which external 
 (or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization).
 
 Unfortunately, regarding the numeric types, STL's `std::complex<double>` was standardized as not-trivially constructible.
-A workaround is possible by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
+A workaround built-in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
 ```cpp
 #include<multi/array.hpp>
 
