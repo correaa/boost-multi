@@ -47,6 +47,7 @@ IndentWidth: 4
 PenaltyBreakTemplateDeclaration: 10
 PointerAlignment: Left
 SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: Custom
 SpaceBeforeParensOptions:
   AfterControlStatements: false

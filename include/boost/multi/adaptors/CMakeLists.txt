@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.5)
+
+find_package(MPI)
+
+if(MPI_FOUND)
+  if(NOT MPI_DISABLED)
+    add_subdirectory(./mpi)
+  endif()
+else()
+  message(WARNING "MPI not found, MPI adaptor will not be tested.")
+endif()
