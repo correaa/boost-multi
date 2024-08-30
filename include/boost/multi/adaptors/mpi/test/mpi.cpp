@@ -2,11 +2,11 @@
 
 #include <mpi.h>
 
-#include <cassert>  // for assert
+#include <boost/core/lightweight_test.hpp>
+
+#include <cassert>   // for assert
 #include <iostream>  // for std::cout
 #include <vector>
-
-#include <boost/core/lightweight_test.hpp>
 
 namespace boost::multi::mpi {
 
@@ -16,7 +16,7 @@ class data {
 
  public:
 	template<class It>
-	explicit data(It first)  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+	explicit data(It first)                                            // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 	: buf_{const_cast<void*>(static_cast<void const*>(first.base()))}  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 	{
 		MPI_Type_vector(
@@ -29,12 +29,12 @@ class data {
 	}
 
 	data(data const&) = delete;
-	data(data&&) = delete;
+	data(data&&)      = delete;
 
 	auto operator=(data const&) = delete;
-	auto operator=(data &&) = delete;
+	auto operator=(data&&)      = delete;
 
-	~data() {MPI_Type_free(&datatype_);}
+	~data() { MPI_Type_free(&datatype_); }
 
 	auto buffer() const { return buf_; }
 	auto type() const { return datatype_; }
@@ -45,63 +45,61 @@ class skeleton {
 	Size         count_;
 	MPI_Datatype datatype_;
 
- public:
+	skeleton() : datatype_{MPI_DATATYPE_NULL} {}
+	skeleton(skeleton&& other) noexcept
+	: count_{other.count_}, datatype_{std::exchange(other.datatype_, MPI_DATATYPE_NULL)} {}
+
+	auto operator=(skeleton&& other) & -> skeleton& {
+		count_    = other.count_;
+		datatype_ = std::exchange(other.datatype_, MPI_DATATYPE_NULL);
+		return *this;
+	}
+
 	template<class Layout>
-	skeleton(Layout const& lyt, MPI_Datatype dt)  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+	skeleton(Layout const& lyt, MPI_Datatype dt, Size subcount)  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init,fuchsia-default-arguments-declarations)
 	: count_{static_cast<Size>(lyt.size())} {
+		assert(lyt.size() <= std::numeric_limits<Size>::max());
+
+		MPI_Datatype sub_type;  // NOLINT(cppcoreguidelines-init-variables)
+		skeleton     sk;
 		if constexpr(Layout::dimensionality == 1) {
-			assert(lyt.size() <= std::numeric_limits<Size>::max());
-
-			{
-				MPI_Datatype vector_datatype;  // NOLINT(cppcoreguidelines-init-variables)
-				MPI_Type_vector(
-					1, 1,
-					lyt.stride(),
-					dt, &vector_datatype
-				);
-
-				MPI_Type_create_resized(vector_datatype, 0, lyt.stride() * sizeof(int), &datatype_);
-				MPI_Type_free(&vector_datatype);
-			}
-
-			MPI_Type_commit(&datatype_);
+			sub_type = dt;
 		} else {
-			{
-				MPI_Datatype resized_datatype;  // NOLINT(cppcoreguidelines-init-variables)
-				{
-					MPI_Datatype vector_datatype;  // NOLINT(cppcoreguidelines-init-variables)
-					MPI_Type_vector(
-						lyt.sub().size(), 1,
-						lyt.sub().stride(),
-						dt, &vector_datatype
-					);
+			sk       = skeleton(lyt.sub(), dt, lyt.sub().size());
+			sub_type = sk.type();
+		}
 
-					MPI_Type_create_resized(vector_datatype, 0, lyt.stride() * sizeof(int), &resized_datatype);
-					MPI_Type_free(&vector_datatype);
-				}
+		int dt_size;
+		MPI_Type_size(dt, &dt_size);  // NOLINT(cppcoreguidelines-init-variables)
 
-				MPI_Datatype vector2D_datatype;  // NOLINT(cppcoreguidelines-init-variables)
-				MPI_Type_vector(
-					1, 1,
-					lyt.stride()/lyt.sub().stride(),
-					resized_datatype, &vector2D_datatype
-				);
+		{
+			MPI_Datatype vector_datatype;  // NOLINT(cppcoreguidelines-init-variables)
+			MPI_Type_create_hvector(
+				subcount, 1,
+				lyt.stride() * dt_size,
+				sub_type, &vector_datatype
+			);
 
-				MPI_Type_create_resized(vector2D_datatype, 0, lyt.stride() * sizeof(int), &datatype_);
-				MPI_Type_free(&vector2D_datatype);
-			}
-
-			MPI_Type_commit(&datatype_);
+			MPI_Type_create_resized(vector_datatype, 0, lyt.stride() * dt_size, &datatype_);
+			MPI_Type_free(&vector_datatype);
 		}
 	}
 
+ public:
+	template<class Layout>
+	skeleton(Layout const& lyt, MPI_Datatype dt)
+	: skeleton{lyt, dt, 1} {
+		MPI_Type_commit(&datatype_);
+	}
+
 	skeleton(skeleton const&) = delete;
-	skeleton(skeleton &&) = delete;
 
 	auto operator=(skeleton const&) = delete;
-	auto operator=(skeleton &&) = delete;
 
-	~skeleton() {MPI_Type_free(&datatype_);}
+	~skeleton() {
+		if(datatype_ != MPI_DATATYPE_NULL)
+			MPI_Type_free(&datatype_);
+	}
 
 	auto count() const { return count_; }
 	auto type() const { return datatype_; }
@@ -125,12 +123,12 @@ class message {
 	// : message{data(arr.begin()), static_cast<Size>(arr.size())} { assert(arr.size() <= std::numeric_limits<Size>::max()); }
 
 	message(message const&) = delete;
-	message(message&&) = delete;
+	message(message&&)      = delete;
 
 	auto operator=(message const&) = delete;
-	auto operator=(message&&) = delete;
+	auto operator=(message&&)      = delete;
 
-	~message() {MPI_Type_free(&datatype_);}
+	~message() {if(datatype_ != MPI_DATATYPE_NULL) { MPI_Type_free(&datatype_);} }
 
 	auto buffer() const { return buf_; }
 	auto count() const { return count_; }
@@ -139,13 +137,14 @@ class message {
 
 }  // namespace boost::multi::mpi
 
-
 namespace multi = boost::multi;
 
 namespace {
 void test_single_number(MPI_Comm comm) {
-	int world_rank; MPI_Comm_rank(comm, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
-	int world_size; MPI_Comm_size(comm, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
+	int world_rank;
+	MPI_Comm_rank(comm, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
+	int world_size;
+	MPI_Comm_size(comm, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
 
 	BOOST_TEST(world_size > 1);
 
@@ -170,12 +169,14 @@ void test_single_number(MPI_Comm comm) {
 }
 
 void test_1d(MPI_Comm comm) {
-	int world_rank; MPI_Comm_rank(comm, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
-	int world_size; MPI_Comm_size(comm, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
+	int world_rank;  // NOLINT(cppcoreguidelines-init-variables)
+	MPI_Comm_rank(comm, &world_rank);
+	int world_size;  // NOLINT(cppcoreguidelines-init-variables)
+	MPI_Comm_size(comm, &world_size);
 	{
 		if(world_rank == 0) {
 			multi::array<int, 1> const AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
-			auto const&& BB = AA.strided(2);
+			auto const&&               BB = AA.strided(2);
 			BOOST_TEST(( BB == multi::array<double, 1>({1, 3, 5}) ));
 
 			auto const B_data = multi::mpi::data(BB.begin());
@@ -246,7 +247,6 @@ auto main() -> int {
 	test_single_number(MPI_COMM_WORLD);
 	test_1d(MPI_COMM_WORLD);
 
-
 	{
 		multi::array<int, 1> AA({3}, 99);
 		if(world_rank == 0) {
@@ -259,10 +259,12 @@ auto main() -> int {
 	}
 	{
 		if(world_rank == 0) {
-			auto const AA = multi::array<int, 2>({
-				{1, 2, 3},
-				{4, 5, 6}
-			});
+			auto const  AA = multi::array<int, 2>(
+				{
+					{1, 2, 3},
+					{4, 5, 6}
+				}
+			);
 			auto const& BB = AA({0, 2}, {1, 3});
 			BOOST_TEST(( BB == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
 
@@ -281,6 +283,33 @@ auto main() -> int {
 			BOOST_TEST(( CC == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
 		}
 	}
+	// {
+	//  if(world_rank == 0) {
+	//      auto const  AA = multi::array<int, 2>(
+	//          {
+	//              {1, 2, 3},
+	//              {4, 5, 6}
+	//          }
+	//      );
+	//      auto const& BB = AA({0, 2}, {1, 3});
+	//      BOOST_TEST(( BB == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
+
+	//      auto const B_msg = multi::mpi::message(BB);
+
+	//      MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.type(), 1, 0, MPI_COMM_WORLD);
+	//  } else if(world_rank == 1) {
+	//      multi::array<int, 2> CC({2, 2}, 99);
+
+	//      auto const C_sk = multi::mpi::skeleton(CC.layout(), MPI_INT);
+
+	//      MPI_Recv(CC.base(), C_sk.count(), C_sk.type(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	//      std::cout << CC[0][0] << ' ' << CC[0][1] << '\n'
+	//                << CC[1][0] << ' ' << CC[1][1] << '\n';
+
+	//      BOOST_TEST(( CC == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
+	//  }
+	// }
+
 
 	MPI_Finalize();
 
