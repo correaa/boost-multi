@@ -190,6 +190,7 @@ void test_1d(MPI_Comm comm) {
 			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.type(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
 		}
+	}
 	std::cout << world_rank << std::endl;
 	{
 		if(world_rank == 0) {
