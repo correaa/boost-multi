@@ -172,6 +172,7 @@ void test_single_number(MPI_Comm comm) {
 void test_1d(MPI_Comm comm) {
 	int world_rank; MPI_Comm_rank(comm, &world_rank);  // NOLINT(cppcoreguidelines-init-variables)
 	int world_size; MPI_Comm_size(comm, &world_size);  // NOLINT(cppcoreguidelines-init-variables)
+	std::cout << "mpi " << world_rank << " " << world_end << std::endl;
 	{
 		if(world_rank == 0) {
 			multi::array<int, 1> const AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
@@ -189,7 +190,7 @@ void test_1d(MPI_Comm comm) {
 			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.type(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
 		}
-	}
+	std::cout << world_rank << std::endl;
 	{
 		if(world_rank == 0) {
 			auto const  AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
@@ -208,6 +209,7 @@ void test_1d(MPI_Comm comm) {
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
 		}
 	}
+	std::cout << world_rank << std::endl;
 	{
 		if(world_rank == 0) {
 			auto const  AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
