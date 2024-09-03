@@ -492,7 +492,7 @@ oneapi:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
 
