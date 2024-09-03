@@ -434,7 +434,7 @@ g++-testing c++20:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS=-fimplicit-constexpr
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++"]
