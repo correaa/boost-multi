@@ -310,7 +310,7 @@ void test_1d(MPI_Comm comm) {
 		} else if(world_rank == 1) {
 			multi::array<int, 1> CC(3, 99);  // NOLINT(misc-const-correctness)
 
-			auto const C_msg = multi::mpi::message(CC.base(), CC.layout(), MPI_INT);
+			auto const C_msg = multi::mpi::message{CC.base(), CC.layout(), MPI_INT};
 
 			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.type(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 3, 5}) ));
