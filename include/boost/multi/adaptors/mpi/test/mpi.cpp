@@ -173,6 +173,9 @@ class message : skeleton<Size> {
  public:
 	message(void* buf, skeleton<Size>&& sk) : skeleton<Size>{std::move(sk)}, buf_{buf} {}
 
+	template<class Layout>
+	message(void* buf, Layout const& lyt, MPI_Datatype dt) : skeleton<Size>(lyt, dt), buf_{buf} {}
+
 	template<class Arr>
 	explicit message(Arr const& arr)
 	: message{
@@ -298,9 +301,6 @@ void test_1d(MPI_Comm comm) {
 			auto const& BB = AA.strided(2);
 			BOOST_TEST(( BB == multi::array<int, 1>({1, 3, 5}) ));
 
-			// auto const B_sk = multi::mpi::skeleton(BB.layout(), MPI_INT);
-			// MPI_Send(BB.base(), B_sk.count(), B_sk.type(), 1, 0, comm);
-
 			MPI_Datatype B_type;  // NOLINT(cppcoreguidelines-init-variables)
 			multi::mpi::create_subarray(BB.layout(), MPI_INT, &B_type);
 			MPI_Type_commit(&B_type);
@@ -310,7 +310,7 @@ void test_1d(MPI_Comm comm) {
 		} else if(world_rank == 1) {
 			multi::array<int, 1> CC(3, 99);  // NOLINT(misc-const-correctness)
 
-			auto const C_msg = multi::mpi::message(CC);
+			auto const C_msg = multi::mpi::message(CC.base(), CC.layout(), MPI_INT);
 
 			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.type(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 3, 5}) ));
