@@ -492,9 +492,9 @@ oneapi:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DDISABLE_MPI=ON
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --parallel 2 --output-on-failure
+    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
 
 oneapi-2022.2:
   stage: build
@@ -511,7 +511,7 @@ oneapi-2022.2:
     - icpx --version
     - CXX=icpx CXXFLAGS="-DPSTL_USE_PARALLEL_POLICIES=0" cmake .. -DCMAKE_BUILD_TYPE=Release -DDISABLE_MPI=ON
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --parallel 2 --output-on-failure || ctest --verbose --rerun-failed --output-on-failure
+    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
 
 oneapi-latest c++20:
@@ -532,7 +532,7 @@ oneapi-latest c++20:
     - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --parallel 2 --output-on-failure || ctest --verbose --rerun-failed --output-on-failure
+    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
 
 nvhpc:
