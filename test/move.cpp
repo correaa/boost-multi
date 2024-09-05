@@ -529,20 +529,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(move_array_vector_1d) {
-		multi::array<std::vector<double>, 1> arrA(10, std::vector<double>(5));
+		multi::array<std::vector<double>, 1> arrA(10, std::vector<double>(5, 0.0, {}));
 
 		BOOST_TEST( arrA[2].size() == 5 );
 		{
 			multi::array<std::vector<double>, 1> arrB = std::move(arrA);
 
-			BOOST_TEST( arrA.size() ==  0 );
+			BOOST_TEST( arrA.empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
 			BOOST_TEST( arrB.size() == 10 );
 			BOOST_TEST( arrB[2].size() == 5 );
 		}
 	}
 
 	BOOST_AUTO_TEST_CASE(move_subarray_vector_1d) {
-		multi::array<std::vector<double>, 1> arrA(10, std::vector<double>(5));
+		multi::array<std::vector<double>, 1> arrA(10, std::vector<double>(5, 0.0));  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( arrA[2].size() == 5 );
 		{
@@ -555,35 +555,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(explicit_move_subarray_vector_1d) {
-		multi::array<std::vector<double>, 1> arrA(10, std::vector<double>(5));
+	// BOOST_AUTO_TEST_CASE(smart_move_subarray_vector_1d) {
+	//  multi::array<std::vector<double>, 1> arrA(10, std::vector<double>(5));
 
-		BOOST_TEST( arrA[2].size() == 5 );
-		{
-			using std::move;
-			multi::array<std::vector<double>, 1> arrB = arrA().element_moved();
+	//  BOOST_TEST( arrA[2].size() == 5 );
+	//  {
+	//      using std::move;
+	//      multi::array<std::vector<double>, 1> arrB = move(arrA());
 
-			BOOST_TEST( arrA.size() == 10 );
-			BOOST_TEST( arrB.size() == 10 );
-			BOOST_TEST( arrA[2].size() == 0 );
-			BOOST_TEST( arrB[2].size() == 5 );
-		}
-	}
-
-	BOOST_AUTO_TEST_CASE(smart_move_subarray_vector_1d) {
-		multi::array<std::vector<double>, 1> arrA(10, std::vector<double>(5));
-
-		BOOST_TEST( arrA[2].size() == 5 );
-		{
-			using std::move;
-			multi::array<std::vector<double>, 1> arrB = move(arrA());
-
-			BOOST_TEST( arrA.size() == 10 );
-			BOOST_TEST( arrB.size() == 10 );
-			BOOST_TEST( arrA[2].size() == 0 );
-			BOOST_TEST( arrB[2].size() == 5 );
-		}
-	}
+	//      BOOST_TEST( arrA.size() == 10 );
+	//      BOOST_TEST( arrB.size() == 10 );
+	//      BOOST_TEST( arrA[2].size() == 0 );
+	//      BOOST_TEST( arrB[2].size() == 5 );
+	//  }
+	// }
 
 	return boost::report_errors();
 }

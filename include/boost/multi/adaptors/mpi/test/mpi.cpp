@@ -1,5 +1,6 @@
 #include <boost/multi/array.hpp>
 
+#define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
 
 #include <boost/core/lightweight_test.hpp>

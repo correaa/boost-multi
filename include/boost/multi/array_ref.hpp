@@ -897,7 +897,7 @@ struct elements_range_t {
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
 	auto operator=(elements_range_t     && other) noexcept -> elements_range_t& {  // cannot be =delete in NVCC?
-		if(! is_empty()) {adl_copy(other.begin(), other.end(), begin());}
+		if(! is_empty()) {adl_copy(other.begin(), other.end(), this->begin());}
 		return *this;
 	}
 
@@ -1757,8 +1757,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto operator&()      & { return subarray_ptr<T, D, ElementPtr, Layout>(this->base_, this->layout()); } // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 
 	using const_subarray<T, D, ElementPtr, Layout>::operator&;
-//  // NOLINTNEXTLINE(runtime/operator)
-//  BOOST_MULTI_HD constexpr auto operator&() const& {return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
+	// NOLINTNEXTLINE(runtime/operator)
+	// BOOST_MULTI_HD constexpr auto operator&() const& {return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
@@ -1873,11 +1873,18 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	template<class Range, class = std::enable_if_t<! std::is_base_of_v<subarray, Range>>>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<
+		class Range,
+		class = std::enable_if_t<! std::is_base_of_v<subarray, Range> >,  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+		class = std::enable_if_t<! is_subarray<Range>::value          >  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+	>
 	constexpr auto operator=(Range const& rng) && -> subarray& {operator=(rng); return *this;}
 
 	template<class TT, class... As>
 	constexpr auto operator=(const_subarray<TT, D, As...> const& other) && -> subarray& {operator=(other); return *this;}
+
+	template<class TT, class... As>
+	constexpr auto operator=(subarray<TT, D, As...>&& other) && -> subarray& {operator=(std::move(other)); return *this;}
 
 	template<class TT, class... As>
 	constexpr
@@ -1886,6 +1893,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		this->elements() = other.elements();
 		return *this;
 	}
+
+	template<class TT, class... As>
+	constexpr
+	auto operator=(subarray<TT, D, As...>&& other) & -> subarray& {
+		assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		this->elements() = std::move(other).elements();
+		return *this;
+	}
+
 
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) const&& -> subarray&;  // for std::indirectly_writable
 	// {

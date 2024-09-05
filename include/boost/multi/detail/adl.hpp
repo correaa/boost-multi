@@ -316,7 +316,17 @@ class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
-	template<class It, class Size, class ItFwd, class ValueType = typename std::iterator_traits<ItFwd>::value_type>
+	template<class It, class Size, class ItFwd, class ValueType = typename std::iterator_traits<ItFwd>::value_type,
+		class = std::enable_if_t<
+			std::is_constructible_v<
+				::thrust::detail::tuple_of_iterator_references<
+					typename std::iterator_traits<It>::reference,
+					typename std::iterator_traits<ItFwd>::reference
+				>,
+				typename std::iterator_traits<It>::reference, typename std::iterator_traits<ItFwd>::reference
+			>
+		>
+	>
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
 		if(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return ::thrust::copy_n(first, count, d_first);
