@@ -353,6 +353,18 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		// #endif
 	}
 
+	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
+	         class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>,
+	         class = decltype(adl_copy(std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().begin(), std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
+	constexpr static_array(multi::subarray<OtherT, D, OtherEP, OtherLayout>&& other, allocator_type const& alloc)
+	: array_alloc{alloc},
+	  ref(
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())),
+		  other.extensions()
+	  ) {
+		adl_alloc_uninitialized_copy_n(static_array::alloc(), std::move(other).elements().begin(), this->num_elements(), this->data_elements());
+	}
+
 	template<
 		class TT, class EElementPtr, class LLayout,
 		std::enable_if_t< ! multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout>&>().base()), T>, int> = 0,
@@ -370,11 +382,23 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr /*implicit*/ static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: static_array(other, allocator_type{}) {}
 
+	template<
+		class TT, class EElementPtr, class LLayout,
+		std::enable_if_t<   multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
+		class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
+	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
+	constexpr /*implicit*/ static_array(multi::subarray<TT, D, EElementPtr, LLayout>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array(std::move(other), allocator_type{}) {}
+
 	constexpr static_array(multi::subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: static_array(other, allocator_type{}) {}
 
 	constexpr static_array(multi::const_subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: static_array(other, allocator_type{}) {}
+
+	constexpr static_array(multi::subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: static_array(std::move(other), allocator_type{}) {}
 
 	// template<class TT, class EElementPtr, class LLayout,  // class... Args,
 	//          std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
@@ -1291,12 +1315,12 @@ struct array : static_array<T, D, Alloc> {
 		std::enable_if_t<!std::is_base_of<array, std::decay_t<Range>>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	auto operator=(Range&& other) -> array& {  // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
-			this->operator()() = other;
+			this->operator()() = std::forward<Range>(other);
 			//  static_::operator=(other);
 		} else if(this->num_elements() == other.extensions().num_elements()) {
 			reshape(other.extensions());
 			//  static_::operator=(other);
-			this->operator()() = other;
+			this->operator()() = std::forward<Range>(other);
 		} else {
 			operator=(static_cast<array>(std::forward<Range>(other)));
 		}

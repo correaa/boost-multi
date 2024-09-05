@@ -3,7 +3,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.16) # 3.16 for precompiled_headers
 
 if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE AND BUILD_TESTING)
 
@@ -911,6 +911,11 @@ else()
 
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
+				
+				# target_precompile_headers(${TEST_EXE} PRIVATE
+				#   <boost/multi/array.hpp>  # // for array, apply, array_types<>::ele...
+				#   <boost/core/lightweight_test.hpp>
+				# )
 			else()
 				# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
 				target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
