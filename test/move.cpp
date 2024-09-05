@@ -546,8 +546,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arrA[2].size() == 5 );
 		{
-			using std::move;
-			multi::array<std::vector<double>, 1> arrB = move(arrA());  // NOLINT(clang-diagnostic-unqualified-std-cast-call)
+			// this is not wrong but it is misleading since std::move is not doing anything on a reference-like type
+			// using std::move;
+			// multi::array<std::vector<double>, 1> arrB = move(arrA());  // NOLINT(clang-diagnostic-unqualified-std-cast-call)
+
+			multi::array<std::vector<double>, 1> arrB = arrA();  // NOLINT(clang-diagnostic-unqualified-std-cast-call)
 
 			BOOST_TEST( arrA.size() == 10 );
 			BOOST_TEST( arrB.size() == 10 );
