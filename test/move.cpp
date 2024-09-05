@@ -547,7 +547,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrA[2].size() == 5 );
 		{
 			using std::move;
-			multi::array<std::vector<double>, 1> arrB = move(arrA());
+			multi::array<std::vector<double>, 1> arrB = move(arrA());  // NOLINT(clang-diagnostic-unqualified-std-cast-call)
 
 			BOOST_TEST( arrA.size() == 10 );
 			BOOST_TEST( arrB.size() == 10 );

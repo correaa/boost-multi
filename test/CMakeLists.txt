@@ -911,13 +911,7 @@ else()
 
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
-				
-				# target_precompile_headers(${TEST_EXE} PRIVATE
-				#   <boost/multi/array.hpp>  # // for array, apply, array_types<>::ele...
-				#   <boost/core/lightweight_test.hpp>
-				# )
 			else()
-				# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
 				target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
 			endif()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
