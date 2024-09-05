@@ -208,10 +208,10 @@ g++-14 c++23 par:  # debian-testing: default is gcc 13.2.0 as of Dec 2023
   allow_failure: true
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ g++-14 pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ g++-14 g++-15 pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - mkdir build && cd build
     - g++-14 --version
-    - CXX=g++-14 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
+    - CXX=g++-14 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++-testing c++20"]

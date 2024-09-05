@@ -34,8 +34,6 @@ Checks: '*,
   -fuchsia-overloaded-operator,
   -fuchsia-trailing-return,
   -llvmlibc-*,
-  -llvm-header-guard,
-  -misc-include-cleaner,
   -modernize-use-nodiscard,
   -readability-magic-numbers
 '
