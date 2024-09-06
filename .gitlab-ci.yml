@@ -492,9 +492,9 @@ oneapi:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release  # -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
+    - ctest --output-on-failure
 
 oneapi-2022.2:
   stage: build
@@ -588,7 +588,7 @@ nvhpc-24.5 c++20 par:
 
 nvhpc-24.7 c++23 par:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:24.7-devel-cuda12.4-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  image: nvcr.io/nvidia/nvhpc:24.7-devel-cuda12.5-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
     - non-shared
     - large-disk-space
