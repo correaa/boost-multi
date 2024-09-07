@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
@@ -32,7 +34,6 @@ class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-
 	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }  // NOLINT(cpp:S4963)
 };
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -63,5 +64,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		out = std::move(aux);
 		BOOST_TEST( out[35][79] == in[79][35] );
 	}
+
 	return boost::report_errors();
 }
