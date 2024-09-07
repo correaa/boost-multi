@@ -1,15 +1,11 @@
 #if 0 && defined(COMPILATION)
-${CXX:-c++} $0 -o $0x -I../include -lboost_unit_test_framework -lstdc++fs -lboost_serialization -lboost_iostreams&& $0x&& rm $0x;
+${CXX:-c++} $0 -o $0x -I../include -lstdc++fs -lboost_serialization -lboost_iostreams&& $0x&& rm $0x;
 exit
 #endif
 // Copyright 2018-2024 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi serialization"
-#define BOOST_TEST_DYN_LINK
-
 #include <boost/test/unit_test.hpp>
 
-// #include "../adaptors/serialization/xml_archive.hpp"
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
@@ -57,6 +53,11 @@ struct watch : private std::chrono::high_resolution_clock {
 		}
 	}
 };
+
+#include <boost/core/lightweight_test.hpp>
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
+
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 
 BOOST_AUTO_TEST_CASE(print_xml) {
 	multi::array<std::string, 2> A{
@@ -388,3 +389,5 @@ BOOST_AUTO_TEST_CASE(test_utility_serialization_2d) {
 		//      arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(Marr);
 	}
 }
+
+return boost::report_errors();}
