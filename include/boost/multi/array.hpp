@@ -528,15 +528,14 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto end() & -> typename static_array::iterator { return ref::end(); }
 
 	using ref::operator[];
-	// BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename static_array::const_reference { return ref::operator[](idx); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
-		if constexpr(D == 1) {
-			return std::move(ref::operator[](idx));
-		} else {
-			return ref::operator[](idx).element_moved();
-		}  // NOLINT(readability/braces)
+		return multi::move(ref::operator[](idx));
+		// if constexpr(D == 1) {
+		//  return std::move(ref::operator[](idx));
+		// } else {
+		//  return ref::operator[](idx).element_moved();
+		// }  // NOLINT(readability/braces)
 	}
-	// BOOST_MULTI_HD constexpr auto operator[](index idx) & -> typename static_array::reference { return ref::operator[](idx); }
 
 	constexpr auto max_size() const noexcept { return static_cast<typename static_array::size_type>(multi::allocator_traits<allocator_type>::max_size(this->alloc())); }  // TODO(correaa)  divide by nelements in under-dimensions?
 
@@ -1206,18 +1205,21 @@ struct array : static_array<T, D, Alloc> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
 
-	auto move() & -> subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>> {
-		subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>>
-			ret = multi::static_array_cast<typename array::element_type, multi::move_ptr<typename array::element_type>>(*this);
+	// auto move() & -> subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>> {
+	//  subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>>
+	//      ret = multi::static_array_cast<typename array::element_type, multi::move_ptr<typename array::element_type>>(*this);
 
-		layout_t<D>::operator=({});
+	//  layout_t<D>::operator=({});
 
-		assert(this->stride() != 0);
-		return ret;
-	}
-	friend auto move(array& self) -> subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>> {
-		return self.move();
-	}
+	//  assert(this->stride() != 0);
+	//  return ret;
+	// }
+	// friend auto move(array& self) -> subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>> {
+	//  return self.move();
+	// }
+
+	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
+	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
 	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_array<T, D, Alloc>{std::move(other), alloc} {
 		assert(this->stride() != 0);

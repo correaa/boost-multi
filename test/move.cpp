@@ -20,7 +20,49 @@ namespace multi = boost::multi;
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
+static void move_element_1d_array() {
+	multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+	using std::move;  // not necessary, just testing if it works
+	auto vec = move(arr({2, 6}))[0];
+	BOOST_TEST( vec.size() == 5 );
+	BOOST_TEST( arr[2].empty() );
+}
+
+static void move_element_2d_array() {
+	multi::array<std::vector<double>, 2> arr({10, 10}, std::vector<double>(5, {}, {}));
+
+	using std::move;
+	auto vec = move(arr({2, 6}, {2, 6}))[0][0];
+	BOOST_TEST( vec.size() == 5 );
+	BOOST_TEST( arr[2][2].empty() );
+}
+
+static void move_element_1d_total_array() {
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		auto vec = std::move(arr)[2];
+		BOOST_TEST( vec.size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		using std::move;
+		auto vec = move(arr)[2];
+		BOOST_TEST( vec.size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+
+	}
+}
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	move_element_1d_array();
+	move_element_2d_array();
+
+	move_element_1d_total_array();
+
 	BOOST_AUTO_TEST_CASE(move_unique_ptr_1D) {
 		{
 			multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>{10});
