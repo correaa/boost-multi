@@ -1774,7 +1774,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
  public:
 	BOOST_MULTI_HD constexpr auto move() {return move_subarray<T, D, ElementPtr, Layout>(*this);}
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
-	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return self.move(); }
+	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
 
 	subarray(subarray&&) noexcept = default;
 	~subarray() = default;
