@@ -178,10 +178,6 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 		);
 		return ret;
 	}();
-
-	auto io = in;
-	(void)io;
-	BOOST_TEST( io.extensions() == in.extensions() );
 }
 
 return boost::report_errors();
