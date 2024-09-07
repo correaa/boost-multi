@@ -4,7 +4,7 @@ exit
 #endif
 // Copyright 2018-2024 Alfredo A. Correa
 
-#include <boost/test/unit_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -39,13 +39,14 @@ namespace fs = std::experimental::filesystem;
 
 struct watch : private std::chrono::high_resolution_clock {
 	std::string  name_;
-	time_point   start_;
+	time_point   start_ = std::chrono::high_resolution_clock::now();
 	mutable bool engaged = true;
-	watch(std::string name = "") : name_{std::move(name)}, start_{now()} {}
+	watch(std::string name = "") : name_{std::move(name)} {}
 	auto operator*() const {
 		engaged = false;
 		return std::chrono::duration<double>(now() - start_).count();
 	}
+	auto operator=(watch const&) = delete;
 	~watch() {
 		if(engaged) {
 			auto count = operator*();
@@ -54,7 +55,6 @@ struct watch : private std::chrono::high_resolution_clock {
 	}
 };
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml) {
 
 	auto gen = [&]() { return std::uniform_real_distribution<>{}(eng); };
 
-	std::for_each(begin(d2D), end(d2D), [&](auto&& r) { std::generate(begin(r), end(r), gen); });
+	std::for_each(begin(d2D), end(d2D), [&](auto& r) { std::generate(begin(r), end(r), gen); });
 	std::string const filename = "serialization-static-small.xml";
 	{
 		std::ofstream ofs{filename};
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml) {
 	{
 		std::ifstream ifs{filename};
 		assert(ifs);
-		decltype(d2D) d2D_copy(extensions(d2D), 99.);
+		decltype(d2D) d2D_copy(extensions(d2D), 99.0);
 		boost::archive::xml_iarchive{ifs} >> BOOST_SERIALIZATION_NVP(d2D_copy);
 		BOOST_REQUIRE( d2D_copy == d2D );
 	}
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_small_xml) {
 	//  auto g = std::bind(std::uniform_real_distribution<>{}, e);//
 	auto g = [&]() { return std::uniform_real_distribution<>{}(e); };
 
-	std::for_each(begin(d2D), end(d2D), [&](auto&& r) { std::generate(begin(r), end(r), g); });
+	std::for_each(begin(d2D), end(d2D), [&](auto& r) { std::generate(begin(r), end(r), g); });
 	std::string const filename = "serialization-small.xml";
 	{
 		std::ofstream ofs{filename};
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml) {
 	multi::static_array<double, 2> d2D({1000, 1000});
 
 	auto gen = [e = std::mt19937_64(std::random_device{}())]() mutable { return std::uniform_real_distribution<>{}(e); };
-	std::for_each(begin(d2D), end(d2D), [&](auto&& r) { std::generate(begin(r), end(r), gen); });
+	std::for_each(begin(d2D), end(d2D), [&](auto& r) { std::generate(begin(r), end(r), gen); });
 
 	watch w("static_large_xml");
 
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small) {
 		auto gen = [d = std::uniform_real_distribution<double>{-1, 1}, e = std::mt19937{std::random_device{}()}]() mutable { return d(e); };
 		std::for_each(
 			begin(d2D), end(d2D),
-			[&](auto&& r) { std::generate(begin(r), end(r), gen); }
+			[&](auto& r) { std::generate(begin(r), end(r), gen); }
 		);
 		std::string const filename = "serialization-small-double2D.xml";
 		[&, _ = watch("xml write double")] {
