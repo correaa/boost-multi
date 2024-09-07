@@ -1735,12 +1735,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 };
 
-template<class T, std::enable_if_t<! has_member_move<T>::value, int> =0>
+template<class T, std::enable_if_t<! has_member_move<T>::value, int> =0>  // NOLINT(modernize-use-constraints)
 BOOST_MULTI_HD constexpr auto move(T&& val) -> decltype(auto) {
 	return std::move(std::forward<T>(val));
 }
 
-template<class T, std::enable_if_t<  has_member_move<T>::value, int> =0>
+template<class T, std::enable_if_t<  has_member_move<T>::value, int> =0>  // NOLINT(modernize-use-constraints)
 BOOST_MULTI_HD constexpr auto move(T&& ref) -> decltype(auto) {
 	return std::forward<T>(ref).move();
 }

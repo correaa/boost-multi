@@ -44,7 +44,7 @@ static void move_element_1d_total_array() {
 
 		auto vec = std::move(arr)[2];
 		BOOST_TEST( vec.size() == 5 );
-		BOOST_TEST( arr[2].empty() );
+		BOOST_TEST( arr[2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
