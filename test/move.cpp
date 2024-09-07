@@ -58,7 +58,7 @@ void move_element_1d_total_array() {
 
 	}
 }
-}
+}  // namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	move_element_1d_array();
