@@ -44,6 +44,8 @@ Checks: '*,
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
+#  -llvm-header-guard,                                    // allow PCH
+#  -misc-include-cleaner                                  // allow PCH
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // many tests use magic numbers
 

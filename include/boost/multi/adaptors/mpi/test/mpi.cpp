@@ -1,5 +1,6 @@
 #include <boost/multi/array.hpp>
 
+#define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
 
 #include <boost/core/lightweight_test.hpp>
@@ -277,7 +278,7 @@ void test_1d(MPI_Comm comm) {
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
 		}
 	}
-	std::cout << world_rank << std::endl;
+	std::cout << world_rank << '\n';
 	{
 		if(world_rank == 0) {
 			auto const  AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
@@ -296,7 +297,7 @@ void test_1d(MPI_Comm comm) {
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
 		}
 	}
-	std::cout << world_rank << std::endl;
+	std::cout << world_rank << '\n';
 	{
 		if(world_rank == 0) {
 			auto const  AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
