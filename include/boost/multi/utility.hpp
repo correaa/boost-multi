@@ -146,6 +146,13 @@ template<class T> struct has_rank : decltype(has_rank_aux(std::declval<T>())){};
 
 template<typename T> struct rank;
 
+template<class T, typename = decltype(std::declval<T&>().move())>
+       auto has_member_move_aux(T const&) -> std::true_type;
+inline auto has_member_move_aux(...     ) -> std::false_type;
+
+template<class T> struct has_member_move : decltype(has_member_move_aux(std::declval<T>())) {};
+
+
 template<typename T, typename = std::enable_if_t<has_rank<T>{}> >
 constexpr auto rank_aux(T const&) -> typename T::rank;
 
