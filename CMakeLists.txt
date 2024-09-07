@@ -107,7 +107,7 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake" "${PR
 install(DIRECTORY "include/" TYPE INCLUDE)
 
 if(MULTI_BUILD_TESTS)
-  find_package(Boost COMPONENTS)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
+  find_package(Boost)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
   if(NOT Boost_FOUND)
     message(WARNING "Cannot find Boost, Multi library will not be fully tested.")
   else()
