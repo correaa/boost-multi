@@ -6,16 +6,13 @@
 #define BOOST_MULTI_ADAPTORS_THRUST_HPP_
 #pragma once
 
-#include "../array.hpp"
-
-// #include "./thrust/reference.hpp"
+#include <boost/multi/array.hpp>
 
 #include <thrust/device_allocator.h>
 
 #include <thrust/universal_allocator.h>
-// #include <thrust/universal_ptr.h>
 
-#if not defined(MULTI_USE_HIP)
+#if !defined(MULTI_USE_HIP)
 #include <thrust/system/cuda/memory.h> // for ::thrust::cuda::allocator
 #else
 #include <thrust/system/hip/memory.h>  // for ::thrust::hip::allocator
