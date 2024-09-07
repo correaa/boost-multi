@@ -1735,14 +1735,13 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 };
 
-template<class T, std::enable_if_t<! has_member_move<T>::value, int> =0>  // NOLINT(modernize-use-constraints)
-BOOST_MULTI_HD constexpr auto move(T&& val) -> decltype(auto) {
-	return std::move(std::forward<T>(val));
-}
-
-template<class T, std::enable_if_t<  has_member_move<T>::value, int> =0>  // NOLINT(modernize-use-constraints)
-BOOST_MULTI_HD constexpr auto move(T&& ref) -> decltype(auto) {
-	return std::forward<T>(ref).move();
+template<class T>
+BOOST_MULTI_HD constexpr auto move(T&& val) noexcept -> decltype(auto) {
+	if constexpr(has_member_move<T>::value) {
+		return std::forward<T>(val).move();
+	} else {
+		return std::move(std::forward<T>(val));
+	}
 }
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
