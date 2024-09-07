@@ -20,7 +20,9 @@ namespace multi = boost::multi;
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-static void move_element_1d_array() {
+namespace {
+
+void move_element_1d_array() {
 	multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
 	using std::move;  // not necessary, just testing if it works
@@ -29,7 +31,7 @@ static void move_element_1d_array() {
 	BOOST_TEST( arr[2].empty() );
 }
 
-static void move_element_2d_array() {
+void move_element_2d_array() {
 	multi::array<std::vector<double>, 2> arr({10, 10}, std::vector<double>(5, {}, {}));
 
 	using std::move;
@@ -38,7 +40,7 @@ static void move_element_2d_array() {
 	BOOST_TEST( arr[2][2].empty() );
 }
 
-static void move_element_1d_total_array() {
+void move_element_1d_total_array() {
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
@@ -55,6 +57,7 @@ static void move_element_1d_total_array() {
 		BOOST_TEST( arr[2].empty() );
 
 	}
+}
 }
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
