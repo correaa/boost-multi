@@ -108,6 +108,9 @@ struct const_subarray;
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class subarray;
 
+template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
+class move_subarray;
+
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
 constexpr auto is_subarray_aux(const_subarray<T, D, ElementPtr, Layout> const&) -> std::true_type;
 constexpr auto is_subarray_aux(...                                            ) -> std::false_type;
@@ -1732,6 +1735,29 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 };
 
+template<class T>
+BOOST_MULTI_HD constexpr auto move(T&& val) noexcept -> decltype(auto) {
+	if constexpr(has_member_move<T>::value) {
+		return std::forward<T>(val).move();
+	} else {
+		return std::move(std::forward<T>(val));
+	}
+}
+
+template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
+class move_subarray : public subarray<T, D, ElementPtr, Layout> {
+	BOOST_MULTI_HD constexpr move_subarray(subarray<T, D, ElementPtr, Layout>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correa) check if this is necessary
+	: subarray<T, D, ElementPtr, Layout>(other.layout(), other.mutable_base()) {}
+
+	friend class subarray<T, D, ElementPtr, Layout>;
+
+ public:
+	using subarray<T, D, ElementPtr, Layout>::operator[];
+	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
+		return multi::move(subarray<T, D, ElementPtr, Layout>::operator[](idx));
+	}
+};
+
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
 class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr subarray(const_subarray<T, D, ElementPtr, Layout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correa) check if this is necessary
@@ -1742,10 +1768,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<class, multi::dimensionality_type, class, bool> friend struct array_iterator;
 
-// protected:
 	subarray(subarray const&) = default;
 
  public:
+	BOOST_MULTI_HD constexpr auto move() {return move_subarray<T, D, ElementPtr, Layout>(*this);}
+	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
+	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
+
 	subarray(subarray&&) noexcept = default;
 	~subarray() = default;
 
@@ -1826,16 +1855,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		this->elements() = other.elements();
 		return *this;
 	}
-
-	// auto operator=(subarray const& other) & -> subarray& {
-	//  const_subarray<T, D, ElementPtr, Layout>::operator=(other);
-	//  return *this;
-	// }
-
-	// auto operator=(subarray const& other) && -> subarray& {
-	//  const_subarray<T, D, ElementPtr, Layout>::operator=(other);
-	//  return *this;
-	// }
 
 	constexpr void swap(subarray&& other) && noexcept {
 		assert(this->extension() == other.extension());

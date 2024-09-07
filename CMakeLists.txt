@@ -56,9 +56,10 @@ add_library(multi INTERFACE)
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 target_compile_options(multi INTERFACE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>)
+
 # https://youtrack.jetbrains.com/issue/CPP-25608
-target_compile_features(${PROJECT_NAME} INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
-target_compile_options(${PROJECT_NAME} INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
+target_compile_features(multi INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
+target_compile_options(multi INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_library(correaa::multi ALIAS multi)
@@ -106,7 +107,7 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake" "${PR
 install(DIRECTORY "include/" TYPE INCLUDE)
 
 if(MULTI_BUILD_TESTS)
-  find_package(Boost COMPONENTS)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
+  find_package(Boost)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
   if(NOT Boost_FOUND)
     message(WARNING "Cannot find Boost, Multi library will not be fully tested.")
   else()

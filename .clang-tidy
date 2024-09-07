@@ -35,8 +35,7 @@ Checks: '*,
   -fuchsia-trailing-return,
   -llvmlibc-*,
   -modernize-use-nodiscard,
-  -readability-magic-numbers
-'
+  -readability-magic-numbers'
 ## explanation of the suppressed rules above:
 #  -altera-struct-pack-align,                             // this asks to use non-standard pragmas such as __attribute__((aligned(0))) and _attribute__((packed)), may interfeere with gcc/nvcc compatibility?
 #  -clang-diagnostic-deprecated-declarations              // some test run deprecated functions on purpose
