@@ -11,7 +11,7 @@
 // // IWYU pragma: no_include <map>
 // // IWYU pragma: no_include <set>
 // // IWYU pragma: no_include <stack>
-// #include <utility>  // for move, swap
+#include <utility>  // for move, swap
 #include <vector>   // for vector, operator==, vector<>::va...
 
 namespace multi = boost::multi;

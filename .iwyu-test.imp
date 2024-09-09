@@ -56,5 +56,6 @@
     { "include": ["@<__fwd/ostream.h>", "private", "<ostream>", "public"] },
     { "include": ["@<__fwd/sstream.h>", "private", "<sstream>", "public"] },
     { "include": ["@<functional>", "public", "<boost/core/lightweight_test.hpp>", "public"] },
-    { "include": ["@<bits/std_abs.h>", "private", "<cstdlib>", "public"] }
+    { "include": ["@<bits/std_abs.h>", "private", "<cstdlib>", "public"] },
+    { "include": ["@<__bit_reference>", "private", "<utility>", "public"] }
 ]
