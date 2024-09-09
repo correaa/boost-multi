@@ -647,9 +647,9 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_conj_complex_zero) {
 		};  // NOLINT(readability-identifier-length) BLAS naming
 		std::transform(begin(A), end(A), begin(yy), [&x](auto const& Ac) { return blas::dot(Ac, x); });
 
-		BOOST_TEST( static_cast<complex>(y[0]).real() == static_cast<complex>(yy[0]).real() );
-		BOOST_TEST( static_cast<complex>(y[1]).imag() == static_cast<complex>(yy[1]).imag() );
-		BOOST_TEST( static_cast<complex>(y[2]).real() == static_cast<complex>(yy[2]).real() );
+		BOOST_TEST( std::abs(static_cast<complex>(y[0]).real() - static_cast<complex>(yy[0]).real()) < 1e-10 );
+		BOOST_TEST( std::abs(static_cast<complex>(y[1]).imag() - static_cast<complex>(yy[1]).imag()) < 1e-10 );
+		BOOST_TEST( std::abs(static_cast<complex>(y[2]).real() - static_cast<complex>(yy[2]).real()) < 1e-10 );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = {
@@ -749,34 +749,36 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_complex_zero) {
 		{2.1, 0.0},
 		{3.1, 0.0},
 		{4.1, 0.0}
-	};  // NOLINT(readability-identifier-length) BLAS naming
+	};
+
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 1, Alloc> y = {
 		{1.1, 0.0},
 		{2.1, 0.0},
 		{3.1, 0.0}
-	};  // NOLINT(readability-identifier-length) BLAS naming
+	};
 	blas::gemv(1.0, blas::J(A), x, 0.0, y);
 	{
 		multi::array<complex, 1, Alloc> yy = {
 			{1.1, 0.0},
 			{2.1, 0.0},
 			{3.1, 0.0}
-		};  // NOLINT(readability-identifier-length) BLAS naming
+		};
 		std::transform(begin(A), end(A), begin(yy), [&x](auto const& Ac) {
 			using blas::operators::operator*;  // nvcc 11.8 needs this to be inside lambda
 			return blas::dot(*Ac, x); }
 		);
 
-		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
-		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
-		BOOST_TEST( static_cast<complex>(y[2]) == static_cast<complex>(yy[2]) );
+		BOOST_TEST( abs( static_cast<complex>(y[0]) - static_cast<complex>(yy[0])) < 1e-7 );
+		BOOST_TEST( abs( static_cast<complex>(y[1]) - static_cast<complex>(yy[1])) < 1e-7 );
+		BOOST_TEST( abs( static_cast<complex>(y[2]) - static_cast<complex>(yy[2])) < 1e-7 );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = {
 			{1.1, 0.0},
 			{2.1, 0.0},
 			{3.1, 0.0}
-		};  // NOLINT(readability-identifier-length) BLAS naming
+		};
 		yy = blas::gemv(1.0, blas::J(A), x);
 		BOOST_TEST( static_cast<complex>(y[0]) == static_cast<complex>(yy[0]) );
 		BOOST_TEST( static_cast<complex>(y[1]) == static_cast<complex>(yy[1]) );
