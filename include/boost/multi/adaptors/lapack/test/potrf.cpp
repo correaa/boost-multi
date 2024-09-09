@@ -124,7 +124,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}*/
 
 	BOOST_AUTO_TEST_CASE(numericalalgorithmsgroup_define_both_sides) {  // }, *boost::unit_test::tolerance(0.0000001)) {
-		double const nan = std::numeric_limits<double>::quiet_NaN();
 		auto const   I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 		multi::array<complex, 2> const A_gold = {

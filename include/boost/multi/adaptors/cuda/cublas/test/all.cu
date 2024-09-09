@@ -649,7 +649,7 @@ BOOST_AUTO_TEST_CASE(cublas_one_gemv_conj_complex_zero) {
 
 		BOOST_TEST( std::abs(static_cast<complex>(y[0]).real() - static_cast<complex>(yy[0]).real()) < 1e-10 );
 		BOOST_TEST( std::abs(static_cast<complex>(y[1]).imag() - static_cast<complex>(yy[1]).imag()) < 1e-10 );
-		BOOST_TEST( std::abs(static_cast<complex>(y[2]).real() == static_cast<complex>(yy[2]).real()) < 1e-10 );
+		BOOST_TEST( std::abs(static_cast<complex>(y[2]).real() - static_cast<complex>(yy[2]).real()) < 1e-10 );
 	}
 	{
 		multi::array<complex, 1, Alloc> yy = {
