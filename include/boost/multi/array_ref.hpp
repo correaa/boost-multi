@@ -265,7 +265,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
 	
-	template<class, ::boost::multi::dimensionality_type, typename, bool> friend struct array_iterator;
+	template<class, ::boost::multi::dimensionality_type, typename, bool, bool> friend struct array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
 	BOOST_MULTI_HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
@@ -325,7 +325,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<typename, multi::dimensionality_type, typename, bool> friend struct array_iterator;
+	template<typename, multi::dimensionality_type, typename, bool, bool> friend struct array_iterator;
 
 	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -465,13 +465,13 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> subarray_ptr& { advance(n); return *this; }
 };
 
-template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false>
+template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false>
 struct array_iterator;
 
-template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst>
+template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove>
 struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 : boost::multi::iterator_facade<
-	array_iterator<Element, D, ElementPtr, IsConst>, void, std::random_access_iterator_tag,
+	array_iterator<Element, D, ElementPtr, IsConst, IsMove>, void, std::random_access_iterator_tag,
 	subarray<Element, D-1, ElementPtr> const&, typename layout_t<D-1>::difference_type
 >
 , multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst>>
@@ -515,7 +515,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	// BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
 	BOOST_MULTI_HD constexpr array_iterator() : ptr_{}, stride_{} {}  // = default;  // TODO(correaa) make = default, now it is not compiling
 
-	template<class, dimensionality_type, class, bool> friend struct array_iterator;
+	template<class, dimensionality_type, class, bool, bool> friend struct array_iterator;
 
 	template<
 		class EElement, typename PPtr,
@@ -1766,7 +1766,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
-	template<class, multi::dimensionality_type, class, bool> friend struct array_iterator;
+	template<class, multi::dimensionality_type, class, bool, bool> friend struct array_iterator;
 
 	subarray(subarray const&) = default;
 
@@ -2211,10 +2211,7 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 	constexpr explicit array_iterator(Other const& other)
 	: ptr_{other.data_}, stride_{other.stride_} {}
 
-	template<class, dimensionality_type, class, bool> friend struct array_iterator;
-
-	// constexpr explicit array_iterator(std::nullptr_t nil)  : ptr_{nil}, stride_{} {}
-	// constexpr explicit array_iterator(Ptr const& ptr) : ptr_{ptr} {}
+	template<class, dimensionality_type, class, bool, bool> friend struct array_iterator;
 
 	template<
 		class EElement, typename PPtr,
@@ -2523,7 +2520,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
  protected:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<class, dimensionality_type D, class, bool> friend struct array_iterator;
+	template<class, dimensionality_type D, class, bool, bool> friend struct array_iterator;
 
  public:
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type {return 1;}
