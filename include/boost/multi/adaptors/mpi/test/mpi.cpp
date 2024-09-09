@@ -7,6 +7,8 @@
 
 #include <cassert>   // for assert
 #include <iostream>  // for std::cout
+#include <limits>    // for numeric_limits
+#include <utility>   // for exchange, move
 #include <vector>
 
 namespace boost::multi::mpi {
@@ -184,7 +186,7 @@ class message : skeleton<Size> {
     } {}
 
 	message(message const& other) = delete;
-	message(message&&)      = delete;
+	message(message&&)            = delete;
 
 	auto operator=(message const&) = delete;
 	auto operator=(message&&)      = delete;
@@ -409,7 +411,7 @@ void test_2d(MPI_Comm comm) {
 
 }  // namespace
 
-auto main() -> int {
+auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	MPI_Init(nullptr, nullptr);
 
 	int world_rank;  // NOLINT(cppcoreguidelines-init-variables)
