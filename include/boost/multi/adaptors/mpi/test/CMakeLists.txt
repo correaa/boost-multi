@@ -3,13 +3,13 @@ cmake_minimum_required(VERSION 3.15)
 enable_testing()
 include(CTest)
 
-find_package(Boost REQUIRED COMPONENTS headers)
+find_package(Boost REQUIRED COMPONENTS)
 
 add_executable(mpi.cpp.x mpi.cpp)
 
 if(APPLE)
-#    add_custom_command (TARGET mpi.cpp.x POST_BUILD COMMAND codesign --verify -vv ${CMAKE_CURRENT_BINARY_DIR}/mpi.cpp.x)
-#    add_custom_command (TARGET mpi.cpp.x POST_BUILD COMMAND /usr/libexec/ApplicationFirewall/socketfilterfw --add ${CMAKE_CURRENT_BINARY_DIR}/mpi.cpp.x)
+    # https://apple.stackexchange.com/a/121010 TODO(correaa) to get rid of macos warning when executing the test
+    add_custom_command (TARGET mpi.cpp.x POST_BUILD COMMAND codesign --force --deep --sign - ${CMAKE_CURRENT_BINARY_DIR}/mpi.cpp.x)
 endif()
 
 # if(ENABLE_CUDA OR DEFINED CXXCUDA)
