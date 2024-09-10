@@ -118,4 +118,26 @@ BOOST_AUTO_TEST_CASE(mutating_views_2d) {
 
 	(void)coll2, (void)coll1_take3_const, (void)coll1_take3;
 }
-return boost::report_errors();}
+
+{
+	multi::array<int, 1> arr1d = {1, 2, 3};
+
+	// multi::array<int, 1>::const_iterator cfirst = arr1d.cbegin();
+	// *cfirst.base() = 5;
+	// *cfirst = 5;  // correctly fails to compile
+	// cfirst[0] = 5;  // correctly fails to compile
+	
+	BOOST_TEST( arr1d[0] == 1 );
+}
+{
+	multi::array<int, 1> const arr1d = {1, 2, 3};
+
+	// multi::array<int, 1>::iterator cfirst = arr1d.begin();  // correctly fails to compile
+	
+	BOOST_TEST( arr1d[0] == 1 );
+}
+
+
+
+return boost::report_errors();
+}

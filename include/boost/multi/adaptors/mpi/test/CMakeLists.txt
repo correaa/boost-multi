@@ -9,7 +9,7 @@ add_executable(mpi.cpp.x mpi.cpp)
 
 if(APPLE)
     # https://apple.stackexchange.com/a/121010 TODO(correaa) to get rid of macos warning when executing the test
-    add_custom_command (TARGET mpi.cpp.x POST_BUILD COMMAND codesign --force --deep --sign - ${CMAKE_CURRENT_BINARY_DIR}/mpi.cpp.x)
+    add_custom_command (TARGET mpi.cpp.x POST_BUILD COMMAND codesign --force --deep -s ACTMPI ${CMAKE_CURRENT_BINARY_DIR}/mpi.cpp.x)
 endif()
 
 # if(ENABLE_CUDA OR DEFINED CXXCUDA)
