@@ -2155,26 +2155,16 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
 
-/**
- * @brief An iterator for a 1-dimensional array in the `multi` library.
- *
- * This iterator provides a random access iterator interface for iterating over
- * the elements of a 1-dimensional array. It supports common iterator operations
- * such as incrementing, decrementing, and dereferencing.
- *
- * The iterator is templated on the element type `Element`, the pointer type
- * `Ptr`, and a boolean flag `IsConst` that indicates whether the iterator is
- * const or not.
- *
- * The iterator is designed to be used in conjunction with the `const_subarray`
- * class, which provides a view into a 1-dimensional array.
- */
-template<class Element, typename Ptr, bool IsConst>
-struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
+template<class Element, typename Ptr, bool IsConst, bool IsMove>
+struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
 : boost::multi::iterator_facade<
-	array_iterator<Element, 1, Ptr, IsConst>,
+	array_iterator<Element, 1, Ptr, IsConst, IsMove>,
 	Element, std::random_access_iterator_tag,
-	typename std::iterator_traits<Ptr>::reference, multi::difference_type
+	std::conditional_t<
+		IsConst,
+		typename std::iterator_traits<typename std::pointer_traits<Ptr>::template rebind<Element const> >::reference,
+		typename std::iterator_traits<Ptr>::reference
+	>, multi::difference_type
 >
 , multi::affine          <array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>
 , multi::decrementable   <array_iterator<Element, 1, Ptr, IsConst>>
@@ -2182,6 +2172,19 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 , multi::totally_ordered2<array_iterator<Element, 1, Ptr, IsConst>, void>
 {
 	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>;
+
+	using pointer = std::conditional_t<
+		IsConst,
+		typename std::pointer_traits<Ptr>::template rebind<Element const>,
+		Ptr
+	>;
+
+	using reference = std::conditional_t<
+		IsConst,
+		typename std::iterator_traits<typename std::pointer_traits<Ptr>::template rebind<Element const> >::reference,
+		typename std::iterator_traits<Ptr>::reference
+	>;
+
 	using difference_type = typename affine::difference_type;
 	static constexpr dimensionality_type dimensionality = 1;
 
@@ -2218,19 +2221,19 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 		typename = decltype(multi::detail::implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
 	>
 	BOOST_MULTI_HD constexpr /*impl*/ array_iterator(array_iterator<EElement, 1, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of original pointer
-	: ptr_{other.data_}, stride_{other.stride_} {}
+	: ptr_{other.base()}, stride_{other.stride_} {}
 
 	constexpr explicit operator bool() const {return static_cast<bool>(this->ptr_);}
 
-	BOOST_MULTI_HD constexpr auto operator[](typename array_iterator::difference_type n) const -> typename std::iterator_traits<Ptr>::reference {
-		return *((*this) + n);
+	BOOST_MULTI_HD constexpr auto operator[](typename array_iterator::difference_type n) const -> decltype(auto) {
+		return static_cast<reference>(*((*this) + n));
 	}
 
-	constexpr auto operator->() const -> Ptr {return ptr_;}
+	constexpr auto operator->() const {return static_cast<pointer>(ptr_);}
 
 	using element = Element;
 	using element_ptr = Ptr;
-	using pointer = element_ptr;
+	// using pointer = element_ptr;
 	using stride_type = multi::index;
 
 	static constexpr dimensionality_type rank_v = 1;
@@ -2261,10 +2264,10 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret+=n; return ret; }
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret-=n; return ret; }
 
-	[[deprecated("use base() for iterator")]]
-	BOOST_MULTI_HD constexpr auto data() const -> element_ptr {return ptr_;}
+	BOOST_MULTI_HD constexpr auto base()              const {return static_cast<pointer>(ptr_);}
 
-	BOOST_MULTI_HD constexpr auto base()              const -> element_ptr {return ptr_;}
+	[[deprecated("use base() for iterator")]]
+	BOOST_MULTI_HD constexpr auto data() const {return base();}
 
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto base(array_iterator const& self) -> element_ptr {return self.base();}
@@ -2312,7 +2315,7 @@ struct array_iterator<Element, 1, Ptr, IsConst>  // NOLINT(fuchsia-multiple-inhe
 
 //  friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.ptr_ == other.ptr_;}
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference { return *ptr_; } // NOLINT(readability-const-return-type)
+	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) { return static_cast<reference>(*ptr_); } // NOLINT(readability-const-return-type)
 };
 
 template<class Element, dimensionality_type D, typename... Ts>
