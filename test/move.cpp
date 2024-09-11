@@ -55,7 +55,6 @@ void move_element_1d_total_array() {
 		auto vec = move(arr)[2];
 		BOOST_TEST( vec.size() == 5 );
 		BOOST_TEST( arr[2].empty() );
-
 	}
 }
 }  // namespace

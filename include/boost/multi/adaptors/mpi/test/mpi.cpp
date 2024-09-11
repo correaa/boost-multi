@@ -91,8 +91,8 @@ class skeleton {
 	}
 
 	template<class Layout>
-	skeleton(Layout const& lyt, MPI_Datatype dt, Size subcount)  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init,fuchsia-default-arguments-declarations)
-	: count_{static_cast<Size>(lyt.size())} {
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init,fuchsia-default-arguments-declarations)
+	skeleton(Layout const& lyt, MPI_Datatype dt, Size subcount) : count_{static_cast<Size>(lyt.size())} {
 		assert(lyt.size() <= std::numeric_limits<Size>::max());
 
 		MPI_Datatype              sub_type;  // NOLINT(cppcoreguidelines-init-variables)
