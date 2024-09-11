@@ -2264,15 +2264,15 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret+=n; return ret; }
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret-=n; return ret; }
 
-	BOOST_MULTI_HD constexpr auto base()              const {return static_cast<pointer>(ptr_);}
+	BOOST_MULTI_HD constexpr auto base() const {return static_cast<pointer>(ptr_);}
 
 	[[deprecated("use base() for iterator")]]
 	BOOST_MULTI_HD constexpr auto data() const {return base();}
 
 	BOOST_MULTI_FRIEND_CONSTEXPR
-	auto base(array_iterator const& self) -> element_ptr {return self.base();}
+	auto base(array_iterator const& self) { return self.base(); }
 
-	       BOOST_MULTI_HD constexpr auto stride()              const        -> stride_type {return      stride_;}
+	BOOST_MULTI_HD constexpr auto stride() const -> stride_type {return      stride_;}
 	friend    constexpr auto stride(array_iterator const& self) -> stride_type { return self.stride_; }
 
 	#if defined(__clang__)
