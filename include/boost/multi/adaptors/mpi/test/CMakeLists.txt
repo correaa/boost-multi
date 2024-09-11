@@ -9,7 +9,7 @@ add_executable(mpi.cpp.x mpi.cpp)
 
 if(APPLE)
     # https://apple.stackexchange.com/a/121010 TODO(correaa) to get rid of macos warning when executing the test
-    add_custom_command (TARGET mpi.cpp.x POST_BUILD COMMAND codesign --force --deep -s ACTMPI ${CMAKE_CURRENT_BINARY_DIR}/mpi.cpp.x)
+    # add_custom_command (TARGET mpi.cpp.x POST_BUILD COMMAND codesign --force --deep -s ACTMPI ${CMAKE_CURRENT_BINARY_DIR}/mpi.cpp.x)
 endif()
 
 # if(ENABLE_CUDA OR DEFINED CXXCUDA)
@@ -27,4 +27,4 @@ endif()
 
 target_link_libraries(mpi.cpp.x PRIVATE multi MPI::MPI_CXX Boost::headers)
 
-add_test(NAME mpi.cpp.x COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS} $<TARGET_FILE:mpi.cpp.x> ${MPIEXEC_POSTFLAGS})
+add_test(NAME mpi.cpp.x COMMAND ${MPIEXEC_EXECUTABLE} --mca btl ^tcp ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS} $<TARGET_FILE:mpi.cpp.x> ${MPIEXEC_POSTFLAGS})
