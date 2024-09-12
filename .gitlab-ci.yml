@@ -628,30 +628,32 @@ cuda:
 #     # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
 #   needs: ["cuda"]
 
-cuda-11.8 mkl:
-  stage: build
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-  tags:
-    - non-shared
-    - nvidia-gpu
-    - high-bandwidth
-    - x86_64
-  interruptible: true
-  script:
-    - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - DEBIAN_FRONTEND=interactive apt-get install --no-install-recommends --yes --force-yes -y libmkl-full-dev
-    - mkdir build && cd build
-    - ls /usr/local
-    - ls /usr/local/cuda-11/bin
-    - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-    # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-    # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-    # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["cuda"]
+# cuda-11.8 mkl:
+#   stage: build
+#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+#   tags:
+#     - non-shared
+#     - nvidia-gpu
+#     - high-bandwidth
+#     - x86_64
+#   interruptible: true
+#   script:
+#     - nvidia-smi
+#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#     - DEBIAN_FRONTEND=interactive apt-get install --no-install-recommends --yes --force-yes -y libmkl-full-dev
+#     - cmake --version
+#     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
+#     - sh ./cmake-install.sh --skip-license --prefix=/usr
+#     - cmake --version
+#     - mkdir build && cd build
+#     - /usr/local/cuda-11/bin/nvcc --version
+#     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#     # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
+#     # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
+#     # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
+#   needs: ["cuda"]
 
 cuda-11.4.3:
   stage: build
@@ -735,6 +737,10 @@ culang++-17 cuda-11.8:
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
     - ./llvm.sh 17
+    - cmake --version
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr  # for CMAKE_CUDA_STANDARD=20
+    - cmake --version
     - mkdir build && cd build
     - clang++-17 --version
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17
@@ -779,12 +785,16 @@ cuda-12.5.0:
     - nvidia-smi
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - cmake --version
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr  # for CMAKE_CUDA_STANDARD=20
+    - cmake --version
     - mkdir build && cd build
     - g++ --version
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of drivers"
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++
+    - cmake --verbose --build . --parallel 2 || cmake --build . --verbose
+    - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
 rocm:
