@@ -512,13 +512,13 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 	{
 		auto const ss = aref.sizes();
-		BOOST_TEST( get<0>(ss) == 2 );
-		BOOST_TEST( get<1>(ss) == 3 );
+		BOOST_TEST( std::get<0>(ss) == 2 );
+		BOOST_TEST( std::get<1>(ss) == 3 );
 		BOOST_TEST( ss == decltype(ss)(2, 3) );
 	}
 	{
-		BOOST_TEST( get<0>(aref.sizes()) == 2 );
-		BOOST_TEST( get<1>(aref.sizes()) == 3 );
+		BOOST_TEST( std::get<0>(aref.sizes()) == 2 );
+		BOOST_TEST( std::get<1>(aref.sizes()) == 3 );
 		BOOST_TEST( aref.sizes() == decltype(aref.sizes())(2, 3) );
 	}
 #endif

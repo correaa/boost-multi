@@ -58,8 +58,12 @@ target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 target_compile_options(multi INTERFACE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>)
 
 # https://youtrack.jetbrains.com/issue/CPP-25608
-target_compile_features(multi INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
-target_compile_options(multi INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
+target_compile_features(multi INTERFACE cxx_std_17)  # $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
+if(ENABLE_CUDA)
+  target_compile_features(multi INTERFACE cuda_std_17)  # $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
+endif()
+
+# target_compile_options(multi INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_library(correaa::multi ALIAS multi)
