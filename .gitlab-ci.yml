@@ -735,6 +735,10 @@ culang++-17 cuda-11.8:
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
     - ./llvm.sh 17
+    - cmake --version
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr  # for CMAKE_CUDA_STANDARD=20
+    - cmake --version
     - mkdir build && cd build
     - clang++-17 --version
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-17 -DCMAKE_CXX_COMPILER=clang++-17
