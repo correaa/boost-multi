@@ -3,8 +3,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>  // for array, layout_t, subarray, sizes
 #include <boost/core/lightweight_test.hpp>
+
+#include <boost/multi/array.hpp>  // for array, layout_t, subarray, sizes
 
 #include <array>    // for array
 #include <numeric>  // for iota
