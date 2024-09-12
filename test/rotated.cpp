@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>  // for array, layout_t, subarray, sizes
+#include <boost/core/lightweight_test.hpp>
 
 #include <array>    // for array
 #include <numeric>  // for iota
@@ -37,8 +38,7 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 	#endif
 #endif
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE)
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 #ifndef _MSC_VER      // msvc 14.40 gets confused with constexpr
@@ -106,7 +106,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	#if __cplusplus >= 202002L
-		#if defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER)
+		#if defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
 	BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end) {
 		constexpr auto test = [] {
 			multi::array<int, 2> arr({3, 3}, 99);
