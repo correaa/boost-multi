@@ -7,14 +7,40 @@ _© Alfredo A. Correa, 2018-2024_
 
 (documentation in progress)
 
-The BLAS Adaptor provides an interface for BLAS and BLAS-like libraries (namely cuBLAS).
+The BLAS Adaptor provides an interface for the BLAS and BLAS-like linear algebra libraries (namely cuBLAS).
+Although BLAS is not strictly a multidimensional array library and it is restricted to work to 1D (vectors) and 2D arrays (matrices), it is an extremely popular numeric library.
+
+The adaptor has a two-fold purpose.
+First, it allows to abstract the stride information and the conjugation/transposition in the BLAS calls, simplifying the interface enormously and making it consistent with their GPU counterparts, such as cuBLAS.
+Second, it provides a functional interface to the BLAS calls, which is easier to use than the C-style interface and plays well with STL algorithms that assume a functional use.
+Different cases, regarding conjugation, transposition, and real and imaginary parts, are handled automatically by "view manipulators".
+
+This interface is independent of the [C++26 Linear Algebra Proposal](https://en.cppreference.com/w/cpp/numeric/linalg), although it shared the goals.
+The main difference with other BLAS adaptors is that this library aims to offer a functional interface.
+
+In the following sections we present the functional interface only, for a conversion to the non-functional interface, see the table at the end.
 
 ## Contents
 [[_TOC_]]
 
 ## Numeric Arrays, Conjugation Real and Imaginary parts
 
-These functions produce views (not copies) related to conjugation, real and imaginary parts.
+Just as BLAS, the main element types the library support are: real (`double` and `float`), complex (`std::complex<double>` and `std::complex<float>`).
+Other types that are semantically equivalent and binary compatible (such as `thrust::complex<double>` and `thrust::complex<float>`) also work directly.
+
+## View manipulators
+
+These functions produce views (not copies) related to conjugation, transposition, and taking real and imaginary parts in the complex case.
+
+### `auto multi::blas::C(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
+
+The conjugation operation is a unary operation that conjugates each element of the array, producing a view of the array that preserves the shape of the original array.
+
+### `multi::blas::T(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
+
+The transposition operation is a unary operation that transposes an array, producing a view of the array that transposed the elements (and the shape) of the original array.
+
+### `multi::blas::H(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
 
 ```cpp
 	using complex = std::complex<double>; 
@@ -26,47 +52,138 @@ These functions produce views (not copies) related to conjugation, real and imag
 	};
 
 	namespace blas = multi::blas;
-	multi::array<complex, 2> conjB = blas::conj(B);
+	multi::array<complex, 2> conjB = blas::C(B);
 
-	assert( blas::conj(B)[2][1] == std::conj(B[2][1]) );
+	assert( blas::C(B)[1][2] == std::conj(B[1][2]) );
+	assert( blas::T(B)[1][2] ==           B[1][2]  );
+	assert( blas::H(B)[1][2] == std::conj(B[2][1]) );
+```
 
-	assert( blas::transposed(B)[1][2] == B[2][1] );
-	assert( blas::transposed(B) == ~B );
+Note that view do not play well with self-assignment.
+The main purpose of these functions is to manipulate arguments to BLAS interface functions.
 
-	assert( blas::hermitized(B)[2][1] == blas::conj(B)[1][2] );
-	assert( blas::hermitized(B)       == blas::conj(blas::transposed(B)) );
+In particular, "view" do not play well with self-assignment:
+```cpp
+	multi::array<double, 2> A({10, 10});
+	A = multi::blas::T(A);   // undefined behavior, this is not the right way to transpose a matrix in-place
+```
 
-	assert( blas::real(B)[2][1] == std::real(B[2][1]) );
-	assert( blas::imag(B)[2][1] == std::imag(B[2][1]) );
+## BLAS level 1
 
-	multi::array<double, 2> B_real_doubled = {
-		{ 1.0, -3.0, 6.0, 2.0},
-		{ 8.0,  2.0, 2.0, 4.0},
-		{ 2.0, -1.0, 1.0, 1.0}
-	};
-	assert( blas::real_doubled(B) == B_real_doubled );
+(https://godbolt.org/z/Kjfa48d4P)
+
+The functions in this cathegory operate on one-dimensional arrays (vectors).
+Here we use `multi::array<T, 1>` as representative of a vector, but it can also be replaced by one-dimensional subarray, such as a row or a column of a 2D array.
+
+In the _functional_ interface, most of the function returns special "views" and not direct results.
+The results are computed when converted to value types or assigned to other views.
+Value types can be 2D (`multi::array<T, 2>`), 1D (`multi::array<T, 1>`) or 0D (`multi::array<T, 0>` or scalars `T`).
+Views can be subarrays (e.g. `multi::subarray<T, 2>` or `multi::subarray<T, 1>`).
+Like other part of the library, when using `auto` and the unary `operator+` help generating concrete values.
+
+## `auto multi::blas::swap(`_complex/real vector_`, `_complex/real vector_`) -> void`
+
+Swaps the values of two vectors.
+Vector extensions must match.
+
+## `auto multi::blas::copy(`_complex/real vector_`) -> `_convertible to complex/real vector_
+
+Copies the values of a vector to another.
+
+This is similar to assigment, except that it used the underlying BLAS function (including parallelization offered by it) and has marginal utility.
+However, this case serves as illustration of the _functional_ interface, used in the rest of the library:
+`multi::blas::copy(v)` doesn't copy or allocates anything, it greates a "view" that can serve different purposes, illustrated in 3 different cases:
+1) The view can be used to construct a new vector (needing allocation),
+Once again `operator+` helps with automatic type deduction.
+
+```cpp
+	multi::array<double, 1> const v = {1.0, 2.0, 3.0};
+	auto const& v_copy = multi::blas::copy(v);
+	...
 ```
 
 ```cpp
-	multi::array<double, 2> const a_real = {
-		{ 1.0, 3.0, 1.0},
-		{ 9.0, 7.0, 1.0},
-	};
-
-	multi::array<complex, 2> const b = {
-		{ 11.0 + 1.0*I, 12.0 + 1.0*I, 4.0 + 1.0*I, 8.0 - 2.0*I},
-		{  7.0 + 8.0*I, 19.0 - 2.0*I, 2.0 + 1.0*I, 7.0 + 1.0*I},
-		{  5.0 + 1.0*I,  3.0 - 1.0*I, 3.0 + 8.0*I, 1.0 + 1.0*I}
-	};
-
-	multi::array<complex, 2> c({2, 4});
-
-	blas::real_doubled(c) = blas::gemm(1., a_real, blas::real_doubled(b)); // c = a_real*b
+	multi::array<double, 1> const v2(v_copy);  // case 1: allocates space for 3 elements and copies (using BLAS)
+	// auto const v2 = +v_copy;  // case 1: same as line above
 ```
+
+2) to assign to an existing vector (and resize it if is nedeed and possible)
+
+```cpp
+	multi::array<double, 1> v3;  // mutable vector
+	v3 = v_copy;  // case 2: resizes v3 (allocates space for 3 elements) and copies
+```
+
+```cpp
+	multi::array<double, 1> v4({3}, 0.0);  // allocates space for 3 elements
+	v4 = v_copy;  // case 2: assigns copies (no allocation necessary)
+```
+
+3) to assign to a 1D subarray vector that is not resizable.
+The importance of this case is that is guarantees that no allocations are performed.
+
+```cpp
+	multi::array<double, 1> const A({3}, 0.0);  // allocates space for 3 elements
+	v4({0, 2}) = v_copy;  // case 3: LHS is not resizable, assigns copies (resizing is not possible or necessary)
+```
+
+## `auto multi::blas::nrm2(`_complex/real vector_`) -> `_convertible to real scalar_
+
+Unary operation that computes the norm-2 (Euclidean norm) of a vector.
+The result is convertible to a real scalar
+
+```cpp
+	multi::array<double, 1> const v = {1.0, 2.0, 3.0};
+	double const n = multi::blas::nrm2(v);
+	// auto const n = +multi::blas::nrm2(v);
+```
+
+```cpp
+	multi::array<std::complex<double>, 1> const v = { {1.0, 2.0}, {2.0, 3.0}, {3.0, 4.0} };
+	double const n = multi::blas::nrm2(v);
+	// auto const n = +multi::blas::nrm2(v);
+```
+
+## `auto multi::blas::asum(`_complex/real vector_`) -> `_convertible to real scalar_
+
+Returns the sum of the absolute values of the elements of a vector (norm-1).
+
+## `auto multi::blas::dot(`_complex/real vector_, _complex/real vector_`) -> `_convertible to complex/real scalar_
+
+Returns the dot product of two vectors with complex or real elements (`T`).
+
+```cpp
+	multi::array<T, 1> const v = {1.0, 2.0, 3.0};
+	multi::array<T, 1> const w = {4.0, 5.0, 6.0};
+	// T const d = multi::blas::dot(v, w); 
+	auto const d = +multi::blas::dot(v, w);
+```
+
+Conjugation can be applied to either vector argument,
+
+```cpp
+	using multi::blas::dot;
+	using multi::blas::C;
+
+	auto const d1 = +dot(  v ,   w );
+	auto const d2 = +dot(C(v),   w );
+	auto const d3 = +dot(  v , C(w));
+	auto const d4 = +dot(C(v), C(w));
+```
+
+It is important to note that right hand side of the assignment can be a scalar that is part of a heap allocation.
+In this case, the result is going to directly put at this location.
+
+```cpp
+	multi::array<double, 1> z = {0.0, 0.0, 0.0};
+	z[1] = multi::blas::dot(v, w);
+```
+
+This is particularly important when operating on GPU memory.
 
 ## GEMM
 
-```
+```cpp
 #include<multi/array.hpp>
 #include<multi/adaptors/blas.hpp>
 
@@ -98,8 +215,8 @@ matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `
 
 | BLAS   | mutable form           | effect                        | operator form [³]        | functional form | thrust/STL [¹] |
 |---     |---                     | ---                           | ---                  | ---             | --- |
-| SWAP   |`blas::swap(x, y)`      | $`x_i \leftrightarrow y_i`$ | `(x^y)` |    | `swap_ranges(begin(x), end(x), begin(y))` |
-| COPY   |`blas::copy(x, y)`      | $`y_i \leftrightarrow x_i`$ | `y << x` |  `y = blas::copy(x)` | `copy(begin(x), end(x), begin(y))` |
+| SWAP   |`blas::swap(x, y)`      | $x_i \leftrightarrow y_i$ | `(x^y)` |    | `swap_ranges(begin(x), end(x), begin(y))` |
+| COPY   |`blas::copy(x, y)`      | $`y_i \leftarrow x_i`$ | `y << x` |  `y = blas::copy(x)` | `copy(begin(x), end(x), begin(y))` |
 | ASUM   |`blas::asum(x, res)`    | $`r \leftarrow \sum_i \|\Re x_i\| + \|\Im x_i\|`$ | `x==0`/`x!=0` `isinf(x)` `isnan(x)`[²] | `res = blas::asum(x)` | `transform_reduce(begin(x), end(x), 0.0, plus<>{}, [](auto const& e){return abs(e.real()) + abs(e.imag());})` |
 | NRM2   |`blas::nrm2(x, res)`     | $`r \leftarrow \sqrt{\sum_i \|x_i\|^2}`$ | `abs(x)` | `res = blas::nrm2(x);` | `sqrt(trasnform_reduce(begin(x), end(x), 0.0, plus<>{}, [](auto const& e){return norm(e);}));` |
 | SCAL   |`blas::scal(aa, x);`    | $`x_i \leftarrow \alpha x_i`$ | `x*=aa;`           |                 | `for_each(begin(x), end(x), [aa](auto& e){return e*=aa;})` |
