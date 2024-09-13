@@ -41,7 +41,7 @@ class fnv1a_t {
 
 	void operator()(unsigned char const* key, std::ptrdiff_t len) noexcept { h_ = fnv1a(key, len, h_); }
 
-	template<class T, std::enable_if_t<std::is_fundamental_v<T>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class T, std::enable_if_t<std::is_fundamental_v<T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	auto operator()(T const& value) noexcept -> decltype(auto) {
 		operator()(&value, sizeof(value));
 		return *this;

@@ -2,11 +2,10 @@
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, apply, array_types<>::ele...
 
-// #include <algorithm>  // for copy, equal, fill_n, move
-// #include <iterator>   // for size, back_insert_iterator, back...
-// #include <memory>     // for unique_ptr, make_unique, allocat...
 // // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
 // // IWYU pragma: no_include <map>
 // // IWYU pragma: no_include <set>
@@ -15,8 +14,6 @@
 #include <vector>   // for vector, operator==, vector<>::va...
 
 namespace multi = boost::multi;
-
-#include <boost/core/lightweight_test.hpp>
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// explicit_move_subarray_vector_2d_assign
@@ -27,7 +24,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			using std::move;
 			multi::array<std::vector<double>, 2> arrB(arrA().element_moved());  // (arrA.extensions());
-			//arrB = arrA().element_moved();
+			// arrB = arrA().element_moved();
 
 			BOOST_TEST( arrA.size() == 10 );
 			BOOST_TEST( arrB.size() == 10 );
