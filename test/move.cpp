@@ -45,7 +45,7 @@ void move_element_1d_array() {
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
-		std::vector<std::vector<double>> out_vec(4);
+		std::vector<std::vector<double>> out_vec(4, {}, {});
 		std::copy(arr({2, 6}).mbegin(), arr({2, 6}).mend(), out_vec.begin());
 		BOOST_TEST( out_vec[0].size() == 5 );
 		BOOST_TEST( arr[2].empty() );
