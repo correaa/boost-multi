@@ -17,6 +17,8 @@
 #include <utility>  // for move, swap
 #include <vector>   // for vector, operator==, vector<>::va...
 
+// IWYU pragma: no_include <pstl/glue_algorithm_defs.h>       // for move
+
 namespace multi = boost::multi;
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
