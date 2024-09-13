@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, apply, array_types<>::ele...
 
 #include <algorithm>  // for copy, equal, fill_n, move
@@ -15,20 +17,99 @@
 #include <utility>  // for move, swap
 #include <vector>   // for vector, operator==, vector<>::va...
 
+// IWYU pragma: no_include <pstl/glue_algorithm_defs.h>       // for move
+
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 namespace {
 
 void move_element_1d_array() {
-	multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+		multi::array<std::vector<double>, 1> brr(10, {}, {});
 
-	using std::move;  // not necessary, just testing if it works
-	auto vec = move(arr({2, 6}))[0];
-	BOOST_TEST( vec.size() == 5 );
-	BOOST_TEST( arr[2].empty() );
+		std::copy_n( std::move(arr).begin(), brr.size(), brr.begin() );
+		BOOST_TEST( arr[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+		BOOST_TEST( brr[0].size() == 5 );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+		multi::array<std::vector<double>, 1> brr(10, {}, {});
+
+		std::copy_n( arr.mbegin(), arr.size(), brr.begin() );
+		BOOST_TEST( arr[0].empty() );
+		BOOST_TEST( brr[0].size() == 5 );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		using std::move;  // not necessary, just testing if it works
+		auto vec = move(arr({2, 6}))[0];
+		BOOST_TEST( vec.size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		auto mbeg = arr({2, 6}).mbegin();
+		auto vec = *mbeg;
+		BOOST_TEST( vec.size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		auto mbeg = arr({2, 6}).mbegin();
+		auto vec = *mbeg;
+		BOOST_TEST( vec.size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		std::vector<std::vector<double>> out_vec(4, {}, {});
+		std::copy(arr({2, 6}).mbegin(), arr({2, 6}).mend(), out_vec.begin());
+		BOOST_TEST( out_vec[0].size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		std::vector<std::vector<double>> out_vec(4, {}, {});
+		std::copy(multi::move(arr({2, 6})).begin(), multi::move(arr({2, 6})).end(), out_vec.begin());
+		BOOST_TEST( out_vec[0].size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		std::vector<std::vector<double>> out_vec(4, {}, {});
+		auto&& marr62 = multi::move(arr({2, 6}));
+		std::copy(std::move(marr62).begin(), std::move(marr62).end(), out_vec.begin());  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+		BOOST_TEST( out_vec[0].size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		std::vector<std::vector<double>> out_vec(4, {}, {});
+		auto&& marr62 = arr({2, 6});
+		std::copy(multi::move(marr62).begin(), multi::move(marr62).end(), out_vec.begin());  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+		BOOST_TEST( out_vec[0].size() == 5 );
+		BOOST_TEST( out_vec[1].size() == 5 );
+		BOOST_TEST( arr[2].empty() );
+	}
+	{
+		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
+
+		std::vector<std::vector<double>> out_vec(4, {}, {});
+		auto&& marr62 = multi::move(arr({2, 6}));
+		std::copy(marr62.begin(), marr62.end(), out_vec.begin());
+		BOOST_TEST( out_vec[0].size() == 5 );
+		BOOST_TEST( !arr[2].empty() );
+	}
 }
 
 void move_element_2d_array() {

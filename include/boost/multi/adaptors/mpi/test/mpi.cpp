@@ -1,3 +1,7 @@
+// Copyright 2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 10.
+// https://www.boost.org/LICENSE_1_0.txt
+
 #include <boost/multi/array.hpp>
 
 #define OMPI_SKIP_MPICXX 1

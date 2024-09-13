@@ -967,21 +967,21 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	//  operator=(std::move(other)); return *this;
 	// }
 
-// #if defined(__NVCOMPILER)
-// #pragma diagnostic push
-// #pragma diag_suppress = conversion_function_not_usable
-// #elif defined(__NVCC__)
-// #pragma nv_diagnostic push
-// #pragma nv_diag_suppress = conversion_function_not_usable
-// #endif
-//  BOOST_MULTI_HD constexpr operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
-//      return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
-//  }
-// #ifdef __NVCOMPILER
-// #pragma diagnostic pop
-// #elif defined(__NVCC__)
-// #pragma nv_diagnostic pop
-// #endif
+	// #if defined(__NVCOMPILER)
+	// #pragma diagnostic push
+	// #pragma diag_suppress = conversion_function_not_usable
+	// #elif defined(__NVCC__)
+	// #pragma nv_diagnostic push
+	// #pragma nv_diag_suppress = conversion_function_not_usable
+	// #endif
+	//  BOOST_MULTI_HD constexpr operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
+	//      return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
+	//  }
+	// #ifdef __NVCOMPILER
+	// #pragma diagnostic pop
+	// #elif defined(__NVCC__)
+	// #pragma nv_diagnostic pop
+	// #endif
 
  protected:
 	// using types::types;
@@ -1031,8 +1031,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
 	BOOST_MULTI_FRIEND_CONSTEXPR auto size (const_subarray const& self) noexcept -> typename const_subarray::size_type  {return self.size ();}  // needed by nvcc
 
-//  template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray     && self) {return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
-//  template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray const& self) {return           self .template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
+	//  template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray     && self) {return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
+	//  template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray const& self) {return           self .template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
 
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) {return D;}
 
@@ -1084,8 +1084,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 		// return at_aux_(idx);
 	}  // TODO(correaa) use return type to cast
-//  BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference { return                              at_aux_(idx) ; }
-//  BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference { return                              at_aux_(idx) ; }
+	//  BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference { return                              at_aux_(idx) ; }
+	//  BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference { return                              at_aux_(idx) ; }
 
 	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>, 
 		typename = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
@@ -1329,8 +1329,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
 	BOOST_MULTI_HD constexpr auto chunked(size_type count) const& -> const_subarray<T, D+1, element_ptr> {return chunked_aux_(count);}
-//  BOOST_MULTI_HD constexpr auto chunked(size_type count)      & -> partitioned_type       {return chunked_aux_(count);}
-//  BOOST_MULTI_HD constexpr auto chunked(size_type count)     && -> partitioned_type       {return chunked_aux_(count);}
+	//  BOOST_MULTI_HD constexpr auto chunked(size_type count)      & -> partitioned_type       {return chunked_aux_(count);}
+	//  BOOST_MULTI_HD constexpr auto chunked(size_type count)     && -> partitioned_type       {return chunked_aux_(count);}
 
  private:
 	constexpr auto reversed_aux_() const -> const_subarray {
@@ -1430,6 +1430,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using       iterator = array_iterator<element, D, element_ptr      >;
 	using const_iterator = array_iterator<element, D, element_ptr, true>;
+	using move_iterator  = array_iterator<element, D, element_ptr, false, true>;
+
 	// using  move_iterator = array_iterator<element, D, element_move_ptr >;
 
 	// using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
@@ -1756,6 +1758,12 @@ class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
 		return multi::move(subarray<T, D, ElementPtr, Layout>::operator[](idx));
 	}
+
+	using subarray<T, D, ElementPtr, Layout>::begin;
+	using subarray<T, D, ElementPtr, Layout>::end;
+
+	auto begin() && { return this->mbegin(); }
+	auto end  () && { return this->mend  (); }
 };
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
@@ -1775,6 +1783,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
 
+	using move_iterator  = array_iterator<T, D, ElementPtr, false, true>;
+
 	subarray(subarray&&) noexcept = default;
 	~subarray() = default;
 
@@ -1791,14 +1801,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
-	// constexpr auto mbegin()                & { return move_iterator{begin()}; }
-	// constexpr auto mend()                  & { return move_iterator{end()  }; }
-
-	// constexpr auto mbegin()               && { return mbegin(); }
-	// constexpr auto mend()                 && { return mend()  ; }
-
-	// constexpr auto mbegin()           const& -> const_iterator {return begin();}
-	// constexpr auto mend()             const& -> const_iterator {return end()  ;}
+	constexpr auto mbegin() { return move_iterator{this->begin()}; }
+	constexpr auto mend()   { return move_iterator{this->end()  }; }
 
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	constexpr auto strided(difference_type diff) && -> subarray { return this->strided_aux_(diff);}
@@ -2179,10 +2183,18 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 		Ptr
 	>;
 
-	using reference = std::conditional_t<
+ private:
+	using reference_aux = std::conditional_t<
 		IsConst,
 		typename std::iterator_traits<typename std::pointer_traits<Ptr>::template rebind<Element const> >::reference,
 		typename std::iterator_traits<Ptr>::reference
+	>;
+
+ public:
+	using reference = std::conditional_t<
+		IsMove,
+		std::add_rvalue_reference_t<reference_aux>,
+		reference_aux
 	>;
 
 	using difference_type = typename affine::difference_type;
@@ -2315,7 +2327,13 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 
 //  friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.ptr_ == other.ptr_;}
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) { return static_cast<reference>(*ptr_); } // NOLINT(readability-const-return-type)
+	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
+		if constexpr(IsMove) {
+			return multi::move(*ptr_);
+		} else {
+			return static_cast<reference>(*ptr_);
+		}
+	}
 };
 
 template<class Element, dimensionality_type D, typename... Ts>
@@ -2519,7 +2537,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	constexpr auto operator+() const { return decay(); }
 
 	const_subarray(const_subarray&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
-// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
+	// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
  protected:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
@@ -2619,8 +2637,8 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	}
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename const_subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-//  BOOST_MULTI_HD constexpr auto operator[](index idx)      & -> typename const_subarray::      reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-//  BOOST_MULTI_HD constexpr auto operator[](index idx)     && -> typename const_subarray::      reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	//  BOOST_MULTI_HD constexpr auto operator[](index idx)      & -> typename const_subarray::      reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	//  BOOST_MULTI_HD constexpr auto operator[](index idx)     && -> typename const_subarray::      reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
 	constexpr auto front() const& -> const_reference {return *begin();}
 	constexpr auto back()  const& -> const_reference {return *std::prev(end(), 1);}
@@ -2871,7 +2889,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
 	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr      >;
 	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true>;
-	using    move_iterator =                 array_iterator<element_type, 1,                 element_move_ptr >;
+	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
 
 	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;

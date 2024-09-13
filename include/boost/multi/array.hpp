@@ -521,8 +521,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto begin() const& -> typename static_array::const_iterator { return ref::begin(); }
 	constexpr auto end() const& -> typename static_array::const_iterator { return ref::end(); }
 
-	constexpr auto begin() && -> typename static_array::iterator { return ref::begin(); }
-	constexpr auto end() && -> typename static_array::iterator { return ref::end(); }
+	constexpr auto begin() && -> typename static_array::move_iterator { return ref::begin(); }
+	constexpr auto end() && -> typename static_array::move_iterator { return ref::end(); }
 
 	constexpr auto begin() & -> typename static_array::iterator { return ref::begin(); }
 	constexpr auto end() & -> typename static_array::iterator { return ref::end(); }
