@@ -27,6 +27,16 @@ namespace {
 
 void move_element_1d_array() {
 	{
+		std::vector<multi::array<int, 1> > varr(3, multi::array<int, 1>({5}, 99), {});
+		multi::array<int, 2> marr({3, 5}, 99);
+		marr[0] = std::move(varr[0]);
+		marr[1] = std::move(varr[1]);
+		marr[2] = std::move(varr[2]);
+
+		BOOST_TEST( marr[0][0] == 99 );
+		BOOST_TEST( !varr[0].empty() );
+	}
+	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 		multi::array<std::vector<double>, 1> brr(10, {}, {});
 
