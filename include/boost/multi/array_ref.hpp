@@ -2245,7 +2245,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	constexpr explicit operator bool() const {return static_cast<bool>(this->ptr_);}
 
 	BOOST_MULTI_HD constexpr auto operator[](typename array_iterator::difference_type n) const -> decltype(auto) {
-		return static_cast<reference>(*((*this) + n));
+		return *((*this) + n);
 	}
 
 	constexpr auto operator->() const {return static_cast<pointer>(ptr_);}
