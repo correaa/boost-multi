@@ -7,18 +7,63 @@ _© Alfredo A. Correa, 2018-2024_
 
 (documentation in progress)
 
-The BLAS Adaptor provides an interface for the BLAS and BLAS-like linear algebra libraries (namely cuBLAS).
-Although BLAS is not strictly a multidimensional array library and it is restricted to work to 1D (vectors) and 2D arrays (matrices), it is an extremely popular numeric library.
+The BLAS Adaptor provides an interface for the BLAS and BLAS-like linear algebra libraries (namely cuBLAS and hipBLAS).
+Although BLAS is not strictly a multidimensional array library and it is restricted to work only on 1D (vectors) and 2D arrays (matrices), it is an extremely popular numeric library.
 
 The adaptor has a two-fold purpose.
 First, it allows to abstract the stride information and the conjugation/transposition in the BLAS calls, simplifying the interface enormously and making it consistent with their GPU counterparts, such as cuBLAS.
 Second, it provides a functional interface to the BLAS calls, which is easier to use than the C-style interface and plays well with STL algorithms that assume a functional use.
 Different cases, regarding conjugation, transposition, and real and imaginary parts, are handled automatically by "view manipulators".
 
-This interface is independent of the [C++26 Linear Algebra Proposal](https://en.cppreference.com/w/cpp/numeric/linalg), although it shared the goals.
-The main difference with other BLAS adaptors is that this library aims to offer a functional interface.
+There are three kinds of interfaces for each BLAS function. 
+
+First is the _traditional_ one, in which input and output arrays are passed as arguments, e.g. `multi::blas::gemv(alpha, A, x, beta, y);` which performs the $`y \leftarrow \alpha A.x + \beta y`$.
+Note that `y` is an output parameter and has to have the correct size.
+
+Second, there is the _algorithm_-like interface which uses iterators whenever possible `multi::blas::gemv_n(alpha, A.begin(), A.size(), x.begin(), beta, y.begin());`.
+
+And finally there is the _functional_-like interface, in which inputs and outputs are separated by assignment.
+In this interface, functions like `gemv` generates ranges that can be assigned to values or from which constructors can be called in the library, without unnecessary copies and allocations when possible.
+Expressions such as `multi::blas::gemv(alpha, A, x)` produce a range object that can be used in different ways.
+
+- Construction:
+```cpp
+	multi::array<double, 1> const y = multi::blas::gemv(alpha, A, x);  // same effect as multi::array<double, 1> y({A.size()}); multi::blas::gemv(alpha, A, x, 0.0, y);
+```
+- Assignment:
+```cpp
+	multi::array<double, 1> y;  // empty vector
+	y = multi::blas::gemv(alpha, A, x);  // same as  multi::blas::gemv(alpha, A, x, 0.0, y), y is resized if necessary
+```
+
+- Assignment (to subarray):
+
+```cpp
+	multi::array<double, 2> Y;  // empty vector
+	Y[0] = multi::blas::gemv(alpha, A, x);  // same as  multi::blas::gemv(alpha, A, x, 0.0, Y[0]), Y[0] can't be resizes because it is a subarray must have the correct size, 
+```
+
+- Compound-assign:
+```cpp
+	multi::array<double, 1> y(A.size());
+	y += multi::blas::gemv(alpha, A, x);  // same as multi::blas::gemv(alpha, A, x, 1.0, y)
+```
+
+Among other advantages related to functional style, such as the the possibility to create constant variables for results (see above), this interface playes well with the style of the STL algorithms.
+For example, suppose we have a container of vectors, all of which need to be multiplied by a given array.
+
+```cpp
+	std::list< multi::array<double, 1> > vs = ...;  // using std::list to avoid confusion
+	std::list< multi::array<double, 1> > ws = ...;
+	multi::array<double, 2> const A = ...;
+
+	std::transform(vs.begin(), vs.end(), ws.begin(), [&A](auto const& v) {return multi::blas::gemv(1.0, A, v);})
+```
 
 In the following sections we present the functional interface only, for a conversion to the non-functional interface, see the table at the end.
+
+This interface is independent of the [C++26 Linear Algebra Proposal](https://en.cppreference.com/w/cpp/numeric/linalg), although it shared the goals.
+The main difference with other BLAS adaptors is that this library aims to offer a functional interface.
 
 ## Contents
 [[_TOC_]]
@@ -81,12 +126,12 @@ Value types can be 2D (`multi::array<T, 2>`), 1D (`multi::array<T, 1>`) or 0D (`
 Views can be subarrays (e.g. `multi::subarray<T, 2>` or `multi::subarray<T, 1>`).
 Like other part of the library, when using `auto` and the unary `operator+` help generating concrete values.
 
-## `auto multi::blas::swap(`_complex/real vector_`, `_complex/real vector_`) -> void`
+### `auto multi::blas::swap(`_complex/real vector_`, `_complex/real vector_`) -> void`
 
 Swaps the values of two vectors.
 Vector extensions must match.
 
-## `auto multi::blas::copy(`_complex/real vector_`) -> `_convertible to complex/real vector_
+### `auto multi::blas::copy(`_complex/real vector_`) -> `_convertible to complex/real vector_
 
 Copies the values of a vector to another.
 
@@ -144,11 +189,11 @@ The result is convertible to a real scalar
 	// auto const n = +multi::blas::nrm2(v);
 ```
 
-## `auto multi::blas::asum(`_complex/real vector_`) -> `_convertible to real scalar_
+### `auto multi::blas::asum(`_complex/real vector_`) -> `_convertible to real scalar_
 
 Returns the sum of the absolute values of the elements of a vector (norm-1).
 
-## `auto multi::blas::dot(`_complex/real vector_, _complex/real vector_`) -> `_convertible to complex/real scalar_
+### `auto multi::blas::dot(`_complex/real vector_, _complex/real vector_`) -> `_convertible to complex/real scalar_
 
 Returns the dot product of two vectors with complex or real elements (`T`).
 
@@ -181,7 +226,7 @@ In this case, the result is going to directly put at this location.
 
 This is particularly important when operating on GPU memory.
 
-## GEMM
+### GEMM
 
 ```cpp
 #include<multi/array.hpp>
