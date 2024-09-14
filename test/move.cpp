@@ -34,7 +34,7 @@ void move_element_1d_array() {
 		marr[2] = std::move(varr[2]);
 
 		BOOST_TEST( marr[0][0] == 99 );
-		BOOST_TEST( ! varr[0].empty() );
+		BOOST_TEST( !varr[0].empty() );
 	}
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
