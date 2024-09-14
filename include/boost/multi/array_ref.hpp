@@ -1889,7 +1889,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	>
 	constexpr auto operator=(Range const& rng) &  // check that you LHS is not read-only
 	-> subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->size() == rng.size());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert( this->size() == rng.size() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
 		// adl_copy_n(adl_begin(r), this->size(), begin());
 		adl_copy(adl_begin(rng), adl_end(rng), this->begin());
@@ -1925,6 +1925,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
+	// template<class TT, class... As>
+	// constexpr
+	// auto operator=(array<TT, D, As...>&& other) & -> subarray& {
+	//  operator=(static_cast<move_subarray<TT, D, As...>&&>(std::move(other)));
+	//  other.clear();  // TODO(correaa) is this a good idea?
+	//  return *this;
+	// }
 
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) const&& -> subarray&;  // for std::indirectly_writable
 	// {
@@ -2238,7 +2245,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	constexpr explicit operator bool() const {return static_cast<bool>(this->ptr_);}
 
 	BOOST_MULTI_HD constexpr auto operator[](typename array_iterator::difference_type n) const -> decltype(auto) {
-		return static_cast<reference>(*((*this) + n));
+		return *((*this) + n);
 	}
 
 	constexpr auto operator->() const {return static_cast<pointer>(ptr_);}
