@@ -89,7 +89,7 @@ else()
 	-Wconditionally-supported
 	-Wconversion -Wconversion-null
 	-Wcoverage-mismatch -Wcpp
-	# -Wctad-maybe-unsupported  # (gcc 12, not in 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wctad-maybe-unsupported>
 	-Wctor-dtor-privacy
 	-Wdangling-else
 	# -Wdangling-pointer # (gcc 12, not in 11)
@@ -354,6 +354,7 @@ else()
 	-Wcovered-switch-default
 	-Wcpp
 	-Wcstring-format-directive
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,18>:-Wctad-maybe-unsupported>
 	-Wctor-dtor-privacy
 	# -Wctu # (not in clang 7)
 	-Wcuda-compat
