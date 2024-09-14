@@ -1925,13 +1925,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	template<class TT, class... As>
-	constexpr
-	auto operator=(array<TT, D, As...>&& other) & -> subarray& {
-		operator=(static_cast<move_subarray<TT, D, As...>&&>(std::move(other)));
-		other.clear();
-		return *this;
-	}
+	// template<class TT, class... As>
+	// constexpr
+	// auto operator=(array<TT, D, As...>&& other) & -> subarray& {
+	//  operator=(static_cast<move_subarray<TT, D, As...>&&>(std::move(other)));
+	//  other.clear();  // TODO(correaa) is this a good idea?
+	//  return *this;
+	// }
 
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) const&& -> subarray&;  // for std::indirectly_writable
 	// {
