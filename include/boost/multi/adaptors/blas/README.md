@@ -135,11 +135,6 @@ The main purpose of these functions is to manipulate arguments to BLAS interface
 The functions in this category operate on one-dimensional arrays (vectors).
 Here, we use `multi::array<T, 1>` as representative of a vector, but a one-dimensional subarray, such as a row or a column of a 2D array, can also be used as a vector.
 
-### `auto multi::blas::swap(`_complex/real vector_`, `_complex/real vector_`) -> void`
-
-Swaps the values of two vectors.
-Vector extensions must match.
-
 ### `auto multi::blas::copy(`_complex/real vector_`) -> `_convertible to complex/real vector_
 
 Copies the values of a vector to another.
@@ -179,6 +174,11 @@ The importance of this case is that it guarantees that no allocations are perfor
  v4({0, 2}) =  multi::blas::copy(v);  // case 3: LHS is not resizable, assigns copies (resizing is not possible or necessary)
 ```
 
+### `auto multi::blas::swap(`_complex/real vector_`, `_complex/real vector_`) -> void`
+
+Swaps the values of two vectors.
+Vector extensions must match.
+
 Note that the utility of `multi::blas::copy` and `multi::blas::swap` is redundant with native features of the library (such as plain assignment, copy construction and swap), the only difference is that these operations will be performed using the BLAS operations elementwise.
 
 ## `auto multi::blas::nrm2(`_complex/real vector_`) -> `_convertible to real scalar_
@@ -202,13 +202,17 @@ double const n = multi::blas::nrm2(v[0]);  // acting on a row view
 
 Returns the sum of the absolute values of the elements of a vector (norm-1).
 
+### `auto multi::blas::iamax(`_complex/real vector_`) -> `_index_type_
+
+Index of the element with the largest absolute value (zero-based)
+
 ### `auto multi::blas::dot(`_complex/real vector_, _complex/real vector_`) -> `_convertible to complex/real scalar_
 
 Returns the dot product of two vectors with complex or real elements (`T`).
 
 ```cpp
- multi::array<double, 1> const v = {1.0, 2.0, 3.0};
- multi::array<double, 1> const w = {4.0, 5.0, 6.0};
+multi::array<double, 1> const v = {1.0, 2.0, 3.0};
+multi::array<double, 1> const w = {4.0, 5.0, 6.0};
 double const d = multi::blas::dot(v, w); 
 // auto const d = +multi::blas::dot(v, w);
 ```
@@ -229,11 +233,26 @@ It is important to note that the right hand side of the assignment can be a scal
 In this case, the result is going to directly put at this location.
 
 ```cpp
- multi::array<double, 1> z = {0.0, 0.0, 0.0};
- z[1] = multi::blas::dot(v, w);
+multi::array<double, 1> z = {0.0, 0.0, 0.0};
+z[1] = multi::blas::dot(v, w);
 ```
 
 This feature regarding scalar results is essential when operating on GPU memory since the whole operation can be performed on the device.
+
+### `auto multi::blas::scal(`_complex/real scalar`, `_complex/real vector_`)`
+
+Scales a vector.
+
+### `auto multi::blas::axpy(`_complex/real scalar`, `_complex/real vector_`) -> `_convertible to complex/real_
+
+Vector addition.
+
+```cpp
+multi::array<double, 1> const x  = ...;
+multi::array<double, 1> y = ...;
+y += blas::axpy(2.0, x);  // same as blas:::axpy(+2.0, x, y)
+y -= blas::axpy(2.0, x);  // same as blas:::axpy(-2.0, x, y)
+```
 
 ## BLAS level 2
 
@@ -242,7 +261,22 @@ Again, we use `multi::array<T, 1>` as representative of a vector, but a one-dime
 `multi::array<T, 2>` as representative of a matrices, but a two-dimensional subarray or larger of higher dimensional arrays can be used as long as one of the two interternal strides in 1.
 This is limitation of BLAS, that only acts on certain layouts of 2D arrays.
 
-### GEMV
+### `auto multi::blas::gemv(`_complex/real scalar_ `,` _complex/real matrix_`) -> `_convertible to complex/real vector_
+
+```cpp
+multi::array<double, 2> const A({4, 3});
+multi::array<double, 1> const x = {1.0, 2.0, 3.0};
+multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};
+
+y = blas::gemv(5.0, A, x);  // y <-  5.0 A * x
+```
+
+The gemv expression can be used for addition and subtraction,
+
+```
+y += blas::gemv(1.0, A, x);  // y <-  + A * x + y
+y -= blas::gemv(1.0, A, x);  // y <-  - A * x + y
+```
 
 ### GEMM
 

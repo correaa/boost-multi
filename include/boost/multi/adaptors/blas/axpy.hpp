@@ -115,7 +115,8 @@ class axpy_range {
 	auto begin() const -> iterator{ return {ctxt_, alpha_, x_begin_         }; }
 	auto end()   const -> iterator{ return {ctxt_, alpha_, x_begin_ + count_}; }
 
-	auto size() const -> size_type{return end() - begin();}
+	auto size() const -> size_type { return end() - begin(); }
+	auto extensions() const { return extensions_t<1>{ {0, size()} }; }
 
 	template<class Other>
 	friend auto operator+=(Other&& other, axpy_range const& self) -> Other&& {
