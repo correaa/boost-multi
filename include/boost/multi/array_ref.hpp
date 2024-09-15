@@ -652,6 +652,12 @@ struct cursor_t {
 
 	BOOST_MULTI_HD constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
 
+	template<class OtherCursor, class = decltype(multi::detail::implicit_cast<element_ptr>(std::declval<OtherCursor>().base()))>
+	// cppcheck-suppress noExplicitConstructor
+	BOOST_MULTI_HD constexpr          cursor_t(OtherCursor const& other) : strides_{other.strides()}, base_{other.base()} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class OtherCursor>
+	BOOST_MULTI_HD constexpr explicit cursor_t(OtherCursor const& other) : strides_{other.strides()}, base_{other.base()} {}
+
  public:
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 		if constexpr(D != 1) {
@@ -690,6 +696,11 @@ struct cursor_t {
 	}
 	BOOST_MULTI_HD constexpr auto operator* () const -> reference {return *base_;}
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer   {return  base_;}
+
+	BOOST_MULTI_HD constexpr auto base() const -> pointer { return base_; }
+	BOOST_MULTI_HD constexpr auto strides() const -> strides_type { return strides_; }
+	template<multi::dimensionality_type DD = 0>
+	BOOST_MULTI_HD constexpr auto stride() const { return std::get<DD>(strides_); }
 };
 
 template<typename Pointer, class LayoutType>
