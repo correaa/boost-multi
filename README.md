@@ -1909,34 +1909,30 @@ When saving arrays to files, consider using serialization (see section) instead.
 
 ## Legacy libraries (C-APIs)
 
-Multi dimensional array data structures exists in all languages, whether implicitly defined by its strided structure or at the language level.
-Functions written in C tend to receive arrays by pointer arguments (e.g. to "first" element) and memory layout (sizes and strides).
+Multi-dimensional array data structures exist in all languages, whether implicitly defined by its strides structure or explicitly at the language level.
+Functions written in C tend to receive arrays by pointer arguments (e.g., to the "first" element) and memory layout (sizes and strides).
 
 A C-function taking a 2D array with a concrete type might look like this in the general case:
-
 ```c
 void fun(double* data, int size1, int size2, int stride1, int stride2);
 ```
-
-The function can be called from C++ using arguments derived from Multi arrays:
-
+such a function can be called from C++ on Multi array (`arr`), by extracting the size and layout information,
 ```cpp
 fun(arr.base(), std::get<0>(arr.sizes()), std::get<1>(arr.sizes()), std::get<0>(arr.strides()), std::get<1>(arr.strides());
 ```
-
 or
-
 ```cpp
 auto const [size1, size2] = arr.sizes();
 auto const [stride1, stride2] = arr.strides();
 
 fun(arr.base(), size1, size2, stride1, stride2);
 ```
-Although the recipe can be applied straightforward, different libraries have various assumptions about memory layouts (e.g. BLAS 2D-arrays assume that the second stride is 1) and some might take stride information in a different way (e.g. FFTW doesn't use strides but stride-products).
-Furthermore, some arguments may need to be permutted if the function expects arrays in column-major (Fortran) ordering.
-For this reason the library is acompained with a series of adaptor libraries to popular C-based libraries, that can be found in the `include/multi/adaptors/` directory.
 
-* BLAS
+Although the recipe can be applied straightforwardly, different libraries make various assumptions about memory layouts (e.g., BLAS 2D arrays assume that the second stride is 1), and some might take stride information in a different way (e.g., FFTW doesn't use strides but stride products).
+Furthermore, some arguments may need to be permuted if the function expects arrays in column-major (Fortran) ordering.
+For this reason, the library is accompanied by a series of adaptor libraries to popular C-based libraries, which can be found in the `include/multi/adaptors/` subdirectory.
+
+* [BLAS](include/boost/multi/adaptors/blas/README.md)
 * Lapack
 * FFTW/cuFFT
 
