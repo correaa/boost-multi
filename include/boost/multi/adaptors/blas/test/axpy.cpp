@@ -115,6 +115,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 2.0*y[2] + carr[1][2] );
 	}
 
+	BOOST_AUTO_TEST_CASE(axpy_assignment) {
+		multi::array<double, 1> const xx = {1.0, 1.0, 1.0};
+		multi::array<double, 1> yy = {2.0, 2.0, 2.0};
+
+		yy += blas::axpy(3.0, xx);
+
+		BOOST_TEST( yy[0] == 5.0 );
+	}
+
 	BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_minus_equal) {
 		multi::array<complex, 2> arr = {
 			{{1.0, 0.0},  {2.0, 0.0},  {3.0, 0.0},  {4.0, 0.0}},

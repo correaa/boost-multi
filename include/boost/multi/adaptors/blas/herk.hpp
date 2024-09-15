@@ -29,6 +29,50 @@ auto base_aux(A&& array)
 
 using core::herk;
 
+template<class ContextPtr, class Scalar, class ItA, class DecayType>
+class herk_range {
+	ContextPtr ctxtp_;
+	Scalar s_;
+	ItA a_begin_;
+	ItA a_end_;
+
+ public:
+	herk_range(herk_range const&) = delete;
+	herk_range(herk_range&&) = delete;
+	auto operator=(herk_range const&) -> herk_range& = delete;
+	auto operator=(herk_range&&) -> herk_range& = delete;
+	~herk_range() = default;
+
+	herk_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last)  // NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length) BLAS naming
+	: ctxtp_{ctxtp}
+	, s_{s}, a_begin_{std::move(a_first)}, a_end_{std::move(a_last)}
+	{}
+
+	// using iterator = herk_iterator<ContextPtr, Scalar, ItA>;
+	using decay_type = DecayType;
+	using size_type = typename decay_type::size_type;
+
+	//        auto begin()          const& -> iterator {return {ctxtp_, s_, a_begin_, b_begin_};}
+	//        auto end()            const& -> iterator {return {ctxtp_, s_, a_end_  , b_begin_};}
+	// friend auto begin(gemm_range const& self) {return self.begin();}
+	// friend auto end  (gemm_range const& self) {return self.end  ();}
+
+	// auto size() const -> size_type {return a_end_ - a_begin_;}
+
+	// auto extensions() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
+	// friend auto extensions(gemm_range const& self) {return self.extensions();}
+
+	// auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
+	// template<class Arr>
+	// friend auto operator+=(Arr&& a, gemm_range const& self) -> Arr&& {  // NOLINT(readability-identifier-length) BLAS naming
+	//  blas::gemm_n(self.ctxtp_, self.s_, self.a_begin_, self.a_end_ - self.a_begin_, self.b_begin_, 1., a.begin());
+	//  return std::forward<Arr>(a);
+	// }
+	// friend auto operator*(Scalar factor, gemm_range const& self) {
+	//  return gemm_range{self.ctxtp_, factor*self.s_, self.a_begin_, self.a_end_, self.b_begin_};
+	// }
+};
+
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr,
 	std::enable_if_t<is_complex_array<C2D>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) 74, BLAS naming
