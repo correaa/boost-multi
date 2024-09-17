@@ -55,7 +55,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	/* test ref(begin, end)*/
 	// {
-	//  multi::array<int, 2> A2D = { {1, 2}, {3, 4} };
+	//  multi::array<int, 2> A2D = {
+	//      {1, 2},
+    //         {3, 4}
+	//  };
 	//  BOOST_TEST( A2D[0][0] == 1 );
 
 	//  multi::const_subarray<int, 2> R2D(A2D.home(), A2D.sizes());

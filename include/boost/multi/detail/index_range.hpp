@@ -148,8 +148,16 @@ class range {
 			return *this;
 		}
 
+		constexpr auto operator-(typename const_iterator::difference_type n) const -> const_iterator {
+			return const_iterator{*this} -= n;
+		}
+
+		constexpr auto operator+(typename const_iterator::difference_type n) const -> const_iterator {
+			return const_iterator{*this} += n;
+		}
+
 		constexpr auto operator-(const_iterator const& other) const { return curr_ - other.curr_; }
-		constexpr auto operator*() const -> typename const_iterator::reference { return curr_; }
+		constexpr auto operator*() const noexcept -> typename const_iterator::reference { return curr_; }
 	};
 
 	using iterator               = const_iterator;
