@@ -106,6 +106,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(( arr == multi::static_array{12, 34, 56} ));
 		}
 		{
+			multi::array<int, 1> arr(std::initializer_list<int>{12, 34, 56});
+			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr[2] == 56 );
+			BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
+		}
+		{
+			multi::array<int, 1> arr({12, 34, 56});
+			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr[2] == 56 );
+			BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
+		}
+		{
 			multi::array arr({12, 34, 56});
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
