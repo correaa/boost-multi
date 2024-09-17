@@ -20,7 +20,7 @@
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// range accumulate 
+	// range accumulate
 	{
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 		namespace multi = boost::multi;
