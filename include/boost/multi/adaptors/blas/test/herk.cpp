@@ -284,9 +284,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(( c[0][1] == complex{50.0, +49.0} ));
 			BOOST_TEST( c[1][0] == 9999.0 );
 		}
+		// {
+		//  multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
+		//  c() = blas::herk(blas::filling::upper, 1.0, arr);
+		//  BOOST_TEST(( c[0][1] == complex{50.0, +49.0} ));
+		//  // BOOST_TEST( c[1][0] == 9999.0 );
+		// }
 		{
 			multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
-			blas::herk(1., arr, c);                             // c†=c=aa†=(aa†)†
+			blas::herk(1.0, arr, c);                             // c†=c=aa†=(aa†)†
 			BOOST_TEST(( c[0][1] == complex{50.0, +49.0} ));
 			BOOST_TEST(( c[1][0] == complex{50.0, -49.0} ));
 		}

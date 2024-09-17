@@ -968,32 +968,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr const_subarray(layout_type const& layout, ElementPtr const& base)
 	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
-	// // mutating
-	// auto operator=(const_subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) -> const_subarray& {  // allows assigment in temporaries // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
-	//  operator=(other); return *this;
-	// }
-
-	// // mutating
-	// auto operator=(const_subarray&& other) && noexcept(std::is_nothrow_copy_assignable_v<T>) -> const_subarray& {  // allows assigment in temporaries // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor) //NOSONAR
-	//  operator=(std::move(other)); return *this;
-	// }
-
-	// #if defined(__NVCOMPILER)
-	// #pragma diagnostic push
-	// #pragma diag_suppress = conversion_function_not_usable
-	// #elif defined(__NVCC__)
-	// #pragma nv_diagnostic push
-	// #pragma nv_diag_suppress = conversion_function_not_usable
-	// #endif
-	//  BOOST_MULTI_HD constexpr operator subarray<T, D, typename types::element_const_ptr, Layout> const& () const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
-	//      return reinterpret_cast<subarray<T, D, typename types::element_const_ptr, Layout> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
-	//  }
-	// #ifdef __NVCOMPILER
-	// #pragma diagnostic pop
-	// #elif defined(__NVCC__)
-	// #pragma nv_diagnostic pop
-	// #endif
-
  protected:
 	// using types::types;
 	BOOST_MULTI_HD constexpr explicit const_subarray(std::nullptr_t nil) : types{nil} {}
@@ -1448,6 +1422,11 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	// using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
 
+	const_subarray(iterator first, iterator last)
+	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first)*first->size()), first.base()) {
+		assert(first->layout() == last->layout());
+	}
+
  private:
 	// [[deprecated("remove")]] BOOST_MULTI_HD constexpr explicit const_subarray(iterator begin, iterator end)
 	// : const_subarray(
@@ -1475,12 +1454,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto addressof()      & ->       ptr { return addressof_aux_(); }
 	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }
 
-	// NOLINTNEXTLINE(runtime/operator) //NOSONAR
-	                                constexpr auto operator&()     && {return addressof();}  // NOLINT(google-runtime-operator) //NOSONAR
-	// NOLINTNEXTLINE(runtime/operator) //NOSONAR
-	[[deprecated("controversial")]] constexpr auto operator&()      & {return addressof();}  // NOLINT(google-runtime-operator) //NOSONAR
-	// NOLINTNEXTLINE(runtime/operator) //NOSONAR
-	[[deprecated("controversial")]] constexpr auto operator&() const& {return addressof();}  // NOLINT(google-runtime-operator) //NOSONAR
+	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
+	// operator& is not defined for r-values anyway
+	constexpr auto operator&()     && { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	// [[deprecated("controversial")]]
+	constexpr auto operator&()      & { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	// [[deprecated("controversial")]]
+	constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	// NOLINTEND(google-runtime-operator)
         
  private:
 	BOOST_MULTI_HD constexpr auto begin_aux_() const {return iterator(types::base_                 , this->sub(), this->stride());}
@@ -1518,6 +1499,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto home() const& -> const_cursor { return home_aux_(); }
 	constexpr auto home()     && ->       cursor { return home_aux_(); }
 	constexpr auto home()      & ->       cursor { return home_aux_(); }
+
+	// const_subarray(cursor home, typename const_subarray::sizes_type szs) {}
 
 	template<class It> constexpr auto assign(It first) & -> It { adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first; }
 	template<class It> constexpr auto assign(It first)&& -> It { return assign(first);}
@@ -1901,8 +1884,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto operator=(Range const& rng) &  // check that you LHS is not read-only
 	-> subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		assert( this->size() == rng.size() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		// MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
-		// adl_copy_n(adl_begin(r), this->size(), begin());
 		adl_copy(adl_begin(rng), adl_end(rng), this->begin());
 		return *this;
 	}
