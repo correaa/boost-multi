@@ -106,11 +106,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(( arr == multi::static_array{12, 34, 56} ));
 		}
 		{
+			multi::array<int, 1> arr(std::initializer_list<int>{12, 34, 56});
+			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr[2] == 56 );
+			BOOST_TEST(( arr == multi::array<int, 1>(std::initializer_list<int>{12, 34, 56}) ));
+		}
+		{
+			multi::array<int, 1> arr({12, 34, 56});
+			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr[2] == 56 );
+			BOOST_TEST(( arr == multi::array<int, 1>({12, 34, 56}) ));
+		}
+		#if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
+		{
 			multi::array arr({12, 34, 56});
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
 			BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
 		}
+		#endif
 #endif
 	}
 
@@ -318,6 +332,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(typename decltype(arr)::rank{} == 1);
 	}
 
+	#if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
 	BOOST_AUTO_TEST_CASE(initializer_list_1d_a) {
 		multi::array arr({10, 20, 30});
 
@@ -394,10 +409,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{1.0, 2.0, 3.0},
 				{4.0, 5.0, 6.0},
 			});
-			BOOST_TEST( multi::rank<decltype(arr)>{} == 2 );
+			BOOST_TEST( multi::rank<decltype(arr)>::value == 2 );
 			BOOST_TEST( num_elements(arr) == 6 );
 		}
 	}
+	#endif
 #endif
 
 	BOOST_AUTO_TEST_CASE(partially_formed) {

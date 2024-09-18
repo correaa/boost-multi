@@ -29,12 +29,35 @@ auto base_aux(A&& array)
 
 using core::herk;
 
-template<class ContextPtr, class Scalar, class ItA, class DecayType>
+template<class AA, class BB, class A2DCursor, class Size, class C2DCursor>
+auto herk_nm(filling c_side, AA alpha, A2DCursor a_home, Size n, Size m, BB beta, C2DCursor c_home) {  // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) BLAS naming
+	auto a_base = base_aux(a_home);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
+	auto c_base = base_aux(c_home);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
+
+	if constexpr(is_conjugated<A2DCursor>::value) {
+		assert(0);  // TODO(correaa) implement
+	} else {
+		if     (a_home.stride()!=1 && c_home.stride()!=1) { 
+														    herk(c_side==filling::upper?'L':'U', 'C', n, m, &alpha, a_base, a_home.template stride<0>(), &beta, c_base, c_home.template stride<0>() );
+		} else if(a_home.stride()!=1 && c_home.stride()==1) {
+			if(n==1)                                      { herk(c_side==filling::upper?'L':'U', 'N', n, m, &alpha, a_base, a_home.template stride<1>(), &beta, c_base, c_home.template stride<1>() ); }
+			else                                          { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		}
+		else if(a_home.stride()==1 && c_home.stride()!=1) { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		else if(a_home.stride()==1 && c_home.stride()==1) { herk(c_side==filling::upper?'U':'L', 'N', n, m, &alpha, a_base, a_home.template stride<1>(), &beta, c_base, c_home.template stride<1>() );}
+	}
+
+	return c_home;
+}
+
+template<class Scalar, class A2DCursor, class Size, class DecayType>
 class herk_range {
-	ContextPtr ctxtp_;
-	Scalar s_;
-	ItA a_begin_;
-	ItA a_end_;
+	// ContextPtr ctxtp_;
+	multi::blas::filling cs_;
+	Scalar scale_;
+	A2DCursor a_home_;
+	Size a_rows_;
+	Size a_cols_;
 
  public:
 	herk_range(herk_range const&) = delete;
@@ -43,34 +66,43 @@ class herk_range {
 	auto operator=(herk_range&&) -> herk_range& = delete;
 	~herk_range() = default;
 
-	herk_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last)  // NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length) BLAS naming
-	: ctxtp_{ctxtp}
-	, s_{s}, a_begin_{std::move(a_first)}, a_end_{std::move(a_last)}
-	{}
+	herk_range(multi::blas::filling cs, Scalar scale, A2DCursor a_home, Size a_rows, Size a_cols) : cs_{cs}, scale_{scale}, a_home_{a_home}, a_rows_{a_rows}, a_cols_{a_cols} {}  // NOLINT(bugprone-easily-swappable-parameters) TODO(correaa)
 
-	// using iterator = herk_iterator<ContextPtr, Scalar, ItA>;
-	using decay_type = DecayType;
-	using size_type = typename decay_type::size_type;
+//  herk_range(ContextPtr ctxtp, Scalar s, A2D&& a)  // NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length) BLAS naming
+//  : ctxtp_{ctxtp}
+//  , s_{s}, a_{std::forward<2D>(a_first)}, a_end_{std::move(a_last)}
+//  {}
 
-	//        auto begin()          const& -> iterator {return {ctxtp_, s_, a_begin_, b_begin_};}
-	//        auto end()            const& -> iterator {return {ctxtp_, s_, a_end_  , b_begin_};}
-	// friend auto begin(gemm_range const& self) {return self.begin();}
-	// friend auto end  (gemm_range const& self) {return self.end  ();}
+	struct iterator {
+		herk_range const* self_;
+		Size index_;
+	};
 
-	// auto size() const -> size_type {return a_end_ - a_begin_;}
+//  // using iterator = herk_iterator<ContextPtr, Scalar, ItA>;
+//  using decay_type = DecayType;
+//  using size_type = typename decay_type::size_type;
 
-	// auto extensions() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
-	// friend auto extensions(gemm_range const& self) {return self.extensions();}
+	auto begin() const { return iterator{this, 0}; }
+	auto end() const { return iterator{this, a_rows_}; }
 
-	// auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
-	// template<class Arr>
-	// friend auto operator+=(Arr&& a, gemm_range const& self) -> Arr&& {  // NOLINT(readability-identifier-length) BLAS naming
-	//  blas::gemm_n(self.ctxtp_, self.s_, self.a_begin_, self.a_end_ - self.a_begin_, self.b_begin_, 1., a.begin());
-	//  return std::forward<Arr>(a);
+	auto size() const { return a_rows_;}
+	auto extensions() const { return multi::extensions_t<2>{a_rows_, a_rows_}; }
+
+	// template<class ItOut>
+	// friend auto copy(iterator const& first, iterator const& last, ItOut d_first) {
+	//  auto const& a = multi::ref(first.self_, last);
+	//  blas::herk_nm(first.self_->cs_, a.home(), a.size(), (~a).size(), 0.0, d_first);  // NOLINT(fuchsia-default-arguments-calls)
 	// }
-	// friend auto operator*(Scalar factor, gemm_range const& self) {
-	//  return gemm_range{self.ctxtp_, factor*self.s_, self.a_begin_, self.a_end_, self.b_begin_};
-	// }
+
+//  // auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
+//  // template<class Arr>
+//  // friend auto operator+=(Arr&& a, gemm_range const& self) -> Arr&& {  // NOLINT(readability-identifier-length) BLAS naming
+//  //  blas::gemm_n(self.ctxtp_, self.s_, self.a_begin_, self.a_end_ - self.a_begin_, self.b_begin_, 1., a.begin());
+//  //  return std::forward<Arr>(a);
+//  // }
+//  // friend auto operator*(Scalar factor, gemm_range const& self) {
+//  //  return gemm_range{self.ctxtp_, factor*self.s_, self.a_begin_, self.a_end_, self.b_begin_};
+//  // }
 };
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr,
@@ -130,8 +162,8 @@ auto herk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-len
 
 template<class A2D, class C2D>
 auto herk(A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(herk(1., a, std::forward<C2D>(c))) {
-	return herk(1., a, std::forward<C2D>(c)); }
+->decltype(herk(1.0, a, std::forward<C2D>(c))) {
+	return herk(1.0, a, std::forward<C2D>(c)); }
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
 [[nodiscard]]  // ("when argument is read-only")
@@ -147,22 +179,25 @@ template<class T> struct numeric_limits<std::complex<T>> : std::numeric_limits<s
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
 [[nodiscard]]  // ("because argument is read-only")]]
 auto herk(filling cs, AA alpha, A2D const& a)  // NOLINT(readability-identifier-length) BLAS naming
-->std::decay_t<
-decltype(  herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))> {
-	return herk(cs, alpha, a, Ret({size(a), size(a)},
-#ifdef NDEBUG
-		numeric_limits<typename Ret::element_type>::quiet_NaN(),
-#endif
-		get_allocator(a)
-	));
+{
+	return herk_range<AA, typename A2D::const_cursor, typename A2D::size_type, Ret>(cs, alpha, a.home(), std::get<0>(a.sizes()), std::get<1>(a.sizes()) );
 }
+// ->std::decay_t<
+// decltype(  herk(cs, alpha, a, Ret({size(a), size(a)}, 0.0, get_allocator(a))))> {
+//  return herk(cs, alpha, a, Ret({size(a), size(a)},
+// #ifdef NDEBUG
+//      numeric_limits<typename Ret::element_type>::quiet_NaN(),
+// #endif
+//      get_allocator(a)
+//  ));
+// }
 
 template<class A2D> auto herk(filling s, A2D const& a)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(herk(s, 1., a)) {
-	return herk(s, 1., a); }
+->decltype(herk(s, 1.0, a)) {
+	return herk(s, 1.0, a); }
 
 template<class A2D> auto herk(A2D const& array) {
-		return herk(1., array);
+		return herk(1.0, array);
 }
 
 }  // end namespace boost::multi::blas

@@ -13,7 +13,7 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// BOOST_AUTO_TEST_CASE(subarray_assignment)
+	/* subarray_assignment */
 	{
 		multi::array<int, 3> A1({3, 4, 5}, 99);
 		A1[2][1][1] = 88;
@@ -28,7 +28,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A2[1][1] == 77 );
 	}
 
-	// BOOST_AUTO_TEST_CASE(subarray_base)
+	/* subarray_base */
 	{
 		multi::array<int, 3> A1({3, 4, 5}, 99);
 
@@ -42,6 +42,37 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A1[0][0][0] == 77 );
 
 		// *std::as_const(Asub).base() = 66;  // should not compile, read-only
+	}
+
+	/* test ref(begin, end)*/
+	{
+		multi::array<int, 2> A2D = { {1, 2}, {3, 4} };
+		BOOST_TEST( A2D[0][0] == 1 );
+
+		multi::const_subarray<int, 2> R2D(A2D.begin(), A2D.end());
+		BOOST_TEST( R2D.addressof()== A2D.addressof() );
+	}
+
+	/* test ref(begin, end)*/
+	// {
+	//  multi::array<int, 2> A2D = {
+	//      {1, 2},
+    //         {3, 4}
+	//  };
+	//  BOOST_TEST( A2D[0][0] == 1 );
+
+	//  multi::const_subarray<int, 2> R2D(A2D.home(), A2D.sizes());
+	//  BOOST_TEST( R2D.addressof()== A2D.addressof() );
+	// }
+
+	/* test ref(begin, end)*/
+	{
+		multi::array<int, 2> A2D = { {1, 2}, {3, 4} };
+		BOOST_TEST( A2D[0][0] == 1 );
+
+		multi::subarray<int, 2> R2D(A2D.begin(), A2D.end());
+		BOOST_TEST( R2D.addressof()== A2D.addressof() );
+		R2D[0][0] = 77;
 	}
 
 	return boost::report_errors();
