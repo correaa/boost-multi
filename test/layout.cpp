@@ -6,6 +6,9 @@
 
 #include <array>     // for array, array<>::value_type
 #include <iterator>  // for size
+#if __cplusplus > 201703L
+#include <ranges>    // for views::iota
+#endif
 #include <tuple>     // for make_tuple, tuple_element<>::type
 // IWYU pragma: no_include <type_traits>
 
@@ -256,11 +259,27 @@ BOOST_AUTO_TEST_CASE(layout_3) {
 }
 
 BOOST_AUTO_TEST_CASE(layout_AA) {
-	multi::array<double, 2> const A2 = {
-		{1.0, 2.0, 3.0},
-		{4.0, 5.0, 6.0},
-		{7.0, 8.0, 9.0},
+	multi::array<int, 2> const A2 = {
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
 	};
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+#if !defined(__clang_major__) || (__clang_major__ > 14)
+#if !defined(__NVCC__)
+	static_assert( std::ranges::random_access_range<decltype(A2.extension())> );
+
+	auto const& tiA2 = std::views::transform(
+		A2.extension(),
+		// std::views::iota(0, 3),
+		[](auto idx) noexcept {return idx;}
+	);
+	BOOST_TEST( *tiA2.begin() == 0 );
+	BOOST_TEST( tiA2[0] == 0 );
+#endif
+#endif
+#endif
 
 	BOOST_TEST( size(A2) == 3 );
 
