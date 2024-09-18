@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 
 	auto tiA2 = std::views::transform(
 		// A2.extension(),
-		std::views::iota(0, A2.size()),
+		std::views::iota(0L, A2.size()),
 		[](auto idx) noexcept {return idx;}
 	);
 	BOOST_TEST( *tiA2.begin() == 0 );
