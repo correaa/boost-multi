@@ -273,8 +273,8 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 	static_assert( std::ranges::random_access_range<decltype(A2.extension())> );
 
 	auto tiA2 = std::views::transform(
-		A2.extension(),
-		// std::views::iota(0, 3),
+		// A2.extension(),
+		std::views::iota(0, A2.size()),
 		[](auto idx) noexcept {return idx;}
 	);
 	BOOST_TEST( *tiA2.begin() == 0 );
