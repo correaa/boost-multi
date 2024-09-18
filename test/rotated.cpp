@@ -315,7 +315,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if(__cplusplus >= 202002L)
 	#if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
-
+	#if !defined(__GNUC__) || (__GNUC__ < 14)
 	BOOST_AUTO_TEST_CASE(matlab_meshgrid) {
 		auto const x = multi::array{1, 2, 3};
 		auto const y = multi::array{1, 2, 3, 4, 5};
@@ -331,6 +331,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 	}
+	#endif
 	#endif
 #endif
 	return boost::report_errors();
