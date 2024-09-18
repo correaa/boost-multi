@@ -7,7 +7,9 @@
 #include <array>     // for array, array<>::value_type
 #include <iterator>  // for size
 #if __cplusplus > 201703L
-#include <ranges>    // for views::iota
+#if __has_include(<ranges>)
+#include <ranges>
+#endif
 #endif
 #include <tuple>     // for make_tuple, tuple_element<>::type
 // IWYU pragma: no_include <type_traits>
