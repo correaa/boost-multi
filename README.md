@@ -7,35 +7,37 @@
 
 _© Alfredo A. Correa, 2018-2024_
 
-_Multi_ is a modern C++ library that provides access and manipulation of data in multidimensional arrays, for both CPU and GPU memory.
+_Multi_ is a modern C++ library that provides access and manipulation of data in multidimensional arrays for both CPU and GPU memory.
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
 This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
 featuring logical access recursively across dimensions and to elements through indices and iterators.
 
-The data structure is stride-based, which makes it compatible with low-level C libraries.
+The data structure layout is stride-based, which makes it compatible with low-level C libraries.
 
 The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
 
-The library's primary concern is with the storage and logic structure of data;
-it doesn't make algebraic or geometric assumptions about the arrays and their elements.
-In this sense, it is instead a building block to implement algorithms to represent mathematical operations, specifically on numeric data. 
-Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or, in general, user-defined value-types.)
+Features of this library that aim to facilitate the manipulation of multidimensional arrays include:
 
-Some features of this library:
-
-* Value semantics of multidimensional array containers
-* Well-defined referential semantics of subarray (also called "view") types
-* Interoperability with other libraries, STL, ranges, thrust (CUDA and AMD GPUs), Boost, and C-libraries
-* Fast access to elements and subarrays (views) types
-* Arbitrary pointer types (fancy pointers, memory spaces)
+* Value semantics of multidimensional array containers and well-defined referential semantics to avoid unnecessary copies if possible.
+* Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
+A D-dimensional array can be interpreted either as an (STL-compatible) sequence of (D-1)-dimensional subarrays or as a flattened one-dimensional (STL-compatible) sequence of elements, assuring interoperability with legacy and modern libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
+* Careful memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
 
 Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
 or with the standard MDSpan proposal `std::mdspan`.
-This library shares some of their goals and is compatible with them, but it is otherwise designed at a different level of generality.
+This library shares some of their goals and is compatible with them, but it is otherwise designed at a different level of generality and with different priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
 
-It requires, at least, C++17.
+The library's primary concern is with the storage and logic structure of data;
+it doesn't make algebraic or geometric assumptions about the arrays and their elements.
+(It is still a good building block for implementing mathematical algorithms, such as representing algebraic dense matrices in the 2D case.)
+In this sense, it is instead a building block to implement algorithms to represent mathematical operations, specifically on numeric data.
+
+The library does not throw exceptions, but it provides basic guarantees (such as no memory-leaks) in theie presence (e.g. thrown from allocators).
+Indexing and other logical errors results in undefined behavior, which this library attempts to reflect via assertions.
+
+The library requires C++17 or higher.
 
 ## Contents
 [[_TOC_]]
@@ -99,10 +101,10 @@ Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, blas, lapack, thurst, or CUDA
 (all can be installed with `sudo apt install libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install blas-devel fftw-devel`.)
 
-## Reference of types
+## Reference documentation of fundamental types
 
 The library interface presents several closely related C++ types (classes) representing arrays.
-The most important types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
+The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `static_array`).
 
 When using the library, it is simpler to start from `array`, and other types are rarely explicitly used, especially if using `auto`;
@@ -112,7 +114,9 @@ Furthermore, the *is-a* relationship is implemented through C++ public inheritan
 
 ### class `multi::subarray<T, D, P = T* >`
 
-A subarray is part (or a whole) of another `subarray` (including an `array`).
+A subarray-reference is part (or a whole) of another larger array.
+It is important to understand that `subarray`s have referential semantics, their elements are not independent of the values of the larger arrays they are part of.
+The elements and structure of a `subarray` can be copies in to a new array (type `array`, see later) to recover value semantics.
 An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
 (`T`, `D`, `P` initials are used in this sense across the documentation, unless indicated otherwise.)
 
@@ -413,15 +417,18 @@ In this way, the functions can be applied to subblocks of larger matrices.
 assert( &element_1_1(C3D[0]) == &C3D[0][1][1] );
 ```
 
+(Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or, in general, user-defined value-types.)
+
 ## Advanced Usage
 
+In this example, we are going to use memory that is not managed by the library and manipulate the elements.
 We can create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
 ```cpp
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
-#include<algorithm>  // for sort
-#include<iostream>  // for print
+#include <algorithm>  // for sort
+#include <iostream>  // for print
 
 namespace multi = boost::multi;
 
@@ -467,7 +474,7 @@ Presumably, if one can sort over a range, one can perform any other standard alg
 
 ```cpp
 		...
-		std::stable_sort( begin(d2D_ref), end(d2D_ref) );
+		std::stable_sort( d2D_ref.begin(), d2D_ref.end() );
 		...
 ```
 
@@ -662,30 +669,34 @@ Changing the size of arrays by `reextent`, `clear`, or assignment generally inva
 
 ## Iteration
 
+Array (and subarray-references) provide a members `.begin()` and `.end()` that produce random-access iterators that access the multidimensional structure through the first dimension (leftmost index).
 Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator-based algorithms (see the sort example above).
 `begin(A)/end(A)` (or equivalently `A.begin()/A.end()`) gives iterators that are linear and random access in the leading dimension.
 
+As an alternative the elements can be iterated in a flat manner, using the `.elements()` member.
+This flattening is done in a canonical order (rightmost index changes fastest) and it is provided whether the elements are contiguous or not in memory.
+This "elements" range also provides the begin and end iterators (`.elements().begin()`).
+
 Other non-leading dimensions can be obtained by "rotating" indices first.
 `A.rotated().begin()/.end()` gives access to a range of subarrays in the second dimension number (the first dimension is put at the end).
-
-`cbegin/cend` give constant (read-only) access.
+(`.cbegin()/.cend()` give constant (read-only) access.)
 
 As an example, this function allows printing arrays of arbitrary dimensionality into a linear comma-separated form.
 
 ```cpp
-void flat_print(double const& d) { cout<<d; };  // terminating overload
+void recursive_print(double const& d) { cout<<d; };  // terminating overload
 
 template<class Array>
-void flat_print(Array const& ma) {
+void recursive_print(Array const& ma) {
 	cout << "{";
 	if(not ma.empty()) {
-		flat_print(*cbegin(ma));  // first element
-		std::for_each(cbegin(ma)+1, cend(ma), [](auto&& e) { cout<<", "; flat_print(e);});  // rest
+		flat_print(*ma.begin());  // first element
+		std::for_each(ma.begin() + 1, ma.end(), [](auto const& e) { cout<<", "; flat_print(e);});  // rest
 	}
 	cout << "}";
 }
 ...
-flat_print(A);
+recursive_print(A);
 ```
 > ```
 > {{{1.2, 1.1}, {2.4, 1}}, {{11.2, 3}, {34.4, 4}}, {{15.2, 99}, {32.4, 2}}}
@@ -695,14 +706,14 @@ Except for those corresponding to the one-dimensional case, dereferencing iterat
 These references can be given a name; using `auto` can be misleading since the resulting variable does not have value semantics.
 
 ```cpp
-auto row = *begin(A);  // accepted by the language but misleading, row is not an independent value
+auto row = *A.begin();  // accepted by the language but misleading, row is not an independent value
 ```
 
 In my experience, however, the following usage pattern produces a more consistent idiom for generating references (still without copying elements):
 
 ```cpp
-auto&&       row0 = * begin(A);  // same as decltype(A)::      reference  row0 = * begin(A);
-auto const& crow0 = *cbegin(A);  // same as decltype(A)::const_reference crow0 = *cbegin(A);
+auto&&       row0 = *A.begin() ;  // same as decltype(A)::      reference  row0 = * begin(A);
+auto const& crow0 = *A.cbegin();  // same as decltype(A)::const_reference crow0 = *cbegin(A);
 
 auto&&       row1 =               A [1];  // same as decltype(A)::      reference  row1 =               A [1];
 auto const& crow1 = std::as_const(A)[1];  // same as decltype(A)::const_reference crow0 = std::as_const(A)[1];
@@ -714,6 +725,27 @@ If a new value is desired, these (equivalent) options express the intention more
 decltype(A)::value_type row =   *begin(A);  // there is a real copy of the row
                    auto row = + *begin(A);  // there is another copy, note the use of '+' (unary plus)
 ```
+
+In the examples above all elements are accessed in a nested way, recursively down the dimensions.
+To iterate over all the elements regardless of the multidimensional structure the following function can print all the elements.
+
+```cpp
+template<class Array>
+void flat_print(Array const& ma) {
+	cout << "[";
+	std::for_each(ma.elements().begin(), ma.elements().end(), [](auto&& e) { cout<< e << ", ";});
+	cout << "]";
+}
+...
+recursive_print(A);
+```
+> ```
+> [1.2, 1.1, 2.4, 1, 11.2, 3, 34.4, 4, 15.2, 99, 32.4, 2]
+> ```
+
+This feature allows to view the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
+For example array element at indices 1,1 is the same as the element 
+
 
 ### "Pointer" to subarray
 
@@ -2018,33 +2050,33 @@ Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://
 [(online)](https://godbolt.org/z/555893MqW).
 
 
-|                             | Multi                                                           | mdspan                                                                          | Boost.MultiArray (R. Garcia)                                                                         | Inria's Eigen                                                                           |
+|                             | Multi                                                           | mdspan/mdarray                                                                          | Boost.MultiArray (R. Garcia)                                                                         | Inria's Eigen                                                                           |
 |---                          | ---                                                             | ---                                                                             | ---                                                                                                  | ---                                                                                     |
-| No external Deps            | **yes** (only Standard Library C++17)                           | **yes** (only Standard Library)                                                 | **yes** (only Boost)                                                                                 | **yes**                                                                                 |
+| No external Deps            | **yes** (only Standard Library C++17)                           | **yes** (only Standard Library C++17/C++26)                                                 | **yes** (only Boost)                                                                                 | **yes**                                                                                 |
 | Arbritary number of dims    | **yes**, via positive dimension (compile-time) parameter `D`    | **yes**                                                                         | **yes**                                                                                              | no  (only 1D and 2D)                                                                    |
 | Non-owning view of data     | **yes**, via `multi::array_ref<T, D>(ptr, {n1, n2, ..., nD})`   | **yes**, via `mdspan m{T*, extents{n1, n2, ..., nD}};`                          | **yes**, via `boost::multi_array_ref<T, D>(T*, boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Map<Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>>(ptr, n1, n2)` |
 | Compile-time dim size       | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` | no                                                                             | **yes**, via `Eigen::Array<T, N1, N2>` |
-| Array values (owning data)  | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`            | no, (planned `mdarray`)                                   | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Array<T>(n1, n2)` |
-| Value semantic (Regular)    | **yes**, via cctor, mctor, assign, massign, auto decay of views | no, and not planned                                       | partial, assigment on equal extensions  | **yes** (?) |
-| Move semantic               | **yes**, via mctor and massign                                  | no                                                        | no (C++98 library)                      | **yes** (?) |
+| Array values (owning data)  | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`            | yes for `mdarray`                                   | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Array<T>(n1, n2)` |
+| Value semantic (Regular)    | **yes**, via cctor, mctor, assign, massign, auto decay of views | yes (?) for `mdarray` planned                                       | partial, assigment on equal extensions  | **yes** (?) |
+| Move semantic               | **yes**, via mctor and massign                                  | yes (?) for `mdarray` (depends on adapted container)                                                        | no (C++98 library)                      | **yes** (?) |
 | const-propagation semantics | **yes**, via `const` or `const&`                                | no, const mdspan elements are assignable!                 | no, inconsistent                        | (?) |
-| Element initialization      | **yes**, via nested init-list                                   | no                                                        | no                                      | no, only delayed init via `A << v1, v2, ...;` |
+| Element initialization      | **yes**, via nested init-list                                   | no (?)                                                        | no                                      | no, only delayed init via `A << v1, v2, ...;` |
 | References w/no-rebinding   | **yes**, assignment is deep                                     | no, assignment of mdspan rebinds!                         | **yes**                                 | **yes** (?) |
-| Element access              | **yes**, via `A(i, j, ...)` or `A[i][j]...`                     | **yes**, via `A(i, j, ...)`                               | **yes**, via `A[i][j]...`               | **yes**, via `A(i, j)` (2D only) |
-| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`                       | **yes**, via `submdspan(A, i, full_extent)`               | **yes**, via `A[i]`                     | **yes**, via `A.row(i)` |
+| Element access              | **yes**, via `A(i, j, ...)` or `A[i][j]...`                     | **yes**, via `A[i, j, ...]`                               | **yes**, via `A[i][j]...`               | **yes**, via `A(i, j)` (2D only) |
+| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`                       | no, only via `submdspan(A, i, full_extent)`               | **yes**, via `A[i]`                     | **yes**, via `A.row(i)` |
 | Subarray views              | **yes**, via `A({0, 2}, {1, 3})` or `A(1, {1, 3})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{1, 3})` | **yes**, via `A[indices[range(0, 2)][range(1, 3)]]` | **yes**, via `A.block(i, j, di, dj)` |
 | Subarray with lower dim     | **yes**, via `A(1, {1, 3})`                                     | **yes**, via `submdspan(A, 1, std::tuple{1, 3})`          | **yes**, via `A[1][indices[range(1, 3)]]`                    | **yes**, via `A(1, Eigen::placeholders::all)` |
 | Subarray w/well def layout  | **yes** (strided layout)                                        | no                                                        | **yes** (strided layout)                      | **yes** (strided) |
 | Recursive subarray          | **yes** (layout is stack-based and owned by the view)           | **yes** (?)                                               | no (subarray may dangle layout, design bug?)  | **yes** (?) (1D only) |
-| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | no (no allocation or ownership)                           | **yes** (stateless?)                          | no | 
-| PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)                           |   no     | no |
+| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | yes(?) through `mdarray`'s adapted container                            | **yes** (stateless?)                          | no | 
+| PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | yes(?) through `mdarray`'s adapted container                            |   no     | no |
 | Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                                        |   no     | no |
-| Strided Layout              | **yes**                                                         | **yes**                                                   |  **yes** | **yes** |
-| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes** (only views are supported)                        |  **yes** | **yes** |
+| Stride-based Layout              | **yes**                                                         | **yes**                                                   |  **yes** | **yes** |
+| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes**                        |  **yes** | **yes** |
 | Zig-zag / Hilbert ordering  | no                                                              | **yes**, via arbitrary layouts (no inverse or flattening) | no       | no |
 | Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing       | no       | no |
 | Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)          | no, only for allocated arrays | no, not for subblocks (?) |
-| Iterators                   | **yes**, standard compliant, random-access-iterator             | no, or very limited                                       | **yes**, limited | no |
+| Iterators                   | **yes**, standard compliant, random-access-iterator             | no                                       | **yes**, limited | no |
 | Multidimensional iterators (cursors) | **yes** (experimental)                                 | no                                                        | no               | no |         
 | STL algorithms or Ranges    | **yes**                                                         | no, limited via `std::cartesian_product`                  | **yes**, some do not work | no |
 | Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                                                        | no | no |
@@ -2124,3 +2156,6 @@ However, algorithms like `transform`, `reduce`, `transform_reduce`and `for_each`
 
 
 [(live)](https://godbolt.org/z/77onne46W)
+
+
+> Thanks to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation and to Matt Borland for his help integrating Boost practices in the testing code.
