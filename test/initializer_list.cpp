@@ -409,7 +409,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{1.0, 2.0, 3.0},
 				{4.0, 5.0, 6.0},
 			});
-			BOOST_TEST( multi::rank<decltype(arr)>{} == 2 );
+			BOOST_TEST( multi::rank<decltype(arr)>::value == 2 );
 			BOOST_TEST( num_elements(arr) == 6 );
 		}
 	}
