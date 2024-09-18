@@ -332,6 +332,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(typename decltype(arr)::rank{} == 1);
 	}
 
+	#if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
 	BOOST_AUTO_TEST_CASE(initializer_list_1d_a) {
 		multi::array arr({10, 20, 30});
 
@@ -412,6 +413,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( num_elements(arr) == 6 );
 		}
 	}
+	#endif
 #endif
 
 	BOOST_AUTO_TEST_CASE(partially_formed) {
