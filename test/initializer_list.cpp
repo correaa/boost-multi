@@ -109,20 +109,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 1> arr(std::initializer_list<int>{12, 34, 56});
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
-			BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
+			BOOST_TEST(( arr == multi::array<int, 1>(std::initializer_list<int>{12, 34, 56}) ));
 		}
 		{
 			multi::array<int, 1> arr({12, 34, 56});
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
-			BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
+			BOOST_TEST(( arr == multi::array<int, 1>({12, 34, 56}) ));
 		}
+		#if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
 		{
 			multi::array arr({12, 34, 56});
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
 			BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
 		}
+		#endif
 #endif
 	}
 
