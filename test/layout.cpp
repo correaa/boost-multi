@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 #if !defined(__NVCC__)
 	static_assert( std::ranges::random_access_range<decltype(A2.extension())> );
 
-	auto const& tiA2 = std::views::transform(
+	auto tiA2 = std::views::transform(
 		A2.extension(),
 		// std::views::iota(0, 3),
 		[](auto idx) noexcept {return idx;}
