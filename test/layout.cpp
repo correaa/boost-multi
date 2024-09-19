@@ -270,6 +270,7 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
 #if !defined(__clang_major__) || (__clang_major__ > 14)
 #if !defined(__NVCC__)
+#if !defined(__MSVC)
 	static_assert( std::ranges::random_access_range<decltype(A2.extension())> );
 
 	auto tiA2 = std::views::transform(
@@ -279,6 +280,7 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 	);
 	BOOST_TEST( *tiA2.begin() == 0 );
 	BOOST_TEST( tiA2[0] == 0 );
+#endif
 #endif
 #endif
 #endif
