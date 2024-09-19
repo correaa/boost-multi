@@ -1433,9 +1433,9 @@ auto dot_product(X1D const& x, Y1D const& y) {
 
 ### Polymorphic Memory Resources
 
-In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's [polymorphic memory resources (PMR)](https://en.cppreference.com/w/cpp/header/memory_resource) which allows using advanced allocation strategies, including preallocated buffers.
+In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's [polymorphic memory resources (PMR)](https://en.cppreference.com/w/cpp/header/memory_resource), which allows using advanced allocation strategies, including preallocated buffers.
 This example code uses a buffer as memory for two arrays; 
-in it a predefined buffer ends up containing the data of the arrays, something like `"aaaabbbbbbXX"`.
+in it, a predefined buffer will contain the arrays' data (something like `"aaaabbbbbbXX"`).
 
 ```cpp
 #include <memory_resource>  // for polymorphic memory resource, monotonic buffer
@@ -1454,7 +1454,7 @@ int main() {
 `multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.
 In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. [(live)](https://godbolt.org/z/fP9P5Ksvb)
 
-The library also supports memory resources from other libraries, including those returning special pointer types (see [CUDA Thrust](#cuda-thrust) Thurst section, and Boost.Interprocess section).
+The library also supports memory resources from other libraries, including those returning special pointer types (see the [CUDA Thrust](#cuda-thrust) section and the Boost.Interprocess section).
 
 ### Substitutability with standard vector and span
 
