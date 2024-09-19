@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 	};
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
-#if !defined(__clang_major__) || (__clang_major__ > 14)
+#if !defined(__clang_major__) || (__clang_major__ < 15)
 #if !defined(__NVCC__)
 #if !defined(__MSVC)
 	static_assert( std::ranges::random_access_range<decltype(A2.extension())> );
