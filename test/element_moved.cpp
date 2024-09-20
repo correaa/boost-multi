@@ -6,10 +6,13 @@
 
 #include <boost/multi/array.hpp>  // for array, apply, array_types<>::ele...
 
-// // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
-// // IWYU pragma: no_include <map>
-// // IWYU pragma: no_include <set>
-// // IWYU pragma: no_include <stack>
+// IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
+// IWYU pragma: no_include <map>
+// IWYU pragma: no_include <set>
+// IWYU pragma: no_include <stack>
+// IWYU pragma: no_include <algorithm>  // for fill_n
+// IWYU pragma: no_include <cstdlib>
+// IWYU pragma: no_include <pstl/glue_algorithm_defs.h>
 #include <utility>  // for move, swap
 #include <vector>   // for vector, operator==, vector<>::va...
 
