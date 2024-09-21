@@ -21,8 +21,9 @@ Features of this library that aim to facilitate the manipulation of multidimensi
 
 * Value semantics of multidimensional array containers and well-defined referential semantics to avoid unnecessary copies if possible.
 * Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
-A D-dimensional array can be interpreted either as an (STL-compatible) sequence of (D-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements, assuring interoperability with legacy and modern libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
-* Careful memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
+A D-dimensional array can be interpreted either as an (STL-compatible) sequence of (D-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
+* Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
+* Memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
 
 Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
 or with the standard MDSpan proposal `std::mdspan`.
