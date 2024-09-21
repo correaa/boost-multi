@@ -13,7 +13,7 @@ Multidimensional array data structures are fundamental to several branches of co
 This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
 featuring logical access recursively across dimensions and to elements through indices and iterators.
 
-The data structure layout is stride-based, which makes it compatible with low-level C libraries.
+The internal data structure layout is stride-based, which makes it compatible with low-level C libraries.
 
 The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
 
@@ -21,7 +21,7 @@ Features of this library that aim to facilitate the manipulation of multidimensi
 
 * Value semantics of multidimensional array containers and well-defined referential semantics to avoid unnecessary copies if possible.
 * Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
-A D-dimensional array can be interpreted either as an (STL-compatible) sequence of (D-1)-dimensional subarrays or as a flattened one-dimensional (STL-compatible) sequence of elements, assuring interoperability with legacy and modern libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
+A D-dimensional array can be interpreted either as an (STL-compatible) sequence of (D-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements, assuring interoperability with legacy and modern libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
 * Careful memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
 
 Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
@@ -32,9 +32,8 @@ The code is entirely independent and has fundamental implementation and semantic
 The library's primary concern is with the storage and logic structure of data;
 it doesn't make algebraic or geometric assumptions about the arrays and their elements.
 (It is still a good building block for implementing mathematical algorithms, such as representing algebraic dense matrices in the 2D case.)
-In this sense, it is instead a building block to implement algorithms to represent mathematical operations, specifically on numeric data.
 
-The library does not throw exceptions, but it provides basic guarantees (such as no memory-leaks) in theie presence (e.g. thrown from allocators).
+The library does not throw exceptions, but it provides basic guarantees (such as no memory-leaks) in their presence (e.g. thrown from allocations).
 Indexing and other logical errors results in undefined behavior, which this library attempts to reflect via assertions.
 
 The library requires C++17 or higher.
