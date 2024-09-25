@@ -11,7 +11,7 @@
 
 #include <cassert>   // for assert
 #include <iostream>  // for std::cout
-#include <limits>    // for numeric_limits
+#include <limits>    // for numeric_limits  NOLINT(misc-include-cleaner)
 #include <utility>   // for exchange, move
 #include <vector>
 
