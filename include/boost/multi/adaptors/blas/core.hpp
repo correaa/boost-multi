@@ -535,8 +535,9 @@ struct context { // stateless (and thread safe)
 
 	template<class... As>
 	static auto nrm2(As... args)
-	->decltype(core::nrm2(args...)) {
-		return core::nrm2(args...); }
+	-> decltype(auto)
+	//->decltype(core::nrm2(args...)) {
+	{   return core::nrm2(args...); }
 
 	template<class... As>
 	static auto trsm(As&&... args)  // TODO(correaa) remove &&

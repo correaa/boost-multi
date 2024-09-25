@@ -84,6 +84,7 @@ set(TEST_SRCS
 	gemm.cu
 	gemv.cu
 	# herk.cu
+	nrm2.cu
 	scal.cu
 	trsm.cu
 )
