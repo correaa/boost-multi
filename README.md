@@ -2043,8 +2043,10 @@ This library can replace Boost.MultiArray in most contexts, it even fulfillis th
 Boost.MultiArray has technical and semantic limitations that are overcome in this library, regarding layouts and references;
 it doesn't support value-semantics, iterator support is limited and it has other technical problems.
 
-[Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) is a very popular matrix linear algebra library, and as such, it only handles the special 2D (and 1D) array case.
-Instead, the Multi library is dimension-generic and doesn't make any algebraic assumptions for arrays or contained elements (but still can be used to _implement_ dense linear algebra algorithms.)
+[Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) is a very popular matrix linear algebra framework library, and as such, it only handles the special 2D (and 1D) array case.
+Instead, the Multi library is dimension-generic and doesn't make any algebraic assumptions for arrays or contained elements (but still can be used to _implement_, or in combination, with dense linear algebra algorithms.)
+
+Other frameworks includes the OpenCV (Open Computing Vision) framework, which is too specialized to make a comparison here.
 
 Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html) and Eigen. 
 [(online)](https://godbolt.org/z/555893MqW).
