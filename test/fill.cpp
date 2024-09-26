@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, apply, operator==
 
 #include <algorithm>    // for fill, all_of, transform
@@ -52,7 +54,6 @@ class fnv1a_t {
 	explicit operator result_type() const& noexcept { return h_; }
 };
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -130,6 +131,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d2D[1][1] == 990 );
 	}
 
+	BOOST_AUTO_TEST_CASE(simple_fill) {
+		namespace multi = boost::multi;
+
+		multi::array<int, 1> d1D = {10, 20, 30, 40};
+		std::fill_n(d1D.begin(), d1D.size(), 420);
+
+		multi::array<int, 2> d2D = {
+			{1500, 160, 170, 180, 190},
+			{  50,  50,  50,  50,  50},
+			{1000, 110, 120, 130, 140},
+			{ 500,  60,  70,  80,  90},
+		};
+
+		BOOST_TEST(   d2D.elements().size()  == d2D.num_elements()  );
+		BOOST_TEST(   d2D.elements().base()  == d2D.base()          );
+		BOOST_TEST(   d2D.elements()[3]      == 180                 );
+		BOOST_TEST( &*d2D.elements().begin() == d2D.data_elements() );
+		BOOST_TEST( &*d2D.elements().end()   == d2D.data_elements() + d2D.num_elements() );
+
+		std::fill(d2D.elements().begin(), d2D.elements().end(), 990);
+
+		BOOST_TEST( d2D[1][1] == 990 );
+	}
+
 	BOOST_AUTO_TEST_CASE(fill) {
 		std::random_device randdev;
 
@@ -174,6 +199,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2[1] == arr );
 
 		BOOST_TEST( arr2[9] == arr );
+	}
+
+	BOOST_AUTO_TEST_CASE(fill_n_1D) {
+		namespace multi = boost::multi;
+
+		multi::array<int, 1> arr = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+		std::fill_n(arr.dropped(3).begin(), 4, 99);
+		// std::fill_n(arr.begin() + 3, 4, 99);
+
+		BOOST_TEST( arr[2] ==  2 );
+		BOOST_TEST( arr[3] == 99 );
+		BOOST_TEST( arr[4] == 99 );
+		BOOST_TEST( arr[5] == 99 );
+		BOOST_TEST( arr[6] == 99 );
+		BOOST_TEST( arr[7] ==  7 );
+
 	}
 
 	return boost::report_errors();
