@@ -4,6 +4,7 @@
 
 // IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // for context
 // IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
+#include <boost/multi/adaptors/blas/core.hpp>  // for context
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref, operator==
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for nrm2, nrm2_ref
 #include <boost/multi/adaptors/complex.hpp>    // for complex, operator*
@@ -53,6 +54,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// BOOST_TEST( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );  // TODO(correaa) nrm2 is returning a pointer?
 		BOOST_TEST( n == std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );
+
 		// BOOST_TEST( blas::nrm2(rotated(cA)[1]) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 
 		// double n2 = blas::nrm2(rotated(cA)[1]);
@@ -87,6 +89,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			double const n = multi::blas::nrm2(X);  // NOLINT(readability-identifier-length) BLAS naming
 			BOOST_TEST( n == multi::blas::nrm2(X) );
+		}
+		{
+			multi::array<double, 0> res{0.0};
+			multi::array<double, 1> const xx = {1.0, 2.0, 3.0};
+
+			// multi::blas::dot(xx, xx, res);
+			// multi::blas::nrm2(xx, res);
+			multi::blas::context ctx;
+			multi::blas::dot_n(&ctx, xx.begin(), xx.size(), xx.begin(), res.base());
+			// multi::blas::nrm2_n(&ctx, xx.begin(), xx.size(), res.base());
+
+			//BOOST_TEST( *res.base() == 1.0*1.0 + 2.0*2.0 + 3.0*3.0 );
+
+			//multi::blas::nrm2(xx, res);
+
+			//BOOST_TEST( *res.base() == 1.0*1.0 + 2.0*2.0 + 3.0*3.0 );
 		}
 	}
 
