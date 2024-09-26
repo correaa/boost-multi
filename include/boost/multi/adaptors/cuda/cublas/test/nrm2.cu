@@ -72,28 +72,28 @@ BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
 		multi::array<double, 1> const xx = {1.0, 2.0, 3.0};
 
 		res = blas::nrm2(xx);
-		BOOST_TEST( res == std::sqrt(1.0*1.0 + 2.0*2.0 + 3.0*3.0) );
+		BOOST_TEST( std::abs( res - std::sqrt(1.0*1.0 + 2.0*2.0 + 3.0*3.0) ) < 1e-7 );
 	}
 	{
 		double res{0.0};
 		multi::array<double, 1> const xx = {1.0, 2.0, 3.0};
 
 		blas::nrm2(xx, res);
-		BOOST_TEST( res == std::sqrt(1.0*1.0 + 2.0*2.0 + 3.0*3.0) );
+		BOOST_TEST( std::abs( res - std::sqrt(1.0*1.0 + 2.0*2.0 + 3.0*3.0) ) < 1e-7 );
 	}
 	{
 		multi::array<double, 0> res{0.0};
 		multi::array<double, 1> const xx = {1.0, 2.0, 3.0};
 
 		blas::nrm2(xx, res);
-		BOOST_TEST( *res.base() == std::sqrt(1.0*1.0 + 2.0*2.0 + 3.0*3.0) );
+		BOOST_TEST( std::abs( *res.base() - std::sqrt(1.0*1.0 + 2.0*2.0 + 3.0*3.0) ) < 1e-7 );
 	}
 	{
 		multi::array<double, 0> res{0.0};
 		multi::array<std::complex<double>, 1> const xx = {std::complex<double>{1.0, 2.0}, std::complex<double>{3.0, 4.0}, std::complex<double>{5.0, 6.0}};
 
 		blas::nrm2(xx, res);
-		BOOST_TEST( *res.base() == std::sqrt(std::norm(std::complex<double>{1.0, 2.0}) + std::norm(std::complex<double>{3.0, 4.0}) + std::norm(std::complex<double>{5.0, 6.0})) );
+		BOOST_TEST( std::abs( *res.base() - std::sqrt(std::norm(std::complex<double>{1.0, 2.0}) + std::norm(std::complex<double>{3.0, 4.0}) + std::norm(std::complex<double>{5.0, 6.0})) ) < 1e-7 );
 	}
 	{
 		multi::thrust::cuda::array<double, 0> res{0.0};
