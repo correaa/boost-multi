@@ -226,7 +226,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  for(auto&& elem : indirect_v) {elem = 88.;}
 		//  std::fill(indirect_v.begin(), indirect_v.end(), 88.0);
 
-#if !defined(_MSC_VER)
+	#if !defined(_MSC_VER)
 		indirect_v.fill(880);
 		BOOST_TEST(  vec[3] ==  880 );
 
@@ -234,7 +234,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		(void)const_indirect_v;
 		// const_indirect_v[1] = 9990;  // does not compile, good!
 		BOOST_TEST(const_indirect_v[3] ==  880);
-#endif
+	#endif
 	}
 
 	BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
@@ -264,7 +264,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(  const_indirect_v[1][2] ==  111110 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) testing legacy type
 
-		//  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
+		//  const_indirect_v[1][2] = 999.0;  // doesn't compile, good!
 	}
 
 	return boost::report_errors();
