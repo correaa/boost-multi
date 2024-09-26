@@ -124,6 +124,20 @@ BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
 
 		auto res3 = blas::nrm2(xx);
 	}
+	{
+		multi::thrust::cuda::array<double, 0> res{0.0};
+		multi::thrust::cuda::array<thrust::complex<double>, 1> const xx = {thrust::complex<double>(1.0, 2.0), thrust::complex<double>(3.0, 4.0), thrust::complex<double>(4.0, 5.0)};
+
+		blas::nrm2_n(xx.begin(), xx.size(), res.base());
+		BOOST_TEST( *res.base() == std::sqrt(std::norm(std::complex<double>(1.0, 2.0)) + std::norm(std::complex<double>(3.0, 4.0)) + std::norm(std::complex<double>(4.0, 5.0))) );
+	}
+	{
+		multi::thrust::cuda::array<double, 0> res{0.0};
+		multi::thrust::cuda::array<double, 1> const xx = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+
+		blas::nrm2_n(xx.begin(), 3, res.base());
+		BOOST_TEST( *res.base() == std::sqrt(1.0*1.0 + 2.0*2.0 + 3.0*3.0) );
+	}
 
 	// {
 	//  multi::thrust::cuda::array<double, 0> res{0.0};
