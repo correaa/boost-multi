@@ -23,7 +23,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		namespace multi = boost::multi;
 		multi::array<int, 1> const arr({10}, 99);
-		for(auto const& elem : arr) {  // NOLINT(altera-unroll-loops)
+		for(auto const& elem : arr) {  // NOLINT(altera-unroll-loops) test plain loop
 			BOOST_TEST( elem == 99 );
 		}
 	}
