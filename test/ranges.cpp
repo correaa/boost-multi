@@ -7,9 +7,9 @@
 
 #include <algorithm>  // for std::ran  // IWYU pragma: keep  //  NOLINT(misc-include-cleaner)
 
-#if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
-	#include <boost/multi/array.hpp>  // for array, subarray, static_array  // IWYU pragma: keep
+#include <boost/multi/array.hpp>  // for array, subarray, static_array  // IWYU pragma: keep
 
+#if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 	#include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
 	#include <iterator>     // for size, begin, end  // IWYU pragma: keep
 	#include <numeric>      // for iota  // IWYU pragma: keep
@@ -20,6 +20,13 @@
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	{
+		namespace multi = boost::multi;
+		multi::array<int, 1> const arr({10}, 99);
+		for(auto const& elem : arr) {  // NOLINT(altera-unroll-loops) test plain loop
+			BOOST_TEST( elem == 99 );
+		}
+	}
 	// range accumulate
 	{
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)

@@ -1,8 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2023-2024 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS gemv"
-// #include<boost/test/unit_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/adaptors/cuda/cublas.hpp>
 
@@ -15,7 +14,6 @@
 
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
