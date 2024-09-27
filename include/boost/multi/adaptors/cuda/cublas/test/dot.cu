@@ -2,8 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS dot"
-// #include<boost/test/unit_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/adaptors/cuda/cublas.hpp>
 
@@ -21,7 +20,6 @@
 
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 int main() {
@@ -37,6 +35,14 @@ int main() {
 //  blas::dot(blas::C(x), y, res);
 // //  BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
 // }
+	// range for test 
+	{
+		multi::thrust::universal::array<int, 1> const x = {1, 2, 3};
+		for(auto const& elem : x) {
+			int ee = elem;
+			BOOST_TEST(ee < 10);
+		}
+	}
 
 BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
 	namespace blas = multi::blas;

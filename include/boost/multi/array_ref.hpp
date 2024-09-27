@@ -2938,10 +2938,10 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	// friend constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
 	constexpr BOOST_MULTI_HD auto begin_aux_() const {return iterator{this->base_                  , this->stride()};}
-	constexpr                auto end_aux_  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
+	constexpr BOOST_MULTI_HD auto end_aux_  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
 
  public:
-	BOOST_MULTI_HD constexpr auto  begin() const& -> const_iterator {return const_iterator{begin_aux_()};}
+	BOOST_MULTI_HD constexpr auto  begin() const& {return const_iterator{begin_aux_()};}
 
 	// constexpr auto mbegin()      & {return move_iterator{begin()};}
 	// constexpr auto mend  ()      & {return move_iterator{end  ()};}
@@ -2949,7 +2949,7 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	// constexpr auto mbegin()     && {return move_iterator{begin()};}
 	// constexpr auto mend  ()     && {return move_iterator{end  ()};}
 
-	BOOST_MULTI_HD constexpr auto  end  () const& -> const_iterator {return end_aux_();}
+	BOOST_MULTI_HD constexpr auto  end  () const& {return const_iterator{end_aux_()};}
 
 	[[deprecated("implement as negative stride")]] constexpr auto rbegin() const& {return const_reverse_iterator(end  ());}  // TODO(correaa) implement as negative stride?
 	[[deprecated("implement as negative stride")]] constexpr auto rend  () const& {return const_reverse_iterator(begin());}  // TODO(correaa) implement as negative stride?
