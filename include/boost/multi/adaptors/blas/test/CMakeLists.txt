@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)  # required by BLAS::BLAS
+cmake_minimum_required(VERSION 3.18)  # required by BLAS::BLAS, CUDA STANDARD 17
 
 if((NOT
 	CMAKE_CXX_COMPILER_ID
@@ -86,10 +86,13 @@ set(TEST_SRCS
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
-	if(ENABLE_CUDA OR DEFINED CXXCUDA)
+	if(ENABLE_CUDA OR FORCE_CXX_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		#set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
-		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
+		# set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
+		# target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
+		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD 17)
+		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD_REQUIRED ON)
+		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_EXTENSIONS OFF)
 	endif()
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
