@@ -412,8 +412,8 @@ constexpr auto array_size_impl(boost::multi::extensions_t<D> const&)
 // Some versions of Clang throw warnings that stl uses class std::tuple_size instead
 // of struct std::tuple_size like it should be
 #ifdef __clang__
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wmismatched-tags"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wmismatched-tags"
 #endif
 
 template<boost::multi::dimensionality_type D>
@@ -565,7 +565,7 @@ struct layout_t<0, SSize>
 	// [[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
 	constexpr auto scale(size_type /*num*/, size_type /*den*/) const {return *this;}
 
-//  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
+	// friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
 	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
 		return
 			   std::tie(self .sub_, self .stride_, self .offset_, self .nelems_)
@@ -769,12 +769,12 @@ struct layout_t
 	       constexpr auto extensions()        const {return extensions_type{tuple{extension(), sub_.extensions().base()}};}  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
-//  [[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
+	// [[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto extension(dimensionality_type dim) const {return std::apply([](auto... extensions) {return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim));}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14 
-//  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
+	// [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto stride   (dimensionality_type dim) const {return std::apply([](auto... strides   ) {return std::array<stride_type    , static_cast<std::size_t>(D)>{strides   ...};}, strides   ()       ).at(static_cast<std::size_t>(dim));}
-//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
+	// [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
+	// constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
 
 	template<typename Size>
 	constexpr auto partition(Size const& count) -> layout_t& {
@@ -821,6 +821,35 @@ struct layout_t
 		assert( (stride_*num) % den == 0 );
 		return layout_t{sub_.scale(num, den), stride_*num/den, offset_*num/den, nelems_*num/den};
 	}
+};
+
+template<dimensionality_type D, typename Size = boost::multi::size_t>
+struct c_layout;
+
+template<typename Size>
+struct c_layout<1, Size> {
+	using size_type = Size;
+	// using dimensionality_type = boost::multi::dimensionality_t;
+	using rank = std::integral_constant<dimensionality_type, 1>;
+	static constexpr auto dimensionality = rank::value;
+	static constexpr auto rank_v = rank::value;
+	// using stride_type = size_type;
+	// using index_extension = std::pair<size_type, size_type>;
+	// using extensions_type = std::pair<index_extension, index_extension>;
+	// using extensions_type_base = tuple<index_extension>;
+	// using dimensionality_type = std::integral_constant<dimensionality_type, 1>;
+	// using index_type = size_type;
+	// using index_type_base = index_type;
+	// using size_type_base = size_type;
+	// using stride_type_base = stride_type;
+	// using index_extension_base = index_extension;
+	// using extensions_type_base = extensions_type_base;
+	// using dimensionality_type_base = dimensionality_type;
+	// using index_type_base = index_type_base;
+	// using size_type_base = size_type_base;
+	// using stride_type_base = stride_type_base;
+	// using index_extension_base = index_extension_base;
+	// using extensions_type_ = extensions_type_base;
 };
 
 constexpr auto
@@ -889,7 +918,7 @@ template<class Tuple> struct std::tuple_size<boost::multi::detail::convertible_t
 template<class Array> struct std::tuple_size<boost::multi::detail::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
 
 #ifdef __clang__
-#  pragma clang diagnostic pop
+	#pragma clang diagnostic pop
 #endif
 
 #undef BOOST_MULTI_HD

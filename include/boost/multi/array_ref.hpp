@@ -2567,8 +2567,8 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	// }
 
  public:
-	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
-	friend constexpr auto size (const_subarray const& self) noexcept -> typename const_subarray::size_type  {return self.size ();}  // needed by nvcc
+	// friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
+	// friend constexpr auto size (const_subarray const& self) noexcept -> typename const_subarray::size_type  {return self.size ();}  // needed by nvcc
 
 	constexpr auto operator+() const { return decay(); }
 
@@ -3171,7 +3171,12 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 {
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
-	using layout_type = typename array_ref::types::layout_t;
+	using layout_type = std::conditional_t<
+		D == 1,
+		// c_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		typename array_ref::types::layout_t,
+		typename array_ref::types::layout_t
+	>;
 
 	using iterator = typename subarray<T, D, ElementPtr>::iterator;
 
