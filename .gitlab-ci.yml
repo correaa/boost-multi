@@ -295,6 +295,9 @@ vs2019-windows:
     - cmake --build build --config Release --parallel 2 --verbose
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
+    - git clone https://github.com/microsoft/vcpkg.git
+    - .\vcpkg\bootstrap-vcpkg.bat
+    - .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
   tags:
     - saas-windows-medium-amd64
   needs: ["clang++", "g++"]
