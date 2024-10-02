@@ -6,9 +6,11 @@
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
 #if defined(NDEBUG)
-	#include <algorithm>   // for transform
-	#include <chrono>      // for duration, high_resolution...
-	#include <execution>   // for execution_policy
+	#include <algorithm>  // for transform
+	#include <chrono>     // for duration, high_resolution...
+	#if __has_include(<execution>)
+		#include <execution>  // for execution_policy
+	#endif
 	#include <iostream>    // for basic_ostream, endl, cout
 	#include <functional>  // for invoke  // IWYU pragma: keep
 #endif
@@ -109,7 +111,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			<< std::invoke([&, start_time = high_resolution_clock::now()] {
 				   B2D_block = A2D_block;
 				   return duration<double>{high_resolution_clock::now() - start_time};
-			   })
+			   }).count()
 			<< '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
@@ -118,7 +120,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
 						 return duration<double>{high_resolution_clock::now() - start_time};
-					 })
+					 }).count()
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
@@ -127,7 +129,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
 						 return duration<double>{high_resolution_clock::now() - start_time};
-					 })
+					 }).count()
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
@@ -136,7 +138,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());
 						 return duration<double>{high_resolution_clock::now() - start_time};
-					 })
+					 }).count()
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
@@ -146,7 +148,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::copy(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin());
 						 return duration<double>{high_resolution_clock::now() - start_time};
-					 })
+					 }).count()
 				  << '\n';
 
 		std::cout << "std::copy par 2\n"
@@ -159,7 +161,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 							 }
 						 );
 						 return duration<double>{high_resolution_clock::now() - start_time};
-					 })
+					 }).count()
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
@@ -168,7 +170,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::copy(std::execution::par_unseq, A2D_block.elements().begin(), A2D_block.elements().end(), B2D_block.elements().begin());
 						 return duration<double>{high_resolution_clock::now() - start_time};
-					 })
+					 }).count()
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
@@ -177,7 +179,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 B2D_block.elements() = A2D_block.elements();
 						 return duration<double>{high_resolution_clock::now() - start_time};
-					 })
+					 }).count()
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
