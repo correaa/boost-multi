@@ -83,6 +83,8 @@ set(TEST_SRCS
 	trsm.cpp
 )
 
+find_package(TBB)
+
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
@@ -96,6 +98,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	# target_link_libraries     (${TEST_EXE} PRIVATE Boost::boost)  # headers)   # unit_test_framework   )
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
+
+	if(TBB_FOUND)
+		target_link_libraries(${TEST_EXE} PRIVATE TBB::tbb)
+	endif()
 
 	# target_compile_options(
 	#   ${TEST_EXE} PRIVATE
