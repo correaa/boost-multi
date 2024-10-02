@@ -36,6 +36,10 @@ namespace boost::multi::detail { template <class ...Ts> class tuple; }
 
 namespace boost::multi {
 
+template<class T> struct is_layout : std::false_type {};
+
+template<dimensionality_type D, typename SSize> struct is_layout<layout_t<D, SSize>> : std::true_type {};
+
 namespace detail {
 
 template <class Tuple, std::size_t... Ns>
@@ -475,9 +479,7 @@ struct monostate : equality_comparable<monostate> {
 };
 
 template<typename SSize>
-struct layout_t<0, SSize>
-: multi::equality_comparable<layout_t<0, SSize> >
-{
+struct layout_t<0, SSize> : multi::equality_comparable<layout_t<0, SSize> > {
 	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, 0>;
 
@@ -524,6 +526,8 @@ struct layout_t<0, SSize>
 
 	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
+
+	[[nodiscard]] constexpr auto partition(SSize /*count*/) const {return layout_t{};}
 
 	[[nodiscard]] constexpr auto extensions()        const        {return extensions_type{};}
 	friend        constexpr auto extensions(layout_t const& self) {return self.extensions();}
@@ -590,10 +594,7 @@ struct layout_t<0, SSize>
 	constexpr auto hull_size() const -> size_type {return num_elements();}  // not in bytes
 };
 
-template<dimensionality_type D, typename SSize>
-struct layout_t
-: multi::equality_comparable<layout_t<D, SSize>>
-{
+template<dimensionality_type D, typename SSize> struct layout_t : multi::equality_comparable<layout_t<D, SSize>> {
 	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, D>;
 
@@ -682,11 +683,12 @@ struct layout_t
 
 	       BOOST_MULTI_HD constexpr auto sub()             &       -> sub_type      & {return      sub_ ;}
 	       BOOST_MULTI_HD constexpr auto sub()        const&       -> sub_type const& {return      sub_ ;}
-	friend BOOST_MULTI_HD constexpr auto sub(layout_t const& self) -> sub_type const& {return self.sub();}
+	// friend BOOST_MULTI_HD constexpr auto sub(layout_t const& self) -> sub_type const& {return self.sub();}
 
-	       BOOST_MULTI_HD constexpr auto nelems()             &       -> nelems_type      & {return      nelems_ ;}
-	       BOOST_MULTI_HD constexpr auto nelems()        const&       -> nelems_type const& {return      nelems_ ;}
-	friend BOOST_MULTI_HD constexpr auto nelems(layout_t const& self) -> nelems_type const& {return self.nelems();}
+	BOOST_MULTI_HD constexpr auto nelems()             &       -> nelems_type      & {return      nelems_ ;}
+	BOOST_MULTI_HD constexpr auto nelems()        const&       -> nelems_type const& {return      nelems_ ;}
+	constexpr auto set_nelems(nelems_type n) & {return      nelems_ = n;}
+	// friend BOOST_MULTI_HD constexpr auto nelems(layout_t const& self) -> nelems_type const& {return self.nelems();}
 
 	constexpr BOOST_MULTI_HD auto nelems(dimensionality_type dim) const {return (dim != 0)?sub_.nelems(dim - 1):nelems_;}
 
@@ -696,6 +698,11 @@ struct layout_t
 			== std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
 		;
 	}
+
+	template<class OtherLayout, typename = std::enable_if_t<!std::is_same_v<OtherLayout, layout_t> && is_layout<OtherLayout>::value && (D > 0) > >
+	layout_t(OtherLayout const& other)
+		: sub_{other.sub()}, stride_{other.stride()}, offset_{other.offset()}, nelems_{other.nelems()} 
+	{}
 
 	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) -> bool {
 		return 
@@ -777,12 +784,18 @@ struct layout_t
 	// constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
 
 	template<typename Size>
-	constexpr auto partition(Size const& count) -> layout_t& {
-		using std::swap;
-		stride_ *= count;
-		nelems_ *= count;
-		sub_.partition(count);
-		return *this;
+	constexpr auto partition(Size count) const {
+		return layout_t(
+			sub().partition(count),
+			stride()*count,
+			offset(),
+			nelems()*count
+		);
+		// using std::swap;
+		// stride_ *= count;
+		// nelems_ *= count;
+		// sub_.partition(count);
+		// return *this;
 	}
 
 	template<class TT>
@@ -817,6 +830,10 @@ struct layout_t
 		return layout_t{sub_.scale(factor), stride_*factor, offset_*factor, nelems_*factor};
 	}
 
+	constexpr auto stride_me(difference_type d) const {
+		return layout_t{this->sub(), this->stride()*d, this->offset(), this->nelems()};
+	}
+
 	constexpr auto scale(size_type num, size_type den) const {
 		assert( (stride_*num) % den == 0 );
 		return layout_t{sub_.scale(num, den), stride_*num/den, offset_*num/den, nelems_*num/den};
@@ -826,13 +843,107 @@ struct layout_t
 template<dimensionality_type D, typename Size = boost::multi::size_t>
 struct c_layout;
 
+template<dimensionality_type D, typename SSize> struct is_layout<c_layout<D, SSize>> : std::true_type {};
+
 template<typename Size>
-struct c_layout<1, Size> {
-	using size_type = Size;
-	// using dimensionality_type = boost::multi::dimensionality_t;
+class c_layout<1, Size> {
+	// c_layout(c_layout const&) = default;
+	Size nelems_;
+	Size offset_;
+
+ public:
+	bool operator==(c_layout const& other) const {return nelems_ == other.nelems_;}
+	bool operator!=(c_layout const& other) const {return nelems_ != other.nelems_;}
+
+	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, 1>;
 	static constexpr auto dimensionality = rank::value;
 	static constexpr auto rank_v = rank::value;
+
+	// using index = Size;
+
+	using size_type       = Size;
+	using difference_type = std::make_signed_t<size_type>;
+	using index           = difference_type;
+	using index_extension = multi::index_extension;
+	using index_range     = multi::range<index>;
+
+	using stride_type = std::integral_constant<Size, 1>;
+	using offset_type = std::integral_constant<Size, 0>;
+	using nelems_type = Size;
+
+	constexpr auto stride() const {return stride_type{};}
+
+	using sizes_type = void;
+	using strides_type = void;
+
+	constexpr auto offsets() = delete;  // const {return offsets_type{};}
+	constexpr auto offset() const { return offset_type{}; }
+
+	constexpr auto num_elements() const {return nelems_;}
+	constexpr auto size() const  noexcept {return nelems_;}
+	constexpr auto sizes() const { return std::make_tuple(size()); };
+	constexpr auto nelems() const -> decltype(auto) { return nelems_; }
+	// [[deprecated("implement slice")]]
+	// constexpr auto nelems() & -> decltype(auto) {return nelems_;}
+	constexpr auto set_nelems(nelems_type n) { nelems_ = n; }
+
+	using extensions_type = multi::extensions_t<1>;
+	using extension_type = index_extension;
+	using sub_type = layout_t<0, Size>;
+
+	c_layout(extensions_type const& es) : nelems_{std::get<0>(es).size()}, offset_{std::get<0>(es).first()} {}
+	c_layout(sub_type, stride_type, offset_type os, nelems_type n) : nelems_{n}, offset_{os} {}
+
+	constexpr auto stride_me(difference_type d) const {
+		return layout_t<1>{this->sub(), this->stride()*d, this->offset(), this->nelems()};
+	}
+
+	constexpr auto scale(size_type num, size_type den) const {
+		assert( (stride()*num) % den == 0 );
+		return layout_t<1>{sub().scale(num, den), stride()*num/den, offset()*num/den, nelems()*num/den};
+	}
+
+	constexpr auto strides() const { return std::make_tuple(stride()); }
+
+	constexpr auto extension() const { return index_extension{offset_, offset_ + nelems_}; }
+	constexpr auto extensions() const { return extensions_type{extension()}; }
+
+	constexpr auto is_empty() const {return nelems_ == 0;}
+	constexpr auto empty() const {return nelems_ == 0;}
+
+	constexpr auto is_compact() const = delete;
+
+	constexpr auto sub() const {return sub_type{};}
+
+	constexpr auto operator()(index idx) const {return idx;}
+
+	auto drop(size_type count) const {
+		// auto ret = *this;
+		// ret.nelems_ = this->stride()*(this->size() - count);
+		return c_layout(
+			this->sub(),
+			this->stride(),
+			this->offset(),
+			this->stride()*(this->size() - count)
+		);
+	};
+
+	auto partition(size_type count) const {
+		auto new_sub = *this;
+		new_sub.set_nelems(new_sub.nelems()/count);
+		return multi::layout_t<2>(
+			new_sub,
+			this->nelems()/count,
+			0,
+			this->nelems()
+		);
+	}
+
+	// multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/size, 0, this->layout().nelems()};
+	// new_layout.sub().nelems() /= size;  // TODO(correaa) : don't use mutation
+
+
 	// using stride_type = size_type;
 	// using index_extension = std::pair<size_type, size_type>;
 	// using extensions_type = std::pair<index_extension, index_extension>;

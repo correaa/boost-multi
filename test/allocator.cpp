@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
 	BOOST_TEST( size(arr) == 10 );
 
 	std::transform(
-		begin(extension(arr)), end(extension(arr)), begin(arr),
+		extension(arr).begin(), extension(arr).end(), arr.begin(),
 		[](auto idx) { return multi::array<std::string, 2>({idx, idx}, std::to_string(idx)); }
 	);
 

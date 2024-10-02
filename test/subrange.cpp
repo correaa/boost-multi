@@ -173,6 +173,28 @@ BOOST_AUTO_TEST_CASE(subrange_ranges) {
 }
 
 BOOST_AUTO_TEST_CASE(subrange_1D_issue129) {
+	auto const arr = std::invoke([]{
+		multi::array<int, 1> ret({ 1024 }, int{});
+		std::iota(ret.elements().begin(), ret.elements().end(), 0);
+		return ret;
+	});
+
+	BOOST_TEST( arr.sliced(0, 512).strided(2)[  1] ==   2 );
+
+	BOOST_TEST( arr.sliced(0, 512, 2)[  1] ==   2 );
+	BOOST_TEST( arr.sliced(0, 512, 2)[255] == 510 );
+
+	BOOST_TEST( arr.sliced(0, 512)[  1] ==   1 );
+	BOOST_TEST( arr.sliced(0, 512)[511] == 511 );
+
+	BOOST_TEST( arr({0, 512})[  1] ==   1 );
+	BOOST_TEST( arr({0, 512})[511] == 511 );
+
+	//  BOOST_TEST( arr({0, 512, 2})[  1] ==   2 );  // TODO(correaa) coompilation error
+	//  BOOST_TEST( arr({0, 512, 2})[255] == 510 );  // TODO(correaa) coompilation error
+}
+
+BOOST_AUTO_TEST_CASE(subrange_1D_issue129_mutable) {
 	multi::array<int, 1> arr({ 1024 }, int{});
 	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
