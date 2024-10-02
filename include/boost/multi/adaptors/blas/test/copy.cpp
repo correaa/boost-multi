@@ -5,6 +5,14 @@
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
+#if defined(NDEBUG)
+	#include <algorithm>   // for transform
+	#include <chrono>      // for duration, high_resolution...
+	#include <execution>   // for execution_policy
+	#include <iostream>    // for basic_ostream, endl, cout
+	#include <functional>  // for invoke  // IWYU pragma: keep
+#endif
+
 #include <complex>   // for operator*, operator+
 #include <iterator>  // for size
 
@@ -86,5 +94,95 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[0][2] == 3.0 + 5.0*I );
 	}
 
+#if defined(NDEBUG)
+	/* transform copy */ {
+		multi::array<double, 2> A2D({10000, 10000}, 55.5);
+		auto&&                  A2D_block = A2D({1000, 9000}, {1000, 5000});
+
+		multi::array<double, 2> B2D({10000, 10000}, 66.6);
+		auto&&                  B2D_block = ~(~B2D({1000, 9000}, {1000, 9000})).strided(2);
+
+		using namespace std::chrono;
+
+		std::cout
+			<< "MULTI assignment\n"
+			<< std::invoke([&, start_time = high_resolution_clock::now()] {
+				   B2D_block = A2D_block;
+				   return duration<double>{high_resolution_clock::now() - start_time};
+			   })
+			<< '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+		std::cout << "std::transform BLAS\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 })
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+		std::cout << "std::transform par BLAS\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 })
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+		std::cout << "std::copy\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 })
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+	#if 1
+		std::cout << "std::copy par\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::copy(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin());
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 })
+				  << '\n';
+
+		std::cout << "std::copy par 2\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::transform(
+							 std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), B2D_block.begin(),
+							 [](auto const& row_a, auto&& row_b) {
+								 std::copy(std::execution::par_unseq, row_a.begin(), row_a.end(), row_b.begin());
+								 return row_b;
+							 }
+						 );
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 })
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+		std::cout << "std::copy elements par\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::copy(std::execution::par_unseq, A2D_block.elements().begin(), A2D_block.elements().end(), B2D_block.elements().begin());
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 })
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+		std::cout << "Multi element assignment\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 B2D_block.elements() = A2D_block.elements();
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 })
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+	#endif
+	}
+#endif
 	return boost::report_errors();
 }
