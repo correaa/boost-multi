@@ -5,14 +5,14 @@
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
-#if defined(NDEBUG)
+#if defined(NDEBUG) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 	#include <algorithm>  // for transform
 	#include <chrono>     // for duration, high_resolution...
 	#if __has_include(<execution>)
 		#include <execution>  // for execution_policy
 	#endif
-	#include <iostream>    // for basic_ostream, endl, cout
 	#include <functional>  // for invoke  // IWYU pragma: keep
+	#include <iostream>    // for basic_ostream, endl, cout
 #endif
 
 #include <complex>   // for operator*, operator+
@@ -104,7 +104,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> B2D({10000, 10000}, 66.6);
 		auto&&                  B2D_block = ~(~B2D({1000, 9000}, {1000, 9000})).strided(2);
 
-		using namespace std::chrono;
+		using namespace std::chrono;  // NOLINT(google-build-using-namespace)
 
 		std::cout
 			<< "MULTI assignment\n"
@@ -125,7 +125,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-	#if defined(__cpp_lib_execution)
+	#if defined(__cpp_lib_execution) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto& row) { return multi::blas::copy(row); });
@@ -145,8 +145,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-	#if 1
-		#if defined(__cpp_lib_execution)
+	#if defined(__cpp_lib_execution) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 		std::cout << "std::copy par\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::copy(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin());
@@ -177,7 +176,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
-		#endif
+	#endif
 
 		std::cout << "Multi element assignment\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
@@ -187,8 +186,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
-	#endif
 	}
 #endif
+
 	return boost::report_errors();
 }
