@@ -2,10 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust"
+#include <boost/core/lightweight_test.hpp>
 
-// #include <boost/test/unit_test.hpp>
-// #include <boost/mpl/list.hpp>
 #include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/adaptors/thrust/managed_allocator.hpp>
 #include <boost/multi/array.hpp>
@@ -42,12 +40,8 @@ inline constexpr bool ::boost::multi::force_element_trivial_default_construction
 namespace {
 
 template<class T> using test_allocator =
-	//  multi ::memory::cuda::allocator<T>
-	//  multi ::memory::cuda::managed::allocator<T>//, std::integral_constant<int, 0> >
-	//  multi ::memory::cuda::cached::allocator<T, std::integral_constant<int, 0> >
 	//  multi::thrust::cuda::managed_allocator<T>
 	thrust::cuda::allocator<T>;
-
 }
 
 // using types_list = boost::mpl::list<
@@ -57,7 +51,6 @@ template<class T> using test_allocator =
 //  thrust::complex<double>
 // >;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

@@ -410,6 +410,26 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector) {
 	BOOST_TEST( &aref[1][0] == &vec[3] );
 }
 
+BOOST_AUTO_TEST_CASE(array_ref_from_subarray) {
+	std::vector<std::int64_t> vec = {  // std::string NOLINT(fuchsia-default-arguments-calls)
+		 1,  2,  3,  4, 
+		 5,  6,  7,  8,
+		 9, 10, 11, 12,
+		13, 14, 15, 16
+	};
+
+	multi::array_ref<std::int64_t, 2> aref({4, 4}, vec.data());
+
+	multi::array<int, 2> barr = {
+		{ 1,  2,  3,  4},
+		{ 5,  6,  7,  8},
+		{ 9, 10, 11, 12},
+		{13, 14, 15, 16}
+	};
+
+	aref = barr();
+}
+
 BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 	// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 	std::vector<double> vec = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
