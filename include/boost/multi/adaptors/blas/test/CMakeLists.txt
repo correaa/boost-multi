@@ -91,7 +91,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 		#set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
-		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
+		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD 17)
 	endif()
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
