@@ -1879,15 +1879,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	// fix mutation
 	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other) && -> decltype(auto) {operator=(          other ); return *this;}
-	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other)  & -> subarray& {
+	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, D, As...> const& other)  & -> subarray& {
 		assert(other.extensions() == this->extensions());
 		this->elements() = other.elements();
 		return *this;
 	}
 
 	// fix mutation
-	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...>     && other) && -> subarray& {operator=(std::move(other)); return *this;}
-	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...>     && other)  & -> subarray& {
+	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, D, As...>     && other) && -> subarray& {operator=(std::move(other)); return *this;}
+	template<class TT, class... As> constexpr auto operator=(const_subarray<TT, D, As...>     && other)  & -> subarray& {
 		assert(this->extensions() == other.extensions());
 		this->elements() = std::move(other).elements();
 		return *this;
