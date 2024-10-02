@@ -34,28 +34,15 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	constexpr ptr(ptr const& /*other*/) = default;
 
 	// vvv it is important that these two functions are device or device host functions
-	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	constexpr auto operator*() const noexcept -> reference { return reference{}; }
-	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	constexpr auto operator+(difference_type /*unused*/) const noexcept -> ptr { return *this; }
-	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-
+	constexpr auto operator[](difference_type dist) const noexcept -> reference { return *(*this + dist); }
 	auto operator+=(difference_type /*difference*/) noexcept -> ptr& { return *this; }
-	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	auto operator++() noexcept -> ptr& { return operator+=(1); }
-	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	friend auto operator-(ptr const& /*a*/, ptr const& /*b*/) noexcept -> difference_type { return 0; }
-	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	auto operator==(ptr const& /*other*/) const noexcept -> bool { return true; }
-	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	auto operator!=(ptr const& /*other*/) const noexcept -> bool { return false; }
-	//  explicit operator T*() const{return &value;}
-	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	// auto operator->() const noexcept -> ptr const& { return *this; }
-	// NOLINTNEXTLINE(fuchsia-trailing-return): this class simulates pointer
-	//  friend auto to_address(ptr const& pointer) -> ptr {return pointer;}
 	explicit operator bool() const noexcept { return false; }
-	//  operator double*() const{return &value;}
 	friend auto get_allocator(ptr const& /*self*/) noexcept { return std::allocator<value_type>{}; }
 };
 

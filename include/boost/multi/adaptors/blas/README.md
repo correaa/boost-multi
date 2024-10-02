@@ -17,35 +17,28 @@ First, it allows the abstracting of the stride information and the conjugation/t
 
 Second, it provides a functional interface to the BLAS calls, which is easier to use than the C-style interface and plays well with STL algorithms that assume a functional programming style.
 
+This functions in this adaptor library strictly uses BLAS operations, the data is not processed outside the BLAS calls.
+
 ## Contents
 [[_TOC_]]
 
 ## Interfaces
 
-There are three kinds of interfaces for each BLAS function. 
-
-1. The _traditional_ one, in which input and output arrays are passed as arguments, e.g. `multi::blas::gemv(alpha, A, x, beta, y);` which performs the $`y \leftarrow \alpha A.x + \beta y`$.
-Note that `y` is an output parameter and has to have the correct size.
-
-2. There is the _algorithm_-like interface which uses iterators whenever possible `multi::blas::gemv_n(alpha, A.begin(), A.size(), x.begin(), beta, y.begin());`.
-
-3. There is the _functional_-like interface, in which inputs and outputs are separated by assignment.
-
 In the _functional_ interface, most functions return special "views" rather than direct results.
 The results are computed when converted to value types or assigned to other views.
 Value types can be 2D (`multi::array<T, 2>`), 1D (`multi::array<T, 1>`) or 0D (`multi::array<T, 0>` or scalars `T`).
-Views can be subarrays (e.g. `multi::subarray<T, 2>` or `multi::subarray<T, 1>`).
+Views can be assigned to subarrays (e.g. `multi::subarray<T, 2>` or `multi::subarray<T, 1>`).
 
-In this interface, functions like `gemv` generates ranges that can be assigned to values or from which constructors can be called in the library without unnecessary copies and allocations when possible.
-Expressions such as `multi::blas::gemv(alpha, A, x)` produce a range object that can be used in different larger statements, notably construction and assignemnt.
+In this interface, functions like `gemv` generates views that can be assigned to values or from which constructors can be called in the library without unnecessary copies or allocations.
+Expressions such as `multi::blas::gemv(alpha, A, x)` produce a range object that can be used in larger expressions, such as construction and assignemnt.
 
 - Construction:
 ```cpp
 multi::array<double, 1> const y = multi::blas::gemv(alpha, A, x);  // same effect as multi::array<double, 1> y({A.size()}); multi::blas::gemv(alpha, A, x, 0.0, y);
 ```
-Among other advantages of functional style is the possibility of creating constant variables for results.
+Among other advantages, the functional style gives the possibility of creating constant variables for results.
 
-Like other part of the library, when using `auto` and the unary `operator+` help generating concrete values.
+Like other parts of the library, when using `auto` and the unary `operator+` help generating concrete values.
 
 ```cpp
 auto const y = +multi::blas::gemv(alpha, A, x);  // y variable is deduced as multi::array<double, 1> and latter constructed from the gemv operation
@@ -59,40 +52,39 @@ auto const y = +multi::blas::gemv(alpha, A, x);  // y variable is deduced as mul
 
 - Assignment (to subarray):
 ```cpp
- multi::array<double, 2> Y;  // empty vector
- Y[0] = multi::blas::gemv(alpha, A, x);  // same as  multi::blas::gemv(alpha, A, x, 0.0, Y[0]), Y[0] can't be resized because it is a subarray must have the correct size, 
+multi::array<double, 2> Y;  // empty vector
+Y[0] = multi::blas::gemv(alpha, A, x);  // same as  multi::blas::gemv(alpha, A, x, 0.0, Y[0]), Y[0] can't be resized because it is a subarray must have the correct size, 
 ```
 
 - Compound-assign:
 ```cpp
- multi::array<double, 1> y(A.size());
- y += multi::blas::gemv(alpha, A, x);  // same as multi::blas::gemv(alpha, A, x, 1.0, y)
+multi::array<double, 1> y(A.size());
+y += multi::blas::gemv(alpha, A, x);  // same as multi::blas::gemv(alpha, A, x, 1.0, y)
 ```
 
 This interface plays well with the style of the STL algorithms.
 For example, suppose we have a container of vectors, all of which need to be multiplied by a given array.
 
 ```cpp
- std::list< multi::array<double, 1> > vs = ...;  // using std::list to avoid confusion
- std::list< multi::array<double, 1> > ws = ...;
- multi::array<double, 2> const A = ...;
+std::list<multi::array<double, 1> > vs = ...;  // using std::list to avoid confusion
+std::list<multi::array<double, 1> > ws = ...;
+multi::array<double, 2> const A = ...;
 
- std::transform(vs.begin(), vs.end(), ws.begin(), [&A](auto const& v) {return multi::blas::gemv(1.0, A, v);})
+std::transform(vs.begin(), vs.end(), ws.begin(), [&A](auto const& v) {return multi::blas::gemv(1.0, A, v);})
 ```
 
-In the following sections, we present the functional interface only; for a conversion to the non-functional interface, see the table at the end.
-
-Although it shared the goals, this interface is independent of the [C++26 Linear Algebra Proposal](https://en.cppreference.com/w/cpp/numeric/linalg).
+Although it shares some of the goals, this interface is independent of the [C++26 Linear Algebra Proposal](https://en.cppreference.com/w/cpp/numeric/linalg).
 The main difference with other BLAS adaptors is that this library aims to offer a functional interface.
 
 ## Numeric Arrays, Conjugation Real and Imaginary parts
 
-Just as BLAS, the element types the library supports are real (`double` and `float`) and complex (`std::complex<double>` and `std::complex<float>`).
-Other types that are semantically equivalent and binary compatible (such as `thrust::complex`) also work directly.
+Just as with BLAS, the library supports element of real (`double` and `float`) and complex (`std::complex<double>` and `std::complex<float>`) types.
+Other types that are semantically equivalent and binary-compatible (such as `thrust::complex`) also work directly.
 
 ## View manipulators
 
 These functions produce views (not copies) related to conjugation, and transposition.
+These typically replace the 'T', 'C' and 'N' characted arguments of the BLAS calls in the C or Fortran interfaces.
 
 ### `auto multi::blas::C(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
 
@@ -102,44 +94,50 @@ The conjugation operation is a unary operation that conjugates each element of t
 
 The transposition operation is a unary operation that transposes an array, producing a view of the array that transposed the elements (and the shape) of the original array.
 
+### `multi::blas::N(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
+
+This view returns the same array, implies no operations on the array; it is provided for completeness.
+
 ### `multi::blas::H(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
 
 ```cpp
-    using complex = std::complex<double>; 
- complex const I{0.0, 1.0};
- multi::array<complex, 2> B = {
- {1.0 - 3.0*I, 6.0 + 2.0*I},
- {8.0 + 2.0*I, 2.0 + 4.0*I},
- {2.0 - 1.0*I, 1.0 + 1.0*I}
- };
+using complex = std::complex<double>; 
+complex const I{0.0, 1.0};
 
-    namespace blas = multi::blas;
- multi::array<complex, 2> conjB = blas::C(B);
+multi::array<complex, 2> B = {
+    {1.0 - 3.0*I, 6.0 + 2.0*I},
+    {8.0 + 2.0*I, 2.0 + 4.0*I},
+    {2.0 - 1.0*I, 1.0 + 1.0*I}
+};
 
- assert( blas::C(B)[1][2] == std::conj(B[1][2]) );
- assert( blas::T(B)[1][2] ==           B[1][2]  );
- assert( blas::H(B)[1][2] == std::conj(B[2][1]) );
+namespace blas = multi::blas;
+multi::array<complex, 2> conjB = blas::C(B);
+
+assert( blas::C(B)[1][2] == std::conj(B[1][2]) );
+assert( blas::T(B)[1][2] ==           B[2][1]  );
+assert( blas::N(B)[1][2] ==           N[1][2]  );
+assert( blas::H(B)[1][2] == std::conj(B[2][1]) );
 ```
 
 Note that views do not play well with self-assignment.
-The main purpose of these functions is to manipulate arguments to BLAS interface functions.
 ```cpp
- multi::array<double, 2> A({10, 10});
- A = multi::blas::T(A);   // undefined behavior, this is not the right way to transpose a matrix in-place
+multi::array<double, 2> A({10, 10});
+A = multi::blas::T(A);   // undefined behavior, this is not the right way to transpose a matrix in-place
 ```
+The main purpose of these functions is to manipulate arguments to BLAS interface functions.
 
 ## BLAS level 1
 
 (https://godbolt.org/z/Kjfa48d4P)
 
-The functions in this category operate on one-dimensional arrays (vectors).
+The functions in this level operate on one-dimensional arrays (vectors).
 Here, we use `multi::array<T, 1>` as representative of a vector, but a one-dimensional subarray, such as a row or a column of a 2D array, can also be used as a vector.
 
 ### `auto multi::blas::copy(`_complex/real vector_`) -> `_convertible to complex/real vector_
 
 Copies the values of a vector to another.
 
-This is similar to assigment, except that it used the underlying BLAS function (including parallelization offered by it) and has marginal utility.
+This is similar to assigment, except that it used the underlying BLAS function (including parallelization if offered by the BLAS implementation) and has marginal utility.
 However, this case serves as illustration of the _functional_ interface, used in the rest of the library:
 `multi::blas::copy(v)` doesn't copy or allocates anything, it creates a "view" that can serve different purposes, illustrated in 3 different cases:
 1) The view can be used to construct a new vector (needing allocation),
@@ -148,7 +146,7 @@ Once again `operator+` helps with automatic type deduction.
 ```cpp
 multi::array<double, 1> const v = {1.0, 2.0, 3.0};
 multi::array<double, 1> const v2 = multi::blas::copy(v);  // case 1: allocates space for 3 elements and copies (using BLAS)
-// auto const v2 = +v_copy;  // case 1: same as line above
+// auto const v2 = +v_copy;  // same effect as line above
 ```
 
 (Note that `auto const v2 = v_copy;` would not create a value or perform a copy, it will simply hold a variable with the "copy range".
@@ -162,16 +160,16 @@ v3 =  multi::blas::copy(v);  // case 2: resizes v3 (allocates space for 3 elemen
 ```
 
 ```cpp
- multi::array<double, 1> v4({3}, 0.0);  // allocates space for 3 elements
- v4 =  multi::blas::copy(v);  // case 2: assigns copies (no allocation necessary)
+multi::array<double, 1> v4({3}, 0.0);  // allocates space for 3 elements
+v4 =  multi::blas::copy(v);  // case 2: assigns copies (no allocation necessary)
 ```
 
-3) to assign to a 1D subarray vector that is not resizable.
+3) to assign to a 1D subarray vector that is _not_ resizable.
 The importance of this case is that it guarantees that no allocations are performed.
 
 ```cpp
- multi::array<double, 1> const A({3}, 0.0);  // allocates space for 3 elements
- v4({0, 2}) =  multi::blas::copy(v);  // case 3: LHS is not resizable, assigns copies (resizing is not possible or necessary)
+ multi::array<double, 1> cA({3}, 0.0);  // allocates space for 3 elements
+ v4({0, 2}) =  multi::blas::copy(v);  // case 3: LHS is not resizable, assigns copies to subrange (resizing is not possible or necessary, no allocations)
 ```
 
 ### `auto multi::blas::swap(`_complex/real vector_`, `_complex/real vector_`) -> void`
@@ -179,9 +177,12 @@ The importance of this case is that it guarantees that no allocations are perfor
 Swaps the values of two vectors.
 Vector extensions must match.
 
-Note that the utility of `multi::blas::copy` and `multi::blas::swap` is redundant with native features of the library (such as plain assignment, copy construction and swap), the only difference is that these operations will be performed using the BLAS operations elementwise.
+Note that the utility of `multi::blas::copy` and `multi::blas::swap` is redundant with native features of the library (such as plain assignment, copy construction and swap), the only difference is that these operations will be performed using the BLAS operations elementwise one dimensional arrays (vectors) on real or complex data only.
 
-## `auto multi::blas::nrm2(`_complex/real vector_`) -> `_convertible to real scalar_
+These function do not work on 2D arrays (matrices) as the BLAS functions do not support this.
+Copying or swapping 2D arrays with arbitrary layouts using BLAS could be done row-by-row: `std::transform(A2.begin(), A2.end(), B2.begin(), [](auto const& arow) {return multi::blas::copy(arow);})` (or, for efficiency column-by-column depending on the layout).
+
+### `auto multi::blas::nrm2(`_complex/real vector_`) -> `_convertible to real scalar_
 
 Unary operation that computes the norm-2 (Euclidean norm) of a vector.
 The result is convertible to a real scalar

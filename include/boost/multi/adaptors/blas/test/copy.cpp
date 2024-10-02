@@ -5,6 +5,16 @@
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
+#if defined(NDEBUG) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
+	#include <algorithm>  // for transform
+	#include <chrono>     // for duration, high_resolution...
+	#if __has_include(<execution>)
+		#include <execution>  // for execution_policy
+	#endif
+	#include <functional>  // for invoke  // IWYU pragma: keep
+	#include <iostream>    // for basic_ostream, endl, cout
+#endif
+
 #include <complex>   // for operator*, operator+
 #include <iterator>  // for size
 
@@ -85,6 +95,99 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		blas::copy(arr[0], arr[2]);
 		BOOST_TEST( arr[0][2] == 3.0 + 5.0*I );
 	}
+
+#if defined(NDEBUG)
+	/* transform copy */ {
+		multi::array<double, 2> A2D({10000, 10000}, 55.5);
+		auto&&                  A2D_block = A2D({1000, 9000}, {1000, 5000});
+
+		multi::array<double, 2> B2D({10000, 10000}, 66.6);
+		auto&&                  B2D_block = ~(~B2D({1000, 9000}, {1000, 9000})).strided(2);
+
+		using namespace std::chrono;  // NOLINT(google-build-using-namespace)
+
+		std::cout
+			<< "MULTI assignment\n"
+			<< std::invoke([&, start_time = high_resolution_clock::now()] {
+				   B2D_block = A2D_block;
+				   return duration<double>{high_resolution_clock::now() - start_time};
+			   }).count()
+			<< '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+		std::cout << "std::transform BLAS\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 }).count()
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+	#if defined(__cpp_lib_execution) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__)) && !defined(__NVCOMPILER)
+		std::cout << "std::transform par BLAS\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto& row) { return multi::blas::copy(row); });
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 }).count()
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+	#endif
+
+		std::cout << "std::copy\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 }).count()
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+	#if defined(__cpp_lib_execution) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__)) && !defined(__NVCOMPILER)
+		std::cout << "std::copy par\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::copy(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin());
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 }).count()
+				  << '\n';
+
+		std::cout << "std::copy par 2\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::transform(
+							 std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), B2D_block.begin(),
+							 [](auto const& row_a, auto&& row_b) -> auto&& {
+								 std::copy(std::execution::par_unseq, row_a.begin(), row_a.end(), row_b.begin());
+								 return std::forward<decltype(row_b)>(row_b);
+							 }
+						 );
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 }).count()
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+
+		std::cout << "std::copy elements par\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::copy(std::execution::par_unseq, A2D_block.elements().begin(), A2D_block.elements().end(), B2D_block.elements().begin());
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 }).count()
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+	#endif
+
+		std::cout << "Multi element assignment\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 B2D_block.elements() = A2D_block.elements();
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 }).count()
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
+	}
+#endif
 
 	return boost::report_errors();
 }

@@ -670,7 +670,7 @@ cuda-11.4.3:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
     - apt-get -qq update
-    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libtbb-dev
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
     - sh ./cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
@@ -700,7 +700,7 @@ cuda-11.4.3:
 #     - ctest -j 2 || ctest --rerun-failed --output-on-failure
 #   needs: ["cuda"]
 
-cuclang++-16 cuda-11.4.3:
+culang++-16 cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   tags:
@@ -735,7 +735,7 @@ culang++-17 cuda-11.8:
   interruptible: true
   script:
     - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libtbb-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh

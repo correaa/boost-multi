@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 // IWYU pragma: no_include <type_traits>                      // for add_const_t
-#include <utility>      // for as_const
+#include <utility>  // for as_const
 
 namespace multi = boost::multi;
 
@@ -46,7 +46,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	/* test ref(begin, end)*/
 	{
-		multi::array<int, 2> A2D = { {1, 2}, {3, 4} };
+		multi::array<int, 2> A2D = {
+			{1, 2},
+			{3, 4}
+		};
 		BOOST_TEST( A2D[0][0] == 1 );
 
 		multi::const_subarray<int, 2> R2D(A2D.begin(), A2D.end());
@@ -57,7 +60,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// {
 	//  multi::array<int, 2> A2D = {
 	//      {1, 2},
-    //         {3, 4}
+	//         {3, 4}
 	//  };
 	//  BOOST_TEST( A2D[0][0] == 1 );
 
@@ -67,13 +70,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	/* test ref(begin, end)*/
 	{
-		multi::array<int, 2> A2D = { {1, 2}, {3, 4} };
+		multi::array<int, 2> A2D = {
+			{1, 2},
+			{3, 4}
+		};
 		BOOST_TEST( A2D[0][0] == 1 );
 
 		multi::subarray<int, 2> R2D(A2D.begin(), A2D.end());
 		BOOST_TEST( R2D.addressof()== A2D.addressof() );
 		R2D[0][0] = 77;
 	}
+
+	// {
+	//  multi::array<double, 2> A2D({10000, 10000}, 55.5);
+	//  auto const&             A2D_block = A2D({1000, 9000}, {1000, 9000});
+
+	//  multi::array<double, 2> B2D({10000, 10000}, 66.6);
+	//  auto const&             B2D_block = B2D({1000, 9000}, {1000, 9000});
+
+	//  *B2D_block.begin() = *A2D_block.begin();  // doesn't compile, CORRECT
+	// }
 
 	return boost::report_errors();
 }
