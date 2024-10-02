@@ -125,14 +125,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
+	#if defined(__cpp_lib_execution)
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
-						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
+						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto& row) { return multi::blas::copy(row); });
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
+	#endif
 
 		std::cout << "std::copy\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
@@ -144,6 +146,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A2D_block == B2D_block );
 
 	#if 1
+		#if defined(__cpp_lib_execution)
 		std::cout << "std::copy par\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::copy(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin());
@@ -157,7 +160,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 							 std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), B2D_block.begin(),
 							 [](auto const& row_a, auto&& row_b) {
 								 std::copy(std::execution::par_unseq, row_a.begin(), row_a.end(), row_b.begin());
-								 return row_b;
+								 return std::forward<decltype(row_b)>(row_b);
 							 }
 						 );
 						 return duration<double>{high_resolution_clock::now() - start_time};
@@ -174,6 +177,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
+		#endif
 
 		std::cout << "Multi element assignment\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
