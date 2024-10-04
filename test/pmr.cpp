@@ -38,9 +38,19 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		std::pmr::monotonic_buffer_resource mbr{ std::data(buffer), std::size(buffer) };
 		static_assert(std::size(buffer) > 6 * sizeof(double));
 
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
+
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> const arr({ 2, 3 }, &mbr);
 		BOOST_TEST( buffer[ 0] == '0' );  // buffer is intact when initializing without value
 		BOOST_TEST( buffer[13] == '3' );
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 
 		BOOST_TEST( arr.num_elements() == 2*3L );
 		//  BOOST_TEST( arr[0][0] != 0.0 );
@@ -97,16 +107,17 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 
 	auto acc = std::transform_reduce(
 		exts.begin(), exts.end(), int64_t{ 0 },
-		std::plus{},
+		std::plus<>{},
 		[&resp](auto idx) {
 			multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
 				multi::extensions_t<2>{ 1000 - idx % 10, 1000 + idx % 10 },  // MSVC needs multi::extensions_t<2>
 				resp
 			);
 			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
-			auto*        be = arr.data_elements();
-			decltype(be) en = arr.data_elements() + arr.num_elements();
-			return std::accumulate(be, en, int64_t{}, std::plus<int64_t>{});
+
+			auto         be = arr.elements().begin();
+			decltype(be) en = arr.elements().end();
+			return std::accumulate(be, en, int64_t{0}, std::plus<int64_t>{});
 		}
 	);
 
