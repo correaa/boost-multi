@@ -134,6 +134,12 @@ auto mut_trace_generic(Array& arr) -> T {
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	int arr[4][5] = {
 		{  0,  10,  20,  30,  40},
@@ -143,12 +149,6 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	};
 
 	multi::array_ptr<int, 2> const map{&arr};
-
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
 
 	BOOST_TEST( &(*map).operator[](1)[1] == &arr[1][1] );
 	BOOST_TEST( &map->operator[](1)[1] == &arr[1][1] );
