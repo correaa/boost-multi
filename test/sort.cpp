@@ -5,11 +5,13 @@
 
 #include <boost/multi/array.hpp>  // for apply, operator!=, operator==
 
-#include <algorithm>   // for is_sorted, stable_sort
-#include <array>       // for array
+#include <algorithm>  // for is_sorted, stable_sort
+#include <array>      // for array
+#include <cmath>      // for abs
 // #include <functional>  // for __cpp_lib_ranges  // IWYU pragma: keep
-#include <iterator>    // for begin, end
-#include <vector>      // for vector
+#include <iterator>  // for begin, end
+#include <numeric>   // for accumulate
+#include <vector>    // for vector
 // IWYU pragma: no_include <version>  // for __cpp_lib_ranges
 #if defined(__cpp_lib_ranges)
 	#include <concepts>  // IWYU pragma: keep
@@ -92,7 +94,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		));
 
-		std::ranges::sort(~A2D);  // NOLINT(fuchsia-default-arguments-calls)
+		std::ranges::sort(~A2D);                   // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST(std::ranges::is_sorted(~A2D));  // NOLINT(fuchsia-default-arguments-calls)
 
 		static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
@@ -100,7 +102,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 	BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
-		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> vec = {1.0, 2.0, 3.0};        // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::array<double, 2> d2D = {
@@ -214,7 +216,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		// clang-format off
-	multi::array<char, 2> name2({{1, 4}, {0, 2}}, '\0');
+		multi::array<char, 2> name2({{1, 4}, {0, 2}}, '\0');
 		// clang-format on
 
 		BOOST_TEST(  name2.size() == 3 );
@@ -241,5 +243,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( name1 > name2 );
 		BOOST_TEST(!(name1 < name2));
 	}
+
+	BOOST_AUTO_TEST_CASE(accumulate_1d) {
+		{
+			std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+
+			auto const sum = std::accumulate(vec.begin(), vec.end(), double{0.0});
+			BOOST_TEST(std::abs(sum - 6.0) < 1e-10);
+		}
+		{
+			multi::array<double, 1> arr = {1.0, 2.0, 3.0};
+
+			auto const sum = std::accumulate(arr.begin(), arr.end(), double{0.0});
+			BOOST_TEST(std::abs(sum - 6.0) < 1e-10);
+		}
+	}
+
 	return boost::report_errors();
 }
