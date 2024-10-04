@@ -5,10 +5,10 @@
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
-#if defined(NDEBUG) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
+#if defined(NDEBUG)  //  && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 	#include <algorithm>  // for transform
 	#include <chrono>     // for duration, high_resolution...
-	#if __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER >= 20230000))
+	#if __has_include(<execution>) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20230000))
 		#include <execution>  // for execution_policy
 	#endif
 	#include <functional>  // for invoke  // IWYU pragma: keep
@@ -96,6 +96,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[0][2] == 3.0 + 5.0*I );
 	}
 
+#if defined(__INTEL_LLVM_COMPILER)
+	std::cout << __INTEL_LLVM_COMPILER << std::endl;
+#endif
+
 #if defined(NDEBUG)
 	/* transform copy */ {
 		multi::array<double, 2> A2D({10000, 10000}, 55.5);
@@ -125,7 +129,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-	#if defined(__cpp_lib_execution) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__)) && !defined(__NVCOMPILER)
+	#if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto& row) { return multi::blas::copy(row); });
@@ -134,18 +138,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
-	#endif
 
-		std::cout << "std::copy\n"
-				  << std::invoke([&, start_time = high_resolution_clock::now()] {
-						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());
-						 return duration<double>{high_resolution_clock::now() - start_time};
-					 }).count()
-				  << '\n';
-
-		BOOST_TEST( A2D_block == B2D_block );
-
-	#if defined(__cpp_lib_execution) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__)) && !defined(__NVCOMPILER)
 		std::cout << "std::copy par\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::copy(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin());
@@ -177,6 +170,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 	#endif
+
+		std::cout << "std::copy\n"
+				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());
+						 return duration<double>{high_resolution_clock::now() - start_time};
+					 }).count()
+				  << '\n';
+
+		BOOST_TEST( A2D_block == B2D_block );
 
 		std::cout << "Multi element assignment\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
