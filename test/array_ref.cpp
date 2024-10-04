@@ -194,9 +194,15 @@ BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
 
 	auto const& diag = map.diagonal();
 
+	#if defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Warray-bounds"
+	#endif
 	BOOST_TEST( diag.begin() != diag.end() );
-	// -Werror=array-bounds
 	// BOOST_TEST( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 6 + 12 + 18 );
+	#if defined(__GNUC__)
+	#pragma GCC diagnostic pop
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
