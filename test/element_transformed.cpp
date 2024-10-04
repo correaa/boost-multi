@@ -198,14 +198,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& ref = vec.element_transformed(&S::a);
 
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
+
 		ref[0][1] = 990;
 
 		BOOST_TEST( ref[0][1] == 990 );
+
 		BOOST_TEST( vec[0].a[1] == 990 );
 
 		auto const& cref = vec.element_transformed(&S::a);
 		BOOST_TEST( cref[0][1] == 990 );
 		//  cref[0][1] = 990;  // compile error "assignment of read-only location"
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
 	BOOST_AUTO_TEST_CASE(indirect_transformed) {
@@ -251,6 +262,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<index_t, 1> const arr = {4, 3, 2, 1, 0};
 
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
+
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		auto&& indirect_v = arr.element_transformed([&carr](index_t idx) noexcept -> int(&)[3] { return carr[idx]; });
 
@@ -265,6 +282,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(  const_indirect_v[1][2] ==  111110 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) testing legacy type
 
 		//  const_indirect_v[1][2] = 999.0;  // doesn't compile, good!
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
 	return boost::report_errors();

@@ -390,6 +390,11 @@ auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, Forward
 template<class Alloc, class InputIt, class Size, class ForwardIt>
 auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
 	ForwardIt current = d_first;
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
 	try {
 		for(; count > 0; ++first, ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), std::move(*first));
@@ -401,6 +406,9 @@ auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, Forward
 		}
 		throw;
 	}
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
 template<class T, class InputIt, class ForwardIt>

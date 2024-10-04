@@ -238,7 +238,7 @@ else()
 	-Wzero-as-null-pointer-constant
 	# -Wzero-length-bounds # (gcc 12, not in 11)
 	>
-	$<$<AND:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra
+	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-WCFString-literal
 	-WCL4
@@ -517,7 +517,7 @@ else()
 	-Wkeyword-compat -Wkeyword-macro
 	-Wknr-promoted-parameter
 	-Wlanguage-extension-token
-	-Wlarge-by-value-copy
+	-Wno-large-by-value-copy  # subarray references can be large
 	-Wliblto
 	# -Wlinker-warnings (clang 15, not in clang 13)
 	-Wliteral-conversion -Wliteral-range
@@ -603,7 +603,7 @@ else()
 	-Woverlength-strings
 	-Woverloaded-shift-op-parentheses -Woverloaded-virtual
 	# -Woverride-init (not in clang 7)
-	-Woverride-module -Woverriding-method-mismatch -Woverriding-t-option
+	-Woverride-module -Woverriding-method-mismatch -Woverriding-option
 	-Wpacked
 	# -Wpadded (ask for aligment)
 	-Wparentheses

@@ -213,8 +213,18 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 
 	vector3 v3d;
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
 	BOOST_TEST( &reinterpret_cast<double(&)[3]>(v3d)[1] == &std::get<1>(v3d) );
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 #ifndef _MSC_VER  // problem with MVSC 14.3 c++17
 	{
