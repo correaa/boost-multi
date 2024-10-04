@@ -1,4 +1,5 @@
 # https://clang-format-configurator.site
+# Copyright 2020-2024 Alfredo A. Correa
 ---
 Language: Cpp
 AccessModifierOffset: -3
