@@ -8,7 +8,7 @@
 #if defined(NDEBUG)  //  && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 	#include <algorithm>  // for transform
 	#include <chrono>     // for duration, high_resolution...
-	#if __has_include(<execution>) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20230000))
+	#if __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 		#include <execution>  // for execution_policy
 	#endif
 	#include <functional>  // for invoke  // IWYU pragma: keep
