@@ -182,6 +182,11 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
+	#if defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Warray-bounds"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	int arr[4][4] = {
 		{  0,  10,  20,  30},
@@ -194,10 +199,6 @@ BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
 
 	auto const& diag = map.diagonal();
 
-	#if defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Warray-bounds"
-	#endif
 	BOOST_TEST( diag.begin() != diag.end() );
 	// BOOST_TEST( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 6 + 12 + 18 );
 	#if defined(__GNUC__)
@@ -222,6 +223,12 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	int arr[][4] = {
 		{},
@@ -231,12 +238,6 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 		{150, 160, 170, 180},
 		{},
 	};
-
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
 
 	multi::array_ref<int, 2> const map(&arr[1][0], {4, 4});
 
