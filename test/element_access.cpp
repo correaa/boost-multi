@@ -189,7 +189,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(front_back_2D) {
 		multi::array<int, 2> arr({3, 4});
-		std::iota(arr.elements().begin(), arr.elements().end(), int{0});
+		std::iota(arr.elements().begin(), arr.elements().end(), int{});
 
 		BOOST_TEST(  arr.front()[2] ==  arr[0][2] );
 		BOOST_TEST( &arr.front()[2] == &arr[0][2] );

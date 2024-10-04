@@ -603,7 +603,9 @@ else()
 	-Woverlength-strings
 	-Woverloaded-shift-op-parentheses -Woverloaded-virtual
 	# -Woverride-init (not in clang 7)
-	-Woverride-module -Woverriding-method-mismatch -Woverriding-option
+	-Woverride-module -Woverriding-method-mismatch
+	# -Woverriding-option (not in clang 14)
+	# -Woverriding-t-option (not in clang 18)
 	-Wpacked
 	# -Wpadded (ask for aligment)
 	-Wparentheses
