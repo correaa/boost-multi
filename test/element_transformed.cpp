@@ -249,6 +249,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
+
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing legacy types
 		int carr[5][3] = {
 			{ 00,  10,  20},
@@ -261,12 +267,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using index_t = std::vector<int>::size_type;
 
 		multi::array<index_t, 1> const arr = {4, 3, 2, 1, 0};
-
-		#if defined(__clang__)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wunknown-warning-option"
-		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-		#endif
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		auto&& indirect_v = arr.element_transformed([&carr](index_t idx) noexcept -> int(&)[3] { return carr[idx]; });
