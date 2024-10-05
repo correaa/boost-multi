@@ -848,6 +848,8 @@ struct elements_range_t {
 	using       iterator = elements_iterator_t<pointer, layout_type>;
 	using const_iterator = elements_iterator_t<const_pointer, layout_type>;
 
+	// using element        = value_type;
+
  private:
 	pointer base_;
 	layout_type l_;
@@ -860,6 +862,11 @@ struct elements_range_t {
 	constexpr explicit elements_range_t(OtherRange const& other) : elements_range_t{other} {}
 
 	constexpr elements_range_t(pointer base, layout_type const& lyt) : base_{base}, l_{lyt} {}
+
+	constexpr auto base()       ->       pointer {return base_;}
+	constexpr auto base() const -> const_pointer {return base_;}
+
+	constexpr auto layout() const -> layout_type {return l_;}
 
  private:
 
