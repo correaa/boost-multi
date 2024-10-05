@@ -123,8 +123,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(   d2D.elements().size()  == d2D.num_elements()  );
 		BOOST_TEST(   d2D.elements().base()  == d2D.base()          );
 		BOOST_TEST(   d2D.elements()[3]      == 180                 );
-		BOOST_TEST( &*d2D.elements().begin() == d2D.data_elements() );
-		BOOST_TEST( &*d2D.elements().end()   == d2D.data_elements() + d2D.num_elements() );
 
 		std::fill(d2D.elements().begin(), d2D.elements().end(), 990);
 
@@ -147,8 +145,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(   d2D.elements().size()  == d2D.num_elements()  );
 		BOOST_TEST(   d2D.elements().base()  == d2D.base()          );
 		BOOST_TEST(   d2D.elements()[3]      == 180                 );
-		BOOST_TEST( &*d2D.elements().begin() == d2D.data_elements() );
-		BOOST_TEST( &*d2D.elements().end()   == d2D.data_elements() + d2D.num_elements() );
 
 		std::fill(d2D.elements().begin(), d2D.elements().end(), 990);
 

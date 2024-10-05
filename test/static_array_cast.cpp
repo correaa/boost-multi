@@ -84,15 +84,37 @@ class involuter {
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
 	constexpr auto operator<(involuter const& other) const { return it_ < other.it_; }
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto) {
 		it_ += n;
 		return *this;
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }
 	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }
-	constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 
 	constexpr auto operator[](typename involuter::difference_type n) const { return reference{*(it_ + n), f_}; }
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
+	constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 };
 
 #if defined(__cpp_deduction_guides)

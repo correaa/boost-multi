@@ -71,8 +71,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( Af[1][1] == 10 );
 		BOOST_TEST( Af[10][20] == 990 );
-		BOOST_TEST( *Af.data_elements() == 10 );
-		BOOST_TEST( Af.data_elements()[Af.num_elements()-1] == 990 );
+		BOOST_TEST( *Af.elements().begin() == 10 );
+		BOOST_TEST( Af.elements()[Af.num_elements()-1] == 990 );
 		BOOST_TEST( size(Af) == 10 );
 
 		BOOST_TEST( extension(Af).first()  ==  1 );
