@@ -253,7 +253,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// BOOST_TEST( &  (arr.rotated() )     != & arr      );
 			// BOOST_TEST( &  (arr.unrotated().rotated()) == & arr      );
 
-			std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0.1);
+			std::iota(arr.elements().begin(), arr.elements().end(), 0.1);
 			BOOST_TEST( ~~arr == arr );
 			BOOST_TEST( arr.unrotated().rotated() == arr );
 		}

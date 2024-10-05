@@ -670,12 +670,24 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		assert(this->stride() != 0);
 		return *this;
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto operator=(static_array&& other) noexcept -> static_array& {  // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		assert(extensions(other) == static_array::extensions());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
 		assert(this->stride() != 0);
 		return *this;
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
 	template<class TT, class... As>
 	auto operator=(static_array<TT, D, As...> const& other) & -> static_array& {
 		assert(extensions(other) == static_array::extensions());
@@ -1029,11 +1041,21 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	constexpr auto equal_extensions_if_(std::false_type /*false*/, static_array const& /*other*/) { return true; }
 
  public:
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	constexpr auto operator=(static_array&& other) noexcept -> static_array& {
 		assert(equal_extensions_if_(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
 		return *this;
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	template<class TT, class... As,
 		class = std::enable_if_t<std::is_assignable<typename static_array::element_ref, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20

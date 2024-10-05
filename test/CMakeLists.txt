@@ -238,7 +238,7 @@ else()
 	-Wzero-as-null-pointer-constant
 	# -Wzero-length-bounds # (gcc 12, not in 11)
 	>
-	$<$<AND:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra
+	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-WCFString-literal
 	-WCL4
@@ -517,7 +517,7 @@ else()
 	-Wkeyword-compat -Wkeyword-macro
 	-Wknr-promoted-parameter
 	-Wlanguage-extension-token
-	-Wlarge-by-value-copy
+	-Wno-large-by-value-copy  # subarray references can be large
 	-Wliblto
 	# -Wlinker-warnings (clang 15, not in clang 13)
 	-Wliteral-conversion -Wliteral-range
@@ -603,7 +603,9 @@ else()
 	-Woverlength-strings
 	-Woverloaded-shift-op-parentheses -Woverloaded-virtual
 	# -Woverride-init (not in clang 7)
-	-Woverride-module -Woverriding-method-mismatch -Woverriding-t-option
+	-Woverride-module -Woverriding-method-mismatch
+	# -Woverriding-option (not in clang 14)
+	# -Woverriding-t-option (not in clang 18)
 	-Wpacked
 	# -Wpadded (ask for aligment)
 	-Wparentheses
@@ -765,7 +767,7 @@ else()
 	-Wunreachable-code -Wunreachable-code-aggressive -Wunreachable-code-break
 	# -Wunreachable-code-fallthrough (clang 15, not in clang 13)
 	-Wunreachable-code-loop-increment -Wunreachable-code-return
-	-Wunsafe-buffer-usage
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,15>:-Wunsafe-buffer-usage>
 	-Wunsequenced
 	# -Wunsupported-abi (clang 15, not in clang 13)
 	-Wunsupported-abs -Wunsupported-availability-guard -Wunsupported-cb -Wunsupported-dll-base-class-template
