@@ -40,14 +40,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::static_array<int, 1> const arr(il);
 			BOOST_TEST( size(arr) == 3 );
-			BOOST_TEST( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			BOOST_TEST( arr[2] == 56 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
 		{
 			auto const il = {12, 34, 56};
 
 			multi::static_array<int, 1> const arr(begin(il), end(il));
 			BOOST_TEST( size(arr) == 3 );
-			BOOST_TEST( arr[2] == il.begin()[2] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			BOOST_TEST( arr[2] == 56 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
 		{
 			multi::static_array<int, 1> const arr = {12, 34, 56};
