@@ -182,13 +182,13 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
-	#if defined(__GNUC__)
+	#if defined(__GNUC__) || defined(__NVCC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Warray-bounds"
 	#endif
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	int arr[4][4] = {
+	int arr[][4] = {
 		{  0,  10,  20,  30},
 		{ 50,  60,  70,  80},
 		{100, 110, 120, 130},
@@ -320,6 +320,12 @@ BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
 	double arr[4][5] = {
 		{ 0.0,  1.0,  2.0,  3.0,  4.0},
@@ -330,12 +336,6 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): special type
 	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
-
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
 
 	BOOST_TEST( &mar[1][1] == &arr[1][1] );
 
