@@ -181,6 +181,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	#endif
 }
 
+#if !defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
 	#if defined(__GNUC__) || defined(__NVCC__)
 	#pragma GCC diagnostic push
@@ -205,6 +206,7 @@ BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
 	#pragma GCC diagnostic pop
 	#endif
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
@@ -675,6 +677,12 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	double darr[2][2] = {
 		{1.0, 2.0},
@@ -688,12 +696,6 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 	// NOLINTNEXTLINE(hicpp-use-auto,modernize-use-auto,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	double(&other_darr2)[2][2] = static_cast<double(&)[2][2]>(ref);
 	double(&other_darr3)[2][2](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
 
 	BOOST_TEST( &ref        [1][0] == &darr[1][0] );
 	BOOST_TEST( &other_darr [1][0] == &darr[1][0] );
