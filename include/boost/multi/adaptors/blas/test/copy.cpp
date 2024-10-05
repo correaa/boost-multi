@@ -129,7 +129,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-	#if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L) && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
+	#if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L) && !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto& row) { return multi::blas::copy(row); });
