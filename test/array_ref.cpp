@@ -721,18 +721,18 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	double const d2D[4][5] = {
 		{1.0, 2.0},
 		{2.0, 3.0},
 	};
 	multi::array_ref<double, 2, double const*> d2Rce(&d2D[0][0], {4, 5});
-
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
 
 	BOOST_TEST( &d2Rce[2][3] == &d2D[2][3] );
 	BOOST_TEST( d2Rce.size() == 4 );
