@@ -263,6 +263,12 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	}
 	{
 #if defined(__cpp_deduction_guides)
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
+
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
 		double zee[4][5]{
 			{ 0.0,  1.0,  2.0,  3.0,  4.0},
@@ -273,12 +279,6 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]}, {4, 5});
 
 		d2DC[1][1] = -66.0;
-
-		#if defined(__clang__)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wunknown-warning-option"
-		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-		#endif
 
 		BOOST_TEST( std::abs( zee[1][1] - 66.0) < 1E-6 );
 
