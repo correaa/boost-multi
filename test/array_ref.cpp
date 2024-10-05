@@ -648,17 +648,17 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 
 	ref[1][1] = 2.0;
 
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	double darr2[4][5] = {
-		{1.0, 0.0},
-		{2.0, 3.0},
-	};
-
 	#if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wunknown-warning-option"
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 	#endif
+
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	double darr2[4][5] = {
+		{1.0, 0.0},
+		{2.0, 3.0},
+	};
 
 	darr2[1][0] = 2.0;
 
