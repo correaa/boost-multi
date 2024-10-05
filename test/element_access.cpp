@@ -189,7 +189,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(front_back_2D) {
 		multi::array<int, 2> arr({3, 4});
-		std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0);
+		std::iota(arr.elements().begin(), arr.elements().end(), int{});
 
 		BOOST_TEST(  arr.front()[2] ==  arr[0][2] );
 		BOOST_TEST( &arr.front()[2] == &arr[0][2] );
@@ -215,7 +215,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(front_back_1D) {
 		multi::array<int, 1> arr({30}, int{});
-		std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0);
+		std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
 		BOOST_TEST(  arr.front() ==  arr[ 0] );
 		BOOST_TEST( &arr.front() == &arr[ 0] );

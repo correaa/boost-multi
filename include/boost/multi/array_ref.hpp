@@ -572,7 +572,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 			|| ((stride_ < 0) && (0 < ptr_.base() - other.ptr_.base()));  // TODO(correaa) consider the case where stride_ is negative
 	}
 
-	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> lyt, index stride)
+	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> const& lyt, index stride)
 	: ptr_{base, lyt}, stride_{stride} {}
 
 	template<class, dimensionality_type, class, class> friend struct const_subarray;
@@ -596,8 +596,18 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	ptr_type ptr_;
 	stride_type stride_;  // = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?  // TODO(correaa) remove to make type trivial
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	BOOST_MULTI_HD constexpr void decrement_() { ptr_.base_ -= stride_; }
 	BOOST_MULTI_HD constexpr void advance_(difference_type n) { ptr_.base_ += stride_*n; }
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
  public:
 	BOOST_MULTI_HD constexpr auto base() const -> element_ptr {return ptr_.base_;}
@@ -729,7 +739,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	template<typename, class> friend struct elements_iterator_t;
 	template<typename, class> friend struct elements_range_t;
 
-	constexpr elements_iterator_t(pointer base, layout_type lyt, difference_type n)
+	constexpr elements_iterator_t(pointer base, layout_type const& lyt, difference_type n)
 	: base_{base}, l_{lyt}, n_{n}, xs_{l_.extensions()}, ns_{lyt.is_empty()?indices_type{}:xs_.from_linear(n)} {}
 
  public:
@@ -849,13 +859,24 @@ struct elements_range_t {
 	template<class OtherRange, decltype(multi::detail::explicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
 	constexpr explicit elements_range_t(OtherRange const& other) : elements_range_t{other} {}
 
-	constexpr elements_range_t(pointer base, layout_type lyt) : base_{base}, l_{lyt} {}
+	constexpr elements_range_t(pointer base, layout_type const& lyt) : base_{base}, l_{lyt} {}
 
  private:
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto at_aux_(difference_type n) const -> reference {
 		assert( ! is_empty() );
 		return base_[std::apply(l_, l_.extensions().from_linear(n))];
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
  public:
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux_(n);}
@@ -959,7 +980,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using layout_type = Layout;
 
-	BOOST_MULTI_HD constexpr auto layout() const -> layout_type {return array_types<T, D, ElementPtr, Layout>::layout();}
+	BOOST_MULTI_HD constexpr auto layout() const -> decltype(auto) {return array_types<T, D, ElementPtr, Layout>::layout();}
 
 	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
@@ -1064,6 +1085,13 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> const_reference {
 		return const_reference(
 			this->layout().sub(),
@@ -1071,6 +1099,11 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 		// return at_aux_(idx);
 	}  // TODO(correaa) use return type to cast
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
 	//  BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference { return                              at_aux_(idx) ; }
 	//  BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference { return                              at_aux_(idx) ; }
 
@@ -1145,7 +1178,18 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 			this->layout().offset(),
 			this->stride()*(this->size() - n)
 		};
+
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
+
 		return const_subarray(new_layout, this->base_ + n*this->layout().stride() - this->layout().offset());
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
  public:
@@ -1154,6 +1198,13 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto dropped(difference_type n)      & ->    const_subarray { return dropped_aux_(n); }
 
  private:
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
 		// TODO(correaa) remove first == last condition
 		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -1163,6 +1214,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		BOOST_MULTI_ACCESS_ASSERT(this->base_ || ((first*this->layout().stride() - this->layout().offset()) == 0) );  // it is UB to offset a nullptr
 		return const_subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
  public:
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> const_subarray { return sliced_aux_(first, last); }
@@ -1466,8 +1521,18 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// NOLINTEND(google-runtime-operator)
         
  private:
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	BOOST_MULTI_HD constexpr auto begin_aux_() const {return iterator(types::base_                 , this->sub(), this->stride());}
 	               constexpr auto end_aux_  () const {return iterator(types::base_ + this->nelems(), this->sub(), this->stride());}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
  public:
 	       BOOST_MULTI_HD constexpr     auto begin()       &       {return begin_aux_();}
@@ -2744,13 +2809,31 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 			this->layout().offset(),
 			this->stride()*(this->size() - count)
 		};
+
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+		#endif
+
 		return const_subarray{new_layout, this->base_ + (count*this->layout().stride() - this->layout().offset())};
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
  public:
 	constexpr auto dropped(difference_type count) const& -> const_subarray { return dropped_aux_(count); }
 
  private:
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
 		typename types::layout_t new_layout = this->layout();
 		if(this->is_empty()) {
@@ -2762,6 +2845,10 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 
 		return const_subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
  public:
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> basic_const_array /*const*/ { return basic_const_array{sliced_aux_(first, last)};}  // NOLINT(readability-const-return-type)
@@ -2945,8 +3032,18 @@ struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Lay
 	// }
 	// friend constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr BOOST_MULTI_HD auto begin_aux_() const {return iterator{this->base_                  , this->stride()};}
 	constexpr                auto end_aux_  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
  public:
 	BOOST_MULTI_HD constexpr auto  begin() const& -> const_iterator {return begin_aux_();}
@@ -3390,6 +3487,13 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		#endif
 
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) { return true; }
@@ -3399,6 +3503,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		);
 		// return ! operator==(self, other);  // commented due to bug in nvcc 22.11
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
 
 	    BOOST_MULTI_HD constexpr auto data_elements() &      -> typename array_ref::element_ptr       { return array_ref::base_; }
 	    BOOST_MULTI_HD constexpr auto data_elements() &&     -> typename array_ref::element_ptr       { return array_ref::base_; }
@@ -3642,11 +3751,23 @@ template<class In, class T, dimensionality_type N, class TP, class = std::enable
 constexpr auto uninitialized_copy
 // require N>1 (this is important because it forces calling placement new on the pointer
 (In first, In last, multi::array_iterator<T, N, TP> dest) {
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	while(first != last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;
 		++dest;
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
 	return dest;
 }
 

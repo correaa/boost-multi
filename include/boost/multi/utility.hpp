@@ -106,8 +106,18 @@ struct transform_ptr {
 	//  return f_(*p_);  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
 	}
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto operator+=(difference_type n) -> transform_ptr& {p_ += n; return *this;}
 	constexpr auto operator-=(difference_type n) -> transform_ptr& {p_ -= n; return *this;}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	constexpr auto operator+(difference_type n) const -> transform_ptr {transform_ptr ret{*this}; ret += n; return ret;}
 	constexpr auto operator-(difference_type n) const -> transform_ptr {transform_ptr ret{*this}; ret -= n; return ret;}

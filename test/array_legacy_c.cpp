@@ -91,10 +91,21 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 
 #ifndef _MSC_VER  // TODO(correaa) not supported by MSVC 14.3 in c++17 mode
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
 	double arr[5] = { 150.0, 16.0, 17.0, 18.0, 19.0 };  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	BOOST_TEST( &f2(arr) == &arr[2] );
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 #endif
 
 return boost::report_errors();}

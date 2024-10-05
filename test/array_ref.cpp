@@ -44,6 +44,12 @@ using Array =
 
 }  // end namespace boost::multi
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
+
 auto f1d5(int const (&carr)[5]) -> int;   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 auto f1d5(int const (&carr)[5]) -> int {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	return carr[1];
@@ -53,6 +59,10 @@ void f2d54(int const (&carr)[5][4]);   // NOLINT(cppcoreguidelines-avoid-c-array
 void f2d54(int const (&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	BOOST_TEST(carr[0][1] == 1);
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 template<class T>
 auto trace_array_deduce(multi::array<T, 2> const& arr) -> T {
@@ -124,6 +134,12 @@ auto mut_trace_generic(Array& arr) -> T {
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	int arr[4][5] = {
 		{  0,  10,  20,  30,  40},
@@ -159,11 +175,21 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	// *(cmar.base()) = 99.0;
 	// *(cmar[0].base()) = 88.0;
 	// *(cmar.data_elements()) = 99.0;
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
+#if !defined(__NVCC__)
 BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
+	#if defined(__GNUC__) || defined(__NVCC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Warray-bounds"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
-	int arr[4][4] = {
+	int arr[][4] = {
 		{  0,  10,  20,  30},
 		{ 50,  60,  70,  80},
 		{100, 110, 120, 130},
@@ -175,9 +201,12 @@ BOOST_AUTO_TEST_CASE(array_ref_test_ub) {
 	auto const& diag = map.diagonal();
 
 	BOOST_TEST( diag.begin() != diag.end() );
-	// -Werror=array-bounds
 	// BOOST_TEST( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 6 + 12 + 18 );
+	#if defined(__GNUC__)
+	#pragma GCC diagnostic pop
+	#endif
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
@@ -196,6 +225,12 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
 	int arr[][4] = {
 		{},
@@ -207,6 +242,11 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 	};
 
 	multi::array_ref<int, 2> const map(&arr[1][0], {4, 4});
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
 	auto const&                    diag = map.diagonal();
 	BOOST_TEST( diag.begin() != diag.end() );
 	BOOST_TEST( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 60 + 120 + 180 );
@@ -282,6 +322,12 @@ BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
 	double arr[4][5] = {
 		{ 0.0,  1.0,  2.0,  3.0,  4.0},
@@ -294,6 +340,11 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
 
 	BOOST_TEST( &mar[1][1] == &arr[1][1] );
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
 	BOOST_TEST( size(mar   .reindexed(1)) == size(mar) );
 	BOOST_TEST( size(mar[0].reindexed(1)) == size(mar[0]) );
 
@@ -599,11 +650,18 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 
 	ref[1][1] = 2.0;
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	double darr2[4][5] = {
 		{1.0, 0.0},
 		{2.0, 3.0},
 	};
+
 	darr2[1][0] = 2.0;
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
@@ -612,9 +670,19 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 	BOOST_TEST( &(dd[1][2]) == &(darr2[1][2]) );
 	BOOST_TEST(( & ref[1].static_array_cast<double, double const*>()[1] == &ref[1][1] ));
 	BOOST_TEST(( &multi::static_array_cast<double, double const*>(ref[1])[1] == &ref[1][1] ));
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	double darr[2][2] = {
 		{1.0, 2.0},
@@ -634,6 +702,10 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 	BOOST_TEST( &other_darr2[1][0] == &darr[1][0] );
 	BOOST_TEST( &other_darr3[1][0] == &darr[1][0] );
 
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
 // TODO(correaa) adapt this test to Boost Test Lightweight
 // Homebrew GCC-13 terminates rather than having the expected exception caught.
 // MSVC 17.10 fails to compile
@@ -649,6 +721,12 @@ BOOST_AUTO_TEST_CASE(array_ref_cast_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	double const d2D[4][5] = {
 		{1.0, 2.0},
@@ -659,6 +737,10 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
 	BOOST_TEST( &d2Rce[2][3] == &d2D[2][3] );
 	BOOST_TEST( d2Rce.size() == 4 );
 	BOOST_TEST( num_elements(d2Rce) == 20 );
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
@@ -841,6 +923,12 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
 	BOOST_TEST( arr.size() == 5 );
 	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	{
 		auto& carr = static_cast<int(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_TEST( &carr[3] == &arr[3] );
@@ -851,11 +939,21 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
 		int(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_TEST( &carr[3] == &arr[3] );
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 	multi::array<int, 2> arr({5, 4});
 	std::iota(arr.elements().begin(), arr.elements().end(), 0);
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
 
 	{
 		auto& carr = static_cast<int(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
@@ -867,6 +965,10 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 		int(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_TEST( &carr[3][2] == &arr[3][2] );
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
 #ifndef _MSC_VER
@@ -966,6 +1068,12 @@ BOOST_AUTO_TEST_CASE(as_span) {
 #endif
 
 BOOST_AUTO_TEST_CASE(diagonal) {
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
 	int arr[4][3] = {
 		{  0,  10,  20},
@@ -980,6 +1088,10 @@ BOOST_AUTO_TEST_CASE(diagonal) {
 	BOOST_TEST( &mar({0, 3}, {0, 3}).diagonal()[0] == &arr[0][0] );
 	BOOST_TEST( &mar({0, 3}, {0, 3}).diagonal()[1] == &arr[1][1] );
 	BOOST_TEST( &mar({0, 3}, {0, 3}).diagonal()[2] == &arr[2][2] );
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	auto sum = 0;
 

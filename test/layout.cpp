@@ -71,6 +71,12 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
 
 	auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+
 	for(int i = 0; i != 10; ++i) {
 		for(int j = 0; j != 12; ++j) {
 			for(int k = 0; k != 15; ++k) {  // NOLINT(altera-unroll-loops)
@@ -79,6 +85,10 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
 			}
 		}
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
@@ -100,6 +110,13 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
 	auto const js = std::get<0>(rot.extensions());
 	auto const ks = std::get<0>(rot.extensions());
 	#endif
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	for(auto const i : is) {
 		for(auto const j : js) {
 			for(auto const k : ks) {  // NOLINT(altera-unroll-loops)
@@ -108,6 +125,10 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
 			}
 		}
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(linearize) {

@@ -34,10 +34,20 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
 	constexpr auto operator*() const -> reference { return *impl_; }
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator+(difference_type n) const { return ptr{ impl_ + n }; }
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator-(difference_type n) const { return ptr{ impl_ - n }; }
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	//  T& operator[](difference_type n) const{return impl_[n];} // optional
 	using default_allocator_type = std::allocator<T>;
@@ -63,10 +73,20 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
 	constexpr auto operator*() const -> reference { return *impl_; }
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator+(difference_type n) const { return ptr2{ impl_ + n }; }
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator-(difference_type n) const { return ptr2{ impl_ - n }; }
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	//  T& operator[](std::ptrdiff_t n) const{return impl_[n];}  // optional
 	using default_allocator_type = std::allocator<T>;
