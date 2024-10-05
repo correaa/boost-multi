@@ -32,17 +32,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		{
-			// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
-			char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";
-
-			std::pmr::monotonic_buffer_resource mbr{std::data(buffer), std::size(buffer)};
-			static_assert(std::size(buffer) > 6 * sizeof(double));
-
 	#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 	#endif
+
+			// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
+			char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";
+
+			std::pmr::monotonic_buffer_resource mbr{std::data(buffer), std::size(buffer)};
+			static_assert(std::size(buffer) > 6 * sizeof(double));
 
 			multi::array<double, 2, std::pmr::polymorphic_allocator<double>> const arr({2, 3}, &mbr);
 			BOOST_TEST( buffer[ 0] == '0' );  // buffer is intact when initializing without value
