@@ -49,3 +49,8 @@ export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-ori
 
 ## sudo setfacl --modify user:correaa:rw /var/run/docker.sock
 # gitlab-runner exec docker rocm
+
+# to recover from GPU error (e.g. after hibernating)
+# fuser --kill /dev/nvidia-uvm
+# sudo modprobe -r nvidia_uvm 
+# sudo modprobe    nvidia_uvm
