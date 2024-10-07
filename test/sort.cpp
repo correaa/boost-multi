@@ -7,7 +7,8 @@
 
 #include <algorithm>  // for is_sorted, stable_sort
 #include <array>      // for array
-#include <cmath>      // for abs
+#include <cmath>      // for abs  // IWYU pragma: keep
+// IWYU pragma: no_include <cstdlib>  // for abs
 // #include <functional>  // for __cpp_lib_ranges  // IWYU pragma: keep
 #include <iterator>  // for begin, end
 #include <numeric>   // for accumulate
@@ -248,13 +249,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
-			auto const sum = std::accumulate(vec.begin(), vec.end(), double{0.0});
+			auto const sum = std::accumulate(vec.begin(), vec.end(), double{});
 			BOOST_TEST(std::abs(sum - 6.0) < 1e-10);
 		}
 		{
 			multi::array<double, 1> arr = {1.0, 2.0, 3.0};
 
-			auto const sum = std::accumulate(arr.begin(), arr.end(), double{0.0});
+			auto const sum = std::accumulate(arr.begin(), arr.end(), double{});
 			BOOST_TEST(std::abs(sum - 6.0) < 1e-10);
 		}
 	}
