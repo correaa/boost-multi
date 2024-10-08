@@ -118,7 +118,7 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libopenmpi-dev pkg-config valgrind
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libmpich-dev pkg-config valgrind
     - g++ --version
     - cpplint --version
     - cppcheck --version
