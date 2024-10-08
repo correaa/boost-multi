@@ -248,13 +248,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
-			auto const sum = std::accumulate(vec.begin(), vec.end(), double{0.0});
+			auto const sum = std::accumulate(vec.begin(), vec.end(), double{});
 			BOOST_TEST(std::abs(sum - 6.0) < 1e-10);
 		}
 		{
 			multi::array<double, 1> arr = {1.0, 2.0, 3.0};
 
-			auto const sum = std::accumulate(arr.begin(), arr.end(), double{0.0});
+			auto const sum = std::accumulate(arr.begin(), arr.end(), double{});
 			BOOST_TEST(std::abs(sum - 6.0) < 1e-10);
 		}
 	}
