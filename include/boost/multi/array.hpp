@@ -1336,6 +1336,7 @@ struct array : static_array<T, D, Alloc> {
 		class Range,
 		class                                                                 = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<!has_data_elements<std::decay_t<Range>>::value, int> = 0,
+		std::enable_if_t<has_extensions<std::decay_t<Range>>::value, int> = 0,
 		std::enable_if_t<!std::is_base_of<array, std::decay_t<Range>>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	auto operator=(Range&& other) -> array& {  // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
@@ -1556,6 +1557,18 @@ template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = t
 array(MatrixRef) -> array<T, D, Alloc>;
 
 template<typename T, dimensionality_type D, typename P> array(subarray<T, D, P>) -> array<T, D>;
+
+template<
+	class Range, 
+	std::enable_if_t<!has_extensions<Range>::value, int> = 0,
+	typename V = typename std::iterator_traits<decltype(::std::begin(std::declval<Range const&>()))>::value_type
+>
+array(Range) -> array<V, 1>;
+
+template<class Reference>
+auto operator+(Reference&& ref)
+->decltype(array(std::forward<Reference>(ref))) {
+	return array(std::forward<Reference>(ref)); }
 
 #endif  // ends defined(__cpp_deduction_guides)
 
