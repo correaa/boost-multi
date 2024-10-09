@@ -1,4 +1,4 @@
-///usr/bin/c++ -std=c++23 $0 -I../include && ./a.out | gnuplot -persist; exit
+///usr/bin/clang++ -std=c++23 $0 -I../include && ./a.out | gnuplot -persist; exit
 #include <boost/multi/array.hpp>
 
 #include <cmath>  // for std::exp
@@ -19,6 +19,16 @@ void plot(auto const& x, auto const& f, std::string const& title = "") {
 			  << "pause 0.1\n";
 }
 
+template<class Range, typename T>
+auto append(Range const& range, T const& value) {
+	return stv::iota(typename Range::size_type{}, range.size() + 1) | stv::transform([&](auto i) -> decltype(auto) {return (i<range.size()-1)?range[i]:value;});
+}
+
+template<class Range, typename T>
+auto prepend(Range const& range, T const& value) {
+	return stv::iota(typename Range::size_type{}, range.size() + 1) | stv::transform([&](auto i) -> decltype(auto) {return (i==0)?value:range[i-1];});
+}
+
 auto main() -> int {
 
 	using multi::operator+;
@@ -36,12 +46,10 @@ auto main() -> int {
 	// f_my_left = [NaN, f(1:end-1)];
 	// f_my_right = [f(2:end), NaN];
 	// d2f = (f_my_right - 2*f + f_my_left)/(dx^2);
-	multi::array<double, 1> f_my_left(f.extensions());
-	f_my_left({1, f.size()}) = f.taked(f.size() - 1);
-	multi::array<double, 1> f_my_right(f.extensions());
-	f_my_right({0, f.size() - 1}) = f.dropped(1);
-
+	auto f_my_left = +prepend(f.taked(f.size() - 1), NAN);
+	auto f_my_right = +append(f.dropped(1), NAN);
 	auto d2f = +stv::zip_transform([dx2 = dx * dx](auto r, auto m, auto l) { return (r - 2 * m + l) / dx2; }, f_my_right, f, f_my_left);
+
 	plot(x, d2f);
 
 	// dt = 0.01; D = 1;
