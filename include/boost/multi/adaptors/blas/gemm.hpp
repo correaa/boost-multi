@@ -208,7 +208,7 @@ class gemm_iterator {
 	using value_type = typename std::iterator_traits<ItA>::value_type;
 	using pointer = std::nullptr_t;
 	using reference = gemm_reference<decltype((*b_begin_).extensions())>;
-	using iterator_category = typename std::iterator_traits<ItB>::iterator_category;  // std::random_access_iterator_tag;
+	using iterator_category = std::random_access_iterator_tag;
 
 	static_assert( std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<gemm_iterator>::iterator_category>{} );
 
