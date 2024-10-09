@@ -211,7 +211,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[5] == 99 );
 		BOOST_TEST( arr[6] == 99 );
 		BOOST_TEST( arr[7] ==  7 );
-
 	}
 
 	return boost::report_errors();
