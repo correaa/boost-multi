@@ -131,6 +131,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 //  #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L) && !defined(__NVCC__) && !defined(__NVCOMPILER) && !((defined(__clang__) ) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	#if __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER) && !((defined(__clang__) ) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+		#if(__cplusplus >= 202002L)
 		#if !defined(__apple_build_version__)
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
@@ -171,6 +172,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				  << '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
+		#endif
 	#endif
 
 		std::cout << "std::copy\n"
