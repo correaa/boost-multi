@@ -100,11 +100,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::blas::dot_n(&ctx, xx.begin(), xx.size(), xx.begin(), res.base());
 			// multi::blas::nrm2_n(&ctx, xx.begin(), xx.size(), res.base());
 
-			//BOOST_TEST( *res.base() == 1.0*1.0 + 2.0*2.0 + 3.0*3.0 );
+			// BOOST_TEST( *res.base() == 1.0*1.0 + 2.0*2.0 + 3.0*3.0 );
 
-			//multi::blas::nrm2(xx, res);
+			// multi::blas::nrm2(xx, res);
 
-			//BOOST_TEST( *res.base() == 1.0*1.0 + 2.0*2.0 + 3.0*3.0 );
+			// BOOST_TEST( *res.base() == 1.0*1.0 + 2.0*2.0 + 3.0*3.0 );
 		}
 	}
 
