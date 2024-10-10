@@ -69,7 +69,7 @@ auto main() -> int {
 		f_my_right({0, f.size() - 1}) = f({1, f.size()});
 
 		d2f                  = stv::zip_transform([dx2 = dx * dx](auto r, auto m, auto l) { return (r - 2 * m + l) / dx2; }, f_my_right, f, f_my_left);
-		f({1, f.size() - 1}) = stv::zip_transform([dt, D, dx2 = dx * dx](auto eff, auto d2) { return eff + D * dt * d2; }, f({1, f.size() - 1}), d2f({1, f.size() - 1}));
+		f({1, f.size() - 1}) = stv::zip_transform([&](auto eff, auto d2) { return eff + D * dt * d2; }, f({1, f.size() - 1}), d2f({1, f.size() - 1}));
 		plot(x, f, "k=" + std::to_string(k));
 	}
 }
