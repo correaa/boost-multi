@@ -77,29 +77,29 @@ A subarray can also be communicated, for example, a small 2x2 block of the origi
 Replacing `message(AA.elements())` with `message(A({0, 2}, {0, 2}).elements())` and `message(B.elements())` with `message(B({0, 2}, {0, 2}).elements())` will result in a communication of a subset of elements.
 
 ```cpp
- ...
+	...
     if(world_rank == 0) {
         auto const& msg = multi::mpi::message(A({0, 2}, {0, 2}).elements());
         MPI_Send(msg.buffer(), msg.count(), msg.type(), 1, 0, MPI_COMM_WORLD);
- } else if(world_rank == 1) {
+	} else if(world_rank == 1) {
         multi::array<int, 2> B({2, 3});
 
         auto&& msg = multi::mpi::message(B({0, 2}, {0, 2}).elements());
         MPI_Recv(msg.buffer(), msg.count(), msg.type(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         assert(B({0, 2}, {0, 2}) == A({0, 2}, {0, 2})); // only the 2x2 block is communicated
- }
+	}
 ```
 
 ### Rearrangement of elements
 
-It is essential to understand that, due to the way MPI works, the array's value is not what is communicated but only its fundamental elements in a canonical order.
+It is essential to understand that, due to the way MPI works, the array's value is not what is communicated but only its fundamental elements (in a canonical order).
 We emphasize this detail by passing the `.elements()` range for message construction, not the array per se.
 
 A consequence of this is that the user has to ensure consistency in the shape of the receiving end, as in the previous example.
 Communicating a 2x3 array and receiving a 2x2 array will be an error because they have different numbers of elements.
 
-A 2x3 array can be communicated into a 3x2 array, although the elements will be rearranged, which is typically not desired.
+Similarly, a 2x3 array can be communicated into a 3x2 array, although the elements will be rearranged, which is typically not desired.
 
 Still, a reasonable use of rearrangement of elements could involve transposition of the array during communication.
 The key to rearranging the elements is that the layouts can be different in different processes.

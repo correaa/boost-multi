@@ -58,13 +58,13 @@ void test_1d(MPI_Comm comm) {
 
 			auto const B_data = multi::mpi::data(BB.begin());
 
-			MPI_Send(B_data.buffer(), static_cast<int>(BB.size()), B_data.type(), 1, 0, comm);
+			MPI_Send(B_data.buffer(), static_cast<int>(BB.size()), B_data.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
 			multi::array<int, 1> CC(3, 99);  // NOLINT(misc-const-correctness)
 
 			auto const& C_msg = multi::mpi::message(CC.elements());
 
-			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.type(), 0, 0, comm, MPI_STATUS_IGNORE);
+			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
 		}
 	}
@@ -77,13 +77,13 @@ void test_1d(MPI_Comm comm) {
 
 			auto const B_data = multi::mpi::data(BB.begin());
 
-			MPI_Send(B_data.buffer(), static_cast<int>(BB.size()), B_data.type(), 1, 0, comm);
+			MPI_Send(B_data.buffer(), static_cast<int>(BB.size()), B_data.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
 			multi::array<int, 1> CC(3, 99);  // NOLINT(misc-const-correctness)
 
 			auto const C_msg = multi::mpi::message(CC);
 
-			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.type(), 0, 0, comm, MPI_STATUS_IGNORE);
+			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
 		}
 	}
@@ -105,7 +105,7 @@ void test_1d(MPI_Comm comm) {
 
 			auto const C_msg = multi::mpi::message{CC.base(), CC.layout(), MPI_INT};
 
-			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.type(), 0, 0, comm, MPI_STATUS_IGNORE);
+			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<double, 1>({1, 3, 5}) ));
 		}
 	}
@@ -129,13 +129,13 @@ void test_2d(MPI_Comm comm) {
 
 			auto const B_msg = multi::mpi::message(BB.elements());
 
-			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.type(), 1, 0, comm);
+			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
 			multi::array<int, 2> CC({2, 2}, 99);
 
-			auto const C_sk = multi::mpi::skeleton(CC.layout(), MPI_INT);
+			auto const C_sk = multi::mpi::skeleton(CC.elements().layout(), MPI_INT);
 
-			MPI_Recv(CC.base(), C_sk.count(), C_sk.type(), 0, 0, comm, MPI_STATUS_IGNORE);
+			MPI_Recv(CC.base(), C_sk.count(), C_sk.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			std::cout << CC[0][0] << ' ' << CC[0][1] << '\n'
 					  << CC[1][0] << ' ' << CC[1][1] << '\n';
 
@@ -152,15 +152,15 @@ void test_2d(MPI_Comm comm) {
 			auto const& BB = AA({0, 2}, {1, 3});
 			BOOST_TEST(( BB == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
 
-			auto const B_msg = multi::mpi::message<>(BB.elements());
+			auto const B_msg = multi::mpi::message(BB.elements());
 
-			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.type(), 1, 0, comm);
+			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
 			multi::array<int, 2> CC({2, 2}, 99);
 
-			auto const C_sk = multi::mpi::skeleton(CC.layout(), MPI_INT);
+			auto const C_sk = multi::mpi::skeleton(CC.elements().layout(), MPI_INT);
 
-			MPI_Recv(CC.base(), C_sk.count(), C_sk.type(), 0, 0, comm, MPI_STATUS_IGNORE);
+			MPI_Recv(CC.base(), C_sk.count(), C_sk.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			std::cout << CC[0][0] << ' ' << CC[0][1] << '\n'
 					  << CC[1][0] << ' ' << CC[1][1] << '\n';
 
@@ -188,7 +188,7 @@ void test_2d(MPI_Comm comm) {
 
 			auto const C_sk = multi::mpi::skeleton(CC.layout(), MPI_INT);
 
-			MPI_Recv(CC.base(), C_sk.count(), C_sk.type(), 0, 0, comm, MPI_STATUS_IGNORE);
+			MPI_Recv(CC.base(), C_sk.count(), C_sk.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			std::cout << CC[0][0] << ' ' << CC[0][1] << '\n'
 					  << CC[1][0] << ' ' << CC[1][1] << '\n';
 
@@ -215,13 +215,13 @@ void test_2d_int(MPI_Comm comm) {
 
 			auto const B_msg = multi::mpi::message(BB.elements());
 
-			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.type(), 1, 0, comm);
+			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
 			multi::array<int, 2> CC({2, 2}, 99);
 
 			auto const C_sk = multi::mpi::skeleton<int>(CC.layout());
 
-			MPI_Recv(CC.base(), C_sk.count(), C_sk.type(), 0, 0, comm, MPI_STATUS_IGNORE);
+			MPI_Recv(CC.base(), C_sk.count(), C_sk.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			std::cout << CC[0][0] << ' ' << CC[0][1] << '\n'
 					  << CC[1][0] << ' ' << CC[1][1] << '\n';
 
@@ -248,13 +248,13 @@ void test_2d_double(MPI_Comm comm) {
 
 			auto const& B_msg = multi::mpi::message(BB.elements());
 
-			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.type(), 1, 0, comm);
+			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
 			multi::array<double, 2> CC({2, 2}, 99.0);
 
 			auto const C_sk = multi::mpi::skeleton<double>(CC.layout());
 
-			MPI_Recv(CC.base(), C_sk.count(), C_sk.type(), 0, 0, comm, MPI_STATUS_IGNORE);
+			MPI_Recv(CC.base(), C_sk.count(), C_sk.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			std::cout << CC[0][0] << ' ' << CC[0][1] << '\n'
 					  << CC[1][0] << ' ' << CC[1][1] << '\n';
 
@@ -303,13 +303,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 			auto const B_sk = multi::mpi::skeleton(BB.layout(), MPI_INT);
 
-			MPI_Send(BB.base(), B_sk.count(), B_sk.type(), 1, 0, MPI_COMM_WORLD);
+			MPI_Send(BB.base(), B_sk.count(), B_sk.datatype(), 1, 0, MPI_COMM_WORLD);
 		} else if(world_rank == 1) {
 			multi::array<int, 2> CC({2, 2}, 99);
 
-			auto const C_sk = multi::mpi::skeleton(CC.layout(), MPI_INT);
+			auto const C_sk = multi::mpi::skeleton(CC.elements().layout(), MPI_INT);
 
-			MPI_Recv(CC.base(), C_sk.count(), C_sk.type(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv(CC.base(), C_sk.count(), C_sk.datatype(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
 		}
 	}

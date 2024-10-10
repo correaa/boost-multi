@@ -75,7 +75,7 @@ class data {
 	~data() { MPI_Type_free(&datatype_); }
 
 	auto buffer() const { return buf_; }
-	auto type() const { return datatype_; }
+	auto datatype() const { return datatype_; }
 };
 
 template<class Layout>
@@ -136,7 +136,7 @@ class skeleton {
 			sub_type = dt;
 		} else {
 			sk       = skeleton(lyt.sub(), dt, lyt.sub().size());
-			sub_type = sk.type();
+			sub_type = sk.datatype();
 		}
 
 		int dt_size;  // NOLINT(cppcoreguidelines-init-variables)
@@ -179,8 +179,8 @@ class skeleton {
 	}
 
 	auto count() const { return count_; }
-	auto type() const& { return datatype_; }
-	auto type() && { return std::exchange(datatype_, MPI_DATATYPE_NULL); }
+	auto datatype() const& { return datatype_; }
+	auto datatype() && { return std::exchange(datatype_, MPI_DATATYPE_NULL); }
 };
 
 template<class Layout>
@@ -196,7 +196,7 @@ auto create_subarray(Layout const& lyt, MPI_Datatype old_datatype, MPI_Datatype*
 		MPI_Type_create_hvector(
 			lyt.size(), 1,
 			lyt.stride() * old_datatype_size,
-			sk.type(), &vector_datatype
+			sk.datatype(), &vector_datatype
 		);
 
 		MPI_Type_create_resized(vector_datatype, 0, lyt.stride() * old_datatype_size, new_datatype);
@@ -239,8 +239,8 @@ class message : skeleton<void, Size> {
 	auto buffer() const { return buf_; }
 	using skeleton_type::count;
 	// auto count() const { return this->count_; }
-	using skeleton_type::type;
-	// auto type() const { return this->datatype_; }
+	using skeleton_type::datatype;
+	// auto datatype() const { return this->datatype_; }
 
 	// template<std::size_t Index>
 	// std::tuple_element_t<Index, skeleton<>> const& get() const& {
