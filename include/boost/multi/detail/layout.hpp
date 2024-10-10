@@ -411,6 +411,14 @@ template<boost::multi::dimensionality_type D>
 constexpr auto array_size_impl(boost::multi::extensions_t<D> const&)
 	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
 
+extensions_t(multi::size_t) -> extensions_t<1>;
+extensions_t(multi::size_t, multi::size_t) -> extensions_t<2>;
+extensions_t(multi::size_t, multi::size_t, multi::size_t) -> extensions_t<3>;
+extensions_t(multi::size_t, multi::size_t, multi::size_t, multi::size_t) -> extensions_t<4>;
+extensions_t(multi::size_t, multi::size_t, multi::size_t, multi::size_t, multi::size_t) -> extensions_t<5>;
+extensions_t(multi::size_t, multi::size_t, multi::size_t, multi::size_t, multi::size_t, multi::size_t) -> extensions_t<6>;
+extensions_t(multi::size_t, multi::size_t, multi::size_t, multi::size_t, multi::size_t, multi::size_t, multi::size_t) -> extensions_t<7>;
+
 }  // end namespace boost::multi
 
 // Some versions of Clang throw warnings that stl uses class std::tuple_size instead

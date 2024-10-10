@@ -3,11 +3,11 @@
 -->
 # [Boost.] Multi
 
-> **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal.**
+> **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/).**
 
 _© Alfredo A. Correa, 2018-2024_
 
-_Multi_ is a modern C++ library that provides access and manipulation of data in multidimensional arrays for both CPU and GPU memory.
+_Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
 This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
@@ -27,15 +27,15 @@ A D-dimensional array can be interpreted either as an (STL-compatible) sequence 
 
 Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
 or with the standard MDSpan proposal `std::mdspan`.
-This library shares some of their goals and is compatible with them, but it is otherwise designed at a different level of generality and with different priorities (such as the features listed above).
+This library shares some of their goals and is compatible with them, but it is designed at a different level of generality and with other priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
 
 The library's primary concern is with the storage and logic structure of data;
 it doesn't make algebraic or geometric assumptions about the arrays and their elements.
 (It is still a good building block for implementing mathematical algorithms, such as representing algebraic dense matrices in the 2D case.)
 
-The library does not throw exceptions, but it provides basic guarantees (such as no memory-leaks) in their presence (e.g. thrown from allocations).
-Indexing and other logical errors results in undefined behavior, which this library attempts to reflect via assertions.
+The library does not throw exceptions and provides basic guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
+Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
 The library requires C++17 or higher.
 
@@ -44,7 +44,7 @@ The library requires C++17 or higher.
 
 ## Using the library, installation and tests
 
-You can try the library [online](https://godbolt.org/z/dvacqK8jE) before using it.
+Before using the library, you can try it [online](https://godbolt.org/z/dvacqK8jE).
 
 _Multi_ doesn't require installation; a single header `#include <multi/array.hpp>` is enough to use the entire core library.
 _Multi_ has no dependencies (except for the standard C++ library) and can be used immediately after downloading.
@@ -53,8 +53,8 @@ _Multi_ has no dependencies (except for the standard C++ library) and can be use
 git clone https://gitlab.com/correaa/boost-multi.git
 ```
 
-Although installation is not necessary, the library can still be installed with CMake.
-The header (and CMake) files will install in the chosen prefix location (by default in `/usr/local/include/multi` and `/usr/local/share/multi`.)
+Although installation is unnecessary, the library can still be installed with CMake.
+The header (and CMake) files will be installed in the chosen prefix location (by default, `/usr/local/include/multi` and `/usr/local/share/multi`).
 
 ```bash
 cd boost-multi
@@ -63,7 +63,7 @@ cmake ..  # --install-prefix=$HOME/.local
 cmake --install .  # or sudo ...
 ```
 
-_Testing_ the library requires the Boost.Test library, installed for example via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
+_Testing_ the library requires the Boost.Test library, installed for example, via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
 A CMake build system is provided to compile and run basic tests.
 
 ```bash
@@ -77,7 +77,7 @@ Once installed, other CMake projects (targets) can depend on Multi by adding a s
 find_package(multi)  # see https://gitlab.com/correaa/boost-multi#using-the-library-installation-and-tests
 ```
 
-Alternatively to `find_package` the library can be fetched on demand:
+As an alternatively to using `find_package`, the library can be fetched on demand:
 ```cmake
 include(FetchContent)
 FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
@@ -99,7 +99,7 @@ Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, blas, lapack, thurst, or CUDA
-(all can be installed with `sudo apt install libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install blas-devel fftw-devel`.)
+(all of them can be installed with `sudo apt install libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install blas-devel fftw-devel ...`.)
 
 ## Reference documentation of fundamental types
 
@@ -108,7 +108,7 @@ The fundamental types represent multidimensional containers (called `array`), re
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `static_array`).
 
 When using the library, it is simpler to start from `array`, and other types are rarely explicitly used, especially if using `auto`;
-however, it is convenient for documentation to present the classes in a different order since the classes `subarray`, `array_ref`, `static_array`, and `array` have a *is-a* relationship (from left to right). 
+however, it is convenient for documentation to present the classes in a different order since the classes `subarray`, `array_ref`, `static_array`, and `array` have an *is-a* relationship (from left to right). 
 For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref`.
 Furthermore, the *is-a* relationship is implemented through C++ public inheritance, so, for example, a reference of type `subarray<T, D>&` can refer to a variable of type `array<T, D>`.
 
@@ -116,11 +116,11 @@ Furthermore, the *is-a* relationship is implemented through C++ public inheritan
 
 A subarray-reference is part (or a whole) of another larger array.
 It is important to understand that `subarray`s have referential semantics, their elements are not independent of the values of the larger arrays they are part of.
-The elements and structure of a `subarray` can be copies in to a new array (type `array`, see later) to recover value semantics.
+To recover value semantics, the elements and structure of a `subarray` can be copied into a new array (type `array`, see later).
 An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
-(`T`, `D`, `P` initials are used in this sense across the documentation, unless indicated otherwise.)
+(`T`, `D`, and `P` initials are used in this sense across the documentation unless indicated otherwise.)
 
-These have reference semantics, and they behave like "language references" as much as possible.
+Instances of this class have reference semantics and behave like "language references" as much as possible.
 As references, they cannot be rebinded or resized; assignments are always "deep".
 They are characterized by a size that does not change.
 They are usually the result of indexing over other `subarray`s and `array`s (generally of higher dimensions);
@@ -145,7 +145,7 @@ The whole object can be invalidated if the original array is destroyed.
 | Member fuctions   |    |
 |---                |--- |
 | (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements. |
-| `operator=`       | assigns the elements from the source, sizes must match.
+| `operator=`       | assigns the elements from the source; the sizes must match.
 
 It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
 (Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (just like language pointers);
@@ -158,9 +158,9 @@ these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `m
 | `operator>`/`operator>=`  | Greater-than/grater-or-equal lexicographical comparison (requires elements to be comparable)
 
 It is important to note that, in this library, comparisons are always "deep".
-Lexicographical order is defined recursively starting from the first dimension index, and from left to right.
+Lexicographical order is defined recursively, starting from the first dimension index and from left to right.
 For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or ..., etc.
-Lexicographical order applies naturaly if the extensions of `A` and `B` are different; however their dimensionalities must match.
+Lexicographical order applies naturally if the extensions of `A` and `B` are different; however, their dimensionalities must match.
 (See sort examples).
 
 | Element access    |    |
@@ -200,12 +200,12 @@ Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3,
 | `extension`       | returns a contiguous index range describing the set of valid indices
 | `num_elements`    | returns the total number of elements
 
-| Creating views        | (this operations do not copy elements or allocate)    |
+| Creating views        | (these operations do not copy elements or allocate)    |
 |---                    |---  |
 | `broadcasted`         | returns a view of dimensionality `D + 1` obtained by infinite repetition of the original array. (This returns a special kind of subarray with a degenerate layout and no size operation. Takes no argument.)
 | `dropped`             | (takes one integer argument `n`) returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
 | `element_transformed` | creates a view of the array, where each element is transformed according to a function (first and only argument) |
-| `elements`            | a flatted view of all the elements rearranged in a canonical way. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range. Takes no argument.
+| `elements`            | a flatted view of all the elements rearranged canonically. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range. Takes no argument.
 | `rotated/unrotated`   | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j])`. Preserves dimension. The function is cyclic; `D` applications will give the original view. Takes no argument. |
 | `transposed` (same as `operator~`) | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view. Takes no argument.  |
 | `sliced`              | (takes two index arguments `a` and `b`) returns a subarray with elements from index `a` to index `b` (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
@@ -228,7 +228,7 @@ For example, if the `array` from which it originates is destroyed or resized.
 A D-dimensional view of the contiguous pre-existing memory buffer.
 This class doesn't manage the elements it contains, and it has reference semantics (it can't be rebound, assignments are deep, and have the same size restrictions as `subarray`)
 
-Since `array_ref` is-a `subarray`, it inherits all the class methods and types described before, in addition it defines these members below.
+Since `array_ref` is-a `subarray`, it inherits all the class methods and types described before and, in addition, it defines these members below.
 
 | Member types      | same as for `subarray` |
 |---                |---                        |
@@ -307,7 +307,7 @@ For most uses, a `multi::array` should be preferred instead.
 ### class `multi::array<T, D, Alloc = std::allocator<T> >`
 
 An array of integer positive dimension D has value semantics if element type T has value semantics.
-It supports stateful and polymorphic allocators, the default for the special type `multi::pmr::static_array`.
+It supports stateful and polymorphic allocators, which is implied for the special type `multi::pmr::array<T, D>`.
 
 | Member types      | same as for `static_array` |
 |---                |---                         |
@@ -342,11 +342,11 @@ It supports stateful and polymorphic allocators, the default for the special typ
 | Manipulation      |     |
 |---                |---  |
 | `clear`           | Erases all elements from the container. The array is resized to zero size. |
-| `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with a default value `v` with a second argument`reextent({e1, e2, ...}, v)`. First argument is of `extensions_type`, second argument is optional for element types that have a default constructor. 
+| `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`. The first argument is of `extensions_type`, and the second is optional for element types with a default constructor. 
 
 ### class `multi::subarray<T, D, P >::(const_)iterator`
 
-A random-access iterator to subarrays of dimension `D - 1`, generaly used to interact with or implement algorithms.
+A random-access iterator to subarrays of dimension `D - 1`, that is generally used to interact with or implement algorithms.
 They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
 They can be dereferenced by `operator*` and index access `operator[]`, returning objects of lower dimension `subarray<T, D, ... >::reference` (see above).
 Note that this is the same type for all related arrays, for example, `multi::array<T, D, P >::(const_)iterator`.

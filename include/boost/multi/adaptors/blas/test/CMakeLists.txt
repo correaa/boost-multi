@@ -83,22 +83,25 @@ set(TEST_SRCS
 	trsm.cpp
 )
 
+find_package(TBB)
+
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
 	if(ENABLE_CUDA OR FORCE_CXX_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		# set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
-		# target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
+		#set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD 17)
-		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD_REQUIRED ON)
-		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_EXTENSIONS OFF)
 	endif()
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 	# target_link_libraries     (${TEST_EXE} PRIVATE Boost::boost)  # headers)   # unit_test_framework   )
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
+
+	if(TBB_FOUND)
+		target_link_libraries(${TEST_EXE} PRIVATE TBB::tbb)
+	endif()
 
 	# target_compile_options(
 	#   ${TEST_EXE} PRIVATE

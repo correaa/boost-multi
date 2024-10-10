@@ -32,7 +32,7 @@ export CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold"
 
 export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
 
- (mkdir -p .build.g++           && cd .build.g++           && CXX=g++                                                       cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON                                                                                                                     && cmake --build . && ctest -j 12 --output-on-failure) || exit 666
+ (mkdir -p .build.g++           && cd .build.g++           && CXX=g++                                                       cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON                                                                                                                     && cmake --build . && ctest -j 12 --output-on-failure) || exit 666
  (mkdir -p .build.clang++       && cd .build.clang++       && CXX=clang++                                                   cmake .. -DCMAKE_BUILD_TYPE=Debug                                                                                                                                                        && cmake --build . && ctest -j 12 --output-on-failure) || exit 666
  (mkdir -p .build.nvcc          && cd .build.nvcc          &&                                                               cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=g++     -DCMAKE_CXX_COMPILER=g++     -DCMAKE_CUDA_ARCHITECTURES=75       && cmake --build . && ctest -j 12 --output-on-failure) || exit 666
  (mkdir -p .build.circle        && cd .build.circle        && CXX="$HOME/bin/circle"                                        cmake .. -DCMAKE_BUILD_TYPE=Debug   -DDISABLE_MPI=1 -DENABLE_CIRCLE=1                                                                                                                                    && cmake --build . && ctest -j 12 --output-on-failure) || exit 666
@@ -49,3 +49,8 @@ export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-ori
 
 ## sudo setfacl --modify user:correaa:rw /var/run/docker.sock
 # gitlab-runner exec docker rocm
+
+# to recover from GPU error (e.g. after hibernating)
+# fuser --kill /dev/nvidia-uvm
+# sudo modprobe -r nvidia_uvm 
+# sudo modprobe    nvidia_uvm

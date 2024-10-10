@@ -90,7 +90,7 @@ coverage:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_MULTI_STANDALONE=1 -DBUILD_TESTING=0 -DCMAKE_CXX_FLAGS="-DNDEBUG --coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 1 --output-on-failure -T Test
     - ctest -j 1 --output-on-failure -T Coverage
@@ -118,7 +118,7 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libopenmpi-dev pkg-config valgrind
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck cpplint g++ make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libmpich-dev pkg-config valgrind
     - g++ --version
     - cpplint --version
     - cppcheck --version
@@ -280,18 +280,24 @@ vs2019-windows:
   allow_failure: true
   interruptible: true
   script:
-    - choco install -y poshgit
-    # - Install-Module posh-git -Scope CurrentUser -Force
-    - git clone https://github.com/microsoft/vcpkg.git
     - choco --version
     - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
     # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
-    - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
+    # - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
     # - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
-    - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart /components="test" | more
+    # - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart /components="test" | more
+    - choco install -y poshgit
+    # - Install-Module posh-git -Scope CurrentUser -Force
+    - git clone https://github.com/microsoft/vcpkg.git
+    - .\vcpkg\bootstrap-vcpkg.bat
+    - .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
+    - echo "BOOST_ROOT=$(Get-Location)\vcpkg\installed\x64-windows" >> $env:GITHUB_ENV
+    - echo "BOOST_INCLUDEDIR=$(Get-Location)\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
+    - echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
+    - echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -A x64
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -A x64 -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
     - cmake --build build --config Release --parallel 2 --verbose
     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'
     - ctest --test-dir build --output-on-failure -C Release
@@ -667,7 +673,7 @@ cuda-11.4.3:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
     - apt-get -qq update
-    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libtbb-dev
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
     - sh ./cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
@@ -697,7 +703,7 @@ cuda-11.4.3:
 #     - ctest -j 2 || ctest --rerun-failed --output-on-failure
 #   needs: ["cuda"]
 
-cuclang++-16 cuda-11.4.3:
+culang++-16 cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
   tags:
@@ -732,7 +738,7 @@ culang++-17 cuda-11.8:
   interruptible: true
   script:
     - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libtbb-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
@@ -934,43 +940,6 @@ inq cuda:
   timeout: 2 hours 30 minutes
   needs: ["cuda", "inq"]
 
-inq cuda 12.0:
-  allow_failure: false
-  stage: test
-  image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04
-  tags:
-    - non-shared
-    - nvidia-gpu
-  interruptible: true
-  before_script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
-  script:
-    - nvidia-smi
-    # - export CUDA_VISIBLE_DEVICES=0,1
-    - __nvcc_device_query
-    - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
-    - cd inq
-    - cd external_libs/multi
-    - git checkout $CI_COMMIT_SHA
-    - cd ../..
-    - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
-    - mkdir build && cd build
-    - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61  # =75  # =80
-    - cmake --build . --parallel 4 || cmake --build . --parallel 1
-    - apt-get -qq --no-install-recommends -y install python3-numpy
-    - cmake --install .
-    - export OMPI_ALLOW_RUN_AS_ROOT=1
-    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-    - export OMPI_MCA_btl_vader_single_copy_mechanism=none
-    - export OMPI_MCA_rmaps_base_oversubscribe=1
-    - ctest -j 2 --output-on-failure --timeout 2400
-    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
-  timeout: 2 hours 30 minutes
-  needs: ["cuda", "inq"]
-
-
 inq rocm:
   stage: test
   image: rocm/dev-ubuntu-22.04
@@ -1134,10 +1103,10 @@ sonar:
     - g++ --version
     - mkdir build
     # Download sonar-scanner
-    - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.1.0.4477-linux-x64.zip -O sonar-scanner.zip
+    - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.2.1.4610-linux-x64.zip -O sonar-scanner.zip
     # - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
     - unzip -o sonar-scanner.zip
-    - mv sonar-scanner-6.1.0.4477-linux-x64 sonar-scanner
+    - mv sonar-scanner-6.2.1.4610-linux-x64 sonar-scanner
     # - Download build-wrapper
     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper

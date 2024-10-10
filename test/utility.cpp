@@ -145,8 +145,18 @@ BOOST_AUTO_TEST_CASE(test_utility_1d) {
 	using std::rend;
 	BOOST_TEST( *(end(varr)-1) == *(end(marr)-1) );
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+
 	using std::end;
 	BOOST_TEST( *(end(carr)-1) == *(end(marr)-1) );
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(test_utility_2d) {
