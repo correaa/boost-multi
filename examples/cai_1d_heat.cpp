@@ -1,5 +1,5 @@
 #if COMPILE_RUN_INSTRUCTIONS
-${CXX:-c++} -std=c++2b $0 -I../include && ./a.out | gnuplot; exit
+${CXX:-c++} -std=c++2b $0 -I../include && ./a.out; exit
 #endif
 #include <boost/multi/array.hpp>
 
