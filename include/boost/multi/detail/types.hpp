@@ -16,7 +16,8 @@ using size_type = std::make_signed_t<std::size_t>;
 using index               = std::make_signed_t<size_type>;
 using difference_type     = std::make_signed_t<index>;
 
-using dimensionality_type = index;
+using dimensionality_type = index;  // TODO(correaa) 
+using dimensionality_t = index;  // TODO(correaa) consider std::size_t;
 
 }  // end namespace boost::multi
 #endif  // BOOST_MULTI_DETAIL_TYPES_HPP

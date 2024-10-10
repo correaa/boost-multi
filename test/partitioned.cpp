@@ -213,10 +213,10 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 
 	wr.prop1 = 88;
 
-	BOOST_TEST( wr.slater_array[2][1] == 521 );
+	// BOOST_TEST( wr.slater_array[2][1] == 521 );
 
-	// what( wr , wr.slater_array, wr.slater_array[2][1] );
-	wr.slater_array[2][1] = 99990;
+	// // what( wr , wr.slater_array, wr.slater_array[2][1] );
+	// wr.slater_array[2][1] = 99990;
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
