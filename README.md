@@ -89,10 +89,14 @@ target_link_libraries(my_target PUBLIC multi)
 The code requires compilers with standard C++17 support; for reference any of:
 LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
 GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
-Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) and `nvc++` (22.7+),
+Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) 
+and 
+            [`nvc++`](https://godbolt.org/z/6z39PjT47) (22.7+),
 Intel's      `icpx` (2022.0.0+),
 Baxter's    [`circle`](https://www.circle-lang.org/) (build 202+),
-[Zig](https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j) in [c++ mode (v0.9.0+)](https://godbolt.org/z/cKGebsWMG), and
+[Zig](https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j) in [c++ mode (v0.9.0+)](https://godbolt.org/z/cKGebsWMG),
+Edison Desing's [EDG]() [(6.5+)](https://godbolt.org/z/693fxPedx)
+and
 Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.1](https://godbolt.org/z/vrfh1fxWK)).
 
 (Multi code inside CUDA kernel can be compiled with `nvcc` and with [`clang` (in CUDA mode)](https://godbolt.org/z/7dTKdPTxc).
@@ -101,258 +105,8 @@ Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, blas, lapack, thurst, or CUDA
 (all of them can be installed with `sudo apt install libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install blas-devel fftw-devel ...`.)
 
-## Reference documentation of fundamental types
-
-The library interface presents several closely related C++ types (classes) representing arrays.
-The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
-In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `static_array`).
-
-When using the library, it is simpler to start from `array`, and other types are rarely explicitly used, especially if using `auto`;
-however, it is convenient for documentation to present the classes in a different order since the classes `subarray`, `array_ref`, `static_array`, and `array` have an *is-a* relationship (from left to right). 
-For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref`.
-Furthermore, the *is-a* relationship is implemented through C++ public inheritance, so, for example, a reference of type `subarray<T, D>&` can refer to a variable of type `array<T, D>`.
-
-### class `multi::subarray<T, D, P = T* >`
-
-A subarray-reference is part (or a whole) of another larger array.
-It is important to understand that `subarray`s have referential semantics, their elements are not independent of the values of the larger arrays they are part of.
-To recover value semantics, the elements and structure of a `subarray` can be copied into a new array (type `array`, see later).
-An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
-(`T`, `D`, and `P` initials are used in this sense across the documentation unless indicated otherwise.)
-
-Instances of this class have reference semantics and behave like "language references" as much as possible.
-As references, they cannot be rebinded or resized; assignments are always "deep".
-They are characterized by a size that does not change.
-They are usually the result of indexing over other `subarray`s and `array`s (generally of higher dimensions);
-therefore, the library doesn't expose constructors for this class.
-The whole object can be invalidated if the original array is destroyed.
-
-| Member types      |                           |
-|---                |---                        |
-| `value_type`      | `multi::array<T, D - 1, P >` or, for `D == 1`, `iterator_traits<P>::value_type` (usually `T`)   
-| `reference`       | `multi::subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::reference` (usually `T&`) 
-| `const_reference` | `multi::const_subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
-| `index`           | indexing type in the leading dimension (usually `std::diffptr_t`)
-| `size_type`       | describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
-| `index_range`     | describe ranges of indices, constructible from braced indices types or from an `extension_type`. Can be continuous (e.g. `{2, 14}`) or strided (e.g. `{2, 14, /*every*/ 3}`)
-| `extesion_type`   | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to `{0, 10}`). 
-| `difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
-| `pointer`         | `multi::subarray_ptr<T, D-1, P > or, for `D == 1, `P` (usually `T*`)
-| `const_pointer`   | `multi::const_subarray_ptr<T, D-1, P >` or, for `D == 1, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
-| `iterator`        | `multi::array_iterator_t<T, D-1, P >`
-| `const_iterator`  | `multi::const_array_iterator_t<T, D-1, P >`
-
-| Member fuctions   |    |
-|---                |--- |
-| (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements. |
-| `operator=`       | assigns the elements from the source; the sizes must match.
-
-It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
-(Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (just like language pointers);
-these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.)
-
-| Relational fuctions       |    |
-|---                        |--- |
-| `operator==`/`operator!=` | Tells if elements of two `subarray` are equal (and if extensions of the subarrays are the same)
-| `operator<`/`operator<=`  | Less-than/less-or-equal      lexicographical comparison (requires elements to be comparable)
-| `operator>`/`operator>=`  | Greater-than/grater-or-equal lexicographical comparison (requires elements to be comparable)
-
-It is important to note that, in this library, comparisons are always "deep".
-Lexicographical order is defined recursively, starting from the first dimension index and from left to right.
-For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or ..., etc.
-Lexicographical order applies naturally if the extensions of `A` and `B` are different; however, their dimensionalities must match.
-(See sort examples).
-
-| Element access    |    |
-|---                |--- |
-|`operator[]`       | access specified element by index (single argument), returns a `reference` (see above), for `D > 1` it can be used recursively |
-|`front`            | access first element (undefined result if array is empty). Takes no argument.
-|`back`             | access last element  (undefined result if array is empty). Takes no argument.
-|`operator()`       | When used with zero arguments, it returns a `subarray` representing the whole array. When used with one argument, access a specified element by index (return a `reference`) or by range (return a `subarray` of equal dimension). For more than one, arguments are positional and reproduce expected array access syntax from Fortran or Matlab: |
-
-- `subarray::operator()(i, j, k, ...)`, as in `S(i, j, k)` for indices `i`, `j`, `k` is a synonym for `A[i][j][k]`, the number of indices can be lower than the total dimension (e.g., `S` can be 4D).
-Each index argument lowers the dimension by one.
-- `subarray::operator()(ii, jj, kk)`, the arguments can be indices or ranges of indices (`index_range` member type).
-This function allows positional-aware ranges.
-Each index argument lowers the rank by one.
-A special range is given by `multi::_`, which means "the whole range" (also spelled `multi::all`).
-For example, if `S` is a 3D of sizes 10-by-10-by-10, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D array where the first index is fixed at 3, with sizes 6-by-2 referring the subblock in the second and third dimension.
-Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3, 5})` (2-by-10).
-- `operator()()` (no arguments) gives the same array but always as a subarray type (for consistency), `S()` is equivalent to `S(S.extension())` and, in turn to `S(multi::_)` or `S(multi::all)`.
-
-| Structure access  | (Generally used for interfacing with C-libraries)   |
-|---                |--- |
-| `base`            | direct access to underlying memory pointer (`S[i][j]... == S.base() + std::get<0>(S.strides())*i + std::get<1>(S.strides())*j + ...`)
-| `stride`          | return the stride value of the leading dimension, e.g `(&A[1][0][0]... - &A[0][0]...)`
-| `strides`         | returns a tuple with the strides defining the internal layout
-| `layout`          | returns a single layout object with stride and size information |
-
-| Iterators         |    |
-|---                |--- |
-| `begin/cbegin`    | returns (const) iterator to the beginning
-| `end/cend`        | returns (const) iterator to the end
-
-| Capacity          |    |
-|---                |--- |
-| `sizes`           | returns a tuple with the sizes in each dimension
-| `extensions`      | returns a tuple with the extensions in each dimension
-| `size`            | returns the number of subarrays contained in the first dimension |
-| `extension`       | returns a contiguous index range describing the set of valid indices
-| `num_elements`    | returns the total number of elements
-
-| Creating views        | (these operations do not copy elements or allocate)    |
-|---                    |---  |
-| `broadcasted`         | returns a view of dimensionality `D + 1` obtained by infinite repetition of the original array. (This returns a special kind of subarray with a degenerate layout and no size operation. Takes no argument.)
-| `dropped`             | (takes one integer argument `n`) returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
-| `element_transformed` | creates a view of the array, where each element is transformed according to a function (first and only argument) |
-| `elements`            | a flatted view of all the elements rearranged canonically. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range. Takes no argument.
-| `rotated/unrotated`   | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j])`. Preserves dimension. The function is cyclic; `D` applications will give the original view. Takes no argument. |
-| `transposed` (same as `operator~`) | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view. Takes no argument.  |
-| `sliced`              | (takes two index arguments `a` and `b`) returns a subarray with elements from index `a` to index `b` (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
-| `strided`             | (takes one integer argument `s`) returns a subarray skipping `s` elements. Preserves the dimension.
-
-| Creating views by pointer manipulation     |     |
-|---                                         |---  |
-| `static_cast_array<T2, P2 = T2*>(args...)` | produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
-| `reinterpret_cast_array<T2>`               | underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal; `reinterpret_cast_array<T2>(n)` produces a view where the underlying elements are interpreted as an array of `n` elements of type `T2`.
-
-| Creating arrays                     |     |
-|---                                  |---  |
-| `decay` (same as prefix unary `operator+`) | creates a concrete independent `array` with the same dimension and elements as the view. Usually used to force a value type (and forcing a copy of the elements) and avoid the propagation of a reference type in combination with `auto` (e.g., `auto A2_copy = + A[2];`).
-
-A reference `subarray` can be invalidated when its origin array is invalidated or destroyed.
-For example, if the `array` from which it originates is destroyed or resized.
-
-### class `multi::array_ref<T, D, P = T* >`
-
-A D-dimensional view of the contiguous pre-existing memory buffer.
-This class doesn't manage the elements it contains, and it has reference semantics (it can't be rebound, assignments are deep, and have the same size restrictions as `subarray`)
-
-Since `array_ref` is-a `subarray`, it inherits all the class methods and types described before and, in addition, it defines these members below.
-
-| Member types      | same as for `subarray` |
-|---                |---                        |
-
-| Member functions  | same as for `subarray` plus ... |
-|---                |--- |
-| (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size size of the multidimensional array (product of sizes). The default constructor and copy constructor are not exposed. Destructor is trivial since elements are not owned or managed. |
-
-| Element access    | same as for `subarray` |
-|---                |--- |
-
-| Structure access  | same as for `subarray` |
-|---                |--- |
-
-| Iterators         | same as for `subarray`   |
-|---                |--- |
-
-| Capacity          | same as for `subarray`   |
-|---                |--- |
-
-| Creating views    | same as for `subarray`  |
-|---                |---  |
-
-| Creating arrays   | same as for `subarray`  |
-|---                |---  |
-
-| Relational functions   |  same as for `subarray`  |
-|---                |--- |
-
-An `array_ref` can be invalidated if the original buffer is deallocated.
-
-### class `multi::static_array<T, D, Alloc = std::allocator<T> >`
-
-A D-dimensional array that manages an internal memory buffer.
-This class owns the elements it contains; it has restricted value semantics because assignments are restricted to sources with equal sizes.
-Memory is requested by an allocator of type Alloc (standard allocator by default).
-It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::static_array`.
-
-The main feature of this class is that its iterators, subarrays, and pointers do not get invalidated unless the whole object is destroyed.
-In this sense, it is semantically similar to a C-array, except that elements are allocated from the heap.
-It can be useful for scoped uses of arrays and multi-threaded programming and to ensure that assignments do not incur allocations.
-The C++ coreguiles proposed a similar (albeith one-dimensional) class, called [`gsl::dyn_array`](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers).
-
-For most uses, a `multi::array` should be preferred instead.
-
-| Member types      | same as for `array_ref` |
-|---                |---                        |
-
-| Member fuctions   | same as for `array_ref` plus ... |
-|---                |--- |
-| (constructors)    | `static_array::static_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `static_array::static_array(std::initializer_list<...>` constructs the array with elements initialized from a nested list.
-| (destructor)      | Destructor deallocates memory and destroy the elements |
-| `operator=`       | assigns the elements from the source, sizes must match.
-
-| Element access    | same as for `array_ref` |
-|---                |--- |
-
-| Structure access  | same as for `array_ref` |
-|---                |--- |
-
-| Iterators         | same as for `array_ref`   |
-|---                |--- |
-
-| Capacity          | same as for `array_ref`   |
-|---                |--- |
-
-| Creating views    | same as for `array_ref`  |
-|---                |---  |
-
-| Creating arrays   | same as for `array_ref`  |
-|---                |---  |
-
-| Relational fuctions   |  same as for `array_ref`  |
-|---                |--- |
-
-### class `multi::array<T, D, Alloc = std::allocator<T> >`
-
-An array of integer positive dimension D has value semantics if element type T has value semantics.
-It supports stateful and polymorphic allocators, which is implied for the special type `multi::pmr::array<T, D>`.
-
-| Member types      | same as for `static_array` |
-|---                |---                         |
-
-| Member fuctions   |    |
-|---                |--- |
-| (constructors)    | `array::array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements;`array::array(It first, It last)` and `array::array(Range const& rng)`, same for a range of subarrays. `static_array::static_array(std::initializer_list<...>, Alloc = {})` constructs the array with elements initialized from a nested list.
-| (destructor)      | Destructor deallocates memory and destroy the elements |
-| `operator=`       | assigns for a source `subarray`, or from another `array`. `array`s can be moved |
-
-| Element access    | same as for `static_array` |
-|---                |--- |
-
-| Structure access  | same as for `static_array` |
-|---                |--- |
-
-| Iterators         | same as for `static_array`   |
-|---                |--- |
-
-| Capacity          | same as for `static_array`  |
-|---                |--- |
-
-| Creating views    | same as for `static_array`  |
-|---                |---  |
-
-| Creating arrays   | same as for `static_array`  |
-|---                |---  |
-
-| Relational fuctions   |  same as for `static_array`  |
-|---                |--- |
-
-| Manipulation      |     |
-|---                |---  |
-| `clear`           | Erases all elements from the container. The array is resized to zero size. |
-| `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`. The first argument is of `extensions_type`, and the second is optional for element types with a default constructor. 
-
-### class `multi::subarray<T, D, P >::(const_)iterator`
-
-A random-access iterator to subarrays of dimension `D - 1`, that is generally used to interact with or implement algorithms.
-They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
-They can be dereferenced by `operator*` and index access `operator[]`, returning objects of lower dimension `subarray<T, D, ... >::reference` (see above).
-Note that this is the same type for all related arrays, for example, `multi::array<T, D, P >::(const_)iterator`.
-
-`iterator` can be invalidated when its original array is invalidated, destroyed or resized.
-An `iterator` that stems from `static_array` becomes invalid only if the original array was destroyed or out-of-scope. 
+In the following sections we present basic and advanced uses of the libraries. 
+Feel free to jump to the "Reference of fundamental types" section to explore a more exhaustive description of the classes provided by the library.
 
 ## Basic Usage
 
@@ -1301,6 +1055,259 @@ As mentioned in other sections using `auto` and/or `+` appropriately can lead to
 | -------- | ------- | ------- | ------- | ------- |
 | `B = A.elements_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred  |
 | `B = + A.elements_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended. |
+
+## Reference documentation of fundamental types
+
+The library interface presents several closely related C++ types (classes) representing arrays.
+The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
+In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `static_array`).
+
+When using the library, it is simpler to start from `array`, and other types are rarely explicitly used, especially if using `auto`;
+however, it is convenient for documentation to present the classes in a different order since the classes `subarray`, `array_ref`, `static_array`, and `array` have an *is-a* relationship (from left to right). 
+For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref`.
+Furthermore, the *is-a* relationship is implemented through C++ public inheritance, so, for example, a reference of type `subarray<T, D>&` can refer to a variable of type `array<T, D>`.
+
+### class `multi::subarray<T, D, P = T* >`
+
+A subarray-reference is part (or a whole) of another larger array.
+It is important to understand that `subarray`s have referential semantics, their elements are not independent of the values of the larger arrays they are part of.
+To recover value semantics, the elements and structure of a `subarray` can be copied into a new array (type `array`, see later).
+An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
+(`T`, `D`, and `P` initials are used in this sense across the documentation unless indicated otherwise.)
+
+Instances of this class have reference semantics and behave like "language references" as much as possible.
+As references, they cannot be rebinded or resized; assignments are always "deep".
+They are characterized by a size that does not change.
+They are usually the result of indexing over other `subarray`s and `array`s (generally of higher dimensions);
+therefore, the library doesn't expose constructors for this class.
+The whole object can be invalidated if the original array is destroyed.
+
+| Member types      |                           |
+|---                |---                        |
+| `value_type`      | `multi::array<T, D - 1, P >` or, for `D == 1`, `iterator_traits<P>::value_type` (usually `T`)   
+| `reference`       | `multi::subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::reference` (usually `T&`) 
+| `const_reference` | `multi::const_subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
+| `index`           | indexing type in the leading dimension (usually `std::diffptr_t`)
+| `size_type`       | describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
+| `index_range`     | describe ranges of indices, constructible from braced indices types or from an `extension_type`. Can be continuous (e.g. `{2, 14}`) or strided (e.g. `{2, 14, /*every*/ 3}`)
+| `extesion_type`   | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to `{0, 10}`). 
+| `difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
+| `pointer`         | `multi::subarray_ptr<T, D-1, P > or, for `D == 1, `P` (usually `T*`)
+| `const_pointer`   | `multi::const_subarray_ptr<T, D-1, P >` or, for `D == 1, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
+| `iterator`        | `multi::array_iterator_t<T, D-1, P >`
+| `const_iterator`  | `multi::const_array_iterator_t<T, D-1, P >`
+
+| Member fuctions   |    |
+|---                |--- |
+| (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements. |
+| `operator=`       | assigns the elements from the source; the sizes must match.
+
+It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
+(Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (just like language pointers);
+these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.)
+
+| Relational fuctions       |    |
+|---                        |--- |
+| `operator==`/`operator!=` | Tells if elements of two `subarray` are equal (and if extensions of the subarrays are the same)
+| `operator<`/`operator<=`  | Less-than/less-or-equal      lexicographical comparison (requires elements to be comparable)
+| `operator>`/`operator>=`  | Greater-than/grater-or-equal lexicographical comparison (requires elements to be comparable)
+
+It is important to note that, in this library, comparisons are always "deep".
+Lexicographical order is defined recursively, starting from the first dimension index and from left to right.
+For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or ..., etc.
+Lexicographical order applies naturally if the extensions of `A` and `B` are different; however, their dimensionalities must match.
+(See sort examples).
+
+| Element access    |    |
+|---                |--- |
+|`operator[]`       | access specified element by index (single argument), returns a `reference` (see above), for `D > 1` it can be used recursively |
+|`front`            | access first element (undefined result if array is empty). Takes no argument.
+|`back`             | access last element  (undefined result if array is empty). Takes no argument.
+|`operator()`       | When used with zero arguments, it returns a `subarray` representing the whole array. When used with one argument, access a specified element by index (return a `reference`) or by range (return a `subarray` of equal dimension). For more than one, arguments are positional and reproduce expected array access syntax from Fortran or Matlab: |
+
+- `subarray::operator()(i, j, k, ...)`, as in `S(i, j, k)` for indices `i`, `j`, `k` is a synonym for `A[i][j][k]`, the number of indices can be lower than the total dimension (e.g., `S` can be 4D).
+Each index argument lowers the dimension by one.
+- `subarray::operator()(ii, jj, kk)`, the arguments can be indices or ranges of indices (`index_range` member type).
+This function allows positional-aware ranges.
+Each index argument lowers the rank by one.
+A special range is given by `multi::_`, which means "the whole range" (also spelled `multi::all`).
+For example, if `S` is a 3D of sizes 10-by-10-by-10, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D array where the first index is fixed at 3, with sizes 6-by-2 referring the subblock in the second and third dimension.
+Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3, 5})` (2-by-10).
+- `operator()()` (no arguments) gives the same array but always as a subarray type (for consistency), `S()` is equivalent to `S(S.extension())` and, in turn to `S(multi::_)` or `S(multi::all)`.
+
+| Structure access  | (Generally used for interfacing with C-libraries)   |
+|---                |--- |
+| `base`            | direct access to underlying memory pointer (`S[i][j]... == S.base() + std::get<0>(S.strides())*i + std::get<1>(S.strides())*j + ...`)
+| `stride`          | return the stride value of the leading dimension, e.g `(&A[1][0][0]... - &A[0][0]...)`
+| `strides`         | returns a tuple with the strides defining the internal layout
+| `layout`          | returns a single layout object with stride and size information |
+
+| Iterators         |    |
+|---                |--- |
+| `begin/cbegin`    | returns (const) iterator to the beginning
+| `end/cend`        | returns (const) iterator to the end
+
+| Capacity          |    |
+|---                |--- |
+| `sizes`           | returns a tuple with the sizes in each dimension
+| `extensions`      | returns a tuple with the extensions in each dimension
+| `size`            | returns the number of subarrays contained in the first dimension |
+| `extension`       | returns a contiguous index range describing the set of valid indices
+| `num_elements`    | returns the total number of elements
+
+| Creating views        | (these operations do not copy elements or allocate)    |
+|---                    |---  |
+| `broadcasted`         | returns a view of dimensionality `D + 1` obtained by infinite repetition of the original array. (This returns a special kind of subarray with a degenerate layout and no size operation. Takes no argument.)
+| `dropped`             | (takes one integer argument `n`) returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
+| `element_transformed` | creates a view of the array, where each element is transformed according to a function (first and only argument) |
+| `elements`            | a flatted view of all the elements rearranged canonically. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range. Takes no argument.
+| `rotated/unrotated`   | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j])`. Preserves dimension. The function is cyclic; `D` applications will give the original view. Takes no argument. |
+| `transposed` (same as `operator~`) | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view. Takes no argument.  |
+| `sliced`              | (takes two index arguments `a` and `b`) returns a subarray with elements from index `a` to index `b` (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
+| `strided`             | (takes one integer argument `s`) returns a subarray skipping `s` elements. Preserves the dimension.
+
+| Creating views by pointer manipulation     |     |
+|---                                         |---  |
+| `static_cast_array<T2, P2 = T2*>(args...)` | produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
+| `reinterpret_cast_array<T2>`               | underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal; `reinterpret_cast_array<T2>(n)` produces a view where the underlying elements are interpreted as an array of `n` elements of type `T2`.
+
+| Creating arrays                     |     |
+|---                                  |---  |
+| `decay` (same as prefix unary `operator+`) | creates a concrete independent `array` with the same dimension and elements as the view. Usually used to force a value type (and forcing a copy of the elements) and avoid the propagation of a reference type in combination with `auto` (e.g., `auto A2_copy = + A[2];`).
+
+A reference `subarray` can be invalidated when its origin array is invalidated or destroyed.
+For example, if the `array` from which it originates is destroyed or resized.
+
+### class `multi::array_ref<T, D, P = T* >`
+
+A D-dimensional view of the contiguous pre-existing memory buffer.
+This class doesn't manage the elements it contains, and it has reference semantics (it can't be rebound, assignments are deep, and have the same size restrictions as `subarray`)
+
+Since `array_ref` is-a `subarray`, it inherits all the class methods and types described before and, in addition, it defines these members below.
+
+| Member types      | same as for `subarray` |
+|---                |---                        |
+
+| Member functions  | same as for `subarray` plus ... |
+|---                |--- |
+| (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size size of the multidimensional array (product of sizes). The default constructor and copy constructor are not exposed. Destructor is trivial since elements are not owned or managed. |
+
+| Element access    | same as for `subarray` |
+|---                |--- |
+
+| Structure access  | same as for `subarray` |
+|---                |--- |
+
+| Iterators         | same as for `subarray`   |
+|---                |--- |
+
+| Capacity          | same as for `subarray`   |
+|---                |--- |
+
+| Creating views    | same as for `subarray`  |
+|---                |---  |
+
+| Creating arrays   | same as for `subarray`  |
+|---                |---  |
+
+| Relational functions   |  same as for `subarray`  |
+|---                |--- |
+
+An `array_ref` can be invalidated if the original buffer is deallocated.
+
+### class `multi::static_array<T, D, Alloc = std::allocator<T> >`
+
+A D-dimensional array that manages an internal memory buffer.
+This class owns the elements it contains; it has restricted value semantics because assignments are restricted to sources with equal sizes.
+Memory is requested by an allocator of type Alloc (standard allocator by default).
+It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::static_array`.
+
+The main feature of this class is that its iterators, subarrays, and pointers do not get invalidated unless the whole object is destroyed.
+In this sense, it is semantically similar to a C-array, except that elements are allocated from the heap.
+It can be useful for scoped uses of arrays and multi-threaded programming and to ensure that assignments do not incur allocations.
+The C++ coreguiles proposed a similar (albeith one-dimensional) class, called [`gsl::dyn_array`](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers).
+
+For most uses, a `multi::array` should be preferred instead.
+
+| Member types      | same as for `array_ref` |
+|---                |---                        |
+
+| Member fuctions   | same as for `array_ref` plus ... |
+|---                |--- |
+| (constructors)    | `static_array::static_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `static_array::static_array(std::initializer_list<...>` constructs the array with elements initialized from a nested list.
+| (destructor)      | Destructor deallocates memory and destroy the elements |
+| `operator=`       | assigns the elements from the source, sizes must match.
+
+| Element access    | same as for `array_ref` |
+|---                |--- |
+
+| Structure access  | same as for `array_ref` |
+|---                |--- |
+
+| Iterators         | same as for `array_ref`   |
+|---                |--- |
+
+| Capacity          | same as for `array_ref`   |
+|---                |--- |
+
+| Creating views    | same as for `array_ref`  |
+|---                |---  |
+
+| Creating arrays   | same as for `array_ref`  |
+|---                |---  |
+
+| Relational fuctions   |  same as for `array_ref`  |
+|---                |--- |
+
+### class `multi::array<T, D, Alloc = std::allocator<T> >`
+
+An array of integer positive dimension D has value semantics if element type T has value semantics.
+It supports stateful and polymorphic allocators, which is implied for the special type `multi::pmr::array<T, D>`.
+
+| Member types      | same as for `static_array` |
+|---                |---                         |
+
+| Member fuctions   |    |
+|---                |--- |
+| (constructors)    | `array::array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements;`array::array(It first, It last)` and `array::array(Range const& rng)`, same for a range of subarrays. `static_array::static_array(std::initializer_list<...>, Alloc = {})` constructs the array with elements initialized from a nested list.
+| (destructor)      | Destructor deallocates memory and destroy the elements |
+| `operator=`       | assigns for a source `subarray`, or from another `array`. `array`s can be moved |
+
+| Element access    | same as for `static_array` |
+|---                |--- |
+
+| Structure access  | same as for `static_array` |
+|---                |--- |
+
+| Iterators         | same as for `static_array`   |
+|---                |--- |
+
+| Capacity          | same as for `static_array`  |
+|---                |--- |
+
+| Creating views    | same as for `static_array`  |
+|---                |---  |
+
+| Creating arrays   | same as for `static_array`  |
+|---                |---  |
+
+| Relational fuctions   |  same as for `static_array`  |
+|---                |--- |
+
+| Manipulation      |     |
+|---                |---  |
+| `clear`           | Erases all elements from the container. The array is resized to zero size. |
+| `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`. The first argument is of `extensions_type`, and the second is optional for element types with a default constructor. 
+
+### class `multi::subarray<T, D, P >::(const_)iterator`
+
+A random-access iterator to subarrays of dimension `D - 1`, that is generally used to interact with or implement algorithms.
+They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
+They can be dereferenced by `operator*` and index access `operator[]`, returning objects of lower dimension `subarray<T, D, ... >::reference` (see above).
+Note that this is the same type for all related arrays, for example, `multi::array<T, D, P >::(const_)iterator`.
+
+`iterator` can be invalidated when its original array is invalidated, destroyed or resized.
+An `iterator` that stems from `static_array` becomes invalid only if the original array was destroyed or out-of-scope.
 
 # Interoperability with other software
 
