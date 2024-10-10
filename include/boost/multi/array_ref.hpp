@@ -2552,8 +2552,8 @@ class const_subarray<T, 0, ElementPtr, Layout>
 };
 
 template<typename T, typename ElementPtr, class Layout>
-struct const_subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
-: multi::random_iterable<subarray<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout> >  // paren for msvc 19.14?
+struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
+: multi::random_iterable<subarray<T, 1, ElementPtr, Layout> >  // paren for msvc 19.14?
 , array_types<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout> {  // paren for msvc 19.14?
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
