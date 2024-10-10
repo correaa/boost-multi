@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
 	BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 
 	#if defined(__GLIBCXX__)
-	BOOST_TEST( static_cast<void*>(&buffer[0]) == static_cast<void*>(&Aarr[0][0]) );
+	BOOST_TEST( static_cast<void*>(buffer.data()) == static_cast<void*>(&Aarr[0][0]) );
 	#elif defined(_LIBCPP_VERSION)
 	BOOST_TEST( static_cast<void*>(&buffer[4]) == static_cast<void*>(&Aarr[0][0]) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	#endif
