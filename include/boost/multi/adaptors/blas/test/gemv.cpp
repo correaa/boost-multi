@@ -5,22 +5,24 @@
 #include <boost/multi/adaptors/blas/axpy.hpp>  // for operator-
 #include <boost/multi/adaptors/blas/core.hpp>  // for gemv, context, dot, nrm2
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref
-#include <boost/multi/adaptors/blas/gemm.hpp>  // for operator*, gemm_range
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
 
+#include <boost/core/lightweight_test.hpp>
+
 // #include <boost/mpl/list.hpp>  // for list
 
-#include <algorithm>  // for generate, transform
-// IWYU pragma: no_include <cmath>  // for abs
+#include <algorithm>    // for generate, transform
+#include <cmath>        // for abs
 #include <complex>      // for complex, operator*
-#include <cstdlib>  // for abs
 #include <iterator>     // for size, begin
+// IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for inner_product
 #include <random>       // for normal_distribution
 #include <type_traits>  // for is_same_v
 #include <utility>      // for move, forward
+// IWYU pragma: no_include <stdlib.h>       // for abs
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
@@ -36,19 +38,6 @@ auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identi
 	return std::forward<VO>(y);
 }
 
-// #ifdef _MULTI_USING_BLAS_MKL
-// #include <mkl/mkl_service.h>  // for mkl_free_buffers
-// struct Fixture {
-//   Fixture()   {
-//     mkl_disable_fast_mm();  // reported to solve memory leaks, but it doesn't with BLA_VENDOR=Intel10_64ilp (non seq) and INTEL_MKL_VERSION 20200004
-//   }
-//   ~Fixture()  { mkl_free_buffers(); }
-// };
-
-// BOOST_GLOBAL_FIXTURE(Fixture);
-// #endif
-
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
@@ -382,7 +371,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		auto const B = [](auto array) {
 			// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp) test purposes
-			auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable { return complex{gauss(gen), gauss(gen)}; };
+			auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable {
+				return complex{gauss(gen), gauss(gen)};
+			};
 			std::generate(array.elements().begin(), array.elements().end(), rand);
 			return array;
 		}(multi::array<complex, 2>({3, 3}));

@@ -16,6 +16,7 @@
 #include <cmath>    // for NAN
 #include <complex>  // for operator*, opera...
 #include <cstdlib>  // for NAN, abs
+// IWYU pragma: no_include <memory>   // for allocator
 
 namespace multi = boost::multi;
 
