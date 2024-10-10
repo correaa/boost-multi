@@ -102,8 +102,8 @@ Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([
 (Multi code inside CUDA kernel can be compiled with `nvcc` and with [`clang` (in CUDA mode)](https://godbolt.org/z/7dTKdPTxc).
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 
-Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, blas, lapack, thurst, or CUDA
-(all of them can be installed with `sudo apt install libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install blas-devel fftw-devel ...`.)
+Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, , lapack, thurst, or CUDA
+(all of them can be installed with `sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install -devel fftw-devel ...`.)
 
 In the following sections we present basic and advanced uses of the libraries. 
 Feel free to jump to the "Reference of fundamental types" section to explore a more exhaustive description of the classes provided by the library.
@@ -991,7 +991,7 @@ These are useful to create "projections" or "views" of data elements.
 In the following example a "transforming pointer" is used to create a conjugated view of the elements.
 In combination with a transposed view, it can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
 We can adapt the library type `boost::transform_iterator` to save coding, but other libraries can be used also.
-The hermitized view is read-only, but with additional work, a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
+The hermitized view is read-only, but with additional work, a read-write view can be created (see `multi::::hermitized` in multi-adaptors).
 
 ```cpp
 constexpr auto conj = [](auto const& c) {return std::conj(c);};
@@ -1967,18 +1967,19 @@ auto const [stride1, stride2] = arr.strides();
 fun(arr.base(), size1, size2, stride1, stride2);
 ```
 
-Although the recipe can be applied straightforwardly, different libraries make various assumptions about memory layouts (e.g., BLAS 2D arrays assume that the second stride is 1), and some might take stride information in a different way (e.g., FFTW doesn't use strides but stride products).
+Although the recipe can be applied straightforwardly, different libraries make various assumptions about memory layouts (e.g.,  2D arrays assume that the second stride is 1), and some might take stride information in a different way (e.g., FFTW doesn't use strides but stride products).
 Furthermore, some arguments may need to be permuted if the function expects arrays in column-major (Fortran) ordering.
 For this reason, the library is accompanied by a series of adaptor libraries to popular C-based libraries, which can be found in the `include/multi/adaptors/` subdirectory.
 
-* [BLAS](include/boost/multi/adaptors/blas/README.md)
-* Lapack
-* FFTW/cuFFT
+### [BLAS Adator](include/boost/multi/adaptors/blas/README.md)
+### Lapack
+### [MPI Adaptor](include/boost/multi/adaptors/mpi/README.md)
+### FFTW/cuFFT
 
-* cuBLAS
-* cuFFT
+### cuBLAS
+### cuFFT
 
-* TotalView: visual debugger (commercial), popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
+### TotalView: visual debugger (commercial), popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
 To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
 
 # Technical points
