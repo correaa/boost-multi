@@ -5,7 +5,6 @@
 #include <boost/multi/adaptors/blas/axpy.hpp>  // for operator-
 #include <boost/multi/adaptors/blas/core.hpp>  // for gemv, context, dot, nrm2
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref
-#include <boost/multi/adaptors/blas/gemm.hpp>  // for operator*, gemm_range
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
