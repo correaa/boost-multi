@@ -5,10 +5,12 @@
 
 #include <boost/multi/array.hpp>  // for array, subarray, static_array
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <array>        // for array  // IWYU pragma: keep
 #include <complex>      // for complex, operator*, operator+
 #include <cstddef>      // for ptrdiff_t
-#include <cstdlib>                           // for abs
+#include <cstdlib>      // for abs
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for iterator_traits
 #include <memory>       // for pointer_traits
@@ -40,10 +42,10 @@ class involuted {
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{ref} {}
-	involuted(involuted const&) = default;
-	involuted(involuted &&) noexcept = default;
+	involuted(involuted const&)     = default;
+	involuted(involuted&&) noexcept = default;
 
-	auto operator=(involuted&&) -> involuted& = delete;
+	auto operator=(involuted&&) -> involuted&      = delete;
 	auto operator=(involuted const&) -> involuted& = default;
 	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return) simulate reference
 		r_ = Involution{}(other);
@@ -114,18 +116,18 @@ class involuter {
 		return *this;
 	}
 
-	#if defined(__clang__)
+#if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wunknown-warning-option"
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
+#endif
 
 	constexpr auto operator+(difference_type n) const { return involuter{it_ + n}; }
 	constexpr auto operator-(difference_type n) const { return involuter{it_ - n}; }
 
-	#if defined(__clang__)
+#if defined(__clang__)
 	#pragma clang diagnostic pop
-	#endif
+#endif
 };
 
 template<class Ref> using negated = involuted<std::negate<>, Ref>;
@@ -205,138 +207,191 @@ class indirect_real {
 
 }  // namespace test
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-BOOST_AUTO_TEST_CASE(transformed_array) {
-	namespace multi = boost::multi;
-	{
-		using complex = std::complex<double>;
-		complex cee{1.0, 2.0};
+	BOOST_AUTO_TEST_CASE(transformed_array) {
+		namespace multi = boost::multi;
+		{
+			using complex = std::complex<double>;
+			complex cee{1.0, 2.0};
 
-		auto&& zee = test::conjd<complex&>{cee};
-		BOOST_TEST(( zee == complex{1.0, -2.0} ));
+			auto&& zee = test::conjd<complex&>{cee};
+			BOOST_TEST(( zee == complex{1.0, -2.0} ));
 
-		BOOST_TEST( std::abs( real(zee) - +1.0 ) < 1E-6);
-		BOOST_TEST( std::abs( imag(zee) - -2.0 ) < 1E-6);
-	}
-	{
-		int val = 50;
+			BOOST_TEST( std::abs( real(zee) - +1.0 ) < 1E-6);
+			BOOST_TEST( std::abs( imag(zee) - -2.0 ) < 1E-6);
+		}
+		{
+			int val = 50;
 
-		auto&& negd_a = test::involuted<test::neg_t, int&>(test::neg, val);
-		BOOST_TEST( negd_a == -50 );
+			auto&& negd_a = test::involuted<test::neg_t, int&>(test::neg, val);
+			BOOST_TEST( negd_a == -50 );
 
-		negd_a = 100;
-		BOOST_TEST( negd_a == 100 );
-		BOOST_TEST( val == -100 );
-	}
-	{
-		multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
-		auto&&                  ref = arr.static_array_cast<double, double const*>();
-		BOOST_TEST( std::abs(ref[2] - arr[2]) < 1E-6 );
-	}
-	{
-		multi::array<double, 1> const arr      = {+0.0, +1.0, +2.0, +3.0, +4.0};
-		multi::array<double, 1>       neg      = {-0.0, -1.0, -2.0, -3.0, -4.0};
-		auto&&                        negd_arr = arr.static_array_cast<double, test::negater<double*>>();
-		BOOST_TEST( negd_arr[2] == neg[2] );
-	}
-	{
-		multi::array<double, 2> const arr = {
-			{ +0.0,  +1.0,  +2.0,  +3.0,  +4.0},
-			{ +5.0,  +6.0,  +7.0,  +8.0,  +9.0},
-			{+10.0, +11.0, +12.0, +13.0, +14.0},
-			{+15.0, +16.0, +17.0, +18.0, +19.0},
-		};
-		multi::array<double, 2> neg = {
-			{ -0.0,  -1.0,  -2.0,  -3.0,  -4.0},
-			{ -5.0,  -6.0,  -7.0,  -8.0,  -9.0},
-			{-10.0, -11.0, -12.0, -13.0, -14.0},
-			{-15.0, -16.0, -17.0, -18.0, -19.0},
-		};
-		// auto&& negd_arr = arr.static_array_cast<double, test::negater<double*>>();  // not compile, ok, read only
-		auto&& negd_arr = arr.static_array_cast<double, test::negater<double const*>>();
-		BOOST_TEST( negd_arr[1][1] == neg[1][1] );
-		BOOST_TEST( negd_arr[1][1] == -6.0 );
-		// negd_arr2[1][1] = 3.0;  // can't compile, ok, read-only
-	}
-	{
+			negd_a = 100;
+			BOOST_TEST( negd_a == 100 );
+			BOOST_TEST( val == -100 );
+		}
+		{
+			multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
+			auto&&                  ref = arr.static_array_cast<double, double const*>();
+			BOOST_TEST( std::abs(ref[2] - arr[2]) < 1E-6 );
+		}
+		{
+			multi::array<double, 1> const arr      = {+0.0, +1.0, +2.0, +3.0, +4.0};
+			multi::array<double, 1>       neg      = {-0.0, -1.0, -2.0, -3.0, -4.0};
+			auto&&                        negd_arr = arr.static_array_cast<double, test::negater<double*>>();
+			BOOST_TEST( negd_arr[2] == neg[2] );
+		}
+		{
+			multi::array<double, 2> const arr = {
+				{ +0.0,  +1.0,  +2.0,  +3.0,  +4.0},
+				{ +5.0,  +6.0,  +7.0,  +8.0,  +9.0},
+				{+10.0, +11.0, +12.0, +13.0, +14.0},
+				{+15.0, +16.0, +17.0, +18.0, +19.0},
+			};
+			multi::array<double, 2> neg = {
+				{ -0.0,  -1.0,  -2.0,  -3.0,  -4.0},
+				{ -5.0,  -6.0,  -7.0,  -8.0,  -9.0},
+				{-10.0, -11.0, -12.0, -13.0, -14.0},
+				{-15.0, -16.0, -17.0, -18.0, -19.0},
+			};
+			// auto&& negd_arr = arr.static_array_cast<double, test::negater<double*>>();  // not compile, ok, read only
+			auto&& negd_arr = arr.static_array_cast<double, test::negater<double const*>>();
+			BOOST_TEST( negd_arr[1][1] == neg[1][1] );
+			BOOST_TEST( negd_arr[1][1] == -6.0 );
+			// negd_arr2[1][1] = 3.0;  // can't compile, ok, read-only
+		}
+		{
 #if defined(__cpp_deduction_guides)
-		#if defined(__clang__)
+	#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-		#endif
+	#endif
 
-		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
-		double zee[4][5]{
-			{ 0.0,  1.0,  2.0,  3.0,  4.0},
-			{ 5.0,  6.0,  7.0,  8.0,  9.0},
-			{10.0, 11.0, 12.0, 13.0, 14.0},
-			{15.0, 16.0, 17.0, 18.0, 19.0},
-		};
-		auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]}, {4, 5});
+			// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
+			double zee[4][5]{
+				{ 0.0,  1.0,  2.0,  3.0,  4.0},
+				{ 5.0,  6.0,  7.0,  8.0,  9.0},
+				{10.0, 11.0, 12.0, 13.0, 14.0},
+				{15.0, 16.0, 17.0, 18.0, 19.0},
+			};
+			auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]}, {4, 5});
 
-		d2DC[1][1] = -66.0;
+			d2DC[1][1] = -66.0;
 
-		BOOST_TEST( std::abs( zee[1][1] - 66.0) < 1E-6 );
+			BOOST_TEST( std::abs( zee[1][1] - 66.0) < 1E-6 );
 
-		#if defined(__clang__)
+	#if defined(__clang__)
 		#pragma clang diagnostic pop
-		#endif
+	#endif
 
 #endif
-		{
-			using complex = std::complex<double>;
+			{
+				using complex = std::complex<double>;
 
-			multi::array<complex, 2> d2D = {
-				{ {0.0, 3.0},  {1.0, 9.0},  {2.0, 4.0},  {3.0, 0.0},  {4.0, 0.0}},
-				{ {5.0, 0.0},  {6.0, 3.0},  {7.0, 5.0},  {8.0, 0.0},  {9.0, 0.0}},
-				{ {1.0, 4.0},  {9.0, 1.0}, {12.0, 0.0}, {13.0, 0.0}, {14.0, 0.0}},
-				{{15.0, 0.0}, {16.0, 0.0}, {17.0, 0.0}, {18.0, 0.0}, {19.0, 0.0}},
-			};
+				multi::array<complex, 2> d2D = {
+					{ {0.0, 3.0},  {1.0, 9.0},  {2.0, 4.0},  {3.0, 0.0},  {4.0, 0.0}},
+					{ {5.0, 0.0},  {6.0, 3.0},  {7.0, 5.0},  {8.0, 0.0},  {9.0, 0.0}},
+					{ {1.0, 4.0},  {9.0, 1.0}, {12.0, 0.0}, {13.0, 0.0}, {14.0, 0.0}},
+					{{15.0, 0.0}, {16.0, 0.0}, {17.0, 0.0}, {18.0, 0.0}, {19.0, 0.0}},
+				};
 
-			auto&& d2Dreal = d2D.reinterpret_array_cast<double>();
-			BOOST_TEST( std::abs( d2Dreal[2][1] - 9.0) < 1E-6 );
+				auto&& d2Dreal = d2D.reinterpret_array_cast<double>();
+				BOOST_TEST( std::abs( d2Dreal[2][1] - 9.0) < 1E-6 );
 
-			d2Dreal[2][1] = 12.0;
-			BOOST_TEST( d2D[2][1] == complex(12.0, 1.0) );
+				d2Dreal[2][1] = 12.0;
+				BOOST_TEST( d2D[2][1] == complex(12.0, 1.0) );
 
-			auto&& d2DrealT = d2D.rotated().reinterpret_array_cast<double>();
-			BOOST_TEST( std::abs( d2DrealT[2][1] -  7.0) < 1E-6);
+				auto&& d2DrealT = d2D.rotated().reinterpret_array_cast<double>();
+				BOOST_TEST( std::abs( d2DrealT[2][1] -  7.0) < 1E-6);
 
-			multi::array<double, 2> const d2Dreal_copy{d2D.template reinterpret_array_cast<double>()};
-			BOOST_TEST( d2Dreal_copy == d2Dreal );
-		}
-		{
-			using complex = std::complex<double>;
+				multi::array<double, 2> const d2Dreal_copy{d2D.template reinterpret_array_cast<double>()};
+				BOOST_TEST( d2Dreal_copy == d2Dreal );
+			}
+			{
+				using complex = std::complex<double>;
 
-			auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
+				auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 
-			multi::array<complex, 2> arr = {
-				{1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I},
-				{9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I},
-			};
-			auto conjd_arr = arr.static_array_cast<complex, test::conjr<complex*>>();
-			BOOST_TEST( conjd_arr[1][2] == conj(arr[1][2]) );
+				multi::array<complex, 2> arr = {
+					{1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I},
+					{9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I},
+				};
+				auto conjd_arr = arr.static_array_cast<complex, test::conjr<complex*>>();
+				BOOST_TEST( conjd_arr[1][2] == conj(arr[1][2]) );
+			}
 		}
 	}
-}
 
 #if !defined(__NVCC__) && defined(__GNU_MINOR__) && (__GNUC_MINOR__ > 7)
-BOOST_AUTO_TEST_CASE(transformed_to_string) {
-	namespace multi = boost::multi;
+	BOOST_AUTO_TEST_CASE(transformed_to_string) {
+		namespace multi = boost::multi;
 
-	multi::array<int, 2> const AA = {
-		{1, 2},
-		{3, 4},
-	};
-	multi::array<std::string, 2> BB = AA.element_transformed([](int ee) noexcept { return std::to_string(ee); });
+		multi::array<int, 2> const AA = {
+			{1, 2},
+			{3, 4},
+		};
+		multi::array<std::string, 2> BB = AA.element_transformed([](int ee) noexcept { return std::to_string(ee); });
 
-	BOOST_TEST( BB[1][1] == "4" );
-}
+		BOOST_TEST( BB[1][1] == "4" );
+	}
 #endif
-return boost::report_errors();}
+
+	/* accumulate rows */
+	{
+		namespace multi = boost::multi;
+
+		multi::array<int, 2> A({100, 200}, 1);
+
+		multi::array<int, 1> v({200}, 0);
+		for(auto i : A.extension()) {
+		    for(auto j : v.extension()) {
+		        v[j] += A[i][j];
+		    }
+		}
+
+		// auto const v = std::reduce(
+		//     A.begin(), A.end(),
+		//     multi::array<int, 1>({200}, 0),
+		//     [](auto&& acc, auto&& row) {
+		//         std::transform(
+		//             acc.begin(), vv.end(), row.begin(), acc.begin(),
+		//             [](auto const& e1, auto const& e2) {
+		//                 return e1 + e2;
+		//             }
+		//         );
+		//         return acc;
+		//     }
+		// );
+
+		// auto const v = std::transform_reduce(
+		//     A.begin(), A.end(),
+		//     multi::array<int, 1>({200}, 0),
+		//     [](auto&& vv, auto&& row) {
+		//         std::transform(
+		//             vv.begin(), vv.end(), row.begin(), vv.begin(),
+		//             [](auto const& e1, auto const& e2) {
+		//                 return e1 + e2;
+		//             }
+		//         );
+		//         return vv;
+		//     },
+		//     [](auto&& vv) {return vv;}
+		// );
+
+		// multi::array<int, 1> v({200}, 0);
+
+		// std::transform(
+		//     (~A).begin(), (~A).end(), v.begin(),
+		//     [](auto const& col) { return std::reduce(col.begin(), col.end()); }
+		// );
+
+		BOOST_TEST(v[0] == 100);
+	}
+
+	return boost::report_errors();
+}
 
 #undef BOOST_MULTI_DECLRETURN
