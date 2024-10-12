@@ -346,8 +346,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> Arr({100, 200}, 1);
 
 		multi::array<int, 1> vv({200}, 0);
-		for(auto i : Arr.extension()) {
-		    for(auto j : vv.extension()) {
+		for(auto i : Arr.extension()) {  // NOLINT(altera-unroll-loops)
+		    for(auto j : vv.extension()) {  // NOLINT(altera-unroll-loops)
 		        vv[j] += Arr[i][j];
 		    }
 		}
