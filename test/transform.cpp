@@ -343,12 +343,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		namespace multi = boost::multi;
 
-		multi::array<int, 2> A({100, 200}, 1);
+		multi::array<int, 2> Arr({100, 200}, 1);
 
-		multi::array<int, 1> v({200}, 0);
-		for(auto i : A.extension()) {
-		    for(auto j : v.extension()) {
-		        v[j] += A[i][j];
+		multi::array<int, 1> vv({200}, 0);
+		for(auto i : Arr.extension()) {
+		    for(auto j : vv.extension()) {
+		        vv[j] += Arr[i][j];
 		    }
 		}
 
@@ -388,7 +388,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//     [](auto const& col) { return std::reduce(col.begin(), col.end()); }
 		// );
 
-		BOOST_TEST(v[0] == 100);
+		BOOST_TEST(vv[0] == 100);
 	}
 
 	return boost::report_errors();
