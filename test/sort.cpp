@@ -7,7 +7,8 @@
 
 #include <algorithm>  // for is_sorted, stable_sort
 #include <array>      // for array
-#include <cmath>      // for abs
+#include <cmath>      // for abs  // IWYU pragma: keep
+// IWYU pragma: no_include <cstdlib>  // for abs
 // #include <functional>  // for __cpp_lib_ranges  // IWYU pragma: keep
 #include <iterator>  // for begin, end
 #include <numeric>   // for accumulate
