@@ -34,9 +34,12 @@ instead, it works by providing a function that generates messages, explicitly ca
 The MPI user-defined datatypes are generated from the Multi arrays, including their type information and layout information (strides).
 
 The basic usage consists of creating a `multi::mpi::message` object from the array elements.
-The message can then be decomposed into a buffer, a count, and a datatype for use in the MPI functions.
+A message is created by passing a reference to the elements of an array, `multi::mpi::message(my_array.elements())`.
+(Elements are not copied in the process.)
 
-This example, running in two processes, creates an array that is communicated to process 1:
+The message can then be later decomposed into a buffer, a count, and a datatype for use in the MPI functions.
+
+In this example, which runs in 2 processes, creates an array that is communicated from process 0 to process 1:
 
 ```cpp
 // compile with `mpic++ -std=c++17 example.cpp -o example.x`
@@ -54,12 +57,12 @@ int main() {
 
 	if(world_rank == 0) {
 		auto const& A_msg = multi::mpi::message(A.elements());
-		MPI_Send(A_msg.buffer(), A_msg.count(), A_msg.type(), 1, 0, MPI_COMM_WORLD);
+		MPI_Send(A_msg.buffer(), A_msg.count(), A_msg.datatype(), 1, 0, MPI_COMM_WORLD);
 	} else if(world_rank == 1) {
 		multi::array<int, 2> B({2, 3});
 
 		auto&& B_msg = multi::mpi::message(B.elements());
-		MPI_Recv(B_msg.buffer(), B_msg.count(), B_msg.type(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 		assert(B == A);
 	}
@@ -78,16 +81,16 @@ Replacing `message(AA.elements())` with `message(A({0, 2}, {0, 2}).elements())` 
 
 ```cpp
 	...
-    if(world_rank == 0) {
-        auto const& msg = multi::mpi::message(A({0, 2}, {0, 2}).elements());
-        MPI_Send(msg.buffer(), msg.count(), msg.type(), 1, 0, MPI_COMM_WORLD);
+	if(world_rank == 0) {
+		auto const& msg = multi::mpi::message(A({0, 2}, {0, 2}).elements());
+		MPI_Send(msg.buffer(), msg.count(), msg.datatype(), 1, 0, MPI_COMM_WORLD);
 	} else if(world_rank == 1) {
-        multi::array<int, 2> B({2, 3});
+		multi::array<int, 2> B({2, 3});
 
-        auto&& msg = multi::mpi::message(B({0, 2}, {0, 2}).elements());
-        MPI_Recv(msg.buffer(), msg.count(), msg.type(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		auto&& msg = multi::mpi::message(B({0, 2}, {0, 2}).elements());
+		MPI_Recv(msg.buffer(), msg.count(), msg.datatype(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        assert(B({0, 2}, {0, 2}) == A({0, 2}, {0, 2})); // only the 2x2 block is communicated
+		assert(B({0, 2}, {0, 2}) == A({0, 2}, {0, 2})); // only the 2x2 block is communicated
 	}
 ```
 
@@ -116,12 +119,12 @@ int main() {
 
 	if(world_rank == 0) {
 		auto const& A_msg = multi::mpi::message(A.elements());
-		MPI_Send(A_msg.buffer(), A_msg.count(), A_msg.type(), 1, 0, MPI_COMM_WORLD);
+		MPI_Send(A_msg.buffer(), A_msg.count(), A_msg.datatype(), 1, 0, MPI_COMM_WORLD);
 	} else if(world_rank == 1) {
 		multi::array<int, 2> B({3, 2});
 
 		auto&& BT_msg = multi::mpi::message(B.tranposed().elements());
-		MPI_Recv(BT_msg.buffer(), BT_msg.count(), BT_msg.type(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(BT_msg.buffer(), BT_msg.count(), BT_msg.datatype(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 		assert(B == multi::array<int, 2>{
 			{1, 4},
@@ -151,7 +154,7 @@ int main() {
 	});
 
 	auto const& A_msg = multi::mpi::message(A.elements());
-	MPI_Reduce(MPI_SUM, A_msg.buffer(), A_msg.count(), A_msg.type(), MPI_COMM_WORLD);
+	MPI_Reduce(MPI_SUM, A_msg.buffer(), A_msg.count(), A_msg.datatype(), MPI_COMM_WORLD);
 }
 ```
 
@@ -177,13 +180,13 @@ int main() {
 		std::vector<int> perm(A.size()); std::iota(perm.begin(), perm.end(), 0);
 		for(auto&& row_index: perm) {
 			auto const& msg = multi::mpi::message(A[row_index].elements());
-			MPI_Send(msg.buffer(), msg.count(), msg.type(), 1, 0, MPI_COMM_WORLD);
+			MPI_Send(msg.buffer(), msg.count(), msg.datatype(), 1, 0, MPI_COMM_WORLD);
 		}
 	} else if(rank == 1) {
 		multi::array<int, 2> B({3, 4});
 		for(auto&& row: B) {
 			auto&& msg = multi::mpi::message(row.elements());
-			MPI_Recv(msg.buffer(), msg.count(), msg.type(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv(msg.buffer(), msg.count(), msg.datatype(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 }
 ```
@@ -196,7 +199,7 @@ The loops can be replaced with this code:
 		...
 		auto sk = multi::mpi::skeleton<int>(A.front().layout());
 		for(auto&& row_index: perm) {
-			MPI_Send(A[row_index].base(), sk.count(), sk.type(), 1, 0, MPI_COMM_WORLD);
+			MPI_Send(A[row_index].base(), sk.count(), sk.datatype(), 1, 0, MPI_COMM_WORLD);
 		}
 		...
 ```
@@ -237,7 +240,7 @@ int main() {
 		multi::array<int, 2> B({2, 3});
 		std::istringstream iss;
 
-		MPI_Recv(B_msg.buffer(), B_msg.count(), B_msg.type(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 		assert(B == A);
 	}
