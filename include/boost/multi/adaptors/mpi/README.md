@@ -96,13 +96,13 @@ Replacing `message(AA.elements())` with `message(A({0, 2}, {0, 2}).elements())` 
 
 ### Rearrangement of elements
 
-It is essential to understand that, due to the way MPI works, the array's value is not what is communicated but only its fundamental elements in a canonical order.
+It is essential to understand that, due to the way MPI works, the array's value is not what is communicated but only its fundamental elements (in a canonical order).
 We emphasize this detail by passing the `.elements()` range for message construction, not the array per se.
 
 A consequence of this is that the user has to ensure consistency in the shape of the receiving end, as in the previous example.
 Communicating a 2x3 array and receiving a 2x2 array will be an error because they have different numbers of elements.
 
-A 2x3 array can be communicated into a 3x2 array, although the elements will be rearranged, which is typically not desired.
+Similarly, a 2x3 array can be communicated into a 3x2 array, although the elements will be rearranged, which is typically not desired.
 
 Still, a reasonable use of rearrangement of elements could involve transposition of the array during communication.
 The key to rearranging the elements is that the layouts can be different in different processes.
