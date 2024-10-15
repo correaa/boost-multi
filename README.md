@@ -1969,17 +1969,36 @@ fun(arr.base(), size1, size2, stride1, stride2);
 
 Although the recipe can be applied straightforwardly, different libraries make various assumptions about memory layouts (e.g.,  2D arrays assume that the second stride is 1), and some might take stride information in a different way (e.g., FFTW doesn't use strides but stride products).
 Furthermore, some arguments may need to be permuted if the function expects arrays in column-major (Fortran) ordering.
-For this reason, the library is accompanied by a series of adaptor libraries to popular C-based libraries, which can be found in the `include/multi/adaptors/` subdirectory.
 
-### [BLAS Adator](include/boost/multi/adaptors/blas/README.md)
-### Lapack
-### [MPI Adaptor](include/boost/multi/adaptors/mpi/README.md)
-### FFTW/cuFFT
+For these reasons, the library is accompanied by a series of adaptor libraries to popular C-based libraries, which can be found in the `include/multi/adaptors/` subdirectory:
 
-### cuBLAS
-### cuFFT
+- ##### [BLAS/cuBLAS Adator 🔗](include/boost/multi/adaptors/blas/README.md)
 
-### TotalView: visual debugger (commercial), popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
+Interface for BLAS-like linear algebra libraries, such as openblas, Apple's Accelerate, MKL and hipBLAS/cuBLAS (GPUs).
+
+To use it, simply `#include "multi/adaptors/blas.hpp"` (and link your program with -lfftw3 for example).
+
+- ##### Lapack
+
+Interface for Lapack linear solver libraries.
+
+To use it, simply `#include "multi/adaptors/lapack.hpp"` (and link your program with -lfftw3 for example).
+
+- ##### FFTW/cuFFT
+
+Interface for FFTW libraries, including FFTW 3, MKL, cuFFT/hipFFT (for GPU).
+
+To use it, simply `#include "multi/adaptors/fftw.hpp"` (and link your program with -lfftw3 for example).
+
+- ##### [MPI Adaptor 🔗](include/boost/multi/adaptors/mpi/README.md)
+
+Use arrays (and subarrays) as messages for distributed interprocess communication (GPU and CPU) that can be passed to MPI functions through datatypes.
+
+To use it, simply `#include "multi/adaptors/mpi.hpp"`
+
+- ##### TotalView: visual debugger (commercial)
+
+Popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
 To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
 
 # Technical points
