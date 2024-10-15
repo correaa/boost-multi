@@ -1975,31 +1975,27 @@ For these reasons, the library is accompanied by a series of adaptor libraries t
 - ##### [BLAS/cuBLAS Adator 🔗](include/boost/multi/adaptors/blas/README.md)
 
 Interface for BLAS-like linear algebra libraries, such as openblas, Apple's Accelerate, MKL and hipBLAS/cuBLAS (GPUs).
-
-To use it, simply `#include "multi/adaptors/blas.hpp"` (and link your program with -lfftw3 for example).
+Simply `#include "multi/adaptors/blas.hpp"` (and link your program with `-lblas` for example).
 
 - ##### Lapack
 
 Interface for Lapack linear solver libraries.
-
-To use it, simply `#include "multi/adaptors/lapack.hpp"` (and link your program with -lfftw3 for example).
+Simply `#include "multi/adaptors/lapack.hpp"` (and link your program with `-llapack` for example).
 
 - ##### FFTW/cuFFT
 
 Interface for FFTW libraries, including FFTW 3, MKL, cuFFT/hipFFT (for GPU).
-
-To use it, simply `#include "multi/adaptors/fftw.hpp"` (and link your program with -lfftw3 for example).
+Simply `#include "multi/adaptors/fftw.hpp"` (and link your program with `-lfftw3` for example).
 
 - ##### [MPI Adaptor 🔗](include/boost/multi/adaptors/mpi/README.md)
 
 Use arrays (and subarrays) as messages for distributed interprocess communication (GPU and CPU) that can be passed to MPI functions through datatypes.
-
-To use it, simply `#include "multi/adaptors/mpi.hpp"`
+Simply `#include "multi/adaptors/mpi.hpp"`.
 
 - ##### TotalView: visual debugger (commercial)
 
 Popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
-To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
+Simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
 
 # Technical points
 
@@ -2009,7 +2005,7 @@ The chained bracket notation (`A[i][j][k]`) allows to refer to elements and suba
 It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of a temporary object which in turn generates a partial copy of the layout.
 Moreover, this goes against [historical recommendations](https://isocpp.org/wiki/faq/operator-overloading#matrix-subscript-op).
 
-It turns out that modern compilers with a fair level of optimization (`-O2`) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (+offsets not shown).
+It turns out that modern compilers with a fair level of optimization (`-O2`) can elide these temporary objects, so that `A[i][j][k]` generates identical machine code as `A.base() + i*stride1 + j*stride2 + k*stride3` (+offsets not shown).
 In a subsequent optimization, constant indices can have their "partial stride" computation removed from loops. 
 As a result, these two loops lead to the [same machine code](https://godbolt.org/z/ncqrjnMvo):
 
@@ -2022,7 +2018,8 @@ As a result, these two loops lead to the [same machine code](https://godbolt.org
     for(long j = 0; j != M; ++j) {acc += *(base + j*std::get<1>(A.strides()));}
 ```
 
-Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so as part of a more general syntax to generate sub-blocks.
+Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access;
+it does so as part of a more general syntax to generate sub-blocks.
 In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i`, `j`, `k` are normal integer indices.
 For this reason, `A(i, j, k)`, `A(i, j)(k)`, `A(i)(j)(k)`, `A[i](j)[k]` are examples of equivalent expressions.
 
@@ -2032,13 +2029,14 @@ Note also that `A({i0, i1}, j, k)` is not equivalent to `A({i0, i1})(j, k)`; the
 Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
 
 ```cpp
-std::array p = {2, 3, 4};
+std::array<int, 3> p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
 
 ### Iteration past-end in the abstract machine
 
-It's crucial to grasp that pointers are limited to referencing valid memory in the strict C abstract machine, such as allocated memory. This understanding is key to avoiding undefined behavior in your code.
+It's crucial to grasp that pointers are limited to referencing valid memory in the strict C abstract machine, such as allocated memory.
+This understanding is key to avoiding undefined behavior in your code.
 Since the library iteration is pointer-based, the iterators replicate these restrictions.
 
 There are three cases to consider; the first two can be illustrated with one-dimensional arrays, and one is intrinsic to multiple dimensions.
@@ -2085,32 +2083,32 @@ Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://
 | Arbritary number of dims    | **yes**, via positive dimension (compile-time) parameter `D`    | **yes**                                                                         | **yes**                                                                                              | no  (only 1D and 2D)                                                                    |
 | Non-owning view of data     | **yes**, via `multi::array_ref<T, D>(ptr, {n1, n2, ..., nD})`   | **yes**, via `mdspan m{T*, extents{n1, n2, ..., nD}};`                          | **yes**, via `boost::multi_array_ref<T, D>(T*, boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Map<Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>>(ptr, n1, n2)` |
 | Compile-time dim size       | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` | no                                                                             | **yes**, via `Eigen::Array<T, N1, N2>` |
-| Array values (owning data)  | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`            | yes for `mdarray`                                   | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Array<T>(n1, n2)` |
-| Value semantic (Regular)    | **yes**, via cctor, mctor, assign, massign, auto decay of views | yes (?) for `mdarray` planned                                       | partial, assigment on equal extensions  | **yes** (?) |
-| Move semantic               | **yes**, via mctor and massign                                  | yes (?) for `mdarray` (depends on adapted container)                                                        | no (C++98 library)                      | **yes** (?) |
-| const-propagation semantics | **yes**, via `const` or `const&`                                | no, const mdspan elements are assignable!                 | no, inconsistent                        | (?) |
-| Element initialization      | **yes**, via nested init-list                                   | no (?)                                                        | no                                      | no, only delayed init via `A << v1, v2, ...;` |
-| References w/no-rebinding   | **yes**, assignment is deep                                     | no, assignment of mdspan rebinds!                         | **yes**                                 | **yes** (?) |
-| Element access              | **yes**, via `A(i, j, ...)` or `A[i][j]...`                     | **yes**, via `A[i, j, ...]`                               | **yes**, via `A[i][j]...`               | **yes**, via `A(i, j)` (2D only) |
-| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`                       | no, only via `submdspan(A, i, full_extent)`               | **yes**, via `A[i]`                     | **yes**, via `A.row(i)` |
+| Array values (owning data)  | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`            | yes for `mdarray`                                               | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Array<T>(n1, n2)` |
+| Value semantic (Regular)    | **yes**, via cctor, mctor, assign, massign, auto decay of views | yes (?) for `mdarray` planned                                   | partial, assigment on equal extensions  | **yes** (?) |
+| Move semantic               | **yes**, via mctor and massign                                  | yes (?) for `mdarray` (depends on adapted container)            | no (C++98 library)                      | **yes** (?) |
+| const-propagation semantics | **yes**, via `const` or `const&`                                | no, const mdspan elements are assignable!                       | no, inconsistent                        | (?) |
+| Element initialization      | **yes**, via nested init-list                                   | no (?)                                                          | no                                      | no, only delayed init via `A << v1, v2, ...;` |
+| References w/no-rebinding   | **yes**, assignment is deep                                     | no, assignment of mdspan rebinds!                               | **yes**                                 | **yes** (?) |
+| Element access              | **yes**, via `A(i, j, ...)` or `A[i][j]...`                     | **yes**, via `A[i, j, ...]`                                     | **yes**, via `A[i][j]...`               | **yes**, via `A(i, j)` (2D only) |
+| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`                       | no, only via `submdspan(A, i, full_extent)`                     | **yes**, via `A[i]`                     | **yes**, via `A.row(i)` |
 | Subarray views              | **yes**, via `A({0, 2}, {1, 3})` or `A(1, {1, 3})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{1, 3})` | **yes**, via `A[indices[range(0, 2)][range(1, 3)]]` | **yes**, via `A.block(i, j, di, dj)` |
-| Subarray with lower dim     | **yes**, via `A(1, {1, 3})`                                     | **yes**, via `submdspan(A, 1, std::tuple{1, 3})`          | **yes**, via `A[1][indices[range(1, 3)]]`                    | **yes**, via `A(1, Eigen::placeholders::all)` |
-| Subarray w/well def layout  | **yes** (strided layout)                                        | no                                                        | **yes** (strided layout)                      | **yes** (strided) |
-| Recursive subarray          | **yes** (layout is stack-based and owned by the view)           | **yes** (?)                                               | no (subarray may dangle layout, design bug?)  | **yes** (?) (1D only) |
-| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | yes(?) through `mdarray`'s adapted container                            | **yes** (stateless?)                          | no | 
-| PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | yes(?) through `mdarray`'s adapted container                            |   no     | no |
-| Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                                        |   no     | no |
-| Stride-based Layout              | **yes**                                                         | **yes**                                                   |  **yes** | **yes** |
-| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes**                        |  **yes** | **yes** |
-| Zig-zag / Hilbert ordering  | no                                                              | **yes**, via arbitrary layouts (no inverse or flattening) | no       | no |
-| Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing       | no       | no |
+| Subarray with lower dim     | **yes**, via `A(1, {1, 3})`                                     | **yes**, via `submdspan(A, 1, std::tuple{1, 3})`                | **yes**, via `A[1][indices[range(1, 3)]]`                    | **yes**, via `A(1, Eigen::placeholders::all)` |
+| Subarray w/well def layout  | **yes** (strided layout)                                        | no                                                              | **yes** (strided layout)                      | **yes** (strided) |
+| Recursive subarray          | **yes** (layout is stack-based and owned by the view)           | **yes** (?)                                                     | no (subarray may dangle layout, design bug?)  | **yes** (?) (1D only) |
+| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | yes(?) through `mdarray`'s adapted container                    | **yes** (stateless?)                          | no | 
+| PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | yes(?) through `mdarray`'s adapted container                    |   no                          | no |
+| Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                                              |   no                          | no |
+| Stride-based Layout         | **yes**                                                         | **yes**                                                   |  **yes**                      | **yes** |
+| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes**                                                   |  **yes**.                     | **yes** |
+| Zig-zag / Hilbert ordering  | no                                                              | **yes**, via arbitrary layouts (no inverse or flattening) | no                            | no |
+| Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing       | no                            | no |
 | Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)          | no, only for allocated arrays | no, not for subblocks (?) |
-| Iterators                   | **yes**, standard compliant, random-access-iterator             | no                                       | **yes**, limited | no |
+| Iterators                   | **yes**, standard compliant, random-access-iterator             | no                                                        | **yes**, limited | no |
 | Multidimensional iterators (cursors) | **yes** (experimental)                                 | no                                                        | no               | no |         
 | STL algorithms or Ranges    | **yes**                                                         | no, limited via `std::cartesian_product`                  | **yes**, some do not work | no |
 | Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                                                        | no | no |
-| Compatibility with Thrust or GPUs | **yes**, via flatten views (loop fusion), thrust-pointers/-refs | no                                                   | no          | no |
-| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq)  | (?) , experience from Kokkos incarnation             | **yes** (?) | [**yes**](https://eigen.tuxfamily.org/index.php?title=Main_Page#Projects_using_Eigen) |
+| Compatibility with Thrust or GPUs | **yes**, via flatten views (loop fusion), thrust-pointers/-refs | no                                                  | no          | no |
+| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq)  | (?) , experience from Kokkos incarnation            | **yes** (?) | [**yes**](https://eigen.tuxfamily.org/index.php?title=Main_Page#Projects_using_Eigen) |
 
 # Appendix: Multi for FORTRAN programmers
 
