@@ -1755,24 +1755,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
 	constexpr auto reinterpret_array_cast() const& {return reinterpret_array_cast_aux_<T2, P2>().as_const();}
 
-	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
-	// constexpr auto reinterpret_array_cast()      & {return reinterpret_array_cast_aux_<T2, P2>();}
-
-	// template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
-	// constexpr auto reinterpret_array_cast()     && {return reinterpret_array_cast_aux_<T2, P2>();}
-
-	// template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2> >
-	// constexpr auto reinterpret_array_cast(size_type count) const& {
-	//  static_assert( sizeof(T)%sizeof(T2) == 0,
-	//      "error: reinterpret_array_cast is limited to integral stride values");
-
-	//  assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-	//  return const_subarray<T2, D + 1, P2>(
-	//      layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-	//      static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-	//  );
-	// }
-
 	template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type count) const& {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
@@ -1780,17 +1762,23 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		if constexpr(std::is_pointer_v<ElementPtr>) {
+			using void_like = std::conditional_t<
+				std::is_const_v<typename std::pointer_traits<decltype(this->base_)>::element_type>,
+				void const,
+				void
+			>;
 			return const_subarray<T2, D + 1, P2>(
 				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-				static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+				static_cast<P2>(static_cast<void_like*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here for some exotic pointers (e.g. thrust::pointer)
 			);
-		} else {
+		} else {  // TODO(correaa) try to unify both if-branches
 			return const_subarray<T2, D + 1, P2>(
 				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
 				reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 			);
 		}
 	}
+
 
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int version) {
