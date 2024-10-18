@@ -653,6 +653,8 @@ struct cursor_t {
 
 	using indices_type = typename extensions_t<D>::indices_type;
 
+	cursor_t() = default;
+
  private:
 	strides_type strides_;
 	element_ptr  base_;
@@ -684,6 +686,7 @@ struct cursor_t {
 			return base_[std::get<0>(strides_)*n];
 		}
 	}
+
 	BOOST_MULTI_HD constexpr auto operator()(difference_type n) const -> decltype(auto) {
 		return operator[](n);
 	}
@@ -1563,16 +1566,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	friend constexpr auto cend  (const_subarray const& self) {return self.cend()  ;}
 
 	using       cursor = cursor_t<typename const_subarray::element_ptr      , D, typename const_subarray::strides_type>;
-
+	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
  private:
 	constexpr auto home_aux_() const {return cursor(this->base_, this->strides());}
 
  public:
-	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
-
 	constexpr auto home() const& -> const_cursor { return home_aux_(); }
-	constexpr auto home()     && ->       cursor { return home_aux_(); }
-	constexpr auto home()      & ->       cursor { return home_aux_(); }
 
 	// const_subarray(cursor home, typename const_subarray::sizes_type szs) {}
 
@@ -1866,6 +1865,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	constexpr auto mbegin() { return move_iterator{this->begin()}; }
 	constexpr auto mend()   { return move_iterator{this->end()  }; }
+
+	using const_subarray<T, D, ElementPtr, Layout>::home;
+	constexpr auto home()     && { return this->home_aux_(); }
+	constexpr auto home()      & { return this->home_aux_(); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	constexpr auto strided(difference_type diff) && -> subarray { return this->strided_aux_(diff);}
@@ -2507,6 +2510,14 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	auto flatted() const& = delete;
 	auto range() const& -> const_subarray = delete;
 
+	using       cursor = cursor_t<typename const_subarray::element_ptr      , 0, typename const_subarray::strides_type>;
+	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, 0, typename const_subarray::strides_type>;
+ private:
+	constexpr auto home_aux_() const {return cursor(this->base_, this->strides());}
+
+ public:
+	constexpr auto home() const& -> const_cursor {return home_aux_();}
+
  private:
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
@@ -2686,20 +2697,13 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	>
 	constexpr auto operator=(const_subarray<T, 1L, ECPtr, Layout> const& other) const && -> const_subarray& {assert(0); operator=(          other ); return *this;}  // required by https://en.cppreference.com/w/cpp/iterator/indirectly_writable for std::ranges::copy_n
 
-	// template<
-	//  class ECPtr,
-	//  class = std::enable_if_t< std::is_same_v<element_const_ptr, ECPtr> && !std::is_same_v<element_const_ptr, element_ptr> >
-	// >
-	// constexpr auto operator=(subarray<T, 1L, ECPtr, Layout> const& other) && -> subarray& {operator=(          other ); return *this;}
-	// template<
-	//  class ECPtr,
-	//  class = std::enable_if_t< std::is_same_v<element_const_ptr, ECPtr> && !std::is_same_v<element_const_ptr, element_ptr> >
-	// >
-	// constexpr auto operator=(subarray<T, 1L, ECPtr, Layout> const& other)  & -> subarray& {
-	//  assert(other.extensions() == this->extensions());
-	//  elements() = other.elements();
-	//  return *this;
-	// }
+	using       cursor = cursor_t<typename const_subarray::element_ptr      , 1, typename const_subarray::strides_type>;
+	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, 1, typename const_subarray::strides_type>;
+ private:
+	constexpr auto home_aux_() const {return cursor(this->base_, this->strides());}
+
+ public:
+	constexpr auto home() const& -> const_cursor {return home_aux_();}
 
  private:
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
