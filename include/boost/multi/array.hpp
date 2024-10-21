@@ -1457,24 +1457,8 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	constexpr auto operator+() const& { return array{*this}; }
-	constexpr auto operator+() && { return array{std::move(*this)}; }
-
-	// auto reextent(typename array::extensions_type const& extensions, typename array::element_type const& elem) && -> array&& {
-	//  if(extensions == this->extensions()) {return std::move(*this);}
-	//  this->destroy();
-	//  this->deallocate();
-	//  this->layout_mutable() = typename array::layout_t{extensions};
-	//  this->base_ = this->static_::array_alloc::allocate(
-	//      static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
-	//          typename array::layout_t{extensions}.num_elements()
-	//      ),
-	//      this->data_elements()  // used as hint
-	//  );
-	//  this->uninitialized_fill_n(this->base_, static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
-
-	//  return std::move(*this);
-	// }
+	[[nodiscard]] constexpr auto operator+() const& { return array{*this}; }
+	[[nodiscard]] constexpr auto operator+() && { return array{*this}; }
 
 	auto reextent(typename array::extensions_type const& exs, typename array::element_type const& elem) & -> array& {
 		if(exs == this->extensions()) {
