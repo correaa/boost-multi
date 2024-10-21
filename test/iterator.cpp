@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, implicit_cast, explicit_cast
 
 #include <algorithm>    // for is_sorted, copy
@@ -18,7 +20,6 @@ namespace multi = boost::multi;
 
 template<class Array> auto take(Array&& array) -> auto& { return std::forward<Array>(array)[0]; }
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
