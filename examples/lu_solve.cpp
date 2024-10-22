@@ -38,14 +38,17 @@ set -x;${CXX:-c++} -std=c++20 -O3 -DNDEBUG -I../include $0 -o $0x &&time $0x&&rm
 			// decompose(A({1, N}, {1, N}), P({1, N}));
 
 			for(auto i : extension(ret)) {
-				if(lup::permute_max_diagonal(A({i, N}, {0, N}), P({i, N}), i) < tol)
+				auto&& A_rest = A({i, N});
+				auto&& P_rest = P({i, N});
+				auto&& A_rest_rest = A_rest({0, N - i}, {i, N});
+				if(lup::permute_max_diagonal(A_rest({0, N - i}, {0, N}), P_rest({0, N - i}), i) < tol)
 					return A({0, i}, {0, i});
 
-				for(auto&& row : A({i + 1, N})) {
+				for(auto&& row : A_rest({1, N - i})) {
 					auto&& urow = row({i + 1, N});
 					std::transform(
-						cbegin(urow), cend(urow), cbegin(A[i]({i + 1, N})), begin(urow),
-						[f = row[i] /= A[i][i]](auto const& a, auto const& b) { return a - f * b; }
+						cbegin(urow), cend(urow), cbegin(A_rest_rest[0]({1, N - i})), begin(urow),
+						[f = row[i] /= A_rest_rest[0][0]](auto const& a, auto const& b) { return a - f * b; }
 					);
 				}
 			}
