@@ -490,7 +490,7 @@ constexpr auto get(::boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-c
 template <typename Fn, boost::multi::dimensionality_type D>
 constexpr auto
 apply(Fn&& fn, boost::multi::extensions_t<D> const& xs) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) I have to specialize std::apply as a workaround
-	return xs.apply(fn);
+	return xs.apply(std::forward<Fn>(fn));
 }
 
 }  // end namespace std

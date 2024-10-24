@@ -89,17 +89,17 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
  private:
 
 	template<class F, std::size_t... I>
-	constexpr auto apply_impl(F&& fn, std::index_sequence<I...> /*012*/) const -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) const -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
+ public:
 	template<class F>
 	constexpr auto apply(F&& fn) const -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
-		return apply_impl(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
+		return apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
 	}
 
- public:
-	constexpr operator std::tuple<T0, Ts...>() const {return this->apply([](auto const&... xs) {return std::tuple<T0, Ts...>(xs...);});}
+	// constexpr explicit operator std::tuple<T0, Ts...>() const {return this->apply([](auto const&... xs) {return std::tuple<T0, Ts...>(xs...);});}
 
  private:
 	template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N - 1>> {};
