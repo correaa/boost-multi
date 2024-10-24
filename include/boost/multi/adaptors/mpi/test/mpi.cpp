@@ -317,6 +317,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	test_2d(MPI_COMM_WORLD);
 	test_2d_int(MPI_COMM_WORLD);
+	test_2d_double(MPI_COMM_WORLD);
 
 	MPI_Finalize();
 
