@@ -192,7 +192,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return false;
 	}
 
-	auto size() const {return std::get<0>(*this).size();}
+	auto size() const {return this->get<0>().size();}
 	auto sizes() const {return this->apply([](auto const&... xs){return multi::detail::mk_tuple(xs.size()...);});}
 
  private:
