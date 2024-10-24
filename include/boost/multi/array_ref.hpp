@@ -241,9 +241,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		typename std::iterator_traits<element_const_ptr>::reference
 	>;
 
-	// BOOST_MULTI_HD constexpr auto base() &      -> element_ptr       {return base_;}
-	// BOOST_MULTI_HD constexpr auto base() &&     -> element_ptr       {return base_;}
-	// BOOST_MULTI_HD constexpr auto base() const& -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }
 
 	BOOST_MULTI_HD constexpr auto  mutable_base() const -> element_ptr {return base_;}
@@ -251,20 +248,16 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
-	// friend /*constexpr*/ auto  base(array_types & self) -> element_ptr  {return self.base_;}
-	// friend /*constexpr*/ auto  base(array_types && self) -> element_ptr  {return std::move(self).base_;}
-	// friend /*constexpr*/ auto  base(array_types const& self) -> element_const_ptr  {return self.base_;}
+	BOOST_MULTI_HD constexpr auto layout()           const        -> layout_t const& {return *this;}
+	// friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
 
-	    BOOST_MULTI_HD constexpr auto layout()           const        -> layout_t const& {return *this;}
-	friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
-
-	       constexpr auto origin()           const&       -> decltype(auto) {return base_ + Layout::origin();}
-	friend constexpr auto origin(array_types const& self) -> decltype(auto) {return self.origin();}
+	constexpr auto origin()           const&       -> decltype(auto) {return base_ + Layout::origin();}
+	// friend constexpr auto origin(array_types const& self) -> decltype(auto) {return self.origin();}
 
  protected:
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
-	
+
 	template<class, ::boost::multi::dimensionality_type, typename, bool, bool> friend struct array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
@@ -1562,8 +1555,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	BOOST_MULTI_HD     constexpr auto cbegin()           const& {return begin();}
 	/*fd*/ constexpr auto cend()             const& {return end()  ;}
-	friend constexpr auto cbegin(const_subarray const& self) {return self.cbegin();}
-	friend constexpr auto cend  (const_subarray const& self) {return self.cend()  ;}
+
+	// friend constexpr auto cbegin(const_subarray const& self) {return self.cbegin();}
+	// friend constexpr auto cend  (const_subarray const& self) {return self.cend()  ;}
 
 	using       cursor = cursor_t<typename const_subarray::element_ptr      , D, typename const_subarray::strides_type>;
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
@@ -2557,6 +2551,9 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 };
 
+template<class T> struct RESTRICT {using type = T;};  // NOLINT(readability-identifier-naming)
+template<class T> struct RESTRICT<T*> {using type = T* __restrict;};  // NOLINT(readability-identifier-naming)
+
 template<typename T, typename ElementPtr, class Layout>
 struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
 : multi::random_iterable<subarray<T, 1, ElementPtr, Layout> >  // paren for msvc 19.14?
@@ -3008,6 +3005,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true>;
 	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
 
+	using RESTRICT_iterator = typename multi::array_iterator<element_type, 1, typename RESTRICT<typename types::element_ptr>::type>;
+
 	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
 
@@ -3056,11 +3055,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	               constexpr auto  begin()      & ->       iterator {return begin_aux_();}
 	               constexpr auto  begin()     && ->       iterator {return begin_aux_();}
 
-	// constexpr auto mbegin()      & {return move_iterator{begin()};}
-	// constexpr auto mend  ()      & {return move_iterator{end  ()};}
-
-	// constexpr auto mbegin()     && {return move_iterator{begin()};}
-	// constexpr auto mend  ()     && {return move_iterator{end  ()};}
+	constexpr auto RESTRICT_begin() & -> RESTRICT_iterator {return begin_aux_();}  // NOLINT(readability-identifier-naming)
 
 	constexpr auto  end  () const& -> const_iterator {return end_aux_();}
 	constexpr auto  end  ()      & ->       iterator {return end_aux_();}
@@ -3069,19 +3064,19 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	[[deprecated("implement as negative stride")]] constexpr auto rbegin() const& {return const_reverse_iterator(end  ());}  // TODO(correaa) implement as negative stride?
 	[[deprecated("implement as negative stride")]] constexpr auto rend  () const& {return const_reverse_iterator(begin());}  // TODO(correaa) implement as negative stride?
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray const& self) -> const_iterator {return           self .begin();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray      & self) ->       iterator {return           self .begin();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray     && self) ->       iterator {return std::move(self).begin();}
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray const& self) -> const_iterator {return           self .begin();}
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray      & self) ->       iterator {return           self .begin();}
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray     && self) ->       iterator {return std::move(self).begin();}
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray const& self) -> const_iterator {return           self .end()  ;}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray      & self) ->       iterator {return           self .end()  ;}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray     && self) ->       iterator {return std::move(self).end()  ;}
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray const& self) -> const_iterator {return           self .end()  ;}
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray      & self) ->       iterator {return           self .end()  ;}
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray     && self) ->       iterator {return std::move(self).end()  ;}
 
 	BOOST_MULTI_HD constexpr auto cbegin()           const& -> const_iterator {return begin();}
-	   constexpr auto cend  ()           const& -> const_iterator {return end()  ;}
+	constexpr auto cend  ()           const& -> const_iterator {return end()  ;}
 
-	friend BOOST_MULTI_HD /*constexpr*/ auto cbegin(const_subarray const& self) {return self.cbegin();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto cend  (const_subarray const& self) {return self.cend()  ;}
+	// friend BOOST_MULTI_HD /*constexpr*/ auto cbegin(const_subarray const& self) {return self.cbegin();}
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto cend  (const_subarray const& self) {return self.cend()  ;}
 
 	// // fix mutation
 	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other) && -> const_subarray& {operator=(          other ); return *this;}
