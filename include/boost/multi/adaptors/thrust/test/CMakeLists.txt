@@ -31,6 +31,7 @@ endif()
 set(TEST_SRCS
     array.cu
     memory_resource.cu
+	run_reduce.cu
 	set_identity_kernel.cu
     speed.cu
     speed_algo.cu

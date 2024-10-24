@@ -192,6 +192,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return false;
 	}
 
+	auto size() const {return std::get<0>(*this).size();}
+	auto sizes() const {return this->apply([](auto const&... xs){return multi::detail::mk_tuple(xs.size()...);});}
+
  private:
 	template<class Archive, std::size_t... I>
 	void serialize_impl_(Archive& arxiv, std::index_sequence<I...> /*unused012*/) {
@@ -245,7 +248,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return get<Index>(this->base());
 	}
 
-	// constexpr operator base_ const&() const { return impl_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use inheritance from tuple to avoid this and implement get in std::
+	template<class Fn>
+	constexpr auto apply(Fn&& fn) const -> decltype(auto) {
+		return std::apply(std::forward<Fn>(fn), this->base());
+	}
 };
 
 template<> struct extensions_t<0> : tuple<> {
@@ -458,21 +464,34 @@ template<> class tuple_size<boost::multi::extensions_t<5>> : public std::integra
 #endif
 
 #if !defined(_MSC_VER) && (!defined(__GLIBCXX__) || (__GLIBCXX__ <= 20240707) )
-template<std::size_t N, boost::multi::dimensionality_type D>
-constexpr auto get(boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+template<std::size_t N, ::boost::multi::dimensionality_type D>
+constexpr auto get(::boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+->decltype(tp.template get<N>()) {
+	return tp.template get<N>(); }
+
+
+// template<std::size_t N>  // , boost::multi::dimensionality_type D>
+// constexpr auto get(boost::multi::extensions_t<2> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+// // ->decltype(tp.template get<N>()) {
+// -> decltype(auto) {
+// 	return tp.template get<N>(); }
+
+template<std::size_t N, ::boost::multi::dimensionality_type D>
+constexpr auto get(::boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
 ->decltype(tp.template get<N>()) {
 	return tp.template get<N>(); }
 
 template<std::size_t N, boost::multi::dimensionality_type D>
-constexpr auto get(boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
-->decltype(tp.template get<N>()) {
-	return tp.template get<N>(); }
-
-template<std::size_t N, boost::multi::dimensionality_type D>
-constexpr auto get(boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+constexpr auto get(::boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
 ->decltype(std::move(tp).template get<N>()) {
 	return std::move(tp).template get<N>(); }
 #endif
+
+template <typename Fn, boost::multi::dimensionality_type D>
+constexpr auto
+apply(Fn&& fn, boost::multi::extensions_t<D> const& xs) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) I have to specialize std::apply as a workaround
+	return xs.apply(fn);
+}
 
 }  // end namespace std
 
