@@ -853,7 +853,7 @@ circle:
     - cmake --build . --parallel 4 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
 
-circle-latest:
+circle-latest c++20:
   stage: build
   allow_failure: true
   tags:
@@ -870,7 +870,7 @@ circle-latest:
     - ls
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
   needs: ["circle"]
