@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>  // for array, implicit_cast, explicit_cast
+#include <boost/multi/adaptors/blas.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -15,8 +16,14 @@
 #include <string>
 #include <utility>
 
-#if defined __has_include && __has_include(<execution>)
-#    include <execution>
+// IWYU pragma: no_include <pstl/glue_numeric_impl.h>         // for reduce, transform_reduce
+// IWYU pragma: no_include <cstdlib>                          // for abs
+// IWYU pragma: no_include <new>                              // for bad_alloc
+
+#ifndef __NVCC__
+	#if defined __has_include && __has_include(<execution>)
+		#include <execution>
+	#endif
 #endif
 
 namespace multi = boost::multi;
@@ -30,7 +37,7 @@ class watch {
 	~watch() {
 		std::cerr << msg_ << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_).count() << " ms\n";
 	};
-	watch(watch const&) = delete;
+	watch(watch const&)           = delete;
 	auto& operator=(watch const&) = delete;
 	//	non-default destructor but does not define a copy constructor, a copy assignment operator, a move constructor or a move assignment operator
 };
@@ -43,7 +50,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// auto pp = [] /*__host__ __device__*/ (long ix, long iy) -> double { return double(ix) * double(iy); };
 
 	auto nx = 80000;  // nmax;     // for(long nx = 1; nx <= nmax; nx *= 10)
-	auto ny = 2000;  // maxsize;  // for(long ny = 1; ny <= maxsize; ny *= 5)
+	auto ny = 2000;   // maxsize;  // for(long ny = 1; ny <= maxsize; ny *= 5)
 
 	// auto total = nx*ny;
 
@@ -59,14 +66,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 #ifndef RUNNING_ON_VALGRIND
-#define RUNNING_ON_VALGRIND 0
+	#define RUNNING_ON_VALGRIND 0
 #endif
 
-	if(RUNNING_ON_VALGRIND) return boost::report_errors();
+#ifndef NDEBUG
+	return boost::report_errors();
+#endif
+
+	if(RUNNING_ON_VALGRIND) {
+		return boost::report_errors();
+	}
 
 	{
-		auto const accumulator = [&] () {
-			watch _("raw loop");
+		auto const accumulator = [&]() {
+			watch                   _("raw loop");
 			multi::array<double, 1> ret({nx}, 0.0);
 
 			for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {      // NOLINT(altera-id-dependent-backward-branch)
@@ -104,7 +117,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&] (auto init) {
+		auto const accumulator = [&](auto init) {
 			watch _("accumulate move");
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
@@ -125,7 +138,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&] (auto init) {
+		auto const accumulator = [&](auto init) {
 			watch _("accumulate forward");
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
@@ -145,7 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&] (auto init) {
+		auto const accumulator = [&](auto init) {
 			watch _("accumulate transform forward");
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
@@ -184,11 +197,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&] {
-			watch const _("transform accumulate element zero");
+			watch const             _("transform accumulate element zero");
 			multi::array<double, 1> ret(K2D.extension());
 			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(),
-				[](auto const& row) {return std::accumulate(row.begin(), row.end(), 0.0);}
+				[](auto const& row) { return std::accumulate(row.begin(), row.end(), 0.0); }
 			);
 			return ret;
 		}();
@@ -200,11 +213,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&] {
-			watch const _("transform reduce element zero");
+			watch const             _("transform reduce element zero");
 			multi::array<double, 1> ret(K2D.extension());
 			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(),
-				[](auto const& row) {return std::reduce(row.begin(), row.end(), 0.0);}
+				[](auto const& row) { return std::reduce(row.begin(), row.end(), 0.0); }
 			);
 			return ret;
 		}();
@@ -215,11 +228,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&] (auto&& init) {
+		auto const accumulator = [&](auto&& init) {
 			watch const _("transform accumulate");
 			std::transform(
 				K2D.begin(), K2D.end(), init.begin(), init.begin(),
-				[](auto const& row, auto rete) {return std::accumulate(row.begin(), row.end(), std::move(rete));}
+				[](auto const& row, auto rete) { return std::accumulate(row.begin(), row.end(), std::move(rete)); }
 			);
 			return std::forward<decltype(init)>(init);
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
@@ -230,11 +243,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&] (auto&& init) {
+		auto const accumulator = [&](auto&& init) {
 			watch const _("> transform reduce");
 			std::transform(
 				K2D.begin(), K2D.end(), init.begin(), init.begin(),
-				[](auto const& row, auto rete) {return std::reduce(row.begin(), row.end(), std::move(rete));}
+				[](auto const& row, auto rete) { return std::reduce(row.begin(), row.end(), std::move(rete)); }
 			);
 			return std::forward<decltype(init)>(init);
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
@@ -244,30 +257,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-#if !defined(__NVCC__) || (__GNUC__>7)
+#if !defined(__NVCC__) && !defined(__NVCOMPILER) && (!defined(__GNUC__) || (__GNUC__ > 7)) && (!defined(__clang_major__) || (__clang_major__ > 7))
 	{
 		auto const accumulator = [&] {
-			watch const _("transform reduce[unseq]");
+			watch const             _("transform reduce[unseq]");
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
 			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(), ret.begin(),
-				[](auto const& row, auto rete) {return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete));}
-			);
-			return ret;
-		}();
-
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
-			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
-		}
-	}
-
-	{
-		auto const accumulator = [&] {
-			watch const _("transform reduce[par]");
-			multi::array<double, 1> ret(K2D.extension(), 0.0);
-			std::transform(
-				K2D.begin(), K2D.end(), ret.begin(), ret.begin(),
-				[](auto const& row, auto rete) {return std::reduce(std::execution::par, row.begin(), row.end(), std::move(rete));}
+				[](auto const& row, auto rete) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); }
 			);
 			return ret;
 		}();
@@ -279,11 +276,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&] {
-			watch const _("transform reduce[par_unseq]");
+			watch const             _("transform reduce[par]");
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
 			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(), ret.begin(),
-				[](auto const& row, auto rete) {return std::reduce(std::execution::par_unseq, row.begin(), row.end(), std::move(rete));}
+				[](auto const& row, auto rete) { return std::reduce(std::execution::par, row.begin(), row.end(), std::move(rete)); }
 			);
 			return ret;
 		}();
@@ -294,12 +291,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&] () {
-			watch const _("transform[par] reduce");
+		auto const accumulator = [&] {
+			watch const             _("transform reduce[par_unseq]");
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
-			std::transform(std::execution::par,
+			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(), ret.begin(),
-				[](auto const& row, auto rete) {return std::reduce(row.begin(), row.end(), std::move(rete));}
+				[](auto const& row, auto rete) { return std::reduce(std::execution::par_unseq, row.begin(), row.end(), std::move(rete)); }
 			);
 			return ret;
 		}();
@@ -310,13 +307,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&] (auto ret) {
+		auto const accumulator = [&]() {
+			watch const             _("transform[par] reduce");
+			multi::array<double, 1> ret(K2D.extension(), 0.0);
+			std::transform(std::execution::par, K2D.begin(), K2D.end(), ret.begin(), ret.begin(), [](auto const& row, auto rete) { return std::reduce(row.begin(), row.end(), std::move(rete)); });
+			return ret;
+		}();
+
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+		}
+	}
+
+	{
+		auto const accumulator = [&](auto ret) {
 			watch _("* transform[par] reduce[unseq]");
 
-			std::transform(std::execution::par,
-				K2D.begin(), K2D.end(), ret.begin(), ret.begin(),
-				[](auto const& row, auto rete) {return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete));}
-			);
+			std::transform(std::execution::par, K2D.begin(), K2D.end(), ret.begin(), ret.begin(), [](auto const& row, auto rete) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); });
 			return ret;
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
 
@@ -327,12 +334,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::array<double, 1> accumulator(K2D.extension(), 0.0);
-		[&] (auto acc_begin) {
+		[&](auto acc_begin) {
 			watch _("transform[par] reduce[unseq] iterator");
-			return std::transform(std::execution::par,
-				K2D.begin(), K2D.end(), acc_begin, acc_begin,
-				[](auto const& row, auto rete) {return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete));}
-			);
+			return std::transform(std::execution::par, K2D.begin(), K2D.end(), acc_begin, acc_begin, [](auto const& row, auto rete) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); });
 		}(accumulator.begin());
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
@@ -341,13 +345,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&] (auto zero_elem) {
-			watch _("transform[par] reduce[unseq] element zero");
+		auto const accumulator = [&](auto zero_elem) {
+			watch                   _("transform[par] reduce[unseq] element zero");
 			multi::array<double, 1> ret(K2D.extension());
-			std::transform(std::execution::par,
-				K2D.begin(), K2D.end(), ret.begin(),
-				[zz = std::move(zero_elem)](auto const& row) {return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(zz));}
-			);
+			std::transform(std::execution::par, K2D.begin(), K2D.end(), ret.begin(), [zz = std::move(zero_elem)](auto const& row) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(zz)); });
 			return ret;
 		}(0.0);
 

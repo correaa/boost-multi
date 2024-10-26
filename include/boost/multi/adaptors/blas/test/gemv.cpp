@@ -42,6 +42,23 @@ auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identi
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
+void gemv_broadcast() {
+	multi::array<double, 2> a = {
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0}
+	};
+
+	multi::array<double, 0> one(1.0);
+
+	auto const& ones = one.broadcasted();
+
+	multi::array<double, 1> sum_rows({a.extension()}, {});
+	blas::gemv_n(1.0, a.begin(), 2, ones.begin(), 0.0, sum_rows.begin());
+
+	BOOST_TEST( sum_rows[0] == 1.0 + 2.0 + 3.0 );
+	BOOST_TEST( sum_rows[1] == 4.0 + 5.0 + 6.0 );
+}
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_blas_gemv_double) {
 		using T = double;
