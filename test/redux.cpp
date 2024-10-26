@@ -65,17 +65,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-#ifndef RUNNING_ON_VALGRIND
-	#define RUNNING_ON_VALGRIND 0
-#endif
-
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(RUNNING_ON_VALGRIND)
 	return boost::report_errors();
 #endif
-
-	if constexpr(RUNNING_ON_VALGRIND) {
-		return boost::report_errors();
-	}
 
 	{
 		auto const accumulator = [&]() {
@@ -175,6 +167,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
+#if (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
 	{
 		auto const accumulator = [&] {
 			watch _("reduce transform forward");
@@ -194,6 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
+#endif
 
 	{
 		auto const accumulator = [&] {
@@ -211,6 +205,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
+#if (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
 	{
 		auto const accumulator = [&] {
 			watch const             _("transform reduce element zero");
@@ -226,6 +221,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
+#endif
 
 	{
 		auto const accumulator = [&](auto&& init) {
@@ -242,6 +238,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
+#if (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
 	{
 		auto const accumulator = [&](auto&& init) {
 			watch const _("> transform reduce");
@@ -256,8 +253,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
+#endif
 
-#if !defined(__NVCC__) && !defined(__NVCOMPILER) && (!defined(__clang_major__) || (__clang_major__ > 7))
+#if (defined __has_include && __has_include(<execution>)) && !defined(__NVCC__) && !defined(__NVCOMPILER) && (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && (!defined(__clang_major__) || (__clang_major__ > 7))
 	{
 		auto const accumulator = [&] {
 			watch const             _("transform reduce[unseq]");
