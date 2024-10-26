@@ -73,7 +73,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	return boost::report_errors();
 #endif
 
-	if(RUNNING_ON_VALGRIND) {
+	if constexpr(RUNNING_ON_VALGRIND) {
 		return boost::report_errors();
 	}
 
@@ -365,6 +365,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::blas::gemv_n(1.0, K2D.begin(), K2D.size(), ones.begin(), 0.0, init.begin());
 			return std::forward<decltype(init)>(init);
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
+
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+		}
+	}
+
+	{
+		auto const accumulator = [&](auto&& init) {
+			watch _("blas gemv smart");
+			multi::blas::gemv_n(1.0, K2D.begin(), K2D.size(), init[0].begin(), 0.0, init[1].begin());
+			return +init[1];
+		}(multi::array<double, 2>({2, K2D.extension()}, 1.0));
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
