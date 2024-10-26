@@ -26,7 +26,7 @@
 // IWYU pragma: no_include <new>                              // for bad_alloc
 
 #ifndef __NVCC__
-	#if defined __has_include && __has_include(<execution>) && !defined(__clang__)
+	#if defined __has_include && __has_include(<execution>) && !defined(__clang__) && !defined(__INTEL_LLVM_COMPILER)
 		#include <execution>  // IWYU pragma: keep
 	#endif
 #endif
@@ -35,6 +35,7 @@ namespace multi = boost::multi;
 
 class watch {
 	std::chrono::time_point<std::chrono::high_resolution_clock> start_ = std::chrono::high_resolution_clock::now();
+
 	std::string                                                 msg_;
 
  public:
