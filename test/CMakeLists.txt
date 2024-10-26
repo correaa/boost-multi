@@ -208,7 +208,9 @@ else()
 	-Wsuggest-attribute=noreturn # -Wsuggest-attribute=pure # (false positive in gcc 8.5.0 RedHat)
 	-Wsuggest-final-methods -Wsuggest-final-types
 	-Wsuggest-override # (gcc 12, not in gcc 11)
-	-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
+	-Wswitch -Wswitch-bool
+	-Wno-switch-default
+	-Wswitch-enum
 	# -Wswitch-outside-range # (gcc 11, not in gcc 9)
 	-Wswitch-unreachable
 	-Wsync-nand -Wsynth
@@ -718,7 +720,9 @@ else()
 	-Wsuper-class-method-mismatch
 	-Wsuspicious-bzero -Wsuspicious-memaccess
 	# -Wswift-name-attribute (clang 13, not in clang 11)
-	-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
+	-Wswitch -Wswitch-bool
+	-Wno-switch-default
+	-Wswitch-enum
 	-Wsync-fetch-and-nand-semantics-changed
 	-Wsynth
 	# -Wtarget-clones-mixed-specifiers (clang 15, not in clang 13)

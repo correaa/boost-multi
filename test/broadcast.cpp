@@ -32,6 +32,13 @@ BOOST_AUTO_TEST_CASE(broadcast_as_fill) {
 	BOOST_TEST( BB[1] == bb );
 
 	BOOST_TEST( std::all_of(BB.begin(), BB.end(), [&bb](auto const& row) { return row == bb; }) );
+
+	multi::array<double, 0> one{1.0};
+
+	BOOST_TEST( one == 1.0 );
+
+	auto const& ones = one.broadcasted();
+	BOOST_TEST( std::abs( *ones.begin() - 1.0 ) < 1.0e-8 );
 }
 
 return boost::report_errors();}
