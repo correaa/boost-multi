@@ -16,6 +16,7 @@
 #include <algorithm>    // for generate, transform
 #include <cmath>        // for abs
 #include <complex>      // for complex, operator*
+#include <iostream>     // for char_traits, basic_ost...
 #include <iterator>     // for size, begin
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for inner_product
@@ -67,21 +68,21 @@ void gemv_broadcast() {
 	}
 	// BLAS GEMV doesn't work with stride zero
 	// {
-	// 	multi::array<double, 0> const one(1.0);
-	// 	auto const& ones = one.broadcasted();
+	//  multi::array<double, 0> const one(1.0);
+	//  auto const& ones = one.broadcasted();
 
-	// 	BOOST_TEST( ones.stride() == 0 );
+	//  BOOST_TEST( ones.stride() == 0 );
 
-	// 	BOOST_TEST( ones[0] == 1.0 );
-	// 	BOOST_TEST( ones[1] == 1.0 );
-	// 	BOOST_TEST( ones[2] == 1.0 );
+	//  BOOST_TEST( ones[0] == 1.0 );
+	//  BOOST_TEST( ones[1] == 1.0 );
+	//  BOOST_TEST( ones[2] == 1.0 );
 
-	// 	multi::array<double, 1> sum_by_rows({2}, 0.0);
-	// 	blas::gemv_n(1.0, a.begin(), 2, ones.begin(), 0.0, sum_by_rows.begin());
+	//  multi::array<double, 1> sum_by_rows({2}, 0.0);
+	//  blas::gemv_n(1.0, a.begin(), 2, ones.begin(), 0.0, sum_by_rows.begin());
 
-	// 	std::cout << sum_by_rows[0] << " " << sum_by_rows[1] << "\n";
-	// 	BOOST_TEST( std::abs( sum_by_rows[0] - (1.0 + 2.0 + 3.0)) < 1.0e-8 );
-	// 	BOOST_TEST( std::abs( sum_by_rows[1] - (4.0 + 5.0 + 6.0)) < 1.0e-8 );
+	//  std::cout << sum_by_rows[0] << " " << sum_by_rows[1] << "\n";
+	//  BOOST_TEST( std::abs( sum_by_rows[0] - (1.0 + 2.0 + 3.0)) < 1.0e-8 );
+	//  BOOST_TEST( std::abs( sum_by_rows[1] - (4.0 + 5.0 + 6.0)) < 1.0e-8 );
 	// }
 }
 
