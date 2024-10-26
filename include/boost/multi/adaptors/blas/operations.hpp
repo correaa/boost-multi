@@ -45,7 +45,7 @@ auto hermitized(A&& array) -> decltype(auto) {return conjugated_transposed(std::
 
 namespace operators {
 
-struct H_t {
+struct H_t {  // NOLINT(readability-identifier-naming) blas naming
 
 	template<class A, std::enable_if_t<std::decay_t<A>::rank::value == 2, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return hermitized(std::forward<A>(array)); }
