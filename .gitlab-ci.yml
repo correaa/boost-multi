@@ -383,7 +383,7 @@ clang++-m32:
     - x86_64  # for g++-multilib in image
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib cmake make tar wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake make tar wget
     - git clone https://github.com/xianyi/OpenBLAS.git
     - cd OpenBLAS
     - CFLAGS="-m32" make

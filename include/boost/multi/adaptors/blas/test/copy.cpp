@@ -9,8 +9,10 @@
 	#include <algorithm>  // for transform
 	#include <chrono>     // NOLINT(build/c++11) for duration, high_resolution...
 	#if __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
-		#if !((defined(__clang__) && !defined(__apple_build_version__)) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
-			#include <execution>  // for execution_policy
+		#if !((defined(__clang__) && !defined(__apple_build_version__)) && defined(__CUDA__))
+			#if (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+				#include <execution>  // for execution_policy
+			#endif
 		#endif
 	#endif
 	#include <functional>  // for invoke  // IWYU pragma: keep
@@ -110,7 +112,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> B2D({10000, 10000}, 66.6);
 		auto&&                  B2D_block = ~(~B2D({1000, 9000}, {1000, 9000})).strided(2);
 
-		using namespace std::chrono;  // NOLINT(google-build-using-namespace)
+		using std::chrono::high_resolution_clock;
+		using std::chrono::duration;
 
 		std::cout
 			<< "MULTI assignment\n"
@@ -131,8 +134,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-//  #if defined(__cpp_lib_execution) && (__cpp_lib_execution >= 201603L) && !defined(__NVCC__) && !defined(__NVCOMPILER) && !((defined(__clang__) ) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
-	#if __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER) && !((defined(__clang__) ) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+	#if __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+	#if !((defined(__clang__) ) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 		#if(__cplusplus >= 202002L)
 		#if !defined(__apple_build_version__)
 		std::cout << "std::transform par BLAS\n"
@@ -175,6 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 		#endif
+	#endif
 	#endif
 
 		std::cout << "std::copy\n"
