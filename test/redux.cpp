@@ -8,6 +8,7 @@
 #endif
 
 #include <boost/multi/array.hpp>  // for array, implicit_cast, explicit_cast
+
 #include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>
@@ -41,8 +42,9 @@ class watch {
 	~watch() {
 		std::cerr << msg_ << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_).count() << " ms\n";
 	};
-	watch(watch const&)           = delete;
-	auto& operator=(watch const&) = delete;
+	watch(watch const&) = delete;
+	watch(watch&&)      = delete;
+	auto operator=(watch const&) = delete;
 	//  non-default destructor but does not define a copy constructor, a copy assignment operator, a move constructor or a move assignment operator
 };
 
