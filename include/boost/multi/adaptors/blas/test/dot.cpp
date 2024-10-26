@@ -11,6 +11,7 @@
 #include <boost/multi/array.hpp>                     // for array, static_array
 
 #include <algorithm>   // for for_each, transform
+#include <cmath>
 #include <complex>     // for complex, operator*
 #include <functional>  // for plus  // IWYU pragma: keep
 #include <iterator>    // for begin, end
@@ -18,6 +19,7 @@
 #include <memory>      // for allocator
 #include <numeric>     // for inner_product
 // IWYU pragma: no_include <tuple>                                     // for tuple_element<>:...
+// IWYU pragma: no_include <stdlib.h>
 #include <type_traits>  // for is_same
 #include <utility>      // for forward
 
