@@ -23,7 +23,7 @@ void zero_stride() {
 	multi::array<double, 1> y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) blas naming
 
 	// regular arrays, stride != 0
-	multi::array<double, 1> const x = {1.0, 1.0, 1.0};
+	multi::array<double, 1> const x = {1.0, 1.0, 1.0};  // NOLINT(readability-identifier-length) blas naming
 
 	multi::blas::axpy(1.0, x.begin(), y);
 
