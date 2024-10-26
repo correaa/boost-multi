@@ -8,11 +8,12 @@
 #include <iterator>  // for size
 #if __cplusplus > 201703L
 #if __has_include(<ranges>)
-#include <ranges>  // NOLINT(misc-include-cleaner)
+#include <ranges>  // NOLINT(misc-include-cleaner) IWYU pragma: keep
 #endif
 #endif
 #include <tuple>     // for make_tuple, tuple_element<>::type
 // IWYU pragma: no_include <type_traits>
+// IWYU pragma: no_#include <version>
 
 namespace multi = boost::multi;
 

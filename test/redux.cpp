@@ -3,12 +3,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wdouble-promotion"
+#endif
+
 #include <boost/multi/array.hpp>  // for array, implicit_cast, explicit_cast
 #include <boost/multi/adaptors/blas.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>
+#include <algorithm>  // IWYU pragma: keep
 #include <chrono>
 #include <cmath>
 #include <iostream>
