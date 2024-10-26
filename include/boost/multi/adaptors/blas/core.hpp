@@ -260,7 +260,7 @@ template<class ALPHA, class SXP, class SX = typename pointer_traits<SXP>::elemen
 	is_##T<ALPHA>{} && is_##T<SX>{} && is_##T<SY>{} && is_assignable<SY&, decltype(ALPHA{}*SX{})>{} \
 	&& is_convertible_v<SXP, SX*> && is_convertible_v<SYP, SY*> \
 , int> =0> \
-void axpy(size_t n, ALPHA const* a, SXP x, size_t incx, SYP y, size_t incy) {BLAS(T##axpy)(n, reinterpret_cast<T const *>(a), reinterpret_cast<T const*>(static_cast<SX*>(x)), incx, reinterpret_cast<T*>(static_cast<SY*>(y)), incy);}  /*NOLINT(readability-identifier-length) NOLINT(readability-identifier-length) conventional BLAS name*/
+void axpy(size_t n, ALPHA const* a, SXP x, size_t incx, SYP y, size_t incy) {BLAS(T##axpy)(n, reinterpret_cast<T const *>(a), reinterpret_cast<T const*>(static_cast<SX*>(x)), incx, reinterpret_cast<T*>(static_cast<SY*>(y)), incy);}  /*NOLINT(readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses) conventional BLAS name*/
 
 xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 #undef  xaxpy
