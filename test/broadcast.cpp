@@ -6,7 +6,7 @@
 #include <boost/multi/array.hpp>
 
 #include <algorithm>  // for std::ranges::fold_left
-#include <cmath>      // for std::abs
+#include <cmath>      // IWYU pragma: keep  for std::abs
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
