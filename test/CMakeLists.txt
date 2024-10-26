@@ -926,6 +926,7 @@ else()
 
 		find_package(BLAS REQUIRED)
 		target_link_libraries(redux.cpp.x PRIVATE BLAS::BLAS)
+		target_compile_options(redux.cpp.x PRIVATE -Wno-double-promotion)
 
 	endif()
 
