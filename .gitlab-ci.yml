@@ -51,7 +51,7 @@ g++-m32 sanitize:
   script:
     - dpkg --add-architecture i386
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libblas-dev:i386 libboost-serialization:i386 make tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libblas-dev:i386 libboost-serialization-dev:i386 make tar wget
     # - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
     # - tar -xf boost_1_84_0.tar.gz
     # - cd boost_1_84_0
@@ -384,6 +384,11 @@ clang++-m32:
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib cmake make tar wget
+    - git clone https://github.com/xianyi/OpenBLAS.git
+    - cd OpenBLAS
+    - CFLAGS="-m32" make
+    - make install PREFIX=/usr/local/
+    - cd ..
     - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
     - tar -xf boost_1_84_0.tar.gz 
     - cd boost_1_84_0
