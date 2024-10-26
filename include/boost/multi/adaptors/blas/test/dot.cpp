@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/blas/core.hpp>        // for context, dot
 #include <boost/multi/adaptors/blas/dot.hpp>         // for dot_ref, dot, dot_n
 #include <boost/multi/adaptors/blas/numeric.hpp>     // for involuter, conj
@@ -22,7 +24,6 @@
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -140,11 +141,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		complex res{0.0F, 0.0F};
 		blas::dot(x, y, res);
 
+		BOOST_TEST( std::abs(real(res)) > 1.0e-6 );
+
 		// // an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
 		BOOST_TEST_EQ(
 			real(res),
 			real(std::inner_product(
-				begin(x), end(x), begin(y), complex{}, std::plus{},  // NOLINT(fuchsia-default-arguments-calls)
+				begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto alpha, auto omega) { return alpha * std::conj(omega); }
 			))
 		);
