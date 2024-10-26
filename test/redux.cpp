@@ -8,15 +8,15 @@
 #endif
 
 #include <boost/multi/array.hpp>  // for array, implicit_cast, explicit_cast
-#include <boost/multi/adaptors/blas.hpp>
+#include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // IWYU pragma: keep
 #include <chrono>
-#include <cmath>
+#include <cmath>  // IWYU pragma: keep
 #include <iostream>
-#include <numeric>
+#include <numeric>  // IWYU pragma: keep
 #include <string>
 #include <utility>
 
@@ -26,7 +26,7 @@
 
 #ifndef __NVCC__
 	#if defined __has_include && __has_include(<execution>)
-		#include <execution>
+		#include <execution>  // IWYU pragma: keep
 	#endif
 #endif
 
