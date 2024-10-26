@@ -26,7 +26,7 @@
 // IWYU pragma: no_include <new>                              // for bad_alloc
 
 #ifndef __NVCC__
-	#if defined __has_include && __has_include(<execution>) && !defined(__clang__) && !defined(__INTEL_LLVM_COMPILER)
+	#if defined __has_include && __has_include(<execution>) && !defined(__clang__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 		#include <execution>  // IWYU pragma: keep
 	#endif
 #endif
