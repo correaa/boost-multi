@@ -257,7 +257,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-#if !defined(__NVCC__) && !defined(__NVCOMPILER) && (!defined(__GNUC__) || (__GNUC__ > 7)) && (!defined(__clang_major__) || (__clang_major__ > 7))
+#if !defined(__NVCC__) && !defined(__NVCOMPILER) && (!defined(__clang_major__) || (__clang_major__ > 7))
 	{
 		auto const accumulator = [&] {
 			watch const             _("transform reduce[unseq]");
@@ -357,6 +357,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 #endif  // __NVCC__
+
+	{
+		auto const accumulator = [&](auto&& init) {
+			watch _("blas gemv");
+			multi::array<double, 1> ones({init.extension()}, 1.0);
+			multi::blas::gemv_n(1.0, K2D.begin(), K2D.size(), ones.begin(), 0.0, init.begin());
+			return std::forward<decltype(init)>(init);
+		}(multi::array<double, 1>(K2D.extension(), 0.0));
+
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+		}
+	}
 
 	return boost::report_errors();
 }

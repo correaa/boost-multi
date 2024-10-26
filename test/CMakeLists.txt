@@ -924,6 +924,9 @@ else()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
 
+		find_package(BLAS REQUIRED)
+		target_link_libraries(redux.cpp.x PRIVATE BLAS::BLAS)
+
 	endif()
 
 endif()
