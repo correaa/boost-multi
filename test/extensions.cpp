@@ -6,8 +6,6 @@
 
 #include <boost/multi/array.hpp>
 
-#include <tuple>
-
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
