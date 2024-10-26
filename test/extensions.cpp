@@ -6,6 +6,8 @@
 
 #include <boost/multi/array.hpp>
 
+#include <tuple>  // IWYU pragma: keep
+
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)

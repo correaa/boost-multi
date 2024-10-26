@@ -10,6 +10,7 @@
 #include <algorithm>  // for std::ranges::fold_left
 #include <cmath>      // IWYU pragma: keep  for std::abs
 // IWYU pragma: no_include <cstdlib>                          // for abs
+// IWYU pragma: no_include <stdlib.h>                          // for abs
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
@@ -36,7 +37,7 @@ BOOST_AUTO_TEST_CASE(broadcast_as_fill) {
 
 	BOOST_TEST( std::all_of(BB.begin(), BB.end(), [&bb](auto const& row) { return row == bb; }) );
 
-	multi::array<double, 0> one{1.0};
+	multi::array<double, 0> const one{1.0};
 
 	BOOST_TEST( one == 1.0 );
 
