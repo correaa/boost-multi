@@ -43,6 +43,7 @@ auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identi
 #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
 void gemv_broadcast() {
+	// NOLINTNEXTLINE(readability-identifier-length)
 	multi::array<double, 2> const a = {
 		{1.0, 2.0, 3.0},
 		{4.0, 5.0, 6.0}
