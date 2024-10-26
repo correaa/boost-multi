@@ -39,7 +39,7 @@ class watch {
 	};
 	watch(watch const&)           = delete;
 	auto& operator=(watch const&) = delete;
-	//	non-default destructor but does not define a copy constructor, a copy assignment operator, a move constructor or a move assignment operator
+	//  non-default destructor but does not define a copy constructor, a copy assignment operator, a move constructor or a move assignment operator
 };
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -65,9 +65,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-#if !defined(NDEBUG) || defined(RUNNING_ON_VALGRIND)
-	return boost::report_errors();
-#endif
+#if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND)
 
 	{
 		auto const accumulator = [&]() {
@@ -255,7 +253,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 
-#if (defined __has_include && __has_include(<execution>)) && !defined(__NVCC__) && !defined(__NVCOMPILER) && (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && (!defined(__clang_major__) || (__clang_major__ > 7))
+#if (defined __has_include && __has_include(<execution>)) && !defined(__NVCC__) && !defined(__NVCOMPILER) && (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && (!defined(__clang_major__) || (__clang_major__ > 7)) && !defined(_LIBCPP_VERSION)
 	{
 		auto const accumulator = [&] {
 			watch const             _("transform reduce[unseq]");
@@ -380,6 +378,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
+#endif
 
 	return boost::report_errors();
 }
