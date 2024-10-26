@@ -51,13 +51,13 @@ g++-m32 sanitize:
   script:
     - dpkg --add-architecture i386
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libblas-dev:i386 make tar wget
-    - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
-    - tar -xf boost_1_84_0.tar.gz
-    - cd boost_1_84_0
-    - ./bootstrap.sh
-    - ./b2 cxxflags=-m32 --with-serialization --with-timer install -j4  # libc++ only works with boost test compiled with libc++
-    - cd ..
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libblas-dev:i386 libboost-serialization:i386 make tar wget
+    # - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
+    # - tar -xf boost_1_84_0.tar.gz
+    # - cd boost_1_84_0
+    # - ./bootstrap.sh
+    # - ./b2 cxxflags=-m32 --with-serialization --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+    # - cd ..
     - mkdir build && cd build
     - c++ --version
     - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
