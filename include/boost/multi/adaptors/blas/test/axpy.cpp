@@ -19,8 +19,8 @@ using complex = multi::complex<double>;  // test internal implementation of comp
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
-static void zero_stride() {
-	multi::array<double, 1> y = {1.0, 2.0, 3.0};
+void zero_stride() {
+	multi::array<double, 1> y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) blas naming
 
 	// regular arrays, stride != 0
 	multi::array<double, 1> const x = {1.0, 1.0, 1.0};

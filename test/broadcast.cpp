@@ -3,12 +3,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>
 
 #include <algorithm>  // for std::ranges::fold_left
 #include <cmath>      // IWYU pragma: keep  for std::abs
+// IWYU pragma: no_include <cstdlib>                          // for abs
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 namespace multi = boost::multi;
