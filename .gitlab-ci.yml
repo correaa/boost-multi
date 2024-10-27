@@ -848,7 +848,6 @@ circle:
     - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
     - tar -zxvf build_*.tgz
     - cd ..
-    - ls
     - ./build_latest/circle --version
     - mkdir build && cd build
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
