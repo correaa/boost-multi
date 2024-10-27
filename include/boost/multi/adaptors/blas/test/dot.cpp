@@ -249,7 +249,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{5.0,  6.0,  7.0,  8.0},
 			{9.0, 10.0, 11.0, 12.0},
 		};
-		double        res = std::numeric_limits<double>::quiet_NaN();
+
+		double res = std::numeric_limits<double>::quiet_NaN();
+
 		blas::context ctxt;
 		blas::dot_n(&ctxt, begin(CA[1]), size(CA[1]), begin(CA[2]), &res);
 		BOOST_TEST( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0) );
