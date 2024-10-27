@@ -265,8 +265,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	#endif
 
 	#if(defined __has_include && __has_include(<execution>))
-		#if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__))
-			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && (!defined(__clang_major__) || (__clang_major__ > 7)) && !defined(_LIBCPP_VERSION) && !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+		#if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7))
+			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && !defined(_LIBCPP_VERSION) && !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
 		auto const accumulator = [&] {
 			watch const _("transform reduce[unseq]");
