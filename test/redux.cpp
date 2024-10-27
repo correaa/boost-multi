@@ -41,7 +41,7 @@ class watch {
 	std::string msg_;
 
  public:
-	explicit watch(std::string msg) : msg_(std::move(msg)) {}
+	explicit watch(std::string_view msg) : msg_(msg) {}
 	~watch() {
 		std::cerr << msg_ << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_).count() << " ms\n";
 	}
