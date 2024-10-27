@@ -313,8 +313,8 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_c<Y>{} && is_assignable<R&, decltype(/*0.0F+*/ X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP rp) {
 	[[maybe_unused]] static bool const check = []{
 		std::clog << "using dot non void\n";
-		std::array<std::complex<float>, 3> const v1 = {std::complex<float>{1.0, 2.0}, std::complex<float>{3.0,  4.0}, std::complex<float>{ 5.0,  6.0}};
-		std::array<std::complex<float>, 3> const v2 = {std::complex<float>{7.0, 8.0}, std::complex<float>{9.0, 10.0}, std::complex<float>{11.0, 12.0}};
+		std::array<std::complex<float>, 3> const v1 = {std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F,  4.0F}, std::complex<float>{ 5.0F,  6.0F}};
+		std::array<std::complex<float>, 3> const v2 = {std::complex<float>{7.0F, 8.0F}, std::complex<float>{9.0F, 10.0F}, std::complex<float>{11.0F, 12.0F}};
 		auto const rr = BLAS(cdotu)(3, v1.data(), 1, v2.data(), 1);
 		std::clog << "dot is (" << rr.real << ", " << rr.imag << ") should be " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << ")\n";
 		if( std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error{"[imag] cdotu should be configured as void"}; }
