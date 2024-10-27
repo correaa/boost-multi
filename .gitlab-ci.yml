@@ -60,7 +60,7 @@ g++-m32 sanitize:
     # - cd ..
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -D_GLIBCXX_SANITIZE_VECTOR -DRETURN_BY_STACK" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
