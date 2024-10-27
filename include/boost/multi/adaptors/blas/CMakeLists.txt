@@ -51,8 +51,9 @@ if(BLAS_FOUND)
 		message(WARNING "Boost Unit Test Framework not found, BLAS-adaptor tests will not be compiled and run. If you want this feature, install Boost")
 	endif()
 else()
-	message(WARNING "BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:"
-		"\n    sudo apt install libblas-dev"
+	message(WARNING
+		"BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:"
+		"\n    sudo apt install libblas-dev # in Ubuntu"
 		"\n    sudo dnf install blas-devel  # in Fedora")
 	message(WARNING "BLA_VENDOR was set to ${BLA_VENDOR}\n")
 endif()
