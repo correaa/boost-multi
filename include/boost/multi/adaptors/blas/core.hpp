@@ -365,6 +365,9 @@ namespace core {
 using std::enable_if_t;
 using std::is_assignable;
 
+using size_t = INT;
+using ssize_t = std::make_signed_t<size_t>;
+
 // NOLINTBEGIN(modernize-use-constraints) TODO(correaa) for C++20
 template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} && is_s<X>{} && is_s<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(sgemv)(trans, m, n, *a, reinterpret_cast<s const*>(ma), lda, reinterpret_cast<s const*>(x), incx, *b, reinterpret_cast<s*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
 template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} && is_d<X>{} && is_d<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, *a, reinterpret_cast<d const*>(ma), lda, reinterpret_cast<d const*>(x), incx, *b, reinterpret_cast<d*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
