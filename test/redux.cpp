@@ -18,6 +18,7 @@
 #include <iostream>
 #include <numeric>    // IWYU pragma: keep
 #include <string>
+#include <string_view>
 // IWYU pragma: no_include <stdlib.h>                         // for abs
 #include <utility>
 
