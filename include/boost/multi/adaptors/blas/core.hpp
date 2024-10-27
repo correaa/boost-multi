@@ -318,7 +318,7 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 
 		{
 			std::complex<float> gemv_rr{-12.345F, -54.321F};
-			BLAS(cgemv)('N', 3, 1, std::complex<float>{1.0F, 0.0F}, v1.data(), 1, v2.data(), 1, std::complex<float>{1.0F, 0.0F}, &gemv_rr, 1);
+			BLAS(cgemv)('N', 1, 3, std::complex<float>{1.0F, 0.0F}, v1.data(), 1, v2.data(), 1, std::complex<float>{1.0F, 0.0F}, &gemv_rr, 1);
 		
 			std::clog << "gemv is (" << gemv_rr.real() << ", " << gemv_rr.imag() << ") should be " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << "\n";
 		}
