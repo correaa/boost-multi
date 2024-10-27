@@ -26,8 +26,10 @@
 // IWYU pragma: no_include <new>                              // for bad_alloc
 
 #ifndef __NVCC__
-	#if defined __has_include && __has_include(<execution>) && !defined(__clang__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
-		#include <execution>  // IWYU pragma: keep
+	#if defined __has_include && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+		#if !(defined(__clang__) && defined(__CUDA__))
+			#include <execution>  // IWYU pragma: keep
+		#endif
 	#endif
 #endif
 
@@ -262,6 +264,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if (defined __has_include && __has_include(<execution>))
 #if !defined(__NVCC__) && !defined(__NVCOMPILER)
+#if !(defined(__clang__) && defined(__CUDA__))
 #if (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && (!defined(__clang_major__) || (__clang_major__ > 7)) && !defined(_LIBCPP_VERSION)
 	{
 		auto const accumulator = [&] {
@@ -377,6 +380,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
+#endif
 #endif
 #endif
 #endif  // __NVCC__
