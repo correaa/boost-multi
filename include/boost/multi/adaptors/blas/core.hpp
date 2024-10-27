@@ -315,16 +315,17 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 		std::clog << "using dot non void\n";
 		std::array<std::complex<float>, 3> const v1 = {std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F,  4.0F}, std::complex<float>{ 5.0F,  6.0F}};
 		std::array<std::complex<float>, 3> const v2 = {std::complex<float>{7.0F, 8.0F}, std::complex<float>{9.0F, 10.0F}, std::complex<float>{11.0F, 12.0F}};
-		Complex_float rr{-1.0F, -2.0F};
-		rr = BLAS(cdotu)(3, v1.data(), 1, v2.data(), 1);
-		std::clog << "dot is (" << rr.real << ", " << rr.imag << ") should be " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << "\n";
 
 		{
-			std::complex<float> gemv_rr{-10.0F, -20.0F};
+			std::complex<float> gemv_rr{-12.345F, -54.321F};
 			BLAS(cgemv)('N', 3, 1, std::complex<float>{1.0F, 0.0F}, v1.data(), 1, v2.data(), 1, std::complex<float>{1.0F, 0.0F}, &gemv_rr, 1);
 		
 			std::clog << "gemv is (" << gemv_rr.real() << ", " << gemv_rr.imag() << ") should be " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << "\n";
 		}
+
+		Complex_float rr{-1.0F, -2.0F};
+		rr = BLAS(cdotu)(3, v1.data(), 1, v2.data(), 1);
+		std::clog << "dot is (" << rr.real << ", " << rr.imag << ") should be " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << "\n";
 
 		if( std::abs(rr.real - std::real(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error{"[real] cdotu should be configured as void"}; }
 		if( std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error{"[imag] cdotu should be configured as void"}; }
