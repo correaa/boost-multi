@@ -18,6 +18,7 @@
 #include <iostream>
 #include <numeric>    // IWYU pragma: keep
 #include <string>
+// IWYU pragma: no_include <stdlib.h>                         // for abs
 #include <utility>
 
 // IWYU pragma: no_include <pstl/glue_numeric_impl.h>         // for reduce, transform_reduce
@@ -263,7 +264,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	#if(defined __has_include && __has_include(<execution>))
 		#if !defined(__NVCC__) && !defined(__NVCOMPILER)
-			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7)) && !defined(_LIBCPP_VERSION) && !defined(__apple_build_version__)
+			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7)) && !defined(_LIBCPP_VERSION) && !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
 		auto const accumulator = [&] {
 			watch const _("transform reduce[unseq]");
@@ -379,7 +380,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return std::forward<decltype(init)>(init);
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
@@ -391,7 +392,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return +init[1];
 		}(multi::array<double, 2>({2, K2D.extension()}, 1.0));
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
