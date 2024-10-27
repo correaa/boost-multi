@@ -42,7 +42,7 @@ class watch {
 	std::string msg_;
 
  public:
-	explicit watch(std::string_view msg) : msg_(msg) {}
+	explicit watch(std::string_view msg) : msg_(msg) {}  // NOLINT(fuchsia-default-arguments-calls)
 	~watch() {
 		std::cerr << msg_ << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_).count() << " ms\n";
 	}
@@ -90,7 +90,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return ret;
 		}();
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
@@ -103,7 +103,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				multi::array<double, 1>(K2D.extension(), 0.0),
 				[](auto const& acc, auto const& col) {
 					multi::array<double, 1> res(acc.extensions());
-					for(auto const i : col.extension()) {
+					for(auto const i : col.extension()) {  // NOLINT(altera-unroll-loops)
 						res[i] = acc[i] + col[i];
 					}
 					return res;
@@ -111,7 +111,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 		}();
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
@@ -124,7 +124,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				std::move(init),
 				[](auto&& acc, auto const& col) {
 					multi::array<double, 1> ret(std::forward<decltype(acc)>(acc));
-					for(auto const i : col.extension()) {
+					for(auto const i : col.extension()) {  // NOLINT(altera-unroll-loops)
 						ret[i] += col[i];
 					}
 					return ret;
@@ -132,7 +132,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
@@ -144,7 +144,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				(~K2D).begin(), (~K2D).end(),
 				std::move(init),
 				[](auto&& acc, auto const& col) -> decltype(acc) {
-					for(auto const i : col.extension()) {
+					for(auto const i : col.extension()) {  // NOLINT(altera-unroll-loops)
 						acc[i] += col[i];
 					}
 					return std::forward<decltype(acc)>(acc);
@@ -152,7 +152,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
@@ -170,7 +170,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
@@ -184,14 +184,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				multi::array<double, 1>(K2D.extension(), 0.0),
 				[](auto acc, auto const& col) {
 					multi::array<double, 1> ret(std::move(acc));
-					// multi::array<double, 1> ret(acc.extensions());
-					std::transform(col.begin(), col.end(), ret.begin(), ret.begin(), [](auto const& cole, auto&& acce) { return std::move(acce) + cole; });
+					std::transform(col.begin(), col.end(), ret.begin(), ret.begin(), [](auto const& cole, auto&& acce) { return std::forward<decltype(acce)>(acce) + cole; });
 					return ret;
 				}
 			);
 		}();
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
@@ -227,7 +226,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return ret;
 		}();
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
@@ -243,7 +242,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return std::forward<decltype(init)>(init);
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
