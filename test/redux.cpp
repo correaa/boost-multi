@@ -78,9 +78,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&]() {
-			watch                   _("raw loop");
-			multi::array<double, 1> ret({nx}, 0.0);
+			watch const _("raw loop");
 
+			multi::array<double, 1> ret({nx}, 0.0);
 			for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {      // NOLINT(altera-id-dependent-backward-branch)
 				for(multi::array<double, 2>::index iy = 0; iy != ny; ++iy) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 					ret[ix] += K2D[ix][iy];
@@ -96,7 +96,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&] {
-			watch _("accumulate for");
+			watch const _("accumulate for");
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
 				multi::array<double, 1>(K2D.extension(), 0.0),
@@ -117,7 +117,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&](auto init) {
-			watch _("accumulate move");
+			watch const _("accumulate move");
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
 				std::move(init),
@@ -138,7 +138,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&](auto init) {
-			watch _("accumulate forward");
+			watch const _("accumulate forward");
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
 				std::move(init),
@@ -158,7 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&](auto init) {
-			watch _("accumulate transform forward");
+			watch const _("accumulate transform forward");
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
 				std::move(init),
@@ -177,7 +177,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
 	{
 		auto const accumulator = [&] {
-			watch _("reduce transform forward");
+			watch const _("reduce transform forward");
 			return std::reduce(
 				(~K2D).begin(), (~K2D).end(),
 				multi::array<double, 1>(K2D.extension(), 0.0),
@@ -198,7 +198,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		auto const accumulator = [&] {
-			watch const             _("transform accumulate element zero");
+			watch const _("transform accumulate element zero");
+
 			multi::array<double, 1> ret(K2D.extension());
 			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(),
@@ -215,7 +216,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
 	{
 		auto const accumulator = [&] {
-			watch const             _("transform reduce element zero");
+			watch const _("transform reduce element zero");
+
 			multi::array<double, 1> ret(K2D.extension());
 			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(),
@@ -263,8 +265,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	#endif
 
 	#if(defined __has_include && __has_include(<execution>))
-		#if !defined(__NVCC__) && !defined(__NVCOMPILER)
-			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7)) && !defined(_LIBCPP_VERSION) && !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+		#if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__))
+			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && (!defined(__clang_major__) || (__clang_major__ > 7)) && !defined(_LIBCPP_VERSION) && !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
 		auto const accumulator = [&] {
 			watch const _("transform reduce[unseq]");
