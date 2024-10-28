@@ -351,7 +351,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::abs(res[0] - (v1[0][0]*v2[0] + v1[0][1]*v2[1] + v1[0][2]*v2[2])) < 1.0e-8 );
 
-		std::complex<float> res_dot;
+		std::complex<float> res_dot;  // NOLINT(fuchsia-default-arguments-calls)
 
 		blas::dot(v1[0], v2, res_dot);
 
