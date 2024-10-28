@@ -327,8 +327,8 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 		rr = BLAS(cdotu)(3, v1.data(), 1, v2.data(), 1);
 		std::clog << "dot is (" << rr.real << ", " << rr.imag << ") should be " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << "\n";
 
-		if( std::abs(rr.real - std::real(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error{"[real] cdotu should be configured as void"}; }
-		if( std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error{"[imag] cdotu should be configured as void"}; }
+		if( !(std::abs(rr.real - std::real(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) < 1.0e-8) ) { throw std::logic_error{"[real] cdotu should be configured as void"}; }
+		if( !(std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) < 1.0e-8) ) { throw std::logic_error{"[imag] cdotu should be configured as void"}; }
 		return true;
 	}();
 	auto const rr = BLAS(cdotu)(                                      n, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy); std::memcpy(reinterpret_cast<std::array<float , 2>*>(static_cast<R*>(rp))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*rp));
