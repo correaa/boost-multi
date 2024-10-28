@@ -323,18 +323,20 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 			std::clog
 				<< "multi::blas warning: when using cdotu that returns non-void\n"
 				<< "I detected this problem in BLAS and OpenBLAS 32bit\n"
-				<< "cdotu resturned (" << rr.real << ", " << rr.imag << ", it should resturn " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << '\n'
+				<< "cdotu returned (" << rr.real << ", " << rr.imag << ", it should return " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << '\n'
 				<< "... falling back to cgemv";
 			{
 				std::complex<float> gemv_rr{-12.345F, -54.321F};
 				BLAS(cgemv)('N', 1, v1.size(), std::complex<float>{1.0F, 0.0F}, v1.data(), 1, v2.data(), 1, std::complex<float>{0.0F, 0.0F}, &gemv_rr, 1);
+				std::clog << "cgemv gives " << gemv_rr << ", it should give " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << '\n';
 			
 				if( !(std::abs(gemv_rr - (v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) < 1.0e-8) ) {
-					std::clog << "gemv also failed, it gives " << gemv_rr << ") should be " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << '\n';
+					std::clog << "gemv also failed" << '\n';
 				}
+				return false;  // dot not use cdotu
 			}
 		}
-		return true;  // use cdotu;
+		return true;  // use cdotu
 	}();
 	if(use_cdotu) {
 		auto const rr = BLAS(cdotu)(                                      n, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy); std::memcpy(reinterpret_cast<std::array<float , 2>*>(static_cast<R*>(rp))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*rp));
