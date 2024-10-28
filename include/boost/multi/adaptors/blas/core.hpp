@@ -321,10 +321,10 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 		if( !(std::abs(rr.real - std::real(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) < 1.0e-8)
 			|| !(std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) < 1.0e-8) ) {
 			std::clog
-				<< "multi::blas warning: when using cdotu that returns non-void\n"
-				<< "I detected this problem in BLAS and OpenBLAS 32bit\n"
+				<< "multi::blas setup warning: when using cdotu that returns non-void,\n"
 				<< "cdotu returned (" << rr.real << ", " << rr.imag << ", it should return " << v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] << '\n'
-				<< "... falling back to cgemv";
+				<< "This problem appears with BLAS and OpenBLAS 32bit.\n"
+				<< "... falling back to cgemv\n";
 			{
 				std::complex<float> gemv_rr{-12.345F, -54.321F};
 				BLAS(cgemv)('N', 1, v1.size(), std::complex<float>{1.0F, 0.0F}, v1.data(), 1, v2.data(), 1, std::complex<float>{0.0F, 0.0F}, &gemv_rr, 1);
@@ -339,9 +339,9 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 		return true;  // use cdotu
 	}();
 	if(use_cdotu) {
-		auto const rr = BLAS(cdotu)(                                      n, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy); std::memcpy(reinterpret_cast<std::array<float , 2>*>(static_cast<R*>(rp))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*rp));
+		Complex_float const rr = BLAS(cdotu)(                                      n, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy); std::memcpy(reinterpret_cast<std::array<float , 2>*>(static_cast<R*>(rp))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*rp));
 	} else {
-		BLAS(cgemv)('N', 1, n, std::complex<float>{1.0F, 0.0F}, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy, std::complex<float>{0.0F, 0.0F}, reinterpret_cast<c*>(static_cast<R*>(rp)), 1);
+		BLAS(cgemv)('N', 1, n, std::complex<float>{1.0F, 0.0F}, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy, std::complex<float>{0.0F, 0.0F}, reinterpret_cast<c*>(static_cast<R*>(rp)), 1);  // NOLINT(readability-suspicious-call-argument)
 	}
 }  // NOSONAR
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_z<Y>{} && is_assignable<R&, decltype(/*0.0 +*/ X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(zdotu)(                                      n, reinterpret_cast<z const*>(static_cast<X*>(x)), incx, reinterpret_cast<z const*>(static_cast<Y*>(y)), incy); std::memcpy(reinterpret_cast<std::array<double, 2>*>(static_cast<R*>(r))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}  // NOSONAR
