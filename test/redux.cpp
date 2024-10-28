@@ -59,7 +59,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// auto pp = [] /*__host__ __device__*/ (long ix, long iy) -> double { return double(ix) * double(iy); };
 
-	auto nx = 80000;  // nmax;     // for(long nx = 1; nx <= nmax; nx *= 10)
+	auto nx = 40000;  // nmax;     // for(long nx = 1; nx <= nmax; nx *= 10)
 	auto ny = 2000;   // maxsize;  // for(long ny = 1; ny <= maxsize; ny *= 5)
 
 	// auto total = nx*ny;
@@ -266,7 +266,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	#if(defined __has_include && __has_include(<execution>))
 		#if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7))
-			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && !defined(_LIBCPP_VERSION) && !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && !defined(_LIBCPP_VERSION)
+				#if !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
 		auto const accumulator = [&] {
 			watch const _("transform reduce[unseq]");
@@ -323,7 +324,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			watch const _("transform[par] reduce");
 
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
-			std::transform(std::execution::par, K2D.begin(), K2D.end(), ret.begin(), ret.begin(), [](auto const& row, auto rete) { return std::reduce(row.begin(), row.end(), std::move(rete)); });
+			std::transform(std::execution::par,
+				K2D.begin(), K2D.end(),
+				ret.begin(), ret.begin(),
+				[](auto const& row, auto rete) { return std::reduce(row.begin(), row.end(), std::move(rete)); }
+			);
 			return ret;
 		}();
 
@@ -335,7 +340,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		auto const accumulator = [&](auto ret) {
 			watch const _("* transform[par] reduce[unseq]");
-			std::transform(std::execution::par, K2D.begin(), K2D.end(), ret.begin(), ret.begin(), [](auto const& row, auto rete) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); });
+			std::transform(std::execution::par,
+				K2D.begin(), K2D.end(),
+				ret.begin(), ret.begin(),
+				[](auto const& row, auto rete) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); }
+			);
 			return ret;
 		}(multi::array<double, 1>(K2D.extension(), 0.0));
 
@@ -348,7 +357,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> accumulator(K2D.extension(), 0.0);
 		[&](auto acc_begin) {
 			watch const _("transform[par] reduce[unseq] iterator");
-			return std::transform(std::execution::par, K2D.begin(), K2D.end(), acc_begin, acc_begin, [](auto const& row, auto rete) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); });
+			return std::transform(std::execution::par, 
+				K2D.begin(), K2D.end(),
+				acc_begin, acc_begin,
+				[](auto const& row, auto rete) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); }
+			);
 		}(accumulator.begin());
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
@@ -361,7 +374,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			watch const _("transform[par] reduce[unseq] element zero");
 
 			multi::array<double, 1> ret(K2D.extension());
-			std::transform(std::execution::par, K2D.begin(), K2D.end(), ret.begin(), [zz = std::move(zero_elem)](auto const& row) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(zz)); });
+			std::transform(std::execution::par,
+				K2D.begin(), K2D.end(), ret.begin(),
+				[zz = std::move(zero_elem)](auto const& row) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(zz)); }
+			);
 			return ret;
 		}(0.0);
 
@@ -369,6 +385,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
+				#endif
 			#endif
 		#endif
 	#endif
