@@ -21,7 +21,7 @@
 // IWYU pragma: no_include <tuple>                                     // for tuple_element<>:...
 // IWYU pragma: no_include <stdlib.h>
 #include <type_traits>  // for is_same
-#include <utility>      // for forward
+// #include <utility>      // for forward
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
@@ -61,20 +61,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0) );
 	}
 
-// // float uses of dot are disabled because of a bug in Apple Accelerate BLAS, https://fortran-lang.discourse.group/t/how-many-blas-libraries-have-this-error/4454/23, https://forums.developer.apple.com/forums/thread/717757
-// #ifndef __APPLE__
-// 	BOOST_AUTO_TEST_CASE(blas_dot_context_float) {
-// 		multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
-// 		multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
+// float uses of dot are disabled because of a bug in Apple Accelerate BLAS, https://fortran-lang.discourse.group/t/how-many-blas-libraries-have-this-error/4454/23, https://forums.developer.apple.com/forums/thread/717757
+#ifndef __APPLE__
+	BOOST_AUTO_TEST_CASE(blas_dot_context_float) {
+		multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 
-// 		blas::context const ctxt;
+		blas::context const ctxt;
 
-// 		auto res1 = +blas::dot(&ctxt, x, y);
-// 		BOOST_TEST( res1 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
+		auto res1 = +blas::dot(&ctxt, x, y);
+		BOOST_TEST( res1 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 
-// 		auto const res2 = +blas::dot(&ctxt, x, y);
-// 		BOOST_TEST( res2 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
-// 	}
+		auto const res2 = +blas::dot(&ctxt, x, y);
+		BOOST_TEST( res2 == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
+	}
 
 // 	BOOST_AUTO_TEST_CASE(blas_dot_no_context_float) {
 // 		multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
@@ -92,7 +92,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 // 		blas::dot(x, y, multi::array_ref<float, 0>(res));
 // 		BOOST_TEST( res == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 // 	}
-// #endif
+#endif
 
 // 	BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_double) {  // if you get a segfaut here, your system may require -DRETURN_BY_STACK
 // 		using complex = std::complex<double>;
