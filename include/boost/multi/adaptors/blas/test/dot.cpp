@@ -6,21 +6,21 @@
 
 #include <boost/multi/adaptors/blas/core.hpp>        // for context, dot
 #include <boost/multi/adaptors/blas/dot.hpp>         // for dot_ref, dot, dot_n
-#include <boost/multi/adaptors/blas/numeric.hpp>     // for involuter, conj
-#include <boost/multi/adaptors/blas/operations.hpp>  // for C, hermitized
+// #include <boost/multi/adaptors/blas/numeric.hpp>     // for involuter, conj
+// #include <boost/multi/adaptors/blas/operations.hpp>  // for C, hermitized
 #include <boost/multi/array.hpp>                     // for array, static_array
 
-#include <algorithm>   // for for_each, transform
+// #include <algorithm>   // for for_each, transform
 #include <cmath>
-#include <complex>     // for complex, operator*
-#include <functional>  // for plus  // IWYU pragma: keep
+// #include <complex>     // for complex, operator*
+// #include <functional>  // for plus  // IWYU pragma: keep
 #include <iterator>    // for begin, end
 #include <limits>      // for numeric_limits
-#include <memory>      // for allocator
+// #include <memory>      // for allocator
 #include <numeric>     // for inner_product
 // IWYU pragma: no_include <tuple>                                     // for tuple_element<>:...
 // IWYU pragma: no_include <stdlib.h>
-#include <type_traits>  // for is_same
+// #include <type_traits>  // for is_same
 // #include <utility>      // for forward
 
 namespace multi = boost::multi;
