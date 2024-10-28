@@ -6,8 +6,9 @@
 #include <boost/multi/adaptors/blas/core.hpp>     // for context
 #include <boost/multi/adaptors/blas/numeric.hpp>  // for imag, real
 #include <boost/multi/adaptors/complex.hpp>       // for complex, operator*
-
 #include <boost/multi/array.hpp>                  // for array, implicit_cast
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <complex>  // for complex, operator+
 
@@ -16,8 +17,31 @@ namespace blas  = multi::blas;
 
 using complex = multi::complex<double>;  // test internal implementation of complex (partially formed complex)
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
+
+void zero_stride() {
+	multi::array<double, 1> y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) blas naming
+
+	// regular arrays, stride != 0
+	multi::array<double, 1> const x = {1.0, 1.0, 1.0};  // NOLINT(readability-identifier-length) blas naming
+
+	multi::blas::axpy(1.0, x.begin(), y);
+
+	BOOST_TEST(y[0] == 2.0);
+	BOOST_TEST(y[1] == 3.0);
+	BOOST_TEST(y[2] == 4.0);
+
+	// broadcasted array of 0D into 1D, stride == 0
+	multi::array<double, 0> const x0(1.0);
+
+	// x0.broadcasted() is {..., 1.0, 1.0, ...} and has zero stride
+
+	multi::blas::axpy(1.0, x0.broadcasted().begin(), y);
+
+	BOOST_TEST(y[0] == 3.0);
+	BOOST_TEST(y[1] == 4.0);
+	BOOST_TEST(y[2] == 5.0);
+}
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_blas_axpy_real) {
@@ -71,7 +95,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{9.0, 10.0, 11.0, 12.0},
 		};
 		multi::array<double, 2>       arr = const_arr;
-		multi::array<double, 1> const b    {const_arr[2]};  // NOLINT(readability-identifier-length) conventional name in BLAS
+		multi::array<double, 1> const b{const_arr[2]};  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 		blas::axpy(2.0, b, arr[1]);  // A[1] = 2*b + A[1], A[1]+= a*A[1]
 		BOOST_TEST( arr[1][2] == 2.0*b[2] + const_arr[1][2] );
@@ -117,7 +141,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(axpy_assignment) {
 		multi::array<double, 1> const xx = {1.0, 1.0, 1.0};
-		multi::array<double, 1> yy = {2.0, 2.0, 2.0};
+		multi::array<double, 1>       yy = {2.0, 2.0, 2.0};
 
 		yy += blas::axpy(3.0, xx);
 
@@ -200,6 +224,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		X -= Y;
 		BOOST_TEST( X[0] == complex{} );
 	}
+
+	zero_stride();
 
 	return boost::report_errors();
 }

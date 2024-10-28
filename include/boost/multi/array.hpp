@@ -987,19 +987,19 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
 	constexpr auto rotated() const& {
-		typename static_array::layout_t new_layout = *this;
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return subarray<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
 	constexpr auto rotated() & {
-		typename static_array::layout_t new_layout = *this;
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return subarray<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
 	constexpr auto rotated() && {
-		typename static_array::layout_t new_layout = *this;
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return subarray<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}

@@ -6,7 +6,7 @@
 
 #include <boost/multi/array.hpp>
 
-#include <tuple>
+#include <tuple>  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 

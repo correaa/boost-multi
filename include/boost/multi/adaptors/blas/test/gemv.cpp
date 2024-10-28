@@ -16,6 +16,7 @@
 #include <algorithm>    // for generate, transform
 #include <cmath>        // for abs
 #include <complex>      // for complex, operator*
+#include <iostream>     // for char_traits, basic_ost...
 #include <iterator>     // for size, begin
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for inner_product
@@ -41,6 +42,49 @@ auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identi
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
+
+void gemv_broadcast() {
+	// NOLINTNEXTLINE(readability-identifier-length)
+	multi::array<double, 2> const a = {
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0}
+	};
+
+	{
+		multi::array<double, 1> const ones({3}, 1.0);
+
+		BOOST_TEST( ones.stride() == 1 );
+
+		BOOST_TEST( ones[0] == 1.0 );
+		BOOST_TEST( ones[1] == 1.0 );
+		BOOST_TEST( ones[2] == 1.0 );
+
+		multi::array<double, 1> sum_by_rows({2}, 0.0);
+		blas::gemv_n(1.0, a.begin(), 2, ones.begin(), 0.0, sum_by_rows.begin());
+
+		std::cout << sum_by_rows[0] << " " << sum_by_rows[1] << "\n";
+		BOOST_TEST( std::abs( sum_by_rows[0] - (1.0 + 2.0 + 3.0)) < 1.0e-8 );
+		BOOST_TEST( std::abs( sum_by_rows[1] - (4.0 + 5.0 + 6.0)) < 1.0e-8 );
+	}
+	// BLAS GEMV doesn't work with stride zero
+	// {
+	//  multi::array<double, 0> const one(1.0);
+	//  auto const& ones = one.broadcasted();
+
+	//  BOOST_TEST( ones.stride() == 0 );
+
+	//  BOOST_TEST( ones[0] == 1.0 );
+	//  BOOST_TEST( ones[1] == 1.0 );
+	//  BOOST_TEST( ones[2] == 1.0 );
+
+	//  multi::array<double, 1> sum_by_rows({2}, 0.0);
+	//  blas::gemv_n(1.0, a.begin(), 2, ones.begin(), 0.0, sum_by_rows.begin());
+
+	//  std::cout << sum_by_rows[0] << " " << sum_by_rows[1] << "\n";
+	//  BOOST_TEST( std::abs( sum_by_rows[0] - (1.0 + 2.0 + 3.0)) < 1.0e-8 );
+	//  BOOST_TEST( std::abs( sum_by_rows[1] - (4.0 + 5.0 + 6.0)) < 1.0e-8 );
+	// }
+}
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_blas_gemv_double) {
@@ -290,6 +334,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
+	BOOST_AUTO_TEST_CASE(blas_gemv_complex_float_mimic_cdot) {
+		multi::array<std::complex<float>, 2> const v1 = {
+			{std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F,  4.0F}, std::complex<float>{ 5.0F,  6.0F}}
+		};
+		BOOST_TEST( v1.size() == 1 );
+		BOOST_TEST( v1.num_elements() == 3 );
+
+		multi::array<std::complex<float>, 1> const v2 = {std::complex<float>{7.0F, 8.0F}, std::complex<float>{9.0F, 10.0F}, std::complex<float>{11.0F, 12.0F}};
+		BOOST_TEST( v2.size() == 3 );
+
+		multi::array<std::complex<float>, 1> res({1}, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST( res.size() == 1 );
+
+		blas::gemv(1.0, v1, v2, 0.0, res);
+
+		BOOST_TEST( std::abs(res[0] - (v1[0][0]*v2[0] + v1[0][1]*v2[1] + v1[0][2]*v2[2])) < 1.0e-8 );
+
+		std::complex<float> res_dot;  // NOLINT(fuchsia-default-arguments-calls)
+
+		blas::dot(v1[0], v2, res_dot);
+
+		BOOST_TEST( std::abs(res[0] - res_dot) < 1.0e-8 );
+	}
+
 	BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_float) {
 		using T        = float;
 		namespace blas = multi::blas;
@@ -445,6 +513,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_REQUIRE_CLOSE(y[1], 105.43, 0.00001);
 		}
 	}
+
+	gemv_broadcast();
 
 	return boost::report_errors();
 }
