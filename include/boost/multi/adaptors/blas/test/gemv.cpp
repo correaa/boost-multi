@@ -344,7 +344,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::complex<float>, 1> const v2 = {std::complex<float>{7.0F, 8.0F}, std::complex<float>{9.0F, 10.0F}, std::complex<float>{11.0F, 12.0F}};
 		BOOST_TEST( v2.size() == 3 );
 
-		multi::array<std::complex<float>, 1> res({1}, std::complex<float>{});
+		multi::array<std::complex<float>, 1> res({1}, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( res.size() == 1 );
 
 		blas::gemv(1.0, v1, v2, 0.0, res);
