@@ -412,7 +412,7 @@ clang++-m32 openblas:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake make libopenblas-dev:i386 libboost-serialization-dev:i386 tar wget
     - mkdir build && cd build
     - c++ --version
-    - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-m32 -DBLAS_DOT_RETURNS_VOID" -DCMAKE_BUILD_TYPE=Debug
+    - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
   # needs: ["clang++"]
