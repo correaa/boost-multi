@@ -311,6 +311,7 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 // TODO(correaa) implement workaround for bug in Apple Accelerate BLAS ? https://stackoverflow.com/a/77017238/225186
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_c<Y>{} && is_assignable<R&, decltype(/*0.0F+*/ X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP rp) {
+	#if 0
 	[[maybe_unused]] static bool const use_cdotu = []{
 		std::array<std::complex<float>, 3> const v1 = {std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F,  4.0F}, std::complex<float>{ 5.0F,  6.0F}};
 		std::array<std::complex<float>, 3> const v2 = {std::complex<float>{7.0F, 8.0F}, std::complex<float>{9.0F, 10.0F}, std::complex<float>{11.0F, 12.0F}};
@@ -341,8 +342,9 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 	if(use_cdotu) {
 		Complex_float const rr = BLAS(cdotu)(                                      n, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy); std::memcpy(reinterpret_cast<std::array<float , 2>*>(static_cast<R*>(rp))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*rp));
 	} else {
-		BLAS(cgemv)('N', 1, n, std::complex<float>{1.0F, 0.0F}, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy, std::complex<float>{0.0F, 0.0F}, reinterpret_cast<c*>(static_cast<R*>(rp)), 1);  // NOLINT(readability-suspicious-call-argument)
-	}
+	#endif
+	BLAS(cgemv)('N', 1, n, std::complex<float>{1.0F, 0.0F}, reinterpret_cast<c const*>(static_cast<X*>(x)), incx, reinterpret_cast<c const*>(static_cast<Y*>(y)), incy, std::complex<float>{0.0F, 0.0F}, reinterpret_cast<c*>(static_cast<R*>(rp)), 1);  // NOLINT(readability-suspicious-call-argument)
+	// }
 }  // NOSONAR
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_z<Y>{} && is_assignable<R&, decltype(/*0.0 +*/ X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(zdotu)(                                      n, reinterpret_cast<z const*>(static_cast<X*>(x)), incx, reinterpret_cast<z const*>(static_cast<Y*>(y)), incy); std::memcpy(reinterpret_cast<std::array<double, 2>*>(static_cast<R*>(r))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}  // NOSONAR
 
