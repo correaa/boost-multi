@@ -20,7 +20,6 @@ if((NOT
 		STREQUAL
 		"icpc"
 	   )
-	AND (NOT ENABLE_CIRCLE)
 )
 	find_package(Boost REQUIRED)  # COMPONENTS boost)  # headers unit_test_framework)
 #   link_libraries("-lboost_unit_test_framework")
@@ -51,7 +50,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")  # nvhpc will find its own blas versi
 #   add_definitions(-DRETURN_BY_STACK)
 	add_definitions(-DBLAS_DOT_RETURNS_VOID)
 endif()
-
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)

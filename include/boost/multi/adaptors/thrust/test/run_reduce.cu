@@ -1,5 +1,7 @@
 
-#define ENABLE_GPU 1
+// #define ENABLE_GPU 1
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/array.hpp>
 
@@ -82,6 +84,13 @@ auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<dec
 		}
 	}
 
+	// thrust::transform(
+	// 	boost::multi::extension_t({0, sizey}).begin(),
+	// 	boost::multi::extension_t({0, sizey}).end(),
+	// 	accumulator.begin(),
+	// 	[](auto e) {return 0.0;}
+	// );
+
 	return accumulator;
 
 #else
@@ -102,6 +111,8 @@ auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<dec
 
 	result.reextent({nblocky, sizex});
 
+	gpu::array<type, 2> result2({nblocky, sizex});
+
 	struct dim3 dg {
 		nblockx, nblocky
 	};
@@ -116,8 +127,11 @@ auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<dec
 	reduce_kernel_vr<<<dg, db, shared_mem_size>>>(sizex, sizey, kernel, begin(result));
 	// check_error(last_error());
 
-	// thrust::transform_reduce(
+	boost::multi::extensions_t<2> xs = {sizex, sizey};
+	assert( xs.size() == sizex );
 
+	// thrust::transform_reduce(
+	// 	xs.
 	// );
 
 	if(nblocky == 1) {
@@ -142,27 +156,30 @@ struct prod {
 	}
 };
 
-int main() {
+auto main() -> int {
 
-	long const maxsize = 390625;
+	long const maxsize = 390;  // 390625;
+	long const nmax = 100;  // 10000;
 
 	auto start = std::chrono::high_resolution_clock::now();
 
 	int rank = 0;
-	for(long nx = 1; nx <= 10000; nx *= 10) {
+	for(long nx = 1; nx <= nmax; nx *= 10) {
 		for(long ny = 1; ny <= maxsize; ny *= 5) {
 
-			auto pp = [] __device__(long ix, long iy) -> double { return double(ix) * double(iy); };
+			auto pp = [] __host__ __device__(long ix, long iy) -> double { return double(ix) * double(iy); };
 
 			auto res = gpu::run<double>(nx, gpu::reduce(ny), pp);
 
-			assert(typeid(decltype(res)) == typeid(gpu::array<double, 1>));
-			assert(res.size() == nx);
+			BOOST_TEST(typeid(decltype(res)) == typeid(gpu::array<double, 1>));
+			BOOST_TEST(res.size() == nx);
 
 			for(long ix = 0; ix < nx; ix++)
-				assert(res[ix] == double(ix) * ny * (ny - 1.0) / 2.0);
+				BOOST_TEST(res[ix] == double(ix) * ny * (ny - 1.0) / 2.0);
 			rank++;
 		}
 	}
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() << "ms\n";
+
+	return boost::report_errors();
 }

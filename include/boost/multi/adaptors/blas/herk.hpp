@@ -121,23 +121,23 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 	if constexpr(is_conjugated<A2D>{}) {
 	//  auto& ctxt = *blas::default_context_of(underlying(a.base()));
 		// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
-		if     (stride(a)==1 && stride(c)!=1) {herk(c_side==filling::upper?'L':'U', 'N', size(c), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, stride(c));}
-		else if(stride(a)==1 && stride(c)==1) {
-			if(size(a)==1)                     {herk(c_side==filling::upper?'L':'U', 'N', size(c), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, stride(c));}
+		if     (stride(a)==1 && c.stride()!=1) {herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
+		else if(stride(a)==1 && c.stride()==1) {
+			if(size(a)==1)                     {herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
 			else                               {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}
-		else if(stride(a)!=1 && stride(c)==1) { herk(c_side==filling::upper?'U':'L', 'C', size(c), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.rotated().stride());}
-		else if(stride(a)!=1 && stride(c)!=1) { herk(c_side==filling::upper?'L':'U', 'C', size(c), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, stride(        c ));}
+		else if(stride(a)!=1 && c.stride()==1) { herk(c_side==filling::upper?'U':'L', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.rotated().stride());}
+		else if(stride(a)!=1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c          .stride());}
 		else                                  { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	} else {
 	//  auto& ctxt = *blas::default_context_of(           a.base() );
-		if     (stride(a)!=1 && stride(c)!=1) { herk(c_side==filling::upper?'L':'U', 'C', size(c), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, stride(c));}
-		else if(stride(a)!=1 && stride(c)==1) {
-			if(size(a)==1)                    { herk(c_side==filling::upper?'L':'U', 'N', size(c), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
+		if     (stride(a)!=1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.stride());}
+		else if(stride(a)!=1 && c.stride()==1) {
+			if(size(a)==1)                    { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
 			else                              { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}
-		else if(stride(a)==1 && stride(c)!=1) {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		else if(stride(a)==1 && stride(c)==1) {herk(c_side==filling::upper?'U':'L', 'N', size(c), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
+		else if(stride(a)==1 && c.stride()!=1) {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		else if(stride(a)==1 && c.stride()==1) {herk(c_side==filling::upper?'U':'L', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
 	//  else                                   {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	}
 
@@ -146,24 +146,24 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr,
 	std::enable_if_t<! is_complex_array<C2D>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(syrk(c_side, alpha, a, beta, std::forward<C2D>(c))) {
-	return syrk(c_side, alpha, a, beta, std::forward<C2D>(c)); }
+auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& C)  // NOLINT(readability-identifier-length) BLAS naming
+->decltype(syrk(c_side, alpha, a, beta, std::forward<C2D>(C))) {
+	return syrk(c_side, alpha, a, beta, std::forward<C2D>(C)); }
 
 template<class AA, class A2D, class C2D, class = typename A2D::element_ptr>
-auto herk(filling c_side, AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(herk(c_side, alpha, a, 0., std::forward<C2D>(c))) {
-	return herk(c_side, alpha, a, 0., std::forward<C2D>(c)); }
+auto herk(filling c_side, AA alpha, A2D const& a, C2D&& C)  // NOLINT(readability-identifier-length) BLAS naming
+->decltype(herk(c_side, alpha, a, 0., std::forward<C2D>(C))) {
+	return herk(c_side, alpha, a, 0., std::forward<C2D>(C)); }
 
 template<typename AA, class A2D, class C2D>
-auto herk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(c)))) {
-	return herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(c))); }
+auto herk(AA alpha, A2D const& a, C2D&& C)  // NOLINT(readability-identifier-length) BLAS naming
+->decltype(herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(C)))) {
+	return herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(C))); }
 
 template<class A2D, class C2D>
-auto herk(A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(herk(1.0, a, std::forward<C2D>(c))) {
-	return herk(1.0, a, std::forward<C2D>(c)); }
+auto herk(A2D const& A, C2D&& C)  // NOLINT(readability-identifier-length) BLAS naming
+->decltype(herk(1.0, A, std::forward<C2D>(C))) {
+	return herk(1.0, A, std::forward<C2D>(C)); }
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
 [[nodiscard]]  // ("when argument is read-only")
@@ -192,9 +192,9 @@ auto herk(filling cs, AA alpha, A2D const& a)  // NOLINT(readability-identifier-
 //  ));
 // }
 
-template<class A2D> auto herk(filling s, A2D const& a)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(herk(s, 1.0, a)) {
-	return herk(s, 1.0, a); }
+template<class A2D> auto herk(filling f, A2D const& a)  // NOLINT(readability-identifier-length) BLAS naming
+->decltype(herk(f, 1.0, a)) {
+	return herk(f, 1.0, a); }
 
 template<class A2D> auto herk(A2D const& array) {
 		return herk(1.0, array);

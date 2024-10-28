@@ -289,7 +289,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> const& Aconst  = arr;
 		auto&&                          A_block = Aconst({0, 5}, {0, 5});
 
-		auto const& Apair_block = A_block.template reinterpret_array_cast<pair const>();  // const is important // cppcheck 1.90 needs `template` to avoid internal bug
+		// const is important below
+		auto const& Apair_block = A_block.template reinterpret_array_cast<pair const>();  // cppcheck 1.90 needs `template` to avoid internal bug
+
 		BOOST_TEST( &Apair_block[1][2] == static_cast<void*>(&arr[1][2]) );
 
 #ifndef _MSC_VER  // problems with MSVC 14.3 c++17

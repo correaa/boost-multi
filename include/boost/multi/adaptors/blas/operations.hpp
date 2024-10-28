@@ -45,7 +45,7 @@ auto hermitized(A&& array) -> decltype(auto) {return conjugated_transposed(std::
 
 namespace operators {
 
-[[maybe_unused]] constexpr static struct {
+struct H_t {  // NOLINT(readability-identifier-naming) blas naming
 
 	template<class A, std::enable_if_t<std::decay_t<A>::rank::value == 2, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return hermitized(std::forward<A>(array)); }
@@ -55,7 +55,9 @@ namespace operators {
 	[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
 	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return blas::conj(std::forward<A>(array)); }
 
-} H;  // NOLINT(readability-identifier-length) conventional name in BLAS
+};
+
+inline constexpr H_t H;  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 template<class A, class Op>
 auto operator^(A&& array, Op op)

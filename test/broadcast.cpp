@@ -3,11 +3,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>
 
 #include <algorithm>  // for std::ranges::fold_left
+#include <cmath>      // IWYU pragma: keep  for std::abs
+// IWYU pragma: no_include <cstdlib>                          // for abs
+// IWYU pragma: no_include <stdlib.h>                          // for abs
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 namespace multi = boost::multi;
@@ -32,6 +36,13 @@ BOOST_AUTO_TEST_CASE(broadcast_as_fill) {
 	BOOST_TEST( BB[1] == bb );
 
 	BOOST_TEST( std::all_of(BB.begin(), BB.end(), [&bb](auto const& row) { return row == bb; }) );
+
+	multi::array<double, 0> const one{1.0};
+
+	BOOST_TEST( one == 1.0 );
+
+	auto const& ones = one.broadcasted();
+	BOOST_TEST( std::abs( *ones.begin() - 1.0 ) < 1.0e-8 );
 }
 
 return boost::report_errors();}
