@@ -60,7 +60,7 @@ g++-m32 sanitize:
     # - cd ..
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -D_GLIBCXX_SANITIZE_VECTOR -DRETURN_BY_STACK" -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
@@ -396,7 +396,31 @@ clang++-m32:
     - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 2 --output-on-failure
-  needs: ["clang++"]
+  #needs: ["clang++"]
+
+clang++-m32 blas void:
+  stage: build
+  image: debian:latest
+  tags:
+    - non-shared
+    - high-bandwidth  # for boost source download
+    - x86_64  # for g++-multilib in image
+  interruptible: true
+  script:
+    - dpkg --add-architecture i386
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake make libblas-dev:i386 libboost-serialization-dev:i386 tar wget
+    # - wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose  # 1.70 doesn't install boost timer well, there is no version 1.71 in sourceforge
+    # - tar -xf boost_1_84_0.tar.gz 
+    # - cd boost_1_84_0
+    # - ./bootstrap.sh --with-toolset=clang
+    # - ./b2 toolset=clang cxxflags=-m32 --with-serialization --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+    # - cd ..
+    - mkdir build && cd build
+    - c++ --version
+    - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-m32 -DBLAS_DOT_RETURNS_VOID" -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  # needs: ["clang++"]
 
 clang++-latest tidy iwyu:
   stage: build
