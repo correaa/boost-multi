@@ -49,8 +49,9 @@ jobs:
 
     - name: Configure system
       run: |
+          sudo dpkg --add-architecture i386
           sudo apt-get -y update
-          sudo apt-get -y install g++-multilib libboost-dev
+          sudo apt-get -y install g++-multilib libboost-dev libblas-dev:i386
           wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
           tar -xf boost_1_84_0.tar.gz 
           cd boost_1_84_0
@@ -151,7 +152,7 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
 
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
+      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization openblas
 
     - name: Set up Boost environment variables
       run: |
