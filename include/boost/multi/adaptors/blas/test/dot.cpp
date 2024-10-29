@@ -14,6 +14,7 @@
 #include <cmath>
 #include <complex>     // for complex, operator*
 #include <functional>  // for plus  // IWYU pragma: keep
+#include <iostream>
 #include <iterator>    // for begin, end
 #include <limits>      // for numeric_limits
 #include <memory>      // for allocator
@@ -201,9 +202,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		complex res{0.0F, 0.0F};
 		blas::dot(blas::C(x), y, res);
+
+		std::cout << "res = " << res << ", should be " << std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
+			[](auto const& alpha, auto const& omega) {
+				return conj(alpha) * omega;
+			}
+		) << '\n';
+
 		BOOST_TEST(
 			res == std::inner_product(
-				begin(x), end(x), begin(y), complex{}, std::plus{},  // NOLINT(fuchsia-default-arguments-calls)
+				begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto const& alpha, auto const& omega) {
 					return conj(alpha) * omega;
 				}

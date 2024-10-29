@@ -51,7 +51,7 @@ jobs:
       run: |
           sudo dpkg --add-architecture i386
           sudo apt-get -y update
-          sudo apt-get -y install g++-multilib libboost-serialization-dev libblas-dev
+          sudo apt-get -y install g++-multilib libboost-serialization-dev:i386 libblas-dev
           # wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
           # tar -xf boost_1_84_0.tar.gz 
           # cd boost_1_84_0
@@ -162,7 +162,7 @@ jobs:
         echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
 
     - name: Configure CMake
-      run: cmake -S . -B build -A x64 -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
+      run: cmake -S . -B build -A x64 -DCMAKE_Fortran_FLAGS_INIT="/names:lowercase /assume:underscore" -DCMAKE_CXX_FLAGS_INIT="/names:lowercase /assume:underscore" -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
 
     - name: Build
       run: cmake --build build --config Release
