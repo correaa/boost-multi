@@ -42,7 +42,7 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
 
   latest-cpp32:
-    runs-on: ubuntu-latest
+    runs-on: debian-latest  # ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
