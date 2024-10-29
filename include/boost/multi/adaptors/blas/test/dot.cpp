@@ -183,7 +183,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 1> const x = {1.0 + 0.0 * I, 2.0 + 0.0 * I, 3.0 + 0.0 * I};  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<complex, 1> const y = {1.0 + 0.0 * I, 2.0 + 2.0 * I, 3.0 + 0.0 * I};  // NOLINT(readability-identifier-length) BLAS naming
 
-		complex res{0.0, 0.0};
+		complex res{-999.0, 666.0};
 		blas::dot(blas::C(x), y, res);
 		BOOST_TEST(
 			res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{},  // NOLINT(fuchsia-default-arguments-calls)
