@@ -52,6 +52,7 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get -y update
           sudo apt-get -y install g++-multilib libboost-serialization-dev:i386
+          curl -sLO http://ftp.us.debian.org/debian/pool/main/l/lapack/libblas-dev_3.11.0-2_i386.deb
           sudo dpkg -i http://ftp.us.debian.org/debian/pool/main/l/lapack/libblas-dev_3.11.0-2_i386.deb
           # wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
           # tar -xf boost_1_84_0.tar.gz 
