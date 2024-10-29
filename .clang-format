@@ -14,9 +14,6 @@ AlignConsecutiveDeclarations:
   AcrossEmptyLines: false
   AcrossComments: false
 AlignOperands: AlignAfterOperator
-AlignTrailingComments:
-  Kind: Always
-  OverEmptyLines: 1
 AllowShortLambdasOnASingleLine: Inline
 AllowShortCaseLabelsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: No
