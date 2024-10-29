@@ -240,6 +240,12 @@ z[1] = multi::blas::dot(v, w);
 
 This feature regarding scalar results is essential when operating on GPU memory since the whole operation can be performed on the device.
 
+> In CPUs BLAS `dot` functions has known bugs in different implementations.
+> For example BLAS Apple Accelerate has bug in `sdot` while BLAS 32bit has a bug in `cdot`.
+> In addition, some implementations of BLAS functions return the complex result in the stack and other write into a pointer.
+> For this reason and for consistency, the library uses BLAS's `gemv` functions in place of `dot` in these cases.
+> This should not affect the results.
+
 ### `auto multi::blas::scal(`_complex/real scalar`, `_complex/real vector_`)`
 
 Scales a vector.
