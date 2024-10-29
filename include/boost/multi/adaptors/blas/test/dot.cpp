@@ -203,14 +203,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		complex res{0.0F, 0.0F};
 		blas::dot(blas::C(x), y, res);
 
-		std::cout << "res = " << res << ", should be "
-			<< std::inner_product(
-				begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
-				[](auto const& alpha, auto const& omega) {
-					return conj(alpha) * omega;
-				}
-			) << '\n'
-		;
 
 		BOOST_TEST(
 			res == std::inner_product(
@@ -455,7 +447,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		complex const c7 = blas::dot(blas::C(A[1]), A[2]);
 		BOOST_TEST(
-			c7 
+			c7
 			== std::inner_product(
 				begin(A[1]), end(A[1]), begin(A[2]), complex{0.0, 0.0}, std::plus<>{},
 				[](auto alpha, auto omega) { return conj(alpha) * omega; }
@@ -463,24 +455,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 	}
 
-//  BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_float) {
-//      namespace blas = multi::blas;
+	BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_float) {
+		namespace blas = multi::blas;
 
-//      using complex = std::complex<float>;
+		using complex = std::complex<float>;
 
-//      complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+		complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
-//      // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-//      multi::array<complex, 2> const A = {
-//          {1.0F + 1.0F * I,  2.0F + 3.0F * I,  3.0F + 2.0F * I,  4.0F - 9.0F * I},
-//          {5.0F + 2.0F * I,  6.0F + 6.0F * I,  7.0F + 2.0F * I,  8.0F - 3.0F * I},
-//          {9.0F + 1.0F * I, 10.0F + 9.0F * I, 11.0F + 1.0F * I, 12.0F + 2.0F * I},
-//      };
+		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+		multi::array<complex, 2> const A = {
+			{1.0F + 1.0F * I,  2.0F + 3.0F * I,  3.0F + 2.0F * I,  4.0F - 9.0F * I},
+			{5.0F + 2.0F * I,  6.0F + 6.0F * I,  7.0F + 2.0F * I,  8.0F - 3.0F * I},
+			{9.0F + 1.0F * I, 10.0F + 9.0F * I, 11.0F + 1.0F * I, 12.0F + 2.0F * I},
+		};
 
-//      auto c1 = complex{0.0F, 0.0F};
-//      blas::dot(A[1], A[2], c1);
-//      BOOST_TEST( c1 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );  // NOLINT(fuchsia-default-arguments-calls)
-
+		auto c1 = complex{0.0F, 0.0F};
+		blas::dot(A[1], A[2], c1);
+		BOOST_TEST( c1 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );  // NOLINT(fuchsia-default-arguments-calls)
+	}
 //      auto const c2 = +blas::dot(A[1], A[2]);
 //      BOOST_TEST( c2 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );  // NOLINT(fuchsia-default-arguments-calls)
 
