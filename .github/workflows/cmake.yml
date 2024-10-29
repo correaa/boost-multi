@@ -166,7 +166,7 @@ jobs:
         dir $(Get-Location)\vcpkg\installed\x64-windows\lib\
 
     - name: Configure CMake
-      run: cmake -S . -B build -A x64 -DCMAKE_Fortran_FLAGS_INIT="/names:lowercase /assume:underscore" -DCMAKE_CXX_FLAGS="/names:lowercase /assume:underscore" -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
+      run: cmake -S . -B build -A x64 -DBLAS_HOME=.\vcpkg\installed\x64-windows -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
 
     - name: Build
       run: cmake --build build --config Release
