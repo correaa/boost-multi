@@ -12,6 +12,7 @@
 
 #include <cmath>  // for sqrt, NAN
 #include <complex>
+#include <iostream>
 
 namespace multi = boost::multi;
 
