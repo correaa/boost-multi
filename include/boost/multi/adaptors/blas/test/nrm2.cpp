@@ -7,14 +7,15 @@
 #include <boost/multi/adaptors/blas/core.hpp>  // for context
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref, operator==
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for nrm2, nrm2_ref
-#include <boost/multi/adaptors/complex.hpp>    // for complex, operator*
+
 #include <boost/multi/array.hpp>               // for array, layout_t, impli...
 
 #include <cmath>  // for sqrt, NAN
+#include <complex>
 
 namespace multi = boost::multi;
 
-using complex = multi::complex<double>;
+using complex = std::complex<double>;
 constexpr complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 
 #include <boost/core/lightweight_test.hpp>
@@ -34,9 +35,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		{
 			multi::array<complex, 1> const x = {1.0 + 1.0 * I, 3.0 + 2.0 * I, 3.0 + 4.0 * I};  // NOLINT(readability-identifier-length) blas conventional name
-			BOOST_TEST( blas::dot(x, x) == (1.0 + 1.0*I)*(1.0 + 1.0*I) + (3.0 + 2.0*I)*(3.0 + 2.0*I) + (3.0 + 4.0*I)*(3.0 + 4.0*I) );
-			using std::sqrt;  // NOLINT(misc-include-cleaner) included in cmath
-			BOOST_TEST( blas::nrm2(x) == sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) );
+
+			BOOST_TEST( std::abs(+blas::dot(x, x) - ((1.0 + 1.0*I)*(1.0 + 1.0*I) + (3.0 + 2.0*I)*(3.0 + 2.0*I) + (3.0 + 4.0*I)*(3.0 + 4.0*I))) < 1.0e-8 );
+
+			BOOST_TEST( blas::nrm2(x) == std::sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) );
 		}
 	}
 
