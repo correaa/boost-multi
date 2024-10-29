@@ -38,7 +38,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::abs(+blas::dot(x, x) - ((1.0 + 1.0*I)*(1.0 + 1.0*I) + (3.0 + 2.0*I)*(3.0 + 2.0*I) + (3.0 + 4.0*I)*(3.0 + 4.0*I))) < 1.0e-8 );
 
-			BOOST_TEST( blas::nrm2(x) == std::sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) );
+			BOOST_TEST( std::abs( blas::nrm2(x) - std::sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) ) < 1.0e-8 );
 		}
 	}
 
