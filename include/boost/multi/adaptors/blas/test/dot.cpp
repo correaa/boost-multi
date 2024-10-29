@@ -203,11 +203,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		complex res{0.0F, 0.0F};
 		blas::dot(blas::C(x), y, res);
 
-		std::cout << "res = " << res << ", should be " << std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
-			[](auto const& alpha, auto const& omega) {
-				return conj(alpha) * omega;
-			}
-		) << '\n';
+		std::cout << "res = " << res << ", should be "
+			<< std::inner_product(
+				begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
+				[](auto const& alpha, auto const& omega) {
+					return conj(alpha) * omega;
+				}
+			) << '\n'
+		;
 
 		BOOST_TEST(
 			res == std::inner_product(
