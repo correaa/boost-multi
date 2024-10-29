@@ -618,8 +618,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return std::forward<decltype(Cr)>(Cr);
 		});
 
+		std::cerr << "CC[1][0] = " << static_cast<complex>(CC[1][0]) << '\n';
+
 		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
 		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+
+		std::cerr << "CC[0][1] = " << static_cast<complex>(CC[0][1]) << '\n';
 
 		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
 		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
