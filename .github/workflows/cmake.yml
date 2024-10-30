@@ -51,7 +51,7 @@ jobs:
       run: |
           sudo dpkg --add-architecture i386
           sudo apt-get -y update
-          sudo apt-get -y install g++-multilib libboost-serialization-dev:i386 wget
+          sudo apt-get -y install g++-multilib gfortran libboost-serialization-dev:i386 wget
           git clone https://github.com/Reference-LAPACK/lapack
           cd lapack
           mkdir build
@@ -159,7 +159,7 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
 
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization lapack
+      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization lapack:x64-windows
 
     - name: Set up Boost environment variables
       run: |
