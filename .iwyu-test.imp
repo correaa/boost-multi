@@ -50,6 +50,7 @@
     { "include": ["@<stdint.h>", "public", "<cstdint>", "public"] },
     { "include": ["@<math.h>", "public", "<cmath>", "public"] },
     { "include": ["@<stdlib.h>", "public", "<cstdlib>", "public"] },
+    { "include": ["@<stdlib.h>", "public", "<cmath>", "public"] },
     { "include": ["@<ext/alloc_traits.h>", "private", "<memory>", "public"]},
     { "include": ["@<shared_mutex>", "public", "<utility>", "public"]},
     { "include": ["@<__assert>", "private", "<cassert>", "public"] },

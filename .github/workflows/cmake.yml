@@ -51,9 +51,14 @@ jobs:
       run: |
           sudo dpkg --add-architecture i386
           sudo apt-get -y update
-          sudo apt-get -y install g++-multilib libboost-serialization-dev:i386 wget
-          wget http://ftp.us.debian.org/debian/pool/main/l/lapack/libblas-dev_3.10.0-2_i386.deb
-          sudo dpkg -i libblas-dev_3.10.0-2_i386.deb
+          sudo apt-get -y install g++-multilib gfortran libboost-serialization-dev:i386 wget
+          git clone https://github.com/Reference-LAPACK/lapack
+          cd lapack
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_Fortran_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_C_FLAGS="-m32"
+          sudo cmake --build . -j --target install
+          cd ../..
           # wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
           # tar -xf boost_1_84_0.tar.gz 
           # cd boost_1_84_0
@@ -154,7 +159,7 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
 
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization openblas
+      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization lapack:x64-windows
 
     - name: Set up Boost environment variables
       run: |
@@ -162,9 +167,11 @@ jobs:
         echo "BOOST_INCLUDEDIR=$(Get-Location)\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
         echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
         echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
+        echo "BLAS_blas_LIBRARY==$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
+        dir .\vcpkg\installed\x64-windows\lib\
 
     - name: Configure CMake
-      run: cmake -S . -B build -A x64 -DCMAKE_Fortran_FLAGS_INIT="/names:lowercase /assume:underscore" -DCMAKE_CXX_FLAGS="/names:lowercase /assume:underscore" -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
+      run: cmake -S . -B build -A x64 -DBLAS_HOME=.\vcpkg\installed\x64-windows -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
 
     - name: Build
       run: cmake --build build --config Release

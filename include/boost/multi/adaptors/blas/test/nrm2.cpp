@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 // IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // for context
 // IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
 #include <boost/multi/adaptors/blas/core.hpp>  // for context
@@ -12,16 +14,17 @@
 
 #include <cmath>  // for sqrt, NAN
 #include <complex>
+#include <iostream>
 
 namespace multi = boost::multi;
 
 using complex = std::complex<double>;
-constexpr complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
+
 	BOOST_AUTO_TEST_CASE(multi_blas_nrm2) {
 		namespace blas = multi::blas;
 
@@ -38,7 +41,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::abs(+blas::dot(x, x) - ((1.0 + 1.0*I)*(1.0 + 1.0*I) + (3.0 + 2.0*I)*(3.0 + 2.0*I) + (3.0 + 4.0*I)*(3.0 + 4.0*I))) < 1.0e-8 );
 
-			BOOST_TEST( blas::nrm2(x) == std::sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) );
+			std::cout << "nrm2 "<< blas::nrm2(x) << " " << std::sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) << '\n';
+			BOOST_TEST( std::abs( blas::nrm2(x) - std::sqrt(norm(1.0 + 1.0*I) + norm(3.0 + 2.0*I) + norm(3.0 + 4.0*I)) ) < 1.0e-8 );
 		}
 	}
 
