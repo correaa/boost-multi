@@ -52,9 +52,13 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get -y update
           sudo apt-get -y install g++-multilib libboost-serialization-dev:i386 wget
-          wget http://ftp.us.debian.org/debian/pool/main/l/lapack/libblas-dev_3.8.0-2_i386.deb
-          ls
-          sudo dpkg -i --force-all libblas-dev_3.8.0-2_i386.deb
+          git clone https://github.com/Reference-LAPACK/lapack
+          cd lapack
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . -j --target install
+          cd ../..
           # wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
           # tar -xf boost_1_84_0.tar.gz 
           # cd boost_1_84_0
@@ -155,7 +159,7 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
 
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization blas
+      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization lapack
 
     - name: Set up Boost environment variables
       run: |
