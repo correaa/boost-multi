@@ -164,7 +164,7 @@ jobs:
         echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
         echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
         echo "BLAS_blas_LIBRARY==$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
-        dir $(Get-Location)\vcpkg\installed\x64-windows\lib\
+        dir .\vcpkg\installed\x64-windows\lib\
 
     - name: Configure CMake
       run: cmake -S . -B build -A x64 -DBLAS_HOME=.\vcpkg\installed\x64-windows -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
