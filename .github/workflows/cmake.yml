@@ -155,7 +155,7 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
 
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization openblas
+      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization blas
 
     - name: Set up Boost environment variables
       run: |
@@ -167,7 +167,7 @@ jobs:
         dir .\vcpkg\installed\x64-windows\lib\
 
     - name: Configure CMake
-      run: cmake -S . -B build -A x64 -DBLA_VENDOR="OpenBLAS" -DBLAS_HOME=.\vcpkg\installed\x64-windows -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
+      run: cmake -S . -B build -A x64 -DBLAS_HOME=.\vcpkg\installed\x64-windows -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
 
     - name: Build
       run: cmake --build build --config Release
