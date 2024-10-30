@@ -56,8 +56,8 @@ jobs:
           cd lapack
           mkdir build
           cd build
-          cmake ..
-          cmake --build . -j --target install
+          cmake .. -DCMAKE_Fortran_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_C_FLAGS="-m32"
+          sudo cmake --build . -j --target install
           cd ../..
           # wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
           # tar -xf boost_1_84_0.tar.gz 
