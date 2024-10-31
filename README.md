@@ -403,14 +403,14 @@ Each of the 10 *elements* of the third row of A is moved into the second row of 
 Arrays can change their size while _preserving elements_ with the `reextent` method.
 
 ```cpp
-multi::array<double, 2> A {
-	 {1.0, 2.0, 3.0},
-	 {4.0, 5.0, 6.0}
+multi::array<int, 2> A = {
+	 {1, 2, 3},
+	 {4, 5, 6}
 };
 
 A.rextent({4, 4});
 
-assert( A[0][0] == 1.0 );
+assert( A[0][0] == 1 );
 ```
 
 Arrays can be emptied (to zero-size) with `.clear()` (equivalent to `.rextent({0, 0, ...})`).
@@ -421,7 +421,7 @@ except for trivial cases, all calls to reextend allocate and deallocate memory.
 If element preservation is not desired, a simple assignment (move) from a new array expresses the intention better and it is more efficient since it doesn't need to copy preexisting elements.
 
 ```cpp
-A = multi::array<double, 2>({4, 4});  // like A.rextent({4, 4}) but elements are not preserved.
+A = multi::array<int, 2>({4, 4});  // like A.rextent({4, 4}) but elements are not preserved.
 ```
 
 An alternative syntax, `.rextent({...}, value)` sets _new_ (not preexisting) elements to a specific value.
@@ -431,7 +431,38 @@ For the same reason, subarrays cannot be assigned from an array or another subar
 
 Changing the size of arrays by `reextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
 
-## Iteration
+## Iteration (range-based loops vs iterators)
+
+Historically, iteration over arrays has been done with `for`-loops, where each nesting level is associated with each dimension.
+The valid range of indices in all the dimensions of an array is extracted with `.extensions()`.
+In the 2D case, `.extensions()` can be conveniently decomposed into two ranges, one for each dimension.
+
+```
+	multi::array<int, 2> A = {
+		{1, 2, 3},
+		{4, 5, 6}
+	};
+
+	auto [is, js] = A.extensions();
+	for(auto i : is) {  // is == {0, 1} (range from 0 to 2, not included)
+		for(auto j : js) {  // ij = {0, 1, 2} (range from 0 to 3, not included)
+			A[i][j] *= 2;
+		}
+	}
+```
+
+The elements of the 2D array can be accessed directly without intermediate indices:
+
+```cpp
+	for(auto&& row : A) {
+		for(int& e: row) {
+			e *= 2;
+		}
+	}
+```
+
+However, in some cases it is better to use the iterator-based interface.
+The iterator-based interface is more convenient to express and interact with generic algorithms, which in turn can be parallelized and less prone to index errors (such as off-by-one, and out-of-range access.)
 
 Array (and subarray-references) provide a members `.begin()` and `.end()` that produce random-access iterators that access the multidimensional structure through the first dimension (leftmost index).
 Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator-based algorithms (see the sort example above).
@@ -453,7 +484,7 @@ void recursive_print(double const& d) { cout<<d; };  // terminating overload
 template<class Array>
 void recursive_print(Array const& ma) {
 	cout << "{";
-	if(not ma.empty()) {
+	if(! ma.empty()) {
 		flat_print(*ma.begin());  // first element
 		std::for_each(ma.begin() + 1, ma.end(), [](auto const& e) { cout<<", "; flat_print(e);});  // rest
 	}
