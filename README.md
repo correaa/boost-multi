@@ -1109,8 +1109,12 @@ The whole object can be invalidated if the original array is destroyed.
 
 | Member fuctions   |    |
 |---                |--- |
-| (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements. |
-| `operator=`       | assigns the elements from the source; the sizes must match.
+| (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements |
+| `size`            | returns the size of the leading dimension |
+| `extension`       | returns a range that generates valid indices for the leading dimension, for example `{0, ... size() - 1}` |
+| `sizes`           | returns a tuple with the sizes in all dimensions, `std::get<0>(A.sizes()) == A.size()` |
+| `extensions`      | returns a tuple of ranges in all dimensions, `std::get<0>(A.extensions()) == A.extension()` |
+| `operator=`       | assigns the elements from the source; the sizes must match |
 
 It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
 (Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (just like language pointers);
