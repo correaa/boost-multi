@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/blas/core.hpp>        // for context
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
 // IWYU pragma: no_include "boost/multi/adaptors/blas/numeric.hpp"     // for involuter, conju...
@@ -9,9 +11,8 @@
 
 #include <boost/multi/array.hpp>                     // for layout_t, array
 
-// IWYU pragma: no_include <cmath>  // for abs
+#include <cmath>  // for abs  // IWYU pragma: keep
 #include <complex>   // for complex, operator*
-#include <cstdlib>  // for abs
 #include <iterator>  // for begin, size
 // IWYU pragma: no_include <memory>  // for allocator
 // IWYU pragma: no_include <exception>  // for exception
@@ -19,7 +20,6 @@
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 // #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )

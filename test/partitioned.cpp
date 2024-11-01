@@ -266,11 +266,42 @@ BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
 
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_2D) {
 	multi::array<double, 2> arr({100, 53});
-	BOOST_TEST( size(arr.partitioned(20)) == 20 );
+	BOOST_TEST( arr.partitioned(20).size() == 20 );
 	BOOST_TEST( &arr.partitioned(20)[1][2] == &arr[7] );
 
 	BOOST_TEST( size(arr.chunked(5)) == 20 );
 	BOOST_TEST( &arr.chunked(5)[1][2] == &arr[7] );
 }
 
-return boost::report_errors();}
+BOOST_AUTO_TEST_CASE(chunked_subarrays) {
+	multi::array<int, 2> const arr = {
+		{ 0,  1,  2,  3,  4,  5},
+		{ 6,  7,  8,  9, 10, 11},
+
+		{12, 13, 14, 15, 16, 17},
+		{18, 19, 20, 21, 22, 23},
+
+		{24, 25, 26, 27, 28, 29},
+		{30, 31, 32, 33, 34, 35},
+
+		{36, 37, 38, 39, 40, 41},
+		{42, 43, 44, 45, 46, 47}
+	};
+
+	BOOST_TEST( arr.dimensionality == 2 );
+	BOOST_TEST( arr.chunked(2).dimensionality == 3 );
+
+	BOOST_TEST( arr.chunked(2).size() == 4 );
+	BOOST_TEST( std::get<1>(arr.chunked(2).sizes()) == 2 );
+	BOOST_TEST( std::get<2>(arr.chunked(2).sizes()) == 6 );
+
+	auto const&& block_arr = arr.chunked(2).rotated().rotated().chunked(2).unrotated().unrotated().unrotated();
+	BOOST_TEST( block_arr.dimensionality == 4 );
+
+	// BOOST_TEST( block_arr.size() == 4 );
+	// BOOST_TEST( std::get<1>(arr.chunked(2).sizes()) == 2 );
+	// BOOST_TEST( std::get<2>(arr.chunked(2).sizes()) == 6 );
+}
+
+return boost::report_errors();
+}
