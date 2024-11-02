@@ -52,13 +52,6 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get -y update
           sudo apt-get -y install g++-multilib gfortran libboost-serialization-dev:i386 wget
-          git clone https://github.com/Reference-LAPACK/lapack
-          cd lapack
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_Fortran_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_C_FLAGS="-m32"
-          sudo cmake --build . -j --target install
-          cd ../..
           # wget https://downloads.sourceforge.net/project/boost/boost/1.84.0/boost_1_84_0.tar.gz --no-verbose
           # tar -xf boost_1_84_0.tar.gz 
           # cd boost_1_84_0
