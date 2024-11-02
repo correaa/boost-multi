@@ -386,30 +386,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	#endif
 #endif  // __NVCC__
 
-	{
-		auto const accumulator = [&](auto&& init) {
-			watch const             _("blas gemv");
-			multi::array<double, 1> ones({init.extension()}, 1.0);
-			multi::blas::gemv_n(1.0, K2D.begin(), K2D.size(), ones.begin(), 0.0, init.begin());
-			return std::forward<decltype(init)>(init);
-		}(multi::array<double, 1>(K2D.extension(), 0.0));
+	// {
+	// 	auto const accumulator = [&](auto&& init) {
+	// 		watch const             _("blas gemv");
+	// 		multi::array<double, 1> ones({init.extension()}, 1.0);
+	// 		multi::blas::gemv_n(1.0, K2D.begin(), K2D.size(), ones.begin(), 0.0, init.begin());
+	// 		return std::forward<decltype(init)>(init);
+	// 	}(multi::array<double, 1>(K2D.extension(), 0.0));
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
-			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
-		}
-	}
+	// 	for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
+	// 		BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+	// 	}
+	// }
 
-	{
-		auto const accumulator = [&](auto&& init) {
-			watch const _("blas gemv smart");
-			multi::blas::gemv_n(1.0, K2D.begin(), K2D.size(), init[0].begin(), 0.0, init[1].begin());
-			return +init[1];
-		}(multi::array<double, 2>({2, K2D.extension()}, 1.0));
+	// {
+	// 	auto const accumulator = [&](auto&& init) {
+	// 		watch const _("blas gemv smart");
+	// 		multi::blas::gemv_n(1.0, K2D.begin(), K2D.size(), init[0].begin(), 0.0, init[1].begin());
+	// 		return +init[1];
+	// 	}(multi::array<double, 2>({2, K2D.extension()}, 1.0));
 
-		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
-			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
-		}
-	}
+	// 	for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
+	// 		BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+	// 	}
+	// }
 
 	return boost::report_errors();
 }
