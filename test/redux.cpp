@@ -27,7 +27,7 @@
 // IWYU pragma: no_include <new>                              // for bad_alloc
 
 #ifndef __NVCC__
-	#if defined __has_include && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+	#if defined(__has_include) && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 		#if !(defined(__clang__) && defined(__CUDA__))
 			#include <execution>  // IWYU pragma: keep
 		#endif
@@ -158,8 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&](auto init) {
-			watch const _("accumulate transform forward");
+		auto const accumulator = [&](auto init, watch = watch("accumulate transform forward")) {
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
 				std::move(init),
@@ -264,14 +263,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	#endif
 
-	#if(defined __has_include && __has_include(<execution>))
+	#if(defined(__has_include) && __has_include(<execution>))
 		#if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7))
-			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && !defined(_LIBCPP_VERSION)
+			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210000)) && !defined(_LIBCPP_VERSION)
 				#if !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
-		auto const accumulator = [&] {
-			watch const _("transform reduce[unseq]");
-
+		auto const accumulator = [&] (watch = watch("transform reduce[unseq]")) {
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
 			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(), ret.begin(),
@@ -370,9 +367,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&](auto zero_elem) {
-			watch const _("transform[par] reduce[unseq] element zero");
-
+		auto const accumulator = [&](auto zero_elem, watch = watch("transform[par] reduce[unseq] element zero")) {
 			multi::array<double, 1> ret(K2D.extension());
 			std::transform(std::execution::par,
 				K2D.begin(), K2D.end(), ret.begin(),
