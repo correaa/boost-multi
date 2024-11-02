@@ -20,7 +20,6 @@
 #include <string>
 #include <string_view>
 // IWYU pragma: no_include <stdlib.h>                         // for abs
-#include <utility>
 
 // IWYU pragma: no_include <pstl/glue_numeric_impl.h>         // for reduce, transform_reduce
 // IWYU pragma: no_include <cstdlib>                          // for abs
