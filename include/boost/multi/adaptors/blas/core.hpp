@@ -229,6 +229,8 @@ using v = void;
 using std::enable_if_t;
 using std::is_assignable;
 
+using ::core::ssize_t;
+
 // TODO(correaa) implement xrotg, xrotmg, xrot, xrotm
 
 // NOLINTBEGIN(modernize-use-constraints) TODO(correaa) for C++20
