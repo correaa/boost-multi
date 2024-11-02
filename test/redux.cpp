@@ -267,14 +267,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210000)) && !defined(_LIBCPP_VERSION)
 				#if !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
-		auto const accumulator = [&] (watch = watch("transform reduce[unseq]")) {
+		auto const accumulator = [&] (watch = watch("transform reduce[unseq]")) {  // NOLINT(fuchsia-default-arguments-declarations) 
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
 			std::transform(
 				K2D.begin(), K2D.end(), ret.begin(), ret.begin(),
 				[](auto const& row, auto rete) {return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); }
 			);
 			return ret;
-		}();
+		}();  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
@@ -366,14 +366,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&](auto zero_elem, watch = watch("transform[par] reduce[unseq] element zero")) {
+		auto const accumulator = [&](auto zero_elem, watch = watch("transform[par] reduce[unseq] element zero")) {  // NOLINT(fuchsia-default-arguments-declarations)
 			multi::array<double, 1> ret(K2D.extension());
 			std::transform(std::execution::par,
 				K2D.begin(), K2D.end(), ret.begin(),
 				[zz = std::move(zero_elem)](auto const& row) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(zz)); }
 			);
 			return ret;
-		}(0.0);
+		}(0.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
