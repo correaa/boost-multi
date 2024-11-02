@@ -157,7 +157,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&](auto init, watch = watch("accumulate transform forward")) {  // NOLINT(fuchsia-default-arguments-declarations)
+		auto const accumulator = [&](auto init, watch = watch("accumulate transform forward")) {  // NOLINT(fuchsia-default-arguments-declarations,fuchsia-default-arguments-calls)
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
 				std::move(init),
