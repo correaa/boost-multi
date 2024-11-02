@@ -157,7 +157,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&](auto init, watch = watch("accumulate transform forward")) {  // NOLINT(fuchsia-default-arguments-declarations,fuchsia-default-arguments-calls)
+		auto const accumulator = [&](auto init, watch = watch("accumulate transform forward")) {  // NOLINT(fuchsia-default-arguments-declarations)
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(),
 				std::move(init),
@@ -166,7 +166,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					return std::forward<decltype(acc)>(acc);
 				}
 			);
-		}(multi::array<double, 1>(K2D.extension(), 0.0));
+		}(multi::array<double, 1>(K2D.extension(), 0.0));  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
