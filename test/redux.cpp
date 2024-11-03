@@ -26,7 +26,7 @@
 // IWYU pragma: no_include <new>                              // for bad_alloc
 
 #ifndef __NVCC__
-	#if defined __has_include && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+	#if defined(__has_include) && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 		#if !(defined(__clang__) && defined(__CUDA__))
 			// #include <execution>  // IWYU pragma: keep
 		#endif
@@ -149,15 +149,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&](auto init) {
-			watch const _("accumulate transform forward");
+		auto const accumulator = [&](auto init, watch = watch("accumulate transform forward")) {  // NOLINT(fuchsia-default-arguments-declarations)
 			return std::accumulate(
 				(~K2D).begin(), (~K2D).end(), std::move(init), [](auto&& acc, auto const& col) -> decltype(acc) {
 					std::transform(col.begin(), col.end(), acc.begin(), acc.begin(), [](auto const& cole, auto&& acce) { return std::forward<decltype(acce)>(acce) + cole; });
 					return std::forward<decltype(acc)>(acc);
 				}
 			);
-		}(multi::array<double, 1>(K2D.extension(), 0.0));
+		}(multi::array<double, 1>(K2D.extension(), 0.0));  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
@@ -247,14 +246,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	#endif
 
-	#if(defined __has_include && __has_include(<execution>))
+	#if(defined(__has_include) && __has_include(<execution>))
 		#if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7))
-			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502)) && !defined(_LIBCPP_VERSION)
+			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210000)) && !defined(_LIBCPP_VERSION)
 				#if !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
-		auto const accumulator = [&] {
-			watch const _("transform reduce[unseq]");
-
+		auto const accumulator = [&] (watch = watch("transform reduce[unseq]")) {  // NOLINT(fuchsia-default-arguments-declarations) 
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
 			std::transform(
 				K2D.begin(), K2D.end(),
@@ -263,7 +260,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				[](auto const& row, auto rete) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(rete)); }
 			);
 			return ret;
-		}();
+		}();  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
@@ -364,9 +361,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		auto const accumulator = [&](auto zero_elem) {
-			watch const _("transform[par] reduce[unseq] element zero");
-
+		auto const accumulator = [&](auto zero_elem, watch = watch("transform[par] reduce[unseq] element zero")) {  // NOLINT(fuchsia-default-arguments-declarations)
 			multi::array<double, 1> ret(K2D.extension());
 			std::transform(
 				std::execution::par,
@@ -375,7 +370,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				[zz = std::move(zero_elem)](auto const& row) { return std::reduce(std::execution::unseq, row.begin(), row.end(), std::move(zz)); }
 			);
 			return ret;
-		}(0.0);
+		}(0.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
@@ -388,11 +383,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif  // __NVCC__
 
 	// {
-	// 	auto const accumulator = [&](auto&& init, watch = watch{"blas gemv"}) {  // NOLINT(fuchsia-default-arguments-declarations)
+	// 	auto const accumulator = [&](auto&& init) {
+	// 		watch const             _("blas gemv");
 	// 		multi::array<double, 1> ones({init.extension()}, 1.0);
 	// 		multi::blas::gemv_n(1.0, K2D.begin(), K2D.size(), ones.begin(), 0.0, init.begin());
 	// 		return std::forward<decltype(init)>(init);
-	// 	}(multi::array<double, 1>(K2D.extension(), 0.0));  // NOLINT(fuchsia-default-arguments-calls)
+	// 	}(multi::array<double, 1>(K2D.extension(), 0.0));
 
 	// 	for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 	// 		BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);

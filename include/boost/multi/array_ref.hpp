@@ -1384,6 +1384,18 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	//  BOOST_MULTI_HD constexpr auto chunked(size_type count)      & -> partitioned_type       {return chunked_aux_(count);}
 	//  BOOST_MULTI_HD constexpr auto chunked(size_type count)     && -> partitioned_type       {return chunked_aux_(count);}
 
+	constexpr auto tiled(size_type count) const & {
+		assert(count != 0);
+		struct divided_type {
+			const_subarray<T, D+1, element_ptr> quotient;
+			const_subarray<T, D, element_ptr> remainder;
+		};
+		return divided_type{
+			this->taked(this->size() - (this->size() % count)).chunked(count),
+			this->dropped(this->size() - (this->size() % count))
+		};
+	}
+
  private:
 	constexpr auto reversed_aux_() const -> const_subarray {
 		auto new_layout = this->layout();
@@ -2255,20 +2267,19 @@ template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
 
 template<class Element, typename Ptr, bool IsConst, bool IsMove>
 struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
-: boost::multi::iterator_facade<
-	array_iterator<Element, 1, Ptr, IsConst, IsMove>,
-	Element, std::random_access_iterator_tag,
-	std::conditional_t<
-		IsConst,
-		typename std::iterator_traits<typename std::pointer_traits<Ptr>::template rebind<Element const> >::reference,
-		typename std::iterator_traits<Ptr>::reference
-	>, multi::difference_type
->
-, multi::affine          <array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>
-, multi::decrementable   <array_iterator<Element, 1, Ptr, IsConst>>
-, multi::incrementable   <array_iterator<Element, 1, Ptr, IsConst>>
-, multi::totally_ordered2<array_iterator<Element, 1, Ptr, IsConst>, void>
-{
+	: boost::multi::iterator_facade<
+		array_iterator<Element, 1, Ptr, IsConst, IsMove>,
+		Element, std::random_access_iterator_tag,
+		std::conditional_t<
+			IsConst,
+			typename std::iterator_traits<typename std::pointer_traits<Ptr>::template rebind<Element const> >::reference,
+			typename std::iterator_traits<Ptr>::reference
+		>, multi::difference_type
+	>
+	, multi::affine          <array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>
+	, multi::decrementable   <array_iterator<Element, 1, Ptr, IsConst>>
+	, multi::incrementable   <array_iterator<Element, 1, Ptr, IsConst>>
+	, multi::totally_ordered2<array_iterator<Element, 1, Ptr, IsConst>, void> {
 	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>;
 
 	using pointer = std::conditional_t<
@@ -2559,8 +2570,8 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 template<typename T, typename ElementPtr, class Layout>
 struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
-: multi::random_iterable<subarray<T, 1, ElementPtr, Layout> >  // paren for msvc 19.14?
-, array_types<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout> {  // paren for msvc 19.14?
+	: multi::random_iterable<subarray<T, 1, ElementPtr, Layout> >  // paren for msvc 19.14?
+	, array_types<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout> {  // paren for msvc 19.14?
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	// boost serialization needs `delete`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::layout_t<1> >]
@@ -2804,7 +2815,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
  public:
-	constexpr auto taked(difference_type count) const& -> basic_const_array {return taked_aux_(count);}
+	constexpr auto taked(difference_type count) const& -> const_subarray<T, 1, ElementPtr, Layout> {return taked_aux_(count);}
 
  private:
 	BOOST_MULTI_HD constexpr auto dropped_aux_(difference_type count) const -> const_subarray {
@@ -2976,6 +2987,18 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto chunked(size_type size) const& -> const_subarray<T, 2, element_ptr> {return chunked_aux_(size);}
 	// BOOST_MULTI_HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux_(size);}
 	// BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux_(size);}
+
+	constexpr auto tiled(size_type count) const & {
+		assert(count != 0);
+		struct divided_type {
+			const_subarray<T, 2, element_ptr> quotient;
+			const_subarray<T, 1, element_ptr> remainder;
+		};
+		return divided_type{
+			this->taked(this->size() - (this->size() % count)).chunked(count),
+			this->dropped(this->size() - (this->size() % count))
+		};
+	}
 
  private:
 	constexpr auto reversed_aux_() const -> const_subarray {
