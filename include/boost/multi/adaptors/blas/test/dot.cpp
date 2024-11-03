@@ -471,9 +471,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto c1 = complex{0.0F, 0.0F};
 		blas::dot(A[1], A[2], c1);
 		BOOST_TEST( c1 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );  // NOLINT(fuchsia-default-arguments-calls)
+
+		auto const c2 = +blas::dot(A[1], A[2]);
+		BOOST_TEST( c2 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );  // NOLINT(fuchsia-default-arguments-calls)
 	}
-//      auto const c2 = +blas::dot(A[1], A[2]);
-//      BOOST_TEST( c2 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );  // NOLINT(fuchsia-default-arguments-calls)
 
 //      complex const c3 = blas::dot(A[1], A[2]);
 //      BOOST_TEST( c3 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}) );  // NOLINT(fuchsia-default-arguments-calls)
