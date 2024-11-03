@@ -230,7 +230,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
+	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210000))
 	{
 		auto const accumulator = [&](auto&& init) {
 			watch const _("> transform reduce");
