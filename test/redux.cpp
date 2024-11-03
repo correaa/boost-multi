@@ -77,7 +77,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND)
 
 	{
-		auto const accumulator = [&](watch = watch("raw loop")) {
+		auto const accumulator = [&](watch = watch("raw loop")) {  // NOLINT(fuchsia-default-arguments-declaration)
 			multi::array<double, 1> ret({nx}, 0.0);
 			for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {      // NOLINT(altera-id-dependent-backward-branch)
 				for(multi::array<double, 2>::index iy = 0; iy != ny; ++iy) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
@@ -85,7 +85,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 			return ret;
-		}();
+		}();  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
@@ -230,7 +230,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210000))
+	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20200000))
 	{
 		auto const accumulator = [&](auto&& init) {
 			watch const _("> transform reduce");
@@ -248,7 +248,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	#if(defined(__has_include) && __has_include(<execution>))
 		#if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7))
-			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20210000)) && !defined(_LIBCPP_VERSION)
+			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20220000)) && !defined(_LIBCPP_VERSION)
 				#if !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
 		auto const accumulator = [&] (watch = watch("transform reduce[unseq]")) {  // NOLINT(fuchsia-default-arguments-declarations) 
