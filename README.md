@@ -1955,8 +1955,9 @@ Algorithms are expected to work with oneAPI execution policies as well (not test
 
 ## Formatting ({fmt} pretty printing)
 
-The library doesn't have a "pretty" printing facility to display arrays;
-fortunatelly it automatically works with the external library [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
+The library doesn't have a "pretty" printing facility to display arrays.
+Although not ideal, arrays can be printed and formatting by looping over elements and dimensions, as shown as examples in this documentation,
+Fortunatelly the library automatically works with the external library [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
 The fmt library is not a dependency of the Multi library; they simply work well together using the "ranges" part of the formatting library.
 
 This example prints a 2-dimensional subblock of a larger array.
@@ -1975,8 +1976,6 @@ This example prints a 2-dimensional subblock of a larger array.
 ```
 with the "flat" output `A2 subblock = [[3, 4], [6, 7]]`
 
-https://godbolt.org/z/EE5sqTdvf
-
 For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
 
 ```cpp
@@ -1988,6 +1987,8 @@ with the output:
 > [3, 4]
 > [6, 7]
 > ```
+https://godbolt.org/z/vjc6n1ove
+
 
 When saving arrays to files, consider using serialization (see section) instead.
 

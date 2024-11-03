@@ -14,8 +14,7 @@
 #include <cmath>  // for abs  // IWYU pragma: keep
 #include <complex>   // for complex, operator*
 #include <iterator>  // for begin, size
-// IWYU pragma: no_include <memory>  // for allocator
-// IWYU pragma: no_include <exception>  // for exception
+// IWYU pragma: no_include <memory>
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
