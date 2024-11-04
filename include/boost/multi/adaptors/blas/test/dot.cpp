@@ -14,6 +14,7 @@
 #include <cmath>
 #include <complex>     // for complex, operator*
 #include <functional>  // for plus  // IWYU pragma: keep
+#include <iostream>
 #include <iterator>    // for begin, end
 #include <limits>      // for numeric_limits
 #include <memory>      // for allocator
