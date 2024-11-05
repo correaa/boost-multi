@@ -481,6 +481,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		complex const c4 = blas::dot(A[1], blas::C(A[2]));
 		std::cout << "c4 = " << c4 << '\n';
+		std::cout << "pp = " << +blas::dot(A[1], A[2]) << '\n';
 		std::cout << "rf = " << std::inner_product(A[1].begin(), A[1].end(), A[2].begin(), complex{0.0F, 0.0F}, std::plus<>{}, [](auto al, auto om) { return al * conj(om); }) << '\n';
 
 		BOOST_TEST(
@@ -491,25 +492,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		complex const c5 = blas::dot(blas::C(A[1]), A[2]);
 		BOOST_TEST(
 			c5
-			== inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto al, auto om) { return conj(al) * om; })  // NOLINT(fuchsia-default-arguments-calls)
+			== std::inner_product(A[1].begin(), A[1].end(), A[2].begin(), complex{0.0F, 0.0F}, std::plus<>{}, [](auto al, auto om) { return conj(al) * om; })
 		);
 
 		complex const c6 = blas::dot(blas::conj(A[1]), A[2]);
 		BOOST_TEST(
 			c6 
-			== inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) { return conj(alpha) * omega; }) // NOLINT(fuchsia-default-arguments-calls)
+			== std::inner_product(A[1].begin(), A[1].end(), A[2].begin(), complex{0.0F, 0.0F}, std::plus<>{}, [](auto al, auto om) { return conj(al) * om; })
 		);
 
 		complex const c7 = blas::dot(blas::C(A[1]), A[2]);
 		BOOST_TEST(
 			c7
-			== std::inner_product(
-				begin(A[1]),
-				end(A[1]), begin(A[2]),
-				complex{},  // NOLINT(fuchsia-default-arguments-calls)
-				std::plus<>{},
-				[](auto alpha, auto omega) { return conj(alpha) * omega; }
-			)
+			== std::inner_product(A[1].begin(), A[1].end(), A[2].begin(), complex{0.0F, 0.0F}, std::plus<>{}, [](auto al, auto om) { return conj(al) * om; })
 		);
 	}
 
