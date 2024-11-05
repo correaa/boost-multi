@@ -51,7 +51,7 @@ g++-m32 sanitize:
   script:
     - dpkg --add-architecture i386
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libopenblas-dev:i386 libboost-serialization-dev:i386 make tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libboost-serialization-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
     - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
@@ -378,7 +378,7 @@ clang++-m32:
   interruptible: true
   script:
     - dpkg --add-architecture i386
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake make libblas-dev:i386 libboost-serialization-dev:i386 tar wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake make libboost-serialization-dev:i386 tar wget
     - mkdir build && cd build
     - c++ --version
     - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_BUILD_TYPE=Debug
