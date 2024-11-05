@@ -367,6 +367,7 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_c<Y>{} && is_assignable<R&, decltype(/*0.0F+*/ X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(ssize_t n, XP xp, ptrdiff_t incx, YP yp, ptrdiff_t incy, RP rp) {
 	// std::clog << "using cdotc non void\n";
+	// c
 	auto const rr = BLAS(cdotc)(                                      n, reinterpret_cast<c const*>(static_cast<X*>(xp)), incx, reinterpret_cast<c const*>(static_cast<Y*>(yp)), incy); std::memcpy(reinterpret_cast<std::array<float ,2>*>(static_cast<R*>(rp))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*rp));
 	// BLAS(cgemv)('N', 1, n, std::complex<float>{1.0F, 0.0F}, reinterpret_cast<c const*>(static_cast<X*>(xp)), incx, reinterpret_cast<c const*>(static_cast<Y*>(yp)), incy, std::complex<float>{0.0F, 0.0F}, reinterpret_cast<c*>(static_cast<R*>(rp)), 1);  // NOLINT(readability-suspicious-call-argument)
 }
