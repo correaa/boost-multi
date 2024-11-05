@@ -276,16 +276,16 @@ vs2019-windows:
   interruptible: true
   script:
     - choco --version
-    - choco install -y visualstudio2019community  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
+    - choco install -y visualstudio2019community poshgit  # 16.11.36.0  # The CXX compiler identification is MSVC 19.40.33811.0
     # - choco install -y boost-msvc-14.2 --version 1.74.0 --x64
     # - Invoke-WebRequest -UserAgent curl https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe -OutFile boost_1_74_0-msvc-14.2-64.exe
     # - Invoke-WebRequest 'https://pilotfiber.dl.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.2-64.exe?viasf=1' -OutFile 'boost_1_74_0-msvc-14.2-64.exe'
     # - .\boost_1_74_0-msvc-14.2-64.exe /sp- /verysilent /suppressmsgboxes /norestart /components="test" | more
-    - choco install -y poshgit
+    # - choco install -y poshgit
     # - Install-Module posh-git -Scope CurrentUser -Force
-    - git clone https://github.com/microsoft/vcpkg.git
+    - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     - .\vcpkg\bootstrap-vcpkg.bat
-    - .\vcpkg\vcpkg install boost-multi-array
+    - .\vcpkg\vcpkg install boost-multi-array boost-timer
     - echo "BOOST_ROOT=$(Get-Location)\vcpkg\installed\x64-windows" >> $env:GITHUB_ENV
     - echo "BOOST_INCLUDEDIR=$(Get-Location)\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
     - echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
