@@ -285,7 +285,7 @@ vs2019-windows:
     # - Install-Module posh-git -Scope CurrentUser -Force
     - git clone https://github.com/microsoft/vcpkg.git
     - .\vcpkg\bootstrap-vcpkg.bat
-    - .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
+    - .\vcpkg\vcpkg install boost-core
     - echo "BOOST_ROOT=$(Get-Location)\vcpkg\installed\x64-windows" >> $env:GITHUB_ENV
     - echo "BOOST_INCLUDEDIR=$(Get-Location)\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
     - echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
