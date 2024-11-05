@@ -77,7 +77,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND)
 
 	{
-		auto const accumulator = [&](watch = watch("raw loop")) {  // NOLINT(fuchsia-default-arguments-declaration)
+		auto const accumulator = [&](watch = watch("raw loop")) {  // NOLINT(fuchsia-default-arguments-declarations)
 			multi::array<double, 1> ret({nx}, 0.0);
 			for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {      // NOLINT(altera-id-dependent-backward-branch)
 				for(multi::array<double, 2>::index iy = 0; iy != ny; ++iy) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
