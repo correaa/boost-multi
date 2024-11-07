@@ -11,7 +11,7 @@
 #include <cmath>    // for abs  // IWYU pragma: keep
 #include <complex>  // for complex, real, operator==, imag
 // IWYU pragma: no_include <cstdlib>                          // for abs
-#include <iterator>     // for size, begin, end
+#include <iterator>  // for size, begin, end
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for iota
 #include <type_traits>  // for is_same_v
@@ -204,10 +204,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &arr.reinterpret_array_cast<double>(3)[5][7][2] == &std::get<2>(arr[5][7]) );
 		}
 		{
-			multi::array<vector3, 2> const arr({
-												   4, 5
-            },
-											   vector3{{1.0, 2.0, 3.0}});
+			multi::array<vector3, 2> const arr({4, 5}, vector3{{1.0, 2.0, 3.0}});
 
 			BOOST_TEST( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
 			BOOST_TEST( decltype(arr.reinterpret_array_cast<double>(3))::dimensionality == 3 );
@@ -319,5 +316,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::abs( carr[1][1] - 6.0 ) < 1E-6 );
 	}
+
+	// test packing 4 doubles
+	{
+		using packed_type = std::array<double, 4>;
+		multi::array<packed_type, 2> arr_4pc({10, 25});
+		BOOST_TEST( arr_4pc[0].size() == 25 );
+		arr_4pc[0][0] = packed_type{{1.0, 2.0, 3.0, 4.0}};
+		arr_4pc[0][1] = packed_type{{5.0, 6.0, 7.0, 8.0}};
+
+		auto&& arr = arr_4pc.reinterpret_array_cast<double>(4).rotated().flatted().unrotated();
+		BOOST_TEST( arr[0].size() == 100 );
+
+		BOOST_TEST( std::abs( arr[0][0] - 1.0 ) < 1.0e6 );
+		BOOST_TEST( std::abs( arr[0][1] - 2.0 ) < 1.0e6 );
+		BOOST_TEST( std::abs( arr[0][2] - 3.0 ) < 1.0e6 );
+		BOOST_TEST( std::abs( arr[0][3] - 4.0 ) < 1.0e6 );
+
+		BOOST_TEST( std::abs( arr[0][4] - 5.0 ) < 1.0e6 );
+		BOOST_TEST( std::abs( arr[0][5] - 6.0 ) < 1.0e6 );
+		BOOST_TEST( std::abs( arr[0][6] - 7.0 ) < 1.0e6 );
+		BOOST_TEST( std::abs( arr[0][7] - 8.0 ) < 1.0e6 );
+	}
+
 	return boost::report_errors();
 }
