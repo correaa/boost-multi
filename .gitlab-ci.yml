@@ -167,7 +167,7 @@ g++-7:
   interruptible: true
   script:
     - arch
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
     - sh ./cmake-*.sh --skip-license --prefix=/usr
     - cmake --version
@@ -276,8 +276,8 @@ vs2019-windows:
   interruptible: true
   variables:
     BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
-    BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
+    # BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
+    # BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
   script:
     - choco --version
     - choco install -y visualstudio2019community poshgit
@@ -286,8 +286,7 @@ vs2019-windows:
     - .\vcpkg\vcpkg install boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=20
-    # - cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -A x64 -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=23
     - cmake --build build --config Release --parallel 2 --verbose
     - $env:Path += ";${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin"
     - ctest --test-dir build --output-on-failure -C Release
