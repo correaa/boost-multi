@@ -18,18 +18,19 @@ enum class diagonal : char {
 };
 
 template<blas::filling Fill, class Array>
+class triangular_part {
+	Array const& ref_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+
+	public:
+	explicit triangular_part(Array const& ref) : ref_{ref} {}
+	static constexpr auto filling() { return Fill; }
+	using underlying_type = Array;
+	auto underlying() const -> Array const& { return ref_;}
+};
+
+template<blas::filling Fill, class Array>
 auto triangular_parted(Array const& arr) {
-	class triangular_part {
-		Array const& ref_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-
-	 public:
-		explicit triangular_part(Array const& ref) : ref_{ref} {}
-		static constexpr auto filling() { return Fill; }
-		using underlying_type __attribute__((unused)) = Array;
-		auto underlying() const -> Array const& { return ref_;}
-	};
-
-	return triangular_part{arr};
+	return triangular_part<Fill, Array>{arr};
 }
 
 template<class Array>
