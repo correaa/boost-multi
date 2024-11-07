@@ -1885,6 +1885,7 @@ Iterators (e.g. `.begin()/.end()`) and "cursors" (e.g. `.home()`) are "trivial t
 Cursors are a generalization of iterators for multiple dimensions.
 They are cheaply copied (like iterators) and they allow indexing.
 Also, they have no associated `.size()` or `.extensions()`, but this is generally fine for kernels.
+(Since `cursors` have minimal information for indexing, they can save stack/register space in individual kernels.)
 
 Here it is an example implementation for matrix multiplication, in combination with Thrust and Multi,
 
