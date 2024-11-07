@@ -230,7 +230,7 @@ Conjugation can be applied to either vector argument,
     auto const d4 = +dot(C(v), C(w));
 ```
 
-It is important to note that the right hand side of the assignment can be a scalar that is part of a heap allocation.
+It is important to note that the left hand side of the assignment can be a scalar that is part of a heap allocation.
 In this case, the result is going to directly put at this location.
 
 ```cpp
