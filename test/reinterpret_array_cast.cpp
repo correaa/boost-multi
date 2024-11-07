@@ -328,15 +328,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& arr = arr_4pc.reinterpret_array_cast<double>(4).rotated().flatted().unrotated();
 		BOOST_TEST( arr[0].size() == 100 );
 
-		BOOST_TEST( std::abs( arr[0][0] - 1.0 ) < 1.0e6 );
-		BOOST_TEST( std::abs( arr[0][1] - 2.0 ) < 1.0e6 );
-		BOOST_TEST( std::abs( arr[0][2] - 3.0 ) < 1.0e6 );
-		BOOST_TEST( std::abs( arr[0][3] - 4.0 ) < 1.0e6 );
+		BOOST_TEST( std::abs( arr[0][0] - 1.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( arr[0][1] - 2.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( arr[0][2] - 3.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( arr[0][3] - 4.0 ) < 1E-6 );
 
-		BOOST_TEST( std::abs( arr[0][4] - 5.0 ) < 1.0e6 );
-		BOOST_TEST( std::abs( arr[0][5] - 6.0 ) < 1.0e6 );
-		BOOST_TEST( std::abs( arr[0][6] - 7.0 ) < 1.0e6 );
-		BOOST_TEST( std::abs( arr[0][7] - 8.0 ) < 1.0e6 );
+		BOOST_TEST( std::abs( arr[0][4] - 5.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( arr[0][5] - 6.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( arr[0][6] - 7.0 ) < 1E-6 );
+		BOOST_TEST( std::abs( arr[0][7] - 8.0 ) < 1E-6 );
 	}
 
 	return boost::report_errors();
