@@ -325,7 +325,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr_4pc[0][0] = packed_type{{1.0, 2.0, 3.0, 4.0}};
 		arr_4pc[0][1] = packed_type{{5.0, 6.0, 7.0, 8.0}};
 
-		auto&& arr = arr_4pc.reinterpret_array_cast<double>(4).rotated().flatted().unrotated();
+		auto arr = arr_4pc.reinterpret_array_cast<double>(4).rotated().flatted().unrotated();
 		BOOST_TEST( arr[0].size() == 100 );
 
 		BOOST_TEST( std::abs( arr[0][0] - 1.0 ) < 1E-6 );
