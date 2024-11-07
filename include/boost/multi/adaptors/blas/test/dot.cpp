@@ -480,13 +480,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( c3 == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.0F, 0.0F}) );
 
 		complex const c4 = blas::dot(A[1], blas::C(A[2]));
-		std::cout << "c4 = " << c4 << '\n';
-		std::cout << "pp = " << +blas::dot(A[1], A[2]) << '\n';
-		std::cout << "rf = " << std::inner_product(A[1].begin(), A[1].end(), A[2].begin(), complex{0.0F, 0.0F}, std::plus<>{}, [](auto al, auto om) { return al * conj(om); }) << '\n';
 
 		BOOST_TEST(
-			c4 == 
-			std::inner_product(A[1].begin(), A[1].end(), A[2].begin(), complex{0.0F, 0.0F}, std::plus<>{}, [](auto al, auto om) { return al * conj(om); })
+			c4
+			== std::inner_product(A[1].begin(), A[1].end(), A[2].begin(), complex{0.0F, 0.0F}, std::plus<>{}, [](auto al, auto om) { return al * conj(om); })
 		);
 
 		complex const c5 = blas::dot(blas::C(A[1]), A[2]);
@@ -497,7 +494,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		complex const c6 = blas::dot(blas::conj(A[1]), A[2]);
 		BOOST_TEST(
-			c6 
+			c6
 			== std::inner_product(A[1].begin(), A[1].end(), A[2].begin(), complex{0.0F, 0.0F}, std::plus<>{}, [](auto al, auto om) { return conj(al) * om; })
 		);
 

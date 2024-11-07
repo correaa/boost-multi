@@ -428,18 +428,6 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		return (base_ != other.base_) || (layout_ != other.layout_);
 	}
 
-	// constexpr auto operator==(subarray_ptr<T, D, ElementPtr, Layout, true> const& other) const -> bool {
-	//  return (base_ == other.base_) && (layout_ == other.layout_);
-	// }
-
-	// template<
-	//  typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherL, bool OtherIsConst,
-	//  std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL, OtherIsConst>>, int> = 0
-	// >
-	// friend BOOST_MULTI_HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL, OtherIsConst> const& other) -> bool {
-	//  return self.base_ == other.base_ && self.layout_ == other.layout_;
-	// }
-
 	template<
 		typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherL, bool OtherIsConst,
 		std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL, OtherIsConst>>, int> =0  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20

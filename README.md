@@ -39,7 +39,7 @@ Indexing and other logical errors result in undefined behavior, which this libra
 
 The library requires C++17 or higher.
 
-## Contents
+**Contents:**
 [[_TOC_]]
 
 ## Using the library, installation and tests
