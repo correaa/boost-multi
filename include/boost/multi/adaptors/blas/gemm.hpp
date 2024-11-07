@@ -232,9 +232,8 @@ class gemm_iterator {
 	->decltype(blas::gemm_n(std::declval<ContextPtr>(), std::declval<typename ItA::element>()       , std::declval<ItA>(), count, std::declval<ItB>(), 0.0, d_first)) try {  // std::complex NOLINT(fuchsia-default-arguments-calls)
 		return blas::gemm_n(first.ctxtp_              , static_cast<typename ItA::element>(first.s_), first.a_it_        , count, first.b_begin_     , 0.0, d_first);  // NOLINT(fuchsia-default-arguments-calls)
 	} catch(std::exception const& e) {
-		using namespace std::string_literals;
 		throw std::logic_error(
-			"in "s + __PRETTY_FUNCTION__ +"\nCouldn't decay product of arrays of size "+ std::to_string(count) +"x"+ std::to_string((*first.a_it_).size()) + " and " + // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			"in `copy_n`\nCouldn't decay product of arrays of size "+ std::to_string(count) +"x"+ std::to_string((*first.a_it_).size()) + " and " + // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			std::to_string((*first.a_it_).size())+ "x" +std::to_string((*first.b_begin_).size()) + " into " + std::to_string(count) +"x" + std::to_string((*first.b_begin_).size()) +
 			"\nbecause\n" + e.what()
 		);
