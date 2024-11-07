@@ -12,7 +12,6 @@
 #include <boost/multi/adaptors/blas/dot.hpp>
 #include <boost/multi/adaptors/blas/gemm.hpp>
 #include <boost/multi/adaptors/blas/gemv.hpp>  // IWYU pragma: export
-//#include <boost/multi/adaptors/blas/ger.hpp>
 #include <boost/multi/adaptors/blas/herk.hpp>
 #include <boost/multi/adaptors/blas/iamax.hpp>
 #include <boost/multi/adaptors/blas/nrm2.hpp>
