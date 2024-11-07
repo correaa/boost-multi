@@ -18,8 +18,7 @@
 #include <utility>                             // for forward, declval
 
 #define BOOST_MULTI_DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
-#define JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
-// TODO(correaa) ^^^ fix macro name
+#define BOOST_MULTI_JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
 namespace boost::multi::blas {
 
@@ -134,7 +133,7 @@ class axpy_range {
 };
 
 template<class Context, class Scalar, class X1D,
-	class=std::enable_if_t<is_context<Context>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	class=std::enable_if_t<is_context<Context>{}>>  // NOLINT(modernize-use-constraints) for C++20
 auto axpy(Context&& ctxt, Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conventional BLAS naming
 -> axpy_range<Context, Scalar, typename X1D::const_iterator> {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	return {std::forward<Context>(ctxt), a, begin(x), end(x)};
@@ -144,7 +143,7 @@ template<class Scalar, class X1D>
 auto axpy(Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conventional BLAS naming
 {
 	auto ctxtp = blas::default_context_of(x.base());
-	return axpy_range<decltype(ctxtp), Scalar, typename X1D::const_iterator>{ctxtp, a, begin(x), end(x)};  // TODO(correaa) fix temporary
+	return axpy_range<decltype(ctxtp), Scalar, typename X1D::const_iterator>{ctxtp, a, begin(x), end(x)};
 }
 
 template<class AA, class X>
@@ -171,7 +170,7 @@ template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) BOOST_
 template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 
 template<class X,
-	std::enable_if_t<X::dimensionality == 1, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	std::enable_if_t<X::dimensionality == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 auto operator*(typename X::element_type a, X const& x) {return scaled{a, x};}  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X += y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
@@ -182,6 +181,6 @@ template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std
 } // end namespace boost::multi::blas
 
 #undef BOOST_MULTI_DECLRETURN
-#undef JUSTRETURN
+#undef BOOST_MULTI_JUSTRETURN
 
 #endif  // BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
