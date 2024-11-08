@@ -218,7 +218,7 @@ class gemm_iterator {
 	auto operator++() -> gemm_iterator& {return operator+=(1);}  // required by random access concept requires even if not used explicitly
 	auto operator--() -> gemm_iterator& {return operator-=(1);}
 
-	auto operator+(difference_type n) const {gemm_iterator ret{*this}; ret+=n; return ret;}
+	friend auto operator+(gemm_iterator ret, difference_type n) { return ret+=n; }
 
 	friend auto operator-(gemm_iterator const& a, gemm_iterator const& b) -> difference_type {  // NOLINT(readability-identifier-length) BLAS naming
 		assert(a.b_begin_ == b.b_begin_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
