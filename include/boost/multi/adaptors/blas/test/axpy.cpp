@@ -5,7 +5,7 @@
 #include <boost/multi/adaptors/blas/axpy.hpp>     // for axpy, operator-
 #include <boost/multi/adaptors/blas/core.hpp>     // for context
 #include <boost/multi/adaptors/blas/numeric.hpp>  // for imag, real
-#include <boost/multi/adaptors/complex.hpp>       // for complex, operator*
+// #include <boost/multi/adaptors/complex.hpp>       // for complex, operator*
 #include <boost/multi/array.hpp>                  // for array, implicit_cast
 
 #include <boost/core/lightweight_test.hpp>
@@ -15,7 +15,8 @@
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-using complex = multi::complex<double>;  // test internal implementation of complex (partially formed complex)
+// using complex = multi::complex<double>;  // test internal implementation of complex (partially formed complex)
+using complex = std::complex<double>;  // test internal implementation of complex (partially formed complex)
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
@@ -185,8 +186,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using blas::operators::operator-;
 
-		BOOST_TEST( (x - y)[0] == complex{} );
-		BOOST_TEST( (y - x)[0] == complex{} );
+		BOOST_TEST( (x - y)[0] == complex(0.0, 0.0) );
+		BOOST_TEST( (y - x)[0] == complex(0.0, 0.0) );
 
 		using blas::operators::operator+;
 
@@ -201,8 +202,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{1.0, 0.0},
 			{2.0, 0.0},
 		};
-		BOOST_TEST( (arr[0] - arr2)[0] == complex{} );
-		BOOST_TEST( (arr[0] - arr2)[1] == complex{} );
+		BOOST_TEST( (arr[0] - arr2)[0] == complex(0.0, 0.0) );
+		BOOST_TEST( (arr[0] - arr2)[1] == complex(0.0, 0.0) );
 
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<complex, 1> X = {
@@ -222,7 +223,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using blas::operators::operator-=;
 		X -= Y;
-		BOOST_TEST( X[0] == complex{} );
+		BOOST_TEST( X[0] == complex(0.0, 0.0) );
 	}
 
 	zero_stride();
