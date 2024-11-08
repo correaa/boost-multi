@@ -251,7 +251,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20220000)) && !defined(_LIBCPP_VERSION)
 				#if !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
-		auto const accumulator = [&] (watch = watch("transform reduce[unseq]")) {  // NOLINT(fuchsia-default-arguments-declarations) 
+		auto const accumulator = [&] (watch = watch("transform reduce[unseq]")) {  // NOLINT(fuchsia-default-arguments-declarations)
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
 			std::transform(
 				K2D.begin(), K2D.end(),

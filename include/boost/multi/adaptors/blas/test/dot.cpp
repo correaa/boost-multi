@@ -592,7 +592,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  });
 
 	//  // TODO(correaa) MKL gives an error here
-	//  // unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
+	//  // unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero":
+	//  // memory access violation at address: 0x00000007: no mapping at fault address
 
 	//  std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {
 	//      std::transform(
