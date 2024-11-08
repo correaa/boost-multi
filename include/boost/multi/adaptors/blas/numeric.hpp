@@ -176,6 +176,10 @@ class involuter {
 	involuter() = default;
 	constexpr involuter(involuter const&) = default;
 	constexpr auto operator=(involuter const&) -> involuter& = default;
+	constexpr involuter(involuter&&) = default;
+	constexpr auto operator=(involuter&&) -> involuter& = default;
+	~involuter() = default;
+
 
 	BOOST_MULTI_HD constexpr explicit involuter(It it) : it_{std::move(it)}, f_{} {}
 	BOOST_MULTI_HD constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
