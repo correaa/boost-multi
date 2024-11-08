@@ -210,8 +210,6 @@ class gemm_iterator {
 	using reference = gemm_reference<decltype((*b_begin_).extensions())>;
 	using iterator_category = std::random_access_iterator_tag;
 
-	// static_assert( std::is_base_of_v<std::random_access_iterator_tag, typename std::iterator_traits<gemm_iterator>::iterator_category> );
-
 	auto operator+=(difference_type n) -> gemm_iterator& {a_it_ += n; return *this;}
 	auto operator-=(difference_type n) -> gemm_iterator& {a_it_ -= n; return *this;}
 
