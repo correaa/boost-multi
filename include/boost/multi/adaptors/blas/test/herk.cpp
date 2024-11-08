@@ -2,6 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+#endif
+
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
 #include <boost/multi/adaptors/blas/herk.hpp>        // for herk
@@ -50,7 +58,7 @@ template<class M> auto print(M const& mat, std::string const& msg = "") -> declt
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
-		
+		static_assert( std::is_literal_type_v<multi::blas::involuter<double*, std::negate<>> > );
 	}
 	BOOST_AUTO_TEST_CASE(multi_blas_herk) {
 		namespace blas = multi::blas;
