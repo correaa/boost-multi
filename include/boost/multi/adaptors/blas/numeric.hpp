@@ -203,8 +203,8 @@ class involuter {
 
 	// constexpr auto operator+(difference_type n) const { return involuter{it_ + n, f_}; }
 	// constexpr auto operator-(difference_type n) const { return involuter{it_ - n, f_}; }
-	constexpr friend auto operator+(involuter lhs, difference_type n) { return lhs += n; }
-	constexpr friend auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
+	/*constexpr*/ friend auto operator+(involuter lhs, difference_type n) { return lhs += n; }
+	/*constexpr*/ friend auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
 
 	auto operator-(involuter const& other) const { return it_ - other.it_; }
 
