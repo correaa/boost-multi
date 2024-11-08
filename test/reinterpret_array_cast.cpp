@@ -27,6 +27,15 @@ template<class T> struct complex_dummy {
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+
+	// simple class reinterpret
+	{
+		struct int_class {int val_;};
+		multi::array<int_class, 1> arr({5}, int_class{});
+		arr[0].val_ = 5;
+		BOOST_TEST( arr.reinterpret_array_cast<int>()[0] == 5 );
+	}
+
 	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 		struct vec3 {
 			double x;
