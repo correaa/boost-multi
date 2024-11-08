@@ -49,6 +49,9 @@ template<class M> auto print(M const& mat, std::string const& msg = "") -> declt
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	{
+		
+	}
 	BOOST_AUTO_TEST_CASE(multi_blas_herk) {
 		namespace blas = multi::blas;
 		using complex  = std::complex<double>;
