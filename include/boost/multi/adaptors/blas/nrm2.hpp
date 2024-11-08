@@ -83,14 +83,17 @@ struct nrm2_ref : private Ptr {
 	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type  //NOSONAR
 
 	auto decay() const -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}  // NOLINT(fuchsia-default-arguments-calls) complex
-	operator decay_type()       const {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) //NOSONAR to allow terse syntax
+	operator decay_type()       const { return decay(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) //NOSONAR to allow terse syntax
 // #if ! defined(__CUDACC__) || ! defined(__INTEL_COMPILER)
 //  friend auto operator*(decay_type const& lhs, dot_ref const& self) {return lhs*self.decay();}
 // #endif
-	auto operator+() const -> decay_type {return decay();}
+	auto operator+() const -> decay_type { return decay(); }
 
-	auto operator==(nrm2_ref const& other) const -> bool {return decay() == other.decay();}
-	auto operator!=(nrm2_ref const& other) const -> bool {return decay() != other.decay();}
+	// auto operator==(nrm2_ref const& other) const { return decay() == other.decay(); }
+	// auto operator!=(nrm2_ref const& other) const { return decay() != other.decay(); }
+
+	friend auto operator==(nrm2_ref const& self, nrm2_ref const& other) { return self.decay() == other.decay(); }
+	friend auto operator!=(nrm2_ref const& self, nrm2_ref const& other) { return self.decay() != other.decay(); }
 };
 
 template<class X>
