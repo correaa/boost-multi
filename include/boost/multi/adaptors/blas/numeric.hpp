@@ -174,12 +174,6 @@ class involuter {
 	template<class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>;
 
 	involuter() = default;
-	constexpr involuter(involuter const&) = default;
-	constexpr auto operator=(involuter const&) -> involuter& = default;
-	constexpr involuter(involuter&&) = default;
-	constexpr auto operator=(involuter&&) -> involuter& = default;
-	~involuter() = default;
-
 
 	BOOST_MULTI_HD constexpr explicit involuter(It it) : it_{std::move(it)}, f_{} {}
 	BOOST_MULTI_HD constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
@@ -195,8 +189,8 @@ class involuter {
 
 	// auto operator==(involuter const& other) const -> bool { return it_ == other.it_; }
 	// auto operator!=(involuter const& other) const -> bool { return it_ != other.it_; }
-	constexpr friend auto operator==(involuter const& slf, involuter const& thr) { return slf.it_ == thr.it_; }
-	constexpr friend auto operator!=(involuter const& slf, involuter const& thr) { return slf.it_ != thr.it_; }
+	friend auto operator==(involuter const& slf, involuter const& thr) { return slf.it_ == thr.it_; }
+	friend auto operator!=(involuter const& slf, involuter const& thr) { return slf.it_ != thr.it_; }
 
 	constexpr auto operator+=(difference_type n) -> involuter& {
 		it_ += n;
