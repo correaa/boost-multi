@@ -201,10 +201,10 @@ class involuter {
 		return *this;
 	}
 
-	template<class DifferenceType = difference_type>  // workaround for nvcc
-	constexpr friend auto operator+(involuter lhs, DifferenceType n) { return lhs += n; }
-	template<class DifferenceType = difference_type>  // workaround for nvcc
-	constexpr friend auto operator-(involuter lhs, DifferenceType n) { return lhs -= n; }
+	template<class = void>  // workaround for nvcc
+	constexpr friend auto operator+(involuter lhs, difference_type n) { return lhs += n; }
+	template<class = void>  // workaround for nvcc
+	constexpr friend auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
 
 	auto operator-(involuter const& other) const { return it_ - other.it_; }
 
