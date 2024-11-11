@@ -297,9 +297,9 @@ constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 #endif
 
 template<class... Ts>
-struct std::tuple_size<boost::multi::detail::tuple<Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
-	// cppcheck-suppress unusedStructMember
-	static constexpr std::size_t value = sizeof...(Ts);
+struct std::tuple_size<boost::multi::detail::tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+	// // cppcheck-suppress unusedStructMember
+	// static constexpr std::size_t value = sizeof...(Ts);
 };
 
 template<>
