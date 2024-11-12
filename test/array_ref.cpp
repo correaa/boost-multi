@@ -492,8 +492,8 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 #ifndef _MSC_VER
 		auto const [exts0, exts1] = exts;
 #else
-		auto const exts0 = std::get<0>(exts);
-		auto const exts1 = std::get<1>(exts);
+		auto const exts0 = get<0>(exts);
+		auto const exts1 = get<1>(exts);
 #endif
 		BOOST_TEST( exts0 == multi::iextension(1, 3) );
 
@@ -506,18 +506,25 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 	}
 	{
 		auto exts = aref.extensions();
-		BOOST_TEST( std::get<0>(exts) == multi::iextension(1, 3) );
-		BOOST_TEST( std::get<1>(exts).first()  == 1 );
-		BOOST_TEST( std::get<1>(exts).last () == 4 );
-		BOOST_TEST( std::get<1>(exts) == multi::iextension(1, 4) );
+
+		using std::get;
+
+		BOOST_TEST( get<0>(exts) == multi::iextension(1, 3) );
+		BOOST_TEST( get<1>(exts).first()  == 1 );
+		BOOST_TEST( get<1>(exts).last () == 4 );
+		BOOST_TEST( get<1>(exts) == multi::iextension(1, 4) );
 		BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 	}
 	{
 		auto const exts = aref.extensions();
-		BOOST_TEST( std::get<0>(exts) == multi::iextension(1, 3) );
-		BOOST_TEST( std::get<1>(exts).first()  == 1 );
-		BOOST_TEST( std::get<1>(exts).last () == 4 );
-		BOOST_TEST( std::get<1>(exts) == multi::iextension(1, 4) );
+
+		using std::get;
+
+		BOOST_TEST( get<0>(exts) == multi::iextension(1, 3) );
+		BOOST_TEST( get<1>(exts).first()  == 1 );
+		BOOST_TEST( get<1>(exts).last () == 4 );
+		BOOST_TEST( get<1>(exts) == multi::iextension(1, 4) );
+
 		BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 	}
 	{
@@ -530,23 +537,33 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 	}
 	{
 		auto const exts = aref.extensions();
-		BOOST_TEST( std::get<0>(exts) == multi::iextension(1, 3) );
-		BOOST_TEST( std::get<1>(exts).first()  == 1 );
-		BOOST_TEST( std::get<1>(exts).last () == 4 );
-		BOOST_TEST( std::get<1>(exts) == multi::iextension(1, 4) );
+
+		using std::get;
+
+		BOOST_TEST( get<0>(exts) == multi::iextension(1, 3) );
+		BOOST_TEST( get<1>(exts).first()  == 1 );
+		BOOST_TEST( get<1>(exts).last () == 4 );
+		BOOST_TEST( get<1>(exts) == multi::iextension(1, 4) );
+
 		BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 	}
 	{
-		BOOST_TEST( std::get<0>(aref.extensions()) == multi::iextension(1, 3) );
-		BOOST_TEST( std::get<1>(aref.extensions()).first()  == 1 );
-		BOOST_TEST( std::get<1>(aref.extensions()).last () == 4 );
-		BOOST_TEST( std::get<1>(aref.extensions()) == multi::iextension(1, 4) );
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
+		BOOST_TEST( get<0>(aref.extensions()) == multi::iextension(1, 3) );
+
+		BOOST_TEST( get<1>(aref.extensions()).first()  == 1 );
+		BOOST_TEST( get<1>(aref.extensions()).last () == 4 );
+
+		BOOST_TEST( get<1>(aref.extensions()) == multi::iextension(1, 4) );
 		BOOST_TEST( aref.extensions() == decltype(aref.extensions())(multi::iextension(1, 3), multi::iextension(1, 4)) );
 	}
 	{
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 		auto ss = aref.sizes();
-		BOOST_TEST( std::get<0>(ss) == 2 );
-		BOOST_TEST( std::get<1>(ss) == 3 );
+		BOOST_TEST( get<0>(ss) == 2 );
+		BOOST_TEST( get<1>(ss) == 3 );
 		BOOST_TEST( ss == decltype(ss)(2, 3) );
 	}
 	{
@@ -555,19 +572,25 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 		BOOST_TEST( mm == 3 );
 	}
 	{
+		using std::get;
+
 		auto const ss = aref.sizes();
-		BOOST_TEST( std::get<0>(ss) == 2 );
-		BOOST_TEST( std::get<1>(ss) == 3 );
+		BOOST_TEST( get<0>(ss) == 2 );
+		BOOST_TEST( get<1>(ss) == 3 );
 		BOOST_TEST( ss == decltype(ss)(2, 3) );
 	}
 	{
-		BOOST_TEST( std::get<0>(aref.sizes()) == 2 );
-		BOOST_TEST( std::get<1>(aref.sizes()) == 3 );
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
+		BOOST_TEST( get<0>(aref.sizes()) == 2 );
+		BOOST_TEST( get<1>(aref.sizes()) == 3 );
 		BOOST_TEST( aref.sizes() == decltype(aref.sizes())(2, 3) );
 	}
 	{
 		auto const ss = aref.sizes();
-		using std::get;
+
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 		BOOST_TEST( get<0>(ss) == 2 );
 		BOOST_TEST( get<1>(ss) == 3 );
 		BOOST_TEST( ss == decltype(ss)(2, 3) );
@@ -582,14 +605,18 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 // vvv GCC: use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 	{
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 		auto const ss = aref.sizes();
-		BOOST_TEST( std::get<0>(ss) == 2 );
-		BOOST_TEST( std::get<1>(ss) == 3 );
+		BOOST_TEST( get<0>(ss) == 2 );
+		BOOST_TEST( get<1>(ss) == 3 );
 		BOOST_TEST( ss == decltype(ss)(2, 3) );
 	}
 	{
-		BOOST_TEST( std::get<0>(aref.sizes()) == 2 );
-		BOOST_TEST( std::get<1>(aref.sizes()) == 3 );
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
+		BOOST_TEST( get<0>(aref.sizes()) == 2 );
+		BOOST_TEST( get<1>(aref.sizes()) == 3 );
 		BOOST_TEST( aref.sizes() == decltype(aref.sizes())(2, 3) );
 	}
 #endif
@@ -744,6 +771,8 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
+	using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 	// NOLINTBEGIN(fuchsia-default-arguments-calls) std::string ctor
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	std::string const dc3D[4][2][3] = {
@@ -760,7 +789,7 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	auto const& A2 = cref.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
 	BOOST_TEST( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && num_elements(A2) == 6 );
 
-	BOOST_TEST( std::get<0>(sizes(A2)) == 3 && std::get<1>(sizes(A2)) == 2 );
+	BOOST_TEST( get<0>(sizes(A2)) == 3 && get<1>(sizes(A2)) == 2 );
 
 	auto const& A3 = cref({0, 3}, 1, {0, 2});
 	BOOST_TEST( multi::rank<std::decay_t<decltype(A3)>>{} == 2 && num_elements(A3) == 6 );
@@ -778,9 +807,11 @@ BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
 		BOOST_TEST( sizes3 == 3 );
 	}
 	{
-		auto sizes1 = std::get<0>(cref.sizes());
-		auto sizes2 = std::get<1>(cref.sizes());
-		auto sizes3 = std::get<2>(cref.sizes());
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
+		auto sizes1 = get<0>(cref.sizes());
+		auto sizes2 = get<1>(cref.sizes());
+		auto sizes3 = get<2>(cref.sizes());
 		BOOST_TEST( sizes1 == 4 );
 		BOOST_TEST( sizes2 == 2 );
 		BOOST_TEST( sizes3 == 3 );
@@ -1227,33 +1258,37 @@ BOOST_AUTO_TEST_CASE(array_fill_constructor) {
 }
 
 BOOST_AUTO_TEST_CASE(array_fill_constructor_1D) {
+	using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 	multi::array<int, 1> arr(3, 10);
 
 	BOOST_TEST( arr[0] == 10 );
 	BOOST_TEST( arr[1] == 10 );
 
-	BOOST_TEST( std::get<0>(arr().sizes()) ==  3 );
-	BOOST_TEST( std::get<0>(sizes(arr())) ==  3 );
+	BOOST_TEST( get<0>(arr().sizes()) ==  3 );
+	BOOST_TEST( get<0>(sizes(arr())) ==  3 );
 
-	// BOOST_TEST( std::get<1>(sizes(arr())) == 10 );
+	// BOOST_TEST( get<1>(sizes(arr())) == 10 );
 
-	// BOOST_TEST( std::get<0>(sizes(arr)) ==  3 );
-	// BOOST_TEST( std::get<1>(sizes(arr)) == 10 );
+	// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
+	// BOOST_TEST( get<1>(sizes(arr)) == 10 );
 }
 
 BOOST_AUTO_TEST_CASE(array_fill_constructor_2D) {
+	using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 	multi::array<int, 2> arr({3, 4}, 10);
 
-	BOOST_TEST( std::get<0>(arr().sizes()) ==  3 );
-	BOOST_TEST( std::get<0>(sizes(arr())) ==  3 );
+	BOOST_TEST( get<0>(arr().sizes()) ==  3 );
+	BOOST_TEST( get<0>(sizes(arr())) ==  3 );
 
-	BOOST_TEST( std::get<1>(arr().sizes()) ==  4 );
-	BOOST_TEST( std::get<1>(sizes(arr())) ==  4 );
+	BOOST_TEST( get<1>(arr().sizes()) ==  4 );
+	BOOST_TEST( get<1>(sizes(arr())) ==  4 );
 
-	// BOOST_TEST( std::get<1>(sizes(arr())) == 10 );
+	// BOOST_TEST( get<1>(sizes(arr())) == 10 );
 
-	// BOOST_TEST( std::get<0>(sizes(arr)) ==  3 );
-	// BOOST_TEST( std::get<1>(sizes(arr)) == 10 );
+	// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
+	// BOOST_TEST( get<1>(sizes(arr)) == 10 );
 }
 
 return boost::report_errors();

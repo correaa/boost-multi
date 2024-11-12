@@ -29,11 +29,13 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 	multi::array_ref<complex, 2>           A2D(vec.data(), multi::extensions_t<2>{10, 10});
 	multi::array_ref<complex, 2, complex*> B2D(vec.data(), {10, 10});
 
-	BOOST_TEST( std::get<0>( A2D().sizes() ) == 10 );
-	BOOST_TEST( std::get<1>( A2D().sizes() ) == 10 );
+	using std::get;
 
-	BOOST_TEST( std::get<0>( A2D().sizes() ) == 10 );
-	BOOST_TEST( std::get<1>( A2D().sizes() ) == 10 );
+	BOOST_TEST( get<0>( A2D().sizes() ) == 10 );
+	BOOST_TEST( get<1>( A2D().sizes() ) == 10 );
+
+	BOOST_TEST( get<0>( A2D().sizes() ) == 10 );
+	BOOST_TEST( get<1>( A2D().sizes() ) == 10 );
 
 	static_assert( multi::array_ref<complex, 2>::rank::value == 2 );
 
