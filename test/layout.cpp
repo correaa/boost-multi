@@ -105,15 +105,7 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
 
 	auto const& rot = sub.rotated();
 
-//  #ifndef _MSC_VER
 	auto const [is, js, ks] = rot.extensions();
-	// #else
-	// using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
-
-	// auto const is = get<0>(rot.extensions());
-	// auto const js = get<0>(rot.extensions());
-	// auto const ks = get<0>(rot.extensions());
-	// #endif
 
 	#if defined(__clang__)
 	#pragma clang diagnostic push
