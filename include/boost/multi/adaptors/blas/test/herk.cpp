@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
 #include <boost/multi/adaptors/blas/herk.hpp>        // for herk
@@ -45,7 +47,6 @@ template<class M> auto print(M const& mat, std::string const& msg = "") -> declt
 	return cout << '}' << '\n';
 }
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

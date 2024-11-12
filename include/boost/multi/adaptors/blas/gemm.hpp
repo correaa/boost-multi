@@ -210,15 +210,13 @@ class gemm_iterator {
 	using reference = gemm_reference<decltype((*b_begin_).extensions())>;
 	using iterator_category = std::random_access_iterator_tag;
 
-	// static_assert( std::is_base_of_v<std::random_access_iterator_tag, typename std::iterator_traits<gemm_iterator>::iterator_category> );
-
 	auto operator+=(difference_type n) -> gemm_iterator& {a_it_ += n; return *this;}
 	auto operator-=(difference_type n) -> gemm_iterator& {a_it_ -= n; return *this;}
 
-	auto operator++() -> gemm_iterator& {return operator+=(1);}  // required by random access concept requires even if not used explicitly
-	auto operator--() -> gemm_iterator& {return operator-=(1);}
+	auto operator++() -> gemm_iterator& { return operator+=(1); }  // required by random access concept requires even if not used explicitly
+	auto operator--() -> gemm_iterator& { return operator-=(1); }
 
-	auto operator+(difference_type n) const {gemm_iterator ret{*this}; ret+=n; return ret;}
+	friend auto operator+(gemm_iterator ret, difference_type n) { return ret += n; }
 
 	friend auto operator-(gemm_iterator const& a, gemm_iterator const& b) -> difference_type {  // NOLINT(readability-identifier-length) BLAS naming
 		assert(a.b_begin_ == b.b_begin_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
