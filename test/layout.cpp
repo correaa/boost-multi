@@ -19,7 +19,7 @@ namespace multi = boost::multi;
 
 namespace {
 auto second_finish(multi::extensions_t<3> exts) {
-	using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+	using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 	return get<1>(exts).last();
 }
 }  // namespace
@@ -105,13 +105,15 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
 
 	auto const& rot = sub.rotated();
 
-	#ifndef _MSC_VER
+//  #ifndef _MSC_VER
 	auto const [is, js, ks] = rot.extensions();
-	#else
-	auto const is = std::get<0>(rot.extensions());
-	auto const js = std::get<0>(rot.extensions());
-	auto const ks = std::get<0>(rot.extensions());
-	#endif
+	// #else
+	// using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
+	// auto const is = get<0>(rot.extensions());
+	// auto const js = get<0>(rot.extensions());
+	// auto const ks = get<0>(rot.extensions());
+	// #endif
 
 	#if defined(__clang__)
 	#pragma clang diagnostic push
