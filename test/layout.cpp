@@ -19,7 +19,8 @@ namespace multi = boost::multi;
 
 namespace {
 auto second_finish(multi::extensions_t<3> exts) {
-	return std::get<1>(exts).last();
+	using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+	return get<1>(exts).last();
 }
 }  // namespace
 

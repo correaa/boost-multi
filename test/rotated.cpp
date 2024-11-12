@@ -148,9 +148,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 		multi::array<double, 3> arr({3, 4, 5});
 
-		BOOST_TEST( std::get<0>(arr.sizes()) == 3 );
-		BOOST_TEST( std::get<1>(arr.sizes()) == 4 );
-		BOOST_TEST( std::get<2>(arr.sizes()) == 5 );
+		using std::get;
+
+		BOOST_TEST( get<0>(arr.sizes()) == 3 );
+		BOOST_TEST( get<1>(arr.sizes()) == 4 );
+		BOOST_TEST( get<2>(arr.sizes()) == 5 );
 
 		auto&& RA = arr.rotated();
 		BOOST_TEST(( sizes(RA) == decltype(RA.sizes()){4, 5, 3} ));
@@ -166,13 +168,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_rotate_4d) {
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 		multi::array<double, 4> original({14, 14, 7, 4});
 
 		auto&& unrotd = original.unrotated();
-		BOOST_TEST( std::get<0>(unrotd.sizes()) ==  4 );
-		BOOST_TEST( std::get<1>(unrotd.sizes()) == 14 );
-		BOOST_TEST( std::get<2>(unrotd.sizes()) == 14 );
-		BOOST_TEST( std::get<3>(unrotd.sizes()) ==  7 );
+		BOOST_TEST( get<0>(unrotd.sizes()) ==  4 );
+		BOOST_TEST( get<1>(unrotd.sizes()) == 14 );
+		BOOST_TEST( get<2>(unrotd.sizes()) == 14 );
+		BOOST_TEST( get<3>(unrotd.sizes()) ==  7 );
 
 		BOOST_TEST(( unrotd.sizes() == decltype(unrotd.sizes()){4, 14, 14, 7} ));
 		BOOST_TEST( &original[0][1][2][3] == &unrotd[3][0][1][2] );

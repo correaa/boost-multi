@@ -6,6 +6,7 @@
 #define BOOST_MULTI_ARRAY_REF_HPP_
 #pragma once
 
+#include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
 namespace boost::multi {
@@ -572,7 +573,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
  private:
 	template<class Self, typename Tuple, std::size_t ... I>
 	static BOOST_MULTI_HD constexpr auto apply_impl_(Self&& self, Tuple const& tuple, std::index_sequence<I...>/*012*/) -> decltype(auto) {
-		return std::forward<Self>(self)(std::get<I>(tuple)...);
+		using std::get;
+		return std::forward<Self>(self)(get<I>(tuple)...);
 	}
 
  public:
@@ -660,6 +662,7 @@ struct cursor_t {
 
  public:
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
+		using std::get;
 		if constexpr(D != 1) {
 			return cursor_t<
 				ElementPtr,
@@ -667,11 +670,11 @@ struct cursor_t {
 				std::decay_t<decltype(strides_.tail())>
 			>{
 				base_
-				+ std::get<0>(strides_)*n,
+				+ get<0>(strides_)*n,
 				strides_.tail()
 			};
 		} else {
-			return base_[std::get<0>(strides_)*n];
+			return base_[get<0>(strides_)*n];
 		}
 	}
 
@@ -686,7 +689,8 @@ struct cursor_t {
  private:
 	template<class Tuple, std::size_t... I>
 	BOOST_MULTI_HD constexpr auto apply_impl_(Tuple const& tup, std::index_sequence<I...> /*012*/) const -> decltype(auto) {
-		return ((std::get<I>(tup)*std::get<I>(strides_)) + ...);
+		using std::get;
+		return ((get<I>(tup)*get<I>(strides_)) + ...);
 	}
 
  public:
@@ -701,7 +705,7 @@ struct cursor_t {
 	BOOST_MULTI_HD constexpr auto base() const -> pointer { return base_; }
 	BOOST_MULTI_HD constexpr auto strides() const -> strides_type { return strides_; }
 	template<multi::dimensionality_type DD = 0>
-	BOOST_MULTI_HD constexpr auto stride() const { return std::get<DD>(strides_); }
+	BOOST_MULTI_HD constexpr auto stride() const { using std::get; return get<DD>(strides_); }
 };
 
 template<typename Pointer, class LayoutType>
@@ -1109,13 +1113,13 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		typename = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	>
 	BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
-	->decltype(operator[](std::get<0>(tup))[detail::tuple_tail(tup)]) {
-		return operator[](std::get<0>(tup))[detail::tuple_tail(tup)]; }
+	->decltype(operator[](detail::head(tup))[detail::tuple_tail(tup)]) {
+		return operator[](detail::head(tup))[detail::tuple_tail(tup)]; }
 
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<Tuple>::value == 1)> >  // NOLINT(modernize-use-constraints) TODO(correaa)
 	BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
-	->decltype(operator[](std::get<0>(tup))) {
-		return operator[](std::get<0>(tup)); }
+	->decltype(operator[](detail::head(tup))) {
+		return operator[](detail::head(tup)); }
 
 	constexpr auto front() const& -> const_reference { return *begin(); }
 	constexpr auto back()  const& -> const_reference { return *(end() - 1); }  // std::prev(end(), 1);}
@@ -1329,7 +1333,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	constexpr auto diagonal() const& -> const_subarray<T, D-1, typename const_subarray::element_const_ptr> {
-		auto square_size = (std::min)(std::get<0>(this->sizes()), std::get<1>(this->sizes()));  // paren for MSVC macros
+		using std::get;
+		auto const square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // parenthesis min for MSVC macros
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();
 		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
@@ -2150,7 +2155,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
  private:
 	template<class Self, typename Tuple, std::size_t ... I>
 	static BOOST_MULTI_HD constexpr auto apply_impl_(Self&& self, Tuple const& tuple, std::index_sequence<I...>/*012*/) -> decltype(auto) {
-		return std::forward<Self>(self)(std::get<I>(tuple)...);
+		using std::get;
+		return std::forward<Self>(self)(get<I>(tuple)...);
 	}
 
  public:
@@ -3550,7 +3556,8 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  private:
 	template<class TTN, std::size_t DD = 0>
 	void check_sizes_() const {
-		if(size_type{std::get<DD>(this->sizes())} != size_type{std::extent<TTN, unsigned{DD}>::value}) {
+		using std::get;
+		if(size_type{get<DD>(this->sizes())} != size_type{std::extent<TTN, unsigned{DD}>::value}) {
 			throw std::bad_cast{};
 		}
 		if constexpr(DD + 1 != D) {

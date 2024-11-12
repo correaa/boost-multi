@@ -18,10 +18,14 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	auto const A2Dxs = A2D.extensions();
 
-	BOOST_TEST( std::get<0>(A2Dxs) == A2Dx );
-	BOOST_TEST( std::get<1>(A2Dxs) == A2D[0].extension() );
+	using std::get;
 
-	BOOST_TEST( &A2D() == &A2D(std::get<0>(A2D.extensions()), std::get<1>(A2D.extensions())) );
+	BOOST_TEST( get<0>(A2Dxs) == A2Dx );
+	BOOST_TEST( get<1>(A2Dxs) == A2D[0].extension() );
+
+	using std::get;
+
+	BOOST_TEST( &A2D() == &A2D(get<0>(A2D.extensions()), get<1>(A2D.extensions())) );
 	BOOST_TEST( &A2D() == &std::apply(A2D, A2Dxs) );
 
 	BOOST_TEST( A2Dxs.size() == A2D.size() );

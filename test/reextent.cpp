@@ -266,8 +266,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> const Aarr({11, 13});
 		auto const                    Aext = Aarr.extensions();
 
-		BOOST_TEST( std::get<0>(Aext[3][5]) == 3 );
-		BOOST_TEST( std::get<1>(Aext[3][5]) == 5 );
+		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
+		BOOST_TEST( get<0>(Aext[3][5]) == 3 );
+		BOOST_TEST( get<1>(Aext[3][5]) == 5 );
 
 		for(int i = 0; i != 3; ++i) {
 			for(int j = 0; j != 5; ++j) {  // NOLINT(altera-unroll-loops)

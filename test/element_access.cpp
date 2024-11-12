@@ -71,8 +71,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto arr = std::apply([](auto const&... szs) { return multi::array<double, 2>({szs...}, 55.0); }, std::make_tuple(3, 4));
 			BOOST_TEST( size(arr) == 3 );
-			BOOST_TEST( std::get<0>(arr.sizes()) == 3 );
-			BOOST_TEST( std::get<1>(arr.sizes()) == 4 );
+
+			using std::get;
+
+			BOOST_TEST( get<0>(arr.sizes()) == 3 );
+			BOOST_TEST( get<1>(arr.sizes()) == 4 );
 		}
 	}
 
