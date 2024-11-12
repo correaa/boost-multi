@@ -31,9 +31,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// simple class reinterpret
 	{
 		struct int_class {int val_;};
-		multi::array<int_class, 1> arr({5}, int_class{});
-		arr[0].val_ = 5;
-		BOOST_TEST( arr.reinterpret_array_cast<int>()[0] == 5 );
+
+		multi::array<int_class, 1> arr1d({3}, int_class{});
+		arr1d[0].val_ = 5;
+		BOOST_TEST( arr1d.reinterpret_array_cast<int>()[0] == 5 );
+
+		multi::array<int_class, 2> arr2d({3, 3}, int_class{});
+		arr2d[0][0].val_ = 5;
+		BOOST_TEST( arr2d.reinterpret_array_cast<int>()[0][0] == 5 );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {

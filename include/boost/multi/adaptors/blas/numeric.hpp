@@ -91,7 +91,8 @@ class involuted {
 	constexpr explicit operator decay_type() const& { return f_(r_); }
 	constexpr /*plct*/ operator decay_type() && { return f_(r_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) //NOSONAR to allow terse syntax
 
-	constexpr auto operator*(decay_type const& other) const { return f_(r_) * other; }
+	// constexpr auto operator*(decay_type const& other) const { return f_(r_) * other; }
+	constexpr friend auto operator*(involuted const& self, decay_type const& other) { return self.f_(self.r_) * other; }
 
 	template<class DecayType, class = decltype(std::declval<Ref&>() = (std::declval<Involution&>())(std::declval<DecayType&&>()))>
 	constexpr auto operator=(DecayType&& other) & -> involuted& {
@@ -186,8 +187,10 @@ class involuter {
 	constexpr auto operator*() const { return reference{*it_, f_}; }
 	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }
 
-	auto operator==(involuter const& other) const -> bool { return it_ == other.it_; }
-	auto operator!=(involuter const& other) const -> bool { return it_ != other.it_; }
+	// auto operator==(involuter const& other) const -> bool { return it_ == other.it_; }
+	// auto operator!=(involuter const& other) const -> bool { return it_ != other.it_; }
+	friend auto operator==(involuter const& slf, involuter const& thr) { return slf.it_ == thr.it_; }
+	friend auto operator!=(involuter const& slf, involuter const& thr) { return slf.it_ != thr.it_; }
 
 	constexpr auto operator+=(difference_type n) -> involuter& {
 		it_ += n;
@@ -198,8 +201,10 @@ class involuter {
 		return *this;
 	}
 
-	constexpr auto operator+(difference_type n) const { return involuter{it_ + n, f_}; }
-	constexpr auto operator-(difference_type n) const { return involuter{it_ - n, f_}; }
+	template<class = void>  // workaround for nvcc
+	constexpr friend auto operator+(involuter lhs, difference_type n) { return lhs += n; }
+	template<class = void>  // workaround for nvcc
+	constexpr friend auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
 
 	auto operator-(involuter const& other) const { return it_ - other.it_; }
 
