@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
 
 #include <array>     // for array, array<>::value_type
@@ -12,8 +14,9 @@
 #endif
 #endif
 #include <tuple>     // for make_tuple, tuple_element<>::type
-// IWYU pragma: no_include <type_traits>
-// IWYU pragma: no_#include <version>
+#include <type_traits> // IWYU pragma: keep
+#include <utility>                          // for forward
+// IWYU pragma: no_include <version>
 
 namespace multi = boost::multi;
 
@@ -23,8 +26,18 @@ auto second_finish(multi::extensions_t<3> exts) {
 }
 }  // namespace
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
+
+template<class Tuple>
+auto to_array(Tuple&& tpl) {
+	using std::apply;
+	return apply(
+		[](auto... es) {
+			return std::array<std::common_type_t<decltype(es)...>, sizeof...(es)>{{std::move(es)...}};
+		},
+		std::forward<Tuple>(tpl)
+	);
+}
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(extensions_3D) {
@@ -1072,6 +1085,48 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 //  //  BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 //  //  BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 // }
+	{
+		multi::array<int, 2> const arr({3, 4});
+		auto const szs = arr.sizes();
 
-return boost::report_errors();
+		using std::get;
+
+		auto const arr_szs1 = std::array<multi::array<int, 2>::size_type, 2>{{get<0>(szs), get<1>(szs)}};
+		// auto const arr_szs2 = std::array<multi::array<int, 2>::size_type, 2>{get<0>(szs), get<1>(szs)};
+
+		std::array<multi::array<int, 2>::size_type, 2> const arr_szs3{{get<0>(szs), get<1>(szs)}};
+		BOOST_TEST( arr_szs1 == arr_szs3 );
+
+		// std::array<multi::array<int, 2>::size_type, 2> const arr_szs4{get<0>(szs), get<1>(szs)};
+
+		std::array<multi::array<int, 2>::size_type, 2> const arr_szs5 = {{get<0>(szs), get<1>(szs)}};
+		BOOST_TEST( arr_szs3 == arr_szs5 );
+
+		// std::array<multi::array<int, 2>::size_type, 2> const arr_szs6 = {get<0>(szs), get<1>(szs)};
+
+		// std::array const arr_szs7 = {{get<0>(szs), get<1>(szs)}};
+		// std::array const arr_szs8 = {get<0>(szs), get<1>(szs)};
+
+		auto const [s1, s2] = szs;
+		auto const [arr1, arr2] = arr_szs1;
+
+		BOOST_TEST( s1 == arr1 );
+		BOOST_TEST( s2 == arr2 );
+#if defined(__GNUC__)
+	#pragma GCC diagnostic ignored "-Wmissing-braces"
+	#pragma GCC diagnostic push
+#endif
+
+		std::array const arr_szs9 = {get<0>(szs), get<1>(szs)};
+#if defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
+		BOOST_TEST( arr_szs5 == arr_szs9 );
+
+		auto const arr_szs10 = to_array(szs);
+		BOOST_TEST( arr_szs9 == arr_szs10 );
+
+	}
+
+	return boost::report_errors();
 }
