@@ -472,23 +472,5 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		} ));
 	}
 
-	// {
-	//  auto range_for_tile = [](auto&& in, std::size_t tile_idx, std::size_t num_tiles) {
-	//    auto const tile_size = (in.size() + num_tiles - 1) / num_tiles;
-	//    auto start = std::min(tile_idx * tile_size, in.size());
-	//    auto finish = std::min((tile_idx + 1)*tile_size, in.size());
-	//    return in({start, finish});
-	//  };
-
-	//  auto arr = multi::array{
-	//    {1, 2, 3},
-	//    {}
-	//  }
-
-	//  for() {
-
-	//  }
-	// }
-
 	return boost::report_errors();
 }

@@ -7,7 +7,6 @@
 #pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>
-// #include <boost/multi/adaptors/complex.hpp>
 
 #include <boost/multi/array_ref.hpp>
 
@@ -163,22 +162,19 @@ namespace operators {
 
 template<class T> struct algebraic_traits {static auto one() { return T{1.0}; }};
 
-template<class T> struct algebraic_traits<std  ::complex<T>> {static auto one() {return std  ::complex<T>{T{1}, T{0}};}};
-// template<class T> struct algebraic_traits<multi::complex<T>> {static auto one() {return multi::complex<T>{T{1}, T{0}};}};
+template<class T> struct algebraic_traits<std::complex<T>> {static auto one() {return std  ::complex<T>{T{1}, T{0}};}};
 
 template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 
-template<class X,
-	std::enable_if_t<X::dimensionality == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
-auto operator*(typename X::element_type a, X const& x) {return scaled{a, x};}  // NOLINT(readability-identifier-length) conventional BLAS naming
+template<class X> auto operator*(typename X::element_type a, X const& x) BOOST_MULTI_DECLRETURN(scaled(a, x))  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X += y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
 template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X -= y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
 
-} // end namespace operators
+}  // end namespace operators
 
-} // end namespace boost::multi::blas
+}  // end namespace boost::multi::blas
 
 #undef BOOST_MULTI_DECLRETURN
 #undef BOOST_MULTI_JUSTRETURN
