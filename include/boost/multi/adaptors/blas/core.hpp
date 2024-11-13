@@ -308,8 +308,8 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 		std::array<std::complex<float>, 3> const v2 = {std::complex<float>{7.0F, 8.0F}, std::complex<float>{9.0F, 10.0F}, std::complex<float>{11.0F, 12.0F}};
 		Complex_float rr{-1.0F, -2.0F};
 		BLAS(cdotu)(&rr, 3, v1.data(), 1, v2.data(), 1);
-		if( std::abs(rr.real - std::real(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error("[real] cdotu should be configured as non-void returing"); }
-		if( std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error("[imag] cdotu should be configured as non-void returing"); }
+		if( std::abs(rr.real - std::real(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8F ) { throw std::logic_error("[real] cdotu should be configured as non-void returing"); }
+		if( std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8F ) { throw std::logic_error("[imag] cdotu should be configured as non-void returing"); }
 		return true;
 	}();
 	// BLAS(cdotu)(reinterpret_cast<Complex_float *>(rp), n, reinterpret_cast<c const*>(static_cast<X*>(xp)), incx, reinterpret_cast<c const*>(static_cast<Y*>(yp)), incy);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
