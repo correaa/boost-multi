@@ -10,6 +10,9 @@
 
 #include <boost/multi/utility.hpp>
 
+#define BOOST_MULTI_DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+#define BOOST_MULTI_JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+
 namespace boost::multi::blas {
 
 using core::gemv;
@@ -191,14 +194,17 @@ namespace operators {
 	->decltype(+blas::gemv(1.0, m, v)) {
 		return +blas::gemv(1.0, m, v); }
 
-	template<class Matrix,
-		std::enable_if_t<Matrix::dimensionality == 2, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	auto operator*(typename Matrix::element_type aa, Matrix const& A) {  // NOLINT(readability-identifier-length) BLAS naming
-		return scaled_matrix<typename Matrix::element_type, Matrix const&>{aa, A};
-	}
+	template<class Matrix/*,
+		std::enable_if_t<Matrix::dimensionality == 2, int> =0*/>  // NOLINT(modernize-use-constraints) for C++20
+	auto operator*(typename Matrix::element_type aa, Matrix const& A) BOOST_MULTI_DECLRETURN((  // NOLINT(readability-identifier-length) BLAS naming
+		scaled_matrix<typename Matrix::element_type, Matrix const&>(aa, A)
+	))
 
 } // end namespace operators
 
 } // end namespace boost::multi::blas
+
+#undef BOOST_MULTI_DECLRETURN
+#undef BOOST_MULTI_JUSTRETURN
 
 #endif

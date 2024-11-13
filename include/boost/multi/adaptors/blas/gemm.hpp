@@ -126,7 +126,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 	if      (a_first. stride()==1 && (*b_first).stride()==1 && (*c_first).stride()==1){
 		if  (a_count==1)        {CTXT->gemm('N', 'C', (*c_first).size(), a_count, (*a_first).size(), &alpha, b_first.base(), b_first. stride(), underlying(a_first.base()), (*a_first).stride(), &beta, base(c_first), (*a_first).size()); }
 		else                    {CTXT->gemm('N', 'C', (*c_first).size(), a_count, (*a_first).size(), &alpha, b_first.base(), b_first. stride(), underlying(a_first.base()), (*a_first).stride(), &beta, base(c_first), c_first.stride() ); }
-	} else                      {throw std::logic_error{"not BLAS-implemented"};}
+	} else                      { throw std::logic_error("not BLAS-implemented"); }
 
 	return c_first + a_count;
 }
@@ -141,15 +141,15 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 	assert( c_first.stride()==1 || (*c_first).stride()==1 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 	if(a_count == 0) { return c_first; }
-	if      (a_first. stride()==1 && b_first. stride()==1 && (*c_first).stride()==1){
-	                            {CTXT->gemm('C', 'C', a_count, (*c_first).size(), (*a_first).size(), &alpha, underlying(base(b_first)), (*b_first).stride(), underlying(base(a_first)), (*a_first).stride(), &beta, base(c_first), c_first. stride());}
-	} else                      {throw std::logic_error{"not BLAS-implemented"};}
+	if(a_first.stride()==1 && b_first.stride()==1 && (*c_first).stride()==1) {
+		CTXT->gemm('C', 'C', a_count, (*c_first).size(), (*a_first).size(), &alpha, underlying(base(b_first)), (*b_first).stride(), underlying(base(a_first)), (*a_first).stride(), &beta, base(c_first), c_first. stride());
+	} else { throw std::logic_error("not BLAS-implemented"); }
 	return c_first + a_count;
 }
 
 #undef CTXT
 
-template<class It2DA, class Size, class It2DB, class It2DC, class Context = blas::context*> // TODO(correaa) automatic deduction of context
+template<class It2DA, class Size, class It2DB, class It2DC, class Context = blas::context*>
 auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
 ->decltype(gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first)) {
 	return gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first); }
@@ -173,8 +173,6 @@ auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element
 		return gemm(ctxt, alpha, a, b, beta, std::forward<C>(c));
 	}
 }
-
-// template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType> class gemm_range;
 
 template<class Ext>
 class gemm_reference {  // TODO(correaa) implement this in terms of gemv_range?
@@ -222,19 +220,20 @@ class gemm_iterator {
 		assert(a.b_begin_ == b.b_begin_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		return a.a_it_ - b.a_it_;
 	}
-	friend auto operator==(gemm_iterator const& self, gemm_iterator const& other) -> bool {return self.a_it_ == other.a_it_;}
-	friend auto operator!=(gemm_iterator const& self, gemm_iterator const& other) -> bool {return self.a_it_ != other.a_it_;}
+	friend auto operator==(gemm_iterator const& self, gemm_iterator const& other) { return self.a_it_ == other.a_it_; }
+	friend auto operator!=(gemm_iterator const& self, gemm_iterator const& other) { return self.a_it_ != other.a_it_; }
 
 	template<class ItOut>
 	friend auto copy_n(gemm_iterator const& first, difference_type count, ItOut d_first)
 	->decltype(blas::gemm_n(std::declval<ContextPtr>(), std::declval<typename ItA::element>()       , std::declval<ItA>(), count, std::declval<ItB>(), 0.0, d_first)) try {  // std::complex NOLINT(fuchsia-default-arguments-calls)
 		return blas::gemm_n(first.ctxtp_              , static_cast<typename ItA::element>(first.s_), first.a_it_        , count, first.b_begin_     , 0.0, d_first);  // NOLINT(fuchsia-default-arguments-calls)
 	} catch(std::exception const& e) {
-		throw std::logic_error(
+		struct blas_error : std::logic_error {using std::logic_error::logic_error;};
+		throw blas_error{
 			"in `copy_n`\nCouldn't decay product of arrays of size "+ std::to_string(count) +"x"+ std::to_string((*first.a_it_).size()) + " and " + // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			std::to_string((*first.a_it_).size())+ "x" +std::to_string((*first.b_begin_).size()) + " into " + std::to_string(count) +"x" + std::to_string((*first.b_begin_).size()) +
 			"\nbecause\n" + e.what()
-		);
+		};
 	}
 
 	template<class ItOut>
