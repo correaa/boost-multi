@@ -32,8 +32,8 @@ template<class Tuple>
 auto to_array(Tuple&& tpl) {
 	using std::apply;
 	return apply(
-		[](auto... es) {
-			return std::array<std::common_type_t<decltype(es)...>, sizeof...(es)>{{std::move(es)...}};
+		[](auto&&... es) {
+			return std::array<std::common_type_t<std::decay_t<decltype(es)>...>, sizeof...(es)>{{std::move(es)...}};
 		},
 		std::forward<Tuple>(tpl)
 	);
@@ -1126,6 +1126,8 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 		auto const arr_szs10 = to_array(szs);
 		BOOST_TEST( arr_szs9 == arr_szs10 );
 
+		BOOST_TEST( arr_szs10[0] == get<0>(szs) );
+		BOOST_TEST( arr_szs10[1] == get<1>(szs) );
 	}
 
 	return boost::report_errors();
