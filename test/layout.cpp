@@ -1128,6 +1128,9 @@ BOOST_AUTO_TEST_CASE(layout_AA) {
 
 		BOOST_TEST( arr_szs10[0] == get<0>(szs) );
 		BOOST_TEST( arr_szs10[1] == get<1>(szs) );
+
+		BOOST_TEST( get<0>(arr_szs10) == get<0>(szs) );
+		BOOST_TEST( get<1>(arr_szs10) == get<1>(szs) );
 	}
 
 	return boost::report_errors();
