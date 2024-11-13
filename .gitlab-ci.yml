@@ -902,7 +902,7 @@ inq cuda:
     # - export CUDA_VISIBLE_DEVICES=0,1
     - __nvcc_device_query
     - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git --branch update-multi-get
     - cd inq
     - cd external_libs/multi
     - git checkout $CI_COMMIT_SHA
@@ -942,7 +942,7 @@ inq rocm:
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - cmake --version
     - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git --branch update-multi-get
     - cd inq
     - cd external_libs/multi
     - git checkout $CI_COMMIT_SHA
