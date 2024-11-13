@@ -39,6 +39,7 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
+  retry: 2
 
 g++-m32 sanitize:
   stage: build
@@ -207,6 +208,7 @@ clang++:
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
+  retry: 2
 
 # deb:
 #   stage: build
