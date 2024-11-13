@@ -146,24 +146,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  BOOST_TEST( size(*begin(arr)   ) == 2 );
 	//  BOOST_TEST( size( begin(arr)[1]) == 2 );
 
-	//  BOOST_TEST( &(arr[1][1].begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
+	//  BOOST_TEST( &(arr[1][1].begin()[0]) == &arr[1][1][0] );
 	//  BOOST_TEST( &arr[0][1][0] == &arr[0][1][0] );
 	//  BOOST_TEST( &((*arr.begin())[1][0]) == &arr[0][1][0] );
 
 	//  BOOST_TEST( &((*arr.begin()).operator[](1)[0]) == &arr[0][1][0] );
 	//  BOOST_TEST( &(  arr.begin()->operator[](1)[0]) == &arr[0][1][0] );
 
-	//  BOOST_TEST( &((*arr.begin()).operator[](1).begin()[0]) == &arr[0][1][0] );  // NOLINT(readability-container-data-pointer) test access
-	//  BOOST_TEST( &(  arr.begin()->operator[](1).begin()[0]) == &arr[0][1][0] );    // NOLINT(readability-container-data-pointer) test access
+	//  BOOST_TEST( &((*arr.begin()).operator[](1).begin()[0]) == &arr[0][1][0] );
+	//  BOOST_TEST( &(  arr.begin()->operator[](1).begin()[0]) == &arr[0][1][0] );
 
-	//  BOOST_TEST( &((*(arr.begin()+1)).operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
-	//  BOOST_TEST( &(  (arr.begin()+1)->operator[](1).begin()[0]) == &arr[1][1][0] );    // NOLINT(readability-container-data-pointer) test access
+	//  BOOST_TEST( &((*(arr.begin()+1)).operator[](1).begin()[0]) == &arr[1][1][0] );
+	//  BOOST_TEST( &(  (arr.begin()+1)->operator[](1).begin()[0]) == &arr[1][1][0] );
 
-	//  BOOST_TEST( &((*(begin(arr)+1)).operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
-	//  BOOST_TEST( &((  begin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );    // NOLINT(readability-container-data-pointer) test access
+	//  BOOST_TEST( &((*(begin(arr)+1)).operator[](1).begin()[0]) == &arr[1][1][0] );
+	//  BOOST_TEST( &((  begin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );
 
-	//  BOOST_TEST( &((*(cbegin(arr)+1)).operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
-	//  BOOST_TEST( &((  cbegin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );    // NOLINT(readability-container-data-pointer) test access
+	//  BOOST_TEST( &((*(cbegin(arr)+1)).operator[](1).begin()[0]) == &arr[1][1][0] );
+	//  BOOST_TEST( &((  cbegin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );
 	// }
 
 	// BOOST_AUTO_TEST_CASE(iterator_semantics) {
@@ -267,7 +267,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  std::copy(irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>{out, ","});
 	//  BOOST_TEST_EQ(out.str(), std::string{"0,1,2,3,4,"});  // NOLINT(fuchsia-default-arguments-calls)
 
-	//  BOOST_TEST( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)) == irng.size()*(irng.size()-1)/2 );
+	//  BOOST_TEST(
+	//    std::accumulate(
+	//      begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)
+	//    )
+	//  == irng.size()*(irng.size()-1)/2
+	// );
 
 	//  auto const sum_of_cubes = [](auto&& acc, auto const& elem) {
 	//      return std::forward<decltype(acc)>(acc) + elem * elem * elem;

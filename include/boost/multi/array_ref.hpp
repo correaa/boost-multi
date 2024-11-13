@@ -100,7 +100,7 @@ template<> inline constexpr bool force_element_trivial_destruction         <std:
 namespace boost::multi {
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
-struct const_subarray;
+class const_subarray;
 
 // template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 // using subarray = const_subarray<T, D, ElementPtr, Layout>;
@@ -314,10 +314,10 @@ using const_subarray_ptr = subarray_ptr<T, D, ElementPtr, Layout, true>;
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>, bool IsConst>
 struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
-: boost::multi::iterator_facade<
+	: boost::multi::iterator_facade<
 	subarray_ptr<T, D, ElementPtr, Layout>, void, std::random_access_iterator_tag,
-	subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type
-> {
+		subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type
+	> {
  private:
 	Layout layout_;
 	ElementPtr base_;
@@ -409,7 +409,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{base} {}
 
-	template<typename, multi::dimensionality_type, typename, class> friend struct const_subarray;
+	template<typename, multi::dimensionality_type, typename, class> friend class const_subarray;
 
 	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr {return base_;}
 
@@ -563,7 +563,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> const& lyt, index stride)
 	: ptr_{base, lyt}, stride_{stride} {}
 
-	template<class, dimensionality_type, class, class> friend struct const_subarray;
+	template<class, dimensionality_type, class, class> friend class const_subarray;
 
 	template<class... As>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, As... args) const -> decltype(auto) {return this->operator[](idx)(args...); }
@@ -647,7 +647,7 @@ struct cursor_t {
 	strides_type strides_;
 	element_ptr  base_;
 
-	template<class, dimensionality_type, class, class> friend struct const_subarray;
+	template<class, dimensionality_type, class, class> friend class const_subarray;
 	template<class, dimensionality_type, class> friend struct cursor_t;
 
 	BOOST_MULTI_HD constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
@@ -965,13 +965,14 @@ template<class It>
 template<typename, ::boost::multi::dimensionality_type, class Alloc> struct static_array;  // this might be needed by MSVC 14.3 in c++17 mode
 
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-struct const_subarray : array_types<T, D, ElementPtr, Layout> {
+class const_subarray : public array_types<T, D, ElementPtr, Layout> {
+ public:
 	using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = const_subarray;
 
 	using array_types<T, D, ElementPtr, Layout>::rank_v;
 
-	friend struct const_subarray<typename types::element, D + 1, typename types::element_ptr >;
+	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
 
 	using types::layout;
 	using typename types::element_type;
@@ -1159,11 +1160,11 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 			this->layout().offset(),
 			this->stride()*n
 		);
-		return const_subarray(new_layout, this->base_);
+		return subarray<T, D, ElementPtr>(new_layout, this->base_);
 	}
 
  public:
-	constexpr auto taked(difference_type n) const& -> basic_const_array { return taked_aux_(n); }
+	constexpr auto taked(difference_type n) const& -> const_subarray { return taked_aux_(n); }
 	// constexpr auto taked(difference_type n)     && -> const_subarray    { return taked_aux_(n); }
 	// constexpr auto taked(difference_type n)      & -> const_subarray    { return taked_aux_(n); }
 
@@ -1183,7 +1184,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 		#endif
 
-		return const_subarray(new_layout, this->base_ + n*this->layout().stride() - this->layout().offset());
+		return subarray<T, D, ElementPtr>(new_layout, this->base_ + n*this->layout().stride() - this->layout().offset());
 
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
@@ -1191,9 +1192,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto dropped(difference_type n) const& -> basic_const_array { return dropped_aux_(n); }
-	constexpr auto dropped(difference_type n)     && ->    const_subarray { return dropped_aux_(n); }
-	constexpr auto dropped(difference_type n)      & ->    const_subarray { return dropped_aux_(n); }
+	constexpr auto dropped(difference_type n) const& -> const_subarray { return dropped_aux_(n); }
 
  private:
 
@@ -1351,7 +1350,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		assert( (this->layout().nelems() % n) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/n, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= n;
-		return subarray<T, D+1, element_ptr>(new_layout, types::base_);
+		return subarray<T, D+1, ElementPtr>(new_layout, types::base_);
 	}
 
  public:
@@ -1372,16 +1371,27 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	//  BOOST_MULTI_HD constexpr auto chunked(size_type count)      & -> partitioned_type       {return chunked_aux_(count);}
 	//  BOOST_MULTI_HD constexpr auto chunked(size_type count)     && -> partitioned_type       {return chunked_aux_(count);}
 
-	constexpr auto tiled(size_type count) const & {
+ private:
+	constexpr auto tiled_aux_(size_type count) const {
 		assert(count != 0);
 		struct divided_type {
+			subarray<T, D+1, element_ptr> quotient;
+			subarray<T, D, element_ptr> remainder;
+		};
+		return divided_type{
+			this->taked_aux_(this->size() - (this->size() % count)).chunked_aux_(count),
+			this->dropped_aux_(this->size() - (this->size() % count))
+		};
+	}
+
+ public:
+	constexpr auto tiled(size_type count) const & {
+		struct const_divided_type {
 			const_subarray<T, D+1, element_ptr> quotient;
 			const_subarray<T, D, element_ptr> remainder;
 		};
-		return divided_type{
-			this->taked(this->size() - (this->size() % count)).chunked(count),
-			this->dropped(this->size() - (this->size() % count))
-		};
+		auto const& tiled_aux = tiled_aux_(count);
+		return const_divided_type{tiled_aux.quotient, tiled_aux.remainder};
 	}
 
  private:
@@ -1447,7 +1457,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// constexpr auto operator|(typename const_subarray::size_type n) const& -> decltype(auto) { return                  partitioned(n); }
 
  private:
-	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct const_subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend class const_subarray;
 
 	BOOST_MULTI_HD constexpr auto paren_aux_() const& {return const_subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_);}
 
@@ -1833,7 +1843,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr subarray(const_subarray<T, D, ElementPtr, Layout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correa) check if this is necessary
 	: subarray(other.layout(), other.mutable_base()) {}
 
-	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
+	template<typename, multi::dimensionality_type, typename, class> friend class const_subarray;
+	template<typename, multi::dimensionality_type, typename, class> friend class       subarray;
+
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
 	template<class, multi::dimensionality_type, class, bool, bool> friend struct array_iterator;
@@ -2047,21 +2059,21 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-//  constexpr
-//  auto operator=(const_subarray               const& other) & -> const_subarray& {
-//      if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
-//      assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-//      // MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
-//      elements() = other.elements();
-// //      if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-// //          adl_copy_n(o.base(), o.num_elements(), this->base());
-// //      } else if(o.stride() < (~o).stride()) {
-// //          adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-// //      } else {
-// //          assign(o.begin());
-// //      }
-//      return *this;
-//  }
+	//  constexpr
+	//  auto operator=(const_subarray               const& other) & -> const_subarray& {
+	//      if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+	//      assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	//      // MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
+	//      elements() = other.elements();
+	// //      if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
+	// //          adl_copy_n(o.base(), o.num_elements(), this->base());
+	// //      } else if(o.stride() < (~o).stride()) {
+	// //          adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+	// //      } else {
+	// //          assign(o.begin());
+	// //      }
+	//      return *this;
+	//  }
 
 	// constexpr auto operator=(const_subarray const& other) &&
 	// -> const_subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -2161,6 +2173,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::partitioned;
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size)      & -> subarray<T, D+1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size)     && -> subarray<T, D+1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
+
+	using const_subarray<T, D, ElementPtr, Layout>::tiled;
+	constexpr auto tiled(size_type count)  & { return this->tiled_aux_(count); }
+	constexpr auto tiled(size_type count) && { return this->tiled_aux_(count); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::flatted;
 	constexpr auto flatted() & {
@@ -2493,8 +2509,10 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	template<class IndexType>
 	constexpr auto operator[](IndexType const&) const& = delete;
+
 	constexpr auto sliced() const& = delete;
 	constexpr auto partitioned() const& = delete;
+	constexpr auto tiled(size_type) const& = delete;
 
 	constexpr auto strided(difference_type) const& = delete;
 
@@ -2616,7 +2634,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	const_subarray(const_subarray const&) = default;
 
-	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct const_subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend class const_subarray;
 	template<typename, ::boost::multi::dimensionality_type, class Alloc>                friend struct static_array;  // TODO(correaa) check if this is necessary
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
@@ -2976,16 +2994,27 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	// BOOST_MULTI_HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux_(size);}
 	// BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux_(size);}
 
-	constexpr auto tiled(size_type count) const & {
+ private:
+	constexpr auto tiled_aux_(size_type count) const {
 		assert(count != 0);
 		struct divided_type {
+			subarray<T, 2, element_ptr> quotient;
+			subarray<T, 1, element_ptr> remainder;
+		};
+		return divided_type{
+			this->taked_aux_(this->size() - (this->size() % count)).chunked_aux_(count),
+			this->dropped_aux_(this->size() - (this->size() % count))
+		};
+	}
+
+ public:
+	constexpr auto tiled(size_type count) const & {
+		struct const_divided_type {
 			const_subarray<T, 2, element_ptr> quotient;
 			const_subarray<T, 1, element_ptr> remainder;
 		};
-		return divided_type{
-			this->taked(this->size() - (this->size() % count)).chunked(count),
-			this->dropped(this->size() - (this->size() % count))
-		};
+		auto const& tiled_aux = tiled_aux_(count);
+		return const_divided_type{tiled_aux.quotient, tiled_aux.remainder};
 	}
 
  private:

@@ -3,6 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#if defined(__GNUC__) && defined(__CUDA__)
+	#pragma GCC diagnostic ignored "-Wdouble-promotion"  // workaround for Thrust in CUDA 12
+#endif
+
 #include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
 #include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
 

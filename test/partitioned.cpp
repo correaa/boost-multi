@@ -273,8 +273,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(chunked_subarrays) {
 		multi::array<int, 2> const arr = {
-			{ 0,  1, /**/ 2,   3, /**/  4,  5},
-			{ 6,  7, /**/ 8,   9, /**/ 10, 11},
+			{ 0,  1,  /**/ 2,  3,  /**/ 4,  5},
+			{ 6,  7,  /**/ 8,  9, /**/ 10, 11},
 			/*********************************/
 			{12, 13, /**/ 14, 15, /**/ 16, 17},
 			{18, 19, /**/ 20, 21, /**/ 22, 23},
@@ -315,15 +315,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(partitined_subarrays) {
 		multi::array<int, 2> const arr = {
-			{ 0,  1, /**/ 2,   3, /**/  4,  5},
-			{ 6,  7, /**/ 8,   9, /**/ 10, 11},
-			/******************************************/
+			{ 0,  1,  /**/ 2,  3,  /**/ 4,  5},
+			{ 6,  7,  /**/ 8,  9, /**/ 10, 11},
+			/*********************************/
 			{12, 13, /**/ 14, 15, /**/ 16, 17},
 			{18, 19, /**/ 20, 21, /**/ 22, 23},
-			/******************************************/
+			/*********************************/
 			{24, 25, /**/ 26, 27, /**/ 28, 29},
 			{30, 31, /**/ 32, 33, /**/ 34, 35},
-			/******************************************/
+			/*********************************/
 			{36, 37, /**/ 38, 39, /**/ 40, 41},
 			{42, 43, /**/ 44, 45, /**/ 46, 47}
 		};
@@ -374,6 +374,121 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( border.size() == 2 );
 		BOOST_TEST(( border == multi::array<int, 1>{6, 7} ));
 	}
+
+	BOOST_AUTO_TEST_CASE(tiled_1D_mutation) {
+		multi::array<int, 1> arr = {0, 1, 2, /**/ 3, 4, 5, /**/ 6, 7};
+
+		BOOST_TEST( arr.size() == 8 );
+
+		auto [tiles, border] = arr.tiled(3);
+
+		tiles[0][1] = 11;
+		BOOST_TEST(( tiles[0] == multi::array<int, 1>{0, 11, 2} ));
+
+		tiles[1][2] = 55;
+		BOOST_TEST(( tiles[1] == multi::array<int, 1>{3, 4, 55} ));
+
+		border[1] = 77;
+		BOOST_TEST(( border == multi::array<int, 1>{6, 77} ));
+
+		BOOST_TEST(( arr == multi::array<int, 1>{0, 11, 2, /**/ 3, 4, 55, /**/ 6, 77} ));
+	}
+
+	BOOST_AUTO_TEST_CASE(tiled_2D) {
+		multi::array<int, 2> const arr = {
+			{ 0,  1,  2},
+			{ 3,  4,  5},
+			/**/
+			{ 6,  7,  8},
+			{ 9, 10, 11},
+			/**/
+			{12, 13, 14}
+		};
+
+		BOOST_TEST( arr.size() == 5 );
+
+		BOOST_TEST(( arr.tiled(2).remainder.size() == 1 ));
+
+		auto [tiles, border] = arr.tiled(2);
+		BOOST_TEST( tiles.size() == 2 );
+		BOOST_TEST(( tiles[0].size() == 2 ));
+		BOOST_TEST(( tiles[1].size() == 2 ));
+
+		BOOST_TEST(( tiles[0] == multi::array<int, 2>{
+			{0, 1, 2},
+			{3, 4, 5},
+		} ));
+		BOOST_TEST(( tiles[1] == multi::array<int, 2>{
+			{6, 7, 8},
+			{9, 10, 11},
+		} ));
+
+		BOOST_TEST( border.size() == 1 );
+		BOOST_TEST( border == (multi::array<int, 2>{
+			{12, 13, 14}
+		}) );
+	}
+
+	BOOST_AUTO_TEST_CASE(tiled_2D_mutable) {
+		multi::array<int, 2> arr = {
+			{ 0,  1,  2},
+			{ 3,  4,  5},
+			/**/
+			{ 6,  7,  8},
+			{ 9, 10, 11},
+			/**/
+			{12, 13, 14}
+		};
+
+		BOOST_TEST( arr.size() == 5 );
+
+		auto [tiles, border] = arr.tiled(2);
+		tiles[0][1][1] = 44;
+
+		BOOST_TEST(( tiles[0] == multi::array<int, 2>{
+			{0, 1, 2},
+			{3, 44, 5},
+		} ));
+
+		tiles[1][0][2] = 88;
+		BOOST_TEST(( tiles[1] == multi::array<int, 2>{
+			{6, 7, 88},
+			{9, 10, 11},
+		} ));
+
+		border[0][1] = 1313;
+		BOOST_TEST( border == (multi::array<int, 2>{
+			{12, 1313, 14}
+		}) );
+
+		BOOST_TEST(( arr == multi::array<int, 2>{
+			{ 0,  1,  2},
+			{ 3,  44,  5},
+			/**/
+			{ 6,  7,  88},
+			{ 9, 10, 11},
+			/**/
+			{12, 1313, 14}
+		} ));
+	}
+
+	// {
+	//  auto range_for_tile = [](auto&& in, std::size_t tile_idx, std::size_t num_tiles) {
+	//    auto const tile_size = (in.size() + num_tiles - 1) / num_tiles;
+	//    auto start = std::min(tile_idx * tile_size, in.size());
+	//    auto finish = std::min((tile_idx + 1)*tile_size, in.size());
+	//    return in({start, finish});
+	//  };
+
+	//  auto arr = multi::array{
+	//    {1, 2, 3},
+	//    {}
+	//  }
+
+	//  for() {
+
+	//  }
+	// }
 
 	return boost::report_errors();
 }
