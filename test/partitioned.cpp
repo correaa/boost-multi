@@ -108,6 +108,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(array_partitioned) {
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
+		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
 		// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
 		multi::array<std::string, 2> A2 = {
@@ -122,13 +123,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(  size(A2) == 6 );
 
-		BOOST_TEST( std::get<0>(A2.sizes()) == 6 );
-		BOOST_TEST( std::get<1>(A2.sizes()) == 2 );
+		BOOST_TEST( get<0>(A2.sizes()) == 6 );
+		BOOST_TEST( get<1>(A2.sizes()) == 2 );
 
 		BOOST_TEST(( A2.sizes() == decltype(A2.sizes()){6, 2} ));
 
-		BOOST_TEST( std::get<0>(A2.sizes()) == 6 );
-		BOOST_TEST( std::get<1>(A2.sizes()) == 2 );
+		BOOST_TEST( get<0>(A2.sizes()) == 6 );
+		BOOST_TEST( get<1>(A2.sizes()) == 2 );
 
 		BOOST_TEST( size(A2.partitioned(3)) == 3 );
 
@@ -138,9 +139,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(( sizes(A2.partitioned(3)) == decltype(sizes(A2.partitioned(3))){3, 2, 2} ));
 
-		BOOST_TEST( std::get<0>(sizes(A2.partitioned(3))) == 3 );
-		BOOST_TEST( std::get<1>(sizes(A2.partitioned(3))) == 2 );
-		BOOST_TEST( std::get<2>(sizes(A2.partitioned(3))) == 2 );
+		BOOST_TEST( get<0>(sizes(A2.partitioned(3))) == 3 );
+		BOOST_TEST( get<1>(sizes(A2.partitioned(3))) == 2 );
+		BOOST_TEST( get<2>(sizes(A2.partitioned(3))) == 2 );
 
 		BOOST_TEST( size(A2.partitioned(1)) == 1 );
 
@@ -152,6 +153,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
+		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 		// arr[walker][encoded_property]  // 7 walkers
 		multi::array<int, 2> arr = {
 			{990, 990, 1000, 001,  10,  11,  20,  21, 990},
@@ -171,9 +174,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(decltype(+arrRPU)::rank{} == 3);
 		static_assert(decltype(+arrRPU)::rank_v == 3);
 
-		BOOST_TEST( std::get<0>(arrRPU.sizes()) == 7 );
-		BOOST_TEST( std::get<1>(arrRPU.sizes()) == 3 );
-		BOOST_TEST( std::get<2>(arrRPU.sizes()) == 2 );
+		BOOST_TEST( get<0>(arrRPU.sizes()) == 7 );
+		BOOST_TEST( get<1>(arrRPU.sizes()) == 3 );
+		BOOST_TEST( get<2>(arrRPU.sizes()) == 2 );
 
 		BOOST_TEST(( arrRPU.sizes() == decltype(arrRPU.sizes()){7, 3, 2} ));
 		BOOST_TEST(( sizes(arrRPU) == decltype(sizes(arrRPU)){7, 3, 2} ));
@@ -272,6 +275,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(chunked_subarrays) {
+		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 		multi::array<int, 2> const arr = {
 			{ 0,  1, /**/ 2,   3, /**/  4,  5},
 			{ 6,  7, /**/ 8,   9, /**/ 10, 11},
@@ -288,20 +293,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr.dimensionality == 2 );
 		BOOST_TEST( arr.size() == 8 );
-		BOOST_TEST( std::get<1>(arr.sizes()) == 6 );
+		BOOST_TEST( get<1>(arr.sizes()) == 6 );
 
 		BOOST_TEST( arr.chunked(2).dimensionality == 3 );
 		BOOST_TEST( arr.chunked(2).size() == 4 );
-		BOOST_TEST( std::get<1>(arr.chunked(2).sizes()) == 2 );
-		BOOST_TEST( std::get<2>(arr.chunked(2).sizes()) == 6 );
+		BOOST_TEST( get<1>(arr.chunked(2).sizes()) == 2 );
+		BOOST_TEST( get<2>(arr.chunked(2).sizes()) == 6 );
 
 		auto const&& block_arr = arr.chunked(2).rotated().rotated().chunked(2).transposed().rotated().transposed();
 		BOOST_TEST( block_arr.dimensionality == 4 );
 
 		BOOST_TEST( block_arr.size() == 4 );
-		BOOST_TEST( std::get<1>(block_arr.sizes()) == 3 );
-		BOOST_TEST( std::get<2>(block_arr.sizes()) == 2 );
-		BOOST_TEST( std::get<3>(block_arr.sizes()) == 2 );
+		BOOST_TEST( get<1>(block_arr.sizes()) == 3 );
+		BOOST_TEST( get<2>(block_arr.sizes()) == 2 );
+		BOOST_TEST( get<3>(block_arr.sizes()) == 2 );
 
 		BOOST_TEST((
 			block_arr[2][1]
@@ -314,6 +319,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(partitined_subarrays) {
+		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 		multi::array<int, 2> const arr = {
 			{ 0,  1, /**/ 2,   3, /**/  4,  5},
 			{ 6,  7, /**/ 8,   9, /**/ 10, 11},
@@ -332,16 +339,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.partitioned(4).dimensionality == 3 );
 
 		BOOST_TEST( arr.partitioned(4).size() == 4 );
-		BOOST_TEST( std::get<1>(arr.partitioned(4).sizes()) == 2 );
-		BOOST_TEST( std::get<2>(arr.partitioned(4).sizes()) == 6 );
+		BOOST_TEST( get<1>(arr.partitioned(4).sizes()) == 2 );
+		BOOST_TEST( get<2>(arr.partitioned(4).sizes()) == 6 );
 
 		auto const&& block_arr = arr.partitioned(4).rotated().rotated().partitioned(3).transposed().rotated().transposed();
 		BOOST_TEST( block_arr.dimensionality == 4 );
 
 		BOOST_TEST( block_arr.size() == 4 );
-		BOOST_TEST( std::get<1>(block_arr.sizes()) == 3 );
-		BOOST_TEST( std::get<2>(block_arr.sizes()) == 2 );
-		BOOST_TEST( std::get<3>(block_arr.sizes()) == 2 );
+		BOOST_TEST( get<1>(block_arr.sizes()) == 3 );
+		BOOST_TEST( get<2>(block_arr.sizes()) == 2 );
+		BOOST_TEST( get<3>(block_arr.sizes()) == 2 );
 
 		BOOST_TEST((
 			block_arr[2][1]

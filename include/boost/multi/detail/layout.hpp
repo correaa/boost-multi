@@ -356,7 +356,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	static constexpr auto to_linear(index const& idx) -> difference_type  /*const*/ {return idx;}
 	constexpr auto operator()(index const& idx) const -> difference_type {return to_linear(idx);}
 	constexpr auto operator[](index idx) const {
-		return multi::detail::tuple<multi::index>{std::get<0>(this->base())[idx]};
+		return multi::detail::tuple<multi::index>{this->base().get<0>()[idx]};
 	}
 
 	template<class... Indices>
@@ -474,7 +474,7 @@ constexpr auto get(::boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dc
 // constexpr auto get(boost::multi::extensions_t<2> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
 // // ->decltype(tp.template get<N>()) {
 // -> decltype(auto) {
-// 	return tp.template get<N>(); }
+//  return tp.template get<N>(); }
 
 template<std::size_t N, ::boost::multi::dimensionality_type D>
 constexpr auto get(::boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
@@ -893,7 +893,8 @@ namespace boost::multi::detail {
 
 		template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Tuple>), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 		friend constexpr auto get(convertible_tuple const& self) -> typename std::tuple_element<Index, Tuple>::type {
-			return std::get<Index>(static_cast<Tuple const&>(self));
+			using std::get;
+			return get<Index>(static_cast<Tuple const&>(self));
 		}
 	};
 
@@ -907,7 +908,8 @@ namespace boost::multi::detail {
 
 		template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Array>), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 		friend constexpr auto get(decaying_array const& self) -> typename std::tuple_element<Index, Array>::type {
-			return std::get<Index>(static_cast<Array const&>(self));
+			using std::get;
+			return get<Index>(static_cast<Array const&>(self));
 		}
 	};
 }  // end namespace boost::multi::detail

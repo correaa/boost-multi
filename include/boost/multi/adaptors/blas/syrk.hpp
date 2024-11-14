@@ -17,7 +17,8 @@ using core::syrk;
 template<class A2D, class C2D>
 auto syrk(filling c_side, typename A2D::element alpha, A2D const& a, typename A2D::element beta, C2D&& cc) {  // NOLINT(readability-identifier-length) BLAS naming
 	//->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
-	assert( cc.size() == std::get<1>(cc.sizes()) );
+	using std::get;
+	assert( cc.size() == get<1>(cc.sizes()) );
 	if(stride(a) == 1) {
 		if(cc.stride() == 1) {
 			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'N', cc.size(), size(a), &alpha, a.base(), a.rotated().stride(), &beta, cc.base(), cc.rotated().size());
