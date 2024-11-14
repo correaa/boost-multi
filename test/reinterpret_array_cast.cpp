@@ -27,7 +27,6 @@ template<class T> struct complex_dummy {
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	// simple class reinterpret
 	{
 		struct int_class {int val_;};

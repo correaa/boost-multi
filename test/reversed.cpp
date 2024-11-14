@@ -32,15 +32,17 @@ BOOST_AUTO_TEST_CASE(multi_reversed_3d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
+	using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 	multi::array<double, 4> arr({ 13, 5, 7, 11 });
 
 	BOOST_TEST( arr.reversed().size() == 11 );
 
 	BOOST_TEST( &arr.reversed()[1][2][3][4] == &arr[4][3][2][1] );
 
-	BOOST_TEST( std::get<0>( arr.reversed().transposed().flatted().reversed().sizes() ) == 13 );
-	BOOST_TEST( std::get<1>( arr.reversed().transposed().flatted().reversed().sizes() ) ==  5 );
-	BOOST_TEST( std::get<2>( arr.reversed().transposed().flatted().reversed().sizes() ) == 77 );
+	BOOST_TEST( get<0>( arr.reversed().transposed().flatted().reversed().sizes() ) == 13 );
+	BOOST_TEST( get<1>( arr.reversed().transposed().flatted().reversed().sizes() ) ==  5 );
+	BOOST_TEST( get<2>( arr.reversed().transposed().flatted().reversed().sizes() ) == 77 );
 
 	BOOST_TEST(( sizes(arr.reversed().transposed().flatted().reversed()) == decltype(sizes(arr.reversed().transposed().flatted().reversed())){13, 5, 77} ));
 	BOOST_TEST( &arr.reversed().transposed().flatted().reversed()[1][2][ 5] == & arr[1][2][0][ 5] );

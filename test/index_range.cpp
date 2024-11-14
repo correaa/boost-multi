@@ -62,20 +62,22 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 			{0, 5},
 		});
 
-		auto const ies0 = std::get<0>(ies);
-		auto const ies1 = std::get<1>(ies);
-		auto const ies2 = std::get<2>(ies);
+		using std::get;
+
+		auto const ies0 = get<0>(ies);
+		auto const ies1 = get<1>(ies);
+		auto const ies2 = get<2>(ies);
 
 		BOOST_TEST( ies0.size() == 3 );
 		BOOST_TEST( ies1.size() == 4 );
 		BOOST_TEST( ies2.size() == 5 );
 
-		BOOST_TEST( std::get<0>(ies).size() == 3 );
-		BOOST_TEST( std::get<1>(ies).size() == 4 );
-		BOOST_TEST( std::get<2>(ies).size() == 5 );
+		BOOST_TEST( get<0>(ies).size() == 3 );
+		BOOST_TEST( get<1>(ies).size() == 4 );
+		BOOST_TEST( get<2>(ies).size() == 5 );
 
 #ifndef _MSC_VER  // doesn't work in MSVC 14.3 in c++17 mode
-		auto [eyes, jays, kays] = ies;
+		auto const [eyes, jays, kays] = ies;
 		BOOST_TEST( eyes.size() == 3 );
 		BOOST_TEST( jays.size() == 4 );
 		BOOST_TEST( kays.size() == 5 );
