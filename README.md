@@ -434,11 +434,10 @@ Changing the size of arrays by `reextent`, `clear`, or assignment generally inva
 
 ## Iteration (range-based loops vs iterators)
 
-Historically, iteration over arrays has been done with `for`-loops, where each nesting level is associated with each dimension.
-The valid range of indices in all the dimensions of an array is extracted with `.extensions()`.
-In the 2D case, `.extensions()` can be conveniently decomposed into two ranges, one for each dimension.
+Historically, iteration over arrays has been done with index-based `for`-loops, where each nesting level is associated with a subdimension.
+For this type of usage, the valid range of indices in all the dimensions of an array is extracted with `.extensions()`, and in the 2D case, `.extensions()` can be conveniently decomposed into two ranges, one for each dimension.
 
-```
+```cpp
 	multi::array<int, 2> A = {
 		{1, 2, 3},
 		{4, 5, 6}
@@ -452,11 +451,11 @@ In the 2D case, `.extensions()` can be conveniently decomposed into two ranges, 
 	}
 ```
 
-The elements of the 2D array can be accessed directly without intermediate indices:
+Using C++'s range-based for, the elements of the 2D array can be accessed directly without intermediate indices:
 
 ```cpp
 	for(auto&& row : A) {
-		for(int& e: row) {
+		for(auto&& e: row) {  // equivalent to for(auto& e: row) or for(int& e: row)
 			e *= 2;
 		}
 	}
@@ -465,11 +464,12 @@ The elements of the 2D array can be accessed directly without intermediate indic
 However, in some cases it is better to use the iterator-based interface.
 The iterator-based interface is more convenient to express and interact with generic algorithms, which in turn can be parallelized and less prone to index errors (such as off-by-one, and out-of-range access.)
 
-Array (and subarray-references) provide a members `.begin()` and `.end()` that produce random-access iterators that access the multidimensional structure through the first dimension (leftmost index).
+Array (and subarray-references) provide a members `.begin()` and `.end()` that produce iterators that access the multidimensional structure through the first dimension (leftmost index).
 Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator-based algorithms (see the sort example above).
 `begin(A)/end(A)` (or equivalently `A.begin()/A.end()`) gives iterators that are linear and random access in the leading dimension.
+Since these iterators are categorized as random-access, arithmetic can be performed on them, for example `it += n;` and `++it` will advance `it` by `n` positions or by one position respectively.
 
-As an alternative the elements can be iterated in a flat manner, using the `.elements()` member.
+As an alternative, the elements can be iterated in a flat manner, using the `.elements()` member.
 This flattening is done in a canonical order (rightmost index changes fastest) and it is provided whether the elements are contiguous or not in memory.
 This "elements" range also provides the begin and end iterators (`.elements().begin()`).
 
@@ -502,7 +502,7 @@ Except for those corresponding to the one-dimensional case, dereferencing iterat
 These references can be given a name; using `auto` can be misleading since the resulting variable does not have value semantics.
 
 ```cpp
-auto row = *A.begin();  // accepted by the language but misleading, row is not an independent value
+auto row = *A.begin();  // accepted by the language but misleading, row is *not* a value independent of A
 ```
 
 In my experience, however, the following usage pattern produces a more consistent idiom for generating references (still without copying elements):
@@ -541,7 +541,6 @@ recursive_print(A);
 
 This feature allows to view the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
 For example array element at indices 1,1 is the same as the element 
-
 
 ### "Pointer" to subarray
 
