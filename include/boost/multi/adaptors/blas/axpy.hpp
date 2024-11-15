@@ -7,7 +7,6 @@
 #pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>
-// #include <boost/multi/adaptors/complex.hpp>
 
 #include <boost/multi/array_ref.hpp>
 
@@ -163,8 +162,7 @@ namespace operators {
 
 template<class T> struct algebraic_traits {static auto one() { return T{1.0}; }};
 
-template<class T> struct algebraic_traits<std  ::complex<T>> {static auto one() {return std  ::complex<T>{T{1}, T{0}};}};
-// template<class T> struct algebraic_traits<multi::complex<T>> {static auto one() {return multi::complex<T>{T{1}, T{0}};}};
+template<class T> struct algebraic_traits<std::complex<T>> {static auto one() {return std  ::complex<T>{T{1}, T{0}};}};
 
 template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
