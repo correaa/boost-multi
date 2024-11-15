@@ -573,7 +573,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
  private:
 	template<class Self, typename Tuple, std::size_t ... I>
 	static BOOST_MULTI_HD constexpr auto apply_impl_(Self&& self, Tuple const& tuple, std::index_sequence<I...>/*012*/) -> decltype(auto) {
-		using std::get;
+		using std::get;  // for C++17 compatibility
 		return std::forward<Self>(self)(get<I>(tuple)...);
 	}
 
@@ -662,7 +662,7 @@ struct cursor_t {
 
  public:
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
-		using std::get;
+		using std::get;  // for C++17 compatibility
 		if constexpr(D != 1) {
 			return cursor_t<
 				ElementPtr,
@@ -689,7 +689,7 @@ struct cursor_t {
  private:
 	template<class Tuple, std::size_t... I>
 	BOOST_MULTI_HD constexpr auto apply_impl_(Tuple const& tup, std::index_sequence<I...> /*012*/) const -> decltype(auto) {
-		using std::get;
+		using std::get;  // for C++17 compatibility
 		return ((get<I>(tup)*get<I>(strides_)) + ...);
 	}
 
@@ -1333,7 +1333,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	constexpr auto diagonal() const& -> const_subarray<T, D-1, typename const_subarray::element_const_ptr> {
-		using std::get;
+		using std::get;  // for C++17 compatibility
 		auto const square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // parenthesis min for MSVC macros
 		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();
@@ -1478,12 +1478,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>  BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const& -> decltype(auto) {return paren_aux_(arg1, arg2, arg3, arg4, args...);}
 
  private:
-	template<typename Tuple, std::size_t ... I> BOOST_MULTI_HD constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return this->operator()(std::get<I>(tuple)...);}
+	template<typename Tuple, std::size_t ... I> BOOST_MULTI_HD constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...>/*012*/) const& -> decltype(auto) { using std::get; return this->operator()(get<I>(tuple)...); }
 
  public:
-	template<typename Tuple> constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	// template<typename Tuple> constexpr auto apply(Tuple const& tuple)     && -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	// template<typename Tuple> constexpr auto apply(Tuple const& tuple)      & -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
 	using       iterator = array_iterator<element, D, element_ptr      >;
 	using const_iterator = array_iterator<element, D, element_ptr, true>;
@@ -2052,21 +2050,21 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-//  constexpr
-//  auto operator=(const_subarray               const& other) & -> const_subarray& {
-//      if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
-//      assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-//      // MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
-//      elements() = other.elements();
-// //      if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-// //          adl_copy_n(o.base(), o.num_elements(), this->base());
-// //      } else if(o.stride() < (~o).stride()) {
-// //          adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-// //      } else {
-// //          assign(o.begin());
-// //      }
-//      return *this;
-//  }
+	//  constexpr
+	//  auto operator=(const_subarray               const& other) & -> const_subarray& {
+	//      if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+	//      assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	//      // MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
+	//      elements() = other.elements();
+	// //      if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
+	// //          adl_copy_n(o.base(), o.num_elements(), this->base());
+	// //      } else if(o.stride() < (~o).stride()) {
+	// //          adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+	// //      } else {
+	// //          assign(o.begin());
+	// //      }
+	//      return *this;
+	//  }
 
 	// constexpr auto operator=(const_subarray const& other) &&
 	// -> const_subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -2089,12 +2087,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	//  (D > 1),
 	//  subarray<typename subarray::element, D-1, typename subarray::element_ptr>,
 	//  typename std::iterator_traits<typename subarray::element_ptr>::reference
-	// >;
-
-	// using const_reference = typename std::conditional_t<
-	//  (D > 1),
-	//  const_subarray<typename subarray::element, D-1, element_const_ptr>,
-	//  typename std::iterator_traits<element_const_ptr>::reference
 	// >;
 
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const&    { return static_cast<typename subarray::const_reference>(this->at_aux_(idx)); }  // TODO(correaa) use return type to cast
@@ -2155,7 +2147,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
  private:
 	template<class Self, typename Tuple, std::size_t ... I>
 	static BOOST_MULTI_HD constexpr auto apply_impl_(Self&& self, Tuple const& tuple, std::index_sequence<I...>/*012*/) -> decltype(auto) {
-		using std::get;
+		using std::get;  // for C++17 compatibility
 		return std::forward<Self>(self)(get<I>(tuple)...);
 	}
 
@@ -2759,7 +2751,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  private: 
 	template<class Self, typename Tuple, std::size_t ... I, const_subarray* = nullptr>
 	static constexpr auto apply_impl_(Self&& self, Tuple const& tuple, std::index_sequence<I...> /*012*/) -> decltype(auto) {
-		return std::forward<Self>(self)(std::get<I>(tuple)...);
+		using std::get;  // for C++17 compatibility
+		return std::forward<Self>(self)(get<I>(tuple)...);
 	}
 
  public:
@@ -2767,11 +2760,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	// template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple)     && -> decltype(auto) {return apply_impl_(std::move(*this), tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
 	// template<typename Tuple>                constexpr auto apply(Tuple const& tuple)      & -> decltype(auto) {return apply_impl_(          *this , tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
 
-	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) { return *this; }  // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices  ) const& -> decltype(auto) { return operator[](std::get<0>(indices)); }  // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) { return *this; }  // NOLINT(modernize-use-constraints) for C++20
+	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices  ) const& -> decltype(auto) { using std::get; return operator[](get<0>(indices)); }  // NOLINT(modernize-use-constraints) for C++20
 	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value >  1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices  ) const&  // NOLINT(modernize-use-constraints) TODO(correaa)
 	->decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
-		return operator[](std::get<0>(indices))[detail::tuple_tail(indices)]; }
+		using std::get;  // for C++17 compatibility
+		return operator[](     get<0>(indices))[detail::tuple_tail(indices)]; }
 
     // Warning C4459 comes from boost::multi_array having a namespace indices which collides with the variable name?
     #ifdef _MSC_VER
@@ -2779,7 +2773,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
     #pragma warning( disable : 4459 )
     #endif
 
-    [[deprecated("BMA compat, finish impl")]] BOOST_MULTI_HD constexpr auto operator[](std::tuple<irange> const& indices) const& { return (*this)({std::get<0>(indices).front(), std::get<0>(indices).back() + 1}); }
+    [[deprecated("BMA compat, finish impl")]] constexpr auto operator[](std::tuple<irange> const& indices) const& { using std::get; return (*this)({get<0>(indices).front(), get<0>(indices).back() + 1}); }
 
     #ifdef _MSC_VER
     #pragma warning( pop )
@@ -3556,7 +3550,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  private:
 	template<class TTN, std::size_t DD = 0>
 	void check_sizes_() const {
-		using std::get;
+		using std::get;  // for C++17 compatibility
 		if(size_type{get<DD>(this->sizes())} != size_type{std::extent<TTN, unsigned{DD}>::value}) {
 			throw std::bad_cast{};
 		}
