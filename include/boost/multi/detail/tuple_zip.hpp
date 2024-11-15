@@ -28,6 +28,11 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 
 	constexpr auto operator<(tuple const& /*other*/) const { return false; }
 	constexpr auto operator>(tuple const& /*other*/) const { return false; }
+
+	template<class F>
+	constexpr friend auto apply(F&& fn, tuple<> const& /*self*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		return std::forward<F>(fn)();
+	}
 };
 
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
@@ -89,17 +94,48 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
  private:
 
 	template<class F, std::size_t... I>
-	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) const -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
+	}
+
+	template<class F, std::size_t... I>
+	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		return std::forward<F>(fn)(this->get<I>()...);
+	}
+
+	template<class F, std::size_t... I>
+	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) &&-> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		return std::forward<F>(fn)(std::move(*this).template get<I>()...);
 	}
 
  public:
 	template<class F>
-	constexpr auto apply(F&& fn) const -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	constexpr auto apply(F&& fn) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
 	}
+	template<class F>
+	constexpr auto apply(F&& fn) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		return apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
+	}
+	template<class F>
+	constexpr auto apply(F&& fn) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		return std::move(*this).apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
+	}
 
-	// constexpr explicit operator std::tuple<T0, Ts...>() const {return this->apply([](auto const&... xs) {return std::tuple<T0, Ts...>(xs...);});}
+	template<class F>
+	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> const& self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		return self.apply(std::forward<F>(fn));
+	}
+
+	template<class F>
+	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> & self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		return self.apply(std::forward<F>(fn));
+	}
+
+	template<class F>
+	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> && self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		return std::move(self).apply(std::forward<F>(fn));
+	}
 
  private:
 	template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N - 1>> {};
@@ -344,13 +380,13 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 
 // }  // end namespace std
 
-namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
-
 template<class F, class Tuple, std::size_t... I>
 constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	(void)tp;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
 	return std::forward<F>(fn)(boost::multi::detail::get<I>(std::forward<Tuple>(tp))...);
 }
+
+namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
 
 template<class F, class... Ts>
 constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
