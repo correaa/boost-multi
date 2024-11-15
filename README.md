@@ -1958,9 +1958,11 @@ Algorithms are expected to work with oneAPI execution policies as well (not test
 ## Formatting ({fmt} pretty printing)
 
 The library doesn't have a "pretty" printing facility to display arrays.
-Although not ideal, arrays can be printed and formatting by looping over elements and dimensions, as shown as examples in this documentation,
-Fortunatelly the library automatically works with the external library [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
+Although it is not ideal, arrays can be printed and formated by looping over elements and dimension, as shown in other examples (using standard streams).
+
+Fortunatelly, the library automatically works with the external library [{fmt}](https://fmt.dev/latest/index.html), both for arrays and subarrays.
 The fmt library is not a dependency of the Multi library; they simply work well together using the "ranges" part of the formatting library.
+fmt allows a high degree of confurability.
 
 This example prints a 2-dimensional subblock of a larger array.
 
@@ -1989,10 +1991,12 @@ with the output:
 > [3, 4]
 > [6, 7]
 > ```
-https://godbolt.org/z/vjc6n1ove
 
+In same way, the size of the array can be printed simply by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which print `(2, 2)`.
 
-When saving arrays to files, consider using serialization (see section) instead.
+https://godbolt.org/z/Mdo8YYqnf
+
+When saving arrays to files, consider using serialization (see section) instead of formatting facilities.
 
 ## Legacy libraries (C-APIs)
 
