@@ -51,7 +51,7 @@ struct H_t {  // NOLINT(readability-identifier-naming) blas naming
 	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return hermitized(std::forward<A>(array)); }
 
 	template<class A, 
-		std::enable_if_t<std::decay_t<A>::rank::value == 1, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+		std::enable_if_t<std::decay_t<A>::rank::value == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
 	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return blas::conj(std::forward<A>(array)); }
 
