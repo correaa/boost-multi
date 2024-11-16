@@ -1741,7 +1741,7 @@ int main(){
 
 (Similarly works with [LLNL's Meta Allocator](https://github.com/llnl/metall))
 
-## CUDA Thrust (and HIP Thrust)
+## CUDA (and HIP, and OMP, and TBB) via Thrust
 
 The library works out-of-the-box in combination with the Thrust library.
 
@@ -1775,7 +1775,7 @@ More specific allocators can be used ensure CUDA backends, for example CUDA mana
 ```
 
 In the same way, to *ensure* HIP backends please replace the `cuda` namespace by the `hip` namespace, and in the directory name `<thrust/system/hip/memory.h>`.
-`<thrust/system/hip/memory.h>` is provided by the ROCm distribution (in `/opt/rocm/include/thrust/system/hip/`, and not by the NVIDIA distribution.)
+`<thrust/system/hip/memory.h>` is provided by rocThrust in the ROCm distribution (in `/opt/rocm/include/thrust/system/hip/`, and not by the NVIDIA distribution.)
 
 Multi doesn't have a dependency on Thrust (or vice versa);
 they just work well together, both in terms of semantics and efficiency.
@@ -1993,7 +1993,7 @@ with the output:
 
 In same way, the size of the array can be printed simply by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which print `(2, 2)`.
 
-https://godbolt.org/z/Mdo8YYqnf
+https://godbolt.org/z/WTEfnMG7n
 
 When saving arrays to files, consider using serialization (see section) instead of formatting facilities.
 
