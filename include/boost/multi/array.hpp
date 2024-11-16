@@ -251,9 +251,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		class = std::enable_if_t<! is_subarray<Range const&>::value>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
-	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
 	: static_array{std::begin(rng), std::end(rng)} {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
-	// : static_array{rng.begin(), rng.end()} {}   // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
@@ -379,7 +378,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr /*implicit*/ static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr /*implicit*/ static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: static_array(other, allocator_type{}) {}
 
 	template<
@@ -397,34 +396,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr static_array(multi::const_subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: static_array(other, allocator_type{}) {}
 
-	constexpr static_array(multi::subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr static_array(multi::subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: static_array(std::move(other), allocator_type{}) {}
-
-	// template<class TT, class EElementPtr, class LLayout,  // class... Args,
-	//          std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
-	//          class                                                                                                                                           = decltype(adl_copy(std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
-	// explicit static_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)
-	// : static_array(other, allocator_type{}) {}
-
-
-
-	// template<typename TT, typename EElementPtr, class LLayout,
-	//          std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout>&&>().base()), T>, int> = 0,
-	//          class                                                                                                                                     = decltype(adl_copy(std::declval<multi::subarray<TT, D, EElementPtr, LLayout>&&>().begin(), std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
-	// // cppcheck-suppress noExplicitConstructor ; // NOLINTNEXTLINE(runtime/explicit)
-	// /*mplct*/ static_array(multi::subarray<TT, D, EElementPtr, LLayout>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	// : static_array(std::move(other), allocator_type{}) {}
-
-	// template<typename TT, typename... Args,
-	//          std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::const_subarray<TT, D, Args...>&&>().base()), T>, int> = 0,
-	//          class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, Args...>&&>().begin(), std::declval<multi::const_subarray<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))>
-	// explicit static_array(multi::const_subarray<TT, D, Args...>&& other)
-	// : static_array(std::move(other), allocator_type{}) {}
 
 	template<class TT, class... Args,
 		std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	/*mplct*/ static_array(array_ref<TT, D, Args...>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	/*mplct*/ static_array(array_ref<TT, D, Args...>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		static_array::uninitialized_copy_elements(other.data_elements());
 	}
