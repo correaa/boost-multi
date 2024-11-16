@@ -30,7 +30,8 @@ class involuted {
 	involuted(involuted const&)     = default;
 	involuted(involuted&&) noexcept = default;
 
-	constexpr auto operator=(involuted const& other) = delete;
+	constexpr auto operator=(involuted const&) = delete;
+	constexpr auto operator=(involuted&&) = delete;
 
 	~involuted() = default;
 
@@ -42,8 +43,6 @@ class involuted {
 		r_ = f_(std::forward<DecayType>(other));
 		return *this;
 	}
-	// NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps reading
-	constexpr auto operator=(involuted&& other) & noexcept -> involuted& = default;
 
 	friend auto operator==(involuted const& self, involuted const& other) -> bool {
 		assert(self.f_ == other.f_);
