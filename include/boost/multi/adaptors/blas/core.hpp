@@ -112,7 +112,7 @@ static_assert(sizeof(INT)==32/8 || sizeof(INT)==64/8, "please set MULTI_BLAS_INT
 #define xASUM(R, TT, T)   auto    TT##asum##_ (    N,               T const *x, INCX) -> R    // NOLINT(readability-identifier-length) conventional BLAS naming
 #define IxAMAX(T)         auto i##T ##amax##_ (    N,               T const* x, INCX) -> INT  // NOLINT(readability-identifier-length) conventional BLAS naming
 
-xROTG(s, s)   ; xROTG(d,d)    ;  // TODO(correaa) MKL extension for "(c, s)" and "(z, d)"?
+xROTG(s, s)   ; xROTG(d,d)    ;  // MKL has extension for "(c, s)" and "(z, d)"
 xROTMG(s)     ; xROTMG(d)     ;
 xROT(s, s, s) ; xROT(d, d, d) ;                 xROT(cs, c, s); xROT(zd, z, d);
 xROTM(s)      ; xROTM(d)      ;
@@ -121,9 +121,9 @@ xSCAL(s, s, s); xSCAL(d, d, d); xSCAL(c, c, c); xSCAL(z, z, z); xSCAL(zd, d, z);
 xCOPY(s)      ; xCOPY(d)      ; xCOPY(c)      ; xCOPY(z)      ;
 xAXPY(s)      ; xAXPY(d)      ; xAXPY(c)      ; xAXPY(z)      ;
 
-xDOT(s, s, s) ; xDOT(d, d, d) ;                                   xDOT(d, ds, s);
-xDOTU(C, c); xDOTU(Z, z);  // TODO(correaa) MKL extension for "(c, c)" and "(z, z)"?
-xDOTC(C, c); xDOTC(Z, z);  // TODO(correaa) MKL extension for "(sds, s)"
+xDOT (s, s, s) ; xDOT(d, d, d) ; xDOT(d, ds, s);
+xDOTU(C, c)    ; xDOTU(Z, z)   ;  // MKL has extension for "(c, c)" and "(z, z)"?
+xDOTC(C, c)    ; xDOTC(Z, z)   ;  // MKL has extension for "(sds, s)"
 
 xNRM2(s, s, s); xNRM2(d, d, d); xNRM2(s, sc, c); xNRM2(d, dz, z);
 xASUM(s, s, s); xASUM(d, d, d); xASUM(s, sc, c); xASUM(d, dz, z);
@@ -231,27 +231,27 @@ using std::is_assignable;
 
 using ::core::ssize_t;
 
-// TODO(correaa) implement xrotg, xrotmg, xrot, xrotm
+// xrotg, xrotmg, xrot, xrotm are not implemented, they might be out of scope
 
-// NOLINTBEGIN(modernize-use-constraints) TODO(correaa) for C++20
-template<class SX, class SY, enable_if_t<is_s<SX>{} && is_s<SY>{} && is_assignable<SY&, SX&>{},int> =0> void swap(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) noexcept {BLAS(sswap)(n, reinterpret_cast<             float   *>(x), incx, reinterpret_cast<             float  *>(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
-template<class DX, class DY, enable_if_t<is_d<DX>{} && is_d<DY>{} && is_assignable<DY&, DX&>{},int> =0> void swap(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) noexcept {BLAS(dswap)(n, reinterpret_cast<             double *>(x), incx, reinterpret_cast<             double *>(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
-template<class CX, class CY, enable_if_t<is_c<CX>{} && is_c<CY>{} && is_assignable<CY&, CX&>{},int> =0> void swap(ssize_t n, CX* x, ptrdiff_t incx, CY* y, ptrdiff_t incy) noexcept {BLAS(cswap)(n, reinterpret_cast<std::complex<float  >*>(x), incx, reinterpret_cast<std::complex<float >*>(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
-template<class ZX, class ZY, enable_if_t<is_z<ZX>{} && is_z<ZY>{} && is_assignable<ZY&, ZX&>{},int> =0> void swap(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) noexcept {BLAS(zswap)(n, reinterpret_cast<std::complex<double>*>(x), incx, reinterpret_cast<std::complex<double>*>(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length) // NOSONAR
+// NOLINTBEGIN(modernize-use-constraints) for C++20
+// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length,modernize-use-constraints)
+template<class SX, class SY, enable_if_t<is_s<SX>{} && is_s<SY>{} && is_assignable<SY&, SX&>{},int> =0> void swap(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) noexcept {BLAS(sswap)(n, reinterpret_cast<             float   *>(x), incx, reinterpret_cast<             float   *>(y), incy); }  // NOSONAR
+template<class DX, class DY, enable_if_t<is_d<DX>{} && is_d<DY>{} && is_assignable<DY&, DX&>{},int> =0> void swap(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) noexcept {BLAS(dswap)(n, reinterpret_cast<             double *>(x), incx, reinterpret_cast<             double *>(y), incy); }  // NOSONAR
+template<class CX, class CY, enable_if_t<is_c<CX>{} && is_c<CY>{} && is_assignable<CY&, CX&>{},int> =0> void swap(ssize_t n, CX* x, ptrdiff_t incx, CY* y, ptrdiff_t incy) noexcept {BLAS(cswap)(n, reinterpret_cast<std::complex<float  >*>(x), incx, reinterpret_cast<std::complex<float  >*>(y), incy); }  // NOSONAR
+template<class ZX, class ZY, enable_if_t<is_z<ZX>{} && is_z<ZY>{} && is_assignable<ZY&, ZX&>{},int> =0> void swap(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) noexcept {BLAS(zswap)(n, reinterpret_cast<std::complex<double>*>(x), incx, reinterpret_cast<std::complex<double>*>(y), incy); }  // NOLINT() // NOSONAR
 
-template<class SX, class SY, enable_if_t<is_s<SX>{} && is_s<SY>{} && is_assignable<SY&, SX&>{},int> =0> void copy(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) {BLAS(scopy)(n, reinterpret_cast<             float    const*>(x), incx, reinterpret_cast<             float   *>(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class DX, class DY, enable_if_t<is_d<DX>{} && is_d<DY>{} && is_assignable<DY&, DX&>{},int> =0> void copy(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) {BLAS(dcopy)(n, reinterpret_cast<             double  const*>(x), incx, reinterpret_cast<             double *>(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class CX, class CY, enable_if_t<is_c<CX>{} && is_c<CY>{} && is_assignable<CY&, CX&>{},int> =0> void copy(ssize_t n, CX* x, ptrdiff_t incx, CY* y, ptrdiff_t incy) {BLAS(ccopy)(n, reinterpret_cast<std::complex<float  > const*>(x), incx, reinterpret_cast<std::complex<float  >*>(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class ZX, class ZY, enable_if_t<is_z<ZX>{} && is_z<ZY>{} && is_assignable<ZY&, ZX&>{},int> =0> void copy(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) {BLAS(zcopy)(n, reinterpret_cast<std::complex<double> const*>(x), incx, reinterpret_cast<std::complex<double>*>(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-// NOLINTEND(modernize-use-constraints) TODO(correaa) for C++20
+template<class SX, class SY, enable_if_t<is_s<SX>{} && is_s<SY>{} && is_assignable<SY&, SX&>{},int> =0> void copy(ssize_t n, SX* x, ptrdiff_t incx, SY* y, ptrdiff_t incy) {BLAS(scopy)(n, reinterpret_cast<             float    const*>(x), incx, reinterpret_cast<             float   *>(y), incy);}  // NOSONAR
+template<class DX, class DY, enable_if_t<is_d<DX>{} && is_d<DY>{} && is_assignable<DY&, DX&>{},int> =0> void copy(ssize_t n, DX* x, ptrdiff_t incx, DY* y, ptrdiff_t incy) {BLAS(dcopy)(n, reinterpret_cast<             double  const*>(x), incx, reinterpret_cast<             double *>(y), incy);}  // NOSONAR
+template<class CX, class CY, enable_if_t<is_c<CX>{} && is_c<CY>{} && is_assignable<CY&, CX&>{},int> =0> void copy(ssize_t n, CX* x, ptrdiff_t incx, CY* y, ptrdiff_t incy) {BLAS(ccopy)(n, reinterpret_cast<std::complex<float  > const*>(x), incx, reinterpret_cast<std::complex<float  >*>(y), incy);}  // NOSONAR
+template<class ZX, class ZY, enable_if_t<is_z<ZX>{} && is_z<ZY>{} && is_assignable<ZY&, ZX&>{},int> =0> void copy(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) {BLAS(zcopy)(n, reinterpret_cast<std::complex<double> const*>(x), incx, reinterpret_cast<std::complex<double>*>(y), incy);}  // NOSONAR
 
 // TODO(correaa) : add mixed-type scal (zdscal, csscal)
-// NOLINTBEGIN(modernize-use-constraints) TODO(correaa) for C++20
-template<class ALPHAP, class SXP, class SX = typename std::pointer_traits<SXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_s<SX>{} && is_s<ALPHA>{} && is_assignable<SX&, decltype(*ALPHAP{}*SX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, SXP xp, ptrdiff_t incx) {BLAS(sscal)(n, *reinterpret_cast<             float    const*>(a), reinterpret_cast<             float   *>(xp), incx);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class ALPHAP, class DXP, class DX = typename std::pointer_traits<DXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_d<DX>{} && is_d<ALPHA>{} && is_assignable<DX&, decltype(*ALPHAP{}*DX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, DXP xp, ptrdiff_t incx) {BLAS(dscal)(n, *reinterpret_cast<             double  const*>(a), reinterpret_cast<             double *>(xp), incx);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class ALPHAP, class CXP, class CX = typename std::pointer_traits<CXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_c<CX>{} && is_c<ALPHA>{} && is_assignable<CX&, decltype(*ALPHAP{}*CX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, CXP xp, ptrdiff_t incx) {BLAS(cscal)(n, *reinterpret_cast<std::complex<float  > const*>(a), reinterpret_cast<std::complex<float  >*>(xp), incx);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-template<class ALPHAP, class ZXP, class ZX = typename std::pointer_traits<ZXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_z<ZX>{} && is_z<ALPHA>{} && is_assignable<ZX&, decltype(*ALPHAP{}*ZX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, ZXP xp, ptrdiff_t incx) {BLAS(zscal)(n, *reinterpret_cast<std::complex<double> const*>(a), reinterpret_cast<std::complex<double>*>(xp), incx);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-// NOLINTEND(modernize-use-constraints) TODO(correaa) for C++20
+template<class ALPHAP, class SXP, class SX = typename std::pointer_traits<SXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_s<SX>{} && is_s<ALPHA>{} && is_assignable<SX&, decltype(*ALPHAP{}*SX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, SXP xp, ptrdiff_t incx) {BLAS(sscal)(n, *reinterpret_cast<             float    const*>(a), reinterpret_cast<             float   *>(xp), incx);}  // NOSONAR
+template<class ALPHAP, class DXP, class DX = typename std::pointer_traits<DXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_d<DX>{} && is_d<ALPHA>{} && is_assignable<DX&, decltype(*ALPHAP{}*DX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, DXP xp, ptrdiff_t incx) {BLAS(dscal)(n, *reinterpret_cast<             double  const*>(a), reinterpret_cast<             double *>(xp), incx);}  // NOSONAR
+template<class ALPHAP, class CXP, class CX = typename std::pointer_traits<CXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_c<CX>{} && is_c<ALPHA>{} && is_assignable<CX&, decltype(*ALPHAP{}*CX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, CXP xp, ptrdiff_t incx) {BLAS(cscal)(n, *reinterpret_cast<std::complex<float  > const*>(a), reinterpret_cast<std::complex<float  >*>(xp), incx);}  // NOSONAR
+template<class ALPHAP, class ZXP, class ZX = typename std::pointer_traits<ZXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_z<ZX>{} && is_z<ALPHA>{} && is_assignable<ZX&, decltype(*ALPHAP{}*ZX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, ZXP xp, ptrdiff_t incx) {BLAS(zscal)(n, *reinterpret_cast<std::complex<double> const*>(a), reinterpret_cast<std::complex<double>*>(xp), incx);}  // NOSONAR
+// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length,modernize-use-constraints)
+// NOLINTEND(modernize-use-constraints) for C++20
 
 using std::pointer_traits;
 using std::enable_if_t;
@@ -283,7 +283,7 @@ namespace core {
 using std::enable_if_t;
 using std::is_assignable;
 
-// NOLINTBEGIN(modernize-use-constraints) TODO(correaa) for C++20
+// NOLINTBEGIN(modernize-use-constraints) for C++20
 template<class XP, class X = typename std::pointer_traits<XP*>::element_type, class YP, class Y = typename std::pointer_traits<YP*>::element_type, class RP, class R = typename std::pointer_traits<RP*>::element_type, enable_if_t<is_s<X>{} && is_s<Y>{} && is_assignable<R&, decltype(0.0F+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (ssize_t n, XP* xp, ptrdiff_t incx, YP* yp, ptrdiff_t incy, RP* rp) {
 	// Apple Accelerate BLAS is known to have bugs in single precission function
 	// `sdot` and `smrm2`, be careful:
@@ -297,10 +297,8 @@ template<class XP, class X = typename std::pointer_traits<XP*>::element_type, cl
 #endif
 }
 template<class XP, class X = typename std::pointer_traits<XP*>::element_type, class YP, class Y = typename std::pointer_traits<YP*>::element_type, class RP, class R = typename std::pointer_traits<RP*>::element_type, enable_if_t<is_d<X>{} && is_d<Y>{} && is_assignable<R&, decltype(0.0 +X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (ssize_t n, XP* xp, ptrdiff_t incx, YP* yp, ptrdiff_t incy, RP* r) {auto const rr = BLAS(ddot )(n, reinterpret_cast<d const*>(static_cast<X*>(xp)), incx, reinterpret_cast<d const*>(static_cast<Y*>(yp)), incy); std::memcpy(reinterpret_cast<double *    >(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)  // NOSONAR
-// NOLINTEND(modernize-use-constraints) TODO(correaa) for C++20
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
-// NOLINTBEGIN(modernize-use-constraints) TODO(correaa) for C++20
 #if defined(BLAS_DOT_RETURNS_VOID)
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_c<Y>{} && is_assignable<R&, decltype(0.0F+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP xp, ptrdiff_t incx, YP yp, ptrdiff_t incy, RP rp) {
 	[[maybe_unused]] static bool const check = []{
@@ -375,11 +373,10 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_z<Y>{} && is_assignable<R&, decltype(/*0.0 +*/ X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(zdotc)(                                      n, reinterpret_cast<z const*>(static_cast<X*>(x)), incx, reinterpret_cast<z const*>(static_cast<Y*>(y)), incy); std::memcpy(reinterpret_cast<std::array<double,2>*>(static_cast<R*>(r))->data(), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}  // NOSONAR
 // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 #endif
-// NOLINTEND(modernize-use-constraints)
+// NOLINTEND(modernize-use-constraints) for C++20
 
 } // end namespace core
 #else
-// TODO(correaa) : make cblas version
 #define xdotu(T) template<class S> v dotu(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
 #define xdotc(T) template<class S> v dotc(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
 
@@ -401,7 +398,7 @@ namespace core {
 
 namespace core {
 
-// NOLINTBEGIN(modernize-use-constraints) TODO(correaa) for C++20
+// NOLINTBEGIN(modernize-use-constraints) for C++20
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} && is_s<R>{} && std::is_assignable<R&, decltype(X{})>{}           , int> =0> void asum(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(sasum) (n, reinterpret_cast<s const*>(static_cast<X*>(x)), incx); std::memcpy(reinterpret_cast<s*>(static_cast<R*>(r)), &rr, sizeof(s));} // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_d<X>{} && is_d<R>{} && std::is_assignable<R&, decltype(X{})>{}           , int> =0> void asum(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(dasum) (n, reinterpret_cast<d const*>(static_cast<X*>(x)), incx); std::memcpy(reinterpret_cast<s*>(static_cast<R*>(r)), &rr, sizeof(d));} // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
 
@@ -414,7 +411,7 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_s<R>{} && std::is_assignable<R&, decltype(norm(X{}))>{}, int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(scnrm2)(n, reinterpret_cast<c const*>(static_cast<X*>(x)), incx); std::memcpy(reinterpret_cast<s*>(static_cast<R*>(r)), &rr, sizeof(s));} // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_d<R>{} && std::is_assignable<R&, decltype(norm(X{}))>{}, int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r) {auto rr = BLAS(dznrm2)(n, reinterpret_cast<z const*>(static_cast<X*>(x)), incx); std::memcpy(reinterpret_cast<s*>(static_cast<R*>(r)), &rr, sizeof(d));} // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)
-// NOLINTEND(modernize-use-constraints) TODO(correaa) for C++20
+// NOLINTEND(modernize-use-constraints) for C++20
 
 	ixamax(s)      ixamax(d)       ixamax(c)       ixamax(z)
 } // end namespace core
@@ -439,14 +436,14 @@ using std::is_assignable;
 using size_t = INT;
 using ssize_t = std::make_signed_t<size_t>;
 
-// NOLINTBEGIN(modernize-use-constraints) TODO(correaa) for C++20
+// NOLINTBEGIN(modernize-use-constraints) for C++20
 template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} && is_s<X>{} && is_s<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(sgemv)(trans, m, n, *a, reinterpret_cast<s const*>(ma), lda, reinterpret_cast<s const*>(x), incx, *b, reinterpret_cast<s*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
 template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} && is_d<X>{} && is_d<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, *a, reinterpret_cast<d const*>(ma), lda, reinterpret_cast<d const*>(x), incx, *b, reinterpret_cast<d*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
 template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} && is_c<X>{} && is_c<Y>{} && is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(cgemv)(trans, m, n, *a, reinterpret_cast<c const*>(ma), lda, reinterpret_cast<c const*>(x), incx, *b, reinterpret_cast<c*>(y), incy);}  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast) // NOSONAR wrapped func has 11 params
 template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} && is_z<X>{} && is_z<Y>{} && is_assignable<Y&, decltype(std::declval<A const&>()*std::declval<M const&>()*std::declval<X const&>()+std::declval<B const&>()*std::declval<Y const&>())>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {  // NOLINT(google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)  //NOSONAR wrapped func has 11 params
 	BLAS(zgemv)(trans, m, n, *a, reinterpret_cast<z const*>(ma), lda, reinterpret_cast<z const*>(x), incx, *b, reinterpret_cast<z*>(y), incy);  // NOLINT(fuchsia-default-arguments-calls,google-readability-casting,readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast)  // NOSONAR
 }
-// NOLINTEND(modernize-use-constraints) TODO(correaa) for C++20
+// NOLINTEND(modernize-use-constraints) for C++20
 
 // TODO(correaa) implement get, geru, gerc
 
@@ -478,7 +475,7 @@ using std::max;
 
 #define xsyrk(T) \
 template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
-enable_if_t<  /* NOLINT(modernize-use-constraints) TODO(correaa) for C++20 */                                                                                                                                                                                    \
+enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                    \
 	is_##T<AA>{} && is_##T<CC>{} && is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} &&                                                                                                       \
 	is_convertible_v<AAP, AA*> && is_convertible_v<CCP, CC*>                                                                                                                                     \
 , int> =0>                                                                                                                                                                                        \
@@ -493,7 +490,7 @@ v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 
 #define xherk(T) \
 template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, class Real = typename T::value_type, \
-enable_if_t<  /* NOLINT(modernize-use-constraints) TODO(correaa) for C++20 */                                                                                                                                                                                                                         \
+enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                                                         \
 	is_##T<AA>{} && is_##T<CC>{} && is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} &&                                                                                                                                            \
 	is_convertible_v<AAP, AA*> && is_convertible_v<CCP, CC*>                                                                                                                                                                          \
 , int> =0>                                                                                                                                                                                                                             \
@@ -509,7 +506,7 @@ v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 
 #define xgemm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
-enable_if_t<  /* NOLINT(modernize-use-constraints) TODO(correaa) for C++20 */                                                                                                                                                                                                                            \
+enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                                                            \
 	is_##T<AA>{} && is_##T<BB>{} && is_##T<CC>{} &&                                                                                                                           \
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*> && is_convertible_v<CCP, CC*>                                                                                                                                            \
 , int> =0>                                                                                                                                                                                                                              \
@@ -534,7 +531,7 @@ xgemm(s) xgemm(d) xgemm(c) xgemm(z)  // NOLINT(modernize-use-constraints,readabi
 
 #define xtrsm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,                                                         \
-enable_if_t<  /* NOLINT(modernize-use-constraints) TODO(correaa) for C++20 */                                                                                                                                                                                                      \
+enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                                      \
 	is_##T<AA>{} && is_##T<BB>{} && is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} && is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} &&                                                                 \
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*>                                                                                                                                                     \
 ,int> =0>                                                                                                                                                                                                         \
@@ -554,9 +551,9 @@ v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA
 xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)  // NOLINT(modernize-use-constraints,readability-function-cognitive-complexity) : 29 of 25
 #undef xtrsm
 
-xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)  // NOLINT(modernize-use-constraints) for C++20
 #undef xsyrk
-	              xherk(c) xherk(z)  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	              xherk(c) xherk(z)  // NOLINT(modernize-use-constraints) for C++20
 
 } // end namespace core
 
@@ -622,7 +619,7 @@ struct context { // stateless (and thread safe)
 	{   return core::nrm2(args...); }
 
 	template<class... As>
-	static auto trsm(As&&... args)  // TODO(correaa) remove &&
+	static auto trsm(As&&... args)
 	->decltype(core::trsm(std::forward<As>(args)...)) {
 		return core::trsm(std::forward<As>(args)...); }
 
@@ -642,7 +639,7 @@ template<> struct is_context<context const&> : std::true_type  {};
 template<> struct is_context<void*&> : std::true_type {};
 
 template<class TPtr,
-	std::enable_if_t<std::is_convertible_v<TPtr, typename std::pointer_traits<TPtr>::element_type*>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	std::enable_if_t<std::is_convertible_v<TPtr, typename std::pointer_traits<TPtr>::element_type*>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 auto default_context_of(TPtr const& /*unused*/) -> blas::context* {
 	static blas::context dc;
 	return &dc;
