@@ -43,7 +43,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	static_allocator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) buffer_ is not initialized
 
 	template<class TT, std::size_t NN>
-	static_allocator(static_allocator<TT, NN> const& /*other*/) {  // NOLINT(hicpp-explicit-conversions,google-explicit-constructor) follow std::allocator
+	explicit static_allocator(static_allocator<TT, NN> const& /*other*/) {  // NOLINT(hicpp-explicit-conversions,google-explicit-constructor) follow std::allocator  // NOSONAR
 		// static_assert(sizeof(T) == sizeof(TT));
 		static_assert(NN == N);
 	}
