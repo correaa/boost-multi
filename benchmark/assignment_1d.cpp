@@ -1,10 +1,10 @@
 #ifdef COMPILATION// sudo cpupower frequency-set --governor performance
-$CXX -DNDEBUG `#-DNOEXCEPT_ASSIGNMENT` $0 -o $0x `pkg-config --libs benchmark`&&$0x&&rm $0x;exit
+set -x; clang++ -std=c++17 -DNDEBUG -O3 `#-DNOEXCEPT_ASSIGNMENT` -I../include `pkg-config --cflags --libs benchmark` $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
 #include <benchmark/benchmark.h>
 
-#include "../array.hpp"
+#include <boost/multi/array.hpp>
 
 #include<complex>
 #include<numeric>
@@ -68,3 +68,23 @@ BENCHMARK_MAIN();
 //MultiAssignment        53.7 ms         28.5 ms           26
 //RawAssignment          52.0 ms         27.8 ms           23
 
+// 2024/11/16 running on Mac M3 Pro
+// + clang++ -std=c++17 -DNDEBUG -O3 -I../include -I/opt/homebrew/Cellar/google-benchmark/1.9.0/include -L/opt/homebrew/Cellar/google-benchmark/1.9.0/lib -lbenchmark ./assignment.cpp -o ./assignment.cppx
+// + ./assignment.cppx
+// Unable to determine clock rate from sysctl: hw.cpufrequency: No such file or directory
+// This does not affect benchmark measurements, only the metadata output.
+// ***WARNING*** Failed to set thread affinity. Estimated CPU frequency may be incorrect.
+// 2024-11-16T02:08:52-08:00
+// Running ./assignment.cppx
+// Run on (16 X 24 MHz CPU s)
+// CPU Caches:
+//   L1 Data 64 KiB
+//   L1 Instruction 128 KiB
+//   L2 Unified 4096 KiB (x16)
+// Load Average: 3.26, 2.88, 2.98
+// -----------------------------------------------------------
+// Benchmark                 Time             CPU   Iterations
+// -----------------------------------------------------------
+// VectorAssignment       4.35 ms         4.35 ms          161
+// MultiAssignment        4.35 ms         4.35 ms          164
+// RawAssignment          4.27 ms         4.27 ms          162

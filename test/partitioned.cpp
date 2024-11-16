@@ -382,5 +382,139 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( border == multi::array<int, 1>{6, 7} ));
 	}
 
+	// put subarray in std::array
+	{
+		multi::array<int, 1> arr = {1, 2, 3, /**/ 4, 5};
+		BOOST_TEST( arr.size() == 5 );
+
+		// std::array<multi::array<int, 1>::subarray, 2> arr2 = {{ arr({0, 3}), arr({3, 5}) }};
+		// auto arr2 = std::array<multi::array<int, 1>::subarray, 2>{{ arr({0, 3}), arr({3, 5}) }};
+		// auto&& arr2 = std::array<multi::array<int, 1>::subarray, 2>{{ arr({0, 3}), arr({3, 5}) }};
+
+		// CTAD fails:
+		// auto&& arr2 = std::array{{ arr({0, 3}), arr({3, 5}) }};
+
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Wmissing-braces"
+		auto&& arr2 = std::array{ arr({0, 3}), arr({3, 5}) };
+		#pragma GCC diagnostic pop
+
+		// arr2 is not copyable, good
+		// auto arr3 = arr2;
+		[[maybe_unused]] auto&& arr3 = arr2;
+
+		BOOST_TEST( arr2[0].size() == 3 );
+		BOOST_TEST( arr2[1].size() == 2 );
+
+		BOOST_TEST( &arr2[0][1] == &arr[1] );
+		BOOST_TEST( &arr2[1][1] == &arr[4] );
+
+		arr2[0][1] = 99;
+		BOOST_TEST( arr[1] == 99 );
+	}
+
+	// put subarrays in tuple
+	{
+		multi::array<int, 1> arr = {1, 2, 3, /**/ 4, 5};
+		BOOST_TEST( arr.size() == 5 );
+
+		// asan complains in these cases:
+		// std::tuple<multi::array<int, 1>::subarray&&, multi::array<int, 1>::subarray&&> tup(arr({0, 3}), arr({3, 5}));
+		// auto tup = std::tuple<multi::array<int, 1>::subarray&&, multi::array<int, 1>::subarray&&>(arr({0, 3}), arr({3, 5}));
+
+		// invalid syntax:
+		//std::tuple<multi::array<int, 1>::subarray&&, multi::array<int, 1>::subarray&&>&& tup(arr({0, 3}), arr({3, 5}));
+
+		// asan complains:
+		// auto&& tup = std::tuple<multi::array<int, 1>::subarray&&, multi::array<int, 1>::subarray&&>(arr({0, 3}), arr({3, 5}));
+
+		// asan complains:
+		// auto&& tup = std::forward_as_tuple(arr({0, 3}), arr({3, 5}));
+		// std::tuple<multi::array<int, 1>::subarray, multi::array<int, 1>::subarray> tup(arr({0, 3}), arr({3, 5}));
+		// auto tup = std::tuple<multi::array<int, 1>::subarray, multi::array<int, 1>::subarray>(arr({0, 3}), arr({3, 5}));
+		// auto tup = std::make_tuple(arr({0, 3}), arr({3, 5}));
+		// auto tup = std::tuple(arr({0, 3}), arr({3, 5}));
+		// auto&& tup = std::tuple(arr({0, 3}), arr({3, 5}));
+
+		auto&& tup = std::tuple{arr({0, 3}), arr({3, 5})};
+
+		// tup is not copyable, good
+		// auto tup2 = tup;
+		[[maybe_unused]] auto&& tup2 = tup;
+
+		using std::get;  // for C++17
+		BOOST_TEST( get<0>(tup).size() == 3 );
+		BOOST_TEST( get<1>(tup).size() == 2 );
+
+		BOOST_TEST( &get<0>(tup)[1] == &arr[1] );
+		BOOST_TEST( &get<1>(tup)[1] == &arr[4] );
+
+		get<0>(tup)[1] = 99;
+		BOOST_TEST( arr[1] == 99 );
+	}
+
+	// put 2D subarrays in 2D tuple
+	{
+		multi::array<int, 2> arr = {
+			{1, 2, 3, /**/ 4,  5},
+			{6, 7, 8, /**/ 9, 10},
+			/*******************/
+			{1, 2, 3, /**/ 4,  5},
+			{6, 7, 8, /**/ 9, 10}
+		};
+
+		BOOST_TEST( arr.elements().size() == 20 );
+
+		auto&& tup = std::tuple{
+			arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5}),
+			arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5}),
+		};
+
+		using std::get;  // for C++17
+		BOOST_TEST( &get<0>(tup)[1][1] == &arr[1][1] );
+		BOOST_TEST( &get<2>(tup)[0][2] == &arr[2][2] );
+
+		auto&& tup2d = std::tuple{
+			std::tuple{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
+			std::tuple{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
+		};
+
+		BOOST_TEST( &get<0>(get<0>(tup2d))[1][1] == &arr[1][1] );
+		BOOST_TEST( &get<0>(get<1>(tup2d))[0][2] == &arr[2][2] );
+	}
+
+		// put 2D subarrays in 2D tuple
+	{
+		multi::array<int, 2> arr = {
+			{1, 2, 3, /**/ 4,  5},
+			{6, 7, 8, /**/ 9, 10},
+			/*******************/
+			{1, 2, 3, /**/ 4,  5},
+			{6, 7, 8, /**/ 9, 10}
+		};
+
+		BOOST_TEST( arr.elements().size() == 20 );
+
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Wmissing-braces"
+		auto&& tup = std::array{
+			arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5}),
+			arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5}),
+		};
+
+		using std::get;  // for C++17
+		BOOST_TEST( &get<0>(tup)[1][1] == &arr[1][1] );
+		BOOST_TEST( &get<2>(tup)[0][2] == &arr[2][2] );
+
+		auto&& tup2d = std::array{
+			std::array{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
+			std::array{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
+		};
+		#pragma GCC diagnostic pop
+
+		BOOST_TEST( &tup2d[0][0] [1][1] == &arr[1][1] );
+		BOOST_TEST( &tup2d[1][0] [0][2] == &arr[2][2] );
+	}
+
 	return boost::report_errors();
 }
