@@ -506,14 +506,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &get<0>(tup)[1][1] == &arr[1][1] );
 		BOOST_TEST( &get<2>(tup)[0][2] == &arr[2][2] );
 
+		#if defined(__clang__) || (!defined(__GNUC__) || (__GNUC__ > 9))  // gcc 9 gets confused with CTAD
 		auto&& tup2d = std::array{
 			std::array{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
 			std::array{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
 		};
-		#pragma GCC diagnostic pop
-
 		BOOST_TEST( &tup2d[0][0] [1][1] == &arr[1][1] );
 		BOOST_TEST( &tup2d[1][0] [0][2] == &arr[2][2] );
+		#endif
+
+		#pragma GCC diagnostic pop
 	}
 
 	return boost::report_errors();
