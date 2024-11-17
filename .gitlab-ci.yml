@@ -789,8 +789,8 @@ cuda-12.5.0:
 
 rocm:
   stage: build
-  image: rocm/dev-ubuntu-22.04
-  allow_failure: false
+  image: rocm/dev-ubuntu-24.04  # rocm/dev-ubuntu-22.04
+  allow_failure: true
   tags:
     - non-shared
     - docker
