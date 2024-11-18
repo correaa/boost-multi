@@ -164,7 +164,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		if constexpr(N == 0) {
 			return head();
 		} else {
-			return tail().template get<N - 1>();
+			return this->tail().template get<N - 1>();  // this-> for msvc 19.14 compilation
 		}
 	}
 
