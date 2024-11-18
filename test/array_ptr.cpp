@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for layout_t, apply, subarray, array...  // IWYU pragma: keep  // bug in iwyu 8.22
 
 #include <algorithm>    // for equal
@@ -15,7 +17,6 @@
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
 template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

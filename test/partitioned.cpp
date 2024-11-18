@@ -394,10 +394,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// CTAD fails:
 		// auto&& arr2 = std::array{{ arr({0, 3}), arr({3, 5}) }};
 
+		#ifdef __GNUC__
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wmissing-braces"
+		#endif
 		auto&& arr2 = std::array{ arr({0, 3}), arr({3, 5}) };
+		#ifdef __GNUC__
 		#pragma GCC diagnostic pop
+		#endif
 
 		// arr2 is not copyable, good
 		// auto arr3 = arr2;
