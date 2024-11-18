@@ -205,6 +205,12 @@ BOOST_AUTO_TEST_CASE(cublas_asum_complex_column) {
 		//  BOOST_TEST( res == res2 );
 	}
 	{
+		multi::array<double, 0, thrust::cuda::allocator<double>> res2{blas::asum(x)};
+		BOOST_TEST(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+		BOOST_TEST(( res == static_cast<double>(res2) ));
+		//  BOOST_TEST( res == res2 );
+	}
+	{
 		multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::asum(x);
 		BOOST_TEST(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
 		BOOST_TEST(( res == static_cast<double>(res2) ));
@@ -312,9 +318,14 @@ BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
 		BOOST_TEST( res == res2 );
 	}
 	{
+		multi::array<double, 0, thrust::cuda::allocator<double>> res2{blas::nrm2(x)};
+		BOOST_TEST(( res == static_cast<double>(res2) ));
+	}
+	{
 		multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::nrm2(x);
 		BOOST_TEST(( res == static_cast<double>(res2) ));
 	}
+
 }
 
 BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
