@@ -328,7 +328,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 	template<typename, multi::dimensionality_type, typename, bool, bool> friend struct array_iterator;
 
-	~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	// ~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	using pointer         = subarray<T, D, ElementPtr, Layout>*;
 	using element_type    = typename subarray<T, D, ElementPtr, Layout>::decay_type;
@@ -345,43 +345,36 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	// cppcheck-suppress noExplicitConstructor
 	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
-	
+
 	subarray_ptr() = default;
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
 	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<typename reference::rank{} - 1> lyt) : layout_{lyt}, base_{base}, offset_{0} {}
 
-	template<bool OtherIsConst, std::enable_if_t< ! OtherIsConst, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<bool OtherIsConst, std::enable_if_t< ! OtherIsConst, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
 	: layout_{other.layout_}, base_{other.base_}, offset_{other.offset_} {}
 
 	template<
 		typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout, bool OtherIsConst,
-		decltype(multi::detail::implicit_cast<typename reference::element_ptr>(std::declval<OtherEPtr>()))* = nullptr
+		decltype(multi::detail::implicit_cast<typename reference::element_ptr>(std::declval<OtherEPtr>()))* = nullptr  // propagate implicitness of pointer
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
+	BOOST_MULTI_HD constexpr/*mplct*/ subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: layout_{other.layout_}, base_{other.base_} {}
 
 	template<
 		class ElementPtr2, 
-		std::enable_if_t<std::is_same_v<ElementPtr2, ElementPtr> && (D==0), int> =0  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		std::enable_if_t<std::is_same_v<ElementPtr2, ElementPtr> && (D==0), int> =0  // NOLINT(modernize-use-constraints) for C++20
 	>
 	BOOST_MULTI_HD constexpr explicit subarray_ptr(ElementPtr2 const& other) : layout_{}, base_{other} {}
 
-	// template<class Array>
-	// // cppcheck-suppress noExplicitConstructor ; no information loss, allows comparisons
-	// BOOST_MULTI_HD constexpr subarray_ptr(Array* other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	// : subarray_ptr(other->data_elements(), other->layout()) {}
-	// BOOST_MULTI_HD constexpr explicit subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout>* other)
-	// : subarray_ptr(other->base(), other->layout()) {}
+//  subarray_ptr(subarray_ptr const&) = default;
+//  subarray_ptr(subarray_ptr     &&) = default;
 
-	subarray_ptr(subarray_ptr const&) = default;
-	subarray_ptr(subarray_ptr     &&) noexcept = default;  // TODO(correaa) remove inheritnace from reference to remove this move ctor
-
-	auto operator=(subarray_ptr const&) -> subarray_ptr& = default;
-	auto operator=(subarray_ptr     &&) noexcept -> subarray_ptr& = default;
+//  auto operator=(subarray_ptr const&) -> subarray_ptr& = default;
+//  auto operator=(subarray_ptr     &&) -> subarray_ptr& = default;
 
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
@@ -514,10 +507,10 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	: ptr_{element_ptr{other.base()}, other.ptr_->layout()}, stride_{other.stride_} {}
 
 	template<class EElement, typename PPtr,
-		decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr
+		decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr  // propagate implicitness of pointer
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	BOOST_MULTI_HD constexpr/*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
+	BOOST_MULTI_HD constexpr/*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: ptr_(other.ptr_), stride_{other.stride_} {}
 
 	array_iterator(array_iterator const&) = default;
