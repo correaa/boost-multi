@@ -230,7 +230,7 @@ clang++ mull:
     - ctest -j 2 --output-on-failure
     - mull-runner-11 ./test/swap.cpp.x
     - cd test
-    - ls | xargs -L 1 -d '\n' mull-runner-11
+    - ls *.x | xargs -L 1 -d '\n' mull-runner-11
     - cd ..
     - mull-runner-11 ctest --output-on-failure
   # needs: ["clang++"]
