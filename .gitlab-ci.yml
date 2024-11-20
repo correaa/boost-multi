@@ -217,18 +217,18 @@ clang++ mull:
   allow_failure: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet curl ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet curl ca-certificates clang-11 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
     - clang++ --version
     - apt-get -qq update
     - apt search mull
-    - apt-get -qq install --no-install-recommends -y --quiet mull-12 libclang-cpp12
+    - apt-get -qq install --no-install-recommends -y --quiet mull-11 libclang-cpp11
     - mkdir build && cd build
-    - mull-runner-12 --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-O0 -flegacy-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-16 -g -grecord-command-line"
+    - mull-runner-11 --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-O0 -flegacy-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-11 -g -grecord-command-line"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
-    - mull-runner-16 ./test/swap.cpp.x
+    - mull-runner-11 ./test/swap.cpp.x
   # needs: ["clang++"]
 
 # deb:
