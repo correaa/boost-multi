@@ -216,12 +216,12 @@ clang++ mull:
   allow_failure: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet curl ca-certificates
+    - apt-get -qq install --no-install-recommends -y --quiet curl ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
-    - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet mull-12 clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
-    - mkdir build && cd build
     - clang++ --version
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet mull-12 
+    - mkdir build && cd build
     - mull-runner-15 --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
