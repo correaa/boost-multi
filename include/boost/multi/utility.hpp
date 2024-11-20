@@ -547,6 +547,15 @@ constexpr auto layout(std::array<T, N> const& arr) {
 	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
+namespace detail {
+	auto valid_mull(int age) {
+		if(age >= 21) {
+			return true;
+		}
+		return false;
+	}
+}
+
 }  // end namespace boost::multi
 
 #undef BOOST_MULTI_HD
