@@ -209,7 +209,7 @@ clang++:
     - ctest -j 2 --output-on-failure
 
 clang++ mull:
-  image: ubuntu:noble
+  image: ubuntu:jammy
   stage: build
   tags:
     - non-shared
@@ -222,9 +222,9 @@ clang++ mull:
     - clang++ --version
     - apt-get -qq update
     - apt search mull
-    - apt-get -qq install --no-install-recommends -y --quiet mull-16 libclang-cpp16
+    - apt-get -qq install --no-install-recommends -y --quiet mull-12 libclang-cpp12
     - mkdir build && cd build
-    - mull-runner-16 --version
+    - mull-runner-12 --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-O0 -flegacy-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-16 -g -grecord-command-line"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
