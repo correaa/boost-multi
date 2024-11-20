@@ -208,6 +208,22 @@ clang++:
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
 
+clang++ mull:
+  stage: build
+  tags:
+    - non-shared
+  interruptible: true
+  allow_failure: true
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet mull clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - mkdir build && cd build
+    - clang++ --version
+    - mull-runner --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
+    - ctest -j 2 --output-on-failure
+  # needs: ["clang++"]
+
 # deb:
 #   stage: build
 #   script:
