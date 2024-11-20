@@ -548,7 +548,8 @@ constexpr auto layout(std::array<T, N> const& arr) {
 }
 
 namespace detail {
-	static auto valid_mull(int age) -> bool {
+	auto valid_mull(int age) -> bool;
+	auto valid_mull(int age) -> bool {
 		if(age >= 21) {
 			return true;
 		}
