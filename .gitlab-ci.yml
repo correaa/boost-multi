@@ -220,9 +220,9 @@ clang++ mull:
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
     - clang++ --version
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet mull-12 
+    - apt-get -qq install --no-install-recommends -y --quiet mull-16
     - mkdir build && cd build
-    - mull-runner-15 --version
+    - mull-runner-16 --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
