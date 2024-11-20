@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(multi_utility_test) {
 		static_assert(num_elements(arr) == 6);
 	}
 	{
-		BOOST_TEST(valid_mull(22));
+		BOOST_TEST(multi::detail::valid_mull(22));
 	}
 }
 
