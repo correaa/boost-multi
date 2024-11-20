@@ -551,7 +551,7 @@ namespace detail {
 	inline auto valid_mull(int age) -> bool {
 		return age >= 21;
 	}
-}
+}  // end namespace detail
 
 }  // end namespace boost::multi
 
