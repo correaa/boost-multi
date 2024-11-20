@@ -217,7 +217,7 @@ clang++ mull:
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet curl
-    - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
+    - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | sh
     - apt search mull
     - apt-get -qq install --no-install-recommends -y --quiet mull clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - mkdir build && cd build
