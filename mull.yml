@@ -1,6 +1,5 @@
 mutators:
- - cxx_add_to_sub
- - cxx_logical
+ - cxx_all
 # excludePaths: # support regex
 #  - gtest
 #  - gmock
