@@ -15,7 +15,7 @@
 #include <vector>       // for vector
 
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
-template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
+template<class T> static auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 

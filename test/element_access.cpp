@@ -18,10 +18,12 @@
 
 namespace multi = boost::multi;
 
+namespace {
 template<class Array1D>
 void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& dest) {  // NOLINT(google-runtime-references) dest is mutated
-	std::copy(std::forward<Array1D>(arr).begin(), std::forward<Array1D>(arr).end(), std::back_inserter(dest));
+	std::copy(std::forward<Array1D>(arr).begin(), std::forward<Array1D>(arr).end(), std::back_inserter(dest));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 }
+}  // end namespace
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE)  /**/

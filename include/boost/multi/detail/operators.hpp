@@ -21,6 +21,11 @@ namespace boost::multi {
 struct empty_base {};
 
 template<class Self> struct selfable {
+ protected:
+	selfable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+
+ public:
 	using self_type = Self;
 	constexpr auto        self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto        self() -> self_type& { return static_cast<self_type&>(*this); }
@@ -35,7 +40,11 @@ struct equality_comparable2<Self, Self> : selfable<Self> {
 	friend constexpr auto operator!=(equality_comparable2 const& self, equality_comparable2 const& other) { return !(self.self() == other.self()); }
 };
 
-template<class Self> struct equality_comparable : equality_comparable2<Self, Self> {};
+template<class Self> struct equality_comparable : equality_comparable2<Self, Self> {
+ protected:
+	equality_comparable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+};
 
 template<class T, class V> struct totally_ordered2;
 
@@ -76,10 +85,19 @@ struct weakly_incrementable {
 
 template<class T>
 struct weakly_decrementable {
+ protected:
+	weakly_decrementable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend T;
 	// friend T& operator--(weakly_decrementable& t){return --static_cast<T&>(t);}
 };
 
-template<class Self> struct incrementable : totally_ordered<Self> {  // , self_mutable<Self> {
+template<class Self>
+struct incrementable : totally_ordered<Self> {
+ protected:
+	incrementable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+
+ public:
 	friend constexpr auto operator++(incrementable& self, int) -> Self {
 		Self tmp{self.self()};
 		++self.self();
@@ -90,6 +108,11 @@ template<class Self> struct incrementable : totally_ordered<Self> {  // , self_m
 
 template<class T>
 struct decrementable : weakly_decrementable<T> {
+ protected:
+	decrementable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend T;
+
+ public:
 	template<class U, typename = std::enable_if_t<!std::is_base_of_v<T, U>>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	friend constexpr auto operator--(U& self, int) -> T {
 		T tmp{self};
@@ -100,6 +123,11 @@ struct decrementable : weakly_decrementable<T> {
 
 template<class Self>
 struct steppable : totally_ordered<Self> {
+ protected:
+	steppable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+
+ public:
 	using self_type = Self;
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
@@ -117,7 +145,12 @@ struct steppable : totally_ordered<Self> {
 };
 
 template<class Self, typename Difference>
-struct affine_with_unit : steppable<Self> {  // affine_with_unit<Self, Difference> > {
+struct affine_with_unit : steppable<Self> {
+ protected:
+	affine_with_unit() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+
+ public:
 	using self_type = Self;
 	constexpr auto cself() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
@@ -149,6 +182,11 @@ struct affine_with_unit : steppable<Self> {  // affine_with_unit<Self, Differenc
 
 template<class Self, typename Reference>
 struct dereferenceable {
+ protected:
+	dereferenceable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+
+ public:
 	using self_type = Self;
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
@@ -162,6 +200,11 @@ template<class Self, typename Difference, typename Reference>
 struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 : affine_with_unit<Self, Difference>
 , dereferenceable<Self, Reference> {
+ protected:
+	random_accessable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+
+ public:
 	using difference_type   = Difference;
 	using reference         = Reference;
 	using iterator_category = std::random_access_iterator_tag;
@@ -180,7 +223,12 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 // };
 
 template<class T, class D>
-struct addable2 {
+class addable2 {
+ protected:
+	addable2() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend T;
+
+ public:
 	using difference_type = D;
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	friend constexpr auto operator+(TT&& self, difference_type const& diff) -> T {
@@ -193,7 +241,12 @@ struct addable2 {
 };
 
 template<class T, class D>
-struct subtractable2 {
+class subtractable2 {
+ protected:
+	subtractable2() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend T;
+
+ public:
 	using difference_type = D;
 	// TODO(correaa) clang 16 picks up this and converts the difference_type to TT !!
 	// template<class TT, class = T>
@@ -203,11 +256,21 @@ struct subtractable2 {
 template<class T, class Difference>
 struct affine : addable2<T, Difference>
 , subtractable2<T, Difference> {
+ protected:
+	affine() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend T;
+
+ public:
 	using difference_type = Difference;
 };
 
 template<class T>
-struct random_iterable {
+class random_iterable {
+ protected:
+	random_iterable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend T;
+
+ public:
 	constexpr auto        cfront() const& -> decltype(auto) { return static_cast<T const&>(*this).front(); }
 	constexpr auto        cback() const& -> decltype(auto) { return static_cast<T const&>(*this).back(); }
 	friend constexpr auto cfront(T const& self) -> decltype(auto) { return self.cfront(); }

@@ -29,6 +29,11 @@ template<
 	class ValueType, class AccessCategory,
 	class Reference = ValueType&, class DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, class Pointer = ValueType*>
 class iterator_facade {
+ protected:
+	iterator_facade() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+
+ private:
 	using self_type = Self;
 	[[nodiscard]] constexpr auto self_() & { return static_cast<self_type&>(*this); }
 	[[nodiscard]] constexpr auto self_() const& { return static_cast<self_type const&>(*this); }
