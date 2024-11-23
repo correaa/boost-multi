@@ -153,6 +153,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra
 					-Wpedantic
 					-Wmove
+					-Wno-pass-failed  # error in PSTL
 					-Wno-error=\#warnings
 					> # -Wno-c++98-compat  # use of constexpr
 					$<$<CXX_COMPILER_ID:IntelLLVM>:

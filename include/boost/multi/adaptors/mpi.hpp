@@ -6,13 +6,14 @@
 #define BOOST_MULTI_ADAPTORS_MPI_HPP_
 #pragma once
 
-#include <boost/multi/array.hpp>
+// #include <boost/multi/array.hpp>
 
 #define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
 
 #include <cassert>  // for assert
 #include <limits>   // for numeric_limits  NOLINT(misc-include-cleaner)
+#include <type_traits>  // for conditional_t
 #include <utility>  // for exchange, move
 
 namespace boost::multi::mpi {

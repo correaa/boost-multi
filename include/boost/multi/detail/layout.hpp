@@ -164,13 +164,13 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class... Indices>
 	constexpr auto to_linear(index const& idx, Indices const&... rest) const {
 		auto const sub_extensions = extensions_t<D-1>{this->base().tail()};
-		return idx*sub_extensions.num_elements() + sub_extensions.to_linear(rest...);
+		return (idx*sub_extensions.num_elements()) + sub_extensions.to_linear(rest...);
 	}
 	template<class... Indices>
-	constexpr auto operator()(index idx, Indices... rest) const {return to_linear(idx, rest...);}
+	constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
-	constexpr auto operator[](index idx) const 
-	->decltype(std::declval<base_ const&>()[idx]) {
+	constexpr auto operator[](index idx) const
+	->decltype(std::declval<base_ const&>()    [idx]) {
 		return static_cast<base_ const&>(*this)[idx]; }
 
 	template<class... Indices>
@@ -696,7 +696,7 @@ struct layout_t
 
  private:
 	constexpr auto at_aux_(index idx) const {
-		return sub_type{sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + idx*stride_, sub_.nelems_}();
+		return sub_type{sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx*stride_), sub_.nelems_}();
 	}
 
  public:

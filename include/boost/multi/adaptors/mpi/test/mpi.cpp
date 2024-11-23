@@ -2,9 +2,8 @@
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
 #include <boost/multi/adaptors/mpi.hpp>
+#include <boost/multi/array.hpp>
 
 #define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
@@ -13,6 +12,97 @@
 
 #include <iostream>  // for std::cout
 #include <vector>
+
+namespace boost::multi::mpi {
+
+template<class F, F Fun>
+class call_base {
+//  F func_;
+
+ public:
+	// constexpr explicit call(F func) : func_{std::move(func)} {}
+
+	template<class... Ts, decltype(Fun(std::declval<Ts&&>()...))* = nullptr>
+	auto operator()(Ts&&... ts) const -> decltype(auto) {
+		return Fun(std::forward<Ts>(ts)...);
+	}
+
+	template<
+		class Message, class... Ts,
+		class B                                                                                                                  = decltype(const_cast<void*>(std::declval<Message&>().buffer())),
+		class C                                                                                                                  = decltype(std::declval<Message&>().count()),
+		class D                                                                                                                  = decltype(std::declval<Message&>().datatype()),
+		decltype(std::declval<F const&>()(std::declval<B&>(), std::declval<C&>(), std::declval<D&>(), std::declval<Ts&&>()...))* = nullptr>
+	auto operator()(Message&& msg, Ts&&... ts) const -> decltype(auto) {
+		auto buffer   = msg.buffer();
+		auto count    = msg.count();
+		auto datatype = msg.datatype();
+		return this->operator()(buffer, count, datatype, std::forward<Ts>(ts)...);
+	}
+
+	template<
+		class Message, class... Ts,
+		class B                                                                                                                  = decltype(const_cast<void*>(std::declval<Message&>().buffer())),
+		class C                                                                                                                  = decltype(std::declval<Message&>().count()),
+		class D                                                                                                                  = decltype(std::declval<Message&>().datatype()),
+		decltype(std::declval<F const&>()(std::declval<B&>(), std::declval<C&>(), std::declval<D&>(), std::declval<Ts&&>()..., MPI_STATUS_IGNORE))* = nullptr>
+	auto operator()(Message&& msg, Ts&&... ts) const -> decltype(auto) {
+		auto buffer   = msg.buffer();
+		auto count    = msg.count();
+		auto datatype = msg.datatype();
+		return this->operator()(buffer, count, datatype, std::forward<Ts>(ts)..., MPI_STATUS_IGNORE);
+	}
+
+	template<
+		class Value, class... Ts,
+		class = decltype(std::declval<call_base const&>()(multi::mpi::message(std::declval<Value&&>()), std::declval<Ts&&>()...)
+		)>
+	auto operator()(Value&& val, Ts&&... ts) const -> decltype(auto) {
+		return operator()(multi::mpi::message(std::forward<Value>(val)), std::forward<Ts>(ts)...);
+	}
+
+	template<class... Ts, decltype(std::declval<call_base const&>()(std::declval<Ts&&>()..., MPI_STATUS_IGNORE))* = nullptr>
+	auto operator()(Ts&&... ts) const -> decltype(auto) {
+		return operator()(std::forward<Ts>(ts)..., MPI_STATUS_IGNORE);
+	}
+};
+
+
+template<class F, F Fun>
+struct call : call_base<F, Fun> {
+	using call_base<F, Fun>::operator();
+};
+
+template<>
+class call<int(void*, int, ompi_datatype_t*, int, int, ompi_communicator_t*, ompi_status_public_t*), MPI_Recv>
+: call_base<int(void*, int, ompi_datatype_t*, int, int, ompi_communicator_t*, ompi_status_public_t*), MPI_Recv> {
+	using F = decltype(MPI_Recv);
+
+ public:
+	using call_base<decltype(MPI_Recv), MPI_Recv>::operator();
+
+	template<class... Ts, class Comm, decltype(std::declval<decltype(MPI_Recv)>()(std::declval<Ts&&>()..., MPI_ANY_TAG, std::declval<Comm>()))* = nullptr>
+	auto operator()(Ts&&... ts, Comm comm) const -> decltype(auto) {
+		return call_base<decltype(MPI_Recv), MPI_Recv>::operator()(std::forward<Ts>(ts)..., MPI_ANY_TAG, comm);
+	}
+};
+
+// template<>
+// class call<decltype(MPI_Send), MPI_Send>
+// : call_base<decltype(MPI_Send), MPI_Send> {
+//  public:
+//  using call_base<decltype(MPI_Send), MPI_Send>::operator();
+
+//  template<class Range>  // , decltype(std::declval<decltype(MPI_Send)>()(std::declval<Ts&&>()..., MPI_ANY_TAG, std::declval<MPI_Comm>()))* = nullptr>
+//  auto operator()(Range&& ts, int dest, MPI_Comm& comm) const -> decltype(auto) {
+//    return call_base<decltype(MPI_Send), MPI_Send>::operator()(std::forward<Range>(ts), dest, MPI_ANY_TAG, comm);
+//  }
+// };
+
+constexpr static auto send    = call<decltype(MPI_Send), MPI_Send>{};
+constexpr static auto receive = call<decltype(MPI_Recv), MPI_Recv>{};
+
+}  // end namespace boost::multi::mpi
 
 namespace multi = boost::multi;
 
@@ -169,12 +259,10 @@ void test_2d(MPI_Comm comm) {
 	}
 	{
 		if(world_rank == 0) {
-			auto const AA = multi::array<int, 2>(
-				{
-					{1, 2, 3},
-					{4, 5, 6}
-            }
-			);
+			auto const AA = multi::array<int, 2>{
+				{1, 2, 3},
+				{4, 5, 6}
+			};
 			auto const& BB = AA({0, 2}, {1, 3});
 			BOOST_TEST(( BB == multi::array<int, 2>({{2, 3}, {5, 6}}) ));
 
@@ -187,6 +275,31 @@ void test_2d(MPI_Comm comm) {
 			multi::array<int, 2> CC({2, 2}, 99);
 
 			auto const C_sk = multi::mpi::skeleton(CC.layout(), MPI_INT);
+
+			MPI_Recv(CC.base(), C_sk.count(), C_sk.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
+			std::cout << CC[0][0] << ' ' << CC[0][1] << '\n'
+					  << CC[1][0] << ' ' << CC[1][1] << '\n';
+
+			BOOST_TEST(( CC == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
+		}
+	}
+	{
+		if(world_rank == 0) {
+			auto const AA = multi::array<int, 2>({
+				{1, 2, 3},
+				{4, 5, 6}
+			});
+
+			auto const& BB = AA({0, 2}, {1, 3});
+			BOOST_TEST(( BB == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
+
+			auto const B_msg = multi::mpi::message(BB.elements());
+
+			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
+		} else if(world_rank == 1) {
+			multi::array<int, 2> CC({2, 2}, 99);
+
+			auto const C_sk = multi::mpi::skeleton(CC.elements().layout(), MPI_INT);
 
 			MPI_Recv(CC.base(), C_sk.count(), C_sk.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			std::cout << CC[0][0] << ' ' << CC[0][1] << '\n'
@@ -313,6 +426,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			BOOST_TEST(( CC == multi::array<double, 2>({{2, 3}, {5, 6}}) ));
 		}
 	}
+
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	test_2d(MPI_COMM_WORLD);
