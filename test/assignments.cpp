@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 // #if defined(__clang__)
 //  #pragma clang diagnostic push
 //  #pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -59,8 +61,6 @@ constexpr auto make_ref(int* ptr) {
 	return multi::array_ref<int, 2>(ptr, { 5, 7 });
 }
 
-}  // namespace
-
 template<class T, class Allocator>
 auto eye(multi::extensions_t<2> exts, Allocator alloc) {
 	multi::array<T, 2, Allocator> ret(exts, 0, alloc);
@@ -71,7 +71,8 @@ auto eye(multi::extensions_t<2> exts, Allocator alloc) {
 template<class T>
 auto eye(multi::extensions_t<2> exts) { return eye<T>(exts, std::allocator<T>{}); }
 
-#include <boost/core/lightweight_test.hpp>
+}  // end unnamed namespace
+
 #define BOOST_AUTO_TEST_CASE(CasenamE)
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

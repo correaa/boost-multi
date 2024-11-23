@@ -16,6 +16,7 @@
 
 namespace multi = boost::multi;
 
+namespace {
 void fun(multi::array<std::complex<float>, 2> arr);
 void fun(multi::array<std::complex<float>, 2> arr) { arr.clear(); }
 
@@ -23,6 +24,7 @@ void gun(multi::array<std::complex<float>, 2> const& /*unused*/);
 void gun(multi::array<std::complex<float>, 2> const& /*unused*/) {
 	/* no-op */
 }
+}  // end unnamed namespace
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
