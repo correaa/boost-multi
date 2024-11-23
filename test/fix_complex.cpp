@@ -5,12 +5,10 @@
 
 #include <boost/multi/array.hpp>
 
-#include <__config>                         // for _LIBCPP_VERSION
-
 #include <array>     // for array
 #include <cassert>   // for _LIBCPP_VERSION  // IWYU pragma: keep
 #include <cmath>                              // for abs  // IWYU pragma: keep
-// IWYU pragma: no_include <stdlib.h>                           // for abs
+#include <cstddef>                          // for _LIBCPP_VERSION
 // IWYU pragma: no_include <cstdlib>                          // for abs
 #include <complex>   // for complex, operator==
 // IWYU pragma: no_include <iosfwd>    // for __GLIBCXX__
