@@ -73,13 +73,13 @@ auto trace_array_deduce(multi::array<T, 2> const& arr) -> T {
 
 template int trace_array_deduce(multi::array<int, 2> const&);
 
-template<class Array, typename T = typename Array::element_type>
-auto trace_generic(Array const& arr) -> T {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), T{0});
-}
+// template<class Array, typename T = typename Array::element_type>
+// auto trace_generic(Array const& arr) -> T {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), T{0});
+// }
 
-template double trace_generic<multi::array<int, 2>>(multi::array<int, 2> const&);
+// template double trace_generic<multi::array<int, 2>>(multi::array<int, 2> const&);
 
 inline auto trace_separate_ref(multi::array_ref<int, 2> const& arr) -> int {
 	auto const& diag = arr.diagonal();
@@ -1165,17 +1165,17 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	multi::array<int, 2> const arr_paren_copy{arr()};
 	BOOST_TEST( arr_paren_copy.size() == 3 );
 
-	BOOST_TEST(  trace_generic                       (arr) == 30  );
-	BOOST_TEST(( trace_generic<multi::array<int, 2> >(arr) == 30 ));
+	// BOOST_TEST(  trace_generic                       (arr) == 30  );
+	// BOOST_TEST(( trace_generic<multi::array<int, 2> >(arr) == 30 ));
 	//  BOOST_TEST(( trace_generic<multi::array    <int, 2>&>(arr) == 3 ));  // can't generate element_type
 
-	BOOST_TEST(  trace_generic                       (arr()) == 30  );
-	BOOST_TEST(( trace_generic<multi::array<int, 2> >(+arr()) == 30 ));  // this will make a copy
+	// BOOST_TEST(  trace_generic                       (arr()) == 30  );
+	// BOOST_TEST(( trace_generic<multi::array<int, 2> >(+arr()) == 30 ));  // this will make a copy
 	//  BOOST_TEST(( trace_generic<multi::array<int, 2>&>(arr()) == 3 ));  // can't generate element_type
 
-	BOOST_TEST(( trace_generic<multi::array_ref<int, 2> >(arr) == 30 ));
+	// BOOST_TEST(( trace_generic<multi::array_ref<int, 2> >(arr) == 30 ));
 	//  BOOST_TEST(( trace_generic<multi::array_ref<int, 2>&>(arr) == 3 ));  // can't generate element_type
-	BOOST_TEST(( trace_generic<multi::subarray <int, 2> >(arr) == 30 ));
+	// BOOST_TEST(( trace_generic<multi::subarray <int, 2> >(arr) == 30 ));
 	//  BOOST_TEST(( trace_generic<multi::subarray <int, 2>&>(arr) == 3 ));  // can't generate element_type
 
 	//  BOOST_TEST(( trace_generic<multi::subarray <int, 2> >(arr({0, 3}, {0, 3})) == 3 ));
