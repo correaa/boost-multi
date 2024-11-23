@@ -6,11 +6,8 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
 
-#include <__config>                                 // for _LIBCPP_VERSION
-
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
-#include <cassert>    // for _LIBCPP_VERSION  // IWYU pragma: keep
 #include <cstddef>    // for __GLIBCXX__, size_t
 #include <iterator>   // for size, back_insert...
 #include <memory>     // for make_unique, uniq...
