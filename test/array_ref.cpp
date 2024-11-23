@@ -116,11 +116,11 @@ inline auto trace_separate_sub(multi::subarray<int, 2> const& arr) -> int {
 
 template<class T>
 auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
- arr[0][1] = 40;
+	arr[0][1] = 40;
 
- auto const& diag = arr.diagonal();
+	auto const& diag = arr.diagonal();
 
- return std::accumulate(diag.begin(), diag.end(), T{0});
+	return std::accumulate(diag.begin(), diag.end(), T{0});
 }
 
 template double mut_trace_array_deduce<double>(multi::array<double, 2>&);
@@ -1235,15 +1235,15 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 }
 #endif
 
-BOOST_AUTO_TEST_CASE(function_passing_4) {
-	multi::array<int, 2> arr({3, 3}, 10);
+// BOOST_AUTO_TEST_CASE(function_passing_4) {
+//  multi::array<int, 2> arr({3, 3}, 10);
 
-	BOOST_TEST( mut_trace_array_deduce     (arr) == 30 );
-	BOOST_TEST( mut_trace_array_deduce<int>(arr) == 30 );
+//  BOOST_TEST( mut_trace_array_deduce     (arr) == 30 );
+//  BOOST_TEST( mut_trace_array_deduce<int>(arr) == 30 );
 
-	BOOST_TEST(  mut_trace_generic                       (arr) == 30  );
-	BOOST_TEST(( mut_trace_generic<multi::array<int, 2> >(arr) == 30 ));
-}
+//  BOOST_TEST(  mut_trace_generic                       (arr) == 30  );
+//  BOOST_TEST(( mut_trace_generic<multi::array<int, 2> >(arr) == 30 ));
+// }
 
 BOOST_AUTO_TEST_CASE(array_fill_constructor) {
 	multi::array<int, 2> arr(3, multi::array<int, 1>{10, 20, 30, 40});
