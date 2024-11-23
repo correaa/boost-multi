@@ -225,10 +225,10 @@ clang++ mull:
     - apt-get -qq install --no-install-recommends -y --quiet mull-11 libclang-cpp11
     - mkdir build && cd build
     - mull-runner-11 --version
-    - CXX=clang++-11 cmake .. -DCMAKE_CXX_FLAGS="-O0 -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-11 -g -grecord-command-line"
+    - CXX=clang++-11 cmake .. -DCMAKE_CXX_FLAGS="-O0 -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-11 -g -grecord-command-line" -DCMAKE_TEST_LAUNCHER=mull-runner-11
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
-    # - ctest -j 2 --output-on-failure
     - mull-runner-11 ./test/swap.cpp.x
+    - ctest -j 2 --output-on-failure
     - cd test
     - ls *.x | xargs -n 1 sh -c 'mull-runner-11 $0 || exit 255'
   needs: ["clang++"]
