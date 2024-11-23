@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/operations.hpp>  // for transposed, T
 #include <boost/multi/adaptors/blas/syrk.hpp>        // for syrk
@@ -10,10 +12,11 @@
 #include <boost/multi/array.hpp>                     // for array, layout_t
 
 #include <complex>  // for operator*, complex
+// IWYU pragma: no_include <iterator>                                  // for size
+// IWYU pragma: no_include <utility>                                   // for forward
 
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

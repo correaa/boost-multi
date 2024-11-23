@@ -48,11 +48,10 @@ auto operator>>(Archive& arxiv, MA&& self)  // this is for compatibility with Ar
 	return arxiv >> static_cast<MA&>(std::forward<MA>(self));
 }
 
-template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
+template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1), int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 auto operator<<(Archive& arxiv, MA&& self)  // this is for compatibility with Archive type
-	-> decltype(arxiv << static_cast<MA&>(std::forward<MA>(self))) {
-	return arxiv << static_cast<MA&>(std::forward<MA>(self));
-}
+->decltype(arxiv << static_cast<MA&>(std::forward<MA>(self))) {
+	return arxiv << static_cast<MA&>(std::forward<MA>(self)); }
 
 template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 auto operator&(Archive& arxiv, MA&& self)  // this is for compatibility with Archive type

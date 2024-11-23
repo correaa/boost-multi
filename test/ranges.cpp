@@ -5,9 +5,11 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for std::ran  // IWYU pragma: keep  //  NOLINT(misc-include-cleaner)
-
 #include <boost/multi/array.hpp>  // for array, subarray, static_array  // IWYU pragma: keep
+
+#include <algorithm>  // for std::ran  // IWYU pragma: keep  //  NOLINT(misc-include-cleaner)
+#include <functional>  // for plus<>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <memory>  // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 	#include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep

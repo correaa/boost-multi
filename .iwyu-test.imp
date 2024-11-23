@@ -59,5 +59,7 @@
     { "include": ["@<functional>", "public", "<boost/core/lightweight_test.hpp>", "public"] },
     { "include": ["@<bits/std_abs.h>", "private", "<cstdlib>", "public"] },
     { "include": ["@<__bit_reference>", "private", "<utility>", "public"] },
-    { "include": ["@<__fwd/string_view.h>", "private", "<string_view>", "public"] }
+    { "include": ["@<__fwd/string_view.h>", "private", "<string_view>", "public"] },
+    { "include": ["@<__ostream/basic_ostream.h>", "private", "<ostream>", "public"] },
+    { "include": ["@<__config>", "private", "<cstddef>", "public"] }
 ]

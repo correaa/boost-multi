@@ -1151,11 +1151,11 @@ struct array : static_array<T, D, Alloc> {
 	}
 
 	// move this to static_array
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> =0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator TTN const&() const& { return this->template to_carray_<TTN>(); }
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> =0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator TTN&() && { return this->template to_carray_<TTN>(); }
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> =0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator TTN&() & { return this->template to_carray_<TTN>(); }
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17 ?
@@ -1176,8 +1176,9 @@ struct array : static_array<T, D, Alloc> {
 		assert(this->stride() != 0);
 	}
 
-	template<class OtherT,
-		class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> && (D == 1)>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<
+		class OtherT,
+		class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> && (D == 1)>>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
 	constexpr explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })} {
 		assert(this->stride() != 0);
@@ -1375,7 +1376,7 @@ struct array : static_array<T, D, Alloc> {
 	void assign(std::initializer_list<value_type> values) { assign(values.begin(), values.end()); }
 
 	template<class Range> auto assign(Range&& other) & -> decltype(assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)))) {  // TODO(correaa) use forward
-		return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));
+		return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 
 	auto operator=(std::initializer_list<value_type> values) -> array& {

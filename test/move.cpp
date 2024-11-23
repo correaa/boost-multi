@@ -116,7 +116,7 @@ void move_element_1d_array() {
 
 		std::vector<std::vector<double>> out_vec(4, {}, {});
 		auto&& marr62 = multi::move(arr({2, 6}));
-		std::copy(marr62.begin(), marr62.end(), out_vec.begin());
+		std::copy(marr62.begin(), marr62.end(), out_vec.begin());  // NOLINT(boost-use-ranges)
 		BOOST_TEST( out_vec[0].size() == 5 );
 		BOOST_TEST( !arr[2].empty() );
 	}
@@ -369,7 +369,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::vector<int>, 1> arr({3}, std::vector<int>{10, 20, 30});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr.size() == 3 );
 		multi::array<std::vector<int>, 1> arr2({3}, std::vector<int>{});
-		std::copy(arr.begin(), arr.end(), arr2.begin());
+		std::copy(arr.begin(), arr.end(), arr2.begin());  // NOLINT(boost-use-ranges)
 
 		BOOST_TEST( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)

@@ -8,7 +8,7 @@
 #include <array>     // for array
 #include <cassert>   // for _LIBCPP_VERSION  // IWYU pragma: keep
 #include <cmath>                              // for abs  // IWYU pragma: keep
-// IWYU pragma: no_include <stdlib.h>                           // for abs
+#include <cstddef>                          // for _LIBCPP_VERSION
 // IWYU pragma: no_include <cstdlib>                          // for abs
 #include <complex>   // for complex, operator==
 // IWYU pragma: no_include <iosfwd>    // for __GLIBCXX__
@@ -17,6 +17,8 @@
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	#include <memory_resource>  // for monotonic_buffer_resource
 #endif
+
+#include <type_traits>                      // for is_trivially_default_cons...
 
 namespace multi = boost::multi;
 

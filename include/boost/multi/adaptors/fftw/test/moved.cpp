@@ -1,19 +1,25 @@
 // Copyright 2020-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
 #include <complex>
 #include <numeric>  // for std::transform_reduce
+#include <utility>                          // for move
 
 namespace multi = boost::multi;
 
+namespace {
 template<class M> auto power(M const& array) {
 	return std::accumulate(array.elements().begin(), array.elements().end(), 0.0, [](auto e1, auto e2) { return std::move(e1) + std::norm(e2); });
 	//  return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
 }
+}  // end unnamed namespace
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

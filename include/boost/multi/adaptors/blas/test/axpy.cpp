@@ -20,6 +20,7 @@ using complex = std::complex<double>;  // test internal implementation of comple
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
+namespace {
 void zero_stride() {
 	multi::array<double, 1> y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) blas naming
 
@@ -43,6 +44,7 @@ void zero_stride() {
 	BOOST_TEST(y[1] == 4.0);
 	BOOST_TEST(y[2] == 5.0);
 }
+}  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_blas_axpy_real) {

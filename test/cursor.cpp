@@ -18,13 +18,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_trivially_copy_assignable_v      <multi::array<double, 0>::cursor>);
 	}
 
-	// BOOST_AUTO_TEST_CASE(iterator_1d) 
+	// BOOST_AUTO_TEST_CASE(iterator_1d)
 	{
 		static_assert(std::is_trivially_default_constructible_v<multi::array<double, 1>::cursor>);
 		static_assert(std::is_trivially_copy_constructible_v   <multi::array<double, 1>::cursor>);
 		static_assert(std::is_trivially_copy_assignable_v      <multi::array<double, 1>::cursor>);
 	}
-	// BOOST_AUTO_TEST_CASE(iterator_2d) 
+	// BOOST_AUTO_TEST_CASE(iterator_2d)
 	{
 		static_assert(std::is_trivially_default_constructible_v<multi::array<double, 2>::cursor>);
 		static_assert(std::is_trivially_copy_constructible_v   <multi::array<double, 2>::cursor>);

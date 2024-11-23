@@ -17,6 +17,8 @@
 #include <complex>  // for operator*, opera...
 #include <cstdlib>  // for NAN, abs
 // IWYU pragma: no_include <memory>   // for allocator
+#include <iterator>                                  // for size  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <utility>                                   // for forward
 
 namespace multi = boost::multi;
 

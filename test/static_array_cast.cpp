@@ -117,7 +117,7 @@ class involuter {
 };
 
 #if defined(__cpp_deduction_guides)
-template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;
+template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19
 #endif
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
