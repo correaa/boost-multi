@@ -111,7 +111,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::plus<>{},
 			[&resp](auto idx) {
 				multi::array<int64_t, 2, std::pmr::polymorphic_allocator<int64_t>> arr(
-					multi::extensions_t<2>{1000 - idx % 10, 1000 + idx % 10},  // MSVC needs multi::extensions_t<2>
+					multi::extensions_t<2>{1000 - (idx % 10), 1000 + (idx % 10)},  // MSVC needs multi::extensions_t<2>
 					resp
 				);
 				std::fill_n(arr.data_elements(), arr.num_elements(), 1);

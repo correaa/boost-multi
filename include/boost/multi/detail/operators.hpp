@@ -279,6 +279,11 @@ class random_iterable {
 
 template<class Self, class Value, class Reference = Value&, class Pointer = Value*, class Difference = std::ptrdiff_t>
 struct random_access_iterator : equality_comparable2<Self, Self> {
+ protected:
+	random_access_iterator() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	friend Self;
+
+ public:
 	using difference_type   = Difference;
 	using value_type        = Value;
 	using pointer           = Pointer;

@@ -5,6 +5,8 @@
 
 #include <boost/multi/array.hpp>
 
+#include <__config>                         // for _LIBCPP_VERSION
+
 #include <array>     // for array
 #include <cassert>   // for _LIBCPP_VERSION  // IWYU pragma: keep
 #include <cmath>                              // for abs  // IWYU pragma: keep
@@ -17,6 +19,8 @@
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	#include <memory_resource>  // for monotonic_buffer_resource
 #endif
+
+#include <type_traits>                      // for is_trivially_default_cons...
 
 namespace multi = boost::multi;
 

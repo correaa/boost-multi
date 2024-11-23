@@ -22,9 +22,11 @@
 #include <limits>       // for numeric_limits
 #include <string>       // for char_traits, bas...
 #include <type_traits>  // for is_same
+// IWYU pragma: no_include <utility>                                   // for forward
 
 namespace multi = boost::multi;
 
+namespace {
 // NOLINTNEXTLINE(fuchsia-default-arguments-declarations,fuchsia-default-arguments-calls)
 template<class M> auto print(M const& mat, std::string const& msg = "") -> decltype(auto) {
 	using multi::size;
@@ -46,6 +48,7 @@ template<class M> auto print(M const& mat, std::string const& msg = "") -> declt
 	}
 	return cout << '}' << '\n';
 }
+}  // end unnamed namespace
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
@@ -134,7 +137,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> b = blas::herk(0.1, a);  // NOLINT(readability-identifier-length) BLAS naming
 
 		BOOST_TEST( size(b) == 1 );
-		BOOST_TEST( std::abs( b[0][0] - (1.0*1.0 + 2.0*2.0 + 3.0*3.0)*0.1 ) < 1E-6 );
+		BOOST_TEST( std::abs( b[0][0] - (((1.0*1.0) + (2.0*2.0) + (3.0*3.0))*0.1) ) < 1E-6 );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case) {
@@ -147,7 +150,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		multi::array<complex, 2> b = blas::herk(1.0, a);  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_TEST( size(b) == 1 );
-		BOOST_TEST( b[0][0] == 1.0*1.0 + 2.0*2.0 + 3.0*3.0 );
+		BOOST_TEST( b[0][0] == (1.0*1.0) + (2.0*2.0) + (3.0*3.0) );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case_scale) {

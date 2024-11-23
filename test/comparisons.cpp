@@ -3,15 +3,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, apply, operator!=, operat...
 
 #include <algorithm>  // for equal
 #include <complex>    // for complex, operator==
 #include <iterator>   // for begin, end, cbegin, cend, size
+#include <utility>    // for swap // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

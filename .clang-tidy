@@ -29,6 +29,7 @@ CheckOptions:
 
 Checks: '*,
   -altera-struct-pack-align,
+  -boost-use-ranges,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -fuchsia-overloaded-operator,
@@ -38,6 +39,7 @@ Checks: '*,
   -readability-magic-numbers'
 ## explanation of the suppressed rules above:
 #  -altera-struct-pack-align,                             // this asks to use non-standard pragmas such as __attribute__((aligned(0))) and _attribute__((packed)), may interfeere with gcc/nvcc compatibility?
+#  -boost-use-ranges                                      // would introduce a dependency on Boost
 #  -clang-diagnostic-deprecated-declarations              // some test run deprecated functions on purpose
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
