@@ -114,24 +114,24 @@ inline auto trace_separate_sub(multi::subarray<int, 2> const& arr) -> int {
 //  return std::accumulate(diag.begin(), diag.end(), 0);
 // }
 
-// template<class T>
-// auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
-//  arr[0][1] = 40;
+template<class T>
+auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
+ arr[0][1] = 40;
 
-//  auto const& diag = arr.diagonal();
+ auto const& diag = arr.diagonal();
 
-//  return std::accumulate(diag.begin(), diag.end(), T{0});
-// }
+ return std::accumulate(diag.begin(), diag.end(), T{0});
+}
 
-// template double mut_trace_array_deduce(multi::array<double, 2>&);
+template double mut_trace_array_deduce<double>(multi::array<double, 2>&);
 
-// template<class Array, typename T = typename Array::element_type>
-// auto mut_trace_generic(Array& arr) -> T {
-//  arr[0][1] = 40;
+template<class Array, typename T = typename Array::element_type>
+auto mut_trace_generic(Array& arr) -> T {
+	arr[0][1] = 40;
 
-//  auto const& diag = arr.diagonal();
-//  return std::accumulate(diag.begin(), diag.end(), T{0});
-// }
+	auto const& diag = arr.diagonal();
+	return std::accumulate(diag.begin(), diag.end(), T{0});
+}
 
 }  // end unnamed namespace
 
