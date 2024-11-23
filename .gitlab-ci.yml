@@ -217,7 +217,9 @@ clang++ mull:
   allow_failure: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet curl ca-certificates g++ clang-11 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet curl wget ca-certificates g++ clang-11 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+      - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh. # for CMAKE_TEST_LAUNCHER
+    - sh cmake-install.sh --skip-license --prefix=/usr
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
     - clang++-11 --version
     - apt-get -qq update
