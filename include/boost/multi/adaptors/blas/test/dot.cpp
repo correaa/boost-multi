@@ -544,7 +544,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {
 			return std::transform(
 						begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto const& Ce) {
-							return std::complex<double>{1.0, 0.0} * blas::dot(Ar, blas::C(Bc)) + 0.0 * Ce;
+							return (std::complex<double>{1.0, 0.0} * blas::dot(Ar, blas::C(Bc))) + (0.0 * Ce);
 						}
 					),
 					std::forward<decltype(Cr)>(Cr);

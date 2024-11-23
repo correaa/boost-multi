@@ -3352,7 +3352,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 	template<
 		class Array,
-		std::enable_if_t<! std::is_array_v<Array> > =0,
+		std::enable_if_t<! std::is_array_v<Array>, int> =0,  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		std::enable_if_t<! std::is_base_of_v<array_ref, std::decay_t<Array>>, int> =0,
 		std::enable_if_t<std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0  // NOLINT(modernize-use-constraints,ppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
 	>
@@ -3387,13 +3387,10 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	constexpr array_ref(std::array<TT, N>& arr) : array_ref(::boost::multi::extensions(arr), ::boost::multi::data_elements(arr)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  // NOSONAR
 
-//  this ctor makes memcheck complain about memmory used after scope
-	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
+	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
 	array_ref(std::initializer_list<TT> il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
-
-	// template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>
-	// array_ref(std::initializer_list<TT>&& il) = delete;
 
 	using subarray<T, D, ElementPtr>::operator=;
 
@@ -3575,11 +3572,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
  public:
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator TTN const&() const& { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20 
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20 
 	constexpr explicit operator TTN&() && { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator TTN&() & { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
  private:

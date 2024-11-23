@@ -12,9 +12,13 @@
 
 #include <boost/multi/array.hpp>               // for array, layout_t, impli...
 
+
 #include <cmath>  // for sqrt, NAN
 #include <complex>
 #include <iostream>
+// IWYU pragma: no_include <iterator>                            // for size, begin
+// IWYU pragma: no_include <type_traits>                         // for is_same_v
+// IWYU pragma: no_include <utility>                             // for declval, forward
 
 namespace multi = boost::multi;
 
@@ -59,7 +63,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		blas::nrm2(cA.rotated()[1], n);
 
 		// BOOST_TEST( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );  // TODO(correaa) nrm2 is returning a pointer?
-		BOOST_TEST( n == std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );
+		BOOST_TEST( n == std::sqrt( (2.0*2.0) + (6.0*6.0) + (10.0*10.0) ) );
 
 		// BOOST_TEST( blas::nrm2(rotated(cA)[1]) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 

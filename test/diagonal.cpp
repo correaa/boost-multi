@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, layout_t, static_array
 
 #include <algorithm>   // for transform
@@ -11,6 +13,7 @@
 
 namespace multi = boost::multi;
 
+namespace {
 template<class Array2D>
 auto trace_with_indices(Array2D const& arr) {
 	typename Array2D::element_type sum{0};
@@ -33,8 +36,8 @@ template<class Array2D>
 auto trace_with_accumulate(Array2D const& arr) {
 	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end(), static_cast<typename Array2D::element_type>(0));
 }
+}  // end unnamed namespace
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

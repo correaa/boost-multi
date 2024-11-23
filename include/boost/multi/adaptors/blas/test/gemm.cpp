@@ -15,6 +15,7 @@
 #include <complex>   // for complex, operator*
 #include <iterator>  // for begin, size
 // IWYU pragma: no_include <memory>
+// IWYU pragma: no_include <utility>                                   // for forward
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;

@@ -1,4 +1,8 @@
 // Copyright 2019-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/adaptors/lapack/filling.hpp>  // for filling, filling...
 #include <boost/multi/adaptors/lapack/potrf.hpp>    // for potrf
@@ -12,9 +16,10 @@
 #include <boost/multi/array.hpp>                     // for array, subarray
 
 #include <algorithm>  // for for_each, generate  // IWYU pragma: keep
+#include <cmath>                                     // for abs
 #include <complex>    // for operator*, complex
-#include <cstdlib>    // for abs
 #include <iostream>   // for operator<<, ostream
+#include <iterator>                                  // for size, distance  // NOLINT(misc-include-cleaner)
 #include <limits>     // for numeric_limits
 #include <random>     // for uniform_real_dis...
 #include <string>     // for allocator, opera...
@@ -28,6 +33,7 @@ namespace blas = multi::blas;
 
 using complex = std::complex<double>;
 
+namespace {
 auto operator<<(std::ostream& os, std::complex<double> const& cx) -> std::ostream& {
 	return os << real(cx) << " + I*" << imag(cx);
 }
@@ -72,8 +78,8 @@ auto randomize(M&& arr) -> M&& {
 	std::for_each(begin(arr), end(arr), [&](auto&& row) { std::generate(begin(row), end(row), gen); });
 	return std::forward<M>(arr);
 }
+}  // end unnamed namespace
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_TEST_CLOSE(X, Y, ToL) BOOST_TEST(std::abs((X) - (Y)) < (ToL))
 
@@ -271,7 +277,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
 		print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
 
-		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+		using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
 		// NOLINTNEXTLINE(altera-id-dependent-backward-branch)
 		for(auto i = 0; i != AA.size(); ++i) {

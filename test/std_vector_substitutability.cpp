@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, layout_t, operator==, imp...
 
 #include <algorithm>    // for equal
@@ -11,6 +13,7 @@
 
 namespace multi = boost::multi;
 
+namespace {
 template<class DynamicArray>  // e.g. std::vector or multi::array
 void resize_copy_1(std::vector<int> const& source, DynamicArray& darr) {
 	darr = DynamicArray(source);
@@ -39,8 +42,8 @@ void resize_copy_5(It first, It last, DynamicArray& darr) {
 }
 
 // void resize_copy_6   ----> see below test_resize_copy_6
+}  // end unnamed namespace
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

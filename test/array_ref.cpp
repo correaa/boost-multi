@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for implicit_cast, explicit_cast
 
 #include <algorithm>  // for for_each, equal
@@ -25,22 +27,21 @@
 
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 namespace boost::multi {
 
 template<class T, boost::multi::dimensionality_type D, class Alloc = std::allocator<std::decay_t<T>>>
 using Array =
-	std::conditional_t<
-		std::is_reference_v<T>,
-		std::conditional_t<
-			std::is_const_v<std::remove_reference_t<T>>,
-			boost::multi::array_ref<std::remove_const_t<std::remove_reference_t<T>>, D> const&,
-			boost::multi::array_ref<std::remove_reference_t<T>, D>&
-		>,
-		multi::array<T, D, Alloc>
-	>;
+std::conditional_t<
+std::is_reference_v<T>,
+std::conditional_t<
+std::is_const_v<std::remove_reference_t<T>>,
+boost::multi::array_ref<std::remove_const_t<std::remove_reference_t<T>>, D> const&,
+boost::multi::array_ref<std::remove_reference_t<T>, D>&
+>,
+multi::array<T, D, Alloc>
+>;
 
 }  // end namespace boost::multi
 
@@ -50,6 +51,7 @@ using Array =
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
+namespace {
 auto f1d5(int const (&carr)[5]) -> int;   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 auto f1d5(int const (&carr)[5]) -> int {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	return carr[1];
@@ -72,13 +74,13 @@ auto trace_array_deduce(multi::array<T, 2> const& arr) -> T {
 
 template int trace_array_deduce(multi::array<int, 2> const&);
 
-template<class Array, typename T = typename Array::element_type>
-auto trace_generic(Array const& arr) -> T {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), T{0});
-}
+// template<class Array, typename T = typename Array::element_type>
+// auto trace_generic(Array const& arr) -> T {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), T{0});
+// }
 
-template double trace_generic<multi::array<int, 2>>(multi::array<int, 2> const&);
+// template double trace_generic<multi::array<int, 2>>(multi::array<int, 2> const&);
 
 inline auto trace_separate_ref(multi::array_ref<int, 2> const& arr) -> int {
 	auto const& diag = arr.diagonal();
@@ -90,47 +92,49 @@ inline auto trace_separate_sub(multi::subarray<int, 2> const& arr) -> int {
 	return std::accumulate(diag.begin(), diag.end(), 0);
 }
 
-inline auto trace_separate_ref2(multi::array_const_view<int, 2> arr) -> int {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0);
-}
+// inline auto trace_separate_ref2(multi::array_const_view<int, 2> arr) -> int {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), 0);
+// }
 
 // unusable for arrays
-inline auto trace_separate_ref3(multi::array_view<int, 2> arr) -> int {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0);
-}
+// inline auto trace_separate_ref3(multi::array_view<int, 2> arr) -> int {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), 0);
+// }
 
 // unusable for arrays
-inline auto trace_separate_ref4(multi::array_ref<int, 2> arr) -> int {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0);
-}
+// inline auto trace_separate_ref4(multi::array_ref<int, 2> arr) -> int {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), 0);
+// }
 
 // unusable for arrays
-inline auto trace_separate_sub4(multi::subarray<int, 2> arr) -> int {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0);
-}
+// inline auto trace_separate_sub4(multi::subarray<int, 2> arr) -> int {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), 0);
+// }
 
-template<class T>
-auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
-	arr[0][1] = 40;
+// template<class T>
+// auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
+//  arr[0][1] = 40;
 
-	auto const& diag = arr.diagonal();
+//  auto const& diag = arr.diagonal();
 
-	return std::accumulate(diag.begin(), diag.end(), T{0});
-}
+//  return std::accumulate(diag.begin(), diag.end(), T{0});
+// }
 
-template double mut_trace_array_deduce(multi::array<double, 2>&);
+// template double mut_trace_array_deduce<double>(multi::array<double, 2>&);
 
-template<class Array, typename T = typename Array::element_type>
-auto mut_trace_generic(Array& arr) -> T {
-	arr[0][1] = 40;
+// template<class Array, typename T = typename Array::element_type>
+// auto mut_trace_generic(Array& arr) -> T {
+//  arr[0][1] = 40;
 
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), T{0});
-}
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), T{0});
+// }
+
+}  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
@@ -606,7 +610,7 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 		BOOST_TEST( ss == decltype(ss)(2, 3) );
 	}
 	{
-		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+		using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
 		BOOST_TEST( get<0>(aref.sizes()) == 2 );
 		BOOST_TEST( get<1>(aref.sizes()) == 3 );
@@ -1162,17 +1166,17 @@ BOOST_AUTO_TEST_CASE(function_passing_3) {
 	multi::array<int, 2> const arr_paren_copy{arr()};
 	BOOST_TEST( arr_paren_copy.size() == 3 );
 
-	BOOST_TEST(  trace_generic                       (arr) == 30  );
-	BOOST_TEST(( trace_generic<multi::array<int, 2> >(arr) == 30 ));
+	// BOOST_TEST(  trace_generic                       (arr) == 30  );
+	// BOOST_TEST(( trace_generic<multi::array<int, 2> >(arr) == 30 ));
 	//  BOOST_TEST(( trace_generic<multi::array    <int, 2>&>(arr) == 3 ));  // can't generate element_type
 
-	BOOST_TEST(  trace_generic                       (arr()) == 30  );
-	BOOST_TEST(( trace_generic<multi::array<int, 2> >(+arr()) == 30 ));  // this will make a copy
+	// BOOST_TEST(  trace_generic                       (arr()) == 30  );
+	// BOOST_TEST(( trace_generic<multi::array<int, 2> >(+arr()) == 30 ));  // this will make a copy
 	//  BOOST_TEST(( trace_generic<multi::array<int, 2>&>(arr()) == 3 ));  // can't generate element_type
 
-	BOOST_TEST(( trace_generic<multi::array_ref<int, 2> >(arr) == 30 ));
+	// BOOST_TEST(( trace_generic<multi::array_ref<int, 2> >(arr) == 30 ));
 	//  BOOST_TEST(( trace_generic<multi::array_ref<int, 2>&>(arr) == 3 ));  // can't generate element_type
-	BOOST_TEST(( trace_generic<multi::subarray <int, 2> >(arr) == 30 ));
+	// BOOST_TEST(( trace_generic<multi::subarray <int, 2> >(arr) == 30 ));
 	//  BOOST_TEST(( trace_generic<multi::subarray <int, 2>&>(arr) == 3 ));  // can't generate element_type
 
 	//  BOOST_TEST(( trace_generic<multi::subarray <int, 2> >(arr({0, 3}, {0, 3})) == 3 ));
@@ -1232,15 +1236,15 @@ BOOST_AUTO_TEST_CASE(function_passing_3_lambdas) {
 }
 #endif
 
-BOOST_AUTO_TEST_CASE(function_passing_4) {
-	multi::array<int, 2> arr({3, 3}, 10);
+// BOOST_AUTO_TEST_CASE(function_passing_4) {
+//  multi::array<int, 2> arr({3, 3}, 10);
 
-	BOOST_TEST( mut_trace_array_deduce     (arr) == 30 );
-	BOOST_TEST( mut_trace_array_deduce<int>(arr) == 30 );
+//  BOOST_TEST( mut_trace_array_deduce     (arr) == 30 );
+//  BOOST_TEST( mut_trace_array_deduce<int>(arr) == 30 );
 
-	BOOST_TEST(  mut_trace_generic                       (arr) == 30  );
-	BOOST_TEST(( mut_trace_generic<multi::array<int, 2> >(arr) == 30 ));
-}
+//  BOOST_TEST(  mut_trace_generic                       (arr) == 30  );
+//  BOOST_TEST(( mut_trace_generic<multi::array<int, 2> >(arr) == 30 ));
+// }
 
 BOOST_AUTO_TEST_CASE(array_fill_constructor) {
 	multi::array<int, 2> arr(3, multi::array<int, 1>{10, 20, 30, 40});

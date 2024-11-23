@@ -42,8 +42,10 @@
 
 namespace multi = boost::multi;
 
+namespace {
 inline auto what_is(multi::array<double, 2> const& /*arr*/) { return std::string{"real"}; }                   // NOLINT(fuchsia-default-arguments-calls)
 inline auto what_is(multi::array<std::complex<double>, 2> const& /*arr*/) { return std::string{"complex"}; }  // NOLINT(fuchsia-default-arguments-calls)
+}  // end unnamed namespace
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
