@@ -269,7 +269,7 @@ constexpr auto data_elements(A const& arr)
 ->decltype(arr.data_elements()) {
 	return arr.data_elements(); }
 
-template<class T, std::enable_if_t<!std::is_array_v<std::decay_t<T>> && ! has_data_elements<std::decay_t<T>>::value && !has_data<std::decay_t<T>>::value, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+template<class T, std::enable_if_t<!std::is_array_v<std::decay_t<T>> && !has_data_elements<std::decay_t<T>>::value && !has_data<std::decay_t<T>>::value, int> =0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 constexpr auto data_elements(T& value) -> decltype(&value) {return &value;}
 
 template<class A> struct num_elements_t: std::integral_constant<std::ptrdiff_t, 1> {};

@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, static_array, num_elements
 
 // IWYU pragma: no_include <algorithm>                        // for fill_n  // bug in iwyu 14.0.6? with GNU stdlib
@@ -13,6 +15,7 @@
 
 namespace multi = boost::multi;
 
+namespace {
 template<class T, class U>
 constexpr auto comp_equal(T left, U right) noexcept -> bool {
 	using UT = std::make_unsigned_t<T>;
@@ -28,8 +31,8 @@ constexpr auto comp_equal(T left, U right) noexcept -> bool {
 	__builtin_unreachable();
 #endif
 }
+}  // end unnamed namespace
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -264,9 +267,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #ifndef __INTEL_COMPILER
 	BOOST_AUTO_TEST_CASE(extension_index_op) {
 		multi::array<double, 2> const Aarr({11, 13});
-		auto const                    Aext = Aarr.extensions();
 
-		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+		auto const Aext = Aarr.extensions();
+
+		using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
 		BOOST_TEST( get<0>(Aext[3][5]) == 3 );
 		BOOST_TEST( get<1>(Aext[3][5]) == 5 );

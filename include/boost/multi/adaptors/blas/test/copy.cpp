@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
@@ -21,11 +23,11 @@
 
 #include <complex>   // for operator*, operator+
 #include <iterator>  // for size
+#include <utility>  // for forward  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE)
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

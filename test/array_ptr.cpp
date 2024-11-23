@@ -14,8 +14,10 @@
 #include <utility>      // for as_const, addressof, exchange, move
 #include <vector>       // for vector
 
+namespace {
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
-template<class T> static auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
+template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
+}  // end unnamed namespace
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 

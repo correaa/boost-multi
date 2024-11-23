@@ -3,12 +3,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>
 
 #include <utility>  // for forward
 
 namespace multi = boost::multi;
 
+namespace {
 template<class Array>
 auto flatted_last(Array&& arr) {
 	return reversed(reversed(std::forward<Array>(arr)).transposed().flatted());
@@ -18,8 +21,8 @@ template<class Array>
 auto partitioned_last(Array&& arr, multi::size_type n) {
 	return reversed( reversed(std::forward<Array>(arr)).partitioned(n).transposed().transposed());
 }
+}  // end unnamed namespace
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

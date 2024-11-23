@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, rotated, subarray, dimens...
 
 #include <array>        // for array
@@ -18,23 +20,22 @@ namespace fake {
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing a legacy interface
 using fftw_complex = double[2];
 
-void fftw_plan_dft(
-	int rank, int const* n,
-	fftw_complex* in, fftw_complex* out, int sign, unsigned flags
-);
+namespace {
 
-void fftw_plan_dft(
-	int rank, int const* n,
-	fftw_complex* in, fftw_complex* out, int sign, unsigned flags
-) {
+void fftw_plan_dft(int rank, int const* n, fftw_complex* in, fftw_complex* out, int sign, unsigned flags);
+
+void fftw_plan_dft(int rank, int const* n, fftw_complex* in, fftw_complex* out, int sign, unsigned flags) {
 	(void)rank, (void)n, (void)in, (void)out, (void)sign, (void)flags;
 }
 
+}  // end unnamed namespace
+
 }  // end namespace fake
 
+namespace {
 constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& { return std::move(array)[2]; }
+}  // end unnamed namespace
 
-#include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE)
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

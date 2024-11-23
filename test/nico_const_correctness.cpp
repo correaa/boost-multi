@@ -15,6 +15,7 @@
 
 namespace multi = boost::multi;
 
+namespace {
 template<class Array1D>
 void print(Array1D const& coll) {
 	// *coll.begin() = 99;  // doesn't compile "assignment of read-only location"
@@ -51,6 +52,7 @@ auto fill_2d_99(Array1D&& coll) -> Array1D&& {
 	// });
 	return std::forward<Array1D>(coll);
 }
+}  // end unnamed namespace
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 

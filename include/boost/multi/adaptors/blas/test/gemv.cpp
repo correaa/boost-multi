@@ -2,16 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/blas/axpy.hpp>  // for operator-
 #include <boost/multi/adaptors/blas/core.hpp>  // for gemv, context, dot, nrm2
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
+
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
-
-#include <boost/core/lightweight_test.hpp>
-
-// #include <boost/mpl/list.hpp>  // for list
 
 #include <algorithm>    // for generate, transform
 #include <cmath>        // for abs
@@ -30,6 +29,7 @@ namespace blas  = multi::blas;
 
 // using fp_types = boost::mpl::list<double, float>;  // old versions of Boost.Test need MPL Type lists explicitly
 
+namespace {
 template<class M, class VI, class VO>
 auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identifier-naming,readability-identifier-length) BLAS naming
 	std::transform(
@@ -38,11 +38,13 @@ auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identi
 	);
 	return std::forward<VO>(y);
 }
+}  // end unnamed namespace
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
+namespace {
 void gemv_broadcast() {
 	// NOLINTNEXTLINE(readability-identifier-length)
 	multi::array<double, 2> const a = {
@@ -85,6 +87,8 @@ void gemv_broadcast() {
 	//  BOOST_TEST( std::abs( sum_by_rows[1] - (4.0 + 5.0 + 6.0)) < 1.0e-8 );
 	// }
 }
+
+}  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(multi_blas_gemv_double) {

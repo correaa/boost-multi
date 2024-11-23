@@ -19,7 +19,8 @@
 #include <numeric>  // IWYU pragma: keep
 #include <string>
 #include <string_view>
-// IWYU pragma: no_include <stdlib.h>                         // for abs
+// ssssIsWsYsUs pragma: no_include <stdlib.h>                         // for abs
+#include <utility>  // for move  // IWYU pragma: keep  // NOLINT(misc-include-cleaner) bug in clang-tidy 19
 
 // IWYU pragma: no_include <pstl/glue_numeric_impl.h>         // for reduce, transform_reduce
 // IWYU pragma: no_include <cstdlib>                          // for abs

@@ -32,15 +32,15 @@ namespace boost::multi {
 
 template<class T, boost::multi::dimensionality_type D, class Alloc = std::allocator<std::decay_t<T>>>
 using Array =
-	std::conditional_t<
-		std::is_reference_v<T>,
-		std::conditional_t<
-			std::is_const_v<std::remove_reference_t<T>>,
-			boost::multi::array_ref<std::remove_const_t<std::remove_reference_t<T>>, D> const&,
-			boost::multi::array_ref<std::remove_reference_t<T>, D>&
-		>,
-		multi::array<T, D, Alloc>
-	>;
+std::conditional_t<
+std::is_reference_v<T>,
+std::conditional_t<
+std::is_const_v<std::remove_reference_t<T>>,
+boost::multi::array_ref<std::remove_const_t<std::remove_reference_t<T>>, D> const&,
+boost::multi::array_ref<std::remove_reference_t<T>, D>&
+>,
+multi::array<T, D, Alloc>
+>;
 
 }  // end namespace boost::multi
 
@@ -50,6 +50,7 @@ using Array =
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
+namespace {
 auto f1d5(int const (&carr)[5]) -> int;   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 auto f1d5(int const (&carr)[5]) -> int {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	return carr[1];
@@ -90,28 +91,28 @@ inline auto trace_separate_sub(multi::subarray<int, 2> const& arr) -> int {
 	return std::accumulate(diag.begin(), diag.end(), 0);
 }
 
-inline auto trace_separate_ref2(multi::array_const_view<int, 2> arr) -> int {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0);
-}
+// inline auto trace_separate_ref2(multi::array_const_view<int, 2> arr) -> int {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), 0);
+// }
 
 // unusable for arrays
-inline auto trace_separate_ref3(multi::array_view<int, 2> arr) -> int {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0);
-}
+// inline auto trace_separate_ref3(multi::array_view<int, 2> arr) -> int {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), 0);
+// }
 
 // unusable for arrays
-inline auto trace_separate_ref4(multi::array_ref<int, 2> arr) -> int {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0);
-}
+// inline auto trace_separate_ref4(multi::array_ref<int, 2> arr) -> int {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), 0);
+// }
 
 // unusable for arrays
-inline auto trace_separate_sub4(multi::subarray<int, 2> arr) -> int {
-	auto const& diag = arr.diagonal();
-	return std::accumulate(diag.begin(), diag.end(), 0);
-}
+// inline auto trace_separate_sub4(multi::subarray<int, 2> arr) -> int {
+//  auto const& diag = arr.diagonal();
+//  return std::accumulate(diag.begin(), diag.end(), 0);
+// }
 
 template<class T>
 auto mut_trace_array_deduce(multi::array<T, 2>& arr) -> T {
@@ -131,6 +132,8 @@ auto mut_trace_generic(Array& arr) -> T {
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), T{0});
 }
+
+}  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
@@ -606,7 +609,7 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 		BOOST_TEST( ss == decltype(ss)(2, 3) );
 	}
 	{
-		using std::get;  // workaround use of function template name with no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+		using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
 		BOOST_TEST( get<0>(aref.sizes()) == 2 );
 		BOOST_TEST( get<1>(aref.sizes()) == 3 );

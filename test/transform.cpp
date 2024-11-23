@@ -14,6 +14,7 @@
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for iterator_traits
 #include <memory>       // for pointer_traits
+#include <string>       // for to_string  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for move, declval
 
@@ -65,18 +66,18 @@ class involuted {
 	auto operator!=(involuted const& other) const { return r_ == other.r_; }
 
 #if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wfloat-equal"
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wfloat-equal"
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 	auto operator==(decay_type const& other) const { return Involution{}(r_) == other; }
 	auto operator!=(decay_type const& other) const { return Involution{}(r_) != other; }
 #if defined(__clang__)
-	#pragma clang diagnostic pop
+#   pragma clang diagnostic pop
 #elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
+#   pragma GCC diagnostic pop
 #endif
 	~involuted() = default;
 };
@@ -117,16 +118,16 @@ class involuter {
 	}
 
 #if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wunknown-warning-option"
+#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 	constexpr auto operator+(difference_type n) const { return involuter{it_ + n}; }
 	constexpr auto operator-(difference_type n) const { return involuter{it_ - n}; }
 
 #if defined(__clang__)
-	#pragma clang diagnostic pop
+#   pragma clang diagnostic pop
 #endif
 };
 
@@ -160,9 +161,10 @@ struct conjugate<> : private basic_conjugate_t {
 };
 
 #if defined(__NVCC__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wsubobject-linkage"
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wsubobject-linkage"
 #endif
+
 template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRef> {
 	explicit conjd(ComplexRef ref) : test::involuted<conjugate<>, ComplexRef>(conjugate<>{}, ref) {}
 	auto real() const { return underlying(*this).real(); }
@@ -179,11 +181,11 @@ template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRe
 	}
 };
 #if defined(__NVCC__)
-	#pragma GCC diagnostic pop
+#   pragma GCC diagnostic pop
 #endif
 
 #if defined(__cpp_deduction_guides)
-template<class T> conjd(T&&) -> conjd<T>;
+template<class T> conjd(T&&) -> conjd<T>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19
 #endif
 
 template<class Complex> using conjr = test::involuter<conjugate<>, Complex>;
@@ -264,11 +266,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 #if defined(__cpp_deduction_guides)
-	#if defined(__clang__)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wunknown-warning-option"
-		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
+#   if defined(__clang__)
+#       pragma clang diagnostic push
+#       pragma clang diagnostic ignored "-Wunknown-warning-option"
+#       pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#   endif
 
 			// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
 			double zee[4][5]{
@@ -283,9 +285,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::abs( zee[1][1] - 66.0) < 1E-6 );
 
-	#if defined(__clang__)
-		#pragma clang diagnostic pop
-	#endif
+#   if defined(__clang__)
+#       pragma clang diagnostic pop
+#   endif
 
 #endif
 			{
@@ -346,10 +348,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> Arr({100, 200}, 1);
 
 		multi::array<int, 1> vv({200}, 0);
-		for(auto i : Arr.extension()) {  // NOLINT(altera-unroll-loops)
-		    for(auto j : vv.extension()) {  // NOLINT(altera-unroll-loops)
-		        vv[j] += Arr[i][j];
-		    }
+		for(auto i : Arr.extension()) {     // NOLINT(altera-unroll-loops)
+			for(auto j : vv.extension()) {  // NOLINT(altera-unroll-loops)
+				vv[j] += Arr[i][j];
+			}
 		}
 
 		// auto const v = std::reduce(

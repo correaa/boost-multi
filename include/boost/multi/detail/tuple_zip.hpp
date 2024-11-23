@@ -450,10 +450,10 @@ constexpr auto tuple_zip_impl(Tuple1&& tup1, Tuple2&& tup2, Tuple3&& tup3, Tuple
 	using boost::multi::detail::get;
 	return boost::multi::detail::mk_tuple(
 		boost::multi::detail::mk_tuple(
-			get<Is>(std::forward<Tuple1>(tup1)),
-			get<Is>(std::forward<Tuple2>(tup2)),
-			get<Is>(std::forward<Tuple3>(tup3)),
-			get<Is>(std::forward<Tuple4>(tup4))
+			get<Is>(std::forward<Tuple1>(tup1)),  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as
+			get<Is>(std::forward<Tuple2>(tup2)),  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as
+			get<Is>(std::forward<Tuple3>(tup3)),  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as
+			get<Is>(std::forward<Tuple4>(tup4))   // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as
 		)...
 	);
 }
