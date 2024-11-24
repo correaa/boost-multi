@@ -212,6 +212,7 @@ clang++ mull:
   image: ubuntu:jammy
   stage: build
   tags:
+    - x86_64  # for mull
     - non-shared
   interruptible: true
   allow_failure: true
@@ -227,9 +228,9 @@ clang++ mull:
     - apt-get -qq install --no-install-recommends -y --quiet mull-11 libclang-cpp11
     - mkdir build && cd build
     - mull-runner-11 --version
-    - CXX=clang++-11 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-11 -g -grecord-command-line" -DCMAKE_TEST_LAUNCHER="mull-runner-11;-ide-reporter-show-killed"
+    - CXX=clang++-11 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-11 -g -grecord-command-line" -DCMAKE_TEST_LAUNCHER="mull-runner-11;--strict;--ld-search-path=/lib/x86_64-linux-gnu"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
-    - mull-runner-11 ./test/swap.cpp.x
+    # - mull-runner-11 --strict ./test/swap.cpp.x
     - ctest -j 2 --output-on-failure --verbose
     - cd test
     - ls *.x | xargs -n 1 sh -c 'mull-runner-11 $0 || exit 255'
