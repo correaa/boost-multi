@@ -7,7 +7,7 @@
 
 #include <array>     // for array
 #include <cmath>                              // for abs  // IWYU pragma: keep
-#include <cstddef>                          // for _LIBCPP_VERSION
+#include <cstddef>                          // for _LIBCPP_VERSION  // IWYU pragma: keep
 // IWYU pragma: no_include <cstdlib>                          // for abs
 #include <complex>   // for complex, operator==
 // IWYU pragma: no_include <iosfwd>    // for __GLIBCXX__

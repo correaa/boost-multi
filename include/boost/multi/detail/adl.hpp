@@ -367,9 +367,9 @@ template<class T, class InputIt, class Size, class ForwardIt>
 constexpr auto alloc_uninitialized_copy_n(std::allocator<T>& /*alloc*/, InputIt first, Size count, ForwardIt d_first) {
 	return adl_uninitialized_copy_n(first, count, d_first);}
 
-template<class T, class InputIt, class Size, class ForwardIt>
-constexpr auto alloc_uninitialized_move_n(std::allocator<T>& /*alloc*/, InputIt first, Size count, ForwardIt d_first) {
-	return adl_uninitialized_move_n(first, count, d_first);}
+// template<class T, class InputIt, class Size, class ForwardIt>
+// constexpr auto alloc_uninitialized_move_n(std::allocator<T>& /*alloc*/, InputIt first, Size count, ForwardIt d_first) {
+// 	return adl_uninitialized_move_n(first, count, d_first);}
 
 template<class Alloc, class InputIt, class Size, class ForwardIt, class = decltype(std::addressof(*ForwardIt{}))>
 auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {

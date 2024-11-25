@@ -219,9 +219,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto* arr_ptr = std::addressof(arr);
 		arr = *arr_ptr;
-		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );
+		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( &arr[1][1][5] == loc );
+	}
+
+
+	BOOST_AUTO_TEST_CASE(static_array_move) {
+		multi::static_array<std::vector<int>, 2> arr = {
+			{std::vector<int>(10, 1), std::vector<int>(20, 2)},  // NOLINT(fuchsia-default-arguments-calls)
+			{std::vector<int>(30, 3), std::vector<int>(40, 4)},  // NOLINT(fuchsia-default-arguments-calls)
+		};
+		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
+
+		multi::static_array<std::vector<int>, 2> arr2(std::move(arr));
+		BOOST_TEST( arr2[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST( arr [1][1].empty() );  // NOLINT(fuchsia-default-arguments-calls)
 	}
 
 	return boost::report_errors();

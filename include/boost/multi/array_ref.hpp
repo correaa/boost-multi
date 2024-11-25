@@ -784,7 +784,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 	#endif
 
-	BOOST_MULTI_HD /*[[gnu::pure]]*/ constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+	BOOST_MULTI_HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
 	}
@@ -2337,9 +2337,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 
 	constexpr auto operator<(array_iterator const& other) const -> bool { 
 		assert(other.stride_ == stride_);
+		assert(stride_ != 0);
 		assert((ptr_ - other.ptr_)%stride_ == 0);
 		return (ptr_ - other.ptr_)/stride_ < 0;
-		// return distance_to_(other) > 0;
 	}
 
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
