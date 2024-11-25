@@ -192,12 +192,14 @@ else()
 	-Wsizeof-pointer-memaccess
 	-Wstack-protector  # -Wstack-usage=<byte-size>
 	-Wstrict-aliasing #=3 # -Wstrict-aliasing=<0,3>
-	-Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
-	-Wstrict-overflow=2
+	-Wstrict-null-sentinel  
+	# -Wstrict-overflow=<0,5>
+	-Wstrict-overflow=1
+	# -Wstrict-overflow=2  # generates false positives when comparing pointers
 	# -Wstrict-overflow=3  # incompatible with index_range operator-
 	# -Wstrict-overflow=4  # not compatible with stl heap
 	# -Wstrict-overflow=5  # not compatible with Boost.Test
-	# -Wstring-compare # (gcc 11, not in 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wstring-compare>  # (not in gcc 9)
 	-Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
 	# -Wstringop-overread # (gcc 11, not in 10)
 	# -Wstringop-truncation # (gcc 8, not in 7)

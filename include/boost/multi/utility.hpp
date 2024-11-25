@@ -119,15 +119,17 @@ struct transform_ptr {
 	#pragma clang diagnostic pop
 	#endif
 
-	constexpr auto operator+(difference_type n) const -> transform_ptr {transform_ptr ret{*this}; ret += n; return ret;}
-	constexpr auto operator-(difference_type n) const -> transform_ptr {transform_ptr ret{*this}; ret -= n; return ret;}
+	constexpr auto operator+(difference_type n) const -> transform_ptr { transform_ptr ret{*this}; ret += n; return ret; }
+	constexpr auto operator-(difference_type n) const -> transform_ptr { transform_ptr ret{*this}; ret -= n; return ret; }
 
-	constexpr auto operator-(transform_ptr const& other) const -> difference_type {return p_ - other.p_;}
+	constexpr auto operator-(transform_ptr const& other) const -> difference_type { return p_ - other.p_; }
 
-	constexpr auto operator[](difference_type n) const -> reference {return *((*this) + n);}  // NOLINT(readability-const-return-type) transformed_view might return by const value.
+	constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }  // NOLINT(readability-const-return-type) transformed_view might return by const value.
 
-	constexpr auto operator==(transform_ptr const& other) const -> bool {return p_ == other.p_;}
-	constexpr auto operator!=(transform_ptr const& other) const -> bool {return p_ != other.p_;}
+	constexpr auto operator==(transform_ptr const& other) const -> bool { return p_ == other.p_; }
+	constexpr auto operator!=(transform_ptr const& other) const -> bool { return p_ != other.p_; }
+
+	constexpr auto operator<(transform_ptr const& other) const -> bool { return p_ < other.p_; }
 
  private:
 	Ptr p_;

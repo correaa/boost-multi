@@ -2335,13 +2335,6 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	constexpr auto operator<(array_iterator const& other) const -> bool { 
-		assert(other.stride_ == stride_);
-		assert(stride_ != 0);
-		// assert((ptr_ - other.ptr_)%stride_ == 0);
-		return (stride_>0)?(ptr_ < other.ptr_):(other.ptr_ < ptr_);
-	}
-
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
 	: ptr_{ptr}, stride_{stride} {}
 
@@ -2398,18 +2391,18 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 		return this->ptr_ == other.ptr_;
 	}
 
-	template<bool OtherIsConst, std::enable_if_t<OtherIsConst != IsConst, int> =0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	template<bool OtherIsConst, std::enable_if_t<OtherIsConst != IsConst, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr auto operator==(array_iterator<Element, 1, Ptr, OtherIsConst> const& other) const -> bool {
 		assert(this->stride_ == other.stride_);
+		assert(stride_ != 0);
 		return this->ptr_ == other.ptr_;
 	}
 
-	// constexpr auto operator!=(array_iterator<Element, 1, Ptr, true> const& other) const -> bool {
-	//  assert(this->stride_ == other.stride_);
-	//  return this->ptr_ != other.ptr_;
-	// }
-
-//  friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.ptr_ == other.ptr_;}
+	constexpr auto operator<(array_iterator const& other) const -> bool { 
+		assert(other.stride_ == stride_);
+		assert(stride_ != 0);
+		return (stride_>0)?(ptr_ < other.ptr_):(other.ptr_ < ptr_);
+	}
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
 		if constexpr(IsMove) {
