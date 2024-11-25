@@ -1278,7 +1278,6 @@ struct array : static_array<T, D, Alloc> {
 			array::allocate();
 			array::uninitialized_copy_elements(other.data_elements());
 		}
-		assert(this->stride() != 0);
 		return *this;
 	}
 #else
