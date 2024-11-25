@@ -69,7 +69,7 @@ auto gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, Tbeta const& 
 		auto const& BfatcolsT = (~B).chunked(N);
 		auto const& AblocksT = (~Afatrow).chunked(N);
 		auto&& CblocksT = (~Cfatrow).chunked(N);
-		std::transform(std::execution::unseq,
+		std::transform(std::execution::seq,
 			begin(BfatcolsT), end(BfatcolsT), begin(CblocksT), begin(CblocksT), [&](auto const& BfatcolT, auto&& CblockTR) {
 			auto const& Bblocks = (~BfatcolT).chunked(N);
 			auto Cblock = +~CblockTR;
