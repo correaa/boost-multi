@@ -2338,8 +2338,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	constexpr auto operator<(array_iterator const& other) const -> bool { 
 		assert(other.stride_ == stride_);
 		assert(stride_ != 0);
-		assert((ptr_ - other.ptr_)%stride_ == 0);
-		return (ptr_ - other.ptr_)/stride_ < 0;
+		// assert((ptr_ - other.ptr_)%stride_ == 0);
+		return (stride_>0)?(ptr_ < other.ptr_):(other.ptr_ < ptr_);
 	}
 
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
