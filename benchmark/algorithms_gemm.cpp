@@ -1,6 +1,12 @@
+#ifdef COMPILATION// sudo cpupower frequency-set --governor performance
+set -x; c++ -std=c++17 -DNDEBUG -O3 `#-DNOEXCEPT_ASSIGNMENT` -I/opt/homebrew/Cellar/boost/1.86.0_2/include -I../include `pkg-config --cflags --libs benchmark` $0 -o $0x &&$0x&&rm $0x;exit
+#endif
+
 // Copyright 2019-2024 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
+
+#include <boost/core/lightweight_test.hpp>
 
 #include<boost/test/unit_test.hpp>
 
@@ -13,6 +19,9 @@
 
 namespace multi = boost::multi;
 
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
+
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 
     std::random_device rd;
@@ -101,4 +110,5 @@ BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 
 		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-12) );
 	}
+}
 }
