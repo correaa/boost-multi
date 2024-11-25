@@ -231,7 +231,6 @@ clang++ mull:
     - mull-runner-11 --version
     - CXX=clang++-11 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-11 -g -grecord-command-line -fprofile-instr-generate -fcoverage-mapping" -DCMAKE_TEST_LAUNCHER="mull-runner-11;--strict;--ld-search-path=/lib/x86_64-linux-gnu"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
-    # - mull-runner-11 --strict ./test/swap.cpp.x
     - ctest -j 2 --output-on-failure --verbose
     - cd test
     - ls *.x | xargs -n 1 sh -c 'echo $0 && (mull-runner-11 $0 || exit 255)'
