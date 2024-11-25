@@ -6,7 +6,6 @@
 #include <boost/multi/array.hpp>
 
 #include <array>     // for array
-#include <cassert>   // for _LIBCPP_VERSION  // IWYU pragma: keep
 #include <cmath>                              // for abs  // IWYU pragma: keep
 #include <cstddef>                          // for _LIBCPP_VERSION
 // IWYU pragma: no_include <cstdlib>                          // for abs
