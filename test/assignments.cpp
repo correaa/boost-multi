@@ -209,5 +209,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( Id[1][0] == 0 );
 	}
 
+	BOOST_AUTO_TEST_CASE(self_assignment) {
+		multi::static_array<int, 2> arr = {{1, 2}, {3, 4}};
+		BOOST_TEST( arr[1][1] == 4 );
+
+		auto* arr_ptr = std::addressof(arr);
+		arr = *arr_ptr;
+		BOOST_TEST( arr[1][1] == 4 );
+	}
+
 	return boost::report_errors();
 }
