@@ -242,4 +242,19 @@ BOOST_AUTO_TEST_CASE(assigment_temporary) {
 	BOOST_TEST( Id[1][0] == 0 );
 }
 
+BOOST_AUTO_TEST_CASE(assignment_2D) {
+	multi::array<int, 2> arr = {
+		{ 10, 20, 30 },
+		{ 40, 50, 60 },
+	};
+	multi::array<int, 2> const arr2 = {
+		{ 11, 22, 33 },
+		{ 44, 55, 66 },
+	};
+
+	arr = arr2;
+
+	BOOST_TEST( arr[0][0] == 11 );
+}
+
 return boost::report_errors();}
