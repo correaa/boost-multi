@@ -5,43 +5,6 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-// #if defined(__clang__)
-//  #pragma clang diagnostic push
-//  #pragma clang diagnostic ignored "-Wunknown-warning-option"
-//  #pragma clang diagnostic ignored "-Wconversion"
-//     #pragma clang diagnostic ignored "-Wextra-semi-stmt"
-//  #pragma clang diagnostic ignored "-Wold-style-cast"
-//  #pragma clang diagnostic ignored "-Wsign-conversion"
-//     #pragma clang diagnostic ignored "-Wswitch-default"
-//  #pragma clang diagnostic ignored "-Wundef"
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic push
-//  #if (__GNUC__ > 7)
-//      #pragma GCC diagnostic ignored "-Wcast-function-type"
-//  #endif
-//  #pragma GCC diagnostic ignored "-Wconversion"
-//  #pragma GCC diagnostic ignored "-Wold-style-cast"
-//  #pragma GCC diagnostic ignored "-Wsign-conversion"
-//  #pragma GCC diagnostic ignored "-Wundef"
-// #elif defined(_MSC_VER)
-//  #pragma warning(push)
-//  #pragma warning(disable : 4244)
-// #endif
-
-// #ifndef BOOST_TEST_MODULE
-//  #define BOOST_TEST_MAIN
-// #endif
-
-// #include <boost/test/included/unit_test.hpp>
-
-// #if defined(__clang__)
-//  #pragma clang diagnostic pop
-// #elif defined(__GNUC__)
-//  #pragma GCC diagnostic pop
-// #elif defined(_MSC_VER)
-//  #pragma warning(pop)
-// #endif
-
 #include <boost/multi/array.hpp>  // for array, apply, operator==, layout_t
 
 #include <algorithm>  // for fill
@@ -242,4 +205,5 @@ BOOST_AUTO_TEST_CASE(assigment_temporary) {
 	BOOST_TEST( Id[1][0] == 0 );
 }
 
-return boost::report_errors();}
+return boost::report_errors();
+}

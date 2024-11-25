@@ -1,11 +1,16 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+#ifdef COMPILATION  // sudo cpupower frequency-set --governor performance; sudo apt search libbenchmark-dev
+set - x;
+c++ -std=c++17 -DNDEBUG -Ofast $0 -o $0x `# - DNOEXCEPT_ASSIGNMENT` -I../include `pkg-config --cflags --libs benchmark openblas` -ltbb && $0x && rm $0x;
+exit
+#endif
+
 // © Alfredo A. Correa 2019-2021
 
 #include <benchmark/benchmark.h>
 
-#include "../array.hpp"
-#include "../algorithms/gemm.hpp"
-#include "../adaptors/blas/gemm.hpp"
+#include <boost/multi/array.hpp>
+#include <boost/multi/algorithms/gemm.hpp>
+#include <boost/multi/adaptors/blas/gemm.hpp>
 
 namespace multi = boost::multi;
 
