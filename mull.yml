@@ -1,12 +1,13 @@
 mutators:
+ - cxx_add_to_sub  # Replaces + with -
+ - cxx_mul_to_div  # Replaces / with *
 #   - cxx_add_assign_to_sub_assign  # Replaces += with -=
-#   - cxx_add_to_sub  # Replaces + with -
 #   - cxx_and_assign_to_or_assign  # Replaces &= with |=
 #   - cxx_and_to_or  # Replaces & with |
 #   - cxx_assign_const  # Replaces ‘a = b’ with ‘a = 42’
 #   - cxx_bitwise_not_to_noop  # Replaces ~x with x
 #   - cxx_div_assign_to_mul_assign  # Replaces /= with *=
-#   - cxx_div_to_mul  # Replaces / with *
+#   - cxx_div_to_mul  
 #   - cxx_eq_to_ne  # Replaces == with !=
 #   - cxx_ge_to_gt  # Replaces >= with >
 #   - cxx_ge_to_lt  # Replaces >= with <
