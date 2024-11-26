@@ -46,7 +46,7 @@ mutators:
 #   - negate_mutator  # Negates conditionals !x to x and x to !x
 #   - scalar_value_mutator  # Replaces zeros with 42, and non-zeros with 0
 excludePaths:
-  - doctest.h
+  - *.cpp
 #timeout:  # milliseconds
 # - 10000  # 10 seconds
 # quiet: false  # enables additional logging
