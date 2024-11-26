@@ -147,6 +147,12 @@ BOOST_AUTO_TEST_CASE(subrange_ranges_strided_1D) {
 	BOOST_TEST(Arev[0] == 4 );
 	BOOST_TEST(Arev[3] == 1 );
 	BOOST_TEST( Arev.begin() < Arev.end() );
+	BOOST_TEST( Arev.begin() <= Arev.end() );
+	BOOST_TEST( Arev.begin() != Arev.end() );
+	BOOST_TEST( !(Arev.begin() == Arev.end()) );
+
+	BOOST_TEST( Arev.end() > Arev.begin() );
+	BOOST_TEST( Arev.end() >= Arev.begin() );
 }
 
 BOOST_AUTO_TEST_CASE(subrange_ranges_sliced) {
