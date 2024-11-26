@@ -139,9 +139,14 @@ BOOST_AUTO_TEST_CASE(subrange_ranges_sliced_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(subrange_ranges_strided_1D) {
-	multi::array<double, 1> const arr = { 1.0, 2.0, 3.0, 4.0 };
+	multi::array<int, 1> const arr = { 1, 2, 3, 4 };
 	auto const&                  As  = arr.strided(2);
 	BOOST_TEST( As.begin() < As.end() );
+
+	auto const& Arev = arr.sliced(3, 0, -1);
+	BOOST_TEST(Arev[0] == 4 );
+	BOOST_TEST(Arev[3] == 1 );
+	BOOST_TEST( Arev.begin() < Arev.end() );
 }
 
 BOOST_AUTO_TEST_CASE(subrange_ranges_sliced) {
