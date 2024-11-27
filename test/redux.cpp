@@ -77,7 +77,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {      // NOLINT(altera-id-dependent-backward-branch)
 		for(multi::array<double, 2>::index iy = 0; iy != ny; ++iy) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
-			K2D[ix][iy] = normal_dist(e2);  // static_cast<double>(ix) * static_cast<double>(iy);
+			K2D[ix][iy] = static_cast<double>(ix) * static_cast<double>(iy);
+		}
+	}
+
+	{
+		auto const accumulator = [&]() {
+			multi::array<double, 1> ret({nx}, 0.0);
+			for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {      // NOLINT(altera-id-dependent-backward-branch)
+				for(multi::array<double, 2>::index iy = 0; iy != ny; ++iy) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+					ret[ix] += K2D[ix][iy];
+				}
+			}
+			return ret;
+		}();
+
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
 
@@ -94,9 +110,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return ret;
 		}();  // NOLINT(fuchsia-default-arguments-calls)
 
-		// for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
-		// 	BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0E-3);
-		// }
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+		}
 	}
 
 	{
