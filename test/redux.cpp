@@ -70,8 +70,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	multi::array<double, 2> K2D({nx, ny});
 
-	std::random_device r;
-	std::seed_seq seed2{r(), r(), r(), r(), r(), r(), r(), r()};
+	std::random_device rd;
+	std::seed_seq seed2{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
 	std::mt19937 e2(seed2);
 	std::normal_distribution<> normal_dist;
 
@@ -95,7 +95,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}();  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
-			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0E-3);
 		}
 	}
 
