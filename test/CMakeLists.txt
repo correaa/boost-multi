@@ -22,7 +22,7 @@ else()
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 
-	find_package(Boost)  #  COMPONENTS boost unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
+	find_package(Boost CONFIG)  #  COMPONENTS boost unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
 
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
@@ -156,7 +156,7 @@ else()
 	-Wnon-template-friend -Wnon-virtual-dtor
 	-Wnonnull -Wnonnull-compare
 	-Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
-	# -Wnrvo # (not in gcc 12)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,14>:-Wnrvo>  # (not in gcc 13)
 	-Wnull-dereference
 	-Wodr
 	-Wold-style-cast  # TODO(correaa) fix this
@@ -192,12 +192,14 @@ else()
 	-Wsizeof-pointer-memaccess
 	-Wstack-protector  # -Wstack-usage=<byte-size>
 	-Wstrict-aliasing #=3 # -Wstrict-aliasing=<0,3>
-	-Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
-	-Wstrict-overflow=2
+	-Wstrict-null-sentinel  
+	# -Wstrict-overflow=<0,5>
+	-Wstrict-overflow=1
+	# -Wstrict-overflow=2  # generates false positives when comparing pointers
 	# -Wstrict-overflow=3  # incompatible with index_range operator-
 	# -Wstrict-overflow=4  # not compatible with stl heap
 	# -Wstrict-overflow=5  # not compatible with Boost.Test
-	# -Wstring-compare # (gcc 11, not in 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wstring-compare>  # (not in gcc 9)
 	-Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
 	# -Wstringop-overread # (gcc 11, not in 10)
 	# -Wstringop-truncation # (gcc 8, not in 7)
@@ -771,7 +773,7 @@ else()
 	-Wunreachable-code -Wunreachable-code-aggressive -Wunreachable-code-break
 	# -Wunreachable-code-fallthrough (clang 15, not in clang 13)
 	-Wunreachable-code-loop-increment -Wunreachable-code-return
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,15>:-Wunsafe-buffer-usage>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,16>:-Wunsafe-buffer-usage>
 	-Wunsequenced
 	# -Wunsupported-abi (clang 15, not in clang 13)
 	-Wunsupported-abs -Wunsupported-availability-guard -Wunsupported-cb -Wunsupported-dll-base-class-template

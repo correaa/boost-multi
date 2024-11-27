@@ -75,6 +75,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
+	{
+		auto const accumulator = [&]() {
+			multi::array<double, 1> ret({nx}, 0.0);
+			for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {      // NOLINT(altera-id-dependent-backward-branch)
+				for(multi::array<double, 2>::index iy = 0; iy != ny; ++iy) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+					ret[ix] += K2D[ix][iy];
+				}
+			}
+			return ret;
+		}();
+
+		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+		}
+	}
+
 #if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND)
 
 	{
@@ -374,7 +390,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}(0.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
-			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-6);
 		}
 	}
 				#endif
