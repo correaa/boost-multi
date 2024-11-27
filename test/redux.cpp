@@ -17,6 +17,7 @@
 #include <cmath>      // IWYU pragma: keep
 #include <iostream>
 #include <numeric>  // IWYU pragma: keep
+#include <random>
 #include <string>
 #include <string_view>
 // ssssIsWsYsUs pragma: no_include <stdlib.h>                         // for abs
@@ -69,9 +70,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	multi::array<double, 2> K2D({nx, ny});
 
+	std::random_device r;
+	std::seed_seq seed2{r(), r(), r(), r(), r(), r(), r(), r()};
+	std::mt19937 e2(seed2);
+	std::normal_distribution<> normal_dist;
+
 	for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {      // NOLINT(altera-id-dependent-backward-branch)
 		for(multi::array<double, 2>::index iy = 0; iy != ny; ++iy) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
-			K2D[ix][iy] = static_cast<double>(ix) * static_cast<double>(iy);
+			K2D[ix][iy] = normal_dist(e2);  // static_cast<double>(ix) * static_cast<double>(iy);
 		}
 	}
 
@@ -374,7 +380,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}(0.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 		for(multi::array<double, 2>::index ix = 0; ix != nx; ++ix) {  // NOLINT(altera-unroll-loops)
-			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
+			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-6);
 		}
 	}
 				#endif

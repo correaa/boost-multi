@@ -772,8 +772,8 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> elements_iterator_t& {
-		auto const nn = std::apply(xs_, ns_);
-		ns_ = xs_.from_linear(nn - n);
+		// auto const nn = std::apply(xs_, ns_);
+		// ns_ = xs_.from_linear(nn - n);
 		n_ -= n;
 		return *this;
 	}
@@ -3748,29 +3748,27 @@ constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> exten
 -> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
 {return {data, extensions};}
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
+
 template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy
 // require N>1 (this is important because it forces calling placement new on the pointer
 (In first, In last, multi::array_iterator<T, N, TP> dest) {
-
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-	#endif
-
 	while(first != last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;
 		++dest;
 	}
-
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
-
 	return dest;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 // begin and end for forwarding reference are needed in this namespace
 // to overwrite the behavior of std::begin and std::end

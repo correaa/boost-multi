@@ -133,6 +133,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &arr({1, 3}, {2, 5}).elements().front() == &arr(1, 2) );
 		BOOST_TEST( &arr({1, 3}, {2, 5}).elements().back()  == &arr(2, 4) );
+
+		auto beg = arr({1, 3}, {2, 5}).elements().begin();
+		beg += (arr({1, 3}, {2, 5}).elements().size() - 1);
+		BOOST_TEST( &*beg  == &arr(2, 4) );
 	}
 
 	BOOST_AUTO_TEST_CASE(empty_elements) {
@@ -171,6 +175,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[2] == 7 );
 		BOOST_TEST( arr.elements()[2] == 7 );
 		BOOST_TEST( arr.elements().end() - arr.elements().begin() == arr.size() );
+		BOOST_TEST( arr.elements().begin() + arr.size() == arr.elements().end() );
+		BOOST_TEST( &(*(arr.elements().begin() + arr.size())) == &(*arr.elements().end()) );
+
+		auto beg = arr.elements().begin();
+		beg += arr.size();
+		BOOST_TEST( &(*beg) == &(*arr.elements().end()) );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range) {
