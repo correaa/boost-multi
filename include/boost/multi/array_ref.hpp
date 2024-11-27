@@ -2874,13 +2874,13 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
  private:
-	constexpr auto strided_aux_(difference_type diff) const -> const_subarray {
+	constexpr auto strided_aux_(difference_type diff) const {
 		auto const new_layout = typename types::layout_t{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
-		return {new_layout, types::base_};
+		return subarray<T, 1, ElementPtr, Layout>(new_layout, types::base_);
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> basic_const_array { return strided_aux_(diff);}
+	constexpr auto strided(difference_type diff) const& -> const_subarray { return strided_aux_(diff);}
 
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
 	// BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)     && -> const_subarray { return sliced(first, last).strided(stride); }
