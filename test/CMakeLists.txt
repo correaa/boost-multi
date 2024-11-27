@@ -773,7 +773,7 @@ else()
 	-Wunreachable-code -Wunreachable-code-aggressive -Wunreachable-code-break
 	# -Wunreachable-code-fallthrough (clang 15, not in clang 13)
 	-Wunreachable-code-loop-increment -Wunreachable-code-return
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,15>:-Wunsafe-buffer-usage>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,16>:-Wunsafe-buffer-usage>
 	-Wunsequenced
 	# -Wunsupported-abi (clang 15, not in clang 13)
 	-Wunsupported-abs -Wunsupported-availability-guard -Wunsupported-cb -Wunsupported-dll-base-class-template
