@@ -772,8 +772,8 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> elements_iterator_t& {
-		auto const nn = std::apply(xs_, ns_);
-		ns_ = xs_.from_linear(nn - n);
+		// auto const nn = std::apply(xs_, ns_);
+		// ns_ = xs_.from_linear(nn - n);
 		n_ -= n;
 		return *this;
 	}
@@ -784,7 +784,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 	#endif
 
-	BOOST_MULTI_HD /*[[gnu::pure]]*/ constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+	BOOST_MULTI_HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
 	}
@@ -2335,13 +2335,6 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	constexpr auto operator<(array_iterator const& other) const -> bool { 
-		assert(other.stride_ == stride_);
-		assert((ptr_ - other.ptr_)%stride_ == 0);
-		return (ptr_ - other.ptr_)/stride_ < 0;
-		// return distance_to_(other) > 0;
-	}
-
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
 	: ptr_{ptr}, stride_{stride} {}
 
@@ -2398,18 +2391,18 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 		return this->ptr_ == other.ptr_;
 	}
 
-	template<bool OtherIsConst, std::enable_if_t<OtherIsConst != IsConst, int> =0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	template<bool OtherIsConst, std::enable_if_t<OtherIsConst != IsConst, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr auto operator==(array_iterator<Element, 1, Ptr, OtherIsConst> const& other) const -> bool {
 		assert(this->stride_ == other.stride_);
+		assert(stride_ != 0);
 		return this->ptr_ == other.ptr_;
 	}
 
-	// constexpr auto operator!=(array_iterator<Element, 1, Ptr, true> const& other) const -> bool {
-	//  assert(this->stride_ == other.stride_);
-	//  return this->ptr_ != other.ptr_;
-	// }
-
-//  friend constexpr auto operator==(array_iterator const& self, array_iterator const& other) -> bool {return self.ptr_ == other.ptr_;}
+	constexpr auto operator<(array_iterator const& other) const -> bool { 
+		assert(other.stride_ == stride_);
+		assert(stride_ != 0);
+		return (stride_>=0)?(ptr_ < other.ptr_):(other.ptr_ < ptr_);
+	}
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
 		if constexpr(IsMove) {
@@ -2881,13 +2874,13 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
  private:
-	constexpr auto strided_aux_(difference_type diff) const -> const_subarray {
+	constexpr auto strided_aux_(difference_type diff) const {
 		auto const new_layout = typename types::layout_t{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
-		return {new_layout, types::base_};
+		return subarray<T, 1, ElementPtr, Layout>(new_layout, types::base_);
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> basic_const_array { return strided_aux_(diff);}
+	constexpr auto strided(difference_type diff) const& -> const_subarray { return strided_aux_(diff);}
 
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
 	// BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)     && -> const_subarray { return sliced(first, last).strided(stride); }
@@ -3755,29 +3748,27 @@ constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> exten
 -> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
 {return {data, extensions};}
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
+
 template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy
 // require N>1 (this is important because it forces calling placement new on the pointer
 (In first, In last, multi::array_iterator<T, N, TP> dest) {
-
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-	#endif
-
 	while(first != last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;
 		++dest;
 	}
-
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
-
 	return dest;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 // begin and end for forwarding reference are needed in this namespace
 // to overwrite the behavior of std::begin and std::end
