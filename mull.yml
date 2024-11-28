@@ -2,5 +2,6 @@ mutators:
  - cxx_add_assign_to_sub_assign  # Replaces += with -=
  - cxx_add_to_sub  # Replaces + with -
  - cxx_mul_to_div  # Replaces / with *
-timeout: 10000 # in milliseconds
+ - cxx_lt_to_le  # Replaces < with <=
+timeout: 1000 # in milliseconds
 quiet: true # enables additional logging
