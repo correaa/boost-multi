@@ -209,7 +209,7 @@ clang++:
     - ctest -j 2 --output-on-failure
 
 clang++ mull:
-  image: ubuntu:jammy
+  image: ubuntu:24.04
   stage: build
   tags:
     - x86_64  # for mull
