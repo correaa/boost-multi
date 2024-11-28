@@ -218,18 +218,18 @@ clang++ mull:
   allow_failure: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates g++ clang-11  make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-17 make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh # for CMAKE_TEST_LAUNCHER
     - sh cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
-    - clang++-11 --version
+    - clang++-17 --version
     - apt-get -qq update
     - apt search mull
     - apt-get -qq install --no-install-recommends -y --quiet mull-11 libclang-cpp11
     - mkdir build && cd build
     - mull-runner-11 --version
-    - CXX=clang++-11 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-11 -g -grecord-command-line -fprofile-instr-generate -fcoverage-mapping"
+    - CXX=clang++-17 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fpass-plugin=/usr/lib/mull-ir-frontend-11 -g -grecord-command-line -fprofile-instr-generate -fcoverage-mapping"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure --verbose
     - cd test
