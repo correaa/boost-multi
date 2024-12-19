@@ -208,7 +208,7 @@ clang++:
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
 
-clang++ mull:
+clang++-16 mull-16:  # mull-17 crashes
   image: ubuntu:24.04
   stage: build
   tags:
@@ -218,22 +218,22 @@ clang++ mull:
   allow_failure: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-17 libclang-rt-17-dev make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
-    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh # for CMAKE_TEST_LAUNCHER
-    - sh cmake-install.sh --skip-license --prefix=/usr
-    - cmake --version
+    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-16 libclang-rt-16-dev make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh # for CMAKE_TEST_LAUNCHER
+    # - sh cmake-install.sh --skip-license --prefix=/usr
+    # - cmake --version
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
-    - clang++-17 --version
+    - clang++-16 --version
     - apt-get -qq update
     - apt search mull
-    - apt-get -qq install --no-install-recommends -y --quiet mull-17 libclang-cpp17
+    - apt-get -qq install --no-install-recommends -y --quiet mull-16 libclang-cpp16
     - mkdir build && cd build
-    - mull-runner-17 --version
-    - CXX=clang++-17 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fpass-plugin=/usr/lib/mull-ir-frontend-17 -g -grecord-command-line -fprofile-instr-generate -fcoverage-mapping"
+    - mull-runner-16 --version
+    - CXX=clang++-16 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fpass-plugin=/usr/lib/mull-ir-frontend-16 -g -grecord-command-line -fprofile-instr-generate -fcoverage-mapping"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure --verbose
     - cd test
-    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-17 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-16 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
   needs: ["clang++"]
 
 # deb:
