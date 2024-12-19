@@ -218,10 +218,7 @@ clang++-16 mull-16:  # mull-17 crashes
   allow_failure: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-16 libclang-rt-16-dev make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
-    # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh # for CMAKE_TEST_LAUNCHER
-    # - sh cmake-install.sh --skip-license --prefix=/usr
-    # - cmake --version
+    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-16 cmake libclang-rt-16-dev make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
     - clang++-16 --version
     - apt-get -qq update
