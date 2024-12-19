@@ -184,8 +184,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs( arr3[5][1] - imag(arr[5]) ) < 1E-6 );
 
 		arr.reinterpret_array_cast<double>(2)[0][0]   = 99.9;
-		arr().reinterpret_array_cast<double>(2)[0][0] = 99.9;
+		BOOST_TEST( std::abs( arr.reinterpret_array_cast<double>(2)[0][0] - 99.9) < 1E-6 );
 
+		arr().reinterpret_array_cast<double>(2)[0][0] = 99.9;
+		BOOST_TEST( std::abs( arr().reinterpret_array_cast<double>(2)[0][0] - 99.9) < 1E-6 );
 #endif
 	}
 
