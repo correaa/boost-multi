@@ -164,6 +164,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	BOOST_TEST( &mar[1][1] == &arr[1][1] );
 
 	mar[1][1] = 90;
+	BOOST_TEST( mar[1][1] == 90 );
 	BOOST_TEST( &mar[1][1] == &arr[1][1] );
 
 	auto const& a_const = arr;
@@ -658,20 +659,21 @@ BOOST_AUTO_TEST_CASE(array_ref_1D) {
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	double darr[4][5] = {
-		{1.0, 2.0},
-		{2.0, 3.0},
+	int darr[4][5] = {
+		{1, 2},
+		{2, 3},
 	};
-	multi::array_ref<double, 2>                ref(&darr[0][0], {4, 5});
-	multi::array_ref<double, 2, double const*> cref(&darr[0][0], {4, 5});
-	multi::array_ref<double const, 2>          crefc(&darr[0][0], {4, 5});
-	multi::array_cref<double, 2>               ref2(&darr[0][0], {4, 5});
+	multi::array_ref<int, 2>                ref(&darr[0][0], {4, 5});
+	multi::array_ref<int, 2, int const*> cref(&darr[0][0], {4, 5});
+	multi::array_ref<int const, 2>          crefc(&darr[0][0], {4, 5});
+	multi::array_cref<int, 2>               ref2(&darr[0][0], {4, 5});
 
 	BOOST_TEST( &ref[1][2] == &cref [1][2] );
 	BOOST_TEST( &ref[1][2] == &crefc[1][2] );
 	BOOST_TEST( &ref[1][2] == & ref2[1][2] );
 
-	ref[1][1] = 2.0;
+	ref[1][1] = 20;
+	BOOST_TEST( ref[1][1] == 20 );
 
 	#if defined(__clang__)
 	#pragma clang diagnostic push
@@ -680,19 +682,20 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 	#endif
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	double darr2[4][5] = {
-		{1.0, 0.0},
-		{2.0, 3.0},
+	int darr2[4][5] = {
+		{10, 00},
+		{20, 30},
 	};
 
-	darr2[1][0] = 2.0;
+	darr2[1][0] = 20;
+	BOOST_TEST( darr2[1][0] == 20 );
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	auto const& dd = std::as_const(darr2);
 
 	BOOST_TEST( &(dd[1][2]) == &(darr2[1][2]) );
-	BOOST_TEST(( & ref[1].static_array_cast<double, double const*>()[1] == &ref[1][1] ));
-	BOOST_TEST(( &multi::static_array_cast<double, double const*>(ref[1])[1] == &ref[1][1] ));
+	BOOST_TEST(( & ref[1].static_array_cast<int, int const*>()[1] == &ref[1][1] ));
+	BOOST_TEST(( &multi::static_array_cast<int, int const*>(ref[1])[1] == &ref[1][1] ));
 
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
@@ -1130,31 +1133,32 @@ BOOST_AUTO_TEST_CASE(diagonal) {
 }
 
 BOOST_AUTO_TEST_CASE(function_passing) {
-	multi::array<double, 2>      arr({3, 3});
-	multi::array_ref<double, 2>& arrR = arr;
+	multi::array<int, 2>      arr({3, 3});
+	multi::array_ref<int, 2>& arrR = arr;
 
-	arrR[0][0] = 2.1;
+	arrR[0][0] = 21;
 
 	arr.reextent({5, 5});
 
-	assert(&arrR[0][0] == &arr[0][0]);
+	BOOST_TEST( arr [0][0] == 21 );
+	BOOST_TEST(&arrR[0][0] == &arr[0][0]);
 }
 
 BOOST_AUTO_TEST_CASE(function_passing_2) {
-	multi::Array<double, 2>                   arr({3, 3});
-	[[maybe_unused]] multi::Array<double&, 2> arrR = arr;
+	multi::Array<int, 2>                   arr({3, 3});
+	[[maybe_unused]] multi::Array<int&, 2> arrR = arr;
 
-	arrR[0][0] = 5.1;
+	arrR[0][0] = 51;
 
-	[[maybe_unused]] multi::Array<double const&, 2> arrCR = arr;
+	[[maybe_unused]] multi::Array<int const&, 2> arrCR = arr;
 
-	assert(&arrCR[0][0] == &arrR[0][0]);
+	BOOST_TEST(&arrCR[0][0] == &arrR[0][0]);
 
-	[[maybe_unused]] multi::Array<double const&, 2> arrCR2 = arrCR;
+	[[maybe_unused]] multi::Array<int const&, 2> arrCR2 = arrCR;
 
 	arr.reextent({5, 5});
-
-	assert(&arrR[0][0] == &arr[0][0]);
+	BOOST_TEST( arrR[0][0] == 51 );
+	BOOST_TEST(&arrR[0][0] == &arr[0][0]);
 }
 
 BOOST_AUTO_TEST_CASE(function_passing_3) {

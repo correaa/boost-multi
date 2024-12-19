@@ -124,10 +124,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( arrlast + 1 == arrend );
 		}
 		{
-			std::vector<double>         vec(10000);  // std::vector NOLINT(fuchsia-default-arguments-calls)
-			multi::array_ref<double, 2> arr(vec.data(), {100, 100});
+			std::vector<int>         vec(10000);  // std::vector NOLINT(fuchsia-default-arguments-calls)
+			multi::array_ref<int, 2> arr(vec.data(), {100, 100});
 			BOOST_TEST(arr.size() == 100);
-			begin(arr)[4][3] = 2.0;
+			begin(arr)[4][3] = 20;
+
+			BOOST_TEST(begin(arr)[4][3] == 20);
 		}
 	}
 
