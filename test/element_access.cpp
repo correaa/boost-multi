@@ -280,14 +280,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
-		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> vec = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
 
-		std::move(vec) = std::vector<double>{3.0, 4.0, 5.0};  // NOLINT(fuchsia-default-arguments-calls)
+		std::move(vec) = std::vector<int>{30, 40, 50};  // NOLINT(fuchsia-default-arguments-calls)
 
-		std::move(vec)[1] = 99.0;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+		std::move(vec)[1] = 990;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
-		multi::array<double, 1>       arr1 = {1.0, 2.0, 3.0};
-		multi::array<double, 1> const arr2 = {1.0, 2.0, 3.0};
+		BOOST_TEST( vec[1] == 990 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+
+		multi::array<int, 1>       arr1 = {10, 20, 30};
+		multi::array<int, 1> const arr2 = {10, 20, 30};
 
 		std::move(arr1) = arr2;  // this compiles TODO(correaa) should it?
 	}

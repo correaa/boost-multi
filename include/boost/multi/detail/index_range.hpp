@@ -209,7 +209,7 @@ class range {
 		}
 		return begin() + (value - front());
 	}
-	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const -> bool { return (value >= first_) && (value < last_); }
+	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const -> bool { return (first_ <= value) && (value < last_); }
 	template<class Value> [[nodiscard]] constexpr auto count(Value const& value) const -> value_type { return contains(value); }
 
 	friend constexpr auto intersection(range const& self, range const& other) {
@@ -220,7 +220,7 @@ class range {
 		new_first      = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}
-	[[nodiscard]] constexpr auto contains(value_type const& value) const { return value >= first_ && value < last_; }
+	// [[nodiscard]] constexpr auto contains(value_type const& value) const { return (first_ <= value) && (value < last_); }
 };
 
 template<typename IndexType, typename IndexTypeLast = IndexType>     // , class Plus = std::plus<>, class Minus = std::minus<> >
