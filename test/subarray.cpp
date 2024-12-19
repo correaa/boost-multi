@@ -79,6 +79,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::subarray<int, 2> R2D(A2D.begin(), A2D.end());
 		BOOST_TEST( R2D.addressof()== A2D.addressof() );
 		R2D[0][0] = 77;
+		BOOST_TEST( R2D[0][0] == 77 );
 	}
 
 	// {
