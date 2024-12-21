@@ -104,6 +104,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &A3_ref[1][1][0] == &A2[3][0] );
 
 		A3_ref[0][0][0] = 99;
+		BOOST_TEST( A3_ref[0][0][0] == 99 );
 	}
 
 	BOOST_AUTO_TEST_CASE(array_partitioned) {
@@ -216,28 +217,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( wr.slater_array[2][1] == 521 );
 
-		// what( wr , wr.slater_array, wr.slater_array[2][1] );
 		wr.slater_array[2][1] = 99990;
+		BOOST_TEST( wr.slater_array[2][1] == 99990 );
 	}
 
 	BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 		multi::array<double, 3> arr = {
 			{
-             {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
-             {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
-             {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-             {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-			 },
+				{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+				{6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+				{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+				{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+			},
 			{
-             {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
-             {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
-             {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-             {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-			 },
+				{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+				{6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+				{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+				{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+			},
 		};
 
 		auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());
-		// auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.strides());
 
 		BOOST_TEST( std::is_sorted(strides.rbegin(), strides.rend()) && arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 

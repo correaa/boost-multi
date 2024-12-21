@@ -85,7 +85,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
 		assert(n <= N);
 		assert(!dirty_);  // do not attempt to resize a vector with static_allocator
-		dirty_ = true;
+		// dirty_ = true;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"        // buffer_ is aligned as T
 		return reinterpret_cast<pointer>(&buffer_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
