@@ -4,9 +4,10 @@ mutators:
  - cxx_and_assign_to_or_assign  # Replaces &= with |=
  - cxx_and_to_or  # Replaces & with |
  - cxx_assign_const  # Replaces `a = b` with `a = 42`
+ - cxx_bitwise_not_to_noop  # Replaces ~x with x
  - cxx_mul_to_div  # Replaces / with *
  - cxx_lt_to_le  # Replaces < with <=
 timeout: 10000 # in milliseconds
 quiet: true # additional logging?
-# excludePaths:
-#   - test*
+excludePaths:
+  - .*test.*
