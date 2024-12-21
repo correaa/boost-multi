@@ -22,8 +22,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::range<int> const irng{5, 12};
 
 		BOOST_TEST(  irng.contains( 6) );
+
+		BOOST_TEST(  irng.contains(10) );
 		BOOST_TEST(  irng.contains(11) );
+
 		BOOST_TEST( !irng.contains(12) );
+		BOOST_TEST( !irng.contains(13) );
 
 		BOOST_TEST( * irng.begin()      ==  5 );
 		BOOST_TEST( *(irng.begin() + 1) ==  6 );
