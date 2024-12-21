@@ -9,5 +9,5 @@ mutators:
  - cxx_lt_to_le  # Replaces < with <=
 timeout: 10000 # in milliseconds
 quiet: true # additional logging?
-# excludePaths:
-#   - .*test.*
+excludePaths:
+  - .*test.*
