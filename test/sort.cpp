@@ -205,8 +205,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(!(name2 >  name1));
 		BOOST_TEST(!(name2 >= name1));
 
-		// BOOST_TEST(!(name1 > name2));
-		// BOOST_TEST(!(name1 > name2));
+		BOOST_TEST( name2[1] == 'a' );
+		BOOST_TEST( name2[2] == 'b' );
+		BOOST_TEST( name2[3] == 'c' );
 	}
 
 	BOOST_AUTO_TEST_CASE(lexicographical_compare_offset_2d) {
@@ -238,11 +239,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(  name2 <  name1 );
 		BOOST_TEST(  name2 <= name1 );
 
-		// BOOST_TEST(!(name2 >  name1));
-		// BOOST_TEST(!(name2 >= name1));
-
 		BOOST_TEST( name1 > name2 );
 		BOOST_TEST(!(name1 < name2));
+
+		BOOST_TEST( name2[1][0] == 'a' );
+		BOOST_TEST( name2[1][1] == 'a' );
+		BOOST_TEST( name2[2][0] == 'b' );
+		BOOST_TEST( name2[2][1] == 'a' );
+		BOOST_TEST( name2[3][0] == 'c' );
+		BOOST_TEST( name2[3][1] == 'a' );
 	}
 
 	BOOST_AUTO_TEST_CASE(accumulate_1d) {

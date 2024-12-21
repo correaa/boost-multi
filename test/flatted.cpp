@@ -21,6 +21,8 @@ BOOST_AUTO_TEST_CASE(array_flatted_2d) {
 	BOOST_TEST( arr.flatted()[4] == 4 );
 
 	arr.flatted()[4] = 44;
+
+	BOOST_TEST( arr.flatted()[4] == 44 );
 }
 
 BOOST_AUTO_TEST_CASE(array_flatted_3d) {

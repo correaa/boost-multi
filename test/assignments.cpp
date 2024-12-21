@@ -127,6 +127,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		src[0][1][2][3][1] = 99;
 
+		BOOST_TEST( src[0][1][2][3][1] == 99 );
+
 		// BOOST_TEST( tmp.unrotated().partitioned(2).transposed().rotated().extensions() == src.extensions() );
 		// BOOST_TEST( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
 	}

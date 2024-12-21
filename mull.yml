@@ -1,7 +1,12 @@
 mutators:
  - cxx_add_assign_to_sub_assign  # Replaces += with -=
  - cxx_add_to_sub  # Replaces + with -
+ - cxx_and_assign_to_or_assign  # Replaces &= with |=
+ - cxx_and_to_or  # Replaces & with |
+ - cxx_assign_const  # Replaces `a = b` with `a = 42`
  - cxx_mul_to_div  # Replaces / with *
  - cxx_lt_to_le  # Replaces < with <=
 timeout: 10000 # in milliseconds
-quiet: true # enables additional logging
+quiet: true # additional logging?
+# excludePaths:
+#   - test*
