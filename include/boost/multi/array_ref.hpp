@@ -2399,9 +2399,10 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	}
 
 	constexpr auto operator<(array_iterator const& other) const -> bool {
-		assert(other.stride_ == stride_);
-		assert(stride_ != 0);
-		return (0 < stride_)?(ptr_ < other.ptr_):(other.ptr_ < ptr_);
+		// assert(other.stride_ == stride_);
+		// assert(stride_ != 0);
+		// return (0 <= stride_)?(ptr_ < other.ptr_):(other.ptr_ < ptr_);  // cxx_lt_to_le
+		return 0 < other - *this;
 	}
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
