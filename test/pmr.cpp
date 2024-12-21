@@ -122,7 +122,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		);
 
-		std::cout << acc << std::endl;
 		BOOST_TEST( acc == 49998575 );
 
 		auto time = std::chrono::high_resolution_clock::now() - start_time;
