@@ -8,6 +8,11 @@ mutators:
  - cxx_div_assign_to_mul_assign  # Replaces /= with *=
  - cxx_div_to_mul  # Replaces / with *
  - cxx_eq_to_ne  # Replaces == with !=
+ - cxx_ge_to_gt  # Replaces >= with >
+ - cxx_ge_to_lt  # Replaces >= with <
+ - cxx_gt_to_ge  # Replaces > with >=
+ - cxx_gt_to_le  # Replaces > with <=
+ - cxx_init_const  # Replaces ‘T a = b’ with ‘T a = 42’
  - cxx_mul_to_div  # Replaces / with *
  - cxx_lt_to_le  # Replaces < with <=
 timeout: 10000 # in milliseconds
