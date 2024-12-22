@@ -28,6 +28,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A2[1][1] == 77 );
 	}
 
+	/* subarray_assignment */
+	{
+		multi::array<int, 3> A1 = {
+			{
+				{1, 2},
+				{3, 4}
+			},
+			{
+				{5, 6},
+				{7, 8}
+			},
+		};
+
+		auto const& R0 = std::as_const(A1)[0];
+		auto&& R1 = A1[1];
+
+		R1 = R0;
+
+		BOOST_TEST( A1[0] == A1[1] );
+	}
+
 	/* subarray_base */
 	{
 		multi::array<int, 3> A1({3, 4, 5}, 99);
