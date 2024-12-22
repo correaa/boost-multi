@@ -13,9 +13,11 @@ mutators:
  - cxx_gt_to_ge  # Replaces > with >=
  - cxx_gt_to_le  # Replaces > with <=
  - cxx_init_const  # Replaces ‘T a = b’ with ‘T a = 42’
+ - cxx_le_to_gt  # Replaces <= with >
+ - cxx_le_to_lt  # Replaces <= with <
  - cxx_mul_to_div  # Replaces / with *
  - cxx_lt_to_le  # Replaces < with <=
-timeout: 10000 # in milliseconds
+timeout: 1000 # in milliseconds
 quiet: true # additional logging?
 excludePaths:
   - .*test.*
