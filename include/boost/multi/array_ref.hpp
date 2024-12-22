@@ -1917,7 +1917,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) & -> subarray& {
 		if(this == std::addressof(other)) { return *this; }
-		assert(this != std::addressof(other));
 		assert(this->extension() == other.extension());
 		this->elements() = other.elements();
 		return *this;
