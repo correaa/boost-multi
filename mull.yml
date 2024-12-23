@@ -16,7 +16,7 @@ mutators:
  - cxx_le_to_gt  # Replaces <= with >
  - cxx_le_to_lt  # Replaces <= with <
  - cxx_logical_and_to_or  # Replaces && with ||
- - cxx_logical_or_to_and  # Replaces || with &&
+#- cxx_logical_or_to_and  # Replaces || with &&  # The module was corrupted by 'cxx_logical_or_to_and' mutator.
  - cxx_lshift_assign_to_rshift_assign  # Replaces <<= with >>=
  - cxx_lshift_to_rshift  # Replaces << with >>
  - cxx_lt_to_ge  # Replaces < with >=
