@@ -7,7 +7,7 @@ mutators:
  - cxx_bitwise_not_to_noop  # Replaces ~x with x
  - cxx_div_assign_to_mul_assign  # Replaces /= with *=
  - cxx_div_to_mul  # Replaces / with *
-#- cxx_eq_to_ne  # Replaces == with !=
+ - cxx_eq_to_ne  # Replaces == with !=
  - cxx_ge_to_gt  # Replaces >= with >
  - cxx_ge_to_lt  # Replaces >= with <
  - cxx_gt_to_ge  # Replaces > with >=

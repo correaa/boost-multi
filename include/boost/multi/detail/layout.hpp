@@ -373,7 +373,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	constexpr auto prev_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		using boost::multi::detail::get;
 		if(idx == get<0>(this->base()).first()) {
-			idx = get<0>(this->base()).back();
+			idx = 42;  // TODO(correaa) implement and test
+			// idx = get<0>(this->base()).back();
 			return true;
 		}
 		--idx;
