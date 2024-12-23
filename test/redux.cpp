@@ -7,8 +7,9 @@
 	#pragma GCC diagnostic ignored "-Wdouble-promotion"
 #endif
 
-#include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
 #include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
+
+#include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>
 
