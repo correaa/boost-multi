@@ -15,6 +15,7 @@
 #include <algorithm>    // for generate, transform
 #include <cmath>        // for abs
 #include <complex>      // for complex, operator*
+// IWYU pragma: no_include <cstdlib>  // for abs
 #include <iostream>     // for char_traits, basic_ost...
 #include <iterator>     // for size, begin
 // IWYU pragma: no_include <memory>       // for allocator
