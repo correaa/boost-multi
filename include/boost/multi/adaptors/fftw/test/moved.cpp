@@ -263,5 +263,42 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// #endif
 	// }
 
+	{
+		multi::array<int, 3> A1 = {
+			{
+				{1, 2},
+				{3, 4}
+			},
+			{
+				{5, 6},
+				{7, 8}
+			},
+		};
+
+		auto&& R1 = A1[1];
+		R1 = A1[0];
+
+		BOOST_TEST( A1[0] == A1[1] );
+	}
+
+	{
+		multi::array<std::vector<int>, 3> A1 = {
+			{
+				{std::vector<int>(1), std::vector<int>(2)},
+				{std::vector<int>(3), std::vector<int>(4)}
+			},
+			{
+				{std::vector<int>(5), std::vector<int>(6)},
+				{std::vector<int>(7), std::vector<int>(8)}
+			},
+		};
+
+		auto&& R1 = A1[1];
+		R1 = A1[0].move();
+
+		BOOST_TEST( A1[1][0][0] == std::vector<int>(1) );
+		// BOOST_TEST( A1[0][0][0].empty() );  // TODO(correaa) make moved elements work
+	}
+
 	return boost::report_errors();
 }
