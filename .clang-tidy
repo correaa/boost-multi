@@ -32,6 +32,7 @@ Checks: '*,
   -boost-use-ranges,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -fuchsia-overloaded-operator,
   -fuchsia-trailing-return,
   -llvmlibc-*,
@@ -43,6 +44,7 @@ Checks: '*,
 #  -boost-use-ranges                                      // would introduce a dependency on Boost
 #  -clang-diagnostic-deprecated-declarations              // some test run deprecated functions on purpose
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
+#  -cppcoreguidelines-pro-bounds-array-to-pointer-decay   // for Boost Lightweight test BOOST_TEST
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
