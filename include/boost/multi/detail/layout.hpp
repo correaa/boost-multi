@@ -847,7 +847,8 @@ struct layout_t
 
 	constexpr auto scale(size_type num, size_type den) const {
 		assert( (stride_*num) % den == 0 );
-		return layout_t{sub_.scale(num, den), stride_*num/den, offset_*num/den, nelems_*num/den};
+		assert(offset_ == 0);  // TODO(correaa) implement ----------------vvv
+		return layout_t{sub_.scale(num, den), stride_*num/den, offset_ /* *num/den */, nelems_*num/den};
 	}
 };
 
