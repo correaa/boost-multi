@@ -2030,9 +2030,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 	constexpr auto operator=(subarray&& other) & noexcept -> subarray& {  // TODO(correaa) make conditionally noexcept
-		if(this == std::addressof(other)) { return *this; }
+		// if(this == std::addressof(other)) { return *this; }
 		assert(this->extension() == other.extension());
-		this->elements() = other.elements();
+		this->elements() = std::move(other).elements();
 		return *this;
 	}
 
