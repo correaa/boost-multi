@@ -281,7 +281,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A1[0] == A1[1] );
 	}
-
 	{
 		multi::array<std::vector<int>, 3> A1 = {
 			{
