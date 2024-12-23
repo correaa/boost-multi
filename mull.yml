@@ -23,7 +23,8 @@ mutators:
 #- cxx_lt_to_le  # Replaces < with <=  # TODO(correaa) investigates why this mutant survices with the range.contains function
  - cxx_mul_to_div  # Replaces / with *
 timeout: 1000 # in milliseconds
-slowIRVerification: true
+debug:
+ slowIRVerification: true
 quiet: true # additional logging?
 excludePaths:
   - .*test.*
