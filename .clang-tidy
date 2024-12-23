@@ -35,6 +35,7 @@ Checks: '*,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -fuchsia-overloaded-operator,
   -fuchsia-trailing-return,
+  -hicpp-no-array-decay,
   -llvmlibc-*,
   -modernize-use-nodiscard,
   -readability-magic-numbers,
@@ -47,9 +48,10 @@ Checks: '*,
 #  -cppcoreguidelines-pro-bounds-array-to-pointer-decay   // for Boost Lightweight test BOOST_TEST
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
+#  -hicpp-no-array-decay,                                 // for Boost Lightweight Test
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
 #  -llvm-header-guard,                                    // allow PCH
 #  -misc-include-cleaner                                  // allow PCH
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // many tests use magic numbers
-#  readability-simplify-boolean-expr,                     // for Boost lightweight test BOOST_TEST
+#  readability-simplify-boolean-expr,                     // for Boost Lightweight Test BOOST_TEST
