@@ -9,7 +9,8 @@
 
 #include <complex>
 #include <numeric>  // for std::transform_reduce
-#include <utility>                          // for move
+#include <utility>  // for move
+#include <vector>   // for vector
 
 namespace multi = boost::multi;
 
