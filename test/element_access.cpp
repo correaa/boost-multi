@@ -157,6 +157,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2.elements().size() == 0 );
 		BOOST_TEST(   arr1.elements() == arr2.elements()  );
 		BOOST_TEST( !(arr1.elements() != arr2.elements()) );
+
+		BOOST_TEST( arr1.elements().size() == arr1.elements().end() - arr1.elements().begin() );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {

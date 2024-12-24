@@ -20,7 +20,7 @@ mutators:
  - cxx_lshift_assign_to_rshift_assign  # Replaces <<= with >>=
  - cxx_lshift_to_rshift  # Replaces << with >>
  - cxx_lt_to_ge  # Replaces < with >=
-#- cxx_lt_to_le  # Replaces < with <=  # TODO(correaa) investigates why this mutant survices with the range.contains function
+#- cxx_lt_to_le  # Replaces < with <=  # TODO(correaa) investigate why this mutant survives with the range.contains function
  - cxx_minus_to_noop  # Replaces -x with x
  - cxx_mul_assign_to_div_assign  # Replaces *= with /=
  - cxx_mul_to_div  # Replaces * with /
