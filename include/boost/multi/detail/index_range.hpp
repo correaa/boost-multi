@@ -12,6 +12,7 @@
 #include <boost/multi/detail/types.hpp>
 
 #include <algorithm>    // for min, max
+#include <cassert>
 #include <cstddef>      // for ptrdiff_t
 #include <functional>   // for minus, plus
 #include <iterator>     // for reverse_iterator, random_access_iterator_tag
