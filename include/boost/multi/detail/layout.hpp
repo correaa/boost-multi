@@ -187,7 +187,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		if(extensions_t<D-1>{this->base().tail()}.prev_canonical(rest...)) { --idx; }
 		if(idx < this->base().head().first()) {
 			// assert(0);  // TODO(correaa) implement
-			idx = this->base().head().back();
+			idx = 42;
+			// idx = this->base().head().back();
 			return true;
 		}
 		return false;
