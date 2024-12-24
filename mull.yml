@@ -27,9 +27,13 @@ mutators:
  - cxx_ne_to_eq  # Replaces != with ==
  - cxx_or_assign_to_and_assign  # Replaces |= with &=
  - cxx_or_to_and  # Replaces | with &
-timeout: 1000 # in milliseconds
+ - cxx_post_dec_to_post_inc  # Replaces x– with x++
+ - cxx_post_inc_to_post_dec  # Replaces x++ with x–
+ - cxx_pre_dec_to_pre_inc  # Replaces –x with ++x
+ - cxx_pre_inc_to_pre_dec  # Replaces ++x with –x
+timeout: 1000  # in milliseconds
 debug:
  slowIRVerification: true
-quiet: true # additional logging?
+quiet: true  # additional logging?
 excludePaths:
   - .*test.*
