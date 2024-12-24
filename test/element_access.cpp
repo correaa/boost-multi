@@ -141,8 +141,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto beg1 = arr({1, 3}, {2, 5}).elements().begin();
 			auto end1 = arr({1, 3}, {2, 5}).elements().end();
+			auto end2 = arr({1, 3}, {2, 5}).elements().end();
 			for(;end1 != beg1; --end1) {}  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 			BOOST_TEST( end1 == beg1 );
+			for(;end1 != end2; ++end1) {}  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+			BOOST_TEST( end1 == end2 );
 		}
 	}
 
@@ -154,6 +157,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2.elements().size() == 0 );
 		BOOST_TEST(   arr1.elements() == arr2.elements()  );
 		BOOST_TEST( !(arr1.elements() != arr2.elements()) );
+
+		BOOST_TEST( arr1.elements().size() == arr1.elements().end() - arr1.elements().begin() );
+		BOOST_TEST( arr1.elements().size() - 1 == arr1.elements().end() - (arr1.elements().begin() + 1) );
+		BOOST_TEST( arr1.elements().size() - 1 == (arr1.elements().end() - 1) - arr1.elements().begin() );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
