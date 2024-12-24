@@ -141,8 +141,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto beg1 = arr({1, 3}, {2, 5}).elements().begin();
 			auto end1 = arr({1, 3}, {2, 5}).elements().end();
+			auto end2 = arr({1, 3}, {2, 5}).elements().end();
 			for(;end1 != beg1; --end1) {}  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 			BOOST_TEST( end1 == beg1 );
+			for(;end1 != end2; ++end1) {}  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+			BOOST_TEST( end1 == end2 );
 		}
 	}
 
