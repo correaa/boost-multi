@@ -46,6 +46,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
 	}
 
+	{
+		multi::range<int> const irng{5, 12};
+		auto beg = irng.begin();
+		++beg;
+		--beg;
+		BOOST_TEST( irng.begin() == beg );
+	}
+
 	BOOST_AUTO_TEST_CASE(multi_range2) {
 		multi::index_extension const iex(10);
 
