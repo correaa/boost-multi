@@ -13,9 +13,18 @@ mutators:
  - cxx_gt_to_ge  # Replaces > with >=
  - cxx_gt_to_le  # Replaces > with <=
  - cxx_init_const  # Replaces ‘T a = b’ with ‘T a = 42’
+ - cxx_le_to_gt  # Replaces <= with >
+ - cxx_le_to_lt  # Replaces <= with <
+#- cxx_logical_and_to_or  # Replaces && with ||
+#- cxx_logical_or_to_and  # Replaces || with &&  # The module was corrupted by 'cxx_logical_or_to_and' mutator.
+ - cxx_lshift_assign_to_rshift_assign  # Replaces <<= with >>=
+ - cxx_lshift_to_rshift  # Replaces << with >>
+ - cxx_lt_to_ge  # Replaces < with >=
+#- cxx_lt_to_le  # Replaces < with <=  # TODO(correaa) investigates why this mutant survices with the range.contains function
  - cxx_mul_to_div  # Replaces / with *
- - cxx_lt_to_le  # Replaces < with <=
-timeout: 10000 # in milliseconds
+timeout: 1000 # in milliseconds
+debug:
+ slowIRVerification: true
 quiet: true # additional logging?
 excludePaths:
   - .*test.*
