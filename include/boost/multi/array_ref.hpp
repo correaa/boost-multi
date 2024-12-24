@@ -550,8 +550,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 		// assert((*ptr_).layout() == (*(other.ptr_)).layout());
 		// assert(stride_ != 0);
 		// return
-		// 	   ((0 < stride_) && (ptr_.base() - other.ptr_.base() < 0))
-		// 	|| ((stride_ < 0) && (0 < ptr_.base() - other.ptr_.base()));  // TODO(correaa) consider the case where stride_ is negative
+		//     ((0 < stride_) && (ptr_.base() - other.ptr_.base() < 0))
+		//  || ((stride_ < 0) && (0 < ptr_.base() - other.ptr_.base()));  // TODO(correaa) consider the case where stride_ is negative
 		return 0 < other - *this;
 	}
 
@@ -2543,7 +2543,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 template<typename T, typename ElementPtr, class Layout>
 struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
-	: multi::random_iterable<subarray<T, 1, ElementPtr, Layout> >  // paren for msvc 19.14?
+	: multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout> >  // paren for msvc 19.14?
 	, array_types<T, ::boost::multi::dimensionality_type{1}, ElementPtr, Layout> {  // paren for msvc 19.14?
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
