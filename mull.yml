@@ -21,7 +21,12 @@ mutators:
  - cxx_lshift_to_rshift  # Replaces << with >>
  - cxx_lt_to_ge  # Replaces < with >=
 #- cxx_lt_to_le  # Replaces < with <=  # TODO(correaa) investigates why this mutant survices with the range.contains function
- - cxx_mul_to_div  # Replaces / with *
+ - cxx_minus_to_noop  # Replaces -x with x
+ - cxx_mul_assign_to_div_assign  # Replaces *= with /=
+ - cxx_mul_to_div  # Replaces * with /
+ - cxx_ne_to_eq  # Replaces != with ==
+ - cxx_or_assign_to_and_assign  # Replaces |= with &=
+ - cxx_or_to_and  # Replaces | with &
 timeout: 1000 # in milliseconds
 debug:
  slowIRVerification: true
