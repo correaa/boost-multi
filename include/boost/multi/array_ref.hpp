@@ -703,9 +703,8 @@ struct cursor_t {
 };
 
 template<typename Pointer, class LayoutType>
-struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-: boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
-{
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference> {
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type = typename std::iterator_traits<Pointer>::value_type;
 	using pointer = Pointer;
@@ -779,12 +778,6 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return *this;
 	}
 
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-	#endif
-
 	BOOST_MULTI_HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
@@ -793,6 +786,12 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
 
 	constexpr auto current() const -> pointer {return base_ + std::apply(l_, ns_);}
 
