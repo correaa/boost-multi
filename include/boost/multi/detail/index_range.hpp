@@ -209,14 +209,14 @@ class range {
 		}
 		return begin() + (value - front());
 	}
-	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const -> bool { return ((first_ <= value) && (value < last_)); }
+	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const -> bool { return (value < last_) && (first_ <= value); }
 	template<class Value> [[nodiscard]] constexpr auto count(Value const& value) const -> value_type { return contains(value); }
 
 	friend constexpr auto intersection(range const& self, range const& other) {
 		using std::max;
 		using std::min;
 		auto new_first = max(self.first(), other.first());
-		auto new_last  = min(self.last(), other.last());
+		auto new_last = min(self.last(), other.last());
 		new_first      = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}

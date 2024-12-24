@@ -547,11 +547,12 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	// }
 
 	BOOST_MULTI_HD constexpr auto operator< (array_iterator const& other) const -> bool {
-		assert((*ptr_).layout() == (*(other.ptr_)).layout());
-		assert(stride_ != 0);
-		return
-			   ((0 < stride_) && (ptr_.base() - other.ptr_.base() < 0))
-			|| ((stride_ < 0) && (0 < ptr_.base() - other.ptr_.base()));  // TODO(correaa) consider the case where stride_ is negative
+		// assert((*ptr_).layout() == (*(other.ptr_)).layout());
+		// assert(stride_ != 0);
+		// return
+		// 	   ((0 < stride_) && (ptr_.base() - other.ptr_.base() < 0))
+		// 	|| ((stride_ < 0) && (0 < ptr_.base() - other.ptr_.base()));  // TODO(correaa) consider the case where stride_ is negative
+		return 0 < other - *this;
 	}
 
 	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> const& lyt, index stride)
@@ -1915,8 +1916,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto base() && -> ElementPtr { return this->base_; }
 	// BOOST_MULTI_HD constexpr auto base() const& -> element_const_ptr {return base_;}
 
-	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other)      & -> subarray& {
-		if(this == std::addressof(other)) {return *this;}
+	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) & -> subarray& {
+		if(this == std::addressof(other)) { return *this; }
 		assert(this->extension() == other.extension());
 		this->elements() = other.elements();
 		return *this;
@@ -2030,9 +2031,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 	constexpr auto operator=(subarray&& other) & noexcept -> subarray& {  // TODO(correaa) make conditionally noexcept
-		if(this == std::addressof(other)) { return *this; }
+		// if(this == std::addressof(other)) { return *this; }
 		assert(this->extension() == other.extension());
-		this->elements() = other.elements();
+		this->elements() = std::move(other).elements();
 		return *this;
 	}
 

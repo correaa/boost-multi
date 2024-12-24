@@ -9,7 +9,8 @@
 
 #include <complex>
 #include <numeric>  // for std::transform_reduce
-#include <utility>                          // for move
+#include <utility>  // for move
+#include <vector>   // for vector
 
 namespace multi = boost::multi;
 
@@ -262,6 +263,44 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// #endif
 	// #endif
 	// }
+
+	{
+		multi::array<int, 3> A1 = {
+			{
+				{1, 2},
+				{3, 4}
+			},
+			{
+				{5, 6},
+				{7, 8}
+			},
+		};
+
+		auto&& R1 = A1[1];
+		R1 = A1[0];
+
+		BOOST_TEST( A1[0] == A1[1] );
+	}
+	{
+		// NOLINTBEGIN(fuchsia-default-arguments-calls)
+		multi::array<std::vector<int>, 3> A1 = {
+			{
+				{std::vector<int>(1, 0), std::vector<int>(2, 0)},
+				{std::vector<int>(3, 0), std::vector<int>(4, 0)}
+			},
+			{
+				{std::vector<int>(5, 0), std::vector<int>(6, 0)},
+				{std::vector<int>(7, 0), std::vector<int>(8, 0)}
+			},
+		};
+
+		auto&& R1 = A1[1];
+		R1 = A1[0].move();
+
+		BOOST_TEST( A1[1][0][0] == std::vector<int>(1, 0) );
+		// BOOST_TEST( A1[0][0][0].empty() );  // TODO(correaa) make moved elements work
+		// NOLINTEND(fuchsia-default-arguments-calls)
+	}
 
 	return boost::report_errors();
 }

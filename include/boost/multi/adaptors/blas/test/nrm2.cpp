@@ -15,6 +15,7 @@
 
 #include <cmath>  // for sqrt, NAN
 #include <complex>
+// IWYU pragma: no_include <cstdlib>  // for abs
 #include <iostream>
 // IWYU pragma: no_include <iterator>                            // for size, begin
 // IWYU pragma: no_include <type_traits>                         // for is_same_v
