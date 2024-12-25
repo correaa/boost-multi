@@ -59,6 +59,26 @@ g++-m32 sanitize:
     - ctest -j 1 --output-on-failure
   needs: ["g++"]
 
+g++ sanitize ub:
+  stage: build
+  image: debian:latest
+  allow_failure: true
+  tags:
+    - non-shared
+    - high-bandwidth  # for boost source download
+    - x86_64  # for g++-multilib in image
+  interruptible: true
+  script:
+    - dpkg --add-architecture i386
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libboost-serialization-dev:i386 make tar wget
+    - mkdir build && cd build
+    - c++ --version
+    - cmake .. -DCMAKE_CXX_FLAGS="-DUBSAN=1 -fsanitize=undefined -fno-sanitize-recover=undefined" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined" -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build .
+    - ctest -j 1 --output-on-failure
+  needs: ["g++"]
+
 arm64:
   stage: build
   image: arm64v8/debian:latest
