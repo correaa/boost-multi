@@ -131,6 +131,9 @@ struct transform_ptr {
 	constexpr auto operator==(transform_ptr const& other) const -> bool { return p_ == other.p_; }
 	constexpr auto operator!=(transform_ptr const& other) const -> bool { return p_ != other.p_; }
 
+	constexpr auto operator==(std::nullptr_t const& nil) const -> bool { return p_ == nil; }
+	constexpr auto operator!=(std::nullptr_t const& nil) const -> bool { return p_ != nil; }
+
 	constexpr auto operator<(transform_ptr const& other) const -> bool { return p_ < other.p_; }
 
  private:
