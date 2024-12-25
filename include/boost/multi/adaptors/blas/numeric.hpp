@@ -193,6 +193,9 @@ class involuter {
 	friend auto operator==(involuter const& slf, involuter const& thr) { return slf.it_ == thr.it_; }
 	friend auto operator!=(involuter const& slf, involuter const& thr) { return slf.it_ != thr.it_; }
 
+	friend auto operator==(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ == nil; }
+	friend auto operator!=(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ != nil; }
+
 	constexpr auto operator+=(difference_type n) -> involuter& {
 		it_ += n;
 		return *this;
