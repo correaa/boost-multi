@@ -9,7 +9,6 @@
 
 #include <algorithm>  // for for_each, equal
 #include <array>      // for array
-#include <cassert>    // for assert
 #include <cstdint>    // for int64_t
 #include <iostream>   // for char_traits, operator<<, basic_o...
 #include <iterator>   // for size
