@@ -2373,8 +2373,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	constexpr auto operator++() -> array_iterator& {ptr_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {ptr_ -= stride_; return *this;}
 
-	constexpr auto operator+=(difference_type n) -> array_iterator& {assert(stride_ != 0); ptr_ += stride_*n; return *this;}
-	constexpr auto operator-=(difference_type n) -> array_iterator& {assert(stride_ != 0); ptr_ -= stride_*n; return *this;}
+	constexpr auto operator+=(difference_type n) -> array_iterator& { assert(stride_ != 0); assert(ptr_ != nullptr); ptr_ += stride_*n; return *this; }
+	constexpr auto operator-=(difference_type n) -> array_iterator& { assert(stride_ != 0); assert(ptr_ != nullptr); ptr_ -= stride_*n; return *this; }
 
 	#if defined(__clang__)
 	#pragma clang diagnostic pop

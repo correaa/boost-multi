@@ -49,5 +49,5 @@ timeout: 1000  # in milliseconds
 debug:
  slowIRVerification: true
 quiet: true  # additional logging?
-excludePaths:
-  - .*test.*
+# excludePaths:
+#   - .*test.*
