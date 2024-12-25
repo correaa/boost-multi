@@ -476,9 +476,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			std::vector<small_array<int, 2, 4UL * 4UL>> VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
 			BOOST_TEST( VV.size() == 3 );
+
 			swap(VV[0], VV[1]);
+			BOOST_TEST( VV[0] == xx );
+			BOOST_TEST( VV[1] == vv );
+
 			std::sort(VV.begin(), VV.end());
 			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
+
 			VV.resize(10, xx);
 			std::sort(VV.begin(), VV.end());
 			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
