@@ -21,6 +21,7 @@
 // #include <boost/multi/adaptors/complex.hpp>
 
 #include <complex>                                           // for complex
+#include <cstddef>                                           // for nullptr_t
 #include <functional>                                        // for negate
 #include <iterator>                                          // for iterator...
 #include <memory>                                            // for pointer_...
