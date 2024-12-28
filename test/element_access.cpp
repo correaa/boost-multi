@@ -27,7 +27,7 @@ void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& des
 }  // end namespace
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE)  /**/
+#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_AUTO_TEST_CASE(empty_intersection) {
@@ -142,9 +142,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto beg1 = arr({1, 3}, {2, 5}).elements().begin();
 			auto end1 = arr({1, 3}, {2, 5}).elements().end();
 			auto end2 = arr({1, 3}, {2, 5}).elements().end();
-			for(;end1 != beg1; --end1) {}  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+
+			for(; end1 != beg1; --end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+			}
 			BOOST_TEST( end1 == beg1 );
-			for(;end1 != end2; ++end1) {}  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+
+			for(; end1 != end2; ++end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+			}  
 			BOOST_TEST( end1 == end2 );
 		}
 
@@ -322,13 +326,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::array<double, 2> const A2D({3, 3}, 11);
-		multi::array<double, 2> B2D({2, 2}, 22);
-		multi::array<double, 1> v1D(3, 33);
+		multi::array<double, 2>       B2D({2, 2}, 22);
+		multi::array<double, 1>       v1D(3, 33);
 
 		using boost::multi::_;
-		v1D( _ )     = A2D(   _  ,   0   );  // v1D() = A2D( _ , 0);
-		v1D( _ )     = A2D(   0  ,   _   );  // v1D() = A2D( 0 )   ;
-		B2D( _ , _ ) = A2D({0, 2}, {0, 2});  // B2D() = A2D({0, 2}, {0, 2});
+		v1D(_)    = A2D(_, 0);            // v1D() = A2D( _ , 0);
+		v1D(_)    = A2D(0, _);            // v1D() = A2D( 0 )   ;
+		B2D(_, _) = A2D({0, 2}, {0, 2});  // B2D() = A2D({0, 2}, {0, 2});
 	}
 
 	return boost::report_errors();
