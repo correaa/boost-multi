@@ -2252,8 +2252,13 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 		std::conditional_t<
 			IsConst,
 			typename std::iterator_traits<typename std::pointer_traits<Ptr>::template rebind<Element const> >::reference,
-			typename std::iterator_traits<Ptr>::reference
-		>, multi::difference_type
+			std::conditional_t<
+				IsMove,
+				std::add_rvalue_reference_t<std::decay_t<typename std::iterator_traits<Ptr>::reference>>,
+				typename std::iterator_traits<Ptr>::reference
+			>
+		>,
+		multi::difference_type
 	>
 	, multi::affine            <array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>
 	, multi::decrementable    <array_iterator<Element, 1, Ptr, IsConst>>
@@ -2277,7 +2282,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
  public:
 	using reference = std::conditional_t<
 		IsMove,
-		std::add_rvalue_reference_t<reference_aux>,
+		std::add_rvalue_reference_t<std::decay_t<reference_aux>>,
 		reference_aux
 	>;
 
@@ -2406,11 +2411,12 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	}
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
-		if constexpr(IsMove) {
-			return multi::move(*ptr_);
-		} else {
-			return static_cast<reference>(*ptr_);
-		}
+		// if constexpr(IsMove) {
+		//  multi::what<decltype(std::move(*std::declval<Ptr const&>())), reference>();
+		//  return multi::move(*ptr_);
+		// } else {
+		return static_cast<reference>(*ptr_);
+		// }
 	}
 };
 
