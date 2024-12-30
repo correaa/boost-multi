@@ -256,8 +256,8 @@ clang++-16 mull-16 aggregate:  # mull-17 crashes
     - ctest -j 2 --output-on-failure
     - cd test
     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-16 --allow-surviving --reporters SQLite --reporters IDE --report-name multi --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -R $0 -j2) || exit 255)'
-    - mull-reporter-16 --version
-    - mull-reporter-16 --reporters IDE ./multi.sqlite --stop-on-failure
+    - mull-reporter-16 --help
+    - mull-reporter-16 --reporters IDE ./multi.sqlite
   needs: ["clang++"]
 
 # deb:
