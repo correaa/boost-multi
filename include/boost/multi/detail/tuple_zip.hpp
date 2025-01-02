@@ -14,7 +14,8 @@
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
 
-template<class... Ts> class tuple;
+// we need a custom tuple type, so some fundamental types (e.g. iterators) are trivially constructible
+template<class... Ts> class tuple;  // TODO(correaa) consider renaming it to `tpl`
 
 template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
  public:
