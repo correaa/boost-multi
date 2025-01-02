@@ -70,10 +70,10 @@ template<> inline constexpr bool force_element_trivial_destruction         <std:
 
 #include <utility>     // for forward
 
-#if !defined(__NVCC__)
-	#define BOOST_MULTI_FRIEND_CONSTEXPR friend constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
-#else
+#if defined(__NVCC__)
 	#define BOOST_MULTI_FRIEND_CONSTEXPR template<class = void> friend constexpr  // workaround nvcc
+#else
+	#define BOOST_MULTI_FRIEND_CONSTEXPR                        friend constexpr
 #endif
 
 #if defined(__NVCC__)
@@ -82,29 +82,10 @@ template<> inline constexpr bool force_element_trivial_destruction         <std:
 	#define BOOST_MULTI_HD
 #endif
 
-// #if defined(__APPLE__) && !defined(__clang__) /*&& defined(__aarch64__)*/ && defined(BOOST_UNIT_TEST_FRAMEWORK_DYN_LINK)
-//  #include <boost/test/tools/detail/print_helper.hpp>
-//  #include <boost/test/tree/test_unit.hpp>
-//  #include <boost/test/unit_test_suite.hpp>
-// auto boost::test_tools::tt_detail::print_log_value<char>::operator()(std::ostream&, char) -> void {}
-// auto boost::unit_test::test_unit::full_name() const -> std::string { return std::string{}; }
-// auto boost::unit_test::ut_detail::normalize_test_case_name(boost::unit_test::basic_cstring<char const> name) -> std::string {
-//  return std::string(name.begin(), name.end());
-// }
-// namespace boost::unit_test {
-// // void make_test_case(boost::function<void ()> const& f, boost::unit_test::basic_cstring<char const>, boost::unit_test::basic_cstring<char const>, unsigned long) {
-// //  f();
-// // }
-// }
-// #endif
-
 namespace boost::multi {
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct const_subarray;
-
-// template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
-// using subarray = const_subarray<T, D, ElementPtr, Layout>;
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class subarray;
