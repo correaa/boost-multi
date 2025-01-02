@@ -82,14 +82,10 @@ template<> inline constexpr bool force_element_trivial_destruction         <std:
 	#define BOOST_MULTI_HD
 #endif
 
-
 namespace boost::multi {
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct const_subarray;
-
-// template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
-// using subarray = const_subarray<T, D, ElementPtr, Layout>;
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class subarray;
