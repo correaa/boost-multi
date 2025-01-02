@@ -2815,13 +2815,14 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	#endif
 
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
-		typename types::layout_t new_layout = this->layout();
-		if(this->is_empty()) {
-			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-			new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
-		} else {
-			(new_layout.nelems() /= this->size())*=(last - first);
-		}
+		auto const new_layout = typename types::layout_t{
+			this->layout().sub(),
+			this->layout().stride(),
+			this->layout().offset(),
+			(this->is_empty())?
+				0:
+				this->layout().nelems() / this->size() * (last - first)
+		};
 
 		return const_subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}

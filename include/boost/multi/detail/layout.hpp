@@ -534,7 +534,7 @@ class continuous_layout<1, SSize> {
 
 	auto is_compact() const = delete;
 
-	auto sub() const -> layout_t<0, SSize> = delete;
+	auto sub() const { return layout_t<0, SSize>{}; }
 
 	using stride_type = std::integral_constant<difference_type, 1>;
 	auto stride() const -> stride_type { return {}; }
@@ -568,10 +568,11 @@ class continuous_layout<1, SSize> {
 	nelems_type nelems_;
 
  public:
-	constexpr explicit continuous_layout(extensions_type const& xs) :
-		offset_{xs.get<0>().front()},
-		nelems_{xs.get<0>().size()}
-	{}
+	constexpr explicit continuous_layout(extensions_type const& xs)
+	: offset_{xs.get<0>().front()},
+	  nelems_{xs.get<0>().size()} {}
+
+	constexpr auto reindex(index idx) -> auto& { offset_ = idx * stride(); return *this; }
 };
 
 template<typename SSize>
