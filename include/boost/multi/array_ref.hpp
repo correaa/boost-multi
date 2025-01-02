@@ -2391,7 +2391,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 		return 0 < other - *this;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference {
 		// if constexpr(IsMove) {
 		//  multi::what<decltype(std::move(*std::declval<Ptr const&>())), reference>();
 		//  return multi::move(*ptr_);
