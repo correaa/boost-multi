@@ -148,7 +148,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( end1 == beg1 );
 
 			for(; end1 != end2; ++end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
-			}  
+			}
 			BOOST_TEST( end1 == end2 );
 		}
 

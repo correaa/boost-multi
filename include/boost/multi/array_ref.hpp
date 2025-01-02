@@ -87,10 +87,10 @@ namespace boost::multi {
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct const_subarray;
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class subarray;
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class move_subarray;
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
@@ -3278,14 +3278,30 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
-struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>?
-: subarray<T, D, ElementPtr>
+class array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>?
+: public subarray<
+	T, D, ElementPtr,
+	std::conditional_t<(D == 1),
+		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
+	>
+>
 {
+	using subarray_base = subarray<
+		T, D, ElementPtr,
+		std::conditional_t<(D == 1),
+			// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+			layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+			layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
+		>
+	>;
+
+ public:
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
-	using layout_type = typename array_ref::types::layout_t;
-
-	using iterator = typename subarray<T, D, ElementPtr>::iterator;
+	using layout_type = typename subarray_base::layout_t;
+	using iterator = typename subarray_base::iterator;
 
  public:
 	constexpr  // attempt for MSVC
@@ -3320,16 +3336,16 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
+	: subarray_base{other.layout(), ElementPtr{std::move(other).base()}} {}
 
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) /*noexcept*/  // TODO(correa) eliminate this ctor
-	: subarray<T, D, ElementPtr>{typename subarray<T, D, ElementPtr>::types::layout_t(xs), dat} {}
+	: subarray_base{typename subarray<T, D, ElementPtr>::types::layout_t(xs), dat} {}
 
 	// constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
 	// : subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
 
 	constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
-	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t(exts), dat} {}
+	: subarray_base{typename array_ref::types::layout_t(exts), dat} {}
 
 	template<
 		class Array,
@@ -3373,7 +3389,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	// cppcheck-suppress noExplicitConstructor
 	array_ref(std::initializer_list<TT> il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
 
-	using subarray<T, D, ElementPtr>::operator=;
+	using subarray_base::operator=;
 
  private:
 	template<class It> constexpr auto copy_elements_(It first) {
