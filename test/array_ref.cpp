@@ -136,6 +136,22 @@ inline auto trace_separate_sub(multi::subarray<int, 2> const& arr) -> int {
 }  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+
+{
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for test
+	int icarr[5] = {};
+	multi::array_ref<int, 1> const iarrr(std::data(icarr), 5);
+	static_assert( std::is_base_of_v<
+		std::random_access_iterator_tag,
+		std::iterator_traits<multi::array_ref<int, 1>::iterator>::iterator_category
+	>);
+
+	// static_assert( std::is_base_of_v<
+	//  std::contiguous_iterator_tag,
+	//  std::iterator_traits<multi::array_ref<int, 1>::iterator>::iterator_category
+	// >);
+}
+
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	#if defined(__clang__)
 	#pragma clang diagnostic push
@@ -143,7 +159,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 	#endif
 
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for test
 	int arr[4][5] = {
 		{  0,  10,  20,  30,  40},
 		{ 50,  60,  70,  80,  90},

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -16,7 +16,8 @@ using size_type = std::make_signed_t<std::size_t>;
 using index               = std::make_signed_t<size_type>;
 using difference_type     = std::make_signed_t<index>;
 
-using dimensionality_type = index;
+using dimensionality_t = index;
+using dimensionality_type = dimensionality_t;
 
 }  // end namespace boost::multi
 #endif  // BOOST_MULTI_DETAIL_TYPES_HPP

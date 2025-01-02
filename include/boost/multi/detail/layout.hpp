@@ -503,6 +503,61 @@ struct monostate : equality_comparable<monostate> {
 	friend BOOST_MULTI_HD constexpr auto operator==(monostate const& /*self*/, monostate const& /*other*/) {return true;}
 };
 
+template<multi::dimensionality_t D = 1, typename SSsize = multi::size_t>
+class continuous_layout;
+
+template<typename SSize>
+class continuous_layout<1, SSize> {
+ public:
+	using dimensionality_type = multi::dimensionality_t;
+	using rank = std::integral_constant<dimensionality_type, 1>;
+	static constexpr dimensionality_type rank_v = rank::value;
+	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
+
+	using difference_type = SSize;
+	using size_type = difference_type;
+
+	using index = difference_type;
+	using index_range = multi::range<index>;
+	using index_extension = multi::extension_t<index>;
+	using extension_type = index_extension;
+
+	auto extension() const -> extension_type;
+
+	using extensions_type = multi::index_extensions<1>;
+	auto extensions() const -> extensions_type = delete;
+
+	auto is_empty() const -> bool = delete;
+	auto    empty() const -> bool = delete;
+
+	auto is_compact() const = delete;
+
+	auto sub() const -> layout_t<0, SSize> = delete;
+
+	using stride_type = void;  // perhaps std::integral_constant<dimensionality_type, 1>
+	auto stride() const -> stride_type;
+
+	using num_elements_type = void;
+	auto num_elements() const -> num_elements_type;
+
+	using offset_type = void;
+	auto offset() const -> offset_type;
+
+	using offsets_type = void;
+	auto offsets() const -> offsets_type;
+
+	using strides_type = void;  // perhaps std::integral_constant<dimensionality_type, 1>
+	auto strides() const -> stride_type;
+
+	auto size() const -> size_type;
+
+	using nelems_type = void;  // perhaps std::integral_constant<dimensionality_type, 1>
+	auto nelems() const -> nelems_type;
+
+	using sizes_type = void;
+	auto sizes() const -> sizes_type = delete;
+};
+
 template<typename SSize>
 struct layout_t<0, SSize>
 : multi::equality_comparable<layout_t<0, SSize> >
