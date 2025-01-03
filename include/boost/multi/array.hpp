@@ -228,9 +228,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It first, It last, allocator_type const& alloc)
-	: array_alloc{alloc}, ref{
+	: array_alloc{alloc}, ref(
 		                      array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),
-		                      index_extension(adl_distance(first, last)) * multi::extensions(*first)} {
+		                      index_extension(adl_distance(first, last)) * multi::extensions(*first)) {
 	#if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
 		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
