@@ -503,6 +503,78 @@ struct monostate : equality_comparable<monostate> {
 	friend BOOST_MULTI_HD constexpr auto operator==(monostate const& /*self*/, monostate const& /*other*/) {return true;}
 };
 
+template<multi::dimensionality_t D, typename SSsize = multi::size_t>
+class continuous_layout;
+
+template<typename SSize>
+class continuous_layout<1, SSize> {
+ public:
+	continuous_layout() = default;
+
+	using dimensionality_type = multi::dimensionality_t;
+	using rank = std::integral_constant<dimensionality_type, 1>;
+	static constexpr dimensionality_type rank_v = rank::value;
+	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
+
+	using difference_type = SSize;
+	using size_type = difference_type;
+
+	using index = difference_type;
+	using index_range = multi::range<index>;
+	using index_extension = multi::extension_t<index>;
+	using extension_type = index_extension;
+
+	constexpr auto extension() const { return extension_type{offset_, offset_ + nelems_}; }
+
+	using extensions_type = multi::index_extensions<1>;
+	auto extensions() const -> extensions_type { return extensions_type{extension()}; };
+
+	constexpr auto is_empty() const -> bool { return false; }
+	constexpr auto    empty() const -> bool { return is_empty(); }
+
+	auto is_compact() const = delete;
+
+	auto sub() const { return layout_t<0, SSize>{}; }
+
+	using stride_type = std::integral_constant<difference_type, 1>;
+	auto stride() const -> stride_type { return {}; }
+
+	using num_elements_type = size_type;
+	auto num_elements() const -> num_elements_type { return nelems_; }
+
+	using offset_type = difference_type;
+	auto offset() const -> offset_type { return offset_; }
+
+	using offsets_type = void;
+	auto offsets() const -> offsets_type;
+
+	using strides_type = multi::tuple<std::integral_constant<difference_type, 1> >;
+	auto strides() const -> stride_type;
+
+	auto size() const -> size_type { return nelems_; }
+
+	using nelems_type = size_type;
+	constexpr auto nelems() const -> nelems_type { return nelems_; }
+
+	using sizes_type = void;
+	auto sizes() const -> sizes_type = delete;
+
+	constexpr auto operator()(index const& idx) const -> difference_type { return idx - offset_; }
+
+ private:
+	// BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_   ;
+	// BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // = {};
+	offset_type offset_;
+	nelems_type nelems_;
+
+ public:
+	constexpr explicit continuous_layout(extensions_type const& xs)
+	: offset_{xs.get<0>().front()},
+	  nelems_{xs.get<0>().size()} {}
+
+	constexpr auto reindex(index idx) -> auto& { offset_ = idx * stride(); return *this; }
+};
+
 template<typename SSize>
 struct layout_t<0, SSize>
 : multi::equality_comparable<layout_t<0, SSize> >
@@ -567,7 +639,7 @@ struct layout_t<0, SSize>
 	[[nodiscard]] constexpr auto offsets() const {return offsets_type{};}
 	[[nodiscard]] constexpr auto nelemss() const {return nelemss_type{};}
 
-	constexpr auto operator()() const {return offset_;}
+	constexpr auto operator()() const { return offset_; }
 	// constexpr explicit operator offset_type() const {return offset_;}
 
 	constexpr auto stride() const -> stride_type = delete;
@@ -666,6 +738,20 @@ struct layout_t
  public:
 	layout_t() = default;
 
+	template<
+		class OtherLayout,
+		class = decltype(sub_type   {std::declval<OtherLayout const&>().sub()}),
+		class = decltype(stride_type{std::declval<OtherLayout const&>().stride()}),
+		class = decltype(offset_type{std::declval<OtherLayout const&>().offset()}),
+		class = decltype(nelems_type{std::declval<OtherLayout const&>().nelems()})
+	>
+	BOOST_MULTI_HD constexpr explicit layout_t(OtherLayout const& other) :
+		sub_{other.sub()}, 
+		stride_{other.stride()},
+		offset_{other.offset()},
+		nelems_{other.nelems()}
+	{}
+
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions) :
 		sub_{
 			std::apply(
@@ -705,9 +791,9 @@ struct layout_t
 	constexpr auto operator[](index idx) const {return at_aux_(idx);}
 
 	template<typename... Indices>
-	constexpr auto operator()(index idx, Indices... rest) const {return operator[](idx)(rest...);}
-	constexpr auto operator()(index idx)                  const {return at_aux_(idx);}
-	constexpr auto operator()()                           const {return *this;}
+	constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
+	constexpr auto operator()(index idx)                  const { return at_aux_(idx); }
+	constexpr auto operator()()                           const { return *this; }
 
 	       BOOST_MULTI_HD constexpr auto sub()             &       -> sub_type      & {return      sub_ ;}
 	       BOOST_MULTI_HD constexpr auto sub()        const&       -> sub_type const& {return      sub_ ;}

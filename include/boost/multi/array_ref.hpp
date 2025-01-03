@@ -87,10 +87,10 @@ namespace boost::multi {
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct const_subarray;
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class subarray;
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class move_subarray;
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
@@ -2698,7 +2698,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	constexpr auto broadcasted() const& {
-		multi::layout_t<2> const new_layout{this->layout(), 0, 0, (std::numeric_limits<size_type>::max)()};
+		multi::layout_t<1> const self_layout{this->layout()};
+		multi::layout_t<2> const new_layout{self_layout, 0, 0, (std::numeric_limits<size_type>::max)()};
 		return const_subarray<T, 2, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
@@ -2814,13 +2815,14 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	#endif
 
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
-		typename types::layout_t new_layout = this->layout();
-		if(this->is_empty()) {
-			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-			new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
-		} else {
-			(new_layout.nelems() /= this->size())*=(last - first);
-		}
+		auto const new_layout = typename types::layout_t{
+			this->layout().sub(),
+			this->layout().stride(),
+			this->layout().offset(),
+			(this->is_empty())?
+				0:
+				this->layout().nelems() / this->size() * (last - first)
+		};
 
 		return const_subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
@@ -3156,11 +3158,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
-	constexpr auto static_array_cast() const -> subarray<T2, 1, P2> {  // name taken from std::static_pointer_cast
+	constexpr auto static_array_cast() const -> subarray<T2, 1, P2, Layout> {  // name taken from std::static_pointer_cast
 		return {this->layout(), static_cast<P2>(this->base_)};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
-	constexpr auto static_array_cast(Args&&... args) const -> subarray<T2, 1, P2> {  // name taken from std::static_pointer_cast
+	constexpr auto static_array_cast(Args&&... args) const -> subarray<T2, 1, P2, Layout> {  // name taken from std::static_pointer_cast
 		return {this->layout(), P2{this->base_, std::forward<Args>(args)...}};
 	}
 
@@ -3278,16 +3280,30 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
-struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>?
-: subarray<T, D, ElementPtr>
+class array_ref : public subarray<
+	T, D, ElementPtr,
+	std::conditional_t<(D == 1),
+		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
+	>
+>
 {
-	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
-
-	using layout_type = typename array_ref::types::layout_t;
-
-	using iterator = typename subarray<T, D, ElementPtr>::iterator;
+	using subarray_base = subarray<
+		T, D, ElementPtr,
+		std::conditional_t<(D == 1),
+			// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+			layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+			layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
+		>
+	>;
 
  public:
+	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
+
+	using layout_type = typename subarray_base::layout_t;
+	using iterator = typename subarray_base::iterator;
+
 	constexpr  // attempt for MSVC
 	array_ref() = delete;  // because reference cannot be unbound
 
@@ -3315,21 +3331,21 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
-	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}  // cppcheck-suppress internalAstError ; bug in cppcheck 2.13.0
+	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // cppcheck-suppress internalAstError ; bug in cppcheck 2.13.0
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: subarray<T, D, ElementPtr>{other.layout(), ElementPtr{std::move(other).base()}} {}
+	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}
 
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) /*noexcept*/  // TODO(correa) eliminate this ctor
-	: subarray<T, D, ElementPtr>{typename subarray<T, D, ElementPtr>::types::layout_t(xs), dat} {}
+	: subarray_base(typename subarray_base::types::layout_t(xs), dat) {}
 
 	// constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
 	// : subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
 
 	constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
-	: subarray<T, D, ElementPtr>{typename array_ref::types::layout_t(exts), dat} {}
+	: subarray_base{typename array_ref::types::layout_t(exts), dat} {}
 
 	template<
 		class Array,
@@ -3373,7 +3389,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	// cppcheck-suppress noExplicitConstructor
 	array_ref(std::initializer_list<TT> il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
 
-	using subarray<T, D, ElementPtr>::operator=;
+	using subarray_base::operator=;
 
  private:
 	template<class It> constexpr auto copy_elements_(It first) {
@@ -3418,10 +3434,8 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 
 	template<typename TT, dimensionality_type DD = D, class... As>
-//  constexpr
 	auto operator=(array_ref<TT, DD, As...> const& other)& -> array_ref& {
 		assert( this->extensions() == other.extensions() );
-	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
@@ -3563,7 +3577,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
  private:
 	template<class Ar>
 	auto serialize_structured_(Ar& arxiv, unsigned int const version) {
-		subarray<T, D, ElementPtr>::serialize(arxiv, version);
+		subarray_base::serialize(arxiv, version);
 	}
 	template<class Archive>
 	auto serialize_flat_(Archive& arxiv, unsigned int const /*version*/) {
@@ -3618,7 +3632,7 @@ struct array_ptr
 	using basic_ptr = subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t>;
 
 	constexpr array_ptr(Ptr data, multi::extensions_t<D> extensions)
-	: basic_ptr{data, multi::layout_t<D>{extensions}} {}
+	: basic_ptr{data, typename array_ref<T, D, Ptr>::layout_t(extensions)} {}
 
 	constexpr explicit array_ptr(std::nullptr_t nil) : array_ptr{nil, multi::extensions_t<D>{}} {}
 
