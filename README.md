@@ -87,7 +87,8 @@ FetchContent_MakeAvailable(multi)
 target_link_libraries(my_target PUBLIC multi)
 ```
 
-The code requires compilers with standard C++17 support; for reference any of:
+The code requires [any C++ compiler](https://godbolt.org/z/nq8sb51ae) (or [CUDA compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support,
+for reference any of:
 LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
 GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
 Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) 
@@ -98,7 +99,7 @@ Baxter's    [`circle`](https://www.circle-lang.org/) (build 202+),
 [Zig](https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j) in [c++ mode (v0.9.0+)](https://godbolt.org/z/cKGebsWMG),
 Edison Desing's [EDG]() [(6.5+)](https://godbolt.org/z/693fxPedx)
 and
-Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.1](https://godbolt.org/z/vrfh1fxWK)).
+Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.1](https://godbolt.org/z/Kqrva137M)).
 
 (Multi code inside CUDA kernel can be compiled with `nvcc` and with [`clang` (in CUDA mode)](https://godbolt.org/z/7dTKdPTxc).
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
