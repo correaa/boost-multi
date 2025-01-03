@@ -3282,20 +3282,22 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 class array_ref : public subarray<
 	T, D, ElementPtr,
-	std::conditional_t<(D == 1),
+	typename std::conditional<
+		(D == 1),
 		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
 		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
-	>
+	>::type
 >
 {
 	using subarray_base = subarray<
 		T, D, ElementPtr,
-		std::conditional_t<(D == 1),
+		typename std::conditional<
+			(D == 1),
 			// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
 			layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 			layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
-		>
+		>::type
 	>;
 
  public:
