@@ -87,8 +87,8 @@ FetchContent_MakeAvailable(multi)
 target_link_libraries(my_target PUBLIC multi)
 ```
 
-The code requires [any C++ compiler](https://godbolt.org/z/nq8sb51ae) (or [CUDA compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support,
-for reference any of:
+The code requires [any C++ compiler](https://godbolt.org/z/hxEYGYEWc) (or [CUDA compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support;
+for reference, any of:
 LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
 GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
 Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) 
