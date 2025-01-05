@@ -3290,14 +3290,16 @@ class array_ref : public subarray<
 	>::type
 >
 {
+	using subarray_layout = // typename std::conditional<
+		// (D == 1), // continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		// layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
+	// >::type
+	;
+
 	using subarray_base = subarray<
 		T, D, ElementPtr,
-		typename std::conditional<
-			(D == 1),
-			// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
-			layout_t<D>,
-			layout_t<D>
-		>::type
+		subarray_layout
 	>;
 
  public:
