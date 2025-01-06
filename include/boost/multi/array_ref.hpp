@@ -3293,7 +3293,9 @@ class array_ref : public subarray<
 	using subarray_layout = // typename std::conditional<
 		// (D == 1), // continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
 		// layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
-		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>  // multi:: needed for msvc
+		::boost::multi::layout_t<
+			dimensionality_type(D),
+			typename std::pointer_traits<ElementPtr>::difference_type >  // multi:: needed for msvc
 	// >::type
 	;
 
