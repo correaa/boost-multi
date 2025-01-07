@@ -1978,7 +1978,8 @@ This example prints a 2-dimensional subblock of a larger array.
 
     fmt::print("A2 subblock = {}", A2({1, 3}, {0, 2}));  // second and third row, first and second column
 ```
-with the "flat" output `A2 subblock = [[3, 4], [6, 7]]`
+obtaining the "flat" output `A2 subblock = [[3, 4], [6, 7]]`.
+(A similar effect can be achieved with [experimental C++23 `std::print` in libc++]( https://godbolt.org/z/4ehd4s5vf).)
 
 For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
 
