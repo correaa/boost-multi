@@ -3282,19 +3282,19 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 class array_ref : public subarray<
 	T, D, ElementPtr,
-	typename std::conditional<
+	std::conditional_t<
 		(D == 1),
 		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
-	>::type
+	>
 >
 {
 	using subarray_layout = // typename std::conditional<
 		// (D == 1), // continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
 		// layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 		::boost::multi::layout_t<
-			dimensionality_type{D},
+			dimensionality_type{D},  // NOLINT(readability-redundant-casting) for msvc
 			typename std::pointer_traits<ElementPtr>::difference_type >  // multi:: needed for msvc
 	// >::type
 	;
