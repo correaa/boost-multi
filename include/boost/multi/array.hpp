@@ -149,6 +149,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		T, D,
 		typename multi::allocator_traits<typename multi::allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer
 	>;
+	using ref_base = ref;
 
 	auto operator new(std::size_t count) -> void* { return ::operator new(count); }
 	auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }
@@ -580,8 +581,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		>
 	>;
 
-	using iterator       = multi::array_iterator<T, D, typename static_array::element_ptr>;
-	using const_iterator = multi::array_iterator<T, D, typename static_array::element_ptr, true>;
+	using iterator       = typename ref_base::iterator;  // multi::array_iterator<T, D, typename static_array::element_ptr>;
+	using const_iterator = typename ref_base::const_iterator;  // multi::array_iterator<T, D, typename static_array::element_ptr, true>;
 
 	friend auto get_allocator(static_array const& self) -> allocator_type { return self.get_allocator(); }
 
@@ -845,10 +846,15 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
 	static_array(
-		typename static_array::extensions_type const& extensions,
-		typename static_array::element_type const&         elem
-	)  // 2
-	: array_alloc{}, ref(static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions) {
+		typename static_array::extensions_type extensions,
+		typename static_array::element_type const& elem
+	)
+	: array_alloc{}
+	, ref(
+		static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_type{extensions}.num_elements()), nullptr),
+		extensions
+	)
+	{
 		uninitialized_fill(elem);
 	}
 

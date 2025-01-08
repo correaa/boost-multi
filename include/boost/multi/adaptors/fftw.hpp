@@ -276,10 +276,10 @@ template<class InPtr, class In, class OutPtr, class Out, dimensionality_type D =
 auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layout, OutPtr out_base, Out const& out_layout, int sign, fftw::flags /*flags*/) -> fftw_plan {
 	assert(in_layout.extensions() == out_layout.extensions());
 
-	auto const sizes_tuple = in_layout.sizes();
+	auto const sizes_tuple = layout_t<D>{in_layout}.sizes();
 
-	auto const istride_tuple = in_layout.strides();
-	auto const ostride_tuple = out_layout.strides();
+	auto const istride_tuple = layout_t<D>{in_layout}.strides();
+	auto const ostride_tuple = layout_t<D>{out_layout}.strides();
 
 	using boost::multi::detail::get;
 	auto which_iodims = std::apply(

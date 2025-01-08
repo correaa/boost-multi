@@ -506,6 +506,8 @@ struct monostate : equality_comparable<monostate> {
 template<multi::dimensionality_t D, typename SSsize = multi::size_t>
 class continuous_layout;
 
+template<typename SSize> class continuous_layout<0, SSize> {};
+
 template<typename SSize>
 class continuous_layout<1, SSize> {
  public:
@@ -526,18 +528,19 @@ class continuous_layout<1, SSize> {
 
 	constexpr auto extension() const { return extension_type{offset_, offset_ + nelems_}; }
 
-	using extensions_type = multi::index_extensions<1>;
-	auto extensions() const -> extensions_type { return extensions_type{extension()}; };
+	using extensions_type = extensions_t<1>;
+	auto extensions() const -> extensions_type { return extensions_type{extension()}; }
 
 	constexpr auto is_empty() const -> bool { return false; }
 	constexpr auto    empty() const -> bool { return is_empty(); }
 
 	auto is_compact() const = delete;
 
-	auto sub() const { return layout_t<0, SSize>{}; }
+	using sub_type = layout_t<0, SSize>;
+	constexpr auto sub() const { return sub_type{}; }
 
 	using stride_type = std::integral_constant<difference_type, 1>;
-	auto stride() const -> stride_type { return {}; }
+	constexpr auto stride() const -> stride_type { return {}; }
 
 	using num_elements_type = size_type;
 	auto num_elements() const -> num_elements_type { return nelems_; }
@@ -556,8 +559,11 @@ class continuous_layout<1, SSize> {
 	using nelems_type = size_type;
 	constexpr auto nelems() const -> nelems_type { return nelems_; }
 
-	using sizes_type = void;
-	auto sizes() const -> sizes_type = delete;
+	using sizes_type = multi::tuple<size_type>;
+	constexpr auto sizes() const { return sizes_type{size()}; }
+
+	template<class... Ts>
+	auto scale(Ts... /*ts*/) const { assert(0); return *this; }
 
 	constexpr auto operator()(index const& idx) const -> difference_type { return idx - offset_; }
 
@@ -571,6 +577,13 @@ class continuous_layout<1, SSize> {
 	constexpr explicit continuous_layout(extensions_type const& xs)
 	: offset_{xs.get<0>().front()},
 	  nelems_{xs.get<0>().size()} {}
+
+	constexpr explicit continuous_layout(
+		sub_type /*sub*/,
+		stride_type /*stride*/,
+		offset_type offset,
+		nelems_type nelems
+	) : offset_{offset}, nelems_{nelems} {}
 
 	constexpr auto reindex(index idx) -> auto& { offset_ = idx * stride(); return *this; }
 };

@@ -48,6 +48,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( arr.begin() < arr.end() );
 			BOOST_TEST( arr.end() - arr.begin() == arr.size() );
 
+			// multi::what<
+			//  multi::array<double, 1>::layout_type,
+			//  multi::array<double, 1>::layout_type::stride_type,
+			//  multi::array<double, 1>::stride_type,
+			//  multi::array<double, 1>::iterator,
+			//  multi::array<double, 1>::const_iterator
+			// >();
+
 			multi::array<double, 1>::const_iterator const cbarr = arr.cbegin();
 			multi::array<double, 1>::iterator             barr  = arr.begin();
 

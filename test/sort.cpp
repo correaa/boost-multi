@@ -47,6 +47,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{2, 2, 2},
 			{1, 1, 1},
 		};
+
+		// multi::what<
+		//  multi::array<int, 2>::iterator::reference&&,
+		//  std::iter_value_t<multi::array<int, 2>::iterator>&
+		// >();
+
+		static_assert(std::indirectly_readable<multi::array<int, 2>::iterator>);
+		static_assert(std::input_iterator<multi::array<int, 2>::iterator>);
+		static_assert(std::ranges::input_range<multi::array<int, 2>>);
+		static_assert(std::ranges::forward_range<multi::array<int, 2>>);
+		static_assert(std::common_reference_with<
+			std::iter_reference_t<multi::array<int, 2>::iterator>&&, std::iter_value_t<multi::array<int, 2>::iterator>&
+		>);
+		static_assert(std::indirectly_readable<multi::array<int, 2>::iterator>);
+		static_assert(std::input_iterator<multi::array<int, 2>::iterator>);
+		static_assert(std::ranges::input_range<multi::array<int, 2>>);
+
 		BOOST_TEST( !std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		using it = boost::multi::array_iterator<int, 2, int*>;
@@ -147,12 +164,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );
 
 		// clang-format off
-	std::array<std::array<double, 5>, 4> d2D {{
-		{{150.0, 16.0, 17.0, 18.0, 19.0}},
-		{{ 30.0,  1.0,  2.0,  3.0,  4.0}},
-		{{100.0, 11.0, 12.0, 13.0, 14.0}},
-		{{ 50.0,  6.0,  7.0,  8.0,  9.0}}
-	}};
+		std::array<std::array<double, 5>, 4> d2D {{
+			{{150.0, 16.0, 17.0, 18.0, 19.0}},
+			{{ 30.0,  1.0,  2.0,  3.0,  4.0}},
+			{{100.0, 11.0, 12.0, 13.0, 14.0}},
+			{{ 50.0,  6.0,  7.0,  8.0,  9.0}}
+		}};
 		// clang-format on
 
 		auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access

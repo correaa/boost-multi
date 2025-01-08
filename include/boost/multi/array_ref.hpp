@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
+#include <type_traits>
 #pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
@@ -87,10 +88,10 @@ namespace boost::multi {
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct const_subarray;
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type> >
 class subarray;
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type> >
 class move_subarray;
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
@@ -127,6 +128,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 
 	using layout_t = Layout;
+	using layout_type = Layout;
 
 	using rank = typename layout_t::rank;
 
@@ -213,19 +215,31 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using reference = typename std::conditional_t<
 		(D > 1),
-		subarray<element, D-1, element_ptr>,
+		subarray<
+			element, D - 1, element_ptr,
+			std::conditional_t<
+				std::is_same_v<stride_type, std::integral_constant<int, 1>> && (D == 2),
+				multi::continuous_layout<D - 1>,
+				multi::layout_t<D - 1>
+			>
+		>,
 		typename std::iterator_traits<element_ptr>::reference
 	>;
 
 	using const_reference = typename std::conditional_t<
 		(D > 1),
-		const_subarray<element, D-1, element_ptr>,
+		// const_subarray<element, D-1, element_ptr>,
+		const_subarray<
+			element, D - 1, element_ptr, 
+			std::conditional_t<
+				std::is_same_v<stride_type, std::integral_constant<int, 1>> && (D == 2),
+				multi::continuous_layout<D - 1>,
+				multi::layout_t<D - 1>
+			>
+		>,
 		typename std::iterator_traits<element_const_ptr>::reference
 	>;
 
-	// BOOST_MULTI_HD constexpr auto base() &      -> element_ptr       {return base_;}
-	// BOOST_MULTI_HD constexpr auto base() &&     -> element_ptr       {return base_;}
-	// BOOST_MULTI_HD constexpr auto base() const& -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }
 
 	BOOST_MULTI_HD constexpr auto  mutable_base() const -> element_ptr {return base_;}
@@ -247,7 +261,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
 	
-	template<class, ::boost::multi::dimensionality_type, typename, bool, bool> friend struct array_iterator;
+	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class> friend struct array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
 	BOOST_MULTI_HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
@@ -307,7 +321,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<typename, multi::dimensionality_type, typename, bool, bool> friend struct array_iterator;
+	template<typename, multi::dimensionality_type, typename, bool, bool, typename, class> friend struct array_iterator;
 
 	// ~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -320,7 +334,8 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	using reference = std::conditional_t<
 		IsConst,
 		const_subarray<T, D, ElementPtr, Layout>,
-		subarray<T, D, ElementPtr, Layout>>;
+		subarray<T, D, ElementPtr, Layout>
+	>;
 
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -428,19 +443,29 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> subarray_ptr& { advance(n); return *this; }
 };
 
-template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false>
+template<
+	class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false,
+	typename StrideType = typename std::iterator_traits<ElementPtr>::difference_type,
+	class    LayoutType = layout_t<D - 1>
+>
 struct array_iterator;
 
-template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove>
+template<
+	class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove,
+	typename StrideType, class LayoutType
+>
 struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 : boost::multi::iterator_facade<
-	array_iterator<Element, D, ElementPtr, IsConst, IsMove>, void, std::random_access_iterator_tag,
-	subarray<Element, D-1, ElementPtr> const&, typename layout_t<D-1>::difference_type
+	array_iterator<Element, D, ElementPtr, IsConst, IsMove, StrideType, LayoutType>, void, std::random_access_iterator_tag,
+	subarray<Element, D-1, ElementPtr> const&, multi::difference_type
 >
-, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst>>
-, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst>>
-, multi::affine<array_iterator<Element, D, ElementPtr, IsConst>, multi::difference_type>
-, multi::totally_ordered2<array_iterator<Element, D, ElementPtr, IsConst>, void> {
+, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, StrideType, LayoutType> >
+, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, StrideType, LayoutType> >
+, multi::affine        <
+	array_iterator<Element, D, ElementPtr, IsConst, IsMove, StrideType, LayoutType>,
+	multi::difference_type
+>
+, multi::totally_ordered2<array_iterator<Element, D, ElementPtr, IsConst, IsMove, StrideType, LayoutType>, void> {
 	~array_iterator() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	constexpr auto operator=(array_iterator&&)  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
@@ -454,15 +479,22 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using element = Element;
 	using element_ptr = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
-	using value_type = typename subarray<element, D-1, element_ptr>::decay_type;
+	using value_type = std::conditional_t<
+		D == 1,
+		element,
+		typename subarray<element, (D - 1), element_ptr>::decay_type
+	>;
 
 	using pointer         = subarray<element, D - 1, element_ptr>*;
 	using reference       = std::conditional_t<
 		IsConst,
-		const_subarray<element, D - 1, element_ptr>,
-		subarray<element, D - 1, element_ptr>
+		const_subarray<element, D - 1, element_ptr, LayoutType>,
+		      subarray<element, D - 1, element_ptr, LayoutType>
 	>;
-	using const_reference = const_subarray<element, D - 1, element_ptr>;  // TODO(correaa) should be const_subarray (base of subarray)
+	using const_reference = const_subarray<
+		element, D - 1, element_ptr,
+		LayoutType
+	>;
 
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -471,14 +503,14 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
 	using ptr_type = subarray_ptr<element, D-1, element_ptr, layout_t<D-1>>;
 
-	using stride_type = index;
+	using stride_type = StrideType;
 	using layout_type = typename reference::layout_type;  // layout_t<D - 1>
 
 	// BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
 	// BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
 	BOOST_MULTI_HD constexpr array_iterator() : ptr_{}, stride_{} {}  // = default;  // TODO(correaa) make = default, now it is not compiling
 
-	template<class, dimensionality_type, class, bool, bool> friend struct array_iterator;
+	template<class, dimensionality_type, class, bool, bool, typename, class> friend struct array_iterator;
 
 	template<
 		class EElement, typename PPtr,
@@ -1015,9 +1047,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
 	BOOST_MULTI_FRIEND_CONSTEXPR auto size (const_subarray const& self) noexcept -> typename const_subarray::size_type  {return self.size ();}  // needed by nvcc
 
-	//  template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray     && self) {return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
-	//  template<class T2> friend constexpr auto reinterpret_array_cast(const_subarray const& self) {return           self .template reinterpret_array_cast<T2, typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>();}
-
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) {return D;}
 
 	using typename types::reference;
@@ -1457,14 +1486,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) {return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
-	using       iterator = array_iterator<element, D, element_ptr      >;
-	using const_iterator = array_iterator<element, D, element_ptr, true>;
-	using move_iterator  = array_iterator<element, D, element_ptr, false, true>;
-
-	// using  move_iterator = array_iterator<element, D, element_move_ptr >;
-
-	// using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
-	// using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
+	using       iterator = array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type>;
+	using const_iterator = array_iterator<element, D, element_ptr, true , false, typename layout_type::stride_type>;
+	using move_iterator  = array_iterator<element, D, element_ptr, false, true , typename layout_type::stride_type>;
 
 	const_subarray(iterator first, iterator last)
 	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first)*first->size()), first.base()) {
@@ -1813,7 +1837,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
-	template<class, multi::dimensionality_type, class, bool, bool> friend struct array_iterator;
+	template<class, multi::dimensionality_type, class, bool, bool, typename, class> friend struct array_iterator;
 
 	subarray(subarray const&) = default;
 
@@ -1822,7 +1846,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
 
-	using move_iterator  = array_iterator<T, D, ElementPtr, false, true>;
+	using layout_type = Layout;
+	using stride_type = typename layout_type::stride_type;
+
+	using      iterator  = array_iterator<T, D, ElementPtr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using move_iterator  = array_iterator<T, D, ElementPtr, false, true , typename layout_type::stride_type, typename layout_type::sub_type>;
 
 	subarray(subarray&&) noexcept = default;
 	~subarray() = default;
@@ -2057,12 +2085,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	// BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray<T, D, ElementPtr, Layout> /*const*/ {return this->paren_aux_();}  // NOLINT(readability-redundant-access-specifiers,readability-const-return-type)
 
-	// using reference = typename std::conditional_t<
-	//  (D > 1),
-	//  subarray<typename subarray::element, D-1, typename subarray::element_ptr>,
-	//  typename std::iterator_traits<typename subarray::element_ptr>::reference
-	// >;
-
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const&    { return static_cast<typename subarray::const_reference>(this->at_aux_(idx)); }  // TODO(correaa) use return type to cast
 	using const_subarray<T, D, ElementPtr, Layout>::operator[];
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_subarray<T, D, ElementPtr, Layout>::operator[](idx); }
@@ -2144,26 +2166,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto flatted() && {return this->flatted();}
 
 	using const_subarray<T, D, ElementPtr, Layout>::reinterpret_array_cast;
-	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
-	// constexpr auto reinterpret_array_cast() & {
-	//  assert(this->layout().stride() * static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0);
 
-	//  return subarray<T2, 1, P2>{
-	//    typename subarray::layout_type{this->layout().sub(), this->layout().stride() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2)), this->layout().offset() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2)), this->layout().nelems() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2))},
-	//    reinterpret_pointer_cast<P2>(this->base_)
-    //     };
-	// }
-
-	// template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
-	// constexpr auto reinterpret_array_cast() && { return this->reinterpret_array_cast(); }
-
-	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
+	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast() & {
-		// static_assert( sizeof(T)%sizeof(T2) == 0,
-		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
-
-		return subarray<T2, D, P2>(
-			this->layout().scale(sizeof(T), sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
+		return subarray<T2, D, P2, Layout>(
+			this->layout().scale(sizeof(T), sizeof(T2)),  // NsssLINT(bugprone-sizeof-expression)
 			reinterpret_pointer_cast<P2>(this->base_)  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
 		);
 	}
@@ -2186,13 +2193,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		if constexpr(std::is_pointer_v<ElementPtr>) {
-			return subarray<T2, D + 1, P2>(
-				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+			return subarray<T2, D + 1, P2, layout_t<D+1> >(
+				layout_t<D+1>(layout_t<D>{this->layout()}.scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
 				static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 			);
 		} else {
-			return subarray<T2, D + 1, P2>(
-				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+			return subarray<T2, D + 1, P2, layout_t<D+1> >(
+				layout_t<D+1>(layout_t<D>{this->layout()}.scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
 				reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 			);
 		}
@@ -2205,13 +2212,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		if constexpr(std::is_pointer_v<ElementPtr>) {
-			return subarray<T2, D + 1, P2>(
-				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+			return subarray<T2, D + 1, P2, layout_t<D+1> >(
+				layout_t<D+1>(layout_t<D>{this->layout()}.scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
 				static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 			);
 		} else {
-			return subarray<T2, D + 1, P2>(
-				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+			return subarray<T2, D + 1, P2, layout_t<D+1> >(
+				layout_t<D+1>(layout_t<D>{this->layout()}.scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
 				reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 			);
 		}
@@ -2225,10 +2232,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
 
-template<class Element, typename Ptr, bool IsConst, bool IsMove>
-struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
+template<class Element, typename Ptr, bool IsConst, bool IsMove, typename StrideType>
+struct array_iterator<Element, 1, Ptr, IsConst, IsMove, StrideType>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
 	: boost::multi::iterator_facade<
-		array_iterator<Element, 1, Ptr, IsConst, IsMove>,
+		array_iterator<Element, 1, Ptr, IsConst, IsMove, StrideType>,
 		Element, std::random_access_iterator_tag,
 		std::conditional_t<
 			IsConst,
@@ -2241,11 +2248,11 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 		>,
 		multi::difference_type
 	>
-	, multi::affine            <array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>
-	, multi::decrementable    <array_iterator<Element, 1, Ptr, IsConst>>
-	, multi::incrementable    <array_iterator<Element, 1, Ptr, IsConst>>
-	, multi::totally_ordered2 <array_iterator<Element, 1, Ptr, IsConst>, void> {
-	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>;
+	, multi::affine            <array_iterator<Element, 1, Ptr, IsConst, IsMove, StrideType>, multi::difference_type>
+	, multi::decrementable    <array_iterator<Element, 1, Ptr, IsConst, IsMove, StrideType>>
+	, multi::incrementable    <array_iterator<Element, 1, Ptr, IsConst, IsMove, StrideType>>
+	, multi::totally_ordered2 <array_iterator<Element, 1, Ptr, IsConst, IsMove, StrideType>, void> {
+	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, StrideType>, multi::difference_type>;
 
 	using pointer = std::conditional_t<
 		IsConst,
@@ -2296,7 +2303,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	constexpr explicit array_iterator(Other const& other)
 	: ptr_{other.data_}, stride_{other.stride_} {}
 
-	template<class, dimensionality_type, class, bool, bool> friend struct array_iterator;
+	template<class, dimensionality_type, class, bool, bool, typename, class> friend struct array_iterator;
 
 	template<
 		class EElement, typename PPtr,
@@ -2321,7 +2328,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
+	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, stride_type stride)
 	: ptr_{ptr}, stride_{stride} {}
 
  private:
@@ -2400,9 +2407,6 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove>  // NOLINT(fuchsia-multi
 		// }
 	}
 };
-
-template<class Element, dimensionality_type D, typename... Ts>
-using iterator = array_iterator<Element, D, Ts...>;
 
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 0, ElementPtr, Layout>
@@ -2544,6 +2548,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
 	using layout_type = Layout;
+	using stride_type = typename layout_type::stride_type;
 	using ref_ = const_subarray;
 
 	using element_type = T;
@@ -2614,7 +2619,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  protected:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<class, dimensionality_type D, class, bool, bool> friend struct array_iterator;
+	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct array_iterator;
 
  public:
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type {return 1;}
@@ -2832,9 +2837,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	#endif
 
  public:
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> basic_const_array /*const*/ { return basic_const_array{sliced_aux_(first, last)};}  // NOLINT(readability-const-return-type)
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last)      & ->          const_subarray           { return                   sliced_aux_(first, last) ;}
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last)     && ->          const_subarray           { return                   sliced_aux_(first, last) ;}
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> const_subarray<T, 1, ElementPtr, Layout> { return sliced_aux_(first, last); }
+	// BOOST_MULTI_HD constexpr auto sliced(index first, index last)      & -> const_subarray<T, 1, ElementPtr, Layout> { return sliced_aux_(first, last) ; }
+	// BOOST_MULTI_HD constexpr auto sliced(index first, index last)     && -> const_subarray<T, 1, ElementPtr, Layout> { return sliced_aux_(first, last) ; }
 
 	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
@@ -2865,14 +2870,14 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  private:
 	constexpr auto strided_aux_(difference_type diff) const {
-		auto const new_layout = typename types::layout_t{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
-		return subarray<T, 1, ElementPtr, Layout>(new_layout, types::base_);
+		auto const new_layout = layout_t<1>{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
+		return subarray<T, 1, ElementPtr, layout_t<1> >(new_layout, types::base_);
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> const_subarray { return strided_aux_(diff);}
+	constexpr auto strided(difference_type diff) const& -> const_subarray<T, 1, ElementPtr, layout_t<1> > { return strided_aux_(diff);}
 
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> const_subarray<T, 1, ElementPtr, layout_t<1> > { return sliced(first, last).strided(stride); }
 	// BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)     && -> const_subarray { return sliced(first, last).strided(stride); }
 	// BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)      & -> const_subarray { return sliced(first, last).strided(stride); }
 
@@ -2933,7 +2938,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto partitioned_aux_(size_type size) const {
 		assert( size != 0 );
 		assert( (this->layout().nelems() % size) == 0 );  // TODO(correaa) remove assert? truncate left over? (like mathematica) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/size, 0, this->layout().nelems()};
+		multi::layout_t<2> new_layout{multi::layout_t<1>{this->layout()}, this->layout().nelems()/size, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= size;  // TODO(correaa) : don't use mutation
 		return subarray<T, 2, element_ptr>(new_layout, types::base_);
 	}
@@ -2991,9 +2996,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	auto transposed() const& = delete;
 	auto flatted() const& = delete;
 
-	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr      >;
-	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true>;
-	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
+	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false /*fix?*/, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true         , false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false        , true , typename layout_type::stride_type, typename layout_type::sub_type>;
 
 	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
@@ -3031,7 +3036,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 	#endif
 
-	constexpr BOOST_MULTI_HD auto begin_aux_() const {return iterator{this->base_                  , this->stride()};}
+	constexpr BOOST_MULTI_HD auto begin_aux_() const {
+		stride_type const ss = this->stride();
+		return iterator{this->base_                  , ss};  // this->stride()};
+	}
 	constexpr                auto end_aux_  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
 
 	#if defined(__clang__)
@@ -3210,7 +3218,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #else
 		auto p2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
-		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), p2);
+		return subarray<T2, 1, P2, decltype(this->layout().scale(sizeof(T), sizeof(T2)))>(
+			this->layout().scale(sizeof(T), sizeof(T2)), p2
+		);
 	}
 
 	// constexpr auto element_moved()  & {return subarray<typename subarray::element, D, element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_});}
@@ -3220,8 +3230,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto reinterpret_array_cast()  const& {
 		assert( this->layout().stride()*static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0 );
 
-		return const_subarray<T2, 1, P2>{
-			layout_type{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
+		return const_subarray<T2, 1, P2, layout_t<1> >{
+			layout_t<1>{this->layout().sub(), this->layout().stride()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().offset()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2)), this->layout().nelems()*static_cast<size_type>(sizeof(T))/static_cast<size_type>(sizeof(T2))},
 			reinterpret_pointer_cast<P2>(this->base_)
 		};
 	}
@@ -3283,8 +3293,8 @@ template<typename T, dimensionality_type D, typename ElementPtr = T*>
 class array_ref : public subarray<
 	T, D, ElementPtr,
 	std::conditional_t<(D == 1),
-		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
-		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+		continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		// layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 		layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
 	>
 >
@@ -3292,17 +3302,19 @@ class array_ref : public subarray<
 	using subarray_base = subarray<
 		T, D, ElementPtr,
 		std::conditional_t<(D == 1),
-			// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
-			layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+			continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+			// layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 			layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
 		>
 	>;
 
  public:
+
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
-	using layout_type = typename subarray_base::layout_t;
-	using iterator = typename subarray_base::iterator;
+	using layout_type = typename subarray_base::layout_type;
+	using iterator  = array_iterator<T, D, ElementPtr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	// using iterator = typename subarray_base::iterator;
 
 	constexpr  // attempt for MSVC
 	array_ref() = delete;  // because reference cannot be unbound
