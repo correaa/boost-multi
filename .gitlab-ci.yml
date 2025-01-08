@@ -1061,6 +1061,32 @@ qmcpack cuda-12.3.1:
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
   needs: ["qmcpack","cuda"]
 
+qmcpack cuda-12.3.1 complex:
+  stage: test
+  image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+    - high-bandwidth
+  interruptible: true
+  before_script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
+  script:
+    - nvidia-smi
+    - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git  # https://github.com/correaa/qmcpack.git --branch correaa-patch-use-adl-get
+    - cd qmcpack
+    - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
+    - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
+    - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_SHA # e.g. https://gitlab.com/correaa/boost-multi.git
+    - cd build
+    - nvcc --version
+    - __nvcc_device_query
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_COMPLEX=1 -DQMC_CXX_STANDARD=17 -DQMC_GPU=cuda -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" -DCMAKE_CUDA_ARCHITECTURES=75  # =80
+    - make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
+    - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
+  needs: ["qmcpack","cuda"]
+
 # sonar cloud
 # from instructions
 # another example here: https://github.com/sonarsource-cfamily-examples/linux-cmake-gitlab-ci-sc/blob/main/.gitlab-ci.yml
