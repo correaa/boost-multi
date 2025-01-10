@@ -761,7 +761,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 
 	BOOST_MULTI_HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ && l_ == other.l_);
-		return n_ - other.n_;
+		return n_ + other.n_;
 	}
 	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ && l_ == other.l_);
