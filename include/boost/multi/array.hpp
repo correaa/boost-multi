@@ -960,9 +960,9 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		return *(this->base_);
 	}
 
-	constexpr explicit operator typename static_array::element_type() const {
-		return *(this->base_);
-	}
+	// constexpr explicit operator typename static_array::element_type() const {
+	// 	return *(this->base_);
+	// }
 
 	constexpr auto rotated() const& {
 		typename static_array::layout_t new_layout = this->layout();
