@@ -19,10 +19,10 @@ template<class... Ts> class tuple;  // TODO(correaa) consider renaming it to `tp
 
 template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
  public:
-	constexpr tuple()             = default;
-	constexpr tuple(tuple const&) = default;
+	tuple()             = default;
+	tuple(tuple const&) = default;
 
-	constexpr auto operator=(tuple const&) -> tuple& = default;
+	auto operator=(tuple const&) -> tuple& = default;
 
 	constexpr auto operator==(tuple const& /*other*/) const -> bool { return true; }
 	constexpr auto operator!=(tuple const& /*other*/) const -> bool { return false; }

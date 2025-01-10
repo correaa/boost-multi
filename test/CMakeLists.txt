@@ -242,7 +242,7 @@ else()
 	-Wzero-as-null-pointer-constant
 	# -Wzero-length-bounds # (gcc 12, not in 11)
 	>
-	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
+	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra -Weverything $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-WCFString-literal
 	-WCL4
@@ -319,9 +319,10 @@ else()
 	# -Wc++2b-extensions
 	# -Wc++98-c++11-c++14-c++17-compat -Wc++98-c++11-c++14-c++17-compat-pedantic -Wc++98-c++11-c++14-compat -Wc++98-c++11-c++14-compat-pedantic
 	# -Wc++98-c++11-compat -Wc++98-c++11-compat-binary-literal -Wc++98-c++11-compat-pedantic
-	# -Wc++98-compat
-	-Wno-c++98-compat-bind-to-temporary-copy
-	#-Wc++98-compat-extra-semi -Wc++98-compat-local-type-template-args -Wc++98-compat-pedantic -Wc++98-compat-unnamed-type-template-args
+	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
+	#-Wc++98-compat-extra-semi -Wc++98-compat-local-type-template-args
+	-Wno-c++98-compat-pedantic
+	#-Wc++98-compat-unnamed-type-template-args
 	-Wno-c++98-compat-unnamed-type-template-args
 	# -Wc11-extensions
 	# -Wc2x-extensions
@@ -611,7 +612,7 @@ else()
 	# -Woverriding-option (not in clang 14)
 	# -Woverriding-t-option (not in clang 18)
 	-Wpacked
-	# -Wpadded (ask for aligment)
+	-Wno-padded
 	-Wparentheses
 	-Wparentheses-equality
 	-Wpartial-availability
@@ -634,7 +635,8 @@ else()
 	# -Wpragma-clang-attribute -Wpragma-once-outside-header -Wpragma-pack -Wpragma-pack-suspicious-include -Wpragma-system-header-outside-header -Wpragmas
 	# -Wpre-c++14-compat -Wpre-c++14-compat-pedantic
 	# -Wpre-c++17-compat -Wpre-c++17-compat-pedantic
-	# -Wpre-c++20-compat -Wpre-c++20-compat-pedantic -Wpre-c++2b-compat -Wpre-c++2b-compat-pedantic (clang 13, not in clang 11)
+	# -Wpre-c++20-compat -Wpre-c++20-compat-pedantic
+	# -Wpre-c++2b-compat -Wpre-c++2b-compat-pedantic (clang 13, not in clang 11)
 	# -Wpre-c2x-compat -Wpre-c2x-compat-pedantic (clang 13, not in clang 11)
 	# -Wpre-openmp-51-compat (clang 13, not in clang 11)
 	-Wpredefined-identifier-outside-function
