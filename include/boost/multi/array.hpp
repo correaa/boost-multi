@@ -961,7 +961,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
 	template<class OtherElement, std::enable_if<std::is_convertible_v<typename static_array::element_type, OtherElement>, int> =0>
-	constexpr operator OtherElement() const {  // typename static_array::element_type() const {
+	constexpr explicit operator OtherElement() const {  // typename static_array::element_type() const {
 		return static_cast<OtherElement>(*(this->base_));
 	}
 
