@@ -960,11 +960,10 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		return *(this->base_);
 	}
 
-	#if defined(__NVCC__)
-	constexpr explicit operator typename static_array::element_type() const {
-		return *(this->base_);
+	template<class OtherElement, std::enable_if<std::is_convertible_v<typename static_array::element_type, OtherElement>, int> =0>
+	constexpr operator OtherElement() const {  // typename static_array::element_type() const {
+		return static_cast<OtherElement>(*(this->base_));
 	}
-	#endif
 
 	constexpr auto rotated() const& {
 		typename static_array::layout_t new_layout = this->layout();
