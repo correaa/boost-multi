@@ -99,6 +99,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// int d3 = 3141592;
 			// BOOST_TEST(( *multi::array_ptr<int, 0>(&d3, {}) == 3141592 ));
 		}
+		{
+			multi::array<int, 0> const arr( {}, 5 );
+			BOOST_TEST( arr.num_elements() == 1 );
+			auto arr_val = int{arr};
+			BOOST_TEST( arr_val == 5 );
+		}
 	}
 
 	return boost::report_errors();
