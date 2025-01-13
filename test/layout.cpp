@@ -12,7 +12,7 @@
 #endif
 #endif
 #include <tuple>     // for make_tuple, tuple_element<>::type
-// IWYU pragma: no_include <type_traits>
+#include <type_traits>
 #include <vector>                           // for vector
 // IWYU pragma: no_include <version>
 
