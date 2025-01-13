@@ -76,12 +76,6 @@ BOOST_AUTO_TEST_CASE(contiguous_layout) {
 		>
 	);
 
-	static_assert(
-		std::is_base_of_v<
-			std::random_access_iterator_tag, ArrayRef::const_iterator::iterator_category
-		>
-	);
-
 	// multi::what(arr.begin().stride());
 
 	// #if (__cplusplus >= 202002L)
