@@ -4,6 +4,7 @@
 
 #include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
 
+// IWYU pragma: no_include <algorithm>
 #include <array>     // for array, array<>::value_type
 #include <iterator>  // for size
 #if __cplusplus > 201703L
