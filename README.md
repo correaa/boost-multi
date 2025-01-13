@@ -87,7 +87,8 @@ FetchContent_MakeAvailable(multi)
 target_link_libraries(my_target PUBLIC multi)
 ```
 
-The code requires compilers with standard C++17 support; for reference any of:
+The code requires [any C++ compiler](https://godbolt.org/z/hxEYGYEWc) (or [CUDA compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support;
+for reference, any of:
 LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
 GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
 Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) 
@@ -98,7 +99,7 @@ Baxter's    [`circle`](https://www.circle-lang.org/) (build 202+),
 [Zig](https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j) in [c++ mode (v0.9.0+)](https://godbolt.org/z/cKGebsWMG),
 Edison Desing's [EDG]() [(6.5+)](https://godbolt.org/z/693fxPedx)
 and
-Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.1](https://godbolt.org/z/vrfh1fxWK)).
+Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.1](https://godbolt.org/z/Kqrva137M)).
 
 (Multi code inside CUDA kernel can be compiled with `nvcc` and with [`clang` (in CUDA mode)](https://godbolt.org/z/7dTKdPTxc).
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
@@ -327,7 +328,7 @@ Constructing or assigning from an existing array generates a copy of the origina
 ```cpp
 auto B2 = A2;  // same as multi::array<double, 2> B2 = A2; (A2 is defined above)
 
-assert(  B2       ==  A2       );  // copies have the same value (and also the same shape)
+assert(  B2       ==  A2       );  // copies have the same element values (and also the same shape)
 assert(  B2[0][0] ==  A2[0][0] )
 assert( &B2[0][0] != &A2[0][0] );  // but they are independent
 ```
@@ -347,7 +348,7 @@ or equivalently,
 auto C2 = + A2( {0, 2}, {0, 2} );
 ```
 Note the use of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
-Due to a language limitation, omitting the `+`` will create another non-independent reference view of the left-hand side, which is generally undesired.
+Due to a language limitation, omitting the `+` will create another non-independent reference view of the left-hand side, which is generally undesired.
 
 Subarray-references can also assigned, but only if the shapes of the left-hand side (LHS) and right-hand side (RHS) match.
 Otherwise, the behavior is undefined (in debug mode, the program will fail an assertion).
@@ -360,13 +361,13 @@ Using the same or overlapping arrays in the RHS and LHS of assignment produces u
 Notably, this instruction does not transpose the array but produces an undefined result:
 
 ```cpp
-A2 = A2.transposed();
+A2 = A2.transposed();  // undefined result, this is an error
 ```
 
 While this below instead does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
 
 ```cpp
-A2 = + A2.transposed();
+A2 = + A2.transposed();  // ok, (might allocate)
 ```
 
 This is an instance of the problem of _data aliasing_, which describes a common situation in which a data location in memory can be accessed through different parts of an expression or function call.
@@ -376,7 +377,7 @@ However the problem of aliasing can persist when taking mutable array-references
 The most general solution to this problem is to make copies or directly work with completely disjoint objects; 
 but other case-by-case solutions might be possible.
 
-For example, in-place transposition is an active subject of research;
+For example, in-place transposition (as attempted above) is an active subject of research;
 _optimal_ speed and memory transpositions might require specially designed libraries.
 
 Finally, arrays can be efficiently moved by transferring ownership of the internal data.
@@ -386,7 +387,7 @@ auto B2 = std::move(A2);  // A2 is empty after this
 ```
 
 Subarrays do not own the data; therefore they cannot directly take advantage of this feature.
-However, individual elements of a view can be moved; this is particularly useful if the elements are expensive to copy.
+However, individual elements of a view can still be moved; this is particularly useful if the elements are expensive to copy (elements that are containers themselves for exampe).
 A "moved" subview is simply another kind of view of the elements.
 
 ```cpp
@@ -396,7 +397,8 @@ multi::array<std::vector<double>, 2> B({10, 10});
 B[1] = A[2].element_moved();
 ```
 
-Each of the 10 *elements* of the third row of A is moved into the second row of B. A[2] still has 10 (moved-from) empty vectors
+Each of the 10 *elements* of the third row of `A` is moved into the second row of `B`.
+`A[2]` still has 10 (moved-from) empty vectors.
 
 
 ## Change sizes (extents)
@@ -1977,7 +1979,8 @@ This example prints a 2-dimensional subblock of a larger array.
 
     fmt::print("A2 subblock = {}", A2({1, 3}, {0, 2}));  // second and third row, first and second column
 ```
-with the "flat" output `A2 subblock = [[3, 4], [6, 7]]`
+obtaining the "flat" output `A2 subblock = [[3, 4], [6, 7]]`.
+(A similar effect can be achieved with [experimental C++23 `std::print` in libc++]( https://godbolt.org/z/4ehd4s5vf).)
 
 For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
 

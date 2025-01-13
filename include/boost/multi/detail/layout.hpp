@@ -622,7 +622,7 @@ struct layout_t<0, SSize>
 
  private:
 	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_   ;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // = {};
+	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // TODO(correaa) padding struct 'boost::multi::layout_t<0>' with 1 byte to align 'stride_' [-Werror,-Wpadded]
 	offset_type offset_;
 	nelems_type nelems_;
 

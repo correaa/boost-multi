@@ -2398,7 +2398,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, StrideType>  // NOLINT(f
 		return 0 < other - *this;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference {
 		// if constexpr(IsMove) {
 		//  multi::what<decltype(std::move(*std::declval<Ptr const&>())), reference>();
 		//  return multi::move(*ptr_);
@@ -3299,6 +3299,15 @@ class array_ref : public subarray<
 	>
 >
 {
+	using subarray_layout = // typename std::conditional<
+		// (D == 1), // continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		// layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+		::boost::multi::layout_t<
+			dimensionality_type{D},  // NOLINT(readability-redundant-casting) for msvc
+			typename std::pointer_traits<ElementPtr>::difference_type >  // multi:: needed for msvc
+	// >::type
+	;
+
 	using subarray_base = subarray<
 		T, D, ElementPtr,
 		std::conditional_t<(D == 1),
