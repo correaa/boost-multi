@@ -527,7 +527,7 @@ class continuous_layout<1, SSize> {
 	constexpr auto extension() const { return extension_type{offset_, offset_ + nelems_}; }
 
 	using extensions_type = multi::index_extensions<1>;
-	auto extensions() const -> extensions_type { return extensions_type{extension()}; };
+	auto extensions() const -> extensions_type { return extensions_type{extension()}; }
 
 	constexpr auto is_empty() const -> bool { return false; }
 	constexpr auto    empty() const -> bool { return is_empty(); }
@@ -551,7 +551,7 @@ class continuous_layout<1, SSize> {
 	using strides_type = multi::tuple<std::integral_constant<difference_type, 1> >;
 	auto strides() const -> stride_type;
 
-	auto size() const -> size_type { return nelems_; }
+	constexpr auto size() const -> size_type { return nelems_; }
 
 	using nelems_type = size_type;
 	constexpr auto nelems() const -> nelems_type { return nelems_; }
@@ -609,7 +609,7 @@ struct layout_t<0, SSize>
 
  private:
 	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_   ;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // = {};
+	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // TODO(correaa) padding struct 'boost::multi::layout_t<0>' with 1 byte to align 'stride_' [-Werror,-Wpadded]
 	offset_type offset_;
 	nelems_type nelems_;
 

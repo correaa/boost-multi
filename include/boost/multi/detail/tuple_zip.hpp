@@ -19,10 +19,10 @@ template<class... Ts> class tuple;  // TODO(correaa) consider renaming it to `tp
 
 template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
  public:
-	constexpr tuple()             = default;
-	constexpr tuple(tuple const&) = default;
+	tuple()             = default;
+	tuple(tuple const&) = default;
 
-	constexpr auto operator=(tuple const&) -> tuple& = default;
+	auto operator=(tuple const&) -> tuple& = default;
 
 	constexpr auto operator==(tuple const& /*other*/) const -> bool { return true; }
 	constexpr auto operator!=(tuple const& /*other*/) const -> bool { return false; }
@@ -59,7 +59,9 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	template<class TT0 = T0, std::enable_if_t<sizeof(TT0*) && (sizeof...(Ts) == 0), int> =0>
+	template<class TT0 = T0,
+		std::enable_if_t<sizeof(TT0*) && (sizeof...(Ts) == 0), int> =0  // NOLINT(modernize-use-constraints) for C++20
+	>
 	constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
