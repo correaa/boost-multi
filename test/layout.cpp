@@ -4,6 +4,7 @@
 
 #include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
 
+// IWYU pragma: no_include <algorithm>
 #include <array>     // for array, array<>::value_type
 #include <iterator>  // for size
 #if __cplusplus > 201703L
@@ -12,8 +13,9 @@
 #endif
 #endif
 #include <tuple>     // for make_tuple, tuple_element<>::type
-// IWYU pragma: no_include <type_traits>
-// IWYU pragma: no_#include <version>
+#include <type_traits>
+#include <vector>                           // for vector
+// IWYU pragma: no_include <version>
 
 namespace multi = boost::multi;
 
@@ -61,6 +63,52 @@ BOOST_AUTO_TEST_CASE(extensions_to_linear) {
 	for(int idx = 0; idx != exts.num_elements(); ++idx) {  // NOLINT(altera-unroll-loops)
 		BOOST_TEST( std::apply([&](auto... indices) { return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(contiguous_layout) {
+	std::vector<int> vec(10, 99);  // NOLINT(fuchsia-default-arguments-calls)
+	using ArrayRef = multi::array_ref<int, 1, int*, multi::contiguous_layout<> >;
+	auto arr = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
+
+	static_assert(
+		std::is_base_of_v<
+			std::random_access_iterator_tag, ArrayRef::const_iterator::iterator_category
+		>
+	);
+
+	// multi::what(arr.begin().stride());
+
+	// #if (__cplusplus >= 202002L)
+	// static_assert(
+	// 	std::is_base_of_v<
+	// 		std::contiguous_iterator_tag, ArrayRef::const_iterator::iterator_category
+	// 	>
+	// );
+	// #endif
+}
+
+{
+	multi::array<double, 2> d2D = {
+		{150.0, 16.0, 17.0, 18.0, 19.0},
+		{ 30.0,  1.0,  2.0,  3.0,  4.0},
+		{100.0, 11.0, 12.0, 13.0, 14.0},
+		{ 50.0,  6.0,  7.0,  8.0,  9.0},
+	};
+
+	// #if __has_cpp_attribute(no_unique_address) >=201803L and not defined(__NVCC__) and not defined(__PGI)
+	// 	BOOST_TEST( sizeof(d2D)==sizeof(double*)+7*sizeof(std::size_t) );
+	// #endif
+	BOOST_TEST( d2D.is_compact() );
+	BOOST_TEST( d2D.rotated().is_compact() );
+	BOOST_TEST( d2D[3].is_compact() );
+	BOOST_TEST( !(d2D.rotated()[2].is_compact()) );
+}
+{
+	multi::array<int, 2> d2D({ 5, 3 });
+	BOOST_TEST( d2D.is_compact() );
+	BOOST_TEST( d2D.rotated().is_compact() );
+	BOOST_TEST( d2D[3].is_compact() );
+	BOOST_TEST( !d2D.rotated()[2].is_compact() );
 }
 
 BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
