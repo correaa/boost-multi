@@ -551,7 +551,7 @@ class continuous_layout<1, SSize> {
 	using strides_type = multi::tuple<std::integral_constant<difference_type, 1> >;
 	auto strides() const -> stride_type;
 
-	auto size() const -> size_type { return nelems_; }
+	constexpr auto size() const -> size_type { return nelems_; }
 
 	using nelems_type = size_type;
 	constexpr auto nelems() const -> nelems_type { return nelems_; }
