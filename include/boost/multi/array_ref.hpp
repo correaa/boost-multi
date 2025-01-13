@@ -20,7 +20,7 @@ inline constexpr bool force_element_trivial_destruction = force_element_trivial<
 template <class Element>
 inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
 
-#ifdef _MULTI_FORCE_TRIVIAL_STD_COMPLEX
+#ifdef _BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX
 template<class T>
 inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivial_v<T>;
 
@@ -34,9 +34,9 @@ template<> inline constexpr bool force_element_trivial                     <std:
 template<> inline constexpr bool force_element_trivial_default_construction<std::complex<double>> = true;
 template<> inline constexpr bool force_element_trivial_destruction         <std::complex<double>> = true;
 
-template<> inline constexpr bool force_element_trivial                     <std::complex<float >> = true;
-template<> inline constexpr bool force_element_trivial_default_construction<std::complex<float >> = true;
-template<> inline constexpr bool force_element_trivial_destruction         <std::complex<float >> = true;
+template<> inline constexpr bool force_element_trivial                     <std::complex<float  >> = true;
+template<> inline constexpr bool force_element_trivial_default_construction<std::complex<float  >> = true;
+template<> inline constexpr bool force_element_trivial_destruction         <std::complex<float  >> = true;
 #endif
 
 }  // end namespace boost::multi
