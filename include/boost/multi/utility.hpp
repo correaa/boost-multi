@@ -297,10 +297,10 @@ template <class T, std::size_t N>
 constexpr auto stride(const T(&/*array*/)[N]) noexcept -> std::ptrdiff_t {return num_elements_t<T>{};}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
 
 template <class T, std::size_t N>
-constexpr auto is_compact(const T(&/*t*/)[N]) noexcept -> bool {return true;}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
+constexpr auto is_compact(const T(&/*t*/)[N]) noexcept -> bool { return true; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
 
 template<class T, std::size_t N>
-constexpr auto offset(const T(&/*t*/)[N]) noexcept -> std::ptrdiff_t {return 0;}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
+constexpr auto offset(const T(&/*t*/)[N]) noexcept -> std::ptrdiff_t { return 0; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
 
 template<class T, std::size_t N>
 [[deprecated("use data_elements instead")]]  // this name is bad because when the element belongs to std:: then std::data is picked up by ADL and the
