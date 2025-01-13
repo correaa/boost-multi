@@ -78,6 +78,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( carr2.base() == arr[2].base() );
 		BOOST_TEST( &carr2 == &std::as_const(arr)[2] );
 		BOOST_TEST( &carr2 == &              arr [2] );
+		BOOST_TEST( &carr2 == &              arr [2] );
+
+		BOOST_TEST(   &carr2 != &              arr [2]({0, 2})  );
+		BOOST_TEST( !(&carr2 == &              arr [2]({0, 2})) );
 
 		auto const& ac2 = carr2;  // fwd_array(A[2]);
 		BOOST_TEST( &ac2 == &std::as_const(arr)[2] );
