@@ -13,7 +13,7 @@
 #endif
 #include <tuple>     // for make_tuple, tuple_element<>::type
 // IWYU pragma: no_include <type_traits>
-// IWYU pragma: no_#include <version>
+// IWYU pragma: no_include <version>
 
 namespace multi = boost::multi;
 
