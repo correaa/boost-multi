@@ -744,6 +744,8 @@ class contiguous_layout {
 	constexpr auto    empty() const { return is_empty(); }
 
 	constexpr auto sub() const { return layout_t<0, SSize>{}; }
+
+	constexpr auto is_compact() const { return std::true_type{}; }
 };
 
 template<dimensionality_type D, typename SSize>
