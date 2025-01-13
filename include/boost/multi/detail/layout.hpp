@@ -691,6 +691,61 @@ struct layout_t<0, SSize>
 	constexpr auto hull_size() const -> size_type {return num_elements();}  // not in bytes
 };
 
+template<typename SSize = multi::size_t>
+class contiguous_layout {
+
+ public:
+	using dimensionality_type = multi::dimensionality_t;
+	using rank = std::integral_constant<dimensionality_type, 1>;
+	static constexpr auto rank_v = rank::value;
+	static constexpr dimensionality_type dimensionality = rank_v;
+
+	using size_type = SSize;
+	using sizes_type = typename boost::multi::detail::tuple<size_type>;
+
+	using difference_type = SSize;
+
+	using index = size_type;
+	using index_range = multi::range<index>;
+	using index_extension = multi::extension_t<index>;
+
+	using extension_type = multi::extension_t<index>;
+	using extensions_type = multi::extensions_t<1>;
+
+	using stride_type = size_type;
+	using strides_type = typename boost::multi::detail::tuple<stride_type>;
+
+
+	// using num_elements = size_type;
+
+ private:
+	size_type nelems_;
+
+	template<std::size_t N, class Tup>
+	static constexpr auto get_(Tup&& tup) { using std::get; return get<N>(std::forward<Tup>(tup)); }
+
+ public:
+	constexpr explicit contiguous_layout(multi::extensions_t<1> xs) : nelems_{get_<0>(xs).size()} {}
+
+	constexpr auto stride() const { return std::integral_constant<dimensionality_type, 1>{}; }
+	constexpr auto offset() const { return std::integral_constant<dimensionality_type, 0>{}; }
+	constexpr auto extension() const { return extension_type{0, nelems_}; }
+
+	constexpr auto num_elements() const { return nelems_; }
+
+	constexpr auto size() const { return nelems_; }
+	constexpr auto sizes() const { return sizes_type{size()}; }
+
+	constexpr auto nelems() const { return nelems_; }
+
+	constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
+
+	constexpr auto is_empty() const { return nelems_; }
+	constexpr auto    empty() const { return is_empty(); }
+
+	constexpr auto sub() const { return layout_t<0, SSize>{}; }
+};
+
 template<dimensionality_type D, typename SSize>
 struct layout_t
 : multi::equality_comparable<layout_t<D, SSize>>

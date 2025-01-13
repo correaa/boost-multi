@@ -63,6 +63,34 @@ BOOST_AUTO_TEST_CASE(extensions_to_linear) {
 	}
 }
 
+// BOOST_AUTO_TEST_CASE(contiguous_layout) {
+// 	std::vector<int> vec(10, 99);
+// 	using ArrayRef = multi::array_ref<int, 1, int*, multi::contiguous_layout<> >;
+// 	auto arr = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
+
+// 	static_assert(
+// 		std::is_base_of_v<
+// 			std::random_access_iterator_tag, ArrayRef::const_iterator::iterator_category
+// 		>
+// 	);
+
+// 	static_assert(
+// 		std::is_base_of_v<
+// 			std::random_access_iterator_tag, ArrayRef::const_iterator::iterator_category
+// 		>
+// 	);
+
+// 	multi::what(arr.begin().stride());
+
+// 	#if (__cplusplus >= 202002L)
+// 	static_assert(
+// 		std::is_base_of_v<
+// 			std::contiguous_iterator_tag, ArrayRef::const_iterator::iterator_category
+// 		>
+// 	);
+// 	#endif
+// }
+
 BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
 	multi::array<double, 3> arr(
 	#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
