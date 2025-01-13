@@ -3,9 +3,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__GNUC__)
-	#pragma GCC diagnostic ignored "-Wdouble-promotion"
-#endif
+// #if defined(__GNUC__)
+// 	#pragma GCC diagnostic ignored "-Wdouble-promotion"
+// #endif
 
 #include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
 
