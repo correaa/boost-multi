@@ -11,6 +11,7 @@
 #include <ranges>  // NOLINT(misc-include-cleaner) IWYU pragma: keep
 #endif
 #endif
+#include <vector>                           // for vector
 #include <tuple>     // for make_tuple, tuple_element<>::type
 // IWYU pragma: no_include <type_traits>
 // IWYU pragma: no_include <version>
