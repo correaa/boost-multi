@@ -141,7 +141,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_t::num_elements;
 	using layout_t::offset;
 
-	using layout_t::offsets;
+	// using layout_t::offsets;
 
 	using typename layout_t::index;
 	using typename layout_t::index_range;
@@ -149,7 +149,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_t::strides_type;
 
-	auto strides() const { return detail::convertible_tuple<strides_type>(layout_t::strides()); }
+	auto strides() const { return detail::convertible_tuple /* <strides_type> */ (layout_t::strides()); }
 
 	using typename layout_t::difference_type;
 
@@ -183,7 +183,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
 	constexpr auto shape() const { return detail::convertible_tuple(this->sizes()); }
 
-	using layout_t::is_compact;
+	// using layout_t::is_compact;
 
 	friend constexpr auto size        (array_types const& self) noexcept -> size_type       {return self.size        ();}
 	friend constexpr auto extension   (array_types const& self) noexcept -> extension_type  {return self.extension   ();}
@@ -199,7 +199,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
 	friend
-	constexpr auto strides    (array_types const& self) noexcept -> strides_type         {return self.strides     ();}
+	constexpr auto strides    (array_types const& self) noexcept /*-> strides_type*/    {return self.strides     ();}
 
  protected:
 	constexpr auto layout_mutable() -> layout_t& {return static_cast<layout_t&>(*this);}
@@ -2670,6 +2670,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	using       cursor = cursor_t<typename const_subarray::element_ptr      , 1, typename const_subarray::strides_type>;
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, 1, typename const_subarray::strides_type>;
+
  private:
 	constexpr auto home_aux_() const {return cursor(this->base_, this->strides());}
 
@@ -2991,9 +2992,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	auto transposed() const& = delete;
 	auto flatted() const& = delete;
 
-	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr      >;
-	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true>;
-	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
+	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, false>;
+	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true , false>;
+	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true >;
 
 	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
@@ -3279,9 +3280,7 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*>
-class array_ref : public subarray<
-	T, D, ElementPtr,
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = 
 	std::conditional_t<
 		(D == 1),
 		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
@@ -3289,20 +3288,11 @@ class array_ref : public subarray<
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
 	>
 >
+class array_ref : public subarray<T, D, ElementPtr, Layout>
 {
-	using subarray_layout = // typename std::conditional<
-		// (D == 1), // continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
-		// layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
-		::boost::multi::layout_t<
-			dimensionality_type{D},  // NOLINT(readability-redundant-casting) for msvc
-			typename std::pointer_traits<ElementPtr>::difference_type >  // multi:: needed for msvc
-	// >::type
-	;
+	using subarray_layout = Layout;
 
-	using subarray_base = subarray<
-		T, D, ElementPtr,
-		subarray_layout
-	>;
+	using subarray_base = subarray<T, D, ElementPtr, Layout>;
 
  public:
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
