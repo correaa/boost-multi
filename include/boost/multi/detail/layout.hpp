@@ -357,7 +357,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	static constexpr auto to_linear(index const& idx) -> difference_type  /*const*/ {return idx;}
 	constexpr auto operator()(index const& idx) const -> difference_type {return to_linear(idx);}
 	constexpr auto operator[](index idx) const {
-		return multi::detail::tuple<multi::index>{this->base().get<0>()[idx]};
+		return multi::detail::tuple<multi::index>{this->base().template get<0>()[idx]};
 	}
 
 	template<class... Indices>
