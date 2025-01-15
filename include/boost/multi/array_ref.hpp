@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
+#include "detail/layout.hpp"
 #pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
@@ -433,7 +434,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> subarray_ptr& { advance(n); return *this; }
 };
 
-template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = std::iterator_traits<ElementPtr> >
+template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type>
 struct array_iterator;
 
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride>
@@ -2266,6 +2267,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	>;
 
  public:
+    using stride_type = Stride;  // multi::index;
 	using reference = std::conditional_t<
 		IsMove,
 		std::add_rvalue_reference_t<std::decay_t<reference_aux>>,
@@ -2273,6 +2275,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	>;
 
 	using difference_type = typename affine::difference_type;
+	using iterator_category = typename stride_traits<Stride>::category;
+	using iterator_concept = typename stride_traits<Stride>::category;
+
 	static constexpr dimensionality_type dimensionality = 1;
 
 	array_iterator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
@@ -2321,7 +2326,6 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	using element = Element;
 	using element_ptr = Ptr;
 	// using pointer = element_ptr;
-	using stride_type = multi::index;
 
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
@@ -2998,7 +3002,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	auto flatted() const& = delete;
 
 	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, false>;
-	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true , false>;
+	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true , false, typename layout_type::stride_type>;
 	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true >;
 
 	using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
