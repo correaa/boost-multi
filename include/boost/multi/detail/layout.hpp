@@ -528,7 +528,7 @@ class stride_t {
 	difference_type stride_;
 
  public:
-	using difference_type = SSize;
+	// using difference_type = SSize;
 
 	constexpr auto operator()() const -> difference_type { return stride_; }
 
@@ -541,9 +541,9 @@ class stride_t {
 template<typename SSize = multi::size_t>
 class contiguous_stride_t {
  public:
-	using difference_type = SSize;
+	// using difference_type = SSize;
 
-	constexpr auto operator()() const -> difference_type { return 1; }
+	constexpr auto operator()() const -> SSize { return 1; }
 
 	template<class Ptr>
 	constexpr auto operator()(Ptr ptr) const -> Ptr { return ptr + 1; }
