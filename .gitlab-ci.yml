@@ -1,6 +1,6 @@
 # # Copyright 2020-2025 Alfredo A. Correa
 
-image: debian:stable
+# image: debian:stable
 
 workflow:
   auto_cancel:
@@ -10,13 +10,13 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-  CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
-  RT_VERSION: "0.1"
-  NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
-  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+# variables:
+#   GIT_SUBMODULE_STRATEGY: recursive
+#   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
+#   RT_VERSION: "0.1"
+#   NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
+#   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+#   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
 
 g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: build
@@ -27,7 +27,7 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure -T Test
+    - ctest -j 2 --output-on-failure
 
 clang++:
   stage: build
@@ -44,9 +44,9 @@ clang++:
   except:
     - gitlab-org
 
-clang++-latest libc++:
+clang++ libc++:
   stage: build
-  image: debian:latest
+  #image: debian:latest
   # tags:
   #   - non-shared
   interruptible: true
@@ -55,39 +55,9 @@ clang++-latest libc++:
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
-    - cmake --build .
+    - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
   except:
     - gitlab-org
-
-vs2019-windows:
-  image: mcr.microsoft.com/windows:ltsc2019
-  # image: mcr.microsoft.com:windows
-  stage: build
-  only:
-    refs:
-      - master
-  allow_failure: true
-  interruptible: true
-  variables:
-    BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-  script:
-    - choco --version
-    - choco install -y visualstudio2019community poshgit
-    - git clone --depth=1 https://github.com/microsoft/vcpkg.git
-    - .\vcpkg\bootstrap-vcpkg.bat
-    - .\vcpkg\vcpkg install boost-multi-array boost-timer
-    - mkdir build
-    - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=23
-    - cmake --build build --config Release --parallel 2 --verbose
-    - $env:Path += ";${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin"
-    - ctest --test-dir build --output-on-failure -C Release
-  # tags:
-  #   - saas-windows-medium-amd64
-  tags:
-    - x86_64
-  needs: ["clang++", "g++"]
-  timeout: 30 minutes
 
