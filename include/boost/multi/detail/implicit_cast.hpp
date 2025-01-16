@@ -1,4 +1,4 @@
-// Copyright 2023-2024 Alfredo A. Correa
+// Copyright 2023-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -11,7 +11,7 @@
 
 namespace boost::multi::detail {
 
-template<class From, class To> constexpr bool is_implicitly_convertible_v = std::is_convertible_v<From, To>;
+template<class From, class To> constexpr bool is_implicitly_convertible_v = std::is_convertible_v<From, To>;  // this library needs C++17 or higher (e.g. -std=c++17)
 template<class From, class To> constexpr bool is_explicitly_convertible_v = std::is_constructible_v<To, From>;
 
 template<class To, class From, std::enable_if_t<std::is_convertible_v<From, To>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
