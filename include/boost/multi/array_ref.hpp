@@ -2330,7 +2330,10 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
+	// BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
+	// : ptr_{ptr}, stride_{stride} {}
+
+	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, Stride stride)
 	: ptr_{ptr}, stride_{stride} {}
 
  private:
@@ -2376,7 +2379,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	#endif
 
 	constexpr auto operator-(array_iterator const& other) const -> difference_type {
-		assert(stride_==other.stride_ && (ptr_ - other.ptr_)%stride_ == 0);
+		assert(stride_ != 0);
+		assert(stride_ == other.stride_);
+		assert((ptr_ - other.ptr_)%stride_ == 0);
 		return (ptr_ - other.ptr_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
 		// return -distance_to_(other);
 	}
@@ -3001,7 +3006,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	auto transposed() const& = delete;
 	auto flatted() const& = delete;
 
-	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, false>;
+	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
 	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true , false, typename layout_type::stride_type>;
 	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true >;
 

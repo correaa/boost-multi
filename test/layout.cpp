@@ -4,13 +4,13 @@
 
 #include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
 
-// IWYU pragma: no_include <algorithm>
-#include <array>     // for array, array<>::value_type
-#include <iterator>  // for size
+#include <algorithm>  // for copy
+#include <array>      // for array, array<>::value_type
+#include <iterator>   // for size
 #if __cplusplus > 201703L
-#	if __has_include(<ranges>)
-#		include <ranges>  // NOLINT(misc-include-cleaner) IWYU pragma: keep
-#	endif
+#   if __has_include(<ranges>)
+#       include <ranges>  // NOLINT(misc-include-cleaner) IWYU pragma: keep
+#   endif
 #endif
 #include <tuple>  // for make_tuple, tuple_element<>::type
 #include <type_traits>
@@ -84,6 +84,31 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
+		std::vector<int> vec(100, 99);
+		std::vector<int> vec2(100);
+
+		multi::array_ref<int, 1, int*, multi::contiguous_layout<> > arr(100, vec.data());
+
+		static_assert(
+			std::is_base_of_v<
+				std::random_access_iterator_tag,
+				decltype(arr.cbegin())::iterator_category
+			>
+		);
+
+#if (__cplusplus >= 202002L)
+		static_assert(
+			std::is_base_of_v<
+				std::contiguous_iterator_tag,
+				decltype(arr.cbegin())::iterator_category
+			>
+		);
+#endif
+		std::copy(arr.begin(), arr.end(), vec2.begin());
+		std::copy(arr.cbegin(), arr.cend(), vec2.begin());
+	}
+
+	{
 		multi::array<double, 2> d2D = {
 			{150.0, 16.0, 17.0, 18.0, 19.0},
 			{ 30.0,  1.0,  2.0,  3.0,  4.0},
@@ -118,9 +143,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
 #if defined(__clang__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wunknown-warning-option"
-#	pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wunknown-warning-option"
+#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
 		for(int i = 0; i != 10; ++i) {
@@ -133,7 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 #if defined(__clang__)
-#	pragma clang diagnostic pop
+#   pragma clang diagnostic pop
 #endif
 	}
 
@@ -152,9 +177,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const [is, js, ks] = rot.extensions();
 
 #if defined(__clang__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wunknown-warning-option"
-#	pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wunknown-warning-option"
+#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		for(auto const i : is) {
@@ -167,7 +192,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 #if defined(__clang__)
-#	pragma clang diagnostic pop
+#   pragma clang diagnostic pop
 #endif
 	}
 
@@ -329,9 +354,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
-#	if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
-#		if !defined(__NVCC__)
-#			if !defined(_MSC_VER)
+#   if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
+#       if !defined(__NVCC__)
+#           if !defined(_MSC_VER)
 		static_assert(std::ranges::random_access_range<decltype(A2.extension())>);
 
 		auto tiA2 = std::views::transform(
@@ -341,9 +366,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 		BOOST_TEST( *tiA2.begin() == 0 );
 		BOOST_TEST( tiA2[0] == 0 );
-#			endif
-#		endif
-#	endif
+#           endif
+#       endif
+#   endif
 #endif
 
 		BOOST_TEST( size(A2) == 3 );
