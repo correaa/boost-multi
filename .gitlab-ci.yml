@@ -56,11 +56,8 @@ clang++-latest libc++:
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-    - except:
-        - tags:
-          - gitlab-org
+  except:
+    - gitlab-org
 
 vs2019-windows:
   stage: build
