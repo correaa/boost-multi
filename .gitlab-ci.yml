@@ -1,6 +1,6 @@
 # # Copyright 2020-2025 Alfredo A. Correa
 
-# image: debian:stable
+image: debian:stable
 
 workflow:
   auto_cancel:
@@ -10,13 +10,13 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
-# variables:
-#   GIT_SUBMODULE_STRATEGY: recursive
-#   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
-#   RT_VERSION: "0.1"
-#   NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
-#   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-#   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
+  RT_VERSION: "0.1"
+  NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
 
 g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: build
@@ -44,7 +44,7 @@ clang++:
   except:
     - gitlab-org
 
-clang++ libc++:
+clang++-latest libc++:
   stage: build
   #image: debian:latest
   # tags:
