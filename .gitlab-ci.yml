@@ -62,7 +62,7 @@ clang++-latest libc++:
     - gitlab-org
 
 vs2019-windows:
-  image: mcr.microsoft.com/vs/enterprise:latest
+  image: mcr.microsoft.com/windows:ltsc2019
   # image: mcr.microsoft.com:windows
   stage: build
   only:
