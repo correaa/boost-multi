@@ -27,9 +27,18 @@ template<class Self> struct selfable {
 
  public:
 	using self_type = Self;
-	constexpr auto        self() const -> self_type const& { return static_cast<self_type const&>(*this); }
-	constexpr auto        self() -> self_type& { return static_cast<self_type&>(*this); }
-	friend constexpr auto self(selfable const& self) -> self_type const& { return self.self(); }
+	constexpr auto        self() const -> self_type const& {
+		static_assert(std::is_base_of_v<selfable<Self>, Self>);
+		return static_cast<self_type const&>(*this);
+	}
+	constexpr auto        self() -> self_type& {
+		static_assert(std::is_base_of_v<selfable<Self>, Self>);
+		return static_cast<self_type&>(*this);
+	}
+	friend constexpr auto self(selfable const& self) -> self_type const& {
+		static_assert(std::is_base_of_v<selfable<Self>, Self>);
+		return self.self();
+	}
 };
 
 template<class Self, class U> struct equality_comparable2;
@@ -92,13 +101,14 @@ struct weakly_decrementable {
 };
 
 template<class Self>
-struct incrementable : totally_ordered<Self> {
+struct incrementable : totally_ordered<Self>, selfable<incrementable<Self> > {
  protected:
 	incrementable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
 	friend Self;
 
  public:
 	friend constexpr auto operator++(incrementable& self, int) -> Self {
+		static_assert(std::is_base_of_v<incrementable<Self>, Self>);
 		Self tmp{self.self()};
 		++self.self();
 		assert(self.self() > tmp);
