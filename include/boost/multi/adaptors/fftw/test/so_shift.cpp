@@ -12,7 +12,7 @@
 
 namespace multi = boost::multi;
 
-auto main() -> int {
+auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	using complex = std::complex<double>;
 
 	// input array
