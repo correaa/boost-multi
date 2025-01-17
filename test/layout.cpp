@@ -126,11 +126,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &*arr.cend() == std::next(arr.data_elements(), arr.num_elements()) );
 
 		BOOST_TEST( *arr.cbegin() == 1 );
-		BOOST_TEST( *std::next(arr.cbegin()) == 2 );
+		BOOST_TEST( *std::next(arr.cbegin(), 1) == 2 );
 
 		// multi::what(arr.cbegin());
-		// std::copy(arr.cbegin(), arr.cbegin() + arr.size(), vec2.begin());
-		std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
+		std::copy(arr.cbegin(), arr.cbegin() + arr.size(), vec2.begin());
+		// std::copy_n(arr.begin(), arr.size(), vec2.begin());
 		// std::copy(arr.cbegin(), arr.cend(), vec2.begin());
 		// std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
 
