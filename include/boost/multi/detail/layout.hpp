@@ -47,8 +47,8 @@ struct stride_traits<std::ptrdiff_t> {
 	using category = std::random_access_iterator_tag;
 };
 
-template<>
-struct stride_traits<std::integral_constant<std::ptrdiff_t, 1> > {
+template<typename Integer>
+struct stride_traits<std::integral_constant<Integer, 1> > {
 	#if (__cplusplus >= 202002L)
 	using category = std::random_access_iterator_tag;  // std::contiguous_iterator_tag;
 	#else
@@ -693,7 +693,7 @@ class contiguous_layout {
 	using extension_type = multi::extension_t<index>;
 	using extensions_type = multi::extensions_t<1>;
 
-	using stride_type = std::integral_constant<difference_type, 1>;
+	using stride_type = std::integral_constant<int, 1>;
 	using strides_type = typename boost::multi::detail::tuple<stride_type>;
 
 
@@ -708,8 +708,8 @@ class contiguous_layout {
  public:
 	constexpr explicit contiguous_layout(multi::extensions_t<1> xs) : nelems_{get_<0>(xs).size()} {}
 
-	constexpr auto stride() const { return std::integral_constant<difference_type, 1>{}; }
-	constexpr auto offset() const { return std::integral_constant<difference_type, 0>{}; }
+	constexpr auto stride() const { return std::integral_constant<int, 1>{}; }
+	constexpr auto offset() const { return std::integral_constant<int, 0>{}; }
 	constexpr auto extension() const { return extension_type{0, nelems_}; }
 
 	constexpr auto num_elements() const { return nelems_; }

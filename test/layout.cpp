@@ -121,7 +121,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( (arr.cend().base() - arr.cbegin().base()) % arr.cbegin().stride() == 0 );
 
-		std::copy(arr.cbegin(), arr.cbegin() + arr.size(), vec2.begin());
+		// std::copy(arr.data_elements(), std::next(arr.data_elements(), arr.num_elements()), vec2.begin());
+		BOOST_TEST( &*arr.cbegin() == arr.data_elements() );
+		BOOST_TEST( &*arr.cend() == std::next(arr.data_elements(), arr.num_elements()) );
+
+		BOOST_TEST( *arr.cbegin() == 1 );
+		BOOST_TEST( *std::next(arr.cbegin()) == 2 );
+
+		// multi::what(arr.cbegin());
+		// std::copy(arr.cbegin(), arr.cbegin() + arr.size(), vec2.begin());
+		std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
 		// std::copy(arr.cbegin(), arr.cend(), vec2.begin());
 		// std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
 
@@ -134,8 +143,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			<< vec2[1] << '\n'
 			<< vec2[2] << '\n'
 			<< vec2[3] << '\n'
-			<< vec2[4] << '\n'
-		;
+			<< vec2[4] << '\n';
 
 		BOOST_TEST( vec2[0] == 1 );
 		BOOST_TEST( vec2[1] == 2 );
