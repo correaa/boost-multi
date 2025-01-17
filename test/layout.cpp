@@ -87,8 +87,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		std::vector<int> vec = {1, 2, 3, 4, 5};
-		std::vector<int> vec2(5);
+		std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> vec2(5);  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::array_ref<int, 1, int*, multi::contiguous_layout<> > const arr(static_cast<std::ptrdiff_t>(vec.size()), vec.data());
 
