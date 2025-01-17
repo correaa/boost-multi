@@ -11,6 +11,8 @@
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
+#include <string>  // for to_string
+
 namespace boost::multi {
 
 template<class Element>

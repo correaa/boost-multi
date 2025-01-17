@@ -121,8 +121,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( (arr.cend().base() - arr.cbegin().base()) % arr.cbegin().stride() == 0 );
 
+		std::copy(arr.cbegin(), arr.cbegin() + arr.size(), vec2.begin());
 		// std::copy(arr.cbegin(), arr.cend(), vec2.begin());
-		std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
+		// std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
 
 		// for(auto idx : arr.extension()) {  // NOLINT(altera-unroll-loops)
 		//  vec2[static_cast<std::size_t>(idx)] = arr[idx];
