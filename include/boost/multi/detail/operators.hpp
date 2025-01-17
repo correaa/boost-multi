@@ -101,7 +101,7 @@ struct weakly_decrementable {
 };
 
 template<class Self>
-struct incrementable : totally_ordered<Self>, selfable<incrementable<Self> > {
+struct incrementable : totally_ordered<Self> {
  protected:
 	incrementable() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
 	friend Self;
