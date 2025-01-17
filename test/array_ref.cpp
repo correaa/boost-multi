@@ -136,7 +136,6 @@ inline auto trace_separate_sub(multi::subarray<int, 2> const& arr) -> int {
 }  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for test
 	int icarr[5] = {};
