@@ -4,18 +4,21 @@
 
 #include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
 
-// IWYU pragma: no_include <algorithm>
-#include <array>     // for array, array<>::value_type
-#include <iterator>  // for size
+#include <algorithm>  // for copy
+#include <array>      // for array, array<>::value_type
+#include <cstddef>                          // for ptrdiff_t, size_t
+#include <iostream>                         // for basic_ostream, char_traits
+#include <iterator>   // for size
 #if __cplusplus > 201703L
-#	if __has_include(<ranges>)
-#		include <ranges>  // NOLINT(misc-include-cleaner) IWYU pragma: keep
-#	endif
+#   if __has_include(<ranges>)
+#       include <ranges>  // NOLINT(misc-include-cleaner) IWYU pragma: keep
+#   endif
 #endif
 #include <tuple>  // for make_tuple, tuple_element<>::type
-#include <type_traits>
 #include <vector>  // for vector
 // IWYU pragma: no_include <version>
+#include <type_traits>
+
 
 namespace multi = boost::multi;
 
@@ -75,12 +78,80 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				std::random_access_iterator_tag, ArrayRef::const_iterator::iterator_category>
 		);
 
-#if (__cplusplus >= 202002L)
+// #if (__cplusplus >= 202002L)
+//      static_assert(
+//          std::is_base_of_v<
+//              std::contiguous_iterator_tag, ArrayRef::const_iterator::iterator_category>
+//      );
+// #endif
+	}
+
+	{
+		std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> vec2(5);  // NOLINT(fuchsia-default-arguments-calls)
+
+		multi::array_ref<int, 1, int*, multi::contiguous_layout<> > const arr(static_cast<std::ptrdiff_t>(vec.size()), vec.data());
+
 		static_assert(
 			std::is_base_of_v<
-				std::contiguous_iterator_tag, ArrayRef::const_iterator::iterator_category>
+				std::random_access_iterator_tag,
+				decltype(arr.cbegin())::iterator_category
+			>
+		);
+
+#if (__cplusplus >= 202002L)
+		static_assert(
+		 std::is_base_of_v<
+		     std::contiguous_iterator_tag,
+		     decltype(arr.cbegin())::iterator_category
+		 >
 		);
 #endif
+		// std::copy(arr.begin(), arr.end(), vec2.begin());
+		BOOST_TEST( arr.cbegin().stride() == 1 );
+		BOOST_TEST( arr.cend().stride() == 1 );
+
+		auto size = arr.cend() - arr.cbegin();
+		BOOST_TEST( size == 5 );
+		BOOST_TEST( arr.size() == 5 );
+
+		BOOST_TEST( arr.cbegin().stride() == 1 );
+
+		BOOST_TEST( arr.cend().base() - arr.cbegin().base() == 5 );
+
+		BOOST_TEST( (arr.cend().base() - arr.cbegin().base()) % arr.cbegin().stride() == 0 );
+
+		// std::copy(arr.data_elements(), std::next(arr.data_elements(), arr.num_elements()), vec2.begin());
+		BOOST_TEST( &*arr.cbegin() == arr.data_elements() );
+		BOOST_TEST( &*arr.cend() == std::next(arr.data_elements(), arr.num_elements()) );
+
+		BOOST_TEST( *arr.cbegin() == 1 );
+		BOOST_TEST( *std::next(arr.cbegin(), 1) == 2 );
+
+		// multi::what(arr.cbegin());
+		std::copy(arr.cbegin(), arr.cbegin() + arr.size(), vec2.begin());
+		// std::copy_n(arr.begin(), arr.size(), vec2.begin());
+		// std::copy(arr.cbegin(), arr.cend(), vec2.begin());
+		// std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
+
+		// for(auto idx : arr.extension()) {  // NOLINT(altera-unroll-loops)
+		//  vec2[static_cast<std::size_t>(idx)] = arr[idx];
+		// }
+
+		std::cout
+			<< vec2[0] << '\n'
+			<< vec2[1] << '\n'
+			<< vec2[2] << '\n'
+			<< vec2[3] << '\n'
+			<< vec2[4] << '\n';
+
+		BOOST_TEST( vec2[0] == 1 );
+		BOOST_TEST( vec2[1] == 2 );
+		BOOST_TEST( vec2[2] == 3 );
+		BOOST_TEST( vec2[3] == 4 );
+		BOOST_TEST( vec2[4] == 5 );
+
+		BOOST_TEST( vec == vec2 );
 	}
 
 	{
@@ -118,9 +189,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
 #if defined(__clang__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wunknown-warning-option"
-#	pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wunknown-warning-option"
+#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
 		for(int i = 0; i != 10; ++i) {
@@ -133,7 +204,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 #if defined(__clang__)
-#	pragma clang diagnostic pop
+#   pragma clang diagnostic pop
 #endif
 	}
 
@@ -152,9 +223,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const [is, js, ks] = rot.extensions();
 
 #if defined(__clang__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wunknown-warning-option"
-#	pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wunknown-warning-option"
+#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		for(auto const i : is) {
@@ -167,7 +238,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 #if defined(__clang__)
-#	pragma clang diagnostic pop
+#   pragma clang diagnostic pop
 #endif
 	}
 
@@ -329,9 +400,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
-#	if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
-#		if !defined(__NVCC__)
-#			if !defined(_MSC_VER)
+#   if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
+#       if !defined(__NVCC__)
+#           if !defined(_MSC_VER)
 		static_assert(std::ranges::random_access_range<decltype(A2.extension())>);
 
 		auto tiA2 = std::views::transform(
@@ -341,9 +412,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 		BOOST_TEST( *tiA2.begin() == 0 );
 		BOOST_TEST( tiA2[0] == 0 );
-#			endif
-#		endif
-#	endif
+#           endif
+#       endif
+#   endif
 #endif
 
 		BOOST_TEST( size(A2) == 3 );

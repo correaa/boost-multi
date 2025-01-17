@@ -5,10 +5,13 @@
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
 #include "detail/layout.hpp"
+#include <stdexcept>
 #pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
+
+#include <string>  // for to_string
 
 namespace boost::multi {
 
@@ -2234,7 +2237,7 @@ template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
 template<class Element, typename Ptr, bool IsConst, bool IsMove, typename Stride>
 struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
 	: boost::multi::iterator_facade<
-		array_iterator<Element, 1, Ptr, IsConst, IsMove>,
+		array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>,
 		Element, std::random_access_iterator_tag,
 		std::conditional_t<
 			IsConst,
@@ -2247,11 +2250,11 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		>,
 		multi::difference_type
 	>
-	, multi::affine            <array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>
-	, multi::decrementable    <array_iterator<Element, 1, Ptr, IsConst>>
-	, multi::incrementable    <array_iterator<Element, 1, Ptr, IsConst>>
-	, multi::totally_ordered2 <array_iterator<Element, 1, Ptr, IsConst>, void> {
-	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst>, multi::difference_type>;
+	, multi::affine            <array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>
+	, multi::decrementable    <array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride> >
+	, multi::incrementable    <array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride> >
+	, multi::totally_ordered2 <array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, void> {
+	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>;
 
 	using pointer = std::conditional_t<
 		IsConst,
@@ -2330,7 +2333,10 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
+	// BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
+	// : ptr_{ptr}, stride_{stride} {}
+
+	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, Stride stride)
 	: ptr_{ptr}, stride_{stride} {}
 
  private:
@@ -2376,8 +2382,12 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	#endif
 
 	constexpr auto operator-(array_iterator const& other) const -> difference_type {
-		assert(stride_==other.stride_ && (ptr_ - other.ptr_)%stride_ == 0);
-		return (ptr_ - other.ptr_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
+		assert(stride() != 0);
+		if(stride() != other.stride()) { throw std::runtime_error(std::to_string(stride()) + " // " + std::to_string(other.stride())); }
+		assert(stride() == other.stride());
+		// if((ptr_ - other.ptr_)%stride() != 0) { throw std::runtime_error(std::string{__PRETTY_FUNCTION__} + " --> " + std::to_string(ptr_ - other.ptr_) + " % " + std::to_string(stride())); }
+		// assert((ptr_ - other.ptr_)%stride() == 0);
+		return (ptr_ - other.ptr_)/stride();  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
 		// return -distance_to_(other);
 	}
 
@@ -3001,7 +3011,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	auto transposed() const& = delete;
 	auto flatted() const& = delete;
 
-	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, false>;
+	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
 	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true , false, typename layout_type::stride_type>;
 	using    move_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true >;
 
@@ -3042,42 +3052,36 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	#endif
 
 	constexpr BOOST_MULTI_HD auto begin_aux_() const {return iterator{this->base_                  , this->stride()};}
-	constexpr                auto end_aux_  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
+	constexpr BOOST_MULTI_HD auto end_aux_  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
 
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
 	#endif
 
  public:
-	BOOST_MULTI_HD constexpr auto  begin() const& -> const_iterator {return begin_aux_();}
-	               constexpr auto  begin()      & ->       iterator {return begin_aux_();}
-	               constexpr auto  begin()     && ->       iterator {return begin_aux_();}
+	BOOST_MULTI_HD constexpr auto  begin() const& -> const_iterator { return begin_aux_(); }
+	               constexpr auto  begin()      & ->       iterator { return begin_aux_(); }
+	               constexpr auto  begin()     && ->       iterator { return begin_aux_(); }
 
-	// constexpr auto mbegin()      & {return move_iterator{begin()};}
-	// constexpr auto mend  ()      & {return move_iterator{end  ()};}
+	constexpr auto  end  () const& -> const_iterator { return end_aux_(); }
+	constexpr auto  end  ()      & ->       iterator { return end_aux_(); }
+	constexpr auto  end  ()     && ->       iterator { return end_aux_(); }
 
-	// constexpr auto mbegin()     && {return move_iterator{begin()};}
-	// constexpr auto mend  ()     && {return move_iterator{end  ()};}
+	[[deprecated("implement as negative stride")]] constexpr auto rbegin() const& { return const_reverse_iterator(end  ()); }  // TODO(correaa) implement as negative stride?
+	[[deprecated("implement as negative stride")]] constexpr auto rend  () const& { return const_reverse_iterator(begin()); }  // TODO(correaa) implement as negative stride?
 
-	constexpr auto  end  () const& -> const_iterator {return end_aux_();}
-	constexpr auto  end  ()      & ->       iterator {return end_aux_();}
-	constexpr auto  end  ()     && ->       iterator {return end_aux_();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray const& self) -> const_iterator { return           self .begin(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray      & self) ->       iterator { return           self .begin(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray     && self) ->       iterator { return std::move(self).begin(); }
 
-	[[deprecated("implement as negative stride")]] constexpr auto rbegin() const& {return const_reverse_iterator(end  ());}  // TODO(correaa) implement as negative stride?
-	[[deprecated("implement as negative stride")]] constexpr auto rend  () const& {return const_reverse_iterator(begin());}  // TODO(correaa) implement as negative stride?
+	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray const& self) -> const_iterator { return           self .end()  ; }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray      & self) ->       iterator { return           self .end()  ; }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray     && self) ->       iterator { return std::move(self).end()  ; }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray const& self) -> const_iterator {return           self .begin();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray      & self) ->       iterator {return           self .begin();}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto begin(const_subarray     && self) ->       iterator {return std::move(self).begin();}
+	BOOST_MULTI_HD constexpr auto cbegin()           const& -> const_iterator { return begin(); }
+	BOOST_MULTI_HD constexpr auto cend  ()           const& -> const_iterator { return end()  ; }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray const& self) -> const_iterator {return           self .end()  ;}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray      & self) ->       iterator {return           self .end()  ;}
-	BOOST_MULTI_FRIEND_CONSTEXPR auto end  (const_subarray     && self) ->       iterator {return std::move(self).end()  ;}
-
-	BOOST_MULTI_HD constexpr auto cbegin()           const& -> const_iterator {return begin();}
-	   constexpr auto cend  ()           const& -> const_iterator {return end()  ;}
-
-	friend BOOST_MULTI_HD /*constexpr*/ auto cbegin(const_subarray const& self) {return self.cbegin();}
+	BOOST_MULTI_FRIEND_CONSTEXPR auto cbegin(const_subarray const& self) {return self.cbegin();}
 	BOOST_MULTI_FRIEND_CONSTEXPR auto cend  (const_subarray const& self) {return self.cend()  ;}
 
 	// // fix mutation
