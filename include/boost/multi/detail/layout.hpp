@@ -50,7 +50,7 @@ struct stride_traits<std::ptrdiff_t> {
 template<>
 struct stride_traits<std::integral_constant<std::ptrdiff_t, 1> > {
 	#if (__cplusplus >= 202002L)
-	using category = std::contiguous_iterator_tag;
+	using category = std::random_access_iterator_tag;  // std::contiguous_iterator_tag;
 	#else
 	using category = std::random_access_iterator_tag;
 	#endif
@@ -524,7 +524,7 @@ struct monostate : equality_comparable<monostate> {
 	friend BOOST_MULTI_HD constexpr auto operator==(monostate const& /*self*/, monostate const& /*other*/) {return true;}
 };
 
-template<typename SSize = multi::size_t>
+template<typename SSize = multi::index>
 class stride_t {
 	difference_type stride_;
 
@@ -539,7 +539,7 @@ class stride_t {
 	using category = std::random_access_iterator_tag;
 };
 
-template<typename SSize = multi::size_t>
+template<typename SSize = multi::index>
 class contiguous_stride_t {
  public:
 	// using difference_type = SSize;
@@ -547,86 +547,14 @@ class contiguous_stride_t {
 	constexpr auto operator()() const -> SSize { return 1; }
 
 	template<class Ptr>
-	constexpr auto operator()(Ptr ptr) const -> Ptr { return ptr + 1; }
+	constexpr auto operator()(Ptr const& ptr) const -> Ptr { return ptr + 1; }
 
 	#if(__cplusplus >= 202002L)
-	using category = std::contiguous_iterator_tag;
+	using category = std::random_access_iterator_tag;  // std::contiguous_iterator_tag;
 	#else
 	using category = std::random_access_iterator_tag;
 	#endif
 };
-
-// template<multi::dimensionality_t D, typename SSsize = multi::size_t>
-// class contiguous_layout;
-
-// template<typename SSize>
-// class contiguous_layout<1, SSize> {
-//  public:
-//  contiguous_layout() = default;
-
-//  using dimensionality_type = multi::dimensionality_t;
-//  using rank = std::integral_constant<dimensionality_type, 1>;
-//  static constexpr dimensionality_type rank_v = rank::value;
-//  static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
-
-//  using difference_type = SSize;
-//  using size_type = difference_type;
-
-//  using index = difference_type;
-//  using index_range = multi::range<index>;
-//  using index_extension = multi::extension_t<index>;
-//  using extension_type = index_extension;
-
-//  constexpr auto extension() const { return extension_type{offset_, offset_ + nelems_}; }
-
-//  using extensions_type = multi::index_extensions<1>;
-//  auto extensions() const -> extensions_type { return extensions_type{extension()}; }
-
-//  constexpr auto is_empty() const -> bool { return false; }
-//  constexpr auto    empty() const -> bool { return is_empty(); }
-
-//  auto is_compact() const = delete;
-
-//  auto sub() const { return layout_t<0, SSize>{}; }
-
-//  using stride_type = std::integral_constant<difference_type, 1>;
-//  auto stride() const -> stride_type { return {}; }
-
-//  using num_elements_type = size_type;
-//  auto num_elements() const -> num_elements_type { return nelems_; }
-
-//  using offset_type = difference_type;
-//  auto offset() const -> offset_type { return offset_; }
-
-//  using offsets_type = void;
-//  auto offsets() const -> offsets_type;
-
-//  using strides_type = multi::tuple<std::integral_constant<difference_type, 1> >;
-//  auto strides() const -> stride_type;
-
-//  constexpr auto size() const -> size_type { return nelems_; }
-
-//  using nelems_type = size_type;
-//  constexpr auto nelems() const -> nelems_type { return nelems_; }
-
-//  using sizes_type = void;
-//  auto sizes() const -> sizes_type = delete;
-
-//  constexpr auto operator()(index const& idx) const -> difference_type { return idx - offset_; }
-
-//  private:
-//  // BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_   ;
-//  // BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // = {};
-//  offset_type offset_;
-//  nelems_type nelems_;
-
-//  public:
-//  constexpr explicit contiguous_layout(extensions_type const& xs)
-//  : offset_{xs.get<0>().front()},
-//    nelems_{xs.get<0>().size()} {}
-
-//  constexpr auto reindex(index idx) -> auto& { offset_ = idx * stride(); return *this; }
-// };
 
 template<typename SSize>
 struct layout_t<0, SSize>
@@ -744,7 +672,7 @@ struct layout_t<0, SSize>
 	constexpr auto hull_size() const -> size_type {return num_elements();}  // not in bytes
 };
 
-template<typename SSize = multi::size_t>
+template<typename SSize = multi::index>
 class contiguous_layout {
 
  public:
@@ -765,7 +693,7 @@ class contiguous_layout {
 	using extension_type = multi::extension_t<index>;
 	using extensions_type = multi::extensions_t<1>;
 
-	using stride_type = std::integral_constant<size_type, 1>;
+	using stride_type = std::integral_constant<difference_type, 1>;
 	using strides_type = typename boost::multi::detail::tuple<stride_type>;
 
 
@@ -780,8 +708,8 @@ class contiguous_layout {
  public:
 	constexpr explicit contiguous_layout(multi::extensions_t<1> xs) : nelems_{get_<0>(xs).size()} {}
 
-	constexpr auto stride() const { return std::integral_constant<dimensionality_type, 1>{}; }
-	constexpr auto offset() const { return std::integral_constant<dimensionality_type, 0>{}; }
+	constexpr auto stride() const { return std::integral_constant<difference_type, 1>{}; }
+	constexpr auto offset() const { return std::integral_constant<difference_type, 0>{}; }
 	constexpr auto extension() const { return extension_type{0, nelems_}; }
 
 	constexpr auto num_elements() const { return nelems_; }

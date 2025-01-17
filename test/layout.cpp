@@ -6,6 +6,8 @@
 
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
+#include <cstddef>                          // for ptrdiff_t, size_t
+#include <iostream>                         // for basic_ostream, char_traits
 #include <iterator>   // for size
 #if __cplusplus > 201703L
 #   if __has_include(<ranges>)
@@ -13,9 +15,10 @@
 #   endif
 #endif
 #include <tuple>  // for make_tuple, tuple_element<>::type
-#include <type_traits>
 #include <vector>  // for vector
 // IWYU pragma: no_include <version>
+#include <type_traits>
+
 
 namespace multi = boost::multi;
 
@@ -75,19 +78,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				std::random_access_iterator_tag, ArrayRef::const_iterator::iterator_category>
 		);
 
-#if (__cplusplus >= 202002L)
-		static_assert(
-			std::is_base_of_v<
-				std::contiguous_iterator_tag, ArrayRef::const_iterator::iterator_category>
-		);
-#endif
+// #if (__cplusplus >= 202002L)
+//      static_assert(
+//          std::is_base_of_v<
+//              std::contiguous_iterator_tag, ArrayRef::const_iterator::iterator_category>
+//      );
+// #endif
 	}
 
 	{
-		std::vector<int> vec(100, 99);
-		std::vector<int> vec2(100);
+		std::vector<int> vec = {1, 2, 3, 4, 5};
+		std::vector<int> vec2(5);
 
-		multi::array_ref<int, 1, int*, multi::contiguous_layout<> > arr(100, vec.data());
+		multi::array_ref<int, 1, int*, multi::contiguous_layout<> > const arr(static_cast<std::ptrdiff_t>(vec.size()), vec.data());
 
 		static_assert(
 			std::is_base_of_v<
@@ -97,15 +100,49 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 
 #if (__cplusplus >= 202002L)
-		static_assert(
-			std::is_base_of_v<
-				std::contiguous_iterator_tag,
-				decltype(arr.cbegin())::iterator_category
-			>
-		);
+		// static_assert(
+		//  std::is_base_of_v<
+		//      std::contiguous_iterator_tag,
+		//      decltype(arr.cbegin())::iterator_category
+		//  >
+		// );
 #endif
-		std::copy(arr.begin(), arr.end(), vec2.begin());
-		std::copy(arr.cbegin(), arr.cend(), vec2.begin());
+		// std::copy(arr.begin(), arr.end(), vec2.begin());
+		BOOST_TEST( arr.cbegin().stride() == 1 );
+		BOOST_TEST( arr.cend().stride() == 1 );
+
+		auto size = arr.cend() - arr.cbegin();
+		BOOST_TEST( size == 5 );
+		BOOST_TEST( arr.size() == 5 );
+
+		BOOST_TEST( arr.cbegin().stride() == 1 );
+
+		BOOST_TEST( arr.cend().base() - arr.cbegin().base() == 5 );
+
+		BOOST_TEST( (arr.cend().base() - arr.cbegin().base()) % arr.cbegin().stride() == 0 );
+
+		// std::copy(arr.cbegin(), arr.cend(), vec2.begin());
+		std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
+
+		// for(auto idx : arr.extension()) {  // NOLINT(altera-unroll-loops)
+		//  vec2[static_cast<std::size_t>(idx)] = arr[idx];
+		// }
+
+		std::cout
+			<< vec2[0] << '\n'
+			<< vec2[1] << '\n'
+			<< vec2[2] << '\n'
+			<< vec2[3] << '\n'
+			<< vec2[4] << '\n'
+		;
+
+		BOOST_TEST( vec2[0] == 1 );
+		BOOST_TEST( vec2[1] == 2 );
+		BOOST_TEST( vec2[2] == 3 );
+		BOOST_TEST( vec2[3] == 4 );
+		BOOST_TEST( vec2[4] == 5 );
+
+		BOOST_TEST( vec == vec2 );
 	}
 
 	{

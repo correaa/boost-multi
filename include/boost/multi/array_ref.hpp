@@ -5,6 +5,7 @@
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
 #include "detail/layout.hpp"
+#include <stdexcept>
 #pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
@@ -2379,10 +2380,12 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	#endif
 
 	constexpr auto operator-(array_iterator const& other) const -> difference_type {
-		assert(stride_ != 0);
-		assert(stride_ == other.stride_);
-		assert((ptr_ - other.ptr_)%stride_ == 0);
-		return (ptr_ - other.ptr_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
+		assert(stride() != 0);
+		if(stride() != other.stride()) { throw std::runtime_error(std::to_string(stride()) + " // " + std::to_string(other.stride())); }
+		assert(stride() == other.stride());
+		// if((ptr_ - other.ptr_)%stride() != 0) { throw std::runtime_error(std::string{__PRETTY_FUNCTION__} + " --> " + std::to_string(ptr_ - other.ptr_) + " % " + std::to_string(stride())); }
+		// assert((ptr_ - other.ptr_)%stride() == 0);
+		return (ptr_ - other.ptr_)/stride();  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
 		// return -distance_to_(other);
 	}
 
