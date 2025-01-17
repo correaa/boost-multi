@@ -100,12 +100,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 
 #if (__cplusplus >= 202002L)
-		// static_assert(
-		//  std::is_base_of_v<
-		//      std::contiguous_iterator_tag,
-		//      decltype(arr.cbegin())::iterator_category
-		//  >
-		// );
+		static_assert(
+		 std::is_base_of_v<
+		     std::contiguous_iterator_tag,
+		     decltype(arr.cbegin())::iterator_category
+		 >
+		);
 #endif
 		// std::copy(arr.begin(), arr.end(), vec2.begin());
 		BOOST_TEST( arr.cbegin().stride() == 1 );
