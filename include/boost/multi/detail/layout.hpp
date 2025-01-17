@@ -50,7 +50,7 @@ struct stride_traits<std::ptrdiff_t> {
 template<typename Integer>
 struct stride_traits<std::integral_constant<Integer, 1> > {
 	#if (__cplusplus >= 202002L)
-	using category = std::random_access_iterator_tag;  // std::contiguous_iterator_tag;
+	using category = std::contiguous_iterator_tag;
 	#else
 	using category = std::random_access_iterator_tag;
 	#endif
