@@ -2282,14 +2282,6 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	using iterator_category = typename stride_traits<Stride>::category;
 	using iterator_concept = typename stride_traits<Stride>::category;
 
-#if __cplusplus >= 202002L
-	template<
-		class T = int,
-		std::enable_if_t<sizeof(T*) && std::is_base_of_v<std::contiguous_iterator_tag, iterator_category>, int> =0
-	>
-	friend auto to_address(array_iterator const& self, T = 0) { return self.base(); }
-#endif
-
 	static constexpr dimensionality_type dimensionality = 1;
 
 	array_iterator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
@@ -3804,6 +3796,17 @@ template<class T, dimensionality_type D, class TPtr = T*>
 using array_view = array_ref<T, D, TPtr>&;
 
 }  // end namespace boost::multi
+
+// workaround for clang++ 15, libc++, std=c++20
+#if __cplusplus >= 202002L
+namespace std {
+	template<
+		class Element, class Ptr, bool IsConst, bool IsMove, class Stride,
+		std::enable_if_t<std::is_base_of_v<std::contiguous_iterator_tag, typename ::boost::multi::array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>::iterator_category>, int> =0
+	>
+	auto to_address(::boost::multi::array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride> const& self) { return self.base(); }
+}
+#endif
 
 #ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
 #define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
