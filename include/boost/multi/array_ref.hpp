@@ -6,6 +6,7 @@
 #define BOOST_MULTI_ARRAY_REF_HPP_
 #include "detail/layout.hpp"
 #include <stdexcept>
+#include <type_traits>
 #pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
@@ -2280,6 +2281,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	using difference_type = typename affine::difference_type;
 	using iterator_category = typename stride_traits<Stride>::category;
 	using iterator_concept = typename stride_traits<Stride>::category;
+	using element_type = typename std::pointer_traits<Ptr>::element_type;  // workaround for clang 15 and libc++ in c++20 mode
 
 	static constexpr dimensionality_type dimensionality = 1;
 
@@ -3795,6 +3797,7 @@ template<class T, dimensionality_type D, class TPtr = T*>
 using array_view = array_ref<T, D, TPtr>&;
 
 }  // end namespace boost::multi
+
 
 #ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
 #define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
