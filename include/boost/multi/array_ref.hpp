@@ -3799,15 +3799,15 @@ using array_view = array_ref<T, D, TPtr>&;
 }  // end namespace boost::multi
 
 // workaround for clang++ 15, libc++, std=c++20
-#if __cplusplus >= 202002L
-namespace std {
-	template<
-		class Element, class Ptr, bool IsConst, bool IsMove, class Stride,
-		std::enable_if_t<std::is_base_of_v<std::contiguous_iterator_tag, typename ::boost::multi::array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>::iterator_category>, int> =0
-	>
-	auto to_address(::boost::multi::array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride> const& self) { return self.base(); }
-}
-#endif
+// #if __cplusplus >= 202002L
+// namespace std {
+//  template<
+//      class Element, class Ptr, bool IsConst, bool IsMove, class Stride,
+//      std::enable_if_t<std::is_base_of_v<std::contiguous_iterator_tag, typename ::boost::multi::array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>::iterator_category>, int> =0
+//  >
+//  auto to_address(::boost::multi::array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride> const& self) { return self.base(); }
+// }
+// #endif
 
 #ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
 #define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
