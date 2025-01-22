@@ -2281,6 +2281,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	using difference_type = typename affine::difference_type;
 	using iterator_category = typename stride_traits<Stride>::category;
 	using iterator_concept = typename stride_traits<Stride>::category;
+	using element_type = typename std::pointer_traits<Ptr>::element_type;
 
 	static constexpr dimensionality_type dimensionality = 1;
 
