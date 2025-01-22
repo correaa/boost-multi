@@ -6,6 +6,7 @@
 #define BOOST_MULTI_ARRAY_REF_HPP_
 #include "detail/layout.hpp"
 #include <stdexcept>
+#include <type_traits>
 #pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
@@ -2280,6 +2281,14 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	using difference_type = typename affine::difference_type;
 	using iterator_category = typename stride_traits<Stride>::category;
 	using iterator_concept = typename stride_traits<Stride>::category;
+
+#if __cplusplus >= 202002L
+	template<
+		class T = int,
+		std::enable_if_t<sizeof(T*) && std::is_base_of_v<std::contiguous_iterator_tag, iterator_category>, int> =0
+	>
+	friend auto to_address(array_iterator const& self, T = 0) { return self.base(); }
+#endif
 
 	static constexpr dimensionality_type dimensionality = 1;
 
