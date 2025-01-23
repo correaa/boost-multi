@@ -2347,11 +2347,6 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	element_ptr ptr_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
 	stride_type stride_;  // = {1};  // = {0};  // TODO(correaa) change to make it trivially default constructible
 
-	// constexpr auto distance_to_(array_iterator const& other) const -> difference_type {
-	//  assert(stride_==other.stride_ && (other.data_-data_)%stride_ == 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-	//  return (other.data_ - data_)/stride_;  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
-	// }
-
  public:
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret+=n; return ret; }
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret-=n; return ret; }
@@ -2390,9 +2385,14 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		return (ptr_ - other.ptr_)/stride();  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
 	}
 
-	constexpr auto operator==(array_iterator const& other) const -> bool {
+	constexpr auto operator==(array_iterator const& other) const noexcept {
 		assert(this->stride_ == other.stride_);
 		return this->ptr_ == other.ptr_;
+	}
+
+	constexpr auto operator!=(array_iterator const& other) const noexcept {
+		assert(this->stride_ == other.stride_);
+		return this->ptr_ != other.ptr_;
 	}
 
 	template<bool OtherIsConst, std::enable_if_t<OtherIsConst != IsConst, int> =0>  // NOLINT(modernize-use-constraints) for C++20
@@ -2409,7 +2409,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		return 0 < other - *this;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference {
+	BOOST_MULTI_HD constexpr auto operator*() const noexcept -> reference {
 		// if constexpr(IsMove) {
 		//  multi::what<decltype(std::move(*std::declval<Ptr const&>())), reference>();
 		//  return multi::move(*ptr_);
