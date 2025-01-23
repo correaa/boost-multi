@@ -7,7 +7,6 @@
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
 #include <cstddef>                          // for ptrdiff_t, size_t
-#include <iostream>                         // for basic_ostream, char_traits
 #include <iterator>   // for size
 #if __cplusplus > 201703L
 #   if __has_include(<ranges>)
@@ -92,6 +91,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array_ref<int, 1, int*, multi::contiguous_layout<> > const arr(static_cast<std::ptrdiff_t>(vec.size()), vec.data());
 
+		auto const& sub_arr = arr.sliced(1, 4);
+		BOOST_TEST( &sub_arr[0] == &arr[1] );
+
 		static_assert(
 			std::is_base_of_v<
 				std::random_access_iterator_tag,
@@ -137,20 +139,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// multi::what(arr.cbegin());
 		std::copy(arr.cbegin(), arr.cbegin() + arr.size(), vec2.begin());
-		// std::copy_n(arr.begin(), arr.size(), vec2.begin());
-		// std::copy(arr.cbegin(), arr.cend(), vec2.begin());
-		// std::copy_n(arr.cbegin(), arr.size(), vec2.begin());
-
-		// for(auto idx : arr.extension()) {  // NOLINT(altera-unroll-loops)
-		//  vec2[static_cast<std::size_t>(idx)] = arr[idx];
-		// }
-
-		std::cout
-			<< vec2[0] << '\n'
-			<< vec2[1] << '\n'
-			<< vec2[2] << '\n'
-			<< vec2[3] << '\n'
-			<< vec2[4] << '\n';
 
 		BOOST_TEST( vec2[0] == 1 );
 		BOOST_TEST( vec2[1] == 2 );
@@ -159,6 +147,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( vec2[4] == 5 );
 
 		BOOST_TEST( vec == vec2 );
+
+
 	}
 
 	{

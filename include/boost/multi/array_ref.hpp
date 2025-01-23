@@ -2834,16 +2834,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	#endif
 
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
-		auto const new_layout = typename types::layout_t{
-			this->layout().sub(),
-			this->layout().stride(),
-			this->layout().offset(),
-			(this->is_empty())?
-				0:
-				this->layout().nelems() / this->size() * (last - first)
+		return const_subarray{
+			this->layout().slice(first, last),
+			this->base_ + (first*this->layout().stride() - this->layout().offset())
 		};
-
-		return const_subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
 	}
 
 	#if defined(__clang__)
@@ -3293,9 +3287,8 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = 
-	std::conditional_t<
-		(D == 1),
-		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+	std::conditional_t<(D == 1),
+		// contiguous_layout<>,  // 1, typename std::pointer_traits<ElementPtr>::difference_type>,
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
 	>
