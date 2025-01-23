@@ -605,9 +605,9 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	#endif
 
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type {
-		assert(self.stride_ == other.stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
-		assert(self.stride_ != 0);
-		return (self.ptr_.base() - other.ptr_.base())/self.stride_;
+		assert(self.stride_ == other.stride_);  // LCOV_EXCL_LINE
+		assert(self.stride_ != 0);              // LCOV_EXCL_LINE
+		return (self.ptr_.base() - other.ptr_.base()) / self.stride_;
 	}
 
 	constexpr auto operator+=(difference_type n) -> array_iterator& { advance_(+n); return *this; }
