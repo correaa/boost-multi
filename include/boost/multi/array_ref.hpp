@@ -3295,7 +3295,7 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = 
 	std::conditional_t<
 		(D == 1),
-		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		// contiguous_layout<>,  // 1, typename std::pointer_traits<ElementPtr>::difference_type>,
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
 	>

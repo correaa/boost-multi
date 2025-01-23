@@ -696,10 +696,15 @@ class contiguous_layout {
 	using stride_type = std::integral_constant<int, 1>;
 	using strides_type = typename boost::multi::detail::tuple<stride_type>;
 
+	using offset_type = std::integral_constant<int, 0>;
 
-	// using num_elements = size_type;
+	using nelems_type = SSize;
+
+	using sub_type = layout_t<0, SSize>;
 
  private:
+	// BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type sub_;
+	// BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;
 	size_type nelems_;
 
 	template<std::size_t N, class Tup>
@@ -707,6 +712,27 @@ class contiguous_layout {
 
  public:
 	constexpr explicit contiguous_layout(multi::extensions_t<1> xs) : nelems_{get_<0>(xs).size()} {}
+
+	BOOST_MULTI_HD constexpr contiguous_layout(
+		sub_type /*sub*/,
+		stride_type /*stride*/,
+		offset_type /*offset*/,
+		nelems_type nelems
+	)
+	: /*sub_{sub}, stride_{} offset_{},*/ nelems_{nelems} {}
+
+ private:   
+	constexpr auto at_aux_(index /*idx*/) const {
+		return sub_type{};  // sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx*stride_), sub_.nelems_}();
+	}
+
+ public:
+	constexpr auto operator[](index idx) const {return at_aux_(idx);}
+
+	template<typename... Indices>
+	constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
+	constexpr auto operator()(index idx)                  const { return at_aux_(idx); }
+	constexpr auto operator()()                           const { return *this; }
 
 	constexpr auto stride() const { return std::integral_constant<int, 1>{}; }
 	constexpr auto offset() const { return std::integral_constant<int, 0>{}; }
