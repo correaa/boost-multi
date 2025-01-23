@@ -95,6 +95,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& arr_d = arr.dropped(1);
 		BOOST_TEST( &arr_d[0] == &arr[1] );
 
+		auto&& arr_s = arr.sliced(1, 4);
+		BOOST_TEST( &arr_s[0] == &arr[1] );
+
 		static_assert(
 			std::is_base_of_v<
 				std::random_access_iterator_tag,
