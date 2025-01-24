@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -114,7 +114,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const accumulator = [&] {
 			watch const _("accumulate for");
 			return std::accumulate(
-				(~K2D).begin(), (~K2D).end(), multi::array<double, 1>(K2D.extension(), 0.0), [](auto const& acc, auto const& col) {
+				(~K2D).begin(), (~K2D).end(),
+				multi::array<double, 1>(multi::array<double, 1>::extensions_type{K2D.extension()}, 0.0),
+				[](auto const& acc, auto const& col) {
 					multi::array<double, 1> res(acc.extensions());
 					for(auto const i : col.extension()) {  // NOLINT(altera-unroll-loops)
 						res[i] = acc[i] + col[i];
