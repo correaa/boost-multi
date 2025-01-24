@@ -2801,21 +2801,13 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  private:
 	BOOST_MULTI_HD constexpr auto dropped_aux_(difference_type count) const -> const_subarray {
-		assert( count <= this->size() );
-		typename types::layout_t const new_layout{
-			this->layout().sub(),
-			this->layout().stride(),
-			this->layout().offset(),
-			this->stride()*(this->size() - count)
-		};
-
 		#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 		#endif
 
-		return const_subarray{new_layout, this->base_ + (count*this->layout().stride() - this->layout().offset())};
+		return const_subarray{this->layout().drop(count), this->base_ + (count*this->layout().stride() - this->layout().offset())};
 
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
@@ -2827,33 +2819,24 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  private:
 
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-	#endif
-
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
-		auto const new_layout = typename types::layout_t{
-			this->layout().sub(),
-			this->layout().stride(),
-			this->layout().offset(),
-			(this->is_empty())?
-				0:
-				this->layout().nelems() / this->size() * (last - first)
-		};
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+		#endif
 
-		return const_subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
+		return const_subarray{this->layout().slice(first, last), this->base_ + (first*this->layout().stride() - this->layout().offset())};
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	}
 
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
-
  public:
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> basic_const_array /*const*/ { return basic_const_array{sliced_aux_(first, last)};}  // NOLINT(readability-const-return-type)
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last)      & ->          const_subarray           { return                   sliced_aux_(first, last) ;}
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last)     && ->          const_subarray           { return                   sliced_aux_(first, last) ;}
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> basic_const_array { return basic_const_array{sliced_aux_(first, last)}; }
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last)      & ->    const_subarray { return                   sliced_aux_(first, last) ; }
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last)     && ->    const_subarray { return                   sliced_aux_(first, last) ; }
 
 	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
@@ -3295,7 +3278,7 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = 
 	std::conditional_t<
 		(D == 1),
-		// continuous_layout<1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		// contiguous_layout<>,  // 1, typename std::pointer_traits<ElementPtr>::difference_type>,
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
 	>
