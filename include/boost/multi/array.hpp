@@ -111,6 +111,11 @@ struct array_allocator {
 };
 }  // end namespace detail
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
 struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
 : protected detail::array_allocator<
@@ -691,6 +696,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 template<typename T, class Alloc>
 struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
 : protected detail::array_allocator<Alloc>
@@ -1099,6 +1108,11 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 	// auto operator&() const& -> array const*{return this;}
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc> {
 	~array() = default;
@@ -1483,9 +1497,13 @@ struct array : static_array<T, D, Alloc> {
 	// }
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 #if defined(__cpp_deduction_guides)
 
-#define BOOST_MULTI_IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing TODO(correaa) remove
+#define BOOST_MULTI_IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing, TODO(correaa) use template typedef instead of macro
 
 // vvv MSVC 14.3 in c++17 mode needs paranthesis in dimensionality_type(d)
 template<class T> static_array(BOOST_MULTI_IL<T>) -> static_array<T, static_cast<dimensionality_type>(1U), std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::static_array': use of class template requires template argument list

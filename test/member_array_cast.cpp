@@ -33,11 +33,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		using v3d = std::array<double, 3>;
 
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wpadded"
+		#endif
+
 		// some members might need explicit padding to work well with member_cast
 		struct particle {
 			int mass;
 			v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
 		};
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 
 		class particles_soa {
 			multi::array<int, 2> masses_;
@@ -112,7 +121,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::string name;
 		// NOLINTNEXTLINE(runtime/int)
 		short       salary;  // NOLINT(google-runtime-int)
+
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wpadded"
+		#endif
+
 		std::size_t age;
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 	};
 
 	struct employee {
@@ -120,7 +139,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(runtime/int)
 		short       salary;  // NOLINT(google-runtime-int)
+
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wpadded"
+		#endif
+
 		std::size_t age;
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 
 		// clang-format off
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
@@ -175,7 +204,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
 		struct record {
 			int    id;
+
+			#if defined(__clang__)
+			#pragma clang diagnostic push
+			#pragma clang diagnostic ignored "-Wpadded"
+			#endif
+
 			double data;
+
+			#if defined(__clang__)
+			#pragma clang diagnostic pop
+			#pragma clang diagnostic ignored "-Wpadded"
+			#endif
+
 		};
 
 		multi::array<record, 2> const recs = {

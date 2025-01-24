@@ -16,6 +16,11 @@
 
 namespace multi = boost::multi;
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 template<class Ref, class Involution>
 class involuted {
 	Ref                                      r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
@@ -115,6 +120,10 @@ class involuter {
 
 	constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #if defined(__cpp_deduction_guides)
 template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19

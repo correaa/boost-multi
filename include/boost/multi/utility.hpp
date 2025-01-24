@@ -62,6 +62,11 @@ template<class T> struct ref_add_const<T const > {using type = T const ;};
 template<class T> struct ref_add_const<T const&> {using type = T const&;};
 template<class T> struct ref_add_const<T      &> {using type = T const&;};
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 template<class T, class UF, class Ptr, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
 struct transform_ptr {
 	using difference_type   = typename std::iterator_traits<Ptr>::difference_type;
@@ -142,6 +147,10 @@ struct transform_ptr {
 
 	template<class, class, class, class> friend struct transform_ptr;
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 template<class Array, typename Reference = void, typename Element = void>
 struct array_traits;
