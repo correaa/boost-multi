@@ -5,7 +5,7 @@
 
 #include <boost/multi/array.hpp>
 
-// #include <algorithm>    // for equal
+#include <algorithm>    // for equal
 #include <array>        // for array
 #include <iterator>     // for size, begin, end
 #include <type_traits>  // for is_assignable_v
