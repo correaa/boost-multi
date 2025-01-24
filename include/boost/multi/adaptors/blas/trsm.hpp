@@ -42,6 +42,11 @@ auto upper_parted(Array const& arr) {return triangular_parted<filling::upper>(ar
 template<class Array> auto L(Array const& arr) { return lower_parted(arr); }  // NOLINT(readability-identifier-naming) BLAS naming
 template<class Array> auto U(Array const& arr) { return upper_parted(arr); }  // NOLINT(readability-identifier-naming) BLAS naming
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-default"
+#endif
+
 template<class Matrix>
 auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readability-identifier-length) BLAS naming
 	auto ret =+ m;
@@ -65,6 +70,10 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 	}
 	return ret;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 using core::trsm;
 

@@ -13,6 +13,11 @@ enum class side : char {
 	right = 'R'
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-default"
+#endif
+
 inline auto swap(side sid) noexcept -> side {
 	switch(sid) {  // NOLINT(clang-diagnostic-switch-default)
 		case side::left : return side::right;
@@ -20,6 +25,11 @@ inline auto swap(side sid) noexcept -> side {
 	}  // __builtin_unreachable();  // LCOV_EXCL_LINE
 	return {};
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 
 } // end namespace boost::multi::blas
 #endif
