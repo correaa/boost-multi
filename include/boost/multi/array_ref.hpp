@@ -3066,40 +3066,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_FRIEND_CONSTEXPR auto cbegin(const_subarray const& self) {return self.cbegin();}
 	BOOST_MULTI_FRIEND_CONSTEXPR auto cend  (const_subarray const& self) {return self.cend()  ;}
 
-	// // fix mutation
-	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other) && -> const_subarray& {operator=(          other ); return *this;}
-	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other)  & -> const_subarray& {
-	//  assert(other.extensions() == this->extensions());
-	//  elements() = other.elements();
-	//  return *this;
-	// }
-
-	// // fix mutation
-	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...>     && other) && -> const_subarray& {operator=(std::move(other)); return *this;}
-	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...>     && other)  & -> const_subarray& {
-	//  assert(this->extensions() == other.extensions());
-	//  elements() = std::move(other).elements();
-	//  return *this;
-	// }
-
-	// template<
-	//  class Range,
-	//  class = std::enable_if_t<! std::is_base_of_v<const_subarray, Range> >,
-	//  class = std::enable_if_t<! is_subarray<Range>::value>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-	// >
-	// constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
-	// -> const_subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	//  assert(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
-	//  adl_copy_n(adl_begin(rng), adl_size(rng), begin());
-	//  return *this;
-	// }
-	// template<
-	//  class Range,
-	//  class = std::enable_if_t<! std::is_base_of_v<const_subarray, Range>>,
-	//  class = std::enable_if_t<! is_subarray<Range>::value>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-	// >
-	// constexpr auto operator=(Range const& rng) && -> const_subarray& {operator=(rng); return *this;}
-
 	template<class It> constexpr auto assign(It first) &&
 	->decltype(adl_copy_n(first, std::declval<size_type>(), std::declval<iterator>()), void()) {
 		return adl_copy_n(first, this->       size()      , std::move(*this).begin()), void(); }
