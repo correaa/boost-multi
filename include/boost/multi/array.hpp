@@ -959,12 +959,17 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array& self) -> typename static_array::element_ptr { return self.origin(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr { return self.origin(); }
 
+	// NOSONAR
 	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return *(this->base_);
 	}
+
+	// NOSONAR
 	constexpr operator std::add_rvalue_reference_t<typename std::iterator_traits<typename static_array::element_ptr>::reference>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return std::move(*(this->base_));
 	}
+
+	// NOSONAR
 	constexpr operator typename std::iterator_traits<typename static_array::element_ptr>::reference() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 		return *(this->base_);
 	}
