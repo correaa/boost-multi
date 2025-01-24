@@ -242,14 +242,14 @@ else()
 	-Wzero-as-null-pointer-constant
 	# -Wzero-length-bounds # (gcc 12, not in 11)
 	>
-	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra -Weverything $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
-	-Wno-error=\#warnings
-	# -Wno-\#warnings disable this working for a bug in rocm ~5.6
+	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
+	-Werror -Wall -Wextra -Wpedantic -Weverything
+	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 	# -Wno-large-by-value-copy  # subarray references can be large
 	-Wno-padded
-	# -Rpass -Rpass-analysis
-	# -Rpass-missed
+	# -Rpass -Rpass-analysis -Rpass-missed
 	-Rsanitize-address
 	# -Rsearch-path-usage
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
