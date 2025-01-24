@@ -244,20 +244,18 @@ else()
 	>
 	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
-	-Werror -Wall -Wextra -Wpedantic -Weverything
+	-Werror -Wall -Wextra -Weverything
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
-	# -Wno-large-by-value-copy  # subarray references can be large
-	-Wno-padded
-	# -Rpass -Rpass-analysis -Rpass-missed
-	-Rsanitize-address
-	# -Rsearch-path-usage
+	-Wlarge-by-value-copy  # subarray references can be large
+	-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
 	# -Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4
 	-Wstrict-overflow=5
-	-Wno-switch-default
-	-Wno-undefined-reinterpret-cast  # needed to cast to c-array
-	-Wno-unknown-pragmas  # other compilers need their own pragmas
+	-Wundefined-reinterpret-cast  # needed to cast to c-array
+	-Wunknown-pragmas  # other compilers need their own pragmas
+	# -Rpass -Rpass-analysis -Rpass-missed
+	-Rsanitize-address # -Rsearch-path-usage
 	>
 	$<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra # also IntelLLVM, XL (ibm), XLClang (ibm)
 	-diag-disable=remark

@@ -865,12 +865,18 @@ struct layout_t
 		nelems_{boost::multi::detail::get<0>(extensions.base()).size()*sub().num_elements()}
 	{}
 
-	BOOST_MULTI_HD constexpr explicit layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	constexpr auto origin() const {return sub_.origin() - offset_;}
 
  private:
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"
+	#endif
+
 	constexpr auto at_aux_(index idx) const {
 		return sub_type{sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx*stride_), sub_.nelems_}();
 	}
@@ -881,7 +887,22 @@ struct layout_t
 	template<typename... Indices>
 	constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
 	constexpr auto operator()(index idx)                  const { return at_aux_(idx); }
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
+	#endif
+
 	constexpr auto operator()()                           const { return *this; }
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	       BOOST_MULTI_HD constexpr auto sub()             &       -> sub_type      & {return      sub_ ;}
 	       BOOST_MULTI_HD constexpr auto sub()        const&       -> sub_type const& {return      sub_ ;}
@@ -1042,11 +1063,21 @@ struct layout_t
 		return layout_t{sub_.scale(factor), stride_*factor, offset_*factor, nelems_*factor};
 	}
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto scale(size_type num, size_type den) const {
 		assert( (stride_*num) % den == 0 );
 		assert(offset_ == 0);  // TODO(correaa) implement ----------------vvv
 		return layout_t{sub_.scale(num, den), stride_*num/den, offset_ /* *num/den */, nelems_*num/den};
 	}
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 };
 
 constexpr auto
