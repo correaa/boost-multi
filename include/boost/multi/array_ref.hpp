@@ -115,12 +115,12 @@ template<class A> struct is_subarray_of_dim: decltype(is_subarray_of_dim_aux(std
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
-template<
-	typename T,
-	dimensionality_type D,
-	typename ElementPtr = T*,
-	class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type> >
->
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type> > >
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
@@ -293,6 +293,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	template<class T2, ::boost::multi::dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst = false>
 struct subarray_ptr;
 
@@ -306,9 +310,18 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type
 > {
  private:
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 	Layout layout_;
 	ElementPtr base_;
 	typename std::iterator_traits<ElementPtr>::difference_type offset_;
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
@@ -641,8 +654,17 @@ struct cursor_t {
 	cursor_t() = default;
 
  private:
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 	strides_type strides_;
 	element_ptr  base_;
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 	template<class, dimensionality_type, class, class> friend struct const_subarray;
 	template<class, dimensionality_type, class> friend struct cursor_t;
@@ -961,6 +983,11 @@ template<class It>
 }
 
 template<typename, ::boost::multi::dimensionality_type, class Alloc> struct static_array;  // this might be needed by MSVC 14.3 in c++17 mode
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
 struct const_subarray : array_types<T, D, ElementPtr, Layout> {
@@ -1806,6 +1833,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 template<class T>
 BOOST_MULTI_HD constexpr auto move(T&& val) noexcept -> decltype(auto) {
 	if constexpr(has_member_move<T>::value) {
@@ -1834,6 +1865,11 @@ class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 	auto begin() && { return this->mbegin(); }
 	auto end  () && { return this->mend  (); }
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
 class subarray : public const_subarray<T, D, ElementPtr, Layout> {
@@ -2263,7 +2299,16 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto element_moved() && {return element_moved();}
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 template<class Element, typename Ptr, bool IsConst, bool IsMove, typename Stride>
 struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
@@ -2449,6 +2494,10 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	}
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 template<class Element, dimensionality_type D, typename... Ts>
 using iterator = array_iterator<Element, D, Ts...>;
 
@@ -2575,6 +2624,11 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	//  arxiv &                             element_ ;
 	}
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 template<typename T, typename ElementPtr, class Layout>
 struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) to define operators via CRTP
@@ -3266,10 +3320,19 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 template<class T2, class P2, class Array, class... Args>
 constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto) {
 	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = 
 	std::conditional_t<
@@ -3593,6 +3656,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 //      }
 	}
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 template<class T, dimensionality_type D, class Ptr = T*>
 using array_cref = array_ref<

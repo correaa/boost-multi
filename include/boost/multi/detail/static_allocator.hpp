@@ -15,20 +15,34 @@
 
 namespace boost::multi::detail {
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 template<class T, std::size_t N>
 class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special semantics
-	bool dirty_ = false;
-
 #ifdef _MSC_VER
 	#pragma warning(push)
 	#pragma warning(disable : 4324)  // Warning that the structure is padded due to the below
 #endif
 
+// #if defined(__clang__)
+// #pragma clang diagnostic push
+// #pragma clang diagnostic ignored "-Wpadded"
+// #endif
+
 	BOOST_MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
+
+// #if defined(__clang__)
+// #pragma clang diagnostic pop
+// #endif
 
 #ifdef _MSC_VER
 	#pragma warning(pop)
 #endif
+
+	bool dirty_ = false;
 
  public:
 	using value_type = T;
@@ -101,6 +115,10 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 
 	using is_always_equal = std::true_type;
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 template<class T, std::size_t N, class U>
 constexpr auto operator==(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> const& /*a2*/) noexcept { return true; }  // &a1 == &a2; }

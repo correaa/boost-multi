@@ -589,9 +589,19 @@ struct layout_t<0, SSize>
 	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
 
  private:
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_   ;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // TODO(correaa) padding struct 'boost::multi::layout_t<0>' with 1 byte to align 'stride_' [-Werror,-Wpadded]
+
 	offset_type offset_;
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 	nelems_type nelems_;
 
 	template<dimensionality_type, typename> friend struct layout_t;
