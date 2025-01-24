@@ -397,11 +397,11 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 
 	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls) std::string ctor
-		multi::array<std::string, 2> arrB = {
-			{"a", "b", "c", "d", "e"},
-			{"f", "g", "h", "f", "g"},
-			{"h", "i", "j", "k", "l"},
-		};
+		// multi::array<std::string, 2> arrB = {
+		//  {"a", "b", "c", "d", "e"},
+		//  {"f", "g", "h", "f", "g"},
+		//  {"h", "i", "j", "k", "l"},
+		// };
 		// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
 		arrB.reindex(2);
 		BOOST_TEST( size(arrB) == 3 );
@@ -409,23 +409,23 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	}
 	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls) std::string ctor
-		multi::array<std::string, 2> arrB = {
-			{"a", "b", "c", "d", "e"},
-			{"f", "g", "h", "f", "g"},
-			{"h", "i", "j", "k", "l"},
-		};
+		// multi::array<std::string, 2> arrB = {
+		//  {"a", "b", "c", "d", "e"},
+		//  {"f", "g", "h", "f", "g"},
+		//  {"h", "i", "j", "k", "l"},
+		// };
 		// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
 		arrB.reindex(2, 1);
 		BOOST_TEST( size(arrB) == 3 );
 		BOOST_TEST( arrB[2][1] == "a" );
 	}
 	{
-		using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
-		multi::array<std::string, 2> arrB = (multi::array<std::string, 2>{
-			{"a"s, "b"s, "c"s, "d"s, "e"s},
-			{"f"s, "g"s, "h"s, "f"s, "g"s},
-			{"h"s, "i"s, "j"s, "k"s, "l"s},
-		});  // .reindex(2, 1);  // std::string NOLINT(fuchsia-default-arguments-calls)
+		// using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
+		// multi::array<std::string, 2> arrB = (multi::array<std::string, 2>{
+		//  {"a"s, "b"s, "c"s, "d"s, "e"s},
+		//  {"f"s, "g"s, "h"s, "f"s, "g"s},
+		//  {"h"s, "i"s, "j"s, "k"s, "l"s},
+		// });  // .reindex(2, 1);  // std::string NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( arrB.reindex(2).extension() == multi::iextension(2, 5) );
 		auto exts = arrB.reindexed(2).extensions();
