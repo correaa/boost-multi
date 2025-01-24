@@ -504,6 +504,12 @@ v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	BLAS(T##herk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<Real const*>(alpha), aa, BC(lda),        *reinterpret_cast<Real const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                                                            \
 }                                                                                                                                                                                                                                      \
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wundefined-reinterpret-cast"
+#endif
+
 #define xgemm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
 enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                                                            \
@@ -529,6 +535,10 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)  // NOLINT(modernize-use-constraints,readability-function-cognitive-complexity) : 36 of 25
 #undef xgemm
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 #define xtrsm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,                                                         \
 enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                                      \
@@ -548,12 +558,22 @@ v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA
 	BLAS(T##trsm)(side, uplo, transA, diag, BC(m), BC(n), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T*>(static_cast<BB*>(bb)), BC(ldb));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
 }                                                                                                                                                                                                                 \
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wundefined-reinterpret-cast"
+#endif
+
 xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)  // NOLINT(modernize-use-constraints,readability-function-cognitive-complexity) : 29 of 25
 #undef xtrsm
 
 xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)  // NOLINT(modernize-use-constraints) for C++20
 #undef xsyrk
 	              xherk(c) xherk(z)  // NOLINT(modernize-use-constraints) for C++20
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 } // end namespace core
 

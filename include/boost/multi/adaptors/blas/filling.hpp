@@ -18,7 +18,7 @@ enum class filling : char {
 };
 
 inline auto flip(filling side) -> filling {
-	switch(side) {
+	switch(side) {  // NOLINT(clang-diagnostic-switch-default)
 		case filling::lower: return filling::upper;
 		case filling::upper: return filling::lower;
 	}  // __builtin_unreachable();  // LCOV_EXCL_LINE

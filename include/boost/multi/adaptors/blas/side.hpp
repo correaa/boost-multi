@@ -14,7 +14,7 @@ enum class side : char {
 };
 
 inline auto swap(side sid) noexcept -> side {
-	switch(sid) {
+	switch(sid) {  // NOLINT(clang-diagnostic-switch-default)
 		case side::left : return side::right;
 		case side::right: return side::left ;
 	}  // __builtin_unreachable();  // LCOV_EXCL_LINE
