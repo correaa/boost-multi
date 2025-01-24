@@ -696,10 +696,15 @@ class contiguous_layout {
 	using stride_type = std::integral_constant<int, 1>;
 	using strides_type = typename boost::multi::detail::tuple<stride_type>;
 
+	using offset_type = std::integral_constant<int, 0>;
 
-	// using num_elements = size_type;
+	using nelems_type = SSize;
+
+	using sub_type = layout_t<0, SSize>;
 
  private:
+	// BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type sub_;
+	// BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;
 	size_type nelems_;
 
 	template<std::size_t N, class Tup>
@@ -707,6 +712,27 @@ class contiguous_layout {
 
  public:
 	constexpr explicit contiguous_layout(multi::extensions_t<1> xs) : nelems_{get_<0>(xs).size()} {}
+
+	BOOST_MULTI_HD constexpr contiguous_layout(
+		sub_type /*sub*/,
+		stride_type /*stride*/,
+		offset_type /*offset*/,
+		nelems_type nelems
+	)
+	: /*sub_{sub}, stride_{} offset_{},*/ nelems_{nelems} {}
+
+ private:   
+	constexpr auto at_aux_(index /*idx*/) const {
+		return sub_type{};  // sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx*stride_), sub_.nelems_}();
+	}
+
+ public:
+	constexpr auto operator[](index idx) const {return at_aux_(idx);}
+
+	template<typename... Indices>
+	constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
+	constexpr auto operator()(index idx)                  const { return at_aux_(idx); }
+	constexpr auto operator()()                           const { return *this; }
 
 	constexpr auto stride() const { return std::integral_constant<int, 1>{}; }
 	constexpr auto offset() const { return std::integral_constant<int, 0>{}; }
@@ -727,6 +753,30 @@ class contiguous_layout {
 	constexpr auto sub() const { return layout_t<0, SSize>{}; }
 
 	constexpr auto is_compact() const { return std::true_type{}; }
+
+	BOOST_MULTI_HD constexpr auto drop(difference_type count) const {
+		assert( count <= this->size() );
+
+		return contiguous_layout{
+			this->sub(),
+			this->stride(),
+			this->offset(),
+			this->stride()*(this->size() - count)
+		};
+	}
+
+	BOOST_MULTI_HD constexpr auto slice(index first, index last) const {
+		return contiguous_layout{
+			this->sub(),
+			this->stride(),
+			this->offset(),
+			(this->is_empty())?
+				0:
+				this->nelems() / this->size() * (last - first)
+		};
+	}
+
+
 };
 
 template<dimensionality_type D, typename SSize>
@@ -928,6 +978,28 @@ struct layout_t
 	constexpr auto stride   (dimensionality_type dim) const {return std::apply([](auto... strides   ) {return std::array<stride_type    , static_cast<std::size_t>(D)>{strides   ...};}, strides   ()       ).at(static_cast<std::size_t>(dim));}
 //  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 //  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
+
+	BOOST_MULTI_HD constexpr auto drop(difference_type count) const {
+		assert( count <= this->size() );
+
+		return layout_t{
+			this->sub(),
+			this->stride(),
+			this->offset(),
+			this->stride()*(this->size() - count)
+		};
+	}
+
+	BOOST_MULTI_HD constexpr auto slice(index first, index last) const {
+		return layout_t{
+			this->sub(),
+			this->stride(),
+			this->offset(),
+			(this->is_empty())?
+				0:
+				this->nelems() / this->size() * (last - first)
+		};
+	}
 
 	template<typename Size>
 	constexpr auto partition(Size const& count) -> layout_t& {
