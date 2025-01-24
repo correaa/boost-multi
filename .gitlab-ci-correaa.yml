@@ -824,6 +824,30 @@ cuda-12.5.0:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
+cuda-12.6.0:
+  stage: build
+  allow_failure: true
+  image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+  interruptible: true
+  script:
+    - nvidia-smi
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - cmake --version
+    # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
+    # - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr  # for CMAKE_CUDA_STANDARD=20
+    # - cmake --version
+    - mkdir build && cd build
+    - g++ --version
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++
+    - cmake --verbose --build . --parallel 2 || cmake --build . --verbose
+    - ctest || ctest --rerun-failed --output-on-failure
+  needs: ["cuda"]
+
 rocm:
   stage: build
   image: rocm/dev-ubuntu-24.04  # rocm/dev-ubuntu-22.04
@@ -927,7 +951,7 @@ inq:
 inq cuda:
   allow_failure: false
   stage: test
-  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+  image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
     - non-shared
     - nvidia-gpu
