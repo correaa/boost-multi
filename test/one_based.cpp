@@ -1,11 +1,11 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
 
-#include <algorithm>    // for equal
+// #include <algorithm>    // for equal
 #include <array>        // for array
 #include <iterator>     // for size, begin, end
 #include <type_traits>  // for is_assignable_v
