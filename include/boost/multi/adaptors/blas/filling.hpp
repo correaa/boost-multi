@@ -17,6 +17,11 @@ enum class filling : char {
 	upper = 'L'
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-default"
+#endif
+
 inline auto flip(filling side) -> filling {
 	switch(side) {  // NOLINT(clang-diagnostic-switch-default)
 		case filling::lower: return filling::upper;
@@ -24,6 +29,10 @@ inline auto flip(filling side) -> filling {
 	}  // __builtin_unreachable();  // LCOV_EXCL_LINE
 	return {};
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 inline auto operator-(filling side) -> filling {return flip(side);}
 inline auto operator+(filling side) -> filling {return side;}
