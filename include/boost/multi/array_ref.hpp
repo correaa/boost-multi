@@ -510,7 +510,17 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr explicit operator bool() const {return ptr_->base();}  // TODO(correaa) implement bool conversion for subarray_ptr
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference {return *ptr_;}
 
-	BOOST_MULTI_HD constexpr auto operator->() const -> decltype(auto) {return ptr_;}
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
+	#endif
+
+	BOOST_MULTI_HD constexpr auto operator->() const -> decltype(auto) { return ptr_; }
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	BOOST_MULTI_HD constexpr auto operator+ (difference_type n) const -> array_iterator {array_iterator ret{*this}; ret += n; return ret;}
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> subarray<element, D-1, element_ptr> {return *((*this) + n);}
@@ -1501,6 +1511,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using const_pointer = const_ptr;
 
  private:
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
+	#endif
+
 	constexpr auto addressof_aux_() const {return ptr(this->base_, this->layout());}
 
  public:
@@ -1516,7 +1532,11 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// [[deprecated("controversial")]]
 	constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 	// NOLINTEND(google-runtime-operator)
-        
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
+
  private:
 	#if defined(__clang__)
 	#pragma clang diagnostic push
@@ -1839,10 +1859,20 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using ptr = subarray_ptr<T, D, ElementPtr, Layout>;
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
+	#endif
+
 	// NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&()     && { return subarray_ptr<T, D, ElementPtr, Layout>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 	// NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&()      & { return subarray_ptr<T, D, ElementPtr, Layout>(this->base_, this->layout()); } // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
+
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	using const_subarray<T, D, ElementPtr, Layout>::operator&;
 	// NOLINTNEXTLINE(runtime/operator)

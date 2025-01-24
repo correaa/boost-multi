@@ -45,10 +45,10 @@ template<class Array> auto U(Array const& arr) { return upper_parted(arr); }  //
 template<class Matrix>
 auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readability-identifier-length) BLAS naming
 	auto ret =+ m;
-	switch(f) {
+	switch(f) {  // NOLINT(clang-diagnostic-switch-default)
 	case multi::blas::filling::upper:
 		{
-			auto ext = extension(ret);
+			auto const ext = extension(ret);
 			std::for_each(ext.begin(), ext.end(), [&ret](auto idx) {
 				std::fill_n(ret[idx].begin(), std::min(idx, size(~ret)), 0.0);
 			});
