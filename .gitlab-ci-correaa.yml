@@ -664,7 +664,7 @@ culang++-16 cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-culang++-20 cuda-12.5.1 tidy:
+culang++-20 cuda-12.4.1 tidy:
   stage: build
   image: nvcr.io/nvidia/cuda:12.4.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.5.1-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
   allow_failure: false
