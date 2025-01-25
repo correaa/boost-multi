@@ -687,7 +687,7 @@ culang++-18 cuda-12.1.1 tidy:
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-18 -DCMAKE_CXX_COMPILER=clang++-18
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
-  needs: ["cuda", "clang++"]
+#  needs: ["cuda", "clang++"]
 
 cuda-12.6.0:
   stage: build
