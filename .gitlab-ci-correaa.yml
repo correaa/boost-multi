@@ -616,55 +616,6 @@ cuda:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++"]
 
-# cuda-11.8:
-#   stage: build
-#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-#   tags:
-#     - non-shared
-#     - nvidia-gpu
-#   interruptible: true
-#   script:
-#     - nvidia-smi
-#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-#     - mkdir build && cd build
-#     - ls /usr/local
-#     - ls /usr/local/cuda-11/bin
-#     - /usr/local/cuda-11/bin/nvcc --version
-#     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#     # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-#     # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-#     # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
-#   needs: ["cuda"]
-
-# cuda-11.8 mkl:
-#   stage: build
-#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-#   tags:
-#     - non-shared
-#     - nvidia-gpu
-#     - high-bandwidth
-#     - x86_64
-#   interruptible: true
-#   script:
-#     - nvidia-smi
-#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-#     - DEBIAN_FRONTEND=interactive apt-get install --no-install-recommends --yes --force-yes -y libmkl-full-dev
-#     - cmake --version
-#     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
-#     - sh ./cmake-install.sh --skip-license --prefix=/usr
-#     - cmake --version
-#     - mkdir build && cd build
-#     - /usr/local/cuda-11/bin/nvcc --version
-#     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#     # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-#     # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-#     # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
-#   needs: ["cuda"]
-
 cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
@@ -713,9 +664,9 @@ culang++-16 cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-culang++-19 cuda-12.1.1 tidy:
+culang++-18 cuda-12.1.1 tidy:
   stage: build
-  image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
+  image: nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
   allow_failure: false
   tags:
     - non-shared
