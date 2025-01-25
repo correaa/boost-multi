@@ -664,9 +664,9 @@ culang++-16 cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-culang++-20 cuda-12.6.3 tidy:  # clang 18 supports up to cuda 12.3
+culang++-20 cuda-12.5.1 tidy:
   stage: build
-  image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.5.1-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
+  image: nvcr.io/nvidia/cuda:12.5.1-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
   allow_failure: false
   tags:
     - non-shared
@@ -706,7 +706,7 @@ cuda-12.6.3:
     - g++ --version
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++
-    - cmake --verbose --build . --parallel 2 || cmake --build . --verbose
+    - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
