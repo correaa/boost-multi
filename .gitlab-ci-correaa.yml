@@ -664,7 +664,7 @@ culang++-16 cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-culang++-18 cuda-12.5.1 tidy:
+culang++-19 cuda-12.5.1 tidy:  # clang 18 supports up to cuda 12.3
   stage: build
   image: nvcr.io/nvidia/cuda:12.5.1-devel-ubuntu24.04 # nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
   allow_failure: false
@@ -679,12 +679,12 @@ culang++-18 cuda-12.5.1 tidy:
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 18
-    - apt-get install --no-install-recommends -y clang-tidy-18
+    - ./llvm.sh 19
+    - apt-get install --no-install-recommends -y clang-tidy-19
     - mkdir build && cd build
-    - clang++-18 --version
-    - clang-tidy-18 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-18 -DCMAKE_CXX_COMPILER=clang++-18
+    - clang++-19 --version
+    - clang-tidy-19 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-19 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
 #  needs: ["cuda", "clang++"]
