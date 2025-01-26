@@ -685,9 +685,9 @@ cuda-12.6.3:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
-culang++-19 cuda-12.1.0 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   stage: build
-  image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.1.0-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.3.2-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.5.1-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
+  image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
   allow_failure: false
   tags:
     - non-shared
@@ -701,7 +701,7 @@ culang++-19 cuda-12.1.0 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
     - ./llvm.sh 19
-    - apt-get install --no-install-recommends -y clang-tidy-19
+    - apt-get install --no-install-recommends -y clang-19 clang-tidy-19
     - mkdir build && cd build
     - clang++-19 --version
     - clang-tidy-19 --version
