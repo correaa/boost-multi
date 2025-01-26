@@ -3,9 +3,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for layout_t, apply, subarray, array...  // IWYU pragma: keep  // bug in iwyu 8.22
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for equal
 #include <array>        // for array  // IWYU pragma: keep  // bug in iwyu 8.22
@@ -25,11 +25,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	namespace multi = boost::multi;
 
 #ifndef _MSC_VER  // MSVC 14.40 is not constexpr ready?
-	// BOOST_AUTO_TEST_CASE(constexpr_ptr_access) {
-	//  static constexpr auto test = [] {
-	//    std::array<int, 12>      buffer{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
-	//    multi::array_ref<int, 2> arr({3, 3}, buffer.data());
-	//    auto                     ptr = &arr;
+				  // BOOST_AUTO_TEST_CASE(constexpr_ptr_access) {
+				  //  static constexpr auto test = [] {
+				  //    std::array<int, 12>      buffer{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
+				  //    multi::array_ref<int, 2> arr({3, 3}, buffer.data());
+				  //    auto                     ptr = &arr;
 
 	//    return (ptr->base() == buffer.data());
 	//  }();
@@ -54,7 +54,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// what( arr[2], arr[2].sliced(0, 2), &(arr[2].sliced(0, 2)) );
 		BOOST_TEST(    &arr[2] != &(arr[2].sliced(0, 2))  );
 
-		BOOST_TEST( !( &arr[2] == &std::as_const(arr)[2]({0, 2})) );
+		// comparison of different provenance is undefined
+		// BOOST_TEST( !( &arr[2] == &std::as_const(arr)[2]({0, 2})) );
 		BOOST_TEST( &arr[2] == &fwd_array(arr[2]) );
 		BOOST_TEST( &fwd_array(arr[2]) == &arr[2] );
 
@@ -80,13 +81,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &carr2 == &              arr [2] );
 		BOOST_TEST( &carr2 == &              arr [2] );
 
-		BOOST_TEST(   &carr2 != &              arr [2]({0, 2})  );
-		BOOST_TEST( !(&carr2 == &              arr [2]({0, 2})) );
+		// comparing array-pointer of different provenance is undefined
+		// BOOST_TEST(   &carr2 != &              arr [2]({0, 2})  );
+		// BOOST_TEST( !(&carr2 == &              arr [2]({0, 2})) );
 
 		auto const& ac2 = carr2;  // fwd_array(A[2]);
 		BOOST_TEST( &ac2 == &std::as_const(arr)[2] );
 		BOOST_TEST( &std::as_const(arr)[2] == &ac2 );
 		BOOST_TEST( &ac2 == &              arr [2] );
+
+		auto pac2  = &ac2;
+		auto parr2 = &arr[2];
+		BOOST_TEST( pac2 == parr2 );
+
+		pac2 = nullptr;
+		BOOST_TEST( pac2 != parr2 );
+
+		parr2 = nullptr;
+		BOOST_TEST( pac2 == parr2 );
 	}
 
 	BOOST_AUTO_TEST_CASE(subarray_ptr_1D) {
@@ -207,17 +219,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using my_span = multi::array_ref<int, 1>;
 
-		#if defined(__clang__)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wunknown-warning-option"
-		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-		#endif
+#if defined(__clang__)
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Wunknown-warning-option"
+#	pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 
 		auto aP = &my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-		#if defined(__clang__)
-		#pragma clang diagnostic pop
-		#endif
+#if defined(__clang__)
+#	pragma clang diagnostic pop
+#endif
 
 		BOOST_TEST( (*aP).size() == 5 );
 		BOOST_TEST( aP->size() == 5 );  // doesn't work on MSVC?
