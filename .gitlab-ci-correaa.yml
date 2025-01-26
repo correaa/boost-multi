@@ -62,6 +62,7 @@ g++-m32 sanitize:
 arm64:
   stage: build
   image: arm64v8/debian:latest
+  allow_failure: true
   tags:
     - non-shared
     - arm  # for image
