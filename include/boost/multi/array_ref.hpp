@@ -431,7 +431,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL, OtherIsConst>>, int> =0  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	>
 	friend BOOST_MULTI_HD constexpr auto operator==(subarray_ptr const& self, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL, OtherIsConst> const& other) -> bool {
-		assert((!self || !other) || (self->layout() == other->layout())); 
+		assert((!self || !other) || (self->layout() == other->layout()));  // comparing array ptrs of different provenance is undefined
 		return self->base() == other->base();
 	}
 
@@ -440,7 +440,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		std::enable_if_t<!std::is_base_of_v<subarray_ptr, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL, OtherIsConst>>, int> =0  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	>
 	friend BOOST_MULTI_HD constexpr auto operator!=(subarray_ptr const& self, subarray_ptr<OtherT, OtherD, OtherEPtr, OtherL, OtherIsConst> const& other) -> bool {
-		assert((!self || !other) || (self->layout() == other->layout())); 
+		assert((!self || !other) || (self->layout() == other->layout()));  // comparing array ptrs of different provenance is undefined
 		return self->base() != other->base();
 	}
 
