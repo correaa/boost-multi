@@ -29,13 +29,13 @@ if(NOT Boost_FOUND)
 endif()
 
 set(TEST_SRCS
-    array.cu
-    memory_resource.cu
+	array.cu
+	memory_resource.cu
 	run_reduce.cu
 	set_identity_kernel.cu
-    speed.cu
-    speed_algo.cu
-    universal.cu
+	speed.cu
+	speed_algo.cu
+	universal.cu
 	vector.cu
 )
 
