@@ -36,7 +36,7 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure -T Test
 
@@ -207,7 +207,7 @@ clang++:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
 
@@ -616,55 +616,6 @@ cuda:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++"]
 
-# cuda-11.8:
-#   stage: build
-#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-#   tags:
-#     - non-shared
-#     - nvidia-gpu
-#   interruptible: true
-#   script:
-#     - nvidia-smi
-#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-#     - mkdir build && cd build
-#     - ls /usr/local
-#     - ls /usr/local/cuda-11/bin
-#     - /usr/local/cuda-11/bin/nvcc --version
-#     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#     # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-#     # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-#     # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
-#   needs: ["cuda"]
-
-# cuda-11.8 mkl:
-#   stage: build
-#   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
-#   tags:
-#     - non-shared
-#     - nvidia-gpu
-#     - high-bandwidth
-#     - x86_64
-#   interruptible: true
-#   script:
-#     - nvidia-smi
-#     - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-#     - DEBIAN_FRONTEND=interactive apt-get install --no-install-recommends --yes --force-yes -y libmkl-full-dev
-#     - cmake --version
-#     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
-#     - sh ./cmake-install.sh --skip-license --prefix=/usr
-#     - cmake --version
-#     - mkdir build && cd build
-#     - /usr/local/cuda-11/bin/nvcc --version
-#     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#     # - ../build/include/boost/multi/adaptors/thrust/test/speed.cu.x
-#     # - ../build/include/boost/multi/adaptors/thrust/test/speed_algo.cu.x
-#     # - ../build/include/boost/multi/adaptors/fftw/test/combinations.cpp.x
-#   needs: ["cuda"]
-
 cuda-11.4.3:
   stage: build
   image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
@@ -713,32 +664,7 @@ culang++-16 cuda-11.4.3:
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
-culang++-19 cuda-12.1.1 tidy:
-  stage: build
-  image: nvcr.io/nvidia/cuda:12.1.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
-  allow_failure: false
-  tags:
-    - non-shared
-    - nvidia-gpu
-    - high-bandwidth
-  interruptible: true
-  script:
-    - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - apt-get install --no-install-recommends -y lsb-release software-properties-common
-    - wget https://apt.llvm.org/llvm.sh
-    - chmod u+x llvm.sh
-    - ./llvm.sh 18
-    - apt-get install --no-install-recommends -y clang-tidy-18
-    - mkdir build && cd build
-    - clang++-18 --version
-    - clang-tidy-18 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-18 -DCMAKE_CXX_COMPILER=clang++-18
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest -j 2 --output-on-failure
-  needs: ["cuda", "clang++"]
-
-cuda-12.6.0:
+cuda-12.6.3:
   stage: build
   allow_failure: true
   image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
@@ -755,9 +681,34 @@ cuda-12.6.0:
     - g++ --version
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++
-    - cmake --verbose --build . --parallel 2 || cmake --build . --verbose
+    - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
+
+culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+  stage: build
+  image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
+  allow_failure: false
+  tags:
+    - non-shared
+    - nvidia-gpu
+    - high-bandwidth
+  interruptible: true
+  script:
+    - nvidia-smi
+    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y lsb-release software-properties-common
+    - wget https://apt.llvm.org/llvm.sh
+    - chmod u+x llvm.sh
+    - ./llvm.sh 19
+    - apt-get install --no-install-recommends -y clang-19 clang-tidy-19
+    - mkdir build && cd build
+    - clang++-19 --version
+    - clang-tidy-19 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-Wno-unknown-cuda-version" -DCMAKE_CXX_CLANG_TIDY=clang-tidy-19 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda", "clang++"]
 
 rocm:
   stage: build
