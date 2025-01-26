@@ -54,7 +54,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// what( arr[2], arr[2].sliced(0, 2), &(arr[2].sliced(0, 2)) );
 		BOOST_TEST(    &arr[2] != &(arr[2].sliced(0, 2))  );
 
-		BOOST_TEST( !( &arr[2] == &std::as_const(arr)[2]({0, 2})) );
+		// comparison of different provenance is undefined
+		// BOOST_TEST( !( &arr[2] == &std::as_const(arr)[2]({0, 2})) );
 		BOOST_TEST( &arr[2] == &fwd_array(arr[2]) );
 		BOOST_TEST( &fwd_array(arr[2]) == &arr[2] );
 
@@ -80,13 +81,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &carr2 == &              arr [2] );
 		BOOST_TEST( &carr2 == &              arr [2] );
 
-		BOOST_TEST(   &carr2 != &              arr [2]({0, 2})  );
-		BOOST_TEST( !(&carr2 == &              arr [2]({0, 2})) );
+		// comparing array-pointer of different provenance is undefined
+		// BOOST_TEST(   &carr2 != &              arr [2]({0, 2})  );
+		// BOOST_TEST( !(&carr2 == &              arr [2]({0, 2})) );
 
 		auto const& ac2 = carr2;  // fwd_array(A[2]);
 		BOOST_TEST( &ac2 == &std::as_const(arr)[2] );
 		BOOST_TEST( &std::as_const(arr)[2] == &ac2 );
 		BOOST_TEST( &ac2 == &              arr [2] );
+
+		// auto pac2 = &ac2;
+		// auto parr2 = &arr[2];
+		// BOOST_TEST( pac2 == parr2 );
+
+		// pac2 = nullptr;
+		// BOOST_TEST( pac2 != parr2 );
+
+		// parr2 = nullptr;
+		// BOOST_TEST( pac2 == parr2 );
 	}
 
 	BOOST_AUTO_TEST_CASE(subarray_ptr_1D) {
