@@ -119,7 +119,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert( std::contiguous_iterator<decltype(arr.cbegin())> );
 		static_assert( std::contiguous_iterator<decltype(arr.cend()  )> );
 
-		int* beg{arr.begin()};
+		int const* beg{arr.begin()};
 		BOOST_TEST( beg == &arr.front() );
 #endif
 
