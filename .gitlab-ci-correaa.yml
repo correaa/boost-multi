@@ -961,7 +961,6 @@ sonar:
     # - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
     - unzip -o sonar-scanner.zip
     - mv sonar-scanner-6.2.1.4610-linux-x64 sonar-scanner
-    - python --version
     # - Download build-wrapper
     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
@@ -972,5 +971,5 @@ sonar:
     - ctest -j 1 --output-on-failure -T Coverage
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
     - cd ..
-    - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" sonar.python.version=3.12.3 -Dsonar.cfamily.compile-commands=build/compile_commands.json `#-Dsonar.cfamily.build-wrapper-output=bw-output` -Dsonar.cfamily.gcov.reportsPath="build/"
+    - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.python.version=3.12.3 -Dsonar.cfamily.compile-commands=build/compile_commands.json `#-Dsonar.cfamily.build-wrapper-output=bw-output` -Dsonar.cfamily.gcov.reportsPath="build/"
   needs: ["g++"]
