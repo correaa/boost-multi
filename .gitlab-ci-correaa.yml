@@ -956,9 +956,8 @@ sonar:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl unzip g++ gcovr make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - g++ --version
     - mkdir build
-    # Download sonar-scanner
+    # Download sonar-scanner, from https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-cli/
     - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.2.1.4610-linux-x64.zip -O sonar-scanner.zip
-    # - curl -sSLo ./sonar-scanner.zip 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip'
     - unzip -o sonar-scanner.zip
     - mv sonar-scanner-6.2.1.4610-linux-x64 sonar-scanner
     # - Download build-wrapper
