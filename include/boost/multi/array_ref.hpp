@@ -465,7 +465,7 @@ template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst
 struct array_iterator;
 
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride>
-struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
+struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
 	array_iterator<Element, D, ElementPtr, IsConst, IsMove>, void, std::random_access_iterator_tag,
 	subarray<Element, D-1, ElementPtr> const&, typename layout_t<D-1>::difference_type
@@ -2370,6 +2370,11 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 
 	static constexpr dimensionality_type dimensionality = 1;
 
+	#if __cplusplus >= 202002L
+	template<class T = void, std::enable_if_t<sizeof(T*) && std::is_base_of_v<std::contiguous_iterator_tag, iterator_category>, int> =0>
+	constexpr operator Ptr() const { return base(); }
+	#endif
+
 	array_iterator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 	using layout_type = multi::layout_t<0>;
 
@@ -2405,7 +2410,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	BOOST_MULTI_HD constexpr /*impl*/ array_iterator(array_iterator<EElement, 1, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of original pointer
 	: ptr_{other.base()}, stride_{other.stride_} {}
 
-	constexpr explicit operator bool() const {return static_cast<bool>(this->ptr_);}
+	constexpr explicit operator bool() const { return static_cast<bool>(this->ptr_); }
 
 	BOOST_MULTI_HD constexpr auto operator[](typename array_iterator::difference_type n) const -> decltype(auto) {
 		return *((*this) + n);
