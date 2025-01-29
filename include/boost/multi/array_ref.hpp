@@ -2374,6 +2374,10 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	template<class T = void,
 		std::enable_if_t<sizeof(T*) && std::is_base_of_v<std::contiguous_iterator_tag, iterator_category>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	constexpr explicit operator Ptr() const { return ptr_; }
+
+	template<class T = void,
+		std::enable_if_t<sizeof(T*) && std::is_base_of_v<std::contiguous_iterator_tag, iterator_category>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	constexpr explicit operator Ptr() && { return ptr_; }
 	#endif
 
 	array_iterator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
