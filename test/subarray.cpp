@@ -173,7 +173,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(  std::is_move_constructible_v        <multi::subarray<int, 4>>);  // mmm, something strange here
 		static_assert(  std::is_nothrow_move_constructible_v<multi::subarray<int, 4>>);  // mmm, something strange here
 		static_assert(! std::is_copy_constructible_v        <multi::subarray<int, 4>>);
+
+		#if !defined(__circle_build__)
 		static_assert(! std::is_trivially_copyable_v        <multi::subarray<int, 4>>);
+		#endif
+
 		static_assert(  std::is_copy_assignable_v           <multi::subarray<int, 4>>);
 		static_assert(! std::is_trivially_copy_assignable_v <multi::subarray<int, 4>>);
 		static_assert(  std::is_swappable_v                 <multi::subarray<int, 4>>);  // TODO(correaa) fix?
