@@ -7,7 +7,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-// IWYU pragma: no_include <type_traits>                      // for add_const_t
+#include <type_traits>  // for std::is_swappable_v
 #include <utility>  // for as_const
 
 namespace multi = boost::multi;
@@ -133,6 +133,53 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	//  *B2D_block.begin() = *A2D_block.begin();  // doesn't compile, CORRECT
 	// }
+
+	{  // https://godbolt.org/z/a5dr7YvMz
+		namespace multi = boost::multi;
+
+		// template<class T, ::boost::multi::dimensionality_t D>
+		// struct std::is_trivially_relocatable<::boost::multi::array<T, D>> : std::true_type{};
+
+		// template<class T, ::boost::multi::dimensionality_t D>
+		// struct std::is_trivially_relocatable<::boost::multi::array_ref<T, D>> : std::true_type{};
+
+		// template<class T, ::boost::multi::dimensionality_t D>
+		// struct std::is_trivially_relocatable<::boost::multi::subarray<T, D>> : std::true_type{};
+
+		static_assert(  std::is_nothrow_move_constructible_v<multi::array<int, 4>>);
+		static_assert(! std::is_trivially_copyable_v        <multi::array<int, 4>>);
+		static_assert(  std::is_swappable_v                 <multi::array<int, 4>>);
+		static_assert(  std::is_nothrow_swappable_v         <multi::array<int, 4>>);
+		static_assert(  std::is_nothrow_swappable_v         <multi::array<std::string, 4>>);
+		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>>);  // <==========
+
+		static_assert(! std::is_move_constructible_v        <multi::array_ref<int, 4>>);
+		static_assert(! std::is_nothrow_move_constructible_v<multi::array_ref<int, 4>>);
+		static_assert(! std::is_copy_constructible_v        <multi::array_ref<int, 4>>);
+		static_assert(! std::is_trivially_copyable_v        <multi::array_ref<int, 4>>);
+		static_assert(  std::is_copy_assignable_v           <multi::array_ref<int, 4>>);
+		static_assert(! std::is_trivially_copy_assignable_v <multi::array_ref<int, 4>>);
+		static_assert(! std::is_swappable_v                 <multi::array_ref<int, 4>>);  // TODO(correaa) fix? swap can be called on it, and it is O(N)
+		// static_assert(    std::is_nothrow_swappable_v      <multi::array_ref<int, 4>>);
+		// static_assert( std::is_trivially_relocatable_v     <multi::array_ref<int, 4>>);  // <==========
+
+		static_assert(  std::is_move_constructible_v        <multi::subarray<int, 4>>);  // mmm, something strange here
+		static_assert(  std::is_nothrow_move_constructible_v<multi::subarray<int, 4>>);  // mmm, something strange here
+		static_assert(! std::is_copy_constructible_v        <multi::subarray<int, 4>>);
+		static_assert(! std::is_trivially_copyable_v        <multi::subarray<int, 4>>);
+		static_assert(  std::is_copy_assignable_v           <multi::subarray<int, 4>>);
+		static_assert(! std::is_trivially_copy_assignable_v <multi::subarray<int, 4>>);
+		static_assert(  std::is_swappable_v                 <multi::subarray<int, 4>>);  // TODO fix?
+
+		// static_assert(    std::is_nothrow_swappable_v      <multi::subarray<int, 4>>);
+		// static_assert( std::is_trivially_relocatable_v     <multi::subarray<int, 4>>);  // <==========
+
+		static_assert( std::is_move_constructible_v        <multi::array<int, 4>::iterator>);
+		static_assert( std::is_nothrow_move_constructible_v<multi::array<int, 4>::iterator>);
+		static_assert( std::is_trivially_copyable_v        <multi::array<int, 4>::iterator>);
+		static_assert( std::is_swappable_v                 <multi::array<int, 4>::iterator>);
+		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>::iterator>);  // <==========
+	}
 
 	return boost::report_errors();
 }
