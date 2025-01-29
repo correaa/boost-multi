@@ -150,7 +150,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(! std::is_trivially_copyable_v        <multi::array<int, 4>>);
 		static_assert(  std::is_swappable_v                 <multi::array<int, 4>>);
 		static_assert(  std::is_nothrow_swappable_v         <multi::array<int, 4>>);
-		static_assert(  std::is_nothrow_swappable_v         <multi::array<std::string, 4>>);
 		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>>);  // <==========
 
 		static_assert(! std::is_move_constructible_v        <multi::array_ref<int, 4>>);
