@@ -3370,8 +3370,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	using layout_type = typename subarray_base::layout_t;
 	using iterator = typename subarray_base::iterator;
 
-	constexpr  // attempt for MSVC
-	array_ref() = delete;  // because reference cannot be unbound
+	constexpr array_ref() = delete;  // because reference cannot be unbound
 
 	array_ref(iterator, iterator) = delete;
 
@@ -3382,11 +3381,11 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	[[deprecated("references are not copyable, use auto&&")]]
 	array_ref(array_ref const&) = default;  // don't try to use `auto` for references, use `auto&&` or explicit value type
 
-	#if defined(__NVCC__)
-	array_ref(array_ref&&) noexcept = default;  // this needs to be public in nvcc c++17
-	#else
+	// #if defined(__NVCC__)
+	// array_ref(array_ref&&) noexcept = default;  // this needs to be public in nvcc c++17
+	// #else
 	array_ref(array_ref&&) = delete;
-	#endif
+	// #endif
 
 	#if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
 	template<class Tconst = const typename array_ref::element_type,
