@@ -168,7 +168,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(! std::is_trivially_copyable_v        <multi::subarray<int, 4>>);
 		static_assert(  std::is_copy_assignable_v           <multi::subarray<int, 4>>);
 		static_assert(! std::is_trivially_copy_assignable_v <multi::subarray<int, 4>>);
-		static_assert(  std::is_swappable_v                 <multi::subarray<int, 4>>);  // TODO fix?
+		static_assert(  std::is_swappable_v                 <multi::subarray<int, 4>>);  // TODO(correaa) fix?
 
 		// static_assert(    std::is_nothrow_swappable_v      <multi::subarray<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v     <multi::subarray<int, 4>>);  // <==========
