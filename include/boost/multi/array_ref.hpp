@@ -3379,7 +3379,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	friend constexpr auto size (array_ref const& self) noexcept /*-> typename array_ref::size_type*/  {return self.size ();}  // needed by nvcc
 
 	[[deprecated("references are not copyable, use auto&&")]]
-	array_ref(array_ref const&) = default;  // don't try to use `auto` for references, use `auto&&` or explicit value type
+	array_ref(array_ref const&) = delete;  // default;  // don't try to use `auto` for references, use `auto&&` or explicit value type
 
 	// #if defined(__NVCC__)
 	// array_ref(array_ref&&) noexcept = default;  // this needs to be public in nvcc c++17
@@ -3394,29 +3394,27 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	constexpr explicit operator std::span<Tconst>() const& {return std::span<Tconst>(this->data_elements(), this->size());}
 	#endif
 
-	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
+	template<class OtherPtr, class=std::enable_if_t<! std::is_same_v<OtherPtr, ElementPtr> >, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // cppcheck-suppress internalAstError ; bug in cppcheck 2.13.0
 
-	template<class OtherPtr, class=std::enable_if_t<! std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
+	template<class OtherPtr, class=std::enable_if_t<! std::is_same_v<OtherPtr, ElementPtr> >, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr /*mplct*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}
 
-	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) /*noexcept*/  // TODO(correa) eliminate this ctor
+	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
 	: subarray_base(typename subarray_base::types::layout_t(xs), dat) {}
-
-	// constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr dat) noexcept
-	// : subarray<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, dat} {}
 
 	constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::types::layout_t(exts), dat} {}
 
 	template<
 		class Array,
-		std::enable_if_t<! std::is_array_v<Array>, int> =0,  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-		std::enable_if_t<! std::is_base_of_v<array_ref, std::decay_t<Array>>, int> =0,
-		std::enable_if_t<std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0  // NOLINT(modernize-use-constraints,ppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+			   ! std::is_array_v<Array>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			&& ! std::is_base_of_v<array_ref, std::decay_t<Array>>
+			&&   std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0
 	>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
 	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
