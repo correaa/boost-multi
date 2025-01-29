@@ -1121,7 +1121,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc> {
 	// ~array() = default;
-	~array() {}  // NOLINT(hicpp-use-equals-default) sonar is asking for this, deallocation is handled by base class TODO(correaa) make constructors also defaulted to base?
+	~array() {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) sonar is asking for this, deallocation is handled by base class TODO(correaa) make constructors also defaulted to base?
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
 		std::is_same_v<
