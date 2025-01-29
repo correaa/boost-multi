@@ -1,4 +1,4 @@
-# Copyright 2018-2024 Alfredo A. Correa
+# Copyright 2018-2025 Alfredo A. Correa
 # Copyright 2024 Matt Borland
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt
@@ -337,7 +337,7 @@ else()
 		*.cpp
 	)
 
-	if(NOT Boost_FOUND)
+	if((NOT Boost_FOUND) AND (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")))
 		message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
