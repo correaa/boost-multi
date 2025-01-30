@@ -5,6 +5,8 @@
 
 #if defined(__GNUC__)
 	#pragma GCC diagnostic ignored "-Wdouble-promotion"
+#elif defined(_MSC_VER)
+	#pragma warning( disable : 4244 )  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
 #endif
 
 #include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
