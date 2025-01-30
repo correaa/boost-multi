@@ -1,5 +1,4 @@
 #!/bin/bash
-# -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 # sudo dpkg --add-architecture i386
 # sudo apt install ccache clang clang-tidy cmake cppcheck g++ git iwyu lcov libblas-dev pkg-config libfftw3-dev libboost-test-dev libboost-timer-dev libopenblas-dev libtbb-dev make ninja-build valgrind libboost-test-dev:i386 libboost-timer-dev:i386
 # sudo dnf install boost-devel blas-devel ccache clang clang-tools-extra cmake cppcheck fftw-devel git lcov libasan liblas-devel libubsan ninja-build valgrind
@@ -18,9 +17,7 @@
 #  sudo apt update
 #  sudo apt install intel-hpckit
 
-#CXX=g++-12 cmake --fresh .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_ARCHITECTURES=61
-
-export VALGRIND_EXE="valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
+set -x  # echo on
 
 export CMAKE_GENERATOR=Ninja
 
@@ -30,21 +27,16 @@ export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
 # export CMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold"
 # export CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold"
 
-if [[ $(uname -m) != 'arm64' ]]; then
-
-export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
-
-set -x #echo on
-
-# CMT=""
-# CTR=""
-
 if [ -z "$1" ]; then
-echo "no args"
+echo "no arg"
 else
 CMT="--target $1"
 CTR="-R $1"
 fi
+
+if [[ $(uname -m) != 'arm64' ]]; then
+
+export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind_suppressions --gen-suppressions=all --error-exitcode=1 "
 
  (mkdir -p .build.g++            && cd .build.g++            && CXX=g++                                                       cmake .. -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON                                                                                                                       && cmake --build . $CMT && ctest --parallel 2 --output-on-failure $CTR ) || exit 666
  (mkdir -p .build.clang++-rel    && cd .build.clang++-rel    && CXX=clang++                                                   cmake .. -DCMAKE_BUILD_TYPE=Release                                                                                                                                                          && cmake --build . $CMT && ctest --parallel 2 --output-on-failure $CTR) || exit 666

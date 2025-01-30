@@ -21,6 +21,7 @@ else()
 
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 	set(CMAKE_CXX_EXTENSIONS OFF)
+	set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 	find_package(Boost CONFIG)  #  COMPONENTS boost unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
 

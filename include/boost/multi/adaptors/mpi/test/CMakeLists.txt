@@ -7,7 +7,7 @@ endif()
 enable_testing()
 include(CTest)
 
-find_package(Boost REQUIRED COMPONENTS)
+find_package(Boost REQUIRED COMPONENTS NO_MODULE)
 
 add_executable(mpi.cpp.x mpi.cpp)
 
