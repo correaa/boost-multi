@@ -3414,21 +3414,17 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::types::layout_t(exts), dat} {}
 
+	// NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)  // compatibility with legacy c-arrays
 	template<
 		class Array,
 		std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
-			   ! std::is_array_v<Array>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-			&& ! std::is_base_of_v<array_ref, std::decay_t<Array>>
-			&&   std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0
-	>
+			   ! std::is_array_v<Array>
+			&& ! std::is_base_of_v<array_ref, std::decay_t<Array> >
+			&&   std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
-	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
-		Array& array  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	)
-	: array_ref(
-	 multi::data_elements(array),
-	 extensions(array)
-	) {}
+	constexpr array_ref(Array& array)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
+	: array_ref(multi::data_elements(array), extensions(array)) {}
+	// NOLINTEND(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 	template<class TT = void, std::enable_if_t<sizeof(TT*) && D == 0, int> =0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
