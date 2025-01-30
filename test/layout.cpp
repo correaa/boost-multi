@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -118,6 +118,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert( std::contiguous_iterator<decltype(arr.cbegin())> );
 		static_assert( std::contiguous_iterator<decltype(arr.cend()  )> );
+
+		int const* beg(arr.begin());
+		BOOST_TEST( beg == &arr.front() );
 #endif
 
 		// std::copy(arr.begin(), arr.end(), vec2.begin());
