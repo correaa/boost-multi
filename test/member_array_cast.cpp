@@ -214,7 +214,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			#if defined(__clang__)
 			#pragma clang diagnostic pop
-			#pragma clang diagnostic ignored "-Wpadded"
 			#endif
 		};
 
