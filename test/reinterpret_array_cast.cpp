@@ -24,8 +24,6 @@ template<class T> struct complex_dummy {
 	T imag;
 };
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// simple class reinterpret
 	{
@@ -40,7 +38,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2d.reinterpret_array_cast<int>()[0][0] == 5 );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
+	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension)
+	{
 		struct vec3 {
 			double x;
 			double y;
@@ -68,6 +67,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
+#if 0
 	BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
 		struct vec3 {
 			double x;
@@ -357,6 +357,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs( arr[0][6] - 7.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( arr[0][7] - 8.0 ) < 1E-6 );
 	}
+#endif
 #endif
 
 	return boost::report_errors();

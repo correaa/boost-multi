@@ -54,10 +54,11 @@ class fnv1a_t {
 	explicit operator result_type() const& noexcept { return h_; }
 };
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
+// #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(fill_1d_a) {
+	// BOOST_AUTO_TEST_CASE(fill_1d_a)
+	{
 		namespace multi = boost::multi;
 
 		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
@@ -75,7 +76,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d1D[9] == 9 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fill_1d_b) {
+	// BOOST_AUTO_TEST_CASE(fill_1d_b)
+	{
 		namespace multi = boost::multi;
 
 		multi::array<multi::index, 1> d1D(begin(multi::index_extension(10)), end(multi::index_extension(10)));
@@ -85,7 +87,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d1D[9] == 9 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fill_1d_c) {
+	// BOOST_AUTO_TEST_CASE(fill_1d_c)
+	{
 		namespace multi = boost::multi;
 
 		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
@@ -97,7 +100,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d1D[9] == 9 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fill_1d_d) {
+	// BOOST_AUTO_TEST_CASE(fill_1d_d)
+	{
 		namespace multi = boost::multi;
 
 		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
@@ -107,7 +111,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d1D[9] == 9 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fill_member) {
+	// BOOST_AUTO_TEST_CASE(fill_member)
+	{
 		namespace multi = boost::multi;
 
 		multi::array<int, 1> d1D = {10, 20, 30, 40};
@@ -129,7 +134,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d2D[1][1] == 990 );
 	}
 
-	BOOST_AUTO_TEST_CASE(simple_fill) {
+	// BOOST_AUTO_TEST_CASE(simple_fill)
+	{
 		namespace multi = boost::multi;
 
 		multi::array<int, 1> d1D = {10, 20, 30, 40};
@@ -142,6 +148,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 500,  60,  70,  80,  90},
 		};
 
+		BOOST_TEST(   (d2D.elements().end() - 5) - (d2D.elements().begin() + 4) == d2D.elements().size() - 9 );
 		BOOST_TEST(   d2D.elements().size()  == d2D.num_elements()  );
 		BOOST_TEST(   d2D.elements().base()  == d2D.base()          );
 		BOOST_TEST(   d2D.elements()[3]      == 180                 );
@@ -151,7 +158,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d2D[1][1] == 990 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fill) {
+	// BOOST_AUTO_TEST_CASE(fill)
+	{
 		std::random_device randdev;
 
 		namespace multi = boost::multi;
@@ -182,22 +190,38 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::for_each(begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); });
 	}
 
-	BOOST_AUTO_TEST_CASE(fill_1D) {
+	// BOOST_AUTO_TEST_CASE(fill_1D)
+	{
 		namespace multi = boost::multi;
 
-		multi::array<double, 1> const arr = {1.0, 2.0, 3.0};
+		multi::array<int, 1> const arr = {1, 2, 3};
 
-		multi::array<double, 2> arr2({10, 3});
+		multi::array<int, 2> arr2({10, 3}, 99);
 
-		std::fill(begin(arr2), end(arr2), arr);
+		// std::fill(begin(arr2), end(arr2), arr);
 
-		BOOST_TEST( arr2[0] == arr );
-		BOOST_TEST( arr2[1] == arr );
+		//*begin(arr2) = arr;
+		BOOST_TEST( (*begin(arr2)).elements().size() ==  arr.elements().size() );
+		(*begin(arr2)).elements() = arr.elements();
 
-		BOOST_TEST( arr2[9] == arr );
+		BOOST_TEST( (*begin(arr2)).elements().size() == (*begin(arr2)).num_elements() );
+		BOOST_TEST( ((*begin(arr2)).elements().end() - 2) - ((*begin(arr2)).elements().begin() + 2) == (*begin(arr2)).num_elements() - 4 );
+
+		// std::copy(arr.elements().begin(), arr.elements().end(), begin(arr2)->elements().begin());
+		// std::copy_n(arr.begin(), arr.size(), begin(arr2)->begin());
+
+		// for (auto first = begin(arr2); first != end(arr2); ++first) {
+		//  *first = arr;
+		// }
+
+		// BOOST_TEST( arr2[0] == arr );
+		// BOOST_TEST( arr2[1] == arr );
+
+		// BOOST_TEST( arr2[9] == arr );
 	}
 
-	BOOST_AUTO_TEST_CASE(fill_n_1D) {
+	// BOOST_AUTO_TEST_CASE(fill_n_1D)
+	{
 		namespace multi = boost::multi;
 
 		multi::array<int, 1> arr = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};

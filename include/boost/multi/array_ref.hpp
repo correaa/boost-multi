@@ -815,6 +815,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
 	}
+
 	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
@@ -974,7 +975,8 @@ struct elements_range_t {
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {assert(size() == other.size());  // NOLINT(cppcoreguidelines-missing-std-forward) std::forward<OtherElementRange>(other) creates a problem with move-only elements
-		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());} 
+		// assert(0);
+		if(! is_empty()) { adl_copy(std::begin(other), std::end(other), begin()); } 
 		return *this;
 	}
 
@@ -3404,8 +3406,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 
 	template<class OtherPtr, class=std::enable_if_t<! std::is_same_v<OtherPtr, ElementPtr> >, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	constexpr /*mplct*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}
+	constexpr /*mplct*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,bugprone-use-after-move,hicpp-invalid-access-moved)
+	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
 	: subarray_base(typename subarray_base::types::layout_t(xs), dat) {}
