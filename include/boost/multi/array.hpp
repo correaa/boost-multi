@@ -1120,20 +1120,12 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc> {
-	// ~array() = default;
-	~array() {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) sonar is asking for this, deallocation is handled by base class TODO(correaa) make constructors also defaulted to base?
 	using static_ = static_array<T, D, Alloc>;
+
 	static_assert(
-		std::is_same_v<
-			typename multi::allocator_traits<Alloc>::value_type, std::remove_const_t<T>
-			// typename array::alloc_traits::value_type, std::remove_const_t<T>
-		>
-		||
-		std::is_same_v<
-			typename multi::allocator_traits<Alloc>::value_type, void
-			// typename array::alloc_traits::value_type, void
-		>,
-		"only exact type of array element or void (default?) is allowed as allocator value type"
+		   std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, T   >
+		|| std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, void>,
+		"only exact type of array element or void (default) is allowed as allocator value type"
 	);
 
 	// NOLINTNEXTLINE(runtime/operator)
@@ -1163,9 +1155,9 @@ struct array : static_array<T, D, Alloc> {
 
 	// move this to static_array
 	template<
-	 class Range,
-	 std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
-	 class = decltype(Range{std::declval<typename array::const_iterator>(), std::declval<typename array::const_iterator>()})
+		class Range,
+		std::enable_if_t<! has_extensions<std::decay_t<Range>>::value, int> =0,
+		class = decltype(Range{std::declval<typename array::const_iterator>(), std::declval<typename array::const_iterator>()})
 	>
 	constexpr explicit operator Range() const {
 		// vvv Range{...} needed by Windows GCC?
@@ -1208,6 +1200,8 @@ struct array : static_array<T, D, Alloc> {
 
 	array()             = default;
 	array(array const&) = default;
+
+	~array() = default;
 
 	auto reshape(typename array::extensions_type extensions) & -> array& {
 		typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape

@@ -21,7 +21,7 @@ if((NOT
 		"icpc"
 	   )
 )
-	find_package(Boost REQUIRED)  # COMPONENTS boost)  # headers unit_test_framework)
+	find_package(Boost REQUIRED NO_MODULE)  # COMPONENTS boost)  # headers unit_test_framework)
 #   link_libraries("-lboost_unit_test_framework")
 
 	find_package(BLAS REQUIRED)

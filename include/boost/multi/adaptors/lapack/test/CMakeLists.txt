@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 if(ENABLE_CUDA)
 	enable_language(CUDA)
@@ -13,7 +13,7 @@ endif()
 # set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED NO_MODULE)
 # add_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 # include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # link_libraries(${Boost_LIBRARIES})
