@@ -216,7 +216,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			#pragma clang diagnostic pop
 			#pragma clang diagnostic ignored "-Wpadded"
 			#endif
-
 		};
 
 		multi::array<record, 2> const recs = {
