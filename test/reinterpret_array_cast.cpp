@@ -67,8 +67,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-#if 0
-	BOOST_AUTO_TEST_CASE(multi_lower_dimension) {
+	// BOOST_AUTO_TEST_CASE(multi_lower_dimension)
+	{
 		struct vec3 {
 			double x;
 			double y;
@@ -96,7 +96,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_lower_dimension_2d) {
+	// BOOST_AUTO_TEST_CASE(multi_lower_dimension_2d)
+	{
 		struct vec3 {
 			double x;
 			double y;
@@ -124,7 +125,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_lower_dimension_3d) {
+	// BOOST_AUTO_TEST_CASE(multi_lower_dimension_3d)
+	{
 		struct vec3 {
 			double x;
 			double y;
@@ -149,7 +151,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimension) {
+	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimension)
+	{
 		using complex = std::complex<double>;
 		multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, complex{1.0, 2.0});
 		BOOST_TEST(  size(arr) == 100 );
@@ -191,7 +194,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
+	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension)
+	{
 		using vector3 = std::array<double, 3>;
 
 		vector3 v3d;
@@ -244,7 +248,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast) {
+	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast)
+	{
 		{
 			std::complex<double> cee{1.0, 2.0};
 
@@ -262,7 +267,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex) {
+	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex)
+	{
 		using complex = std::complex<double>;
 		{
 			complex cee{1.0, 2.0};
@@ -293,7 +299,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex) {
+	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex)
+	{
 		using complex = std::complex<double>;
 		using pair    = std::pair<double, double>;
 		multi::array<complex, 2> arr({10, 10}, complex{3.0, 4.0});
@@ -312,7 +319,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pointer) {
+	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pointer)
+	{
 		multi::array<double, 2> arr({10, 10}, 5.0);
 
 		auto&& Aconstcast = arr.reinterpret_array_cast<double, double const*>();
@@ -320,7 +328,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_same_v<decltype(Aconstcast[1][2]), double const&>);
 	}
 
-	BOOST_AUTO_TEST_CASE(const_array_cast) {
+	// BOOST_AUTO_TEST_CASE(const_array_cast)
+	{
 		multi::array<double, 2> arr({10, 10}, 5.0);  // NOLINT(misc-const-correctness) test const cast
 
 		multi::array<double, 2> const& carr = arr;
@@ -357,7 +366,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs( arr[0][6] - 7.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( arr[0][7] - 8.0 ) < 1E-6 );
 	}
-#endif
 #endif
 
 	return boost::report_errors();
