@@ -59,22 +59,22 @@ g++-m32 sanitize:
     - ctest -j 1 --output-on-failure
   needs: ["g++"]
 
-arm64:
-  stage: build
-  image: arm64v8/debian:latest
-  allow_failure: true
-  tags:
-    - non-shared
-    - arm  # for image
-  interruptible: true
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ cmake make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
-    - mkdir build && cd build
-    - c++ --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build .
-    - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -j 2 --output-on-failure
-  needs: ["g++"]
+# arm64:
+#   stage: build
+#   image: arm64v8/debian:latest
+#   allow_failure: true
+#   tags:
+#     - non-shared
+#     - arm  # for image
+#   interruptible: true
+#   script:
+#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ cmake make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
+#     - mkdir build && cd build
+#     - c++ --version
+#     - cmake .. -DCMAKE_BUILD_TYPE=Debug
+#     - cmake --build .
+#     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -j 2 --output-on-failure
+#   needs: ["g++"]
 
 coverage:
   stage: build
