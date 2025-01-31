@@ -12,7 +12,23 @@
 
 namespace multi = boost::multi;
 
+static auto f_arr(multi::array<int, 1> arr) {
+	return arr[2];
+}
+
+static auto f_sub(multi::const_subarray<int, 1>&& arr) {
+	return arr[2];
+}
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	{
+		auto f_arr_ret = f_arr({1, 2, 3});
+		BOOST_TEST(f_arr_ret == 3 );
+
+		auto f_sub_ret = f_sub({1, 2, 3});
+		BOOST_TEST(f_sub_ret == 3 );
+	}
+
 	/* subarray_assignment */
 	{
 		multi::array<int, 3> A1({3, 4, 5}, 99);

@@ -89,7 +89,7 @@ template<> inline constexpr bool force_element_trivial_destruction         <std:
 
 namespace boost::multi {
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
+template<typename T, dimensionality_type D, typename ElementPtr = T const*, class Layout = layout_t<D>>
 struct const_subarray;
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
@@ -2657,9 +2657,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	, array_types<T, 1, ElementPtr, Layout> {
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
+	BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<T>&& il)
+	: array_types<T, 1, ElementPtr, Layout>{layout_type({static_cast<size_type>(std::size(il))}), std::data(il)} { (void)std::move(il); }
+
 	// boost serialization needs `delete`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::layout_t<1> >]
 	// void operator delete(void* ptr) noexcept = delete;
-	// void operator delete(void* ptr, void* place ) noexcept = doperator=(elete;  // NOLINT(bugprone-easily-swappable-parameters)
+	// void operator delete(void* ptr, void* place ) noexcept = delete;  // NOLINT(bugprone-easily-swappable-parameters)
 
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
@@ -2717,15 +2720,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
 
-	// template<class T2>
-	// friend constexpr auto reinterpret_array_cast(const_subarray&& self) {
-	//  return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
-	// }
-	// template<class T2>
-	// friend constexpr auto reinterpret_array_cast(const_subarray const& self) {
-	//  return self.template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
-	// }
-
  public:
 	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
 	friend constexpr auto size (const_subarray const& self) noexcept -> typename const_subarray::size_type  {return self.size ();}  // needed by nvcc
@@ -2772,18 +2766,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	constexpr auto operator=(const_subarray const&) const& -> const_subarray const& = delete;
 	constexpr auto operator=(const_subarray     &&) const& -> const_subarray const& = delete;
-
-	// constexpr auto operator=(const_subarray const& other) && -> const_subarray& {
-	//  if(this == std::addressof(other)) {return *this;}  // lints cert-oop54-cpp
-	//  operator=(other); return *this;
-	// }
-
-	// [[deprecated("for compatibility with ranges")]] constexpr auto operator=(const_subarray const& other) const&& -> const_subarray const&&;  // NOLINT(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator) //NOSONAR this is needed to satify the std::indirectly_writable concept
-	// {  // something like this will fail
-	//  if(this == std::addressof(other)) {return static_cast<subarray const&&>(*this);}  // lints cert-oop54-cpp
-	//  const_cast<subarray&&>(*this).operator=(other);
-	//  return static_cast<subarray const&&>(*this);
-	// }
 
 	template<
 		class ECPtr,
