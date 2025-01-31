@@ -20,7 +20,7 @@ namespace {
 	auto f_sub(multi::const_subarray<int, 1> const& arr) {
 		return arr[2];
 	}
-}
+}  // namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
