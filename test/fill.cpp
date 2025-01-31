@@ -198,26 +198,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<int, 2> arr2({10, 3}, 99);
 
-		// std::fill(begin(arr2), end(arr2), arr);
-
-		//*begin(arr2) = arr;
 		BOOST_TEST( (*begin(arr2)).elements().size() ==  arr.elements().size() );
 		(*begin(arr2)).elements() = arr.elements();
 
 		BOOST_TEST( (*begin(arr2)).elements().size() == (*begin(arr2)).num_elements() );
 		BOOST_TEST( ((*begin(arr2)).elements().end() - 2) - ((*begin(arr2)).elements().begin() + 2) == (*begin(arr2)).num_elements() - 4 );
-
-		// std::copy(arr.elements().begin(), arr.elements().end(), begin(arr2)->elements().begin());
-		// std::copy_n(arr.begin(), arr.size(), begin(arr2)->begin());
-
-		// for (auto first = begin(arr2); first != end(arr2); ++first) {
-		//  *first = arr;
-		// }
-
-		// BOOST_TEST( arr2[0] == arr );
-		// BOOST_TEST( arr2[1] == arr );
-
-		// BOOST_TEST( arr2[9] == arr );
 	}
 
 	// BOOST_AUTO_TEST_CASE(fill_n_1D)
