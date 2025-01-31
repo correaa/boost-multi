@@ -23,7 +23,7 @@ else()
 	set(CMAKE_CXX_EXTENSIONS OFF)
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
-	find_package(Boost CONFIG)  #  COMPONENTS boost unit_test_framework)  # tests require Boost.Test `sudo apt install libboost-test-dev`
+	find_package(Boost CONFIG)
 
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
@@ -368,23 +368,18 @@ else()
 
 			target_link_libraries(${TEST_EXE} PRIVATE multi)
 			target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
-			# target_link_libraries     (${TEST_EXE} PRIVATE multi Boost::boost   )
+
 			if(TBB_FOUND)
-				target_link_libraries     (${TEST_EXE} PRIVATE TBB::tbb)
+				target_link_libraries    (${TEST_EXE} PRIVATE TBB::tbb)
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
 			endif()
 
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
 			else()
-				target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
+				target_compile_options(${TEST_EXE} PRIVATE -Werror -Wall)
 			endif()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
-        
-		# find_package(BLAS REQUIRED)
-		# target_link_libraries(redux.cpp.x PRIVATE BLAS::BLAS)
-
 	endif()
-
 endif()
