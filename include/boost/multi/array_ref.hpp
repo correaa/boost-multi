@@ -89,7 +89,7 @@ template<> inline constexpr bool force_element_trivial_destruction         <std:
 
 namespace boost::multi {
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
+template<typename T, dimensionality_type D, typename ElementPtr = T const*, class Layout = layout_t<D>>
 struct const_subarray;
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
@@ -2633,7 +2633,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	constexpr auto broadcasted() const& {
 		multi::layout_t<1> const new_layout{this->layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
-		return subarray<T, 1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
+		return subarray<T, 1, typename const_subarray::element_const_ptr>(new_layout, types::base_);
 	}
 
 	template<class Archive>
@@ -2657,9 +2657,14 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	, array_types<T, 1, ElementPtr, Layout> {
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
+	template<class TT,
+		std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> =0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT> const& il)
+	: array_types<T, 1, ElementPtr, Layout>{layout_type(multi::extensions_t<1>{{0, static_cast<size_type>(std::size(il))}}), std::data(il)} {}
+
 	// boost serialization needs `delete`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::layout_t<1> >]
 	// void operator delete(void* ptr) noexcept = delete;
-	// void operator delete(void* ptr, void* place ) noexcept = doperator=(elete;  // NOLINT(bugprone-easily-swappable-parameters)
+	// void operator delete(void* ptr, void* place ) noexcept = delete;  // NOLINT(bugprone-easily-swappable-parameters)
 
 	static constexpr dimensionality_type rank_v = 1;
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
@@ -2717,22 +2722,13 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
 
-	// template<class T2>
-	// friend constexpr auto reinterpret_array_cast(const_subarray&& self) {
-	//  return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
-	// }
-	// template<class T2>
-	// friend constexpr auto reinterpret_array_cast(const_subarray const& self) {
-	//  return self.template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
-	// }
-
  public:
 	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type {return self.sizes();}  // needed by nvcc
 	friend constexpr auto size (const_subarray const& self) noexcept -> typename const_subarray::size_type  {return self.size ();}  // needed by nvcc
 
 	constexpr auto operator+() const { return decay(); }
 
-	const_subarray(const_subarray&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
+	const_subarray(const_subarray&&) noexcept = default;  // in C++ 14 this was necessary to return array references from functions
 	// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
  protected:
@@ -2742,11 +2738,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  public:
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type {return 1;}
 
-	// // NOLINTNEXTLINE(runtime/operator)
-	// BOOST_MULTI_HD constexpr auto operator&()     && { return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()}; }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
-	// // NOLINTNEXTLINE(runtime/operator)
-	// BOOST_MULTI_HD constexpr auto operator&()      & { return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()}; } // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
-	// NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() const& {return const_subarray_ptr<T, 1, ElementPtr, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	BOOST_MULTI_HD constexpr void assign(std::initializer_list<typename const_subarray::value_type> values) const {assert( values.size() == static_cast<std::size_t>(this->size()) );
@@ -2764,26 +2755,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	// constexpr auto operator=(const_subarray&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations) //NOSONAR
-	// -> const_subarray& {  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	//  operator=(other);
-	//  return *this;  // lints([cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	// }
-
 	constexpr auto operator=(const_subarray const&) const& -> const_subarray const& = delete;
 	constexpr auto operator=(const_subarray     &&) const& -> const_subarray const& = delete;
-
-	// constexpr auto operator=(const_subarray const& other) && -> const_subarray& {
-	//  if(this == std::addressof(other)) {return *this;}  // lints cert-oop54-cpp
-	//  operator=(other); return *this;
-	// }
-
-	// [[deprecated("for compatibility with ranges")]] constexpr auto operator=(const_subarray const& other) const&& -> const_subarray const&&;  // NOLINT(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator) //NOSONAR this is needed to satify the std::indirectly_writable concept
-	// {  // something like this will fail
-	//  if(this == std::addressof(other)) {return static_cast<subarray const&&>(*this);}  // lints cert-oop54-cpp
-	//  const_cast<subarray&&>(*this).operator=(other);
-	//  return static_cast<subarray const&&>(*this);
-	// }
 
 	template<
 		class ECPtr,
@@ -2828,24 +2801,16 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename const_subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-	//  BOOST_MULTI_HD constexpr auto operator[](index idx)      & -> typename const_subarray::      reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-	//  BOOST_MULTI_HD constexpr auto operator[](index idx)     && -> typename const_subarray::      reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
 	constexpr auto front() const& -> const_reference {return *begin();}
 	constexpr auto back()  const& -> const_reference {return *std::prev(end(), 1);}
 
+	// TODO(correaa) remove or move to subarray interface
 	constexpr auto front()     && ->       reference {return *begin();}
 	constexpr auto back()      && ->       reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()      & ->       reference {return *begin();}
 	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
-
-	// template<class ElementPtr2,
-	//  std::enable_if_t<std::is_same_v<ElementPtr2, typename const_subarray::element_const_ptr>, int> = 0
-	// >
-	// constexpr operator subarray<T, 1, ElementPtr2, Layout>&& () const & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is needed by std::ranges, TODO(correaa) think if this can be solved by inheritance from subarray<T, D, const ptr>
-	//  return std::move(reinterpret_cast<subarray<T, 1, ElementPtr2, Layout> const&>(*this));  // NOLINT([ppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-reinterpret-cast)  think if this can be solved by inheritance from subarray<T, D, const ptr>
-	// }
 
  private: 
 	template<class Self, typename Tuple, std::size_t ... I, const_subarray* = nullptr>
@@ -2856,8 +2821,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) {return apply_impl_(          *this , tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
-	// template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple)     && -> decltype(auto) {return apply_impl_(std::move(*this), tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
-	// template<typename Tuple>                constexpr auto apply(Tuple const& tuple)      & -> decltype(auto) {return apply_impl_(          *this , tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
 
 	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) { return *this; }  // NOLINT(modernize-use-constraints) for C++20
 	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices  ) const& -> decltype(auto) { using std::get; return operator[](get<0>(indices)); }  // NOLINT(modernize-use-constraints) for C++20
@@ -2977,59 +2940,29 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> const_subarray { return strided_aux_(diff);}
+	constexpr auto strided(difference_type diff) const& -> const_subarray { return strided_aux_(diff); }
 
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
-	// BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)     && -> const_subarray { return sliced(first, last).strided(stride); }
-	// BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride)      & -> const_subarray { return sliced(first, last).strided(stride); }
 
-	// BOOST_MULTI_HD constexpr auto range(index_range const& rng)      & {return                  sliced(rng.front(), rng.last());}
-	// BOOST_MULTI_HD constexpr auto range(index_range const& rng)     && {return std::move(*this).sliced(rng.front(), rng.last());}
-	BOOST_MULTI_HD constexpr auto range(index_range const& rng) const& {return                  sliced(rng.front(), rng.last());}
+	BOOST_MULTI_HD constexpr auto range(index_range const& rng) const& { return sliced(rng.front(), rng.last()); }
 
-	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray {return *this;}  // const_subarray(this->base(), this->layout());}
-	// BOOST_MULTI_HD constexpr auto operator()()     && -> const_subarray       {return *this;}
-	// BOOST_MULTI_HD constexpr auto operator()()      & -> const_subarray       {return *this;}
+	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return *this; }  // const_subarray(this->base(), this->layout());}
 
-	// BOOST_MULTI_HD constexpr auto operator()(index_range const& rng)      & {return                  range(rng);}
-	// BOOST_MULTI_HD constexpr auto operator()(index_range const& rng)     && {return std::move(*this).range(rng);}
-	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& {return                  range(rng);}
+	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return operator[](idx); }
 
-	// BOOST_MULTI_HD constexpr auto operator()(index idx)      & -> decltype(auto) {return                  operator[](idx);}
-	// BOOST_MULTI_HD constexpr auto operator()(index idx)     && -> decltype(auto) {return std::move(*this).operator[](idx);}
-	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) {return operator[](idx);}
+	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& { return range(rng); }
 
  private:
-	// BOOST_MULTI_HD constexpr auto paren_aux_()      & {return operator()();}
-	// BOOST_MULTI_HD constexpr auto paren_aux_()     && {return operator()();}
-	BOOST_MULTI_HD constexpr auto paren_aux_() const& {return operator()();}
+	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return operator()(); }
 
-	// BOOST_MULTI_HD constexpr auto paren_aux_(index_range const& rng)      & {return range(rng);}
-	// BOOST_MULTI_HD constexpr auto paren_aux_(index_range const& rng)     && {return range(rng);}
-	BOOST_MULTI_HD constexpr auto paren_aux_(index_range const& rng) const& {return range(rng);}
-
-	// BOOST_MULTI_HD constexpr auto paren_aux_(index idx)      & -> decltype(auto) {return operator[](idx);}
-	// BOOST_MULTI_HD constexpr auto paren_aux_(index idx)     && -> decltype(auto) {return operator[](idx);}
 	BOOST_MULTI_HD constexpr auto paren_aux_(index idx) const& -> decltype(auto) {return operator[](idx);}
 
-	// constexpr auto paren_aux_(intersecting_range<index> const& rng)      & -> decltype(auto) {return                  paren_aux_(intersection(this->extension(), rng));}
-	// constexpr auto paren_aux_(intersecting_range<index> const& rng)     && -> decltype(auto) {return std::move(*this).paren_aux_(intersection(this->extension(), rng));}
+	BOOST_MULTI_HD constexpr auto paren_aux_(index_range const& rng) const& {return range(rng);}
+
 	constexpr auto paren_aux_(intersecting_range<index> const& rng) const& -> decltype(auto) {return                  paren_aux_(intersection(this->extension(), rng));}
 
  public:
-	// constexpr auto operator()(intersecting_range<index> const& isrange)      & -> decltype(auto) {return                  paren_aux_(isrange);}
-	// constexpr auto operator()(intersecting_range<index> const& isrange)     && -> decltype(auto) {return std::move(*this).paren_aux_(isrange);}
 	BOOST_MULTI_HD constexpr auto operator()(intersecting_range<index> const& isrange) const& -> decltype(auto) {return                  paren_aux_(isrange);}
-
-	// template<class... Args>
-	// constexpr auto operator()(Args&&... args) &
-	// ->decltype(paren_(*this, std::forward<Args>(args)...)) {
-	//  return paren_(*this, std::forward<Args>(args)...); }
-
-	// template<class... Args>
-	// constexpr auto operator()(Args&&... args) &&
-	// ->decltype(paren_(std::move(*this), std::forward<Args>(args)...)) {
-	//  return paren_(std::move(*this), std::forward<Args>(args)...); }
 
 	template<class... Args>
 	BOOST_MULTI_HD constexpr auto operator()(Args&&... args) const&

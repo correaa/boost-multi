@@ -23,7 +23,7 @@ if((NOT
 )
 #   find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 else()
-	link_libraries("-lboost_unit_test_framework") # -lboost_timer")
+	# link_libraries("-lboost_unit_test_framework") # -lboost_timer")
 endif()
 
 # find_package(PkgConfig REQUIRED)
@@ -91,26 +91,30 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
-	if((NOT ENABLE_CUDA)
-	   AND (NOT
-			DART_COMPILER_NAME
-			STREQUAL
-			"nvcc"
-		   )
-	)
+	#if((NOT ENABLE_CUDA)
+	#   AND (NOT
+	#       DART_COMPILER_NAME
+	#       STREQUAL
+	#       "nvcc"
+	#      )
+	#)
         if(NOT DEFINED ENABLE_CIRCLE)
 		  target_compile_options(
 			  ${TEST_EXE}
-			  PRIVATE -Werror
+			  PRIVATE
+					  $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>:
+					-Werror
 					  -Wall
 					  -Wextra
-					  $<$<CXX_COMPILER_ID:GNU>:
 					  -fno-common
 					  -Wpedantic
 					  -Wformat-truncation
 					  -Wparentheses
 					  -fstack-usage> # -Wconversion
 					  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+					   -Werror
+					  -Wall
+					  -Wextra
 					  -fno-common
 					  -Wpedantic
 					  -Wmove
@@ -152,13 +156,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 					#--use_fast_math
 					#--extra-device-vectorization
 					#--restrict
-					-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
+					-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 					>
 
-		  )
-        else()
-          target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
-        endif()
+	     )
+    #    else()
+    #      target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
+    #    endif()
 	endif()
 
 	target_link_libraries(${TEST_EXE} PRIVATE multi PkgConfig::FFTW)
