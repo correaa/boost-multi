@@ -115,7 +115,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			static_assert(std::is_same_v<citer::element, double>);
 			static_assert(std::is_same_v<citer::value_type, multi::array<double, 1>>);
 
-			static_assert(std::is_same_v<citer::reference, multi::const_subarray<double, 1>>);
+			static_assert(std::is_same_v<citer::reference, multi::const_subarray<double, 1, double*>>);
 			static_assert(std::is_same_v<citer::element_ptr, double*>);
 
 			auto const arrend  = arr.end();
