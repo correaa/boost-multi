@@ -54,14 +54,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(one_based_2D) {
 		multi::array<int, 2> const Ac({
 										  {0, 10},
-                                          {0, 20}
+										  {0, 20}
         },
 									  0);
 		BOOST_TEST( Ac.size() == 10 );
 
 		multi::array<int, 2> Af({
 									{1, 1 + 10},
-                                    {1, 1 + 20}
+									{1, 1 + 20}
         },
 								0);
 		Af[1][1]   = 10;
@@ -83,11 +83,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size(Af1) == 10 );
 		BOOST_TEST( Af1[10][10] == 0 );
 
-		multi::array<int, 2> BB({
-								   {0, 10},
-                                   {0, 20}
-        },
-							   0);
+		multi::array<int, 2> BB({{0, 10}, {0, 20}}, 0);
 		BB[0][0]  = 10;
 		BB[1][1]  = 20;
 		BB[2][2]  = 30;
@@ -126,7 +122,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{
 				{1, 1 + 3},
 				{1, 1 + 5},
-			}
+        }
 		);
 
 		BOOST_TEST( sizes(Ar) == sizes(Ar2) );
