@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -13,16 +13,18 @@
 #include <boost/multi/array.hpp>  // for array, subarray
 
 // IWYU pragma: no_include <algorithm>  // for min
-#include <cmath>    // for NAN
+#include <cmath>    // for NAN, abs
 #include <complex>  // for operator*, opera...
-#include <cstdlib>  // for NAN, abs
-// IWYU pragma: no_include <memory>   // for allocator
+// IWYU pragma: no_include <cstdlib>  // for NAN, abs
 #include <iterator>                                  // for size  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <memory>   // for allocator
+// IWYU pragma: no_include <type_traits>                               // for remove_reference...
 // IWYU pragma: no_include <utility>                                   // for forward
 
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
+
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 
