@@ -167,7 +167,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	friend BOOST_MULTI_HD auto operator==(extensions_t const& self, extensions_t const& other) {return self.base() == other.base();}
 	friend BOOST_MULTI_HD auto operator!=(extensions_t const& self, extensions_t const& other) {return self.base() != other.base();}
 
-	using indices_type = multi::detail::tuple_prepend_t<multi::index, typename extensions_t<D-1>::indices_type>;
+	using index = multi::index;
+	using indices_type = multi::detail::tuple_prepend_t<index, typename extensions_t<D-1>::indices_type>;
 
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {
 		auto const sub_num_elements = extensions_t<D-1>{static_cast<base_ const&>(*this).tail()}.num_elements();
@@ -206,7 +207,6 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto prev_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		if(extensions_t<D-1>{this->base().tail()}.prev_canonical(rest...)) { --idx; }
 		if(idx < this->base().head().first()) {
-			// assert(0);  // TODO(correaa) implement
 			idx = this->base().head().back();
 			return true;
 		}
@@ -311,8 +311,8 @@ template<> struct extensions_t<0> : tuple<> {
 
 	constexpr void operator[](index) const = delete;
 
-	static constexpr auto next_canonical() /*const*/ -> bool {return true;}
-	static constexpr auto prev_canonical() /*const*/ -> bool {return true;}
+	static constexpr auto next_canonical() /*const*/ -> bool { return true; }
+	static constexpr auto prev_canonical() /*const*/ -> bool { return true; }
 
 	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t {return {};}
 

@@ -98,6 +98,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(!std::is_assignable_v<decltype(carr(1, {0, 3})[1]), double>);
 	}
 
+	// comparison for elements iterator
+	{
+		multi::array<int, 2> const arr({3, 3}, 99);
+		auto const& subarr = arr({0, 3}, {0, 3});
+
+		BOOST_TEST(   subarr.elements().begin() == subarr.elements().begin()  );
+		BOOST_TEST( !(subarr.elements().begin() != subarr.elements().begin()) );
+		BOOST_TEST( !(subarr.elements().begin() < subarr.elements().begin())  );
+	}
+
 	BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 		using namespace std::string_literals;  // NOLINT(build/namespaces) ""s
 
@@ -175,6 +185,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(  arr.elements().size() == 10 );
 		BOOST_TEST( &arr.elements()[0] == &arr[0] );
 		BOOST_TEST( &arr.elements()[9] == &arr[9] );
+
+		BOOST_TEST(    arr.elements().begin() <  arr.elements().begin() + 1 );
+		BOOST_TEST( !(arr.elements().begin() <  arr.elements().begin()) );
+		BOOST_TEST( !(arr.elements().begin() + 1 <  arr.elements().begin() + 1) );
 
 		BOOST_TEST(    arr.elements().begin() <  arr.elements().end()     );
 		BOOST_TEST(    arr.elements().end()   >  arr.elements().begin()   );

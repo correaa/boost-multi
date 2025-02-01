@@ -204,7 +204,8 @@ class range {
 	}
 	friend constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }
 
-	[[nodiscard]] constexpr auto find(value_type const& value) const -> range::const_iterator {
+	[[nodiscard]]  // ("find returns an iterator to the sequence, that is the only effect")]] for C++20
+	constexpr auto find(value_type const& value) const -> range::const_iterator {
 		if(value >= last_ || value < first_) {
 			return end();
 		}
@@ -217,7 +218,7 @@ class range {
 		using std::max;
 		using std::min;
 		auto new_first = max(self.first(), other.first());
-		auto new_last = min(self.last(), other.last());
+		auto new_last  = min(self.last(), other.last());
 		new_first      = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}
