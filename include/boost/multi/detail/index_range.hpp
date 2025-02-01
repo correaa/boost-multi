@@ -217,7 +217,7 @@ class range {
 		using std::max;
 		using std::min;
 		auto new_first = max(self.first(), other.first());
-		auto new_last = min(self.last(), other.last());
+		auto new_last  = min(self.last(), other.last());
 		new_first      = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}
