@@ -164,21 +164,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// template<class T, ::boost::multi::dimensionality_t D>
 		// struct std::is_trivially_relocatable<::boost::multi::subarray<T, D>> : std::true_type{};
 
-		static_assert(  std::is_nothrow_move_constructible_v<multi::array<int, 4>>);
-		static_assert(! std::is_trivially_copyable_v        <multi::array<int, 4>>);
-		static_assert(  std::is_swappable_v                 <multi::array<int, 4>>);
-		static_assert(  std::is_nothrow_swappable_v         <multi::array<int, 4>>);
+		static_assert( std::is_nothrow_move_constructible_v<multi::array<int, 4>>);
+		static_assert(!std::is_trivially_copyable_v        <multi::array<int, 4>>);
+		static_assert( std::is_swappable_v                 <multi::array<int, 4>>);
+		static_assert( std::is_nothrow_swappable_v         <multi::array<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>>);  // <==========
 
-		static_assert(! std::is_move_constructible_v        <multi::array_ref<int, 4>>);
-		static_assert(! std::is_nothrow_move_constructible_v<multi::array_ref<int, 4>>);
+		static_assert(!std::is_move_constructible_v        <multi::array_ref<int, 4>>);
+		static_assert(!std::is_nothrow_move_constructible_v<multi::array_ref<int, 4>>);
 		#if (!defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ >= 24)) && !defined(__NVCC__)
-		static_assert(! std::is_copy_constructible_v        <multi::array_ref<int, 4>>);
+		static_assert(!std::is_copy_constructible_v        <multi::array_ref<int, 4>>);
 		#endif
-		static_assert(! std::is_trivially_copyable_v        <multi::array_ref<int, 4>>);
-		static_assert(  std::is_copy_assignable_v           <multi::array_ref<int, 4>>);
-		static_assert(! std::is_trivially_copy_assignable_v <multi::array_ref<int, 4>>);
-		static_assert(! std::is_swappable_v                 <multi::array_ref<int, 4>>);  // TODO(correaa) fix? swap can be called on it, and it is O(N)
+		static_assert(!std::is_trivially_copyable_v        <multi::array_ref<int, 4>>);
+		static_assert( std::is_copy_assignable_v           <multi::array_ref<int, 4>>);
+		static_assert(!std::is_trivially_copy_assignable_v <multi::array_ref<int, 4>>);
+		static_assert(!std::is_swappable_v                 <multi::array_ref<int, 4>>);  // TODO(correaa) fix? swap can be called on it, and it is O(N)
 		// static_assert(    std::is_nothrow_swappable_v      <multi::array_ref<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v     <multi::array_ref<int, 4>>);  // <==========
 
