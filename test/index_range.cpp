@@ -21,6 +21,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::range<int> const irng{5, 12};
 
+		BOOST_TEST( !irng.contains( 4) );
+		BOOST_TEST(  irng.contains( 5) );
 		BOOST_TEST(  irng.contains( 6) );
 
 		BOOST_TEST(  irng.contains(10) );
@@ -97,6 +99,73 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( kays.size() == 5 );
 #endif
 		}
+	}
+
+	// test prev canonical 2D
+	{
+		multi::extensions_t<2> const ies({{0, 3}, {0, 4}});
+		multi::extensions_t<2>::index i = 1;
+		multi::extensions_t<2>::index j = 0;
+
+		ies.prev_canonical(i, j);
+		BOOST_TEST( i == 0 );
+		BOOST_TEST( j == 3 );
+
+		ies.prev_canonical(i, j);
+		BOOST_TEST( i == 0 );
+		BOOST_TEST( j == 2 );
+
+		ies.prev_canonical(i, j);
+		BOOST_TEST( i == 0 );
+		BOOST_TEST( j == 1);
+
+		ies.prev_canonical(i, j);
+		BOOST_TEST( i == 0 );
+		BOOST_TEST( j == 0);        
+	}
+
+	// test prev canonical 2D
+	{
+		multi::extensions_t<3> const ies({{0, 3}, {0, 4}, {0, 5}});
+		multi::extensions_t<3>::index i = 1;
+		multi::extensions_t<3>::index j = 1;
+		multi::extensions_t<3>::index k = 1;
+
+		ies.prev_canonical(i, j, k);
+		BOOST_TEST( i == 1 );
+		BOOST_TEST( j == 1 );
+		BOOST_TEST( k == 0 );
+
+		ies.prev_canonical(i, j, k);
+		BOOST_TEST( i == 1 );
+		BOOST_TEST( j == 0 );
+		BOOST_TEST( k == 4 );
+
+		ies.prev_canonical(i, j, k);
+		BOOST_TEST( i == 1 );
+		BOOST_TEST( j == 0 );
+		BOOST_TEST( k == 3 );
+
+		ies.prev_canonical(i, j, k);
+		BOOST_TEST( i == 1 );
+		BOOST_TEST( j == 0 );
+		BOOST_TEST( k == 2 );
+
+		ies.prev_canonical(i, j, k);
+		BOOST_TEST( i == 1 );
+		BOOST_TEST( j == 0 );
+		BOOST_TEST( k == 1 );
+
+		ies.prev_canonical(i, j, k);
+		BOOST_TEST( i == 1 );
+		BOOST_TEST( j == 0 );
+		BOOST_TEST( k == 0 );
+
+		ies.prev_canonical(i, j, k);
+		BOOST_TEST( i == 0 );
+		std::cout << "j = " << j << std::endl;
+		BOOST_TEST( j == 3 );
+		BOOST_TEST( k == 4 );
 	}
 
 	return boost::report_errors();
