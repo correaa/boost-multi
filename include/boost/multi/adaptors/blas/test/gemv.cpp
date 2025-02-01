@@ -1,4 +1,4 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -13,7 +13,7 @@
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
 
 #include <algorithm>    // for generate, transform
-#include <cmath>        // for abs
+#include <cmath>        // for abs  // // IWYU pragma: keep
 #include <complex>      // for complex, operator*
 // IWYU pragma: no_include <cstdlib>  // for abs
 #include <iostream>     // for char_traits, basic_ost...

@@ -1,4 +1,4 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -7,9 +7,10 @@
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
+// IWYU pragma: no_include <algorithm>                        // for fill_n, equal  
 #include <complex>
 #include <numeric>  // for std::transform_reduce
-#include <utility>  // for move
+#include <utility>  // for move  // IWYU pragma: keep
 #include <vector>   // for vector
 
 namespace multi = boost::multi;
