@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -10,8 +10,11 @@
 #include <boost/multi/adaptors/blas/operations.hpp>  // for C, hermitized
 #include <boost/multi/array.hpp>                     // for array, static_array
 
+
+
 #include <algorithm>   // for for_each, transform
-#include <cmath>
+#include <cmath>       // for abs  // IWYU pragma: keep
+// IWYU pragma: no_include <cstdlib>
 #include <complex>     // for complex, operator*
 #include <functional>  // for plus  // IWYU pragma: keep
 #include <iterator>    // for begin, end
