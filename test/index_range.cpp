@@ -163,7 +163,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		ies.prev_canonical(i, j, k);
 		BOOST_TEST( i == 0 );
-		std::cout << "j = " << j << std::endl;
 		BOOST_TEST( j == 3 );
 		BOOST_TEST( k == 4 );
 	}
