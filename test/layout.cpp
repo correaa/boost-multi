@@ -6,7 +6,7 @@
 
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
-#include <cstddef>                          // for ptrdiff_t, size_t
+#include <cstddef>                          // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iostream>                         // for basic_ostream, char_traits
 #include <iterator>   // for size
 #if __cplusplus > 201703L
