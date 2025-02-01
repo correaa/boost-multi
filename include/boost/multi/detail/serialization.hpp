@@ -13,6 +13,12 @@
 #include <type_traits>  // for enable_if_t, decay_t
 #include <utility>      // for forward
 
+#if __cpp_lib_byte
+using BOOST_MULTI_BYTE = std::byte;
+#else
+using BOOST_MULTI_BYTE = unsigned char;
+#endif
+
 namespace boost::archive::detail { template <class Ar> class common_iarchive; }  // lines 24-24
 namespace boost::archive::detail { template <class Ar> class common_oarchive; }  // lines 25-25
 
@@ -71,7 +77,7 @@ struct archive_traits<Ar, typename std::enable_if_t<std::is_base_of_v<boost::arc
 	template<class T> /*inline*/ static auto make_nvp(char const* name, T&& value) noexcept -> nvp<T> const { return nvp<T>{name, static_cast<T&>(std::forward<T>(value))}; }  // NOLINT(readability-const-return-type) : match original boost declaration
 
 	template<class T>        /*inline*/ static auto make_array(T* first, std::size_t size) noexcept -> array_wrapper<T> const { return array_wrapper<T>{first, size}; }  // NOLINT(readability-const-return-type) original boost declaration
-	template<class T = void> /*inline*/ static auto make_binary_object(std::byte const* first, std::size_t size) noexcept -> const typename binary_object_t<T>::type { return typename binary_object_t<T>::type(first, size); }  // if you get an error here you need to eventually `#include<boost/serialization/binary_object.hpp>`// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) : original boost declaration
+	template<class T = void> /*inline*/ static auto make_binary_object(BOOST_MULTI_BYTE const* first, std::size_t size) noexcept -> const typename binary_object_t<T>::type { return typename binary_object_t<T>::type(first, size); }  // if you get an error here you need to eventually `#include<boost/serialization/binary_object.hpp>`// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) : original boost declaration
 };
 
 template<class Ar>
