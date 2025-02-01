@@ -2868,14 +2868,16 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto taked(difference_type count) const& -> const_subarray<T, 1, ElementPtr, Layout> {return taked_aux_(count);}
 
  private:
-	BOOST_MULTI_HD constexpr auto dropped_aux_(difference_type count) const -> const_subarray {
+	BOOST_MULTI_HD constexpr auto dropped_aux_(difference_type count) const {
 		#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 		#endif
 
-		return const_subarray{this->layout().drop(count), this->base_ + (count*this->layout().stride() - this->layout().offset())};
+		return const_subarray(
+			this->layout().drop(count), this->base_ + (count*this->layout().stride() - this->layout().offset())
+		);
 
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
