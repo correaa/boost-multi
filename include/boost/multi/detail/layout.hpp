@@ -1000,7 +1000,7 @@ struct layout_t
 		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 
-	       constexpr auto extensions()        const {return extensions_type{tuple{extension(), sub_.extensions().base()}};}  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
+	       constexpr auto extensions()        const { return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())}; }  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
 //  [[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
