@@ -250,10 +250,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	friend constexpr auto intersection(extensions_t const& self, extensions_t const& other) -> extensions_t{
 		using boost::multi::detail::get;
 		return extensions_t{
-			tuple{
+			multi::detail::ht_tuple(
 				index_extension{intersection(get<0>(self.base()), get<0>(other.base()))},
 				intersection( extensions_t<D-1>{self.base().tail()}, extensions_t<D-1>{other.base().tail()} ).base()
-			}
+			)
 		};
 	}
 
