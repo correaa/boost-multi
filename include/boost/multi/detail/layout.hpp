@@ -989,7 +989,7 @@ struct layout_t
 	       constexpr auto shape()        const&       -> decltype(auto) {return      sizes();}
 	friend constexpr auto shape(layout_t const& self) -> decltype(auto) {return self.shape();}
 
-	constexpr BOOST_MULTI_HD auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
+	constexpr BOOST_MULTI_HD auto sizes() const noexcept {return multi::detail::ht_tuple(size(), sub_.sizes());}
 
 	friend        constexpr auto extension(layout_t const& self) {return self.extension();}
 	[[nodiscard]] constexpr auto extension()        const     -> extension_type {
