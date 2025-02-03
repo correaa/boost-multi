@@ -155,7 +155,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	: extensions_t(tup, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
 
 	constexpr extensions_t(index_extension const& extension, typename layout_t<D-1>::extensions_type const& other)
-	: extensions_t(tuple{extension, other.base()}) {}
+	: extensions_t(multi::detail::ht_tuple(extension, other.base())) {}
 
 	constexpr auto base()            const&    -> base_ const& {return *this;} // impl_;}
 
@@ -250,10 +250,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	friend constexpr auto intersection(extensions_t const& self, extensions_t const& other) -> extensions_t{
 		using boost::multi::detail::get;
 		return extensions_t{
-			tuple{
+			multi::detail::ht_tuple(
 				index_extension{intersection(get<0>(self.base()), get<0>(other.base()))},
 				intersection( extensions_t<D-1>{self.base().tail()}, extensions_t<D-1>{other.base().tail()} ).base()
-			}
+			)
 		};
 	}
 
@@ -989,7 +989,7 @@ struct layout_t
 	       constexpr auto shape()        const&       -> decltype(auto) {return      sizes();}
 	friend constexpr auto shape(layout_t const& self) -> decltype(auto) {return self.shape();}
 
-	constexpr BOOST_MULTI_HD auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
+	constexpr BOOST_MULTI_HD auto sizes() const noexcept {return multi::detail::ht_tuple(size(), sub_.sizes());}
 
 	friend        constexpr auto extension(layout_t const& self) {return self.extension();}
 	[[nodiscard]] constexpr auto extension()        const     -> extension_type {
@@ -1000,7 +1000,7 @@ struct layout_t
 		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 
-	       constexpr auto extensions()        const {return extensions_type{tuple{extension(), sub_.extensions().base()}};}  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
+	       constexpr auto extensions()        const { return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())}; }  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
 //  [[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output

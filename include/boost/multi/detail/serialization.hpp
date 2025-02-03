@@ -13,7 +13,7 @@
 #include <type_traits>  // for enable_if_t, decay_t
 #include <utility>      // for forward
 
-#if __cpp_lib_byte
+#if defined(__cpp_lib_byte) && (__cpp_lib_byte >= 201603L )
 using BOOST_MULTI_BYTE = std::byte;
 #else
 using BOOST_MULTI_BYTE = unsigned char;

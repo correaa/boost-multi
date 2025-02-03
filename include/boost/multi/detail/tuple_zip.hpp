@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Alfredo A. Correa
+// Copyright 2021-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -227,7 +227,9 @@ template<class T0> class tuple<T0> {  // NOLINT(cppcoreguidelines-special-member
 };
 #endif
 
+#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703L) 
 template<class T0, class... Ts> tuple(T0, tuple<Ts...>) -> tuple<T0, Ts...>;
+#endif
 
 template<class T0, class... Ts> constexpr auto mk_tuple(T0 head, Ts... tail) {
 	return tuple<T0, Ts...>(std::move(head), std::move(tail)...);
