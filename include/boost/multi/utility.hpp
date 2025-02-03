@@ -348,9 +348,7 @@ constexpr auto sizes(T const& /*unused*/) noexcept {return tuple<>{};}
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&array)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
 //  using std::size; // this line needs c++17
-	using multi::size;
-	return tuple(multi::size(array), multi::sizes(array[0]));
-//  return tuple_cat(make_tuple(boost::multi::size(t)), sizes(t[0]));
+	return multi::detail::ht_tuple(multi::size(array), multi::sizes(array[0]));
 }
 
 template<class T, std::size_t N>
