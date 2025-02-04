@@ -114,7 +114,7 @@ class range {
 
 	template<
 		class Range,
-		std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, int> = 0,
+		std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, unsigned> = 0,
 		decltype(detail::explicit_cast<IndexType>(std::declval<Range&&>().first()),
 		         detail::explicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 		)*                                                                    = nullptr>
