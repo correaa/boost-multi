@@ -1222,7 +1222,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 		#endif
 
-		return const_subarray(new_layout, this->base_ + n*this->layout().stride() - this->layout().offset());
+		return const_subarray(new_layout, this->base_ + n*this->layout().stride() /*- this->layout().offset()*/);
 
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
