@@ -333,7 +333,7 @@ vs2019-windows:
   needs: ["clang++", "g++"]
   timeout: 30 minutes
 
-vs2022-shell c++17
+vs2022-shell c++17:
   stage: build
   allow_failure: true
   interruptible: true
