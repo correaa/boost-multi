@@ -334,6 +334,9 @@ vs2019-windows:
   timeout: 30 minutes
 
 vs2019-shell-windows:
+  tags:
+    - windows
+    - shell
   stage: build
   # only:
   #   refs:
