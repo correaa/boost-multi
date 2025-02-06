@@ -2878,7 +2878,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		#endif
 
 		return const_subarray(
-			this->layout().drop(count), this->base_ + (count*this->layout().stride() - this->layout().offset())
+			this->layout().drop(count), this->base_ + (count*this->layout().stride() /*- this->layout().offset()*/)  // TODO(correaa) fix need for offset
 		);
 
 		#if defined(__clang__)
@@ -2898,7 +2898,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 		#endif
 
-		return const_subarray{this->layout().slice(first, last), this->base_ + (first*this->layout().stride() - this->layout().offset())};
+		return const_subarray{this->layout().slice(first, last), this->base_ + (first*this->layout().stride() /*- this->layout().offset()*/)};  // TODO(correaa) fix need for offset
 
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
