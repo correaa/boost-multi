@@ -341,25 +341,30 @@ vs2019-shell-windows:
   allow_failure: true
   interruptible: true
   variables:
-    BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
+    # BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
+    BOOST_ROOT: ${HOME}/.vcpkg/installed/x64-windows
     # BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
     # BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
-    - git clone --depth=1 https://github.com/microsoft/vcpkg.git
-    - .\vcpkg\bootstrap-vcpkg.bat
-    - .\vcpkg\vcpkg install boost-multi-array boost-timer
+    - | 
+      if [ ! -d "$HOME/.vcpkg" ]; then
+        git clone https://github.com/Microsoft/vcpkg.git $HOME/.vcpkg
+        cd $HOME/.vcpkg
+        ./bootstrap-vcpkg.sh
+        cd -
+      fi
+    # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    # - .\vcpkg\bootstrap-vcpkg.bat
+    # - .\vcpkg\vcpkg install boost-multi-array boost-timer
+    - $HOME/.vcpkg/vcpkg install boost-multi-array boost-timer
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_STANDARD=23
     - cmake --build build --config Release --parallel 2 --verbose
-    - $env:Path += ";${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin"
+    - $env:Path += ";${HOME}/.vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin"
     - ctest --test-dir build --output-on-failure -C Release
-  tags:
-    - windows, shell
-#  needs: ["clang++", "g++"]
-  timeout: 30 minutes
 
 # vs2022-windows:
 #   stage: build
