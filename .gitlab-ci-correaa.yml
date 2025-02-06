@@ -333,17 +333,35 @@ vs2019-windows:
   needs: ["clang++", "g++"]
   timeout: 30 minutes
 
-vs2019-shell-windows:
+vs2022-shell c++17
   stage: build
-  # only:
-  #   refs:
-  #     - master
   allow_failure: true
   interruptible: true
   variables:
     BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    # BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
-    # BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
+  script:
+    # - choco --version
+    # - choco install -y visualstudio2019community poshgit
+    - git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    - .\vcpkg\bootstrap-vcpkg.bat
+    - .\vcpkg\vcpkg install boost-multi-array boost-timer
+    - mkdir build
+    - cmake --version
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17
+    - cmake --build build --config Release --parallel 4 --verbose
+    - $env:Path += ";${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin"
+    - ctest -j 4 --test-dir build --output-on-failure -C Release
+  tags:
+    - windows, shell
+  needs: ["clang++", "g++"]
+  timeout: 10 minutes
+
+vs2022-shell c++23:
+  stage: build
+  allow_failure: true
+  interruptible: true
+  variables:
+    BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
@@ -353,80 +371,13 @@ vs2019-shell-windows:
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_STANDARD=23
-    - cmake --build build --config Release --parallel 2 --verbose
+    - cmake --build build --config Release --parallel 4 --verbose
     - $env:Path += ";${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin"
-    - ctest --test-dir build --output-on-failure -C Release
+    - ctest -j 4 --test-dir build --output-on-failure -C Release
   tags:
     - windows, shell
-#  needs: ["clang++", "g++"]
-  timeout: 30 minutes
-
-# vs2022-windows:
-#   stage: build
-#   allow_failure: true
-#   script:
-#     # - choco --version
-#     # - choco upgrade -y chocolatey
-#     - choco --version
-#     - choco install -y visualstudio2022community
-#     - choco install -y boost-msvc-14.2 --version 1.74.0  # --params "/StaticBuild"
-#     - mkdir build
-#     - cmake --version
-#     - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -A x64  # -DBOOST_ROOT="C:\local\boost_1_74_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_74_0\lib64-msvc-14.2"  # c:/local/boost_1_74_0/lib64-msvc-14.2
-#     - cmake --build build --config Release
-#     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'  # C:\local\boost_1_74_0;  ;C:\Program Files\CMake\bin
-#     - ctest --test-dir build --output-on-failure -C Release
-#   tags:
-#     - saas-windows-medium-amd64
-#   timeout: 30  # minutes
-#   # rules:
-#   #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-#   needs: ["vs2019-windows"]
-
-# vs2017-windows:
-#   stage: build
-#   allow_failure: true
-#   script:
-#     - choco --version
-#     - choco install -y visualstudio2017community
-#     - choco install -y boost-msvc-14.2 --version 1.74.0  # --params "/StaticBuild"
-#     - mkdir build
-#     - cmake --version
-#     - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -A x64  # -DBOOST_ROOT="C:\local\boost_1_74_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_74_0\lib64-msvc-14.2"  # c:/local/boost_1_74_0/lib64-msvc-14.2
-#     - cmake --build build --config Release
-#     - $env:Path += ';C:\local\boost_1_74_0\lib64-msvc-14.2'  # C:\local\boost_1_74_0;  ;C:\Program Files\CMake\bin
-#     - ctest --test-dir build --output-on-failure -C Release
-#   tags:
-#     - saas-windows-medium-amd64
-#   # rules:
-#   #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-#   needs: ["vs2019-windows"]
-
-# clang++-macos:
-#   interruptible: true
-#   stage: build
-# # image: macos-14-xcode-15
-# # variables:
-# #   HOMEBREW_NO_AUTO_UPDATE: 1
-#   tags:
-#     - shared-macos-amd64
-#     # - saas-macos-medium-m1
-#     # - saas-macos-large-m2pro 
-#   allow_failure: true
-#   script:
-#     #- apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libblas-dev libc++-dev libc++abi-dev libfftw3-dev pkg-config tar wget
-#     #- wget https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz --no-verbose # 1.70 doesn't install boost timer well, there is no version 1.72 in sourceforge
-#     #- tar -xf boost_1_72_0.tar.gz 
-#     #- cd boost_1_72_0
-#     #- ./bootstrap.sh --with-toolset=clang
-#     #- ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4 # libc++ only works with boost test compiled with libc++
-#     #- cd ..
-#     - mkdir build && cd build
-#     - c++ --version
-#     - CXX=c++ cmake .. -DCMAKE_BUILD_TYPE=Debug  # -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"
-#     - cmake --build .
-#     - ctest -j 2 --output-on-failure
-#   needs: ["clang++"]
+  needs: ["clang++", "g++"]
+  timeout: 10 minutes
 
 clang++-m32:
   stage: build
