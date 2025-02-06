@@ -345,8 +345,8 @@ vs2019-shell-windows:
     # BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
     # BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
   script:
-    - choco --version
-    - choco install -y visualstudio2019community poshgit
+    # - choco --version
+    # - choco install -y visualstudio2019community poshgit
     - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     - .\vcpkg\bootstrap-vcpkg.bat
     - .\vcpkg\vcpkg install boost-multi-array boost-timer
