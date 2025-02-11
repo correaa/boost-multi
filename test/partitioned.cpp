@@ -95,7 +95,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(halved_ref_2d) {
-		std::vector<int> buff = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+		std::vector<int> buff({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, {});
 		auto const& arr = multi::array_ref<int, 2>({4, 4}, buff.data());
 
 		BOOST_TEST(( arr == multi::array<int, 2>{
