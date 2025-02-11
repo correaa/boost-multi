@@ -654,6 +654,15 @@ struct layout_t<0, SSize>
 	constexpr auto origin()    const -> offset_type {return 0;}
 
 	constexpr auto reverse()          -> layout_t& {return *this;}
+
+	BOOST_MULTI_HD constexpr auto take(size_type /*n*/) const {
+		return layout_t<0, SSize>{};
+	}
+
+	BOOST_MULTI_HD constexpr auto halve() const {
+		return layout_t<1>(*this, 0, 0, 0);
+	}
+
 	// [[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
 	constexpr auto scale(size_type /*num*/, size_type /*den*/) const {return *this;}
 
@@ -1034,7 +1043,6 @@ struct layout_t
 
 	template<typename Size>
 	constexpr auto partition(Size const& count) -> layout_t& {
-		using std::swap;
 		stride_ *= count;
 		nelems_ *= count;
 		sub_.partition(count);
@@ -1078,6 +1086,25 @@ struct layout_t
 	#pragma clang diagnostic ignored "-Wunknown-warning-option"
 	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
 	#endif
+
+	auto take(size_type n) const {
+		return layout_t(
+			this->sub(),
+			this->stride(),
+			this->offset(),
+			this->stride()*n
+		);
+	}
+
+	BOOST_MULTI_HD constexpr auto halve() const {
+		assert(this->size()%2 == 0);
+		return layout_t<D + 1>(
+			this->take(this->size()/2),
+			this->nelems()/2,
+			0,
+			this->nelems()
+		);
+	}
 
 	constexpr auto scale(size_type num, size_type den) const {
 		assert( (stride_*num) % den == 0 );

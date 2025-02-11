@@ -19,7 +19,6 @@
 // IWYU pragma: no_include <version>
 #include <type_traits>
 
-
 namespace multi = boost::multi;
 
 namespace {
@@ -1200,6 +1199,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  //  BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 	//  //  BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 	// }
+
+	{
+		multi::array<int, 2> arr({6, 8});
+		BOOST_TEST( arr.size() == 6 );
+
+		auto&& arrp2 = arr.partitioned(2);
+		BOOST_TEST( arrp2.num_elements() == arr.num_elements() );
+		BOOST_TEST( arrp2.size() == 2 );
+	}
 
 	return boost::report_errors();
 }
