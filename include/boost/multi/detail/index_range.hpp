@@ -224,8 +224,10 @@ class range {
 	}
 };
 
+#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703)
 template<typename IndexType, typename IndexTypeLast = IndexType>     // , class Plus = std::plus<>, class Minus = std::minus<> >
 range(IndexType, IndexTypeLast) -> range<IndexType, IndexTypeLast>;  // #3
+#endif
 
 template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
 constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexType, IndexTypeLast> {
