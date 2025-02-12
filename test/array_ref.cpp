@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -242,6 +242,27 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 	BOOST_TEST( diag.begin() != diag.end() );
 	BOOST_TEST( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 60 + 120 + 180 );
 }
+
+/*use iterator as pointer*/
+{
+	multi::array<int, 1> const arr = {1, 2, 3, 4, 5, 6};
+	multi::array_ref<int, 2, multi::array<int, 1>::const_iterator> const arr2({2, 3}, arr.begin());
+	BOOST_TEST(( arr2 == multi::array{
+		{1, 2, 3},
+		{4, 5, 6}
+	}));
+}
+
+/*use iterator as pointer*/
+{
+	// multi::array<int, 2> const arr = { {1, 2}, {3, 4}, {5, 6}, {7, 8}};
+	// multi::array_ref<int, 2, multi::array<int, 2>::const_iterator> const arr2({2, 2}, arr.begin());
+	// BOOST_TEST(( arr2 == multi::array{
+	// 	{1, 2, 3},
+	// 	{4, 5, 6}
+	// }));
+}
+
 
 BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 	#if defined(__clang__)

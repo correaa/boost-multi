@@ -497,6 +497,9 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	>;
 	using const_reference = const_subarray<element, D - 1, element_ptr>;  // TODO(correaa) should be const_subarray (base of subarray)
 
+	template<class Element2>
+	using rebind = array_iterator<std::decay_t<Element2>, D, typename std::pointer_traits<ElementPtr>::template rebind<Element2>, IsConst, IsMove, Stride>;
+
 	using iterator_category = std::random_access_iterator_tag;
 
 	constexpr static dimensionality_type rank_v = D;
@@ -2376,6 +2379,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	using iterator_concept = typename stride_traits<Stride>::category;
 	using element_type = typename std::pointer_traits<Ptr>::element_type;  // workaround for clang 15 and libc++ in c++20 mode
 
+	template<class Element2>
+	using rebind = array_iterator<std::decay_t<Element2>, 1, typename std::pointer_traits<Ptr>::template rebind<Element2>, IsConst, IsMove, Stride>;
+
 	static constexpr dimensionality_type dimensionality = 1;
 
 	#if __cplusplus >= 202002L
@@ -3625,11 +3631,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 #pragma clang diagnostic pop
 #endif
 
-template<class T, dimensionality_type D, class Ptr = T*>
-using array_cref = array_ref<
-	std::decay_t<T>, D,
-	typename std::pointer_traits<Ptr>::template rebind<T const>
->;
+template<class T, dimensionality_type D, class Ptr = typename std::pointer_traits<T*>::template rebind<T const> >
+using array_cref = array_ref<std::decay_t<T>, D, Ptr>;
 
 template<class T, dimensionality_type D, class Ptr = T*>
 using array_mref = array_ref<
