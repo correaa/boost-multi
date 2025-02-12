@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 {
 	multi::array<int, 1> const arr = {1, 2, 3, 4, 5, 6};
 	multi::array_ref<int, 2, multi::array<int, 1>::const_iterator> const arr2({2, 3}, arr.begin());
-	BOOST_TEST(( arr2 == multi::array{
+	BOOST_TEST(( arr2 == multi::array<int, 2>{
 		{1, 2, 3},
 		{4, 5, 6}
 	}));
