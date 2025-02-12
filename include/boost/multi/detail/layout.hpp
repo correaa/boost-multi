@@ -556,132 +556,6 @@ class contiguous_stride_t {
 	#endif
 };
 
-template<typename SSize>
-struct layout_t<0, SSize>
-: multi::equality_comparable<layout_t<0, SSize> >
-{
-	using dimensionality_type = multi::dimensionality_type;
-	using rank = std::integral_constant<dimensionality_type, 0>;
-
-	using size_type       = SSize;
-	using difference_type = std::make_signed_t<size_type>;
-	using index           = difference_type;
-	using index_extension = multi::index_extension;
-	using index_range     = multi::range<index>;
-
-	using sub_type    = monostate;
-	using stride_type = monostate;
-	using offset_type = index;
-	using nelems_type = index;
-
-	using strides_type  = tuple<>;
-	using offsets_type  = tuple<>;
-	using nelemss_type  = tuple<>;
-
-	using extension_type = void;
-
-	using extensions_type = extensions_t<rank::value>;
-	using sizes_type      = tuple<>;
-
-	static constexpr dimensionality_type rank_v = rank::value;
-	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
-
-	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
-
- private:
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpadded"
-#endif
-	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_   ;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // TODO(correaa) padding struct 'boost::multi::layout_t<0>' with 1 byte to align 'stride_' [-Werror,-Wpadded]
-
-	offset_type offset_;
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
-	nelems_type nelems_;
-
-	template<dimensionality_type, typename> friend struct layout_t;
-
- public:
-	layout_t() = default;
-
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/)
-	: offset_{0}, nelems_{1} {}
-	
-	// BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
-
-	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
-
-	[[nodiscard]] constexpr auto extensions()        const        {return extensions_type{};}
-	friend        constexpr auto extensions(layout_t const& self) {return self.extensions();}
-
-	[[nodiscard]] constexpr auto num_elements()        const        {return nelems_;}
-	friend        constexpr auto num_elements(layout_t const& self) {return self.num_elements();}
-
-	[[nodiscard]] constexpr auto sizes()        const        {return tuple<>{};}
-	friend        constexpr auto sizes(layout_t const& self) {return self.sizes();}
-
-	[[nodiscard]] constexpr auto strides() const {return strides_type{};}
-	[[nodiscard]] constexpr auto offsets() const {return offsets_type{};}
-	[[nodiscard]] constexpr auto nelemss() const {return nelemss_type{};}
-
-	constexpr auto operator()() const { return offset_; }
-	// constexpr explicit operator offset_type() const {return offset_;}
-
-	constexpr auto stride() const -> stride_type = delete;
-	constexpr auto offset() const -> offset_type {return offset_;}
-	constexpr auto nelems() const -> nelems_type {return nelems_;}
-	constexpr auto sub()    const -> sub_type = delete;
-
-	constexpr auto size()      const -> size_type      = delete;
-	constexpr auto extension() const -> extension_type = delete;
-
-	constexpr auto is_empty()  const noexcept {return nelems_ == 0;}
-	[[nodiscard/*for c++20 ("empty checks for emptyness")*/]]
-	constexpr auto empty()        const     noexcept {return nelems_ == 0;}
-	friend
-	constexpr auto empty(layout_t const& self) noexcept {return self.empty();}
-
-	[[deprecated("is going to be removed")]]
-	constexpr auto is_compact() const -> bool = delete;
-
-	constexpr auto base_size() const -> size_type   {return 0;}
-	constexpr auto origin()    const -> offset_type {return 0;}
-
-	constexpr auto reverse()          -> layout_t& {return *this;}
-	// [[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
-	constexpr auto scale(size_type /*num*/, size_type /*den*/) const {return *this;}
-
-//  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
-	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
-		return
-			   std::tie(self .sub_, self .stride_, self .offset_, self .nelems_)
-			== std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
-		;
-	}
-
-	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) {
-		return
-			   std::tie(self .sub_, self .stride_, self .offset_, self .nelems_)
-			!= std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
-		;
-	}
-
-	constexpr auto operator< (layout_t const& other) const -> bool {
-		return std::tie(offset_, nelems_) < std::tie(other.offset_, other.nelems_);
-	}
-
-	constexpr auto   rotate() -> layout_t& {return *this;}
-	constexpr auto unrotate() -> layout_t& {return *this;}
-
-	constexpr auto hull_size() const -> size_type {return num_elements();}  // not in bytes
-};
-
 template<typename SSize = multi::index>
 class contiguous_layout {
 
@@ -785,8 +659,6 @@ class contiguous_layout {
 				this->nelems() / this->size() * (last - first)
 		};
 	}
-
-
 };
 
 template<dimensionality_type D, typename SSize>
@@ -1034,7 +906,6 @@ struct layout_t
 
 	template<typename Size>
 	constexpr auto partition(Size const& count) -> layout_t& {
-		using std::swap;
 		stride_ *= count;
 		nelems_ *= count;
 		sub_.partition(count);
@@ -1079,6 +950,25 @@ struct layout_t
 	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
 	#endif
 
+	auto take(size_type n) const {
+		return layout_t(
+			this->sub(),
+			this->stride(),
+			this->offset(),
+			this->stride()*n
+		);
+	}
+
+	BOOST_MULTI_HD constexpr auto halve() const {
+		assert(this->size()%2 == 0);
+		return layout_t<D + 1>(
+			this->take(this->size()/2),
+			this->nelems()/2,
+			0,
+			this->nelems()
+		);
+	}
+
 	constexpr auto scale(size_type num, size_type den) const {
 		assert( (stride_*num) % den == 0 );
 		assert(offset_ == 0);  // TODO(correaa) implement ----------------vvv
@@ -1088,6 +978,141 @@ struct layout_t
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
 	#endif
+};
+
+template<typename SSize>
+struct layout_t<0, SSize>
+: multi::equality_comparable<layout_t<0, SSize> >
+{
+	using dimensionality_type = multi::dimensionality_type;
+	using rank = std::integral_constant<dimensionality_type, 0>;
+
+	using size_type       = SSize;
+	using difference_type = std::make_signed_t<size_type>;
+	using index           = difference_type;
+	using index_extension = multi::index_extension;
+	using index_range     = multi::range<index>;
+
+	using sub_type    = monostate;
+	using stride_type = monostate;
+	using offset_type = index;
+	using nelems_type = index;
+
+	using strides_type  = tuple<>;
+	using offsets_type  = tuple<>;
+	using nelemss_type  = tuple<>;
+
+	using extension_type = void;
+
+	using extensions_type = extensions_t<rank::value>;
+	using sizes_type      = tuple<>;
+
+	static constexpr dimensionality_type rank_v = rank::value;
+	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
+
+	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
+
+ private:
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_   ;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // TODO(correaa) padding struct 'boost::multi::layout_t<0>' with 1 byte to align 'stride_' [-Werror,-Wpadded]
+
+	offset_type offset_;
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
+	nelems_type nelems_;
+
+	template<dimensionality_type, typename> friend struct layout_t;
+
+ public:
+	layout_t() = default;
+
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/)
+	: offset_{0}, nelems_{1} {}
+	
+	// BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
+
+	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
+
+	[[nodiscard]] constexpr auto extensions()        const        {return extensions_type{};}
+	friend        constexpr auto extensions(layout_t const& self) {return self.extensions();}
+
+	[[nodiscard]] constexpr auto num_elements()        const        {return nelems_;}
+	friend        constexpr auto num_elements(layout_t const& self) {return self.num_elements();}
+
+	[[nodiscard]] constexpr auto sizes()        const        {return tuple<>{};}
+	friend        constexpr auto sizes(layout_t const& self) {return self.sizes();}
+
+	[[nodiscard]] constexpr auto strides() const {return strides_type{};}
+	[[nodiscard]] constexpr auto offsets() const {return offsets_type{};}
+	[[nodiscard]] constexpr auto nelemss() const {return nelemss_type{};}
+
+	constexpr auto operator()() const { return offset_; }
+	// constexpr explicit operator offset_type() const {return offset_;}
+
+	constexpr auto stride() const -> stride_type = delete;
+	constexpr auto offset() const -> offset_type {return offset_;}
+	constexpr auto nelems() const -> nelems_type {return nelems_;}
+	constexpr auto sub()    const -> sub_type = delete;
+
+	constexpr auto size()      const -> size_type      = delete;
+	constexpr auto extension() const -> extension_type = delete;
+
+	constexpr auto is_empty()  const noexcept {return nelems_ == 0;}
+	[[nodiscard/*for c++20 ("empty checks for emptyness")*/]]
+	constexpr auto empty()        const     noexcept {return nelems_ == 0;}
+	friend
+	constexpr auto empty(layout_t const& self) noexcept {return self.empty();}
+
+	[[deprecated("is going to be removed")]]
+	constexpr auto is_compact() const -> bool = delete;
+
+	constexpr auto base_size() const -> size_type   {return 0;}
+	constexpr auto origin()    const -> offset_type {return 0;}
+
+	constexpr auto reverse()          -> layout_t& {return *this;}
+
+	BOOST_MULTI_HD constexpr auto take(size_type /*n*/) const {
+		return layout_t<0, SSize>{};
+	}
+
+	BOOST_MULTI_HD constexpr auto halve() const {
+		return layout_t<1, SSize>(*this, 0, 0, 0);
+	}
+
+	// [[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
+	constexpr auto scale(size_type /*num*/, size_type /*den*/) const {return *this;}
+
+//  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
+	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
+		return
+			   std::tie(self .sub_, self .stride_, self .offset_, self .nelems_)
+			== std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
+		;
+	}
+
+	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) {
+		return
+			   std::tie(self .sub_, self .stride_, self .offset_, self .nelems_)
+			!= std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
+		;
+	}
+
+	constexpr auto operator< (layout_t const& other) const -> bool {
+		return std::tie(offset_, nelems_) < std::tie(other.offset_, other.nelems_);
+	}
+
+	constexpr auto   rotate() -> layout_t& {return *this;}
+	constexpr auto unrotate() -> layout_t& {return *this;}
+
+	constexpr auto hull_size() const -> size_type {return num_elements();}  // not in bytes
 };
 
 constexpr auto

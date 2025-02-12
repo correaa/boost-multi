@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost::multi::detail {
+namespace boost::multi::detail {  // this library requires C++17 and above !!!
 
 template<class From, class To> constexpr bool is_implicitly_convertible_v = std::is_convertible_v<From, To>;  // this library needs C++17 or higher (e.g. -std=c++17)
 template<class From, class To> constexpr bool is_explicitly_convertible_v = std::is_constructible_v<To, From>;
