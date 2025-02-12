@@ -68,6 +68,8 @@ fi
 # sudo modprobe -r nvidia_uvm 
 # sudo modprobe    nvidia_uvm
 else
+# brew install boost ccache clang-tidy cmake cppcheck cpplint ninja
+# ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
 #(mkdir -p .build.g++-14    && cd .build.g++-14    && CXX=g++-14                                cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23                                                          && cmake --build . $CMT &&                                           ctest -j 12 --output-on-failure $CTR) || exit 666
  (mkdir -p .build.c++.std23 && cd .build.c++.std23 && CXX=c++ CXXFLAGS="-fexperimental-library" cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23                     && cmake --build . $CMT &&                                           ctest -j 12 --output-on-failure $CTR) || exit 666
 #(mkdir -p .build.mull      && cd .build.mull      && CXX=c++ CXXFLAGS="-O1 -fpass-plugin=~/bin/mull-ir-frontend-16 -g -grecord-command-line -fprofile-instr-generate -fcoverage-mapping" cmake ..                  && cmake --build . $CMT &&                                           (ls *.x | xargs -n 1 sh -c 'echo $0 && ((~/bin/mull-runner-16 $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)')) || exit 666

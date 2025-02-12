@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -1192,12 +1192,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto taked_aux_(difference_type n) const {
 		assert( n <= this->size() );
-		typename types::layout_t const new_layout(
-			this->layout().sub(),
-			this->layout().stride(),
-			this->layout().offset(),
-			this->stride()*n
-		);
+		auto const new_layout = this->layout().take(n);
 		return const_subarray(new_layout, this->base_);
 	}
 
@@ -1205,6 +1200,15 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto taked(difference_type n) const& -> basic_const_array { return taked_aux_(n); }
 	// constexpr auto taked(difference_type n)     && -> const_subarray    { return taked_aux_(n); }
 	// constexpr auto taked(difference_type n)      & -> const_subarray    { return taked_aux_(n); }
+
+ private:
+	BOOST_MULTI_HD constexpr auto halved_aux_() const {
+		auto new_layout = this->layout().halve();
+		return subarray<T, D + 1, element_ptr>(new_layout, this->base_);
+	}
+
+ public:
+	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> {return halved_aux_();}
 
  private:
 	constexpr auto dropped_aux_(difference_type n) const {
@@ -2972,6 +2976,15 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto operator()(Args&&... args) const&
 	->decltype(paren_(*this, std::forward<Args>(args)...)) {
 		return paren_(*this, std::forward<Args>(args)...); }
+ 
+ private:
+	BOOST_MULTI_HD constexpr auto halved_aux_() const {
+		auto new_layout = this->layout().halve();
+		return subarray<T, 2, element_ptr>(new_layout, this->base_);
+	}
+
+ public:
+	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, 2, element_ptr> {return halved_aux_();}
 
  private:
 	BOOST_MULTI_HD constexpr auto partitioned_aux_(size_type size) const {
