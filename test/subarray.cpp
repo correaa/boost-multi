@@ -13,13 +13,13 @@
 namespace multi = boost::multi;
 
 namespace {
-	auto f_arr(multi::array<int, 1> arr) {
-		return arr[2];
-	}
+auto f_arr(multi::array<int, 1> arr) {
+	return arr[2];
+}
 
-	auto f_sub(multi::const_subarray<int, 1> const& arr) {
-		return arr[2];
-	}
+auto f_sub(multi::const_subarray<int, 1> const& arr) {
+	return arr[2];
+}
 }  // namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -182,17 +182,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// static_assert(    std::is_nothrow_swappable_v      <multi::array_ref<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v     <multi::array_ref<int, 4>>);  // <==========
 
-		static_assert(  std::is_move_constructible_v        <multi::subarray<int, 4>>);  // mmm, something strange here
-		static_assert(  std::is_nothrow_move_constructible_v<multi::subarray<int, 4>>);  // mmm, something strange here
-		static_assert(! std::is_copy_constructible_v        <multi::subarray<int, 4>>);
+		static_assert( std::is_move_constructible_v        <multi::subarray<int, 4>>);  // mmm, something strange here
+		static_assert( std::is_nothrow_move_constructible_v<multi::subarray<int, 4>>);  // mmm, something strange here
+		static_assert(!std::is_copy_constructible_v        <multi::subarray<int, 4>>);
 
 		#if !defined(__circle_build__)
-		static_assert(! std::is_trivially_copyable_v        <multi::subarray<int, 4>>);
+		static_assert(!std::is_trivially_copyable_v        <multi::subarray<int, 4>>);
 		#endif
 
-		static_assert(  std::is_copy_assignable_v           <multi::subarray<int, 4>>);
-		static_assert(! std::is_trivially_copy_assignable_v <multi::subarray<int, 4>>);
-		static_assert(  std::is_swappable_v                 <multi::subarray<int, 4>>);  // TODO(correaa) fix?
+		static_assert( std::is_copy_assignable_v           <multi::subarray<int, 4>>);
+		static_assert(!std::is_trivially_copy_assignable_v <multi::subarray<int, 4>>);
+		static_assert( std::is_swappable_v                 <multi::subarray<int, 4>>);  // TODO(correaa) fix?
 
 		// static_assert(    std::is_nothrow_swappable_v      <multi::subarray<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v     <multi::subarray<int, 4>>);  // <==========

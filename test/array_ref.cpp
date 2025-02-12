@@ -255,12 +255,19 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 
 /*use iterator as pointer*/
 {
-	// multi::array<int, 2> const arr = { {1, 2}, {3, 4}, {5, 6}, {7, 8}};
-	// multi::array_ref<int, 2, multi::array<int, 2>::const_iterator> const arr2({2, 2}, arr.begin());
-	// BOOST_TEST(( arr2 == multi::array{
-	// 	{1, 2, 3},
-	// 	{4, 5, 6}
-	// }));
+	multi::array<int, 2> const arr = { {1, 2}, {3, 4}, {5, 6}, {7, 8}};
+	// std::pointer_traits<multi::array<int, 2>::const_iterator>::difference_type dt;
+	multi::array_ref<int, 2, multi::array<int, 2>::const_iterator> const arr2({2, 2}, arr.begin());
+
+	BOOST_TEST(( arr2[0][0] == multi::array<int, 1>{1, 2} ));
+	BOOST_TEST(( arr2[0][1] == multi::array<int, 1>{3, 4} ));
+	BOOST_TEST(( arr2[1][0] == multi::array<int, 1>{5, 6} ));
+	BOOST_TEST(( arr2[1][1] == multi::array<int, 1>{7, 8} ));
+
+	BOOST_TEST(( arr2 == multi::array<int, 3>{
+		{{1, 2}, {3, 4}},
+		{{5, 6}, {7, 8}}
+	}));
 }
 
 

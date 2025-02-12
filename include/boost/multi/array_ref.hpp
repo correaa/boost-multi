@@ -488,6 +488,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	using element_ptr = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using value_type = typename subarray<element, D-1, element_ptr>::decay_type;
+	using element_type = value_type;
 
 	using pointer         = subarray<element, D - 1, element_ptr>*;
 	using reference       = std::conditional_t<
@@ -1639,6 +1640,15 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		//  std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
 		class = decltype(Range(std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()))>
 	constexpr explicit operator Range() const { return Range(begin(), end()); }  // NOLINT(fuchsia-default-arguments-calls) for example std::vector(it, ti, alloc = {})
+
+	template<class TT, dimensionality_type DD, class... As>
+	friend constexpr auto operator==(const_subarray const& self, const_subarray<TT, DD, As...> const& other) -> bool {
+		return (self.extension() == other.extension()) && adl_equal(self.begin(), self.end(), other.begin());
+	}
+	template<class TT, dimensionality_type DD, class... As>
+	friend constexpr auto operator!=(const_subarray const& self, const_subarray<TT, DD, As...> const& other) -> bool {
+		return (self.extension() != other.extension()) || adl_equal(self.begin(), self.end(), other.begin());
+	}
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
@@ -3131,6 +3141,15 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	->decltype(adl_copy_n(first, std::declval<size_type>(), std::declval<iterator>()), void()) {
 		return adl_copy_n(first, this->       size()      , std::move(*this).begin()), void(); }
 
+	template<class TT, dimensionality_type DD, class... As>
+	friend constexpr auto operator==(const_subarray const& self, const_subarray<TT, DD, As...> const& other) -> bool {
+		return (self.extension() == other.extension()) && adl_equal(self.begin(), self.end(), other.begin());
+	}
+	template<class TT, dimensionality_type DD, class... As>
+	friend constexpr auto operator!=(const_subarray const& self, const_subarray<TT, DD, As...> const& other) -> bool {
+		return (self.extension() != other.extension()) || adl_equal(self.begin(), self.end(), other.begin());
+	}
+		
 	friend constexpr auto operator==(const_subarray const& self, const_subarray const& other) -> bool {
 		return
 			self.extension() == other.extension()
