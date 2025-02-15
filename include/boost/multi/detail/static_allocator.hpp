@@ -20,7 +20,7 @@ namespace boost::multi::detail {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-template<class T, std::size_t N = std::extent_v<T> >  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+template<class T, std::size_t N /*= std::extent_v<T>*/ >  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special semantics
 #ifdef _MSC_VER
 	#pragma warning(push)

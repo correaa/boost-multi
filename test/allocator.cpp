@@ -26,7 +26,7 @@ namespace multi = boost::multi;
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 template<class T, multi::dimensionality_type D, std::size_t Capacity = 256/sizeof(T)>
-using small_array = multi::static_array<T, D, multi::detail::static_allocator<T[Capacity]>>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+using small_array = multi::static_array<T, D, multi::detail::static_allocator<T, Capacity>>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 // https://godbolt.org/z/d8ozWahna
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
