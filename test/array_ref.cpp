@@ -265,8 +265,10 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 	BOOST_TEST(( arr2[1][1] == multi::array<int, 1>{7, 8} ));
 
 	BOOST_TEST(( arr2 == multi::array<int, 3>{
-		{{1, 2}, {3, 4}},
-		{{5, 6}, {7, 8}}
+		{{1, 2}, 
+		 {3, 4}},
+		{{5, 6},
+		 {7, 8}}
 	}));
 }
 

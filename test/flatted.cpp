@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -11,6 +11,53 @@ namespace multi = boost::multi;
 #define BOOST_AUTO_TEST_CASE(CasenamE)
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+
+// BOOST_AUTO_TEST_CASE(array_flattened_2d) {
+// 	multi::array<int, 2> arr = {
+// 		{0, 1, 2},
+// 		{3, 4, 5},
+// 	};
+
+// 	auto bit = arr({0, 2}, {0, 2}).flattened_begin();
+
+// 	BOOST_TEST( *bit == 0 );
+
+// 	++bit; BOOST_TEST( *bit == 1 );
+// 	++bit; BOOST_TEST( *bit == 3 );
+// 	++bit; BOOST_TEST( *bit == 4 );
+// 	++bit;
+
+// 	--bit; BOOST_TEST( *bit == 4 );
+// 	--bit; BOOST_TEST( *bit == 3 );
+// 	--bit; BOOST_TEST( *bit == 1 );
+// 	--bit; BOOST_TEST( *bit == 0 );
+// }
+
+BOOST_AUTO_TEST_CASE(array_flattened_4d) {
+	multi::array<int, 4> arr = {
+		{
+			{{0, 0}, {0, 0}}, {{1, 1}, {1, 1}}, {{2, 2}, {2, 2}}
+		},
+		{	{{3, 3}, {3, 3}}, {{4, 4}, {4, 4}}, {{5, 5}, {5, 5}}
+		}
+	};
+
+	auto bit = arr({0, 2}, {0, 2}).flattened_begin();
+
+	BOOST_TEST(( *bit == multi::array<int, 2>({{0, 0}, {0, 0}})  ));
+
+	++bit; BOOST_TEST(( *bit == multi::array<int, 2>({{1, 1}, {1, 1}}) ));
+	++bit; BOOST_TEST(( *bit == multi::array<int, 2>({{3, 3}, {3, 3}}) ));
+	++bit; BOOST_TEST(( *bit == multi::array<int, 2>({{4, 4}, {4, 4}}) ));
+
+	++bit;
+
+	--bit; BOOST_TEST(( *bit == multi::array<int, 2>({{4, 4}, {4, 4}}) ));
+	--bit; BOOST_TEST(( *bit == multi::array<int, 2>({{3, 3}, {3, 3}}) ));
+	--bit; BOOST_TEST(( *bit == multi::array<int, 2>({{1, 1}, {1, 1}}) ));
+	--bit; BOOST_TEST(( *bit == multi::array<int, 2>({{0, 0}, {0, 0}}) ));
+}
+
 BOOST_AUTO_TEST_CASE(array_flatted_2d) {
 	multi::array<int, 2> arr = {
 		{0, 1, 2},

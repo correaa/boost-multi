@@ -1,4 +1,4 @@
-// Copyright 2023-2024 Alfredo A. Correa
+// Copyright 2023-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -20,23 +20,14 @@ namespace boost::multi::detail {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-template<class T, std::size_t N>
+template<class T, std::size_t N = std::extent_v<T> >  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special semantics
 #ifdef _MSC_VER
 	#pragma warning(push)
 	#pragma warning(disable : 4324)  // Warning that the structure is padded due to the below
 #endif
 
-// #if defined(__clang__)
-// #pragma clang diagnostic push
-// #pragma clang diagnostic ignored "-Wpadded"
-// #endif
-
-	BOOST_MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
-
-// #if defined(__clang__)
-// #pragma clang diagnostic pop
-// #endif
+BOOST_MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
 
 #ifdef _MSC_VER
 	#pragma warning(pop)
@@ -45,8 +36,8 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	bool dirty_ = false;
 
  public:
-	using value_type = T;
-	using pointer    = T*;
+	using value_type = std::remove_extent_t<T> ;
+	using pointer    = std::remove_extent_t<T>*;
 
 	template<class TT> struct rebind {
 		using other = static_allocator<TT, N>;

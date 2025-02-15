@@ -105,7 +105,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{13, 14, 15, 16}
 		}));
 
-		BOOST_TEST((  arr.halved().extensions() == multi::extensions_t{2, 2, 4} ));
+		BOOST_TEST(( arr.halved().extensions() == multi::extensions_t{2, 2, 4} ));
 		BOOST_TEST(( arr.halved() == multi::array<int, 3>{
 			{
 				{ 1,  2,  3,  4},

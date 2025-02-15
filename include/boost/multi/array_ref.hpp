@@ -508,7 +508,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 
 	using ptr_type = subarray_ptr<element, D-1, element_ptr, layout_t<D-1>>;
 
-	using stride_type = index;
+	using stride_type = Stride;
 	using layout_type = typename reference::layout_type;  // layout_t<D - 1>
 
 	// BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
@@ -583,7 +583,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 		return 0 < other - *this;
 	}
 
-	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> const& lyt, index stride)
+	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> const& lyt, Stride stride)
 	: ptr_{base, lyt}, stride_{stride} {}
 
 	template<class, dimensionality_type, class, class> friend struct const_subarray;
@@ -1351,12 +1351,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return const_subarray<T, D-1, ElementPtr>{new_layout, types::base_};
 	}
 
-	void flattened() const = delete;
-	// {
-	//  multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
-	//  return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
-	// }
-
 	constexpr auto broadcasted() const& {
 		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
 		return const_subarray<T, D+1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
@@ -1585,6 +1579,60 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
 	#endif
+
+ 	struct bistride_t {
+		difference_type stride_;
+		difference_type size_;
+		difference_type sub_stride_;
+		difference_type rest_;
+
+		using category = std::random_access_iterator_tag;
+
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+		#endif
+	
+		friend auto operator+=(ElementPtr& ptr, bistride_t& self) noexcept -> auto& {
+			ptr += self.sub_stride_;
+			++self.rest_;
+			if(self.rest_ != self.size_) { return ptr; }
+			ptr -= self.size_*self.sub_stride_;
+			self.rest_ = 0;
+			ptr += self.stride_;
+			return ptr;
+		}
+
+		friend auto operator-=(ElementPtr& ptr, bistride_t& self) noexcept -> auto& {
+			ptr -= self.sub_stride_;
+			--self.rest_;
+			if(self.rest_ != -1) { return ptr; }
+			self.rest_ = self.size_ - 1;
+			ptr += self.size_*self.sub_stride_;
+			ptr -= self.stride_;
+
+			return ptr;
+		}
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
+	};
+
+	auto flattened_begin() {
+		if constexpr(D == 2) {
+			return array_iterator<T, D - 1, ElementPtr, false, false, bistride_t>(this->base_                   , bistride_t{this->stride(), this->sub().size(), this->sub().stride(), 0});
+		} else {
+			return array_iterator<T, D - 1, ElementPtr, false, false, bistride_t>(this->base_, this->sub().sub(), bistride_t{this->stride(), this->sub().size(), this->sub().stride(), 0});
+		}
+	}
+
+	void flattened() const = delete;
+	// {
+	//  multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
+	//  return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
+	// }
 
  private:
 	#if defined(__clang__)
