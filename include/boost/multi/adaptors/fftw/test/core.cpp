@@ -88,13 +88,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::fftw::dft_forward({false, false}, in, out);  // out = in;
 
+		std::cout << in[2][3].real() << "==" <<  out[2][3].real() << std::endl;
 		BOOST_TEST( in[2][3].real() == out[2][3].real() );
+
+		std::cout << in[2][3].imag() << "==" <<  out[2][3].imag() << std::endl;
 		BOOST_TEST( in[2][3].imag() == out[2][3].imag() );
 
 		BOOST_TEST( out == in );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_many) {  // , *boost::unit_test::tolerance(0.0001)) {
+	BOOST_AUTO_TEST_CASE(fftw_2D_many) {
 		using complex = std::complex<double>;
 
 		auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
