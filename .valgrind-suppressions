@@ -33,37 +33,102 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:*
-   obj:/usr/lib/x86_64-linux-gnu/libpciaccess.so.0.*
+   match-leak-kinds: possible
+   fun:calloc
+   obj:/usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.535.183.01
    ...
-   fun:pci_get_strings
-   obj:/usr/lib/x86_64-linux-gnu/hwloc/hwloc_pci.so
-   ...
-   obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.*
+   obj:/usr/lib/x86_64-linux-gnu/libOpenCL.so.1.0.0
+   fun:clGetPlatformIDs
+   obj:/usr/lib/x86_64-linux-gnu/hwloc/hwloc_opencl.so
+   obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.15.7.0
    fun:hwloc_topology_load
-   fun:opal_hwloc_base_get_topology
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.535.183.01
+   ...
+   obj:/usr/lib/x86_64-linux-gnu/libOpenCL.so.1.0.0
+   fun:clGetPlatformIDs
+   obj:/usr/lib/x86_64-linux-gnu/hwloc/hwloc_opencl.so
+   obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.15.7.0
+   fun:hwloc_topology_load
    obj:*
+   obj:*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
    fun:orte_init
-   fun:orte_submit_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   writev(vector[1])
+   fun:__writev
+   fun:writev
+   fun:pmix_ptl_base_send_handler
+   obj:/usr/lib/x86_64-linux-gnu/libevent_core-2.1.so.7.0.1
+   fun:event_base_loop
+   obj:/usr/lib/x86_64-linux-gnu/pmix2/lib/libpmix.so.2.13.1
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:main
 }
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:*
+   ...
+   obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.*
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
    fun:*
+   ...
    obj:/usr/lib/x86_64-linux-gnu/libpciaccess.so.0.*
    ...
-   fun:pci_get_strings
+   fun:*
    obj:/usr/lib/x86_64-linux-gnu/hwloc/hwloc_pci.so
    ...
    obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.*
    fun:hwloc_topology_load
-   fun:opal_hwloc_base_get_topology
-   obj:*
-   fun:*
-   fun:*
+   ...
 }
 {
    <insert_a_suppression_name_here>
@@ -72,13 +137,14 @@
    fun:malloc
    obj:/usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.*
    ...
-   obj:/usr/lib/x86_64-linux-gnu/libOpenCL.so.1.0.0
-   fun:clGetPlatformIDs
-   obj:/usr/lib/x86_64-linux-gnu/hwloc/hwloc_opencl.so
-   obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.*
-   fun:hwloc_topology_load
-   fun:opal_hwloc_base_get_topology
-   obj:*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.*
+   ...
 }
 {
    <insert_a_suppression_name_here>
@@ -91,10 +157,9 @@
    fun:clGetPlatformIDs
    obj:/usr/lib/x86_64-linux-gnu/hwloc/hwloc_opencl.so
    obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.*
+   ...
    fun:hwloc_topology_load
-   fun:opal_hwloc_base_get_topology
-   obj:*
-   fun:*
+   ...
 }
 {
    <suppression_for_libopen_mpi>
@@ -114,4 +179,302 @@
    fun:_dl_catch_exception
    fun:_dl_catch_error
    fun:_dlerror_run
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   ...
+   obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.*
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.*
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen_implementation
+   fun:dlopen@@GLIBC_2.34
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   fun:ompi_op_base_op_select
+   fun:ompi_op_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   ...
+   obj:/usr/lib/x86_64-linux-gnu/libevent_core-2.1.so.7.0.1
+   fun:event_base_loop
+   obj:*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/x86_64-linux-gnu/libevent_core-2.1.so.7.0.1
+   fun:event_base_loop
+   obj:*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/x86_64-linux-gnu/libevent_core-2.1.so.7.0.1
+   fun:event_base_loop
+   obj:*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:ompi_op_base_op_select
+   fun:ompi_op_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:malloc
+   fun:strdup
+   fun:_dl_load_cache_lookup
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/x86_64-linux-gnu/libevent_core-2.1.so.7.0.1
+   fun:event_base_loop
+   obj:*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:malloc
+   fun:strdup
+   fun:_dl_map_object
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:malloc
+   fun:strdup
+   fun:_dl_load_cache_lookup
+   fun:_dl_map_object
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   fun:call_init.part.0
+   fun:call_init
+   fun:_dl_init
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:orte_finalize
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   ...
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   ...
 }
