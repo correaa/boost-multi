@@ -310,11 +310,13 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	}
 };
 
+#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703)
 template<class IndexType, class IndexTypeLast>
 extension_t(IndexType, IndexTypeLast) -> extension_t<IndexType, IndexTypeLast>;
 
 template<class IndexType>
 extension_t(IndexType) -> extension_t<IndexType>;
+#endif
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 constexpr auto make_extension_t(IndexType first, IndexTypeLast last) -> extension_t<IndexType, IndexTypeLast> {
