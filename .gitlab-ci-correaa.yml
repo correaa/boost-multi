@@ -335,6 +335,10 @@ vs2019-windows:
 
 #winget install Microsoft.PowerShell
 #winget install -e --id Kitware.CMake
+# cd C:\
+# git clone --depth=1 https://github.com/microsoft/vcpkg.git
+# C:\vcpkg\bootstrap-vcpkg.bat
+# C:\vcpkg\vcpkg install boost-multi-array boost-timer
 # install Boost binaries from here https://sourceforge.net/projects/boost/
 
 vs2022-shell c++17:
@@ -343,16 +347,17 @@ vs2022-shell c++17:
   interruptible: true
   variables:
     #BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
+    BOOST_ROOT: C:/vcpkg/installed/x64-windows
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
-    - $env:Path += ";${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     #- git clone --depth=1 https://github.com/microsoft/vcpkg.git
     #- .\vcpkg\bootstrap-vcpkg.bat
     #- .\vcpkg\vcpkg install boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.1"
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17  # -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.1"
     - cmake --build build --config Release --parallel 4 --verbose
     - ctest -j 4 --test-dir build --output-on-failure -C Release
   tags:
@@ -366,17 +371,17 @@ vs2022-shell c++23:
   interruptible: true
   variables:
     #BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    #BOOST_ROOT: C:\local\boost_1_86_0
+    BOOST_ROOT: C:/vcpkg/installed/x64-windows
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
-    - $env:Path += ";${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     #- git clone --depth=1 https://github.com/microsoft/vcpkg.git
     #- .\vcpkg\bootstrap-vcpkg.bat
     #- .\vcpkg\vcpkg install boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=23 -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.1"
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=23  # -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.1"
     - cmake --build build --config Release --parallel 4 --verbose
     - ctest -j 4 --test-dir build --output-on-failure -C Release
   tags:
