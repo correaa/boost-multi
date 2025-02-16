@@ -352,7 +352,7 @@ vs2022-shell c++17:
     #- .\vcpkg\vcpkg install boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -D -DBOOST_ROOT="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.1"
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -DBOOST_ROOT="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.1"
     - cmake --build build --config Release --parallel 4 --verbose
     - ctest -j 4 --test-dir build --output-on-failure -C Release
   tags:
