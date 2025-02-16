@@ -315,7 +315,7 @@ else()
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
 	/GS  # Enables buffer security check (can help detect stack-based buffer overflows)
-	/Wall /EHsc  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
+	/Wall /EHsc  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4 /Qspectre
 	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
 	/wd4514  # unreferenced inline function has been removed
 	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
