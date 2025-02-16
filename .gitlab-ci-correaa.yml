@@ -1,4 +1,4 @@
-# Copyright 2020-2024 Alfredo A. Correa
+# Copyright 2020-2025 Alfredo A. Correa
 
 # Install docker (for local CI or to set up CI machine)
 #   sudo apt install docker.io
@@ -354,7 +354,7 @@ vs2022-shell c++17:
   tags:
     - windows, shell
   needs: ["clang++", "g++"]
-  timeout: 10 minutes
+  timeout: 20 minutes
 
 vs2022-shell c++23:
   stage: build
@@ -377,7 +377,7 @@ vs2022-shell c++23:
   tags:
     - windows, shell
   needs: ["clang++", "g++"]
-  timeout: 10 minutes
+  timeout: 20 minutes
 
 clang++-m32:
   stage: build
