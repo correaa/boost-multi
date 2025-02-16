@@ -5,7 +5,7 @@
 
 > **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/) and it doesn't depend on Boost libraries.**
 
-_© Alfredo A. Correa, 2018-2024_
+_© Alfredo A. Correa, 2018-2025_
 
 _Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
 
@@ -37,7 +37,7 @@ it doesn't make algebraic or geometric assumptions about the arrays and their el
 The library does not throw exceptions and provides basic guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
 Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
-The library requires C++17 or higher.
+The library requires C++17 or higher, and it has no external dependencies.
 
 **Contents:**
 
