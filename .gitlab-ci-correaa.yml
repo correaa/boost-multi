@@ -343,7 +343,6 @@ vs2022-shell c++17:
   interruptible: true
   variables:
     #BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    BOOST_ROOT: C:\local\boost_1_86_0
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
@@ -353,12 +352,12 @@ vs2022-shell c++17:
     #- .\vcpkg\vcpkg install boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -D -DBOOST_ROOT="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.1"
     - cmake --build build --config Release --parallel 4 --verbose
     - ctest -j 4 --test-dir build --output-on-failure -C Release
   tags:
     - windows, shell
-  needs: ["clang++", "g++"]
+  #needs: ["clang++", "g++"]
   timeout: 20 minutes
 
 vs2022-shell c++23:
@@ -367,7 +366,7 @@ vs2022-shell c++23:
   interruptible: true
   variables:
     #BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    BOOST_ROOT: C:\local\boost_1_86_0
+    #BOOST_ROOT: C:\local\boost_1_86_0
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
@@ -377,7 +376,7 @@ vs2022-shell c++23:
     #- .\vcpkg\vcpkg install boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=23
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=23 -DBOOST_ROOT="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.1"
     - cmake --build build --config Release --parallel 4 --verbose
     - ctest -j 4 --test-dir build --output-on-failure -C Release
   tags:
