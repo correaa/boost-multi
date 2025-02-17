@@ -19,16 +19,18 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	endif()
 endif()
 
-#find_package(BLAS REQUIRED)
-#find_path(
-#   BLAS_INCLUDE_DIRS
-#   cblas.h
-#   /usr/include
-#   /usr/local/include
-#   $ENV{BLAS_HOME}/include
-#)
-#   include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
-#link_libraries(${BLAS_LIBRARIES})
+if(ENABLE_CIRCLE)
+find_package(BLAS REQUIRED)
+find_path(
+   BLAS_INCLUDE_DIRS
+   cblas.h
+   /usr/include
+   /usr/local/include
+   $ENV{BLAS_HOME}/include
+)
+include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
+link_libraries(${BLAS_LIBRARIES})
+endif()
 
 enable_testing()
 
