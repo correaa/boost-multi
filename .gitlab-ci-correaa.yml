@@ -218,6 +218,7 @@ clang++-16 mull-16:  # mull-17 crashes
   tags:
     - x86_64  # for mull
     - non-shared
+    - large-memory-space
   interruptible: true
   allow_failure: false
   script:
