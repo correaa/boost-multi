@@ -488,7 +488,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	using element_ptr = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using value_type = typename subarray<element, D-1, element_ptr>::decay_type;
-	using element_type = value_type;
+	// using element_type = value_type;
 
 	using pointer         = subarray<element, D - 1, element_ptr>*;
 	using reference       = std::conditional_t<
