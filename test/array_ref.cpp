@@ -258,7 +258,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{5, 6},
 			{7, 8}
 		};
-		// std::pointer_traits<multi::array<int, 2>::const_iterator>::difference_type dt;
 		multi::array_ref<int, 2, multi::array<int, 2>::const_iterator> const arr2({2, 2}, arr.begin());
 
 		BOOST_TEST(( arr2[0][0] == multi::array<int, 1>({1, 2}) ));
