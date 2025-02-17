@@ -19,6 +19,7 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	endif()
 endif()
 
+if(ENABLE_CIRCLE)
 find_package(BLAS REQUIRED)
 find_path(
    BLAS_INCLUDE_DIRS
@@ -29,6 +30,7 @@ find_path(
 )
 include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
 link_libraries(${BLAS_LIBRARIES})
+endif()
 
 enable_testing()
 
