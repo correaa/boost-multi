@@ -94,7 +94,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( out == in );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_many) {  // , *boost::unit_test::tolerance(0.0001)) {
+	BOOST_AUTO_TEST_CASE(fftw_2D_many) {
 		using complex = std::complex<double>;
 
 		auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
