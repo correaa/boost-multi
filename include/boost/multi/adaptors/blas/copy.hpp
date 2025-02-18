@@ -61,15 +61,23 @@ struct copy_it {
 	constexpr auto operator*() const -> value_type { return *it_; }
 };
 
-template<class A1D> [[nodiscard]]
+template<class A1D>
+[[nodiscard("a blas::copy range needs to be assigned to produce a result")]]
 auto copy(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
-	struct ref {
-		A1D const& x_;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members)
-		using iterator = copy_it<typename A1D::const_iterator>;
-		auto begin() const { return iterator{x_.begin()}; }
-		auto end() const { return iterator{x_.end()}; }
-		auto size() const { return x_.size(); }
-		auto extensions() const { return x_.extensions(); }
+	class ref {
+		A1D const& source_;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members)
+
+	 public:
+		explicit ref(A1D const& source) : source_{source} {}
+
+		using const_iterator = copy_it<typename A1D::const_iterator>;
+		using iterator = const_iterator;
+
+		auto begin() const { return iterator{source_.begin()}; }
+		auto end()   const { return iterator{source_.end()}; }
+
+		auto size()       const { return source_.size(); }
+		auto extensions() const { return source_.extensions(); }
 	};
 	return ref{x};
 }
