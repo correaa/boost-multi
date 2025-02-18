@@ -303,15 +303,6 @@ constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readab
 		return get<N - 1>(t.tail());
 	}
 }
-#if defined __NVCC__
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diagnostic pop
-#else
-#pragma diagnostic pop
-#endif
-#elif defined      __NVCOMPILER
-#pragma diagnostic pop
-#endif
 
 template<std::size_t N, class T0, class... Ts>
 constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
@@ -330,6 +321,17 @@ constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 		return get<N - 1>(std::move(std::move(tup).tail()));
 	}
 }
+
+#if defined __NVCC__
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diagnostic pop
+#else
+#pragma diagnostic pop
+#endif
+#elif defined      __NVCOMPILER
+#pragma diagnostic pop
+#endif
+
 #if ! defined(_MSC_VER)
 #pragma GCC diagnostic pop
 #endif

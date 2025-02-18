@@ -4,7 +4,8 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifdef __NVCC__  // affects cuda 11.4.3
-#pragma diag_suppress 20014  // error #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
+// #pragma diag_suppress 20014  // error #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
+#pragma nv_diag_suppress 20014  // error #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
 #endif
 
 #include <boost/multi/array.hpp>  // for array, array_ref, subarray, arra...

@@ -295,15 +295,16 @@ auto conj(A&& array) -> A&& {
 }
 
 template<
-	class A, class D = std::decay_t<A>, typename Elem = typename D::element_type,
+	class A, class D = std::decay_t<A>, typename Elem = typename D::element,
 	typename Ptr = std::decay_t<decltype(std::declval<A&&>().base())>,
+	// typename = decltype(std::declval<A>().size()),
 	// typename = decltype(std::declval<A&&>().template static_array_cast<Elem, conjugater<Ptr>>()),
 	std::enable_if_t<!is_conjugated<A>{} && is_complex_array<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array) -> decltype(auto) {
 	return std::forward<A>(array).template static_array_cast<Elem, conjugater<Ptr>>();
 }
 
-template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type,
+template<class A, class D = std::decay_t<A>, typename Elem = typename D::element,
          typename Ptr = typename decltype(std::declval<A&&>().base())::underlying_type,
 		 std::enable_if_t<is_conjugated<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array)
