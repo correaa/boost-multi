@@ -256,12 +256,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
-		#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
-		class = typename std::ranges::iterator_t<Range>,  // this solves a problem in cuda 11.x when element_iterator is made to be pointer-like
-		#else
-		class = typename Range::iterator,  // this solves a problem in cuda 11.x when element_iterator is made to be pointer-like
-		#endif
-		// class = decltype(std::declval<Range const&>().begin(), std::declval<Range const&>().end()),
+		// #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+		// class = typename std::ranges::const_iterator_t<Range>,  // this solves a problem in cuda 11.x when element_iterator is made to be pointer-like
+		// #else
+		// class = typename Range::const_iterator,  // this solves a problem in cuda 11.x when element_iterator is made to be pointer-like
+		// #endif
+		class = decltype(std::begin(std::declval<Range const&>()), std::end(std::declval<Range const&>())),
 		// class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<! is_subarray<Range const&>::value>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 	>
