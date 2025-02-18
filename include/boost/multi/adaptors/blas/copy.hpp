@@ -6,6 +6,8 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
 #pragma once
 
+#include <boost/multi/detail/config/NODISCARD.hpp>
+
 #include <boost/multi/adaptors/blas/core.hpp>  // for copy, default_context_of  // IWYU pragma: export
 // IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // bug in iwyu 18.1.8?
 
@@ -62,7 +64,7 @@ struct copy_it {
 };
 
 template<class A1D>
-[[nodiscard("a blas::copy range needs to be assigned to produce a result")]]
+BOOST_MULTI_NODISCARD("a blas::copy range needs to be assigned to produce a result")
 auto copy(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 	class ref {
 		A1D const& source_;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members)
