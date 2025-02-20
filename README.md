@@ -1110,20 +1110,22 @@ however, it is convenient for documentation to present the classes in a differen
 For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref`.
 Furthermore, the *is-a* relationship is implemented through C++ public inheritance, so, for example, a reference of type `subarray<T, D>&` can refer to a variable of type `array<T, D>`.
 
+
 ### class `multi::subarray<T, D, P = T* >`
 
 A subarray-reference is part (or a whole) of another larger array.
 It is important to understand that `subarray`s have referential semantics, their elements are not independent of the values of the larger arrays they are part of.
-To recover value semantics, the elements and structure of a `subarray` can be copied into a new array (type `array`, see later).
 An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
-(`T`, `D`, and `P` initials are used in this sense across the documentation unless indicated otherwise.)
+(`T`, `D`, and `P` initials are used in this sense across the documentation.)
 
 Instances of this class have reference semantics and behave like "language references" as much as possible.
 As references, they cannot be rebinded or resized; assignments are always "deep".
-They are characterized by a size that does not change.
-They are usually the result of indexing over other `subarray`s and `array`s (generally of higher dimensions);
+They are characterized by a size that does not change in the lifetime of the reference.
+They are usually the result of indexing over other `multi::subarray`s and `multi::array`s objects, typically of higher dimensions;
 therefore, the library doesn't expose constructors for this class.
 The whole object can be invalidated if the original array is destroyed.
+
+<details><summary>Member types</summary>
 
 | Member types      |                           |
 |---                |---                        |
@@ -1140,18 +1142,22 @@ The whole object can be invalidated if the original array is destroyed.
 | `iterator`        | `multi::array_iterator_t<T, D-1, P >`
 | `const_iterator`  | `multi::const_array_iterator_t<T, D-1, P >`
 
+</details>
+
+<details><summary>Special member functions</summary>
+
 | Member fuctions   |    |
 |---                |--- |
 | (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements |
-| `size`            | returns the size of the leading dimension |
-| `extension`       | returns a range that generates valid indices for the leading dimension, for example `{0, ... size() - 1}` |
-| `sizes`           | returns a tuple with the sizes in all dimensions, `std::get<0>(A.sizes()) == A.size()` |
-| `extensions`      | returns a tuple of ranges in all dimensions, `std::get<0>(A.extensions()) == A.extension()` |
 | `operator=`       | assigns the elements from the source; the sizes must match |
 
 It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
 (Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (just like language pointers);
 these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.)
+
+</details>
+
+<details><summary>Relational functions</summary>
 
 | Relational fuctions       |    |
 |---                        |--- |
@@ -1164,6 +1170,22 @@ Lexicographical order is defined recursively, starting from the first dimension 
 For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or ..., etc.
 Lexicographical order applies naturally if the extensions of `A` and `B` are different; however, their dimensionalities must match.
 (See sort examples).
+
+</details>
+
+<details><summary>Shape access</summary>
+
+| Shape             |    |
+|---                |--- |
+| `sizes`           | returns a tuple with the sizes in each dimension
+| `extensions`      | returns a tuple with the extensions in each dimension
+| `size`            | returns the number of subarrays contained in the first dimension |
+| `extension`       | returns a contiguous index range describing the set of valid indices
+| `num_elements`    | returns the total number of elements
+
+</details>
+
+<details><summary>Element access</summary>
 
 | Element access    |    |
 |---                |--- |
@@ -1182,6 +1204,10 @@ For example, if `S` is a 3D of sizes 10-by-10-by-10, `S(3, {2, 8}, {3, 5})` give
 Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3, 5})` (2-by-10).
 - `operator()()` (no arguments) gives the same array but always as a subarray type (for consistency), `S()` is equivalent to `S(S.extension())` and, in turn to `S(multi::_)` or `S(multi::all)`.
 
+</details>
+
+<details><summary>Structure access</summary>
+
 | Structure access  | (Generally used for interfacing with C-libraries)   |
 |---                |--- |
 | `base`            | direct access to underlying memory pointer (`S[i][j]... == S.base() + std::get<0>(S.strides())*i + std::get<1>(S.strides())*j + ...`)
@@ -1189,20 +1215,20 @@ Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3,
 | `strides`         | returns a tuple with the strides defining the internal layout
 | `layout`          | returns a single layout object with stride and size information |
 
+</details>
+
+<details><summary>Iterators</summary>
+
 | Iterators         |    |
 |---                |--- |
 | `begin/cbegin`    | returns (const) iterator to the beginning
 | `end/cend`        | returns (const) iterator to the end
 
-| Capacity          |    |
-|---                |--- |
-| `sizes`           | returns a tuple with the sizes in each dimension
-| `extensions`      | returns a tuple with the extensions in each dimension
-| `size`            | returns the number of subarrays contained in the first dimension |
-| `extension`       | returns a contiguous index range describing the set of valid indices
-| `num_elements`    | returns the total number of elements
+</details>
 
-| Creating views        | (these operations do not copy elements or allocate)    |
+<details><summary>Subarray/array generators</summary>
+
+| Subarray generators   | (these operations do not copy elements or allocate)    |
 |---                    |---  |
 | `broadcasted`         | returns a view of dimensionality `D + 1` obtained by infinite repetition of the original array. (This returns a special kind of subarray with a degenerate layout and no size operation. Takes no argument.)
 | `dropped`             | (takes one integer argument `n`) returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
@@ -1215,7 +1241,7 @@ Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3,
 
 | Creating views by pointer manipulation     |     |
 |---                                         |---  |
-| `static_cast_array<T2, P2 = T2*>(args...)` | produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
+| `static_array_cast<T2, P2 = T2*>(args...)` | produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
 | `reinterpret_cast_array<T2>`               | underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal; `reinterpret_cast_array<T2>(n)` produces a view where the underlying elements are interpreted as an array of `n` elements of type `T2`.
 
 | Creating arrays                     |     |
@@ -1224,6 +1250,8 @@ Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3,
 
 A reference `subarray` can be invalidated when its origin array is invalidated or destroyed.
 For example, if the `array` from which it originates is destroyed or resized.
+
+</details>
 
 ### class `multi::array_ref<T, D, P = T* >`
 
