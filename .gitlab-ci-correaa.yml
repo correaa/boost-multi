@@ -217,6 +217,7 @@ clang++-16 mull-16:  # mull-17 crashes
   stage: build
   tags:
     - x86_64  # for mull
+    - large-memory-space
     - non-shared
   interruptible: true
   allow_failure: false
