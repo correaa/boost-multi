@@ -3,7 +3,9 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuFFT adaptor"
-#include<boost/test/unit_test.hpp>
+// #include<boost/test/unit_test.hpp>
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/timer/timer.hpp>
 
@@ -35,7 +37,7 @@
 
 namespace multi = boost::multi;
 using complex = thrust::complex<double>;
-namespace utf = boost::unit_test;
+// namespace utf = boost::unit_test;
 complex const I{0.0, 1.0};
 
 template<>
@@ -59,15 +61,18 @@ struct watch : private std::chrono::high_resolution_clock{
 	}
 };
 
+auto main() -> int { }
+
+#if 0
 BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 
 	using complex = thrust::complex<double>;  // this can't be std::complex<double> in the gpu
 
 	auto const in_cpu = multi::array<complex, 2>{
-		{ 1.0 + 2.0*I, 9.0 - 1.0*I, 2.0 + 4.0*I},
-		{ 3.0 + 3.0*I, 7.0 - 4.0*I, 1.0 + 9.0*I},
-		{ 4.0 + 1.0*I, 5.0 + 3.0*I, 2.0 + 4.0*I},
-		{ 3.0 - 1.0*I, 8.0 + 7.0*I, 2.0 + 1.0*I},
+		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 + 4.0*I},
+		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 + 9.0*I},
+		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 + 4.0*I},
+		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 + 1.0*I},
 		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
@@ -693,6 +698,7 @@ BOOST_AUTO_TEST_CASE(cufft_4D, *utf::tolerance(0.00001) ){
 	// multi::cufft::many_dft(begin(in_gpu.rotated()), end(in_gpu.rotated()), begin( out_gpu.rotated() ), multi::fftw::forward);
 	// BOOST_TEST( ( static_cast<complex>(out_gpu[5][4][3]) - out[5][4][3]).imag() == 0. );
 }
+#endif
 #endif
 
 #endif

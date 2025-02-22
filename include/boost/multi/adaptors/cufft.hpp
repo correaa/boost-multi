@@ -12,6 +12,7 @@
 
 #include<tuple>
 #include<array>
+#include<map>
 
 #include<thrust/memory.h>  // for raw_pointer_cast
 
@@ -55,7 +56,7 @@ static char const* _cudaGetErrorEnum(cufftResult error) {
 }
 
 #define cufftSafeCall(err) implcufftSafeCall(err, __FILE__, __LINE__)
-inline void implcufftSafeCall(cufftResult err, const char *file, const int line) {
+inline void implcufftSafeCall(cufftResult err, const char */*file*/, const int /*line*/) {
 	if( CUFFT_SUCCESS != err) {
 		std::cerr <<"CUFFT error in file "<< __FILE__ <<", line "<< __LINE__ <<"\nerror "<< err <<": "<<_cudaGetErrorEnum(err)<<"\n";
 		//fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", __FILE__, __LINE__, err, 
