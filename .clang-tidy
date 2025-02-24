@@ -34,6 +34,7 @@ Checks: '*,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -fuchsia-overloaded-operator,
+  -fuchsia-default-arguments-calls,
   -fuchsia-trailing-return,
   -hicpp-no-array-decay,
   -llvmlibc-*,
@@ -47,6 +48,7 @@ Checks: '*,
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-pro-bounds-array-to-pointer-decay   // for Boost Lightweight test BOOST_TEST
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
+#  -fuchsia-default-arguments-calls,                      // this library uses STL functions, which use default arguments
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -hicpp-no-array-decay,                                 // for Boost Lightweight Test
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
