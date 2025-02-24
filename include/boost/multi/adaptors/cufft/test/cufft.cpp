@@ -99,12 +99,11 @@ auto main() -> int {
 			BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 			BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
 
-			multi::cufft::plan<2> p({true, true}, in_gpu.layout(), fw_gpu.layout());
+			multi::cufft::plan<2>({true, true}, in_gpu.layout(), fw_gpu.layout())
+				.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
 
-			p.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
-
-		//	BOOST_TEST( std::abs(complex(fw_gpu[3][2]) - fw_cpu[3][2]).real()) < 1.0e-8 );
-		//	BOOST_TEST( std::abs(complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag()) < 1.0e-8 );
+			BOOST_TEST( std::abs((complex(fw_gpu[3][2]) - fw_cpu[3][2]).real()) < 1.0e-8 );
+			BOOST_TEST( std::abs((complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag()) < 1.0e-8 );
 		}
 	}
 
