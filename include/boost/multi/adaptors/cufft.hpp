@@ -70,7 +70,7 @@ class sign {
  public:
 	sign() = default;
 	constexpr explicit sign(int impl) : impl_{impl} {}
-	constexpr explicit operator int() const { return impl_; }
+	constexpr operator int() const { return impl_; }
 
 	constexpr auto operator==(sign const& other) const { return impl_ == other.impl_; }
 	constexpr auto operator!=(sign const& other) const { return impl_ != other.impl_; }
