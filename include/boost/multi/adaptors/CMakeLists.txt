@@ -11,5 +11,5 @@ else()
   endif()
 endif()
 
-add_subdirectory(./cufft)
+# add_subdirectory(./cufft)
 
