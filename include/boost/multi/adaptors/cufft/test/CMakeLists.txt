@@ -26,11 +26,13 @@ if(NOT
    STREQUAL
    "PGI"
 )
-	find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+	find_package(Boost CONFIG)
+	#find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 else()
-	find_package(Boost REQUIRED) # cmake cannot detect this component with pgi compiler
+	find_package(Boost CONFIG)
+	#find_package(Boost REQUIRED) # cmake cannot detect this component with pgi compiler
 endif()
-link_libraries("-lboost_unit_test_framework")
+#link_libraries("-lboost_unit_test_framework")
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
