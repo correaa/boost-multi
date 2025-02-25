@@ -106,46 +106,46 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	using typename base::const_void_pointer;
 
 	using base::allocate;
-	[[nodiscard]] static constexpr auto allocate(Alloc& a, size_type n, const_void_pointer hint) -> pointer {
-		auto ret = allocator_traits::allocate(a, n);
-		if(not hint) {
-			prefetch_to_device(ret, n*sizeof(TT), get_current_device());
+	[[nodiscard]] static constexpr auto allocate(Alloc& alloc, size_type n, const_void_pointer hint) -> pointer {
+		auto ret = allocator_traits::allocate(alloc, n);
+		if(!hint) {
+			prefetch_to_device_(ret, n*sizeof(TT), get_current_device_());
 			return ret;
 		}
-		prefetch_to_device(ret, n*sizeof(TT), get_device(hint));
+		prefetch_to_device_(ret, n*sizeof(TT), get_device_(hint));
 		return ret;
 	}
 
  private:
 	using device_index = int;
-	static auto get_current_device() -> device_index {
-		int device;
+	static auto get_current_device_() -> device_index {
+		int device;  // NOLINT(cppcoreguidelines-init-variables) delayed init
 		switch(HICUP_(GetDevice)(&device)) {
 			case HICUP_(Success)          : break;
-			case HICUP_(ErrorInvalidValue): assert(0);
+			case HICUP_(ErrorInvalidValue): assert(0);  // NOLINT(bugprone-branch-clone)
 			default: assert(0);
 		}
 		return device;
 	}
-	static void prefetch_to_device(const_void_pointer p, size_type byte_count, device_index d) {
-		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(p), byte_count, d)) {
+	static void prefetch_to_device_(const_void_pointer ptr, size_type byte_count, device_index dev) {
+		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, dev)) {
 			case HICUP_(Success)           : break;
-			case HICUP_(ErrorInvalidValue) : assert(0); break;
-			case HICUP_(ErrorInvalidDevice): assert(0); break;
+			case HICUP_(ErrorInvalidValue) : assert(0); break;  // NOLINT(bugprone-branch-clone)
+			case HICUP_(ErrorInvalidDevice): assert(0); break;  // NOLINT(bugprone-branch-clone)
 			default: assert(0);
 		}
 	}
 
-	static auto get_device(const_void_pointer p) -> device_index {
+	static auto get_device_(const_void_pointer ptr) -> device_index {
 		#if defined(__HIPCC__)
 		hipPointerAttribute_t attr{};
 		#else  // #if defined(__NVCC__)
 		cudaPointerAttributes attr{};
 		#endif
-		switch(HICUP_(PointerGetAttributes)(&attr, raw_pointer_cast(p))) {
+		switch(HICUP_(PointerGetAttributes)(&attr, raw_pointer_cast(ptr))) {
 			case HICUP_(Success): break;
-			case HICUP_(ErrorInvalidDevice): assert(0); break;
-			case HICUP_(ErrorInvalidValue): assert(0); break;
+			case HICUP_(ErrorInvalidDevice): assert(0); break;  // NOLINT(bugprone-branch-clone)
+			case HICUP_(ErrorInvalidValue): assert(0); break;  // NOLINT(bugprone-branch-clone)
 			default: assert(0);  // 71 enumeration values not handled in switch: 'hipErrorOutOfMemory', 'hipErrorNotInitialized', 'hipErrorDeinitialized'...
 		}
 		assert(attr.type == HICUP_(MemoryTypeManaged));
@@ -153,7 +153,7 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	}
 };
 
-}  // end namespace ::boost::multi
+}  // end namespace boost::multi
 
 // this is important for algorithms to dispatch to the right thrust executor
 namespace thrust {
@@ -218,10 +218,9 @@ struct iterator_system<::boost::multi::elements_iterator_t<Pointer, LayoutType>>
 // };
 // }
 
-}  // end namespace ::thrust
+}  // end namespace thrust
 
-namespace boost::multi {
-namespace thrust {
+namespace boost::multi::thrust {
 
 // defines multi::thrust::device_array
 // defines multi::thrust::host_array
@@ -258,16 +257,14 @@ template<class T, multi::dimensionality_type D> using universal_array = multi::a
 
 namespace universal {
 	template<class T, multi::dimensionality_type D> using array = multi::thrust::cuda::universal_array<T, D>;
-}
+}  // end namespace universal
 
 namespace pmr {
 	template<class T, multi::dimensionality_type D> using universal_array = ::boost::multi::thrust::pmr::array<T, D, ::thrust::HICUP::universal_pointer<void>>;
 }  // end namespace pmr
 }  // end namespace cuda
 
-
-}  // end namespace thrust
-}  // end namespace boost::multi
+}  // end namespace boost::multi::thrust
 
 namespace boost::multi {
 
@@ -276,7 +273,7 @@ constexpr auto default_allocator_of(::thrust::pointer<Q, ::thrust::HICUP::tag, Q
 	return ::thrust::HICUP::universal_allocator<typename std::iterator_traits<::thrust::pointer<Q, ::thrust::HICUP::tag, Q&>>::value_type>{};
 }
 
-}
+}  // end namespace boost::multi
 
 #undef HICUP
 #undef HICUP_

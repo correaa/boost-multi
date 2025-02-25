@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
-
 find_package(MPI)
 
 if(DISABLE_MPI)
@@ -11,3 +10,6 @@ else()
     message(WARNING "MPI not found, MPI adaptor will not be tested.")
   endif()
 endif()
+
+# add_subdirectory(./cufft)
+
