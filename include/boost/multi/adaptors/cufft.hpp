@@ -372,7 +372,7 @@ class cached_plan {
 	auto operator=(cached_plan const&) -> cached_plan& = delete;
 	auto operator=(cached_plan&&) -> cached_plan& = delete;
 
-	~cached_plan() = delete;
+	~cached_plan() = default;
 
 	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::size_type> in, boost::multi::layout_t<D, boost::multi::size_type> out, Alloc const& alloc = {}) {  // NOLINT(fuchsia-default-arguments-declarations)
 		static thread_local std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >;
