@@ -121,7 +121,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		ies.prev_canonical(i, j);
 		BOOST_TEST( i == 0 );
-		BOOST_TEST( j == 0);        
+		BOOST_TEST( j == 0);
 	}
 
 	// test prev canonical 2D
