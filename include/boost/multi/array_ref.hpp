@@ -1383,7 +1383,7 @@ public:
 	// }
 
 	template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	constexpr auto diagonal() const& -> const_subarray<T, D-1, typename const_subarray::element_const_ptr> {
+	constexpr auto diagonal() const& -> const_subarray<T, D-1, typename const_subarray::element_ptr> {
 		return this->diagonal_aux_();
 	}
 
