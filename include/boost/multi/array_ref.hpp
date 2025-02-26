@@ -297,16 +297,16 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma clang diagnostic pop
 #endif
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst = false>
+template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
 struct subarray_ptr;
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D> >
 using const_subarray_ptr = subarray_ptr<T, D, ElementPtr, Layout, true>;
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>, bool IsConst>
+template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>, bool IsConst = false>
 struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
 : boost::multi::iterator_facade<
-	subarray_ptr<T, D, ElementPtr, Layout>, void, std::random_access_iterator_tag,
+	subarray_ptr<T, D, ElementPtr, Layout, IsConst>, void, std::random_access_iterator_tag,
 	subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type
 > {
  private:
@@ -1566,7 +1566,7 @@ public:
 	friend BOOST_MULTI_HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
  public:
-	using       ptr =       subarray_ptr<T, D, ElementPtr, Layout>;
+	using       ptr =       subarray_ptr<T, D, ElementPtr, Layout, false>;
 	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
 
 	using pointer = ptr;
@@ -1923,7 +1923,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	subarray(subarray&&) noexcept = default;
 	~subarray() = default;
 
-	using ptr = subarray_ptr<T, D, ElementPtr, Layout>;
+	using ptr = subarray_ptr<T, D, ElementPtr, Layout, false>;
 
 	#if defined(__clang__)
 	#pragma clang diagnostic push
@@ -1932,9 +1932,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	#endif
 
 	// NOLINTNEXTLINE(runtime/operator)
-	BOOST_MULTI_HD constexpr auto operator&()     && { return subarray_ptr<T, D, ElementPtr, Layout>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&()     && { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 	// NOLINTNEXTLINE(runtime/operator)
-	BOOST_MULTI_HD constexpr auto operator&()      & { return subarray_ptr<T, D, ElementPtr, Layout>(this->base_, this->layout()); } // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&()      & { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); } // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 
 	#if defined(__clang__)
 	#pragma clang diagnostic pop
@@ -2675,7 +2675,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	BOOST_MULTI_HD constexpr auto operator&() const& {  // NOLINT(google-runtime-operator)
-		return /*TODO(correaa) add const*/ subarray_ptr<T, 0, ElementPtr, Layout>(this->base_, this->layout());
+		return /*TODO(correaa) add const*/ subarray_ptr<T, 0, ElementPtr, Layout, false>(this->base_, this->layout());
 	}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
@@ -3682,8 +3682,8 @@ constexpr auto ref(
 
 template<class T, dimensionality_type D, typename Ptr = T*>
 struct array_ptr
-: subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t> {
-	using basic_ptr = subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t>;
+: subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> {
+	using basic_ptr = subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false>;
 
 	constexpr array_ptr(Ptr data, multi::extensions_t<D> extensions)
 	: basic_ptr{data, typename array_ref<T, D, Ptr>::layout_t(extensions)} {}
@@ -3702,7 +3702,7 @@ struct array_ptr
 	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(modernize-use-constraints,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  TODO(correaa) for C++20  // NOSONAR
 
 	constexpr auto operator*() const -> array_ref<T, D, Ptr> {
-		return array_ref<T, D, Ptr>((*static_cast<subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t> const&>(*this)).extensions(), this->base());
+		return array_ref<T, D, Ptr>((*static_cast<subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> const&>(*this)).extensions(), this->base());
 	}
 };
 
