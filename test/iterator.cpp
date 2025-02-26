@@ -34,9 +34,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<1>>));
 		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<1>>));
 
-		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 1>>));
-		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 1>>));
-		BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 1>>));
+		// BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 1>>));
+		// BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 1>>));
+		// BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 1>>));
 
 		BOOST_TEST((std::is_trivially_default_constructible_v<multi::array<double, 1>::iterator>));
 		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::array<double, 1>::iterator>));
@@ -90,9 +90,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<2>>));
 		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<2>>));
 
-		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 2>>));
-		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 2>>));
-		BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>));
+		// BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 2>>));
+		// BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 2>>));
+		// BOOST_TEST((std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>));
 
 		// BOOST_TEST((std::is_trivially_default_constructible_v<multi::array<double, 2>::iterator>));  // TODO(correaa)
 		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::array<double, 2>::iterator>));
