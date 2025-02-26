@@ -7,7 +7,7 @@
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
-// IWYU pragma: no_include <algorithm>                        // for fill_n, equal  
+// IWYU pragma: no_include <algorithm>                        // for fill_n, equal
 #include <complex>
 #include <numeric>  // for std::transform_reduce
 #include <utility>  // for move  // IWYU pragma: keep
