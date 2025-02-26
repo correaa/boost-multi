@@ -318,7 +318,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// simple example arrow iterator 1D
 	{
-		multi::array<std::string, 1> const arr({4}, std::string{"hello"});
+		multi::array<std::string, 1> const arr({4}, std::string{"hello"});  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr.size() == 4 );
 		BOOST_TEST( arr.begin()->size() == 5 );
 
