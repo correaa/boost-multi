@@ -316,5 +316,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.end() - 1 < arr.end()       );
 	}
 
+	// simple example arrow iterator 1D
+	{
+		multi::array<std::string, 1> const arr({4}, std::string{"hello"});
+		BOOST_TEST( arr.size() == 4 );
+		BOOST_TEST( arr.begin()->size() == 5 );
+
+		BOOST_TEST( arr[0] == "hello" );
+		BOOST_TEST( *(arr.begin()->begin()) == 'h' );
+
+		// arr[0][0] = 'H';
+		// *(arr.begin()->begin()) = "H";  // can't assign to const value
+		// BOOST_TEST( arr[0] == "Hello" );
+	}
+
+	// simple example arrow operator 2D
+	{
+		multi::array<int, 2> const arr({2, 3}, 5);
+		BOOST_TEST( arr[0].size() == 3 );
+		BOOST_TEST( arr.begin()->size() == 3 );
+
+		BOOST_TEST( arr[0][0] == 5 );
+		BOOST_TEST( *(arr.begin()->begin()) == 5 );
+
+		// arr[0][0] = 6;  // ok, doesn't compile, it is read-only
+		// *(arr.begin()->begin()) = 6;  // ok, doesn't work, it is read-only
+		// BOOST_TEST( arr[0][0] == 6 );
+	}
+
 	return boost::report_errors();
 }
