@@ -2314,23 +2314,34 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		);
 	}
 
+ private:
+	template<typename P2>
+	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& ptr) -> decltype(auto) {
+		if constexpr(std::is_pointer_v<ElementPtr>) {
+			return static_cast<P2>(static_cast<void*>(ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+		} else {
+			return reinterpret_cast<P2 const&>(ptr);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+		}
+	}
+
+ public:
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type count) & {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-		if constexpr(std::is_pointer_v<ElementPtr>) {
+		// if constexpr(std::is_pointer_v<ElementPtr>) {
+		// 	return subarray<T2, D + 1, P2>(
+		// 		layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+		// 		static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+		// 	);
+		// } else {
 			return subarray<T2, D + 1, P2>(
 				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-				static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+				reinterpret_pointer_cast_<P2>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 			);
-		} else {
-			return subarray<T2, D + 1, P2>(
-				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-				reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-			);
-		}
+		// }
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2> >
@@ -2339,17 +2350,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-		if constexpr(std::is_pointer_v<ElementPtr>) {
-			return subarray<T2, D + 1, P2>(
-				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-				static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-			);
-		} else {
-			return subarray<T2, D + 1, P2>(
-				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-				reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-			);
-		}
+		return subarray<T2, D + 1, P2>(
+			layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+			reinterpret_pointer_cast_<P2>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+		);
 	}
 
 	using element_move_ptr  = multi::move_ptr<typename subarray::element, typename subarray::element_ptr>;
