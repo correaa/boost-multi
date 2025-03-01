@@ -21,8 +21,7 @@ namespace fftw  = multi::fftw;
 
 template<class M> auto power(M const& elem) -> decltype(std::norm(elem)) { return std::norm(elem); }
 
-template<class M,
-	std::enable_if_t<(M::rank::value >= 1), int> =0>  // NOLINT(modernize-use-constraints) for C++20
+template<class M, std::enable_if_t<(M::rank::value >= 1), int> =0>  // NOLINT(modernize-use-constraints) for C++20
 auto power(M const& array) {
 	return accumulate(begin(array), end(array), 0.0, [](auto const& alpha, auto const& omega) { return alpha + power(omega); });
 }
