@@ -39,8 +39,8 @@ template<> const_MPI_Datatype datatype<int> = MPI_INT;  // NOLINT(misc-misplaced
 // MPI3_DECLARE_DATATYPE(unsigned long          , MPI_UNSIGNED_LONG);
 // MPI3_DECLARE_DATATYPE(float                  , MPI_FLOAT);
 
-template<> const_MPI_Datatype datatype<float>  = MPI_FLOAT;   // NOLINT(misc-definitions-in-headers)
-template<> const_MPI_Datatype datatype<double> = MPI_DOUBLE;  // NOLINT(misc-definitions-in-headers)
+template<> const_MPI_Datatype const datatype<float>  = MPI_FLOAT;   // NOLINT(misc-definitions-in-headers)
+template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(misc-definitions-in-headers)
 
 // MPI3_DECLARE_DATATYPE(long double            , MPI_LONG_DOUBLE);
 // MPI3_DECLARE_DATATYPE(long long int          , MPI_LONG_LONG_INT);
