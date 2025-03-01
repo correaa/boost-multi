@@ -294,8 +294,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated().unrotated() == multi::array<int, 4>{
 		// 	{
 		// 		{{ 1,  2},
-		// 		 { 9, 10}}, 
-		// 		{{ 3, 4}, 
+		// 		 { 9, 10}},
+		// 		{{ 3, 4},
 		// 		 {11, 12}},
 		// 	},
 		// 	{
