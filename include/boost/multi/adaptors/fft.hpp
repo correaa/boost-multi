@@ -47,6 +47,8 @@ namespace boost::multi::fft{
 		Direction dir_;
 
 		struct const_iterator : private In::const_iterator {
+			// static constexpr auto dimensionality = In::const_iterator::dimensionality;
+
 			bool do_;
 			std::array<bool, dimensionality - 1> sub_which_;
 			Direction dir_;
@@ -56,30 +58,63 @@ namespace boost::multi::fft{
 				bool doo, std::array<bool, In::dimensionality - 1> sub_which,
 				Direction dir
 			) : In::const_iterator{it}, do_{doo}, sub_which_{sub_which}, dir_{dir} {}
-			// using In::const_iterator::operator-;
-			friend auto operator-(const_iterator const& lhs, const_iterator const& rhs) {
-				return static_cast<typename In::const_iterator>(lhs) - static_cast<typename In::const_iterator>(rhs);
-			}
-
+			
 			using typename In::const_iterator::difference_type;
 			using typename In::const_iterator::value_type;
 			using pointer = void*;
 			using reference = DFT_range<typename In::const_iterator::reference, Direction>;
 			using iterator_category = std::random_access_iterator_tag;
+			
+			auto operator+(difference_type n) const { return const_iterator{static_cast<typename In::const_iterator const&>(*this) + n, do_, sub_which_, dir_}; }
+			friend auto operator-(const_iterator const& lhs, const_iterator const& rhs) {
+				return static_cast<typename In::const_iterator>(lhs) - static_cast<typename In::const_iterator>(rhs);
+			}
+			
+			auto operator*() const {
+				struct fake_array {
+					multi::extensions_t<dimensionality - 1> extensions_;
+					auto extensions() const {return extensions_;}
+				//  multi::size_t size_;
+					auto extension() const { using std::get; return get<0>(extensions()); }
+					auto size() const { return extension().size(); }
+				} fa{(*static_cast<typename In::const_iterator const&>(*this)).extensions()};
+				return fa;
+			}
 
-			auto operator*() const -> reference {
-				return DFT_range<reference, Direction>(sub_which_, *static_cast<typename In::const_iterator>(*this), dir_);
+			template<class It>
+			auto Copy(const_iterator const& last, It const& first_d) const -> decltype(auto) {
+				auto const count = last - *this;
+				dft(
+					std::apply([doo = do_](auto... es) { return std::array{doo, es...}; }, sub_which_),
+					multi::const_subarray<typename In::const_iterator::element, dimensionality, typename In::const_iterator::element_ptr>(
+						static_cast<typename In::const_iterator const&>(*this),
+						static_cast<typename In::const_iterator const&>(last)
+					),
+					multi::subarray<typename It::element, dimensionality, typename It::element_ptr>(
+						first_d, first_d + count
+					)
+				);
+				return first_d + count;
 			}
 
 			template<class It>
 			friend auto copy(const_iterator const& first, const_iterator const& last, It const& first_d) -> decltype(auto) {
-				auto const n = last - first;
-				dft(
-					std::apply([doo = first.do_](auto... es) { return std::array<bool, dimensionality + 1>{doo, es...}; }, first.sub_which_),
-					const_subarray(static_cast<typename In::const_iterator>(first), static_cast<typename In::const_iterator>(last)),
-					subarray(first_d, first_d + n)
-				);
-				return first_d + n;
+				return first.copy(last, first_d);
+			}
+
+			template<class It, class Size>
+			friend auto copy_n(const_iterator const& first, Size const& count, It const& first_d) -> decltype(auto) {
+				return first.Copy(first + count, first_d);
+			}
+
+			template<class It, class Size>
+			friend auto uninitialized_copy_n(const_iterator const& first, Size const& count, It const& first_d) -> decltype(auto) {
+				return copy_n(first, count, first_d);
+			}
+
+			template<class It>
+			friend auto uninitialized_copy(const_iterator const& first, const_iterator const& last, It const& first_d) -> decltype(auto) {
+				return first.copy(last, first_d);
 			}
 		};
 

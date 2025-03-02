@@ -1534,10 +1534,16 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	// using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
 
-	const_subarray(iterator first, iterator last)
+	// const_subarray(iterator first, iterator last)  // TODO(correaa) fix definition of iterator for const_subarray
+	// : const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first)*first->size()), first.base()) {
+	//  assert(first->layout() == last->layout());
+	// }
+
+	const_subarray(const_iterator first, const_iterator last)
 	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first)*first->size()), first.base()) {
 		assert(first->layout() == last->layout());
 	}
+
 
  private:
 	// [[deprecated("remove")]] BOOST_MULTI_HD constexpr explicit const_subarray(iterator begin, iterator end)
