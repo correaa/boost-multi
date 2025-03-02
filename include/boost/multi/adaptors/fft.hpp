@@ -36,6 +36,66 @@ namespace boost::multi::fft{
 	template<class... Args> auto dft_backward_aux(priority<1> /*unused*/, Args&&... args) BOOST_MULTI_DECLRETURN_(cufft ::dft_backward(std::forward<Args>(args)...))
 	template<class In, class... Args> auto dft_backward(std::array<bool, In::dimensionality> which, In const& in, Args&&... args) -> decltype(auto) {return dft_backward_aux(priority<1>{}, which, in, std::forward<Args>(args)...);}
 
+	template<class In, class Direction>
+	class DFT_range {
+	 public:
+		static constexpr auto dimensionality = std::decay_t<In>::dimensionality;
+
+	 private:
+		std::array<bool, dimensionality> which_;
+		In const& in_;
+		Direction dir_;
+
+		struct const_iterator : private In::const_iterator {
+			bool do_;
+			std::array<bool, dimensionality - 1> sub_which_;
+			Direction dir_;
+
+			const_iterator(
+				typename In::const_iterator it,
+				bool doo, std::array<bool, In::dimensionality - 1> sub_which,
+				Direction dir
+			) : In::const_iterator{it}, do_{doo}, sub_which_{sub_which}, dir_{dir} {}
+			// using In::const_iterator::operator-;
+			friend auto operator-(const_iterator const& lhs, const_iterator const& rhs) {
+				return static_cast<typename In::const_iterator>(lhs) - static_cast<typename In::const_iterator>(rhs);
+			}
+
+			using typename In::const_iterator::difference_type;
+			using typename In::const_iterator::value_type;
+			using pointer = void*;
+			using reference = DFT_range<typename In::const_iterator::reference, Direction>;
+			using iterator_category = std::random_access_iterator_tag;
+
+			auto operator*() const -> reference {
+				return DFT_range<reference, Direction>(sub_which_, *static_cast<typename In::const_iterator>(*this), dir_);
+			}
+
+			template<class It>
+			friend auto copy(const_iterator const& first, const_iterator const& last, It const& first_d) -> decltype(auto) {
+				auto const n = last - first;
+				dft(
+					std::apply([doo = first.do_](auto... es) { return std::array<bool, dimensionality + 1>{doo, es...}; }, first.sub_which_),
+					const_subarray(static_cast<typename In::const_iterator>(first), static_cast<typename In::const_iterator>(last)),
+					subarray(first_d, first_d + n)
+				);
+				return first_d + n;
+			}
+		};
+
+	 public:
+		DFT_range(std::array<bool, std::decay_t<In>::dimensionality> which, In const& in, Direction dir) : which_{which}, in_(in), dir_{dir} {}
+		auto begin() const { return const_iterator(in_.begin(), which_[0], std::apply([](auto /*e0*/, auto... es) { return std::array<bool, dimensionality - 1>{es...}; }, which_), dir_); }
+		auto end  () const { return const_iterator(in_.end  (), which_[0], std::apply([](auto /*e0*/, auto... es) { return std::array<bool, dimensionality - 1>{es...}; }, which_), dir_); }
+
+		auto extensions() const { return in_.extensions(); }
+	};
+
+	template<class In, class Direction>
+	auto DFT(std::array<bool, In::dimensionality> which, In const& in, Direction dir) {
+		return DFT_range(which, in, dir);
+	}
+
 }  // end namespace boost::multi::fft
 
 #undef BOOST_MULTI_DECLRETURN_
