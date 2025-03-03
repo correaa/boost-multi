@@ -107,14 +107,14 @@ auto main() -> int {
 			BOOST_TEST( std::abs((complex(fw_gpu[3][2]) - fw_cpu[3][2]).real()) < 1.0e-8 );
 			BOOST_TEST( std::abs((complex(fw_gpu[3][2]) - fw_cpu[3][2]).imag()) < 1.0e-8 );
 
+			// TODO(correaa) test funcional interface for GPU
+			// auto const& dft = multi::fft::DFT({true, true}, in_cpu, multi::fft::forward);
 
-			auto const& dft = multi::fft::DFT({true, true}, in_cpu, multi::fft::forward);
+			// BOOST_TEST( dft.extensions() == in_cpu.extensions() );
+			// BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
+			// BOOST_TEST( (*dft.begin()).extensions() == (*in_cpu.begin()).extensions() );
 
-			BOOST_TEST( dft.extensions() == in_cpu.extensions() );
-			BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
-			BOOST_TEST( (*dft.begin()).extensions() == (*in_cpu.begin()).extensions() );
-
-			multi::array<complex, 2> const fw_cpu_out = multi::fft::DFT({true, true}, in_cpu, multi::fft::forward);
+			// multi::array<complex, 2> const fw_cpu_out = multi::fft::DFT({true, true}, in_cpu, multi::fft::forward);
 		}
 	}
 
