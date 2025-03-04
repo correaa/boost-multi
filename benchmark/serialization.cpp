@@ -75,10 +75,9 @@ void BM_iserialization(benchmark::State& st) {
 	for(auto _  : st) {
 		std::ifstream fs{"file"};
 		Ar xa{fs};
-		std::vector<double> AA;
-		xa >> boost::serialization::make_nvp("A", AA);
-		// xa >> boost::serialization::make_nvp("A", A);
-		// xa>> multi::archive_traits<Ar>::make_nvp("A", A);
+		// auto&& Ap = A();
+		// xa >> boost::serialization::make_nvp("A", Ap);
+		xa>> multi::archive_traits<Ar>::make_nvp("A", A());
 		benchmark::DoNotOptimize(A);
 	    benchmark::ClobberMemory();
 	}
