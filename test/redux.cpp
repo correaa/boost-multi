@@ -62,8 +62,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// auto pp = [] /*__host__ __device__*/ (long ix, long iy) -> double { return double(ix) * double(iy); };
 
-	auto nx = 40000;  // nmax;     // for(long nx = 1; nx <= nmax; nx *= 10)
-	auto ny = 2000;   // maxsize;  // for(long ny = 1; ny <= maxsize; ny *= 5)
+	// auto nx = 40000;  // nmax;     // for(long nx = 1; nx <= nmax; nx *= 10)
+	// auto ny = 2000;   // maxsize;  // for(long ny = 1; ny <= maxsize; ny *= 5)
+
+	auto const nx = 4000;  // nmax;     // for(long nx = 1; nx <= nmax; nx *= 10)
+	auto const ny = 200;   // maxsize;  // for(long ny = 1; ny <= maxsize; ny *= 5)
 
 	// auto total = nx*ny;
 
