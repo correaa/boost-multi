@@ -233,9 +233,9 @@ clang++-16 mull-16:  # mull-17 crashes
     - mull-runner-16 --version
     - CXX=clang++-16 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fpass-plugin=/usr/lib/mull-ir-frontend-16 -g -grecord-command-line -fprofile-instr-generate -fcoverage-mapping"
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
-    - ctest -j 2 --output-on-failure
+    # - ctest -j 2 --output-on-failure
     - cd test
-    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-16 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-16 --timeout 10000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
   needs: ["clang++"]
 
 # deb:
