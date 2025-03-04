@@ -19,7 +19,7 @@ namespace boost::multi::mpi {
 
 using const_MPI_Datatype = MPI_Datatype const;
 
-template<class T> static const_MPI_Datatype datatype = std::conditional_t<static_cast<bool>(sizeof(T*)), void, int>{};
+template<class T> static const_MPI_Datatype const datatype = std::conditional_t<static_cast<bool>(sizeof(T*)), void, int>{};
 
 // template<> MPI_Datatype const datatype<char> = MPI_CHAR;
 // template<> MPI_Datatype const datatype<unsigned char> = MPI_UNSIGNED_CHAR;
@@ -32,7 +32,7 @@ template<class T> static const_MPI_Datatype datatype = std::conditional_t<static
 // MPI3_DECLARE_DATATYPE(short                  , MPI_SHORT);
 // MPI3_DECLARE_DATATYPE(unsigned short         , MPI_UNSIGNED_SHORT);
 
-template<> const_MPI_Datatype datatype<int> = MPI_INT;  // NOLINT(misc-misplaced-const,misc-definitions-in-headers)
+template<> const_MPI_Datatype const datatype<int> = MPI_INT;  // NOLINT(misc-misplaced-const,misc-definitions-in-headers)
 
 // MPI3_DECLARE_DATATYPE(unsigned int           , MPI_UNSIGNED);
 // MPI3_DECLARE_DATATYPE(long                   , MPI_LONG);
