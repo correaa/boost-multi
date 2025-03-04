@@ -2332,10 +2332,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		// if constexpr(std::is_pointer_v<ElementPtr>) {
-		// 	return subarray<T2, D + 1, P2>(
-		// 		layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-		// 		static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-		// 	);
+		//  return subarray<T2, D + 1, P2>(
+		//      layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+		//      static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+		//  );
 		// } else {
 			return subarray<T2, D + 1, P2>(
 				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
@@ -3651,15 +3651,15 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
  public:
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int const version) {
-		serialize_flat(arxiv, version);
-//      serialize_structured(ar, version);
+		serialize_flat_(arxiv, version);
+//      serialize_structured_(ar, version);
 //      switch(version) {
-//          case static_cast<unsigned int>( 0): return serialize_flat(arxiv);
-//          case static_cast<unsigned int>(-1): return serialize_structured(arxiv, version);
+//          case static_cast<unsigned int>( 0): return serialize_flat_(arxiv);
+//          case static_cast<unsigned int>(-1): return serialize_structured_(arxiv, version);
 //      //  case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, arxiv);
 //          default:
-//              if( this->num_elements() <= version ){serialize_structured(arxiv, version);}
-//              else                                 {serialize_flat      (arxiv         );}
+//              if( this->num_elements() <= version ){serialize_structured_(arxiv, version);}
+//              else                                 {serialize_flat_       (arxiv         );}
 //      }
 	}
 };
