@@ -1851,7 +1851,7 @@ public:
 	}
 
 	template<class Archive>
-	auto serialize(Archive& arxiv, unsigned int version) {
+	auto serialize(Archive& arxiv, unsigned int version) const {
 		using AT = multi::archive_traits<Archive>;
 		if(version == 0) {
 			std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
@@ -2332,10 +2332,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		// if constexpr(std::is_pointer_v<ElementPtr>) {
-		// 	return subarray<T2, D + 1, P2>(
-		// 		layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-		// 		static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
-		// 	);
+		//  return subarray<T2, D + 1, P2>(
+		//      layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
+		//      static_cast<P2>(static_cast<void*>(this->base_))  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+		//  );
 		// } else {
 			return subarray<T2, D + 1, P2>(
 				layout_t<D+1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
@@ -2360,6 +2360,19 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	constexpr auto element_moved()  & {return subarray<T, D, typename subarray::element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_});}
 	constexpr auto element_moved() && {return element_moved();}
+
+	template<class Archive>
+	auto serialize(Archive& arxiv, unsigned int version) {
+		using AT = multi::archive_traits<Archive>;
+		if(version == 0) {
+			std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
+		} else {
+			std::for_each(this->elements().begin(), this->elements().end(), [&](typename subarray::element& elem) {arxiv & AT    ::make_nvp("elem", elem);});
+		}
+	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
+	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
+	}
+
 };
 
 #if defined(__clang__)
@@ -2696,7 +2709,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	template<class Archive>
-	auto serialize(Archive& arxiv, unsigned int const /*version*/) {
+	auto serialize(Archive& arxiv, unsigned int const /*version*/) const {
 		using AT = multi::archive_traits<Archive>;
 		auto& element_ = *(this->base_);
 		arxiv &     AT::make_nvp("element", element_);
@@ -3651,15 +3664,15 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
  public:
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int const version) {
-		serialize_flat(arxiv, version);
-//      serialize_structured(ar, version);
+		serialize_flat_(arxiv, version);
+//      serialize_structured_(ar, version);
 //      switch(version) {
-//          case static_cast<unsigned int>( 0): return serialize_flat(arxiv);
-//          case static_cast<unsigned int>(-1): return serialize_structured(arxiv, version);
+//          case static_cast<unsigned int>( 0): return serialize_flat_(arxiv);
+//          case static_cast<unsigned int>(-1): return serialize_structured_(arxiv, version);
 //      //  case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, arxiv);
 //          default:
-//              if( this->num_elements() <= version ){serialize_structured(arxiv, version);}
-//              else                                 {serialize_flat      (arxiv         );}
+//              if( this->num_elements() <= version ){serialize_structured_(arxiv, version);}
+//              else                                 {serialize_flat_       (arxiv         );}
 //      }
 	}
 };
