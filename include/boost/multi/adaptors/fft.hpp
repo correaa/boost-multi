@@ -30,13 +30,13 @@ namespace boost::multi::fft{
 	#endif
 	template<          class... Args> auto dft(Args&&... args) BOOST_MULTI_DECLRETURN_(dft_aux_(priority<1>{}, std::forward<Args>(args)...))
 
-	template<class In, class... Args> auto dft(std::array<bool, std::decay_t<In>::dimensionality> which, In const& in, Args&&... args) BOOST_MULTI_DECLRETURN_(dft_aux(priority<1>{}, which, in, std::forward<Args>(args)...))
+	template<class In, class... Args> auto dft(std::array<bool, std::decay_t<In>::dimensionality> which, In&& in, Args&&... args) BOOST_MULTI_DECLRETURN_(dft_aux(priority<1>{}, which, std::forward<In>(in), std::forward<Args>(args)...))
 
 	template<class... Args> auto dft_forward_aux(priority<0> /*unused*/, Args&&... args) BOOST_MULTI_DECLRETURN_(  fftw::dft_forward(std::forward<Args>(args)...))
 	#if defined(__CUDA__) || defined(__NVCC__)
 	template<class... Args> auto dft_forward_aux(priority<1> /*unused*/, Args&&... args) BOOST_MULTI_DECLRETURN_(cufft ::dft_forward(std::forward<Args>(args)...))
 	#endif
-	template<class In, class... Args> auto dft_forward(std::array<bool, In::dimensionality> which, In const& in, Args&&... args) BOOST_MULTI_DECLRETURN_(dft_forward_aux(priority<1>{}, which, in, std::forward<Args>(args)...))
+	template<class In, class... Args> auto dft_forward(std::array<bool, std::decay_t<In>::dimensionality> which, In&& in, Args&&... args) BOOST_MULTI_DECLRETURN_(dft_forward_aux(priority<1>{}, which, std::forward<In>(in), std::forward<Args>(args)...))
 
 	template<class... Args> auto dft_backward_aux(priority<0> /*unused*/, Args&&... args) BOOST_MULTI_DECLRETURN_(  fftw::dft_backward(std::forward<Args>(args)...))
 	#if defined(__CUDA__) || defined(__NVCC__)
