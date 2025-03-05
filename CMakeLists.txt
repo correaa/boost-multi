@@ -112,7 +112,11 @@ install(DIRECTORY "include/" TYPE INCLUDE)
 
 if(MULTI_BUILD_TESTS)
   find_package(Boost COMPONENTS NO_MODULE)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
-  if(NOT Boost_FOUND)
+  if((NOT Boost_FOUND) AND (NOT
+	   CMAKE_CXX_COMPILER_ID
+		STREQUAL
+        "NVHPC"
+	))
     message(WARNING "Cannot find Boost, Multi library will not be fully tested.")
   else()
     enable_testing()

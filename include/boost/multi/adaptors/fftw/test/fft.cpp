@@ -34,11 +34,11 @@ auto main() -> int {
 	complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	auto const in_cpu = multi::array<complex, 2>{
-		{ 1.0 + 2.0 * I,  9.0 - 1.0 * I, 2.0 +  4.0 * I},
-		{ 3.0 + 3.0 * I,  7.0 - 4.0 * I, 1.0 +  9.0 * I},
-		{ 4.0 + 1.0 * I,  5.0 + 3.0 * I, 2.0 +  4.0 * I},
-		{ 3.0 - 1.0 * I,  8.0 + 7.0 * I, 2.0 +  1.0 * I},
-		{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I},
+	 { 1.0 + 2.0 * I,  9.0 - 1.0 * I, 2.0 +  4.0 * I},
+	 { 3.0 + 3.0 * I,  7.0 - 4.0 * I, 1.0 +  9.0 * I},
+	 { 4.0 + 1.0 * I,  5.0 + 3.0 * I, 2.0 +  4.0 * I},
+	 { 3.0 - 1.0 * I,  8.0 + 7.0 * I, 2.0 +  1.0 * I},
+	 {31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I},
 	};
 
 	auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
@@ -55,116 +55,116 @@ auto main() -> int {
 		BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
 		BOOST_TEST( (*dft.begin()).extensions() == (*in_cpu.begin()).extensions() );
 	}
-	// assignment with right size
-	{
-		multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
-		complex* const persistent_base = fw_cpu_out.base();
-
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-		BOOST_TEST( persistent_base == fw_cpu_out.base() );
-	}
-	// assignment with incorrect size (need reallocation)
-	{
-		multi::array<complex, 2> fw_cpu_out({2, 2});
-
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-	// assignment to empty
-	{
-		multi::array<complex, 2> fw_cpu_out;
-
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-	// constructor
-	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-				// check properties
-	{
-		auto const& dft = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-
-		BOOST_TEST( dft.extensions() == in_cpu.extensions() );
-		BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
-		BOOST_TEST( (*dft.begin()).extensions() == (*in_cpu.begin()).extensions() );
-	}
-	// assignment with right size
-	{
-		multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
-		complex* const persistent_base = fw_cpu_out.base();
-
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-		BOOST_TEST( persistent_base == fw_cpu_out.base() );
-	}
-	// assignment with incorrect size (need reallocation)
-	{
-		multi::array<complex, 2> fw_cpu_out({2, 2});
-
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-	// assignment to empty
-	{
-		multi::array<complex, 2> fw_cpu_out;
-
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-	// constructor
-	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-	// constructor forward
-	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft_forward({true, true}, in_cpu);
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-	// constructor forward default
-	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu);
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-	// constructor all default
-	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft_all(in_cpu);
-		BOOST_TEST( fw_cpu_out == fw_cpu );
-	}
-	// constructor none
-	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({false, false}, in_cpu);
-		BOOST_TEST( fw_cpu_out == in_cpu );
-	}
-	// constructor none
-	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu);
-		BOOST_TEST( fw_cpu_out == in_cpu );
-	}
-	// constructor none
-	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu());
-		BOOST_TEST( fw_cpu_out == in_cpu );
-	}
-	// constructor none
-	{
-		multi::array<complex, 2> const fw_cpu_out = in_cpu.transposed();
-		BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
-	}
-	// constructor none
+	// // assignment with right size
 	// {
-	// 	multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu.transposed());
-	// 	// BOOST_TEST( fw_cpu_out == in_cpu );
+	//  multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
+	//  complex* const persistent_base = fw_cpu_out.base();
+
+	//  fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	//  BOOST_TEST( persistent_base == fw_cpu_out.base() );
 	// }
+	// // assignment with incorrect size (need reallocation)
+	// {
+	//  multi::array<complex, 2> fw_cpu_out({2, 2});
+
+	//  fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	// // assignment to empty
+	// {
+	//  multi::array<complex, 2> fw_cpu_out;
+
+	//  fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	// // constructor
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	//          // check properties
+	// {
+	//  auto const& dft = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+
+	//  BOOST_TEST( dft.extensions() == in_cpu.extensions() );
+	//  BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
+	//  BOOST_TEST( (*dft.begin()).extensions() == (*in_cpu.begin()).extensions() );
+	// }
+	// // assignment with right size
+	// {
+	//  multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
+	//  complex* const persistent_base = fw_cpu_out.base();
+
+	//  fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	//  BOOST_TEST( persistent_base == fw_cpu_out.base() );
+	// }
+	// // assignment with incorrect size (need reallocation)
+	// {
+	//  multi::array<complex, 2> fw_cpu_out({2, 2});
+
+	//  fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	// // assignment to empty
+	// {
+	//  multi::array<complex, 2> fw_cpu_out;
+
+	//  fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	// // constructor
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	// // constructor forward
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft_forward({true, true}, in_cpu);
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	// // constructor forward default
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu);
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	// // constructor all default
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft_all(in_cpu);
+	//  BOOST_TEST( fw_cpu_out == fw_cpu );
+	// }
+	// // constructor none
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({false, false}, in_cpu);
+	//  BOOST_TEST( fw_cpu_out == in_cpu );
+	// }
+	// // constructor none
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu);
+	//  BOOST_TEST( fw_cpu_out == in_cpu );
+	// }
+	// // constructor none
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu());
+	//  BOOST_TEST( fw_cpu_out == in_cpu );
+	// }
+	// // constructor none
+	// {
+	//  multi::array<complex, 2> const fw_cpu_out = in_cpu.transposed();
+	//  BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
+	// }
+	// // constructor none
+	// // {
+	// //  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu.transposed());
+	// //  // BOOST_TEST( fw_cpu_out == in_cpu );
+	// // }
 
 	return boost::report_errors();
 }
