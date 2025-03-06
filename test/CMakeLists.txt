@@ -24,6 +24,7 @@ else()
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
 	find_package(Boost CONFIG)
+	find_package(Boost COMPONENTS serialization)
 
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
@@ -383,7 +384,7 @@ else()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
 
-		target_link_libraries    (${TEST_EXE} PRIVATE TBB::tbb)
+		# target_link_libraries    (serialization.cpp.x PRIVATE Boost::serialization)
 
 	endif()
 endif()
