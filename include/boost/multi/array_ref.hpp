@@ -1548,7 +1548,7 @@ public:
 	// using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
 	// using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
 
-	const_subarray(iterator first, iterator last)
+	const_subarray(const_iterator first, const_iterator last)
 	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first)*first->size()), first.base()) {
 		assert(first->layout() == last->layout());
 	}
