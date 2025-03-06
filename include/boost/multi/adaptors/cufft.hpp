@@ -11,12 +11,13 @@
 #include <boost/multi/detail/config/NODISCARD.hpp>
 
 #include <array>
+#include <cstddef>
 #include <map>
 #include <tuple>
 
 #include<thrust/memory.h>  // for raw_pointer_cast
 
-#if not defined(__HIP_ROCclr__)
+#if !defined(__HIP_ROCclr__)
 #include <cufft.h>
 #include <cufftXt.h>
 #endif
@@ -88,22 +89,22 @@ class plan {
 	Alloc alloc_;
 	::size_t workSize_ = 0;
 	void* workArea_{};
-
-	using complex_type = cufftDoubleComplex;
 	cufftHandle h_{};  // TODO(correaa) put this in a unique_ptr
 	std::array<std::pair<bool, fftw_iodim64>, DD + 1> which_iodims_{};
 	int first_howmany_{};
+	
+	using complex_type = cufftDoubleComplex;
 
-public:
+	public:
 	using allocator_type = Alloc;
 
 	plan(plan&& other) noexcept :
-		h_{std::exchange(other.h_, {})},
-		which_iodims_{std::exchange(other.which_iodims_, {})},
-		first_howmany_{std::exchange(other.first_howmany_, {})},
+		alloc_{std::move(other.alloc_)},
 		workSize_{std::exchange(other.workSize_, {})},
 		workArea_{std::exchange(other.workArea_, {})},
-		alloc_{std::move(other.alloc_)}
+		h_{std::exchange(other.h_, {})},
+		which_iodims_{std::exchange(other.which_iodims_, {})},
+		first_howmany_{std::exchange(other.first_howmany_, {})}
 	{}
 
 	template<
@@ -136,8 +137,8 @@ public:
 		std::array<fftw_iodim64, D> dims{};
 		auto const dims_end         = std::transform(which_iodims.begin(), part,         dims.begin(), [](auto elem) {return elem.second;});
 
-		std::array<fftw_iodim64, D> howmany_dims{};
-		auto const howmany_dims_end = std::transform(part, which_iodims.end() -1, howmany_dims.begin(), [](auto elem) {return elem.second;});
+		// std::array<fftw_iodim64, D> howmany_dims{};
+		// auto const howmany_dims_end = std::transform(part, which_iodims.end() -1, howmany_dims.begin(), [](auto elem) {return elem.second;});
 
 		which_iodims_ = which_iodims;
 		first_howmany_ = part - which_iodims.begin();
@@ -157,7 +158,7 @@ public:
 		int ostride = *(ostrides_end -1);
 		auto onembed = ostrides; onembed.fill(0);
 
-		for(std::size_t idx = 1; idx != ion_end - ion.begin(); ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) replace with algorithm
+		for(std::ptrdiff_t idx = 1; idx != ion_end - ion.begin(); ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) replace with algorithm
 			assert(ostrides[idx - 1] >= ostrides[idx]);
 			assert(ostrides[idx - 1] % ostrides[idx] == 0);
 			onembed[idx] = ostrides[idx - 1] / ostrides[idx];
@@ -286,7 +287,7 @@ public:
  private:
 
 	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const{
-		cufftSafeCall(::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
+		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
 		// cudaDeviceSynchronize();
 	}
 
@@ -300,7 +301,7 @@ public:
 		if(first_howmany_ == DD - 1) {
 			if( which_iodims_[first_howmany_].first) {throw std::runtime_error{"logic error"};}
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-				::cufftExecZ2Z(
+				cufftExecZ2Z(
 					h_,
 					const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx*which_iodims_[first_howmany_].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 					                          reinterpret_cast<complex_type      *>(::thrust::raw_pointer_cast(odata + idx*which_iodims_[first_howmany_].second.os)) ,  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
@@ -315,7 +316,7 @@ public:
 			if(idata == odata) {throw std::runtime_error{"complicated inplace 2"};}
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
 				for(int jdx = 0; jdx != which_iodims_[first_howmany_ + 1].second.n; ++jdx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
-					::cufftExecZ2Z(
+					cufftExecZ2Z(
 						h_,
 						const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx*which_iodims_[first_howmany_].second.is + jdx*which_iodims_[first_howmany_ + 1].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 												  reinterpret_cast<complex_type      *>(::thrust::raw_pointer_cast(odata + idx*which_iodims_[first_howmany_].second.os + jdx*which_iodims_[first_howmany_ + 1].second.os)) ,  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
