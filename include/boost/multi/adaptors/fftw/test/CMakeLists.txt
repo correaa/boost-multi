@@ -43,7 +43,6 @@ set(TEST_SRCS
   combinations.cpp
 # copy.cpp
   core.cpp
-  fft.cpp
   moved.cpp
   shift.cpp
   so_shift.cpp

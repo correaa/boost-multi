@@ -45,11 +45,7 @@ endif()
 
 if(BLAS_FOUND)
 	find_package(Boost NO_MODULE)  # COMPONENTS boost)  # headers unit_test_framework)
-	if(Boost_FOUND OR (
-	   CMAKE_CXX_COMPILER_ID
-		STREQUAL
-        "NVHPC"
-	))
+	if(Boost_FOUND)
 		add_subdirectory(test)
 	else()
 		message(WARNING "Boost Unit Test Framework not found, BLAS-adaptor tests will not be compiled and run. If you want this feature, install Boost")

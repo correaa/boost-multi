@@ -7,7 +7,7 @@ endif()
 enable_testing()
 include(CTest)
 
-find_package(Boost COMPONENTS NO_MODULE)
+find_package(Boost REQUIRED COMPONENTS NO_MODULE)
 
 add_executable(mpi.cpp.x mpi.cpp)
 
@@ -20,7 +20,7 @@ if(APPLE)
     # add_custom_command (TARGET mpi.cpp.x POST_BUILD COMMAND codesign --force --deep -s ACTMPI ${CMAKE_CURRENT_BINARY_DIR}/mpi.cpp.x)
 endif()
 
-target_link_libraries(mpi.cpp.x PRIVATE multi MPI::MPI_CXX)  # Boost::boost)
+target_link_libraries(mpi.cpp.x PRIVATE multi MPI::MPI_CXX Boost::boost)
 
 if(APPLE)
 #    add_test(NAME mpi.cpp.x COMMAND ${MPIEXEC_EXECUTABLE} --mca btl ^tcp ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS} $<TARGET_FILE:mpi.cpp.x> ${MPIEXEC_POSTFLAGS})

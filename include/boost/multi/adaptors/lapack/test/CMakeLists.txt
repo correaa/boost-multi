@@ -13,7 +13,7 @@ endif()
 # set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Boost NO_MODULE)
+find_package(Boost REQUIRED NO_MODULE)
 # add_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 # include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # link_libraries(${Boost_LIBRARIES})
@@ -72,6 +72,6 @@ if(ENABLE_CUDA)
     set_source_files_properties(potrf.cpp PROPERTIES LANGUAGE CUDA)
 endif()
 
-target_link_libraries(potrf.cpp.x PRIVATE multi-lapack)  # Boost::boost)
+target_link_libraries(potrf.cpp.x PRIVATE multi-lapack Boost::boost)
 
 add_test(NAME potrf.cpp.x COMMAND $<TARGET_FILE:potrf.cpp.x>)
