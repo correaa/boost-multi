@@ -157,7 +157,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr extensions_t(index_extension const& extension, typename layout_t<D-1>::extensions_type const& other)
 	: extensions_t(multi::detail::ht_tuple(extension, other.base())) {}
 
-	constexpr auto base()            const&    -> base_ const& {return *this;} // impl_;}
+	constexpr auto base()            const&    -> base_ const& { return *this; } // impl_;}
+	constexpr auto base()                 &    -> base_      & { return *this; } // impl_;}
 
 	friend constexpr auto operator*(index_extension const& extension, extensions_t const& self) -> extensions_t<D + 1> {
 		// return extensions_t<D + 1>(tuple(extension, self.base()));
@@ -292,7 +293,8 @@ template<> struct extensions_t<0> : tuple<> {
 
 	extensions_t() = default;
 
-	constexpr auto base() const -> base_ const& {return *this;}
+	constexpr auto base() const& -> base_ const& { return *this; }
+	constexpr auto base()      & -> base_      & { return *this; }
 
 	template<class Archive> static void serialize(Archive&/*ar*/, unsigned /*version*/) {/*noop*/}
 
@@ -353,7 +355,9 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	constexpr explicit extensions_t(base_ tup) : base_{tup} {}
 
 	extensions_t() = default;
-	constexpr auto base() const -> base_ const& {return *this;}
+
+	constexpr auto base() const& -> base_ const& { return *this; }
+	constexpr auto base()      & -> base_      & { return *this; }
 
 	BOOST_MULTI_HD constexpr auto operator==(extensions_t const& other) const -> bool {return base() == other.base();}  // when compiling as cuda code, this needs --expt-relaxed-constexpr
 	BOOST_MULTI_HD constexpr auto operator!=(extensions_t const& other) const -> bool {return base() != other.base();}
