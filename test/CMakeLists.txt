@@ -339,7 +339,7 @@ else()
 		*.cpp
 	)
 
-	if((NOT Boost_FOUND) AND (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")))
+	if(NOT Boost_FOUND)
 		message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
@@ -382,5 +382,8 @@ else()
 			endif()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
+
+		target_link_libraries    (${TEST_EXE} PRIVATE TBB::tbb)
+
 	endif()
 endif()
