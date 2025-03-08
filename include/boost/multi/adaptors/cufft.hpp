@@ -185,8 +185,6 @@ class plan {
 			}
 		}
 
-		static_assert(sizeof(ILayout*) == 0);
-
 		if(first_howmany_ == D) {
 			if constexpr(std::is_same_v<Alloc, void*>) {
 				cufftSafeCall(::cufftPlanMany(
