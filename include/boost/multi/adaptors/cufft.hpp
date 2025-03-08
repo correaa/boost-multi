@@ -11,12 +11,13 @@
 #include <boost/multi/detail/config/NODISCARD.hpp>
 
 #include <array>
+#include <cstddef>
 #include <map>
 #include <tuple>
 
 #include<thrust/memory.h>  // for raw_pointer_cast
 
-#if not defined(__HIP_ROCclr__)
+#if !defined(__HIP_ROCclr__)
 #include <cufft.h>
 #include <cufftXt.h>
 #endif
@@ -83,27 +84,27 @@ constexpr sign backward{CUFFT_INVERSE};
 
 static_assert(forward != none && none != backward && backward != forward);
 
-template<dimensionality_type DD = -1, class Alloc = void*>
+template<dimensionality_type DD, class Alloc = void*>
 class plan {
 	Alloc alloc_;
 	::size_t workSize_ = 0;
 	void* workArea_{};
-
-	using complex_type = cufftDoubleComplex;
 	cufftHandle h_{};  // TODO(correaa) put this in a unique_ptr
 	std::array<std::pair<bool, fftw_iodim64>, DD + 1> which_iodims_{};
 	int first_howmany_{};
+	
+	using complex_type = cufftDoubleComplex;
 
-public:
+	public:
 	using allocator_type = Alloc;
 
 	plan(plan&& other) noexcept :
-		h_{std::exchange(other.h_, {})},
-		which_iodims_{std::exchange(other.which_iodims_, {})},
-		first_howmany_{std::exchange(other.first_howmany_, {})},
+		alloc_{std::move(other.alloc_)},
 		workSize_{std::exchange(other.workSize_, {})},
 		workArea_{std::exchange(other.workArea_, {})},
-		alloc_{std::move(other.alloc_)}
+		h_{std::exchange(other.h_, {})},
+		which_iodims_{std::exchange(other.which_iodims_, {})},
+		first_howmany_{std::exchange(other.first_howmany_, {})}
 	{}
 
 	template<
@@ -136,8 +137,8 @@ public:
 		std::array<fftw_iodim64, D> dims{};
 		auto const dims_end         = std::transform(which_iodims.begin(), part,         dims.begin(), [](auto elem) {return elem.second;});
 
-		std::array<fftw_iodim64, D> howmany_dims{};
-		auto const howmany_dims_end = std::transform(part, which_iodims.end() -1, howmany_dims.begin(), [](auto elem) {return elem.second;});
+		// std::array<fftw_iodim64, D> howmany_dims{};
+		// auto const howmany_dims_end = std::transform(part, which_iodims.end() -1, howmany_dims.begin(), [](auto elem) {return elem.second;});
 
 		which_iodims_ = which_iodims;
 		first_howmany_ = part - which_iodims.begin();
@@ -157,7 +158,7 @@ public:
 		int ostride = *(ostrides_end -1);
 		auto onembed = ostrides; onembed.fill(0);
 
-		for(std::size_t idx = 1; idx != ion_end - ion.begin(); ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) replace with algorithm
+		for(std::ptrdiff_t idx = 1; idx != ion_end - ion.begin(); ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) replace with algorithm
 			assert(ostrides[idx - 1] >= ostrides[idx]);
 			assert(ostrides[idx - 1] % ostrides[idx] == 0);
 			onembed[idx] = ostrides[idx - 1] / ostrides[idx];
@@ -285,14 +286,20 @@ public:
 
  private:
 
+	template<typename = void>
 	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const{
-		cufftSafeCall(::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
+		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
 		// cudaDeviceSynchronize();
 	}
 
  public:
 	template<class IPtr, class OPtr>
-	void execute(IPtr idata, OPtr odata, int direction) {  // TODO(correaa) make const
+	auto execute(IPtr idata, OPtr odata, int direction)
+	-> decltype((void)(
+		reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)),
+		reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata))
+	))
+	{  // TODO(correaa) make const
 		if(first_howmany_ == DD) {
 			ExecZ2Z_(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)), reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata)), direction);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) wrap a legacy interface
 			return;
@@ -300,7 +307,7 @@ public:
 		if(first_howmany_ == DD - 1) {
 			if( which_iodims_[first_howmany_].first) {throw std::runtime_error{"logic error"};}
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-				::cufftExecZ2Z(
+				cufftExecZ2Z(
 					h_,
 					const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx*which_iodims_[first_howmany_].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 					                          reinterpret_cast<complex_type      *>(::thrust::raw_pointer_cast(odata + idx*which_iodims_[first_howmany_].second.os)) ,  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
@@ -315,7 +322,7 @@ public:
 			if(idata == odata) {throw std::runtime_error{"complicated inplace 2"};}
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
 				for(int jdx = 0; jdx != which_iodims_[first_howmany_ + 1].second.n; ++jdx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
-					::cufftExecZ2Z(
+					cufftExecZ2Z(
 						h_,
 						const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx*which_iodims_[first_howmany_].second.is + jdx*which_iodims_[first_howmany_ + 1].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 												  reinterpret_cast<complex_type      *>(::thrust::raw_pointer_cast(odata + idx*which_iodims_[first_howmany_].second.os + jdx*which_iodims_[first_howmany_ + 1].second.os)) ,  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
@@ -380,24 +387,32 @@ class cached_plan {
 		if(it_ == LEAKY_cache.end()) {it_ = LEAKY_cache.insert(std::make_pair(std::make_tuple(which, in, out), plan<D, Alloc>(which, in, out, alloc))).first;}
 	}
 	template<class IPtr, class OPtr>
-	void execute(IPtr idata, OPtr odata, int direction) {
+	auto execute(IPtr idata, OPtr odata, int direction)
+	-> decltype(
+		(void)
+		(std::declval<
+			typename std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >::iterator&
+		>()->second.execute(idata, odata, direction)
+		)
+	)
+	{
 		// assert(it_ != LEAKY_cache.end());
 		it_->second.execute(idata, odata, direction);
 	}
 };
 
-template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0>
+template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0, typename = decltype(::thrust::raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 ->decltype(cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); }
 
-template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0>
+template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 ->decltype(cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/ >{which, in.layout(), out.layout()/*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
 	return cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/ >{which, in.layout(), out.layout()/*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); }
 
 template<typename In, class Out, dimensionality_type D = In::rank::value>//, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
-auto dft_forward(std::array<bool, +D> which, In const& in, Out&& out)  -> Out&& {
+auto dft_forward(std::array<bool, +D> which, In const& in, Out&& out) -> Out&& { 
 //->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), cufft::forward), std::forward<Out>(o)) {
 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), cufft::forward), std::forward<Out>(out); }
 
