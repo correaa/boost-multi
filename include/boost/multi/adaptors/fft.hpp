@@ -167,7 +167,7 @@ namespace boost::multi::fft{
 #endif
 	template<class In>
 	auto dft_all(In&& in) {
-		auto const all_true = std::apply([](auto... es) { return std::array{(es, true)...}; }, std::array<bool, std::decay_t<In>::dimensionality>{});
+		auto const all_true = std::apply([](auto... es) { return std::array{((void)es, true)...}; }, std::array<bool, std::decay_t<In>::dimensionality>{});
 		return dft(all_true, std::forward<In>(in), fft::forward);
 	}
 

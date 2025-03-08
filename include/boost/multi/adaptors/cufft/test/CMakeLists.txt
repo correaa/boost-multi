@@ -71,14 +71,14 @@ include(CTest)
 include_directories(${CMAKE_BINARY_DIR})
 
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
-set(TEST_SRCS cufft.cpp)
+#set(TEST_SRCS cufft.cpp)
 
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
+		# target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
 	endif()
 	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS") # needed by Boost.Test and NVCC
