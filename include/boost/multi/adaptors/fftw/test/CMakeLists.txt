@@ -43,6 +43,7 @@ set(TEST_SRCS
   combinations.cpp
 # copy.cpp
   core.cpp
+  fft.cpp
   moved.cpp
   shift.cpp
   so_shift.cpp
@@ -57,7 +58,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	add_executable(${TEST_EXE} ${TEST_FILE})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
+		# target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
 	endif()
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
