@@ -1851,13 +1851,13 @@ public:
 	}
 
 	template<class Archive>
-	auto serialize(Archive& arxiv, unsigned int version) const {
+	auto serialize(Archive& arxiv, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		if(version == 0) {
-			std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
-		} else {
-			std::for_each(this->elements().begin(), this->elements().end(), [&](element& elem) {arxiv & AT    ::make_nvp("elem", elem);});
-		}
+		// if(version == 0) {
+		// 	std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
+		// } else {
+			std::for_each(this->elements().begin(), this->elements().end(), [&](element const& elem) {arxiv & AT    ::make_nvp("elem", elem);});
+		// }
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
@@ -2362,13 +2362,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto element_moved() && {return element_moved();}
 
 	template<class Archive>
-	auto serialize(Archive& arxiv, unsigned int version) {
+	auto serialize(Archive& arxiv, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		if(version == 0) {
-			std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
-		} else {
+		// if(version == 0) {
+		// 	std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
+		// } else {
 			std::for_each(this->elements().begin(), this->elements().end(), [&](typename subarray::element& elem) {arxiv & AT    ::make_nvp("elem", elem);});
-		}
+		//}
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 	//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
