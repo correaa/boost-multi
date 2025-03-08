@@ -84,7 +84,7 @@ constexpr sign backward{CUFFT_INVERSE};
 
 static_assert(forward != none && none != backward && backward != forward);
 
-template<dimensionality_type DD = -1, class Alloc = void*>
+template<dimensionality_type DD, class Alloc = void*>
 class plan {
 	Alloc alloc_;
 	::size_t workSize_ = 0;
@@ -184,6 +184,8 @@ class plan {
 				break;
 			}
 		}
+
+		static_assert(sizeof(ILayout*) == 0);
 
 		if(first_howmany_ == D) {
 			if constexpr(std::is_same_v<Alloc, void*>) {
@@ -286,6 +288,7 @@ class plan {
 
  private:
 
+	template<typename = void>
 	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const{
 		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
 		// cudaDeviceSynchronize();
@@ -293,7 +296,12 @@ class plan {
 
  public:
 	template<class IPtr, class OPtr>
-	void execute(IPtr idata, OPtr odata, int direction) {  // TODO(correaa) make const
+	auto execute(IPtr idata, OPtr odata, int direction)
+	-> decltype((void)(
+		reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)),
+		reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata))
+	))
+	{  // TODO(correaa) make const
 		if(first_howmany_ == DD) {
 			ExecZ2Z_(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)), reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata)), direction);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) wrap a legacy interface
 			return;
@@ -381,24 +389,32 @@ class cached_plan {
 		if(it_ == LEAKY_cache.end()) {it_ = LEAKY_cache.insert(std::make_pair(std::make_tuple(which, in, out), plan<D, Alloc>(which, in, out, alloc))).first;}
 	}
 	template<class IPtr, class OPtr>
-	void execute(IPtr idata, OPtr odata, int direction) {
+	auto execute(IPtr idata, OPtr odata, int direction)
+	-> decltype(
+		(void)
+		(std::declval<
+			typename std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >::iterator&
+		>()->second.execute(idata, odata, direction)
+		)
+	)
+	{
 		// assert(it_ != LEAKY_cache.end());
 		it_->second.execute(idata, odata, direction);
 	}
 };
 
-template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0>
+template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 ->decltype(cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); }
 
-template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0>
+template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 ->decltype(cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/ >{which, in.layout(), out.layout()/*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
 	return cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/ >{which, in.layout(), out.layout()/*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); }
 
 template<typename In, class Out, dimensionality_type D = In::rank::value>//, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
-auto dft_forward(std::array<bool, +D> which, In const& in, Out&& out)  -> Out&& {
+auto dft_forward(std::array<bool, +D> which, In const& in, Out&& out) -> Out&& { 
 //->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), cufft::forward), std::forward<Out>(o)) {
 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), cufft::forward), std::forward<Out>(out); }
 
