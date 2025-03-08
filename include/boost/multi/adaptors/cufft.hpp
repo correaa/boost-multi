@@ -401,7 +401,7 @@ class cached_plan {
 	}
 };
 
-template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
+template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0, typename = decltype(::thrust::raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 ->decltype(cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); }
