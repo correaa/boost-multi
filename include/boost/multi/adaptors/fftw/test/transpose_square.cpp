@@ -23,7 +23,7 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	time_point  start_ = now();
 
  public:
-	explicit watch(std::string const& label) : label_{label} {}
+	explicit watch(std::string label) : label_{ std::move(label) } {}
 
 	watch(watch const&) = delete;
 	watch(watch&&)      = delete;
