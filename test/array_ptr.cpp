@@ -102,13 +102,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	// BOOST_AUTO_TEST_CASE(subarray_ptr_1D) {
-	// 	multi::subarray_ptr<double, 1> const ptr = nullptr;
-	// 	BOOST_TEST(( ptr == multi::subarray_ptr<double, 1>{nullptr} ));
+	//  multi::subarray_ptr<double, 1> const ptr = nullptr;
+	//  BOOST_TEST(( ptr == multi::subarray_ptr<double, 1>{nullptr} ));
 	// }
 
 	// BOOST_AUTO_TEST_CASE(subarray_ptr_2D) {
-	// 	multi::subarray_ptr<double, 2> const ptr = nullptr;
-	// 	BOOST_TEST(( ptr == multi::subarray_ptr<double, 2>{nullptr} ));
+	//  multi::subarray_ptr<double, 2> const ptr = nullptr;
+	//  BOOST_TEST(( ptr == multi::subarray_ptr<double, 2>{nullptr} ));
 	// }
 
 	BOOST_AUTO_TEST_CASE(multi_array_ptr) {
@@ -138,7 +138,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			static_assert(std::is_trivially_copyable_v<multi::layout_t<2>>);
 
 #ifndef _MSC_VER
-//			static_assert(std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>);
+			// static_assert(std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>);
 #endif
 			// static_assert(std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>>);
 			// static_assert(std::is_trivially_copyable_v<multi::subarray_ptr<double, 2>>);
@@ -220,15 +220,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using my_span = multi::array_ref<int, 1>;
 
 #if defined(__clang__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wunknown-warning-option"
-#	pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wunknown-warning-option"
+#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		auto aP = &my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__)
-#	pragma clang diagnostic pop
+#   pragma clang diagnostic pop
 #endif
 
 		BOOST_TEST( (*aP).size() == 5 );
