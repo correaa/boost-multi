@@ -3,13 +3,22 @@
 #ifndef BOOST_MULTI_ADAPTORS_FFT_HPP
 #define BOOST_MULTI_ADAPTORS_FFT_HPP
 
-#include "../adaptors/fftw.hpp"
+#include <boost/multi/adaptors/fftw.hpp>
 
 #if defined(__CUDA__) || defined(__NVCC__)
-#include "../adaptors/cufft.hpp"
+#include <boost/multi/adaptors/cufft.hpp>
 #elif defined(__HIPCC__)
-#include "../adaptors/hipfft.hpp"
+#include <boost/multi/adaptors/hipfft.hpp>
 #endif
+
+#include <boost/multi/array_ref.hpp>  // for extensions_t, const_subarray, get
+
+#include <array>                      // for array
+#include <cstddef>                    // for size_t
+#include <iterator>                   // for random_access_iterator_tag
+#include <tuple>                      // for apply
+#include <type_traits>                // for decay_t, conditional_t, true_type
+#include <utility>                    // for forward
 
 #define BOOST_MULTI_DECLRETURN_(ExpR) -> decltype(ExpR) { return ExpR; }  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 #define BOOST_MULTI_JUSTRETURN_(ExpR) -> decltype(auto) { return ExpR; }  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
