@@ -1573,18 +1573,18 @@ A detailed comparison with other array libraries (mspan, Boost.MultiArray, Eigen
 
 ## Serialization
 
-The ability of serializing arrays is important to save/load data to/from disk and also to communicate values via streams or networks (including MPI).
-The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
+The ability to serialize arrays is essential for storing data in a persistent medium (files on disk) and communicating values via streams or networks (e.g., MPI).
+Unfortunately, the C++ language does not provide facilities for serialization, and the standard library doesn't either.
 
-However there are a few libraries that offer a certain common protocol for serialization,
+However, there are a few libraries that offer a certain common protocol for serialization,
 such as [Boost.Serialization](https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html) and [Cereal](https://uscilab.github.io/cereal/).
-The Multi library is compatible with both of them (and yet it doesn't depend on any of them).
+The Multi library is compatible with both (and doesn't depend on any of them).
 The user can choose one or the other, or none, if serialization is not needed.
-The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have single code for both.
-Serialization can be binary (efficient) or text-based (human readable).
+The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have a single code for both.
+Serialization can be binary (efficient) or text-based (human-readable).
 
-Here it is a small implementation of save and load functions for array to JSON format with Cereal.
-The example can be easily adapted to other formats or libraries (XML with Boost.Serialization are commented on the right).
+Here, it is a small implementation of save and load functions for an array to JSON format with the Cereal library.
+The example can be easily adapted to other formats or libraries (an alternative for XML with Boost.Serialization is commented on the right).
 
 ```cpp
 #include<multi/array.hpp>  // this library
@@ -1617,24 +1617,24 @@ void array_save(OStream&& os, multi::array<Element, D> const& value) {
 
 int main() {
 	multi::array<std::string, 2> const A = {{"w", "x"}, {"y", "z"}};
-	array_save(std::ofstream{"file.string2D.json"}, A);  // use std::cout to print serialization to the screen
+	array_save(std::ofstream("file.string2D.json"), A);  // use std::cout to print serialization to the screen
 
-	auto const B = array_load<std::string, 2>(std::ifstream{"file.string2D.json"});
+	auto const B = array_load<std::string, 2>(std::ifstream("file.string2D.json"));
 	assert(A == B);
 }
 ```
-[(online)](https://godbolt.org/z/9j9avjh8M)
+[(online)](https://godbolt.org/z/1bvMGq11W)
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
 However, note that the user must ensure that data is serialized and deserialized into the same type;
 the underlying serialization libraries only do minimal consistency checks for efficiency reasons and don't try to second-guess file formats or contained types.
-Serialization is a relatively low-level feature for which efficiency and economy of bytes is a priority.
+Serialization is a relatively low-level feature for which efficiency and economy of bytes are a priority.
 Cryptic errors and crashes can occur if serialization libraries, file formats, or C++ types are mixed between writes and reads.
-Some formats are human-readable, but not particularly pretty for showing as output (see section on Formatting on how to print to the screen).
+Some formats are human-readable but still not particularly pretty for showing as output (see the section on Formatting on how to print to the screen).
 
 References to subarrays (views) can also be serialized; however, size information is not saved in such cases.
 The reasoning is that references to subarrays cannot be resized in their number of elements if there is a size mismatch during deserialization.
-Therefore, array views should be deserialized as other array views, with matching sizes.
+Therefore, array views should be deserialized as other array views with matching sizes.
 
 The output JSON file created by Cereal in the previous example looks like this.
 
