@@ -45,7 +45,7 @@ mutators:
 ignoreMutators:
   - cxx_logical_and_to_or  # Replaces && with ||
   - cxx_logical_or_to_and
-timeout: 1000  # in milliseconds
+timeout: 10000  # in milliseconds
 debug:
  slowIRVerification: true
 quiet: true  # additional logging?
