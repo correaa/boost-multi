@@ -1854,7 +1854,7 @@ public:
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		// if(version == 0) {
-		// 	std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
+		//  std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
 		// } else {
 			std::for_each(this->elements().begin(), this->elements().end(), [&](element const& elem) {arxiv & AT    ::make_nvp("elem", elem);});
 		// }
@@ -2365,7 +2365,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		// if(version == 0) {
-		// 	std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
+		//  std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
 		// } else {
 			std::for_each(this->elements().begin(), this->elements().end(), [&](typename subarray::element& elem) {arxiv & AT    ::make_nvp("elem", elem);});
 		//}
@@ -2857,10 +2857,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 		#endif
-		auto ba = this->base_;  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		auto of = (idx*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		return *pt;  // in C++17 this is allowed even with syntethic references
+		// auto ba = this->base_;  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
+		// auto of = (idx*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
+		// auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		// return *pt;  // in C++17 this is allowed even with syntethic references
+		return *(this->base_ + (idx*this->stride() - this->offset()));
 	//  return *(this->base() + (idx*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
