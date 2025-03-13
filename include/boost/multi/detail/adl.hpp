@@ -369,23 +369,24 @@ constexpr auto alloc_uninitialized_copy_n(std::allocator<T>& /*alloc*/, InputIt 
 
 // template<class T, class InputIt, class Size, class ForwardIt>
 // constexpr auto alloc_uninitialized_move_n(std::allocator<T>& /*alloc*/, InputIt first, Size count, ForwardIt d_first) {
-// 	return adl_uninitialized_move_n(first, count, d_first);}
+//  return adl_uninitialized_move_n(first, count, d_first);}
 
-template<class Alloc, class InputIt, class Size, class ForwardIt, class = decltype(std::addressof(*ForwardIt{}))>
-auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
-	ForwardIt current = d_first;
-	try {
-		for(; count > 0; ++first, ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), *first);
-		}
-		return current;
-	} catch(...) {
-		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*d_first));
-		}
-		throw;
-	}
-}
+// template<class Alloc, class InputIt, class Size, class ForwardIt, class = decltype(std::addressof(*ForwardIt{}))>
+// auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
+//  ForwardIt current = d_first;
+//  assert(0);
+//  try {
+//      for(; count > 0; ++first, ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), *first);
+//      }
+//      return current;
+//  } catch(...) {
+//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*d_first));
+//      }
+//      throw;
+//  }
+// }
 
 #if defined(__clang__)
 #pragma clang diagnostic push
