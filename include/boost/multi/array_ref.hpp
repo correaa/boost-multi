@@ -2816,16 +2816,16 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		assign(values.begin(), values.end());
 	}
 	template<class It>
-	constexpr auto assign(It first) & -> It {adl_copy_n(first, this->size(), this->begin()); std::advance(first, this->size()); return first;}
+	constexpr auto assign(It first) & -> It { adl_copy_n(first, this->size(), this->begin()); std::advance(first, this->size()); return first; }
 	template<class It>
-	constexpr auto assign(It first)&& -> It {return assign(first);}
+	constexpr auto assign(It first)&& -> It { return assign(first); }
 	template<class It>
 	constexpr void assign(It first, It last) & {
 		assert( std::distance(first, last) == this->size() ); (void)last;  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assign(first);
 	}
 	template<class It>
-	constexpr void assign(It first, It last)&& {assign(first, last);}
+	constexpr void assign(It first, It last)&& { assign(first, last); }
 
 	
 	// constexpr auto operator=(const_subarray     &&) const& noexcept -> const_subarray const&;  // UNIMPLEMENTABLE! TO PASS THE viewable_range CONCEPT!!!, can't be = delete;
