@@ -1623,7 +1623,7 @@ int main() {
 	assert(A == B);
 }
 ```
-[(online)](https://godbolt.org/z/1bvMGq11W)
+[(online)](https://godbolt.org/z/Grr7Mqef5)
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
 However, note that the user must ensure that data is serialized and deserialized into the same type;
