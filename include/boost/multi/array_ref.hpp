@@ -2859,12 +2859,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 		#endif
-		// auto ba = this->base_;  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		// auto of = (idx*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		// auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		// return *pt;  // in C++17 this is allowed even with syntethic references
-		return *(this->base_ + (idx*this->stride() - this->offset()));
-	//  return *(this->base() + (idx*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
+		return *(this->base_ + (idx*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
 		#endif
