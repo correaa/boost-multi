@@ -1,4 +1,4 @@
-// Copyright 2023-2024 Alfredo A. Correa
+// Copyright 2023-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -11,6 +11,10 @@
 #include <functional>  // for plus<>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #include <memory>  // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
+#if (__cplusplus >= 202002L)
+	#include <ranges>  // NOLINT(misc-include-cleaner)
+#endif
+
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 	#include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
 	#include <iterator>     // for size, begin, end  // IWYU pragma: keep
@@ -21,9 +25,10 @@
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
+namespace multi = boost::multi;
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
-		namespace multi = boost::multi;
 		multi::array<int, 1> const arr({10}, 99);
 		for(auto const& elem : arr) {  // NOLINT(altera-unroll-loops) test plain loop
 			BOOST_TEST( elem == 99 );
@@ -61,8 +66,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(range_find) {
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
-		namespace multi = boost::multi;
-
 		using Array2D = multi::array<int, 2>;
 
 		Array2D const a = {
@@ -120,5 +123,39 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  BOOST_TEST( X1 == X2 );
 	// }
 	// #endif
+
+#if defined(__cpp_lib_ranges_zip) && (__cpp_lib_ranges_zip >= 202110L)
+	{
+		multi::array<int, 2> A = {
+			{1, 2, 3},
+			{4, 5, 6},
+			{7, 8, 9},
+		};
+	
+		multi::array<int, 1> const V = {10, 11, 12};
+	
+		multi::array<int, 1> const R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
+
+		BOOST_TEST( R[0] == 11 );
+		BOOST_TEST( R[0] == 13 );
+		BOOST_TEST( R[0] == 15 );
+	}
+	{
+		static_assert( std::ranges::viewable_range<boost::multi::const_subarray<int, 1, int*> > );
+		multi::array<int, 2> const A = {
+			{1, 2, 3},
+			{4, 5, 6},
+			{7, 8, 9},
+		};
+
+		multi::array<int, 1> const V = {10, 11, 12};
+		multi::array<int, 1> const R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
+
+		BOOST_TEST( R[0] == 11 );
+		BOOST_TEST( R[0] == 13 );
+		BOOST_TEST( R[0] == 15 );
+	}
+#endif
+	
 	return boost::report_errors();
 }

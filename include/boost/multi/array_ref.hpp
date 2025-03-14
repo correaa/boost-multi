@@ -1854,7 +1854,7 @@ public:
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		// if(version == 0) {
-		// 	std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
+		//  std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
 		// } else {
 			std::for_each(this->elements().begin(), this->elements().end(), [&](element const& elem) {arxiv & AT    ::make_nvp("elem", elem);});
 		// }
@@ -2365,7 +2365,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		// if(version == 0) {
-		// 	std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
+		//  std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
 		// } else {
 			std::for_each(this->elements().begin(), this->elements().end(), [&](typename subarray::element& elem) {arxiv & AT    ::make_nvp("elem", elem);});
 		//}
@@ -2821,14 +2821,14 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto assign(It first)&& -> It {return assign(first);}
 	template<class It>
 	constexpr void assign(It first, It last) & {
-		assert( std::distance(first, last) == this->size() ); (void)last;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert( std::distance(first, last) == this->size() ); (void)last;  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assign(first);
 	}
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	constexpr auto operator=(const_subarray const&) const& -> const_subarray const& = delete;
-	constexpr auto operator=(const_subarray     &&) const& -> const_subarray const& = delete;
+	// constexpr auto operator=(const_subarray const&) const& -> const_subarray const& = delete;
+	constexpr auto operator=(const_subarray&&) & noexcept -> const_subarray&;  // LEAVE IT UNIMPLEMENTED TO PASS THE viewable_range CONCEPT!!! = delete;
 
 	template<
 		class ECPtr,
