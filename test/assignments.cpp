@@ -236,6 +236,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::static_array<std::vector<int>, 2> arr2(std::move(arr));
 		BOOST_TEST( arr2[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
+
+		BOOST_TEST( arr [0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 		BOOST_TEST( arr [1][1].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 

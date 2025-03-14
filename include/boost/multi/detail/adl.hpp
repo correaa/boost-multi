@@ -235,13 +235,12 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 		//  workadoung for gcc 8.3.1 in Lass
 		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 		return first + count;
-	}
-	// LCOV_EXCL_START  // TODO(correaa) add test
-	catch(...) {
+	} catch(...) {
+		// LCOV_EXCL_START  // TODO(correaa) add test
 		std::for_each(first, current, [&](T& elem) { alloc_traits::destroy(alloc, std::addressof(elem)); });
 		throw;
+		// LCOV_EXCL_STOP
 	}
-	// LCOV_EXCL_STOP
 
 
 	// return current;
@@ -371,22 +370,21 @@ constexpr auto alloc_uninitialized_copy_n(std::allocator<T>& /*alloc*/, InputIt 
 // constexpr auto alloc_uninitialized_move_n(std::allocator<T>& /*alloc*/, InputIt first, Size count, ForwardIt d_first) {
 //  return adl_uninitialized_move_n(first, count, d_first);}
 
-// template<class Alloc, class InputIt, class Size, class ForwardIt, class = decltype(std::addressof(*ForwardIt{}))>
-// auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
-//  ForwardIt current = d_first;
-//  assert(0);
-//  try {
-//      for(; count > 0; ++first, ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), *first);
-//      }
-//      return current;
-//  } catch(...) {
-//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//          std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*d_first));
-//      }
-//      throw;
-//  }
-// }
+template<class Alloc, class InputIt, class Size, class ForwardIt, class = decltype(std::addressof(*ForwardIt{}))>
+auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
+	ForwardIt current = d_first;
+	try {
+		for(; count > 0; ++first, ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), *first);
+		}
+		return current;
+	} catch(...) {
+		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*d_first));
+		}
+		throw;
+	}
+}
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -397,7 +395,6 @@ constexpr auto alloc_uninitialized_copy_n(std::allocator<T>& /*alloc*/, InputIt 
 template<class Alloc, class InputIt, class Size, class ForwardIt>
 auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
 	ForwardIt current = d_first;
-
 	try {
 		for(; count > 0; ++first, ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), std::move(*first));
