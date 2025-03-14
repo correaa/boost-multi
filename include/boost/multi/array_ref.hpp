@@ -2827,7 +2827,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	// constexpr auto operator=(const_subarray const&) const& -> const_subarray const& = delete;
+	constexpr auto operator=(const_subarray const&) const& -> const_subarray const& = delete;
 	constexpr auto operator=(const_subarray&&) & noexcept -> const_subarray&;  // LEAVE IT UNIMPLEMENTED TO PASS THE viewable_range CONCEPT!!! = delete;
 
 	template<
