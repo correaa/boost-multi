@@ -1,4 +1,4 @@
-// Copyright 2023-2024 Alfredo A. Correa
+// Copyright 2023-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -43,6 +43,9 @@ BOOST_AUTO_TEST_CASE(broadcast_as_fill) {
 
 	auto const& ones = one.broadcasted();
 	BOOST_TEST( std::abs( *ones.begin() - 1.0 ) < 1.0e-8 );
+
+	BOOST_TEST( ones.layout().nelems() == (std::numeric_limits<multi::size_type>::max)() );
 }
 
-return boost::report_errors();}
+return boost::report_errors();
+}
