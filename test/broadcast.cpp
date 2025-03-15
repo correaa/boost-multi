@@ -11,6 +11,7 @@
 #include <cmath>      // IWYU pragma: keep  for std::abs
 // IWYU pragma: no_include <cstdlib>                          // for abs
 // IWYU pragma: no_include <stdlib.h>                          // for abs
+#incllude <limits>
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
