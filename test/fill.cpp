@@ -131,6 +131,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::fill(d2D.elements().begin(), d2D.elements().end(), 990);
 
+		BOOST_TEST( d2D.elements().end() - d2D.elements().begin() == 20 );
+		BOOST_TEST( d2D.elements().end() - (d2D.elements().begin() + 10)== 10 );
+
 		BOOST_TEST( d2D[1][1] == 990 );
 	}
 
