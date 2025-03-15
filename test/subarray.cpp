@@ -116,7 +116,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( R2D.addressof()== A2D.addressof() );
 	}
 
-	// equaility
+	// equality 1D
+	{
+		multi::array<int, 1> const AA = {1, 2, 3};
+		multi::array<int, 1> const BB = {2, 3, 4};
+
+		BOOST_TEST(   AA   != BB    );
+		BOOST_TEST( !(AA   == BB  ) );
+
+		BOOST_TEST(   AA() != BB()  );
+		BOOST_TEST( !(AA() == BB()) );
+	}
+
+	// equality 2D
 	{
 		multi::array<int, 2> const AA = {{1, 2}, {3, 4}};
 		multi::array<int, 2> const BB = {{2, 3}, {4, 5}};

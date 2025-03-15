@@ -3197,14 +3197,14 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	friend constexpr auto operator==(const_subarray const& self, const_subarray const& other) -> bool {
 		return
-			self.extension() == other.extension()
+			   self.extension() == other.extension()
 			&& self.elements() == other.elements()
 		;
 	}
 
 	friend constexpr auto operator!=(const_subarray const& self, const_subarray const& other) -> bool {
 		return
-			self.extension() != other.extension()
+			   self.extension() != other.extension()
 			|| self.elements() != other.elements()
 		;
 	}
