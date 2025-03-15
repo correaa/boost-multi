@@ -1355,7 +1355,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// }
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
+		multi::layout_t<D + 1> const new_layout(layout(), 0, 0);  //, (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
 		return const_subarray<T, D+1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
