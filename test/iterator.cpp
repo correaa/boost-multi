@@ -25,7 +25,8 @@ namespace multi = boost::multi;
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(iterator_1d) {
+	// iterator_1d
+	{
 		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<0>>));
 		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<0>>));
 		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<0>>));
@@ -47,6 +48,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( arr.size() == 100 );
 			BOOST_TEST( arr.begin() < arr.end() );
 			BOOST_TEST( arr.end() - arr.begin() == arr.size() );
+
+			auto const begin_plus_10 = arr.begin() + 10;
+			BOOST_TEST( begin_plus_10 - 10 == arr.begin() );
 
 			multi::array<double, 1>::const_iterator const cbarr = arr.cbegin();
 			multi::array<double, 1>::iterator             barr  = arr.begin();
