@@ -1355,6 +1355,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// }
 
 	constexpr auto broadcasted() const& {
+		// TODO(correaa) introduce a broadcasted_layout?
 		multi::layout_t<D + 1> const new_layout(layout(), 0, 0);  //, (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
 		return const_subarray<T, D+1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
@@ -2872,8 +2873,16 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  public:
 	constexpr auto broadcasted() const& {
 		multi::layout_t<1> const self_layout{this->layout()};
-		multi::layout_t<2> const new_layout{self_layout, 0, 0, (std::numeric_limits<size_type>::max)()};
-		return const_subarray<T, 2, typename const_subarray::element_const_ptr>{new_layout, types::base_};
+		// TODO(correaa) introduce a broadcasted_layout?
+		multi::layout_t<2> const new_layout(self_layout, 0, 0);  // , (std::numeric_limits<size_type>::max)()};
+		return const_subarray<T, 2, ElementPtr>(new_layout, types::base_);
+	}
+
+	template <template<class> class Container = std::vector, class... As>
+	constexpr auto to(As&&... as) const& {
+		using value_type = typename const_subarray::value_type;
+		using container_type = Container<value_type>;
+		return container_type(this->begin(), this->end(), std::forward<As>(as)...);
 	}
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename const_subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
