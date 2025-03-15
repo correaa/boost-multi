@@ -558,9 +558,9 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
-		// assert( this->stride_ == other.stride_ );
-		// assert( this->ptr_->layout() == other.ptr_->layout() );
-		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && ( (*(this->ptr_)).layout() == (*(other.ptr_)).layout() );
+		assert( this->stride_ == other.stride_ );
+		assert( this->ptr_->layout() == other.ptr_->layout() );
+		return (this->ptr_ == other.ptr_);  // && (this->stride_ == other.stride_) && ( (*(this->ptr_)).layout() == (*(other.ptr_)).layout() );
 	}
 
 	BOOST_MULTI_HD constexpr auto operator!=(array_iterator const& other) const -> bool {
