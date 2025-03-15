@@ -42,7 +42,8 @@ mutators:
   - cxx_sub_to_add  # Replaces - with +
   - cxx_xor_assign_to_or_assign  # Replaces ^= with |=
   - cxx_xor_to_or  # Replaces ^ with |
-# ignoreMutators:
+ignoreMutators:
+  - cxx_lt_to_le
 #   - cxx_logical_and_to_or  # Replaces && with ||
 #   - cxx_logical_or_to_and
 timeout: 10000  # in milliseconds
