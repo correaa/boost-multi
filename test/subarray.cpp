@@ -140,6 +140,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !(AA() == BB()) );
 	}
 
+	// equality 1D
+	{
+		multi::array<int, 1> const AA = {1, 2, 3};
+		multi::array<unsigned, 1> const BB = {2, 3, 4};
+
+		BOOST_TEST(   AA   != BB    );
+		BOOST_TEST( !(AA   == BB  ) );
+
+		BOOST_TEST(   AA() != BB()  );
+		BOOST_TEST( !(AA() == BB()) );
+	}
+
+	// equality 2D
+	{
+		multi::array<int, 2> const AA = {{1, 2}, {3, 4}};
+		multi::array<unsigned, 2> const BB = {{2, 3}, {4, 5}};
+
+		BOOST_TEST(   AA   != BB    );
+		BOOST_TEST( !(AA   == BB  ) );
+
+		BOOST_TEST(   AA() != BB()  );
+		BOOST_TEST( !(AA() == BB()) );
+	}
+
 	/* test ref(begin, end)*/
 	// {
 	//  multi::array<int, 2> A2D = {
