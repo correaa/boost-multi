@@ -754,6 +754,9 @@ struct layout_t
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset/*, nelems_type nelems*/)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{stride}, offset_{offset} /*, nelems_{nelems}*/ {}  // this leaves nelems_ uninitialized
+
 	constexpr auto origin() const {return sub_.origin() - offset_;}
 
  private:
