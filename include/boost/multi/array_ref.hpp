@@ -925,11 +925,11 @@ struct elements_range_t {
 	elements_range_t(elements_range_t     &&) = delete;
 
 	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
-		if( is_empty() && other.is_empty()) {return true;}
-		return size() == other.size() &&     adl_equal(other.begin(), other.end(), begin());
+		// if( is_empty() && other.is_empty()) { return true; }
+		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());
 	}
 	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
-		if(is_empty() && other.is_empty()) {return false;}
+		// if(is_empty() && other.is_empty()) { return false; }
 		return size() != other.size() ||  ! adl_equal(other.begin(), other.end(), begin());
 	}
 
@@ -1662,7 +1662,7 @@ public:
 		return (this->extension() == other.extension()) && (this->elements() == other.elements());
 	}
 	constexpr auto operator!=(const_subarray const& other) const -> bool {
-		return (this->extension() != other.extension()) ||  (this->elements() != other.elements());
+		return (this->extension() != other.extension()) || (this->elements() != other.elements());
 	}
 
 	friend constexpr auto lexicographical_compare(const_subarray const& self, const_subarray const& other) -> bool {
@@ -2507,9 +2507,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
  private:
 	friend struct const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
 
-	element_ptr ptr_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
-	stride_type stride_;  // = {1};  // = {0};  // TODO(correaa) change to make it trivially default constructible
-
+	element_ptr ptr_;
+	stride_type stride_;
  public:
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const { return array_iterator{*this} += n; }
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const { return array_iterator{*this} -= n; }
@@ -2517,10 +2516,10 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	BOOST_MULTI_HD constexpr auto base() const {return static_cast<pointer>(ptr_);}
 
 	[[deprecated("use base() for iterator")]]
-	BOOST_MULTI_HD constexpr auto data() const {return base();}
+	BOOST_MULTI_HD constexpr auto data() const { return base(); }
 
-	// BOOST_MULTI_FRIEND_CONSTEXPR
-	// auto base(array_iterator const& self) { return self.base(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR
+	auto base(array_iterator const& self) { return self.base(); }
 
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type {return      stride_;}
 	friend    constexpr auto stride(array_iterator const& self) -> stride_type { return self.stride_; }
