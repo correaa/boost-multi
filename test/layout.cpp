@@ -92,6 +92,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<int, 1, int*, multi::contiguous_layout<> > const arr(static_cast<std::ptrdiff_t>(vec.size()), vec.data());
 
 		auto&& arr_d = arr.dropped(1);
+		BOOST_TEST(  arr_d.size() == arr.size() - 1 );
 		BOOST_TEST( &arr_d[0] == &arr[1] );
 
 		auto&& arr_s = arr.sliced(1, 4);
