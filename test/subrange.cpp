@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -263,7 +263,30 @@ BOOST_AUTO_TEST_CASE(subrange_start_finish) {
 	multi::irange const rng4(rng3);
 
 	BOOST_TEST( &arr(rng4, 1)[0] == &arr[2][1] );
-
 	BOOST_TEST( &arr(rng3, 1)[0] == &arr[2][1] );
 }
-return boost::report_errors();}
+// elements random access
+{
+	multi::array<int, 2> arr = {
+		{ 0, 1, 2 },
+		{ 3, 4, 5 },
+		{ 6, 7, 8 },
+	};
+
+	auto const it = arr.elements().begin() + 5;
+	BOOST_TEST( *it == 5 );
+	BOOST_TEST( *(it + 2) == 7 );
+}
+
+{
+	multi::array<int, 1> arr = { 0, 1, 2, 3, 4, 5};
+
+	auto const it = arr.elements().begin() + 3;
+	BOOST_TEST( *it == 3 );
+	BOOST_TEST( *(it + 2) == 5 );
+}
+
+
+return boost::report_errors();
+
+}
