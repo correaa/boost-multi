@@ -378,12 +378,14 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return extensions.from_linear(idx);
 	}
 
-	static constexpr auto to_linear(index const& idx) -> difference_type  /*const*/ {return idx;}
-	constexpr auto operator()(index const& idx) const -> difference_type {return to_linear(idx);}
+	static constexpr auto to_linear(index const& idx) -> difference_type { return idx; }
+
 	constexpr auto operator[](index idx) const {
 		using std::get;
 		return multi::detail::tuple<multi::index>{get<0>(this->base())[idx]};
 	}
+	constexpr auto operator()(index idx) const { return idx; }
+	// constexpr auto operator()(index const& /*idx*/) const -> difference_type { return to_linear(42); }
 
 	template<class... Indices>
 	constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
