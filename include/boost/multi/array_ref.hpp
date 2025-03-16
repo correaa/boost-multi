@@ -4,10 +4,11 @@
 
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
+#pragma once
+
 #include "detail/layout.hpp"
 #include <stdexcept>
 #include <type_traits>
-#pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -232,22 +232,20 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 //   friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
 // };
 
-template<class T, class D>
+template<class Self, class D>
 class addable2 {
  protected:
 	addable2() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
-	friend T;
+	friend Self;
 
  public:
 	using difference_type = D;
-	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto operator+(TT&& self, difference_type const& diff) -> T {
-		T tmp{std::forward<TT>(self)};
-		tmp += diff;
-		return tmp;
-	}
-	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto operator+(difference_type const& diff, TT&& self) -> T { return std::forward<TT>(self) + diff; }
+
+	template<class TT, typename = std::enable_if_t<std::is_base_of<Self, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	friend constexpr auto operator+(TT&& self, difference_type const& diff) -> Self { return Self{std::forward<TT>(self)} += diff; }
+
+	template<class TT, typename = std::enable_if_t<std::is_base_of<Self, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	friend constexpr auto operator+(difference_type const& diff, TT&& self) -> Self { return std::forward<TT>(self) + diff; }
 };
 
 template<class T, class D>
