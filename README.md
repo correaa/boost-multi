@@ -95,7 +95,7 @@ Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+)
 and 
             [`nvc++`](https://godbolt.org/z/6z39PjT47) (22.7+),
 Intel's      `icpx` (2022.0.0+) and `icc` (2021.1.2+, deprecated),
-Baxter's    [`circle`](https://www.circle-lang.org/) (build 202+),
+Baxter's    [`circle`](https://www.circle-lang.org/) ([build 202+](https://godbolt.org/z/KeG417fMz)),
 [Zig](https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j) in [c++ mode (v0.9.0+)](https://godbolt.org/z/cKGebsWMG),
 Edison Desing's [EDG]() [(6.5+)](https://godbolt.org/z/693fxPedx)
 and
