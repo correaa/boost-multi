@@ -12,7 +12,7 @@
 #include <memory>  // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 #if (__cplusplus >= 202002L)
-	#include <ranges>  // NOLINT(misc-include-cleaner)
+	#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #endif
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -124,7 +124,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 	// #endif
 
-#if defined(__cpp_lib_ranges_zip) && (__cpp_lib_ranges_zip >= 202110L)
+#if defined(__cpp_lib_ranges_zip) && (__cpp_lib_ranges_zip >= 202110L) && !defined(_MSC_VER)
 	{
 		multi::array<int, 2> A = {
 			{1, 2, 3},

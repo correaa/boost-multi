@@ -1186,8 +1186,8 @@ struct array : static_array<T, D, Alloc> {
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
-	: static_{array<T, D>(ilv.begin(), ilv.end())} {
-		assert(this->stride() != 0);
+	: static_{ilv.size()?array<T, D>(ilv.begin(), ilv.end()):array<T,D>{}} {
+		assert(ilv.size() || (this->stride() != 0));
 	}
 
 	template<
@@ -1395,17 +1395,13 @@ struct array : static_array<T, D, Alloc> {
 	}
 
 	auto operator=(std::initializer_list<value_type> values) -> array& {
-		assign(values.begin(), values.end());
+		if(!values.size()) {
+			this->clear();
+		} else {
+			assign(values.begin(), values.end());
+		}
 		return *this;
 	}
-
-	// template<class... TTs>
-	// [[deprecated("use extensions for reextents, not tuples")]]
-	// auto reextent(std::tuple<TTs...> const& other) -> array& {
-	//  return reextent(
-	//    std::apply([](auto const&... extensions) {return typename array::extensions_type(extensions...);}, other)
-	//  );  // paren is important here ext_type(...) for allow narrowing casts ^^^
-	// }
 
 	auto reextent(typename array::extensions_type const& extensions) && -> array&& {
 		if(extensions == this->extensions()) {

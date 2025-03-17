@@ -1,21 +1,22 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
+#include <boost/multi/adaptors/blas/core.hpp>  // for context
+#include <boost/multi/adaptors/blas/gemm.hpp>  // for gemm, gemm_range
 
-#include <boost/multi/adaptors/blas/core.hpp>        // for context
-#include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
+#include <boost/core/lightweight_test.hpp>
 // IWYU pragma: no_include "boost/multi/adaptors/blas/numeric.hpp"     // for involuter, conju...
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
-
 #include <boost/multi/array.hpp>                     // for layout_t, array
 
-#include <cmath>  // for abs  // IWYU pragma: keep
+#include <cmath>     // for abs  // IWYU pragma: keep
 #include <complex>   // for complex, operator*
 #include <iterator>  // for begin, size
 // IWYU pragma: no_include <memory>
 // IWYU pragma: no_include <utility>                                   // for forward
+// IWYU pragma: no_include <cstdlib>                                   // for abs
+// IWYU pragma: no_include <exception>                                 // for exception
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
@@ -443,7 +444,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 #if defined(CUDA_FOUND)
-	#include <thrust/complex.h>
+#   include <thrust/complex.h>
 	BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust) {
 		using complex = thrust::complex<double>;
 		complex const                  I{0.0, 1.0};

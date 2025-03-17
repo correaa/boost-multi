@@ -4,10 +4,11 @@
 
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
+#pragma once
+
 #include "detail/layout.hpp"
 #include <stdexcept>
 #include <type_traits>
-#pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
@@ -558,9 +559,9 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
-		// assert( this->stride_ == other.stride_ );
-		// assert( this->ptr_->layout() == other.ptr_->layout() );
-		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && ( (*(this->ptr_)).layout() == (*(other.ptr_)).layout() );
+		assert( this->stride_ == other.stride_ );
+		assert( this->ptr_->layout() == other.ptr_->layout() );
+		return (this->ptr_ == other.ptr_);  // && (this->stride_ == other.stride_) && ( (*(this->ptr_)).layout() == (*(other.ptr_)).layout() );
 	}
 
 	BOOST_MULTI_HD constexpr auto operator!=(array_iterator const& other) const -> bool {
@@ -925,11 +926,11 @@ struct elements_range_t {
 	elements_range_t(elements_range_t     &&) = delete;
 
 	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
-		if( is_empty() && other.is_empty()) {return true;}
-		return size() == other.size() &&     adl_equal(other.begin(), other.end(), begin());
+		// if( is_empty() && other.is_empty()) { return true; }
+		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());
 	}
 	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
-		if(is_empty() && other.is_empty()) {return false;}
+		// if(is_empty() && other.is_empty()) { return false; }
 		return size() != other.size() ||  ! adl_equal(other.begin(), other.end(), begin());
 	}
 
@@ -1355,7 +1356,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// }
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<D + 1> const new_layout{layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
+		// TODO(correaa) introduce a broadcasted_layout?
+		multi::layout_t<D + 1> const new_layout(layout(), 0, 0);  //, (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
 		return const_subarray<T, D+1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
@@ -1662,7 +1664,7 @@ public:
 		return (this->extension() == other.extension()) && (this->elements() == other.elements());
 	}
 	constexpr auto operator!=(const_subarray const& other) const -> bool {
-		return (this->extension() != other.extension()) ||  (this->elements() != other.elements());
+		return (this->extension() != other.extension()) || (this->elements() != other.elements());
 	}
 
 	friend constexpr auto lexicographical_compare(const_subarray const& self, const_subarray const& other) -> bool {
@@ -2507,17 +2509,16 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
  private:
 	friend struct const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
 
-	element_ptr ptr_;  // {nullptr};  // TODO(correaa) : consider uninitialized pointer
-	stride_type stride_;  // = {1};  // = {0};  // TODO(correaa) change to make it trivially default constructible
-
+	element_ptr ptr_;
+	stride_type stride_;
  public:
-	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret+=n; return ret; }
-	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> array_iterator { array_iterator ret{*this}; ret-=n; return ret; }
+	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const { return array_iterator{*this} += n; }
+	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const { return array_iterator{*this} -= n; }
 
 	BOOST_MULTI_HD constexpr auto base() const {return static_cast<pointer>(ptr_);}
 
 	[[deprecated("use base() for iterator")]]
-	BOOST_MULTI_HD constexpr auto data() const {return base();}
+	BOOST_MULTI_HD constexpr auto data() const { return base(); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto base(array_iterator const& self) { return self.base(); }
@@ -2704,7 +2705,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<1> const new_layout{this->layout(), 0, 0, (std::numeric_limits<size_type>::max)()};  // paren for MSVC macros
+		multi::layout_t<1> const new_layout(this->layout(), 0, 0, (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
 		return subarray<T, 1, typename const_subarray::element_const_ptr>(new_layout, types::base_);
 	}
 
@@ -2873,8 +2874,16 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  public:
 	constexpr auto broadcasted() const& {
 		multi::layout_t<1> const self_layout{this->layout()};
-		multi::layout_t<2> const new_layout{self_layout, 0, 0, (std::numeric_limits<size_type>::max)()};
-		return const_subarray<T, 2, typename const_subarray::element_const_ptr>{new_layout, types::base_};
+		// TODO(correaa) introduce a broadcasted_layout?
+		multi::layout_t<2> const new_layout(self_layout, 0, 0);  // , (std::numeric_limits<size_type>::max)()};
+		return const_subarray<T, 2, ElementPtr>(new_layout, types::base_);
+	}
+
+	template <template<class> class Container = std::vector, class... As>
+	constexpr auto to(As&&... as) const& {
+		using value_type = typename const_subarray::value_type;
+		using container_type = Container<value_type>;
+		return container_type(this->begin(), this->end(), std::forward<As>(as)...);
 	}
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename const_subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
@@ -3198,14 +3207,14 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	friend constexpr auto operator==(const_subarray const& self, const_subarray const& other) -> bool {
 		return
-			self.extension() == other.extension()
+			   self.extension() == other.extension()
 			&& self.elements() == other.elements()
 		;
 	}
 
 	friend constexpr auto operator!=(const_subarray const& self, const_subarray const& other) -> bool {
 		return
-			self.extension() != other.extension()
+			   self.extension() != other.extension()
 			|| self.elements() != other.elements()
 		;
 	}

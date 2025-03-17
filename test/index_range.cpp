@@ -11,6 +11,9 @@
 #include <numeric>    // for accumulate
 #include <vector>     // for vector
 
+// IWYU pragma: no_include <tuple>                            // for tuple_element<>::type
+// IWYU pragma: no_include <type_traits>                      // for add_const<>::type
+
 namespace multi = boost::multi;
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/

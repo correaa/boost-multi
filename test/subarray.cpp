@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -114,6 +114,54 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::const_subarray<int, 2> R2D(A2D.begin(), A2D.end());
 		BOOST_TEST( R2D.addressof()== A2D.addressof() );
+	}
+
+	// equality 1D
+	{
+		multi::array<int, 1> const AA = {1, 2, 3};
+		multi::array<int, 1> const BB = {2, 3, 4};
+
+		BOOST_TEST(   AA   != BB    );
+		BOOST_TEST( !(AA   == BB  ) );
+
+		BOOST_TEST(   AA() != BB()  );
+		BOOST_TEST( !(AA() == BB()) );
+	}
+
+	// equality 2D
+	{
+		multi::array<int, 2> const AA = {{1, 2}, {3, 4}};
+		multi::array<int, 2> const BB = {{2, 3}, {4, 5}};
+
+		BOOST_TEST(   AA   != BB    );
+		BOOST_TEST( !(AA   == BB  ) );
+
+		BOOST_TEST(   AA() != BB()  );
+		BOOST_TEST( !(AA() == BB()) );
+	}
+
+	// equality 1D
+	{
+		multi::array<int, 1> const AA = {1, 2, 3};
+		multi::array<unsigned, 1> const BB = {2, 3, 4};
+
+		BOOST_TEST(   AA   != BB    );
+		BOOST_TEST( !(AA   == BB  ) );
+
+		BOOST_TEST(   AA() != BB()  );
+		BOOST_TEST( !(AA() == BB()) );
+	}
+
+	// equality 2D
+	{
+		multi::array<int, 2> const AA = {{1, 2}, {3, 4}};
+		multi::array<unsigned, 2> const BB = {{2, 3}, {4, 5}};
+
+		BOOST_TEST(   AA   != BB    );
+		BOOST_TEST( !(AA   == BB  ) );
+
+		BOOST_TEST(   AA() != BB()  );
+		BOOST_TEST( !(AA() == BB()) );
 	}
 
 	/* test ref(begin, end)*/

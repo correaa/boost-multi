@@ -7,6 +7,7 @@
 #include <boost/multi/array.hpp>
 
 #include <tuple>  // IWYU pragma: keep
+// IWYU pragma: no_include <type_traits>                      // for add_const<>::type
 
 namespace multi = boost::multi;
 
