@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -292,29 +292,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}));
 
 		// BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated().unrotated() == multi::array<int, 4>{
-		// 	{
-		// 		{{ 1,  2},
-		// 		 { 9, 10}},
-		// 		{{ 3, 4},
-		// 		 {11, 12}},
-		// 	},
-		// 	{
-		// 		{{ 5,  6},
-		// 		 {13, 14}},
-		// 		{{7, 8},
-		// 		 {15, 16}}
-		// 	}
+		//  {
+		//      {{ 1,  2},
+		//       { 9, 10}},
+		//      {{ 3, 4},
+		//       {11, 12}},
+		//  },
+		//  {
+		//      {{ 5,  6},
+		//       {13, 14}},
+		//      {{7, 8},
+		//       {15, 16}}
+		//  }
 		// }));
 
 		// BOOST_TEST(( arr.halved().rotated().rotated().halved().unr == multi::array<int, 3>{
-		// 	{
-		// 		{ 1,  2,  3,  4},
-		// 		{ 5,  6,  7,  8}
-		// 	},
-		// 	{
-		// 		{ 9, 10, 11, 12},
-		// 		{13, 14, 15, 16}
-		// 	}
+		//  {
+		//      { 1,  2,  3,  4},
+		//      { 5,  6,  7,  8}
+		//  },
+		//  {
+		//      { 9, 10, 11, 12},
+		//      {13, 14, 15, 16}
+		//  }
 		// }));
 	}
 
@@ -624,7 +624,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		));
 	}
 
-	BOOST_AUTO_TEST_CASE(tiled_1D) {
+	// tiled 1D with 3 elements per tile
+	{
 		multi::array<int, 1> const arr = {0, 1, 2, /**/ 3, 4, 5, /**/ 6, 7};
 
 		BOOST_TEST( arr.size() == 8 );
@@ -644,6 +645,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( border.size() == 2 );
 		BOOST_TEST(( border == multi::array<int, 1>{6, 7} ));
+	}
+
+	// tiled 1D with 4 elements per tile 
+	{
+		multi::array<int, 1> const arr = {0, 1, 2, 3, /**/ 4, 5, 6, 7, /**/ 8, 9};
+
+		BOOST_TEST( arr.size() == 8 );
+
+		BOOST_TEST(( arr.tiled(4).quotient[0].size() == 4 ));
+		BOOST_TEST(( arr.tiled(4).quotient[1].size() == 4 ));
+
+		BOOST_TEST(( arr.tiled(4).remainder.size() == 2 ));
+
+		auto [tiles, border] = arr.tiled(4);
+		BOOST_TEST( tiles.size() == 2 );
+		BOOST_TEST(( tiles[0].size() == 4 ));
+		BOOST_TEST(( tiles[1].size() == 4 ));
+
+		BOOST_TEST(( tiles[0] == multi::array<int, 1>{0, 1, 2, 3} ));
+		BOOST_TEST(( tiles[1] == multi::array<int, 1>{4, 5, 6, 7} ));
+
+		BOOST_TEST( border.size() == 2 );
+		BOOST_TEST(( border == multi::array<int, 1>{8, 9} ));
 	}
 
 	// put subarray in std::array
