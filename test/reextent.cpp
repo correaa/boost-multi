@@ -1,4 +1,4 @@
-// Copyright 2018-2023 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -51,6 +51,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr)== 5L*4L );
 		BOOST_TEST( arr[1][2] ==  60 );   // reextent preserves values when it can...
 		BOOST_TEST( arr[4][3] == 990 );  // ...and gives selected value to the rest
+	}
+	{
+		multi::array<int, 2> arr({2, 3});
+
+		BOOST_TEST( arr.size() == 2 );
+
+		arr = multi::array<int, 2>{};
+
+		BOOST_TEST( arr.size() == 0 );
 	}
 
 	BOOST_AUTO_TEST_CASE(array_reextent_noop) {
