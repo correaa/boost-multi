@@ -246,7 +246,7 @@ clang++-18 mull-18:  # mull-18 crashes
     - large-memory-space
     - non-shared
   interruptible: true
-  allow_failure: false
+  allow_failure: true
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
