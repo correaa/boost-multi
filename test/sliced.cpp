@@ -5,7 +5,8 @@
 
 #include <boost/multi/array.hpp>
 
-#include <numeric>  // std::iota
+#include <numeric>  // for std::iota
+#include <vector>  // for std::vector
 
 namespace multi = boost::multi;
 
