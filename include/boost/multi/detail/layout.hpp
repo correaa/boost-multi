@@ -6,6 +6,8 @@
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
+#include <boost/multi/detail/config/NODISCARD.hpp>
+
 #include <boost/multi/detail/index_range.hpp>    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
 #include <boost/multi/detail/operators.hpp>      // IWYU pragma: export  // for equality_comparable
 #include <boost/multi/detail/serialization.hpp>  // IWYU pragma: export  // for archive_traits
@@ -637,8 +639,10 @@ class contiguous_layout {
 
 	constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
 
-	constexpr auto is_empty() const { return nelems_; }
-	constexpr auto    empty() const { return is_empty(); }
+	constexpr auto is_empty() const -> bool { return nelems_ == 0; }
+
+	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
+	constexpr auto empty() const { return is_empty(); }
 
 	constexpr auto sub() const { return layout_t<0, SSize>{}; }
 
@@ -1075,8 +1079,10 @@ struct layout_t<0, SSize>
 	constexpr auto extension() const -> extension_type = delete;
 
 	constexpr auto is_empty()  const noexcept {return nelems_ == 0;}
-	[[nodiscard/*for c++20 ("empty checks for emptyness")*/]]
+
+	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
 	constexpr auto empty()        const     noexcept {return nelems_ == 0;}
+
 	friend
 	constexpr auto empty(layout_t const& self) noexcept {return self.empty();}
 
