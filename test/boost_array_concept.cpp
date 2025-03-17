@@ -15,8 +15,8 @@
 	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
-	#pragma GCC diagnositc ignored "-Wunknown-pragmas"
-	#pragma GCC diagnositc ignored "-Wdeprecated-declarations"
+	#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+	#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 #include <boost/multi/array.hpp>  // for operator!=, implicit...
