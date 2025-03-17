@@ -61,6 +61,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr.size() == 0 );
 	}
+
+	#if !defined(__circle_build__)
 	{
 		multi::array<int, 2> const arr({2, 3});
 
@@ -70,7 +72,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( brr.size() == 0 );
 	}
-	#if !defined(__circle_build__)
 
 	{
 		multi::array<int, 2> const arr({2, 3});
