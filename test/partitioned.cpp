@@ -651,7 +651,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> const arr = {0, 1, 2, 3, /**/ 4, 5, 6, 7, /**/ 8, 9};
 
-		BOOST_TEST( arr.size() == 8 );
+		BOOST_TEST( arr.size() == 10 );
 
 		BOOST_TEST(( arr.tiled(4).quotient[0].size() == 4 ));
 		BOOST_TEST(( arr.tiled(4).quotient[1].size() == 4 ));
@@ -668,6 +668,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( border.size() == 2 );
 		BOOST_TEST(( border == multi::array<int, 1>{8, 9} ));
+	}
+
+	// tiled 1D with 5 elements per tile
+	{
+		multi::array<int, 1> const arr = {0, 1, 2, 3, 4, /**/ 5, 6, 7, 8, 9, /**/ 10, 11};
+
+		BOOST_TEST( arr.size() == 12 );
+
+		BOOST_TEST(( arr.tiled(5).quotient[0].size() == 5 ));
+		BOOST_TEST(( arr.tiled(5).quotient[1].size() == 5 ));
+
+		BOOST_TEST(( arr.tiled(5).remainder.size() == 2 ));
+
+		auto [tiles, border] = arr.tiled(5);
+		BOOST_TEST( tiles.size() == 2 );
+		BOOST_TEST(( tiles[0].size() == 5 ));
+		BOOST_TEST(( tiles[1].size() == 5 ));
+
+		BOOST_TEST(( tiles[0] == multi::array<int, 1>{0, 1, 2, 3, 4} ));
+		BOOST_TEST(( tiles[1] == multi::array<int, 1>{5, 6, 7, 8, 9} ));
+
+		BOOST_TEST( border.size() == 2 );
+		BOOST_TEST(( border == multi::array<int, 1>{10, 11} ));
 	}
 
 	// put subarray in std::array

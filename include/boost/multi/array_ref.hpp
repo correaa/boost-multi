@@ -3096,7 +3096,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 			const_subarray<T, 1, element_ptr> remainder;
 		};
 		return divided_type{
-			this->taked(this->size() - (this->size() % count)).chunked(count),
+			this->taked(this->size() - (this->size() / count)).chunked(count),
 			this->dropped(this->size() - (this->size() % count))
 		};
 	}
