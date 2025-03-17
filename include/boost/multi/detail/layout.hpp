@@ -5,7 +5,9 @@
 #ifndef BOOST_MULTI_DETAIL_LAYOUT_HPP
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
+#include <boost/multi/detail/config/NODISCARD.hpp>
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
+
 #include <boost/multi/detail/index_range.hpp>    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
 #include <boost/multi/detail/operators.hpp>      // IWYU pragma: export  // for equality_comparable
 #include <boost/multi/detail/serialization.hpp>  // IWYU pragma: export  // for archive_traits
@@ -378,12 +380,14 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return extensions.from_linear(idx);
 	}
 
-	static constexpr auto to_linear(index const& idx) -> difference_type  /*const*/ {return idx;}
-	constexpr auto operator()(index const& idx) const -> difference_type {return to_linear(idx);}
+	static constexpr auto to_linear(index const& idx) -> difference_type { return idx; }
+
 	constexpr auto operator[](index idx) const {
 		using std::get;
 		return multi::detail::tuple<multi::index>{get<0>(this->base())[idx]};
 	}
+	constexpr auto operator()(index idx) const { return idx; }
+	// constexpr auto operator()(index const& /*idx*/) const -> difference_type { return to_linear(42); }
 
 	template<class... Indices>
 	constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
@@ -635,8 +639,10 @@ class contiguous_layout {
 
 	constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
 
-	constexpr auto is_empty() const { return nelems_; }
-	constexpr auto    empty() const { return is_empty(); }
+	constexpr auto is_empty() const -> bool { return nelems_ == 0; }
+
+	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
+	constexpr auto empty() const { return is_empty(); }
 
 	constexpr auto sub() const { return layout_t<0, SSize>{}; }
 
@@ -753,6 +759,9 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
+
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset/*, nelems_type nelems*/)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{stride}, offset_{offset} /*, nelems_{nelems}*/ {}  // this leaves nelems_ uninitialized
 
 	constexpr auto origin() const {return sub_.origin() - offset_;}
 
@@ -879,8 +888,8 @@ struct layout_t
 	       constexpr auto extensions()        const { return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())}; }  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
-//  [[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-	constexpr auto extension(dimensionality_type dim) const {return std::apply([](auto... extensions) {return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim));}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14 
+	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
+	constexpr auto extension(dimensionality_type dim) const { return std::apply([](auto... extensions) { return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim)); }  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14 
 //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto stride   (dimensionality_type dim) const {return std::apply([](auto... strides   ) {return std::array<stride_type    , static_cast<std::size_t>(D)>{strides   ...};}, strides   ()       ).at(static_cast<std::size_t>(dim));}
 //  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
@@ -1070,8 +1079,10 @@ struct layout_t<0, SSize>
 	constexpr auto extension() const -> extension_type = delete;
 
 	constexpr auto is_empty()  const noexcept {return nelems_ == 0;}
-	[[nodiscard/*for c++20 ("empty checks for emptyness")*/]]
+
+	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
 	constexpr auto empty()        const     noexcept {return nelems_ == 0;}
+
 	friend
 	constexpr auto empty(layout_t const& self) noexcept {return self.empty();}
 

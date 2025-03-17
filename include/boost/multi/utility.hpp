@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -126,8 +126,8 @@ struct transform_ptr {
 	#pragma clang diagnostic pop
 	#endif
 
-	constexpr auto operator+(difference_type n) const -> transform_ptr { transform_ptr ret{*this}; ret += n; return ret; }
-	constexpr auto operator-(difference_type n) const -> transform_ptr { transform_ptr ret{*this}; ret -= n; return ret; }
+	constexpr auto operator+(difference_type n) const -> transform_ptr { return transform_ptr{*this} += n; }
+	constexpr auto operator-(difference_type n) const -> transform_ptr { return transform_ptr{*this} -= n; }
 
 	constexpr auto operator-(transform_ptr const& other) const -> difference_type { return p_ - other.p_; }
 

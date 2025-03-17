@@ -212,7 +212,33 @@ clang++:
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
 
-clang++-16 mull-16:  # mull-17 crashes
+# clang++-16 mull-16:  # mull-17 crashes
+#   image: ubuntu:24.04
+#   stage: build
+#   tags:
+#     - x86_64  # for mull
+#     - large-memory-space
+#     - non-shared
+#   interruptible: true
+#   allow_failure: false
+#   script:
+#     - apt-get -qq update
+#     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-16 cmake libclang-rt-16-dev make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+#     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
+#     - clang++-16 --version
+#     - apt-get -qq update
+#     - apt search mull
+#     - apt-get -qq install --no-install-recommends -y --quiet mull-16 libclang-cpp16
+#     - mkdir build && cd build
+#     - mull-runner-16 --version
+#     - CXX=clang++-16 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fpass-plugin=/usr/lib/mull-ir-frontend-16 -g -grecord-command-line -fsanitize=address"
+#     - cmake --build . --parallel 8 || cmake --build . --parallel 1 --verbose
+#     # - ctest -j 2 --output-on-failure
+#     - cd test
+#     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-16 --timeout 20000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+#   needs: ["clang++"]
+
+clang++-18 mull-18:  # mull-18 crashes
   image: ubuntu:24.04
   stage: build
   tags:
@@ -220,22 +246,22 @@ clang++-16 mull-16:  # mull-17 crashes
     - large-memory-space
     - non-shared
   interruptible: true
-  allow_failure: false
+  allow_failure: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-16 cmake libclang-rt-16-dev make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
-    - clang++-16 --version
+    - clang++-18 --version
     - apt-get -qq update
     - apt search mull
-    - apt-get -qq install --no-install-recommends -y --quiet mull-16 libclang-cpp16
+    - apt-get -qq install --no-install-recommends -y --quiet mull-18 libclang-cpp18
     - mkdir build && cd build
-    - mull-runner-16 --version
-    - CXX=clang++-16 cmake .. -DCMAKE_CXX_FLAGS="-O1 -fpass-plugin=/usr/lib/mull-ir-frontend-16 -g -grecord-command-line -fprofile-instr-generate -fcoverage-mapping"
-    - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
+    - mull-runner-18 --version
+    - CXX=clang++-18 cmake .. -DCMAKE_CXX_FLAGS="-O3 -fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line -fsanitize=address"
+    - cmake --build . --parallel 8 || cmake --build . --parallel 1 --verbose
     # - ctest -j 2 --output-on-failure
     - cd test
-    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-16 --timeout 20000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j4 --stop-on-failure) || exit 255)'
   needs: ["clang++"]
 
 # deb:
@@ -707,7 +733,7 @@ culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
 rocm:
   stage: build
   image: rocm/dev-ubuntu-24.04  # rocm/dev-ubuntu-22.04
-  allow_failure: true
+  allow_failure: false
   tags:
     - non-shared
     - docker
@@ -773,7 +799,7 @@ circle-latest c++20:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle"]
+#  needs: ["circle"]
 
 inq:
   stage: test

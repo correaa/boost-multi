@@ -37,6 +37,7 @@ export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-ori
 export PMIX_MCA_gds=hash
 
 
+ (mkdir -p .build.clang++        && cd .build.clang++        && CXX=clang++                                                   cmake .. -DCMAKE_BUILD_TYPE=Debug                                                                                                                                                            && cmake --build . $CMT &&  (ctest --parallel 2 $CTR || ctest --rerun-failed --output-on-failure $CTR) ) || exit 666
  (mkdir -p .build.clang++-rel    && cd .build.clang++-rel    && CXX=clang++                                                   cmake .. -DCMAKE_BUILD_TYPE=Release                                                                                                                                                          && cmake --build . $CMT &&  (ctest --parallel 2 $CTR || ctest --rerun-failed --output-on-failure $CTR) ) || exit 666
  (mkdir -p .build.g++            && cd .build.g++            && CXX=g++                                                       cmake .. -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON                                                                                                                       && cmake --build . $CMT &&  (ctest --parallel 2 $CTR || ctest --rerun-failed --output-on-failure $CTR) ) || exit 666
  (mkdir -p .build.clang++        && cd .build.clang++        && CXX=clang++                                                   cmake .. -DCMAKE_BUILD_TYPE=Debug                                                                                                                                                            && cmake --build . $CMT &&  ctest --parallel 2 --output-on-failure $CTR) || exit 666
@@ -80,7 +81,4 @@ else
 #(find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression:{} --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 --suppress=unmatchedSuppression {} \;) || exit
 fi
 
-#fuser --kill /dev/nvidia-uvm
-#while fuser --silent /dev/nvidia-uvm; do sleep 1; done
-#echo "$0 $@: reload nvidia_uvm"
-#modprobe -r nvidia_uvm && modprobe nvidia_uvm
+#fuser --kill /dev/nvidia-uvm; while fuser --silent /dev/nvidia-uvm; do sleep 1; done; modprobe -r nvidia_uvm && modprobe nvidia_uvm
