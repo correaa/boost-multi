@@ -407,30 +407,31 @@ Arrays can change their size while _preserving elements_ with the `reextent` met
 
 ```cpp
 multi::array<int, 2> A = {
-	 {1, 2, 3},
-	 {4, 5, 6}
+ {1, 2, 3},
+ {4, 5, 6}
 };
 
-A.rextent({4, 4});
+A.reextent({4, 4});
 
 assert( A[0][0] == 1 );
 ```
 
-Arrays can be emptied (to zero-size) with `.clear()` (equivalent to `.rextent({0, 0, ...})`).
+An alternative syntax with an additional parameter, `.reextent({...}, value)`, sets _new_ (not preexisting) elements to a specific value.
 
-The main purpose of `reextent` is element preservation.
-Allocations are not amortized; 
-except for trivial cases, all calls to reextend allocate and deallocate memory.
-If element preservation is not desired, a simple assignment (move) from a new array expresses the intention better and it is more efficient since it doesn't need to copy preexisting elements.
+The primary purpose of `reextent` is element preservation.
+All calls to `reextent` allocate and deallocate memory; therefore, they are not amortized.
+If element preservation is not desired, a simple assignment (move) from a new array better expresses the intention and is more efficient since it doesn't need to copy preexisting elements.
 
 ```cpp
-A = multi::array<int, 2>({4, 4});  // like A.rextent({4, 4}) but elements are not preserved.
+A = multi::array<int, 2>({4, 4});  // extensions like A.reextent({4, 4}) but elements are not preserved
+
+A = multi::array<int, 2>({4, 4}, 99)  // for initialization with specific value 99
+
+A = {};  // empties the array, equivalent to `A.reextent({0, 0});`.
 ```
 
-An alternative syntax, `.rextent({...}, value)` sets _new_ (not preexisting) elements to a specific value.
-
-Subarrays or views cannot change their size or be emptied (e.g. `A[1].rextent({4})` or `A[1].clear()` will not compile).
-For the same reason, subarrays cannot be assigned from an array or another subarray of a different size.
+Subarrays or views cannot change their size or be emptied (e.g., `A[1].rextent({4})` or `A[1].clear()` will not compile).
+For the same reason, subarrays cannot be assigned from an array or another subarray of different size.
 
 Changing the size of arrays by `reextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
 
