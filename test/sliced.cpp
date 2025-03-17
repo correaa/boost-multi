@@ -105,9 +105,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( AA.nelems() == static_cast<multi::size_t>(VV.size()) );
 		BOOST_TEST( !AA.is_empty() );
 
-		std::cout << AA.size() << '\n';
-		std::cout << AA.sliced(2, 9).size() << '\n';
-
 		BOOST_TEST( AA.sliced(2, 9).size() == 7 );
 		BOOST_TEST( AA.sliced(2, 9)[0] == 2 );
 		BOOST_TEST( AA.sliced(2, 9)[6] == 8 );
