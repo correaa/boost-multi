@@ -12,7 +12,7 @@
 #include <memory>  // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 #if (__cplusplus >= 202002L)
-	#include <ranges>  // NOLINT(misc-include-cleaner)
+	#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #endif
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)

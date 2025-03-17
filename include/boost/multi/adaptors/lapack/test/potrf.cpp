@@ -20,7 +20,7 @@
 #include <complex>    // for operator*, complex
 // IWYU pragma: no_include <cstdlib>                                   // for abs
 #include <iostream>   // for operator<<, ostream
-#include <iterator>                                  // for size, distance  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <iterator>                                  // for size, distance  // NOLINT(misc-include-cleaner)
 #include <limits>     // for numeric_limits
 #include <random>     // for uniform_real_dis...
 #include <string>     // for allocator, opera...

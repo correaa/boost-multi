@@ -13,7 +13,7 @@
 // IWYU pragma: no_include <algorithm>  // for fill_n
 // IWYU pragma: no_include <cstdlib>
 // IWYU pragma: no_include <pstl/glue_algorithm_defs.h>
-#include <utility>  // for move, swap
+#include <utility>  // for move, swap  // IWYU pragma: keep
 #include <vector>   // for vector, operator==, vector<>::va...
 
 namespace multi = boost::multi;
