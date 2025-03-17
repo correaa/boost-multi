@@ -102,10 +102,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[0][2] == 3.0 + 5.0*I );
 	}
 
-#if defined(__INTEL_LLVM_COMPILER)
-	std::cout << __INTEL_LLVM_COMPILER << std::endl;
-#endif
-
 #if defined(NDEBUG)
 	/* transform copy */ {
 		multi::array<double, 2> A2D({10000, 10000}, 55.5);

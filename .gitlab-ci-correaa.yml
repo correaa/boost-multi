@@ -257,7 +257,7 @@ clang++-18 mull-18:  # mull-18 crashes
     - apt-get -qq install --no-install-recommends -y --quiet mull-18 libclang-cpp18
     - mkdir build && cd build
     - mull-runner-18 --version
-    - CXX=clang++-18 cmake .. -DCMAKE_CXX_FLAGS="-O3 -fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line -fsanitize=address"
+    - CXX=clang++-18 cmake .. -DCMAKE_CXX_FLAGS="-DNDEBUG -O3 -fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line -fsanitize=address"
     - cmake --build . --parallel 8 || cmake --build . --parallel 1 --verbose
     # - ctest -j 2 --output-on-failure
     - cd test
@@ -799,7 +799,7 @@ circle-latest c++20:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-#  needs: ["circle"]
+  needs: ["circle"]
 
 inq:
   stage: test
