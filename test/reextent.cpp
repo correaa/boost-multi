@@ -62,14 +62,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 0 );
 	}
 	{
-		multi::array<int, 2> arr({2, 3});
+		multi::array<int, 2> const arr({2, 3});
 
 		BOOST_TEST( arr.size() == 2 );
 
-		multi::array<int, 2> brr({});
+		multi::array<int, 2> const brr({});
 
 		BOOST_TEST( brr.size() == 0 );
 	}
+	{
+		multi::array<int, 2> const arr({2, 3});
+
+		BOOST_TEST( arr.size() == 2 );
+
+		multi::array<int, 2> const brr = {};
+
+		BOOST_TEST( brr.size() == 0 );
+	}
+
 	{
 		multi::array<int, 2> arr({2, 3});
 
