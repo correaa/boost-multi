@@ -186,10 +186,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::subarray<int, 2> R2D(A2D.begin(), A2D.end());
 		BOOST_TEST( R2D.addressof()== A2D.addressof() );
+
 		R2D[0][0] = 77;
 		BOOST_TEST( R2D[0][0] == 77 );
 	}
-
 	// {
 	//  multi::array<double, 2> A2D({10000, 10000}, 55.5);
 	//  auto const&             A2D_block = A2D({1000, 9000}, {1000, 9000});

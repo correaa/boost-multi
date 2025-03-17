@@ -131,9 +131,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{4, 5, 6},
 			{7, 8, 9},
 		};
-	
+
 		multi::array<int, 1> const V = {10, 11, 12};
-	
+
 		multi::array<int, 1> const R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
 
 		BOOST_TEST( R[0] == 11 );
@@ -156,6 +156,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( R[2] == 15 );
 	}
 #endif
-	
+
 	return boost::report_errors();
 }
