@@ -61,6 +61,43 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr.size() == 0 );
 	}
+	{
+		multi::array<int, 2> arr({2, 3});
+
+		BOOST_TEST( arr.size() == 2 );
+
+		multi::array<int, 2> brr({});
+
+		BOOST_TEST( brr.size() == 0 );
+	}
+	{
+		multi::array<int, 2> arr({2, 3});
+
+		BOOST_TEST( arr.size() == 2 );
+
+		arr = {};
+
+		BOOST_TEST( arr.size() == 0 );
+	}
+	{
+		multi::array<int, 2> arr({2, 3});
+
+		BOOST_TEST( arr.size() == 2 );
+
+		arr = {{}};
+
+		BOOST_TEST( arr.size() == 0 );
+	}
+
+	{
+		multi::array<int, 2> arr({2, 3});
+
+		BOOST_TEST( arr.size() == 2 );
+
+		arr = {{}, {}};
+
+		BOOST_TEST( arr.size() == 0 );
+	}
 
 	BOOST_AUTO_TEST_CASE(array_reextent_noop) {
 		multi::array<int, 2> arr({2, 3});
