@@ -1,40 +1,29 @@
-// Copyright 2024 Alfredo A. Correa
+// Copyright 2024-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
+#include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT
+#include <boost/concept_check.hpp>               // for Assignable, CopyCons...
+
 // Test explicitly calls deprecated function
 #if defined(__clang__)
 	#pragma clang diagnostic push
-	#pragma clang diagnositc ignored "-Wdeprecated-declarations"
+	#pragma clang diagnostic ignored "-Wunknown-pragmas"
+	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
+	#pragma GCC diagnositc ignored "-Wunknown-pragmas"
 	#pragma GCC diagnositc ignored "-Wdeprecated-declarations"
 #endif
 
-#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wundef"
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
-	#pragma clang diagnostic ignored "-Wunknown-pragmas"
-	#pragma clang diagnostic ignored "-Wunused-variable"
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wundef"
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
-	#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-	#pragma GCC diagnostic ignored "-Wunused-variable"
-#endif
+#include <boost/multi/array.hpp>  // for operator!=, implicit...
+// IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
 
-#ifndef BOOST_TEST_MODULE
-	#define BOOST_TEST_MAIN
-#endif
-
-#include <boost/test/unit_test.hpp>
+#include <boost/multi_array.hpp>                 // for multi_array
+#include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
 
 #if defined(__clang__)
 	#pragma clang diagnostic pop
@@ -42,17 +31,12 @@
 	#pragma GCC diagnostic pop
 #endif
 
-#include <boost/multi/array.hpp>  // for operator!=, implicit...
-// IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
-
-#include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT
-#include <boost/concept_check.hpp>               // for Assignable, CopyCons...
-#include <boost/multi_array.hpp>                 // for multi_array
-#include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
-
 #include <cstddef>  // for ptrdiff_t
 #include <vector>   // for vector
 
+#define BOOST_AUTO_TEST_CASE(NamE) /**/
+
+auto main() -> int {
 BOOST_AUTO_TEST_CASE(concepts_boost_array) {
 	using BMA [[maybe_unused]] = boost::multi_array<int, 2>;  // maybe_unused for bug in nvcc 11.8
 
@@ -292,8 +276,5 @@ BOOST_AUTO_TEST_CASE(concepts_const_iterator) {
 	//  BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<MAIt>));
 }
 
-#if defined(__clang__)
-	#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
+	return boost::report_errors();
+}
