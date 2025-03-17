@@ -733,7 +733,7 @@ culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
 rocm:
   stage: build
   image: rocm/dev-ubuntu-24.04  # rocm/dev-ubuntu-22.04
-  allow_failure: true
+  allow_failure: false
   tags:
     - non-shared
     - docker

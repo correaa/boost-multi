@@ -155,13 +155,13 @@ auto main() -> int {
 	}
 	// // constructor none
 	// {
-	// 	multi::array<complex, 2> const fw_cpu_out = in_cpu.transposed();
-	// 	BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
+	//  multi::array<complex, 2> const fw_cpu_out = in_cpu.transposed();
+	//  BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
 	// }
 	// // constructor none
 	// {
-	// 	multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu.transposed());
-	// 	// BOOST_TEST( fw_cpu_out == in_cpu );
+	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu.transposed());
+	//  // BOOST_TEST( fw_cpu_out == in_cpu );
 	// }
 
 	return boost::report_errors();

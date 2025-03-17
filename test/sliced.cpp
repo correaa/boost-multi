@@ -7,6 +7,7 @@
 
 #include <numeric>  // for std::iota
 #include <vector>  // for std::vector
+// IWYU pragma: no_include <algorithm>                        // for copy
 
 namespace multi = boost::multi;
 

@@ -11,7 +11,7 @@
 #include <iterator>   // for size
 #if __cplusplus > 201703L
 #   if __has_include(<ranges>)
-#       include <ranges>  // NOLINT(misc-include-cleaner) IWYU pragma: keep
+#       include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #   endif
 #endif
 #include <tuple>  // for make_tuple, tuple_element<>::type
