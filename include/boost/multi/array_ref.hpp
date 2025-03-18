@@ -155,7 +155,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_t::strides_type;
 
-	auto strides() const { return detail::convertible_tuple /* <strides_type> */ (layout_t::strides()); }
+	auto strides() const { return detail::convertible_tuple<decltype(layout_t::strides())>(layout_t::strides()); }
 
 	using typename layout_t::difference_type;
 
@@ -187,7 +187,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	auto index_bases() const -> std::ptrdiff_t const*;  // = delete;  this function is not implemented, it can give a linker error
 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
-	constexpr auto shape() const { return detail::convertible_tuple(this->sizes()); }
+	constexpr auto shape() const { return detail::convertible_tuple<decltype(this->sizes())>(this->sizes()); }
 
 	using layout_t::is_compact;
 
@@ -246,7 +246,15 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	    BOOST_MULTI_HD constexpr auto layout()           const        -> layout_t const& {return *this;}
 	friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
 
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
 	       constexpr auto origin()           const&       -> decltype(auto) {return base_ + Layout::origin();}
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) {return self.origin();}
 
  protected:
@@ -624,7 +632,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type {return stride_;}
 
 	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr {return self.base();}  // TODO(correaa) remove
-	friend constexpr auto stride(array_iterator const& self) -> stride_type {return self.stride_;}  // TODO(correaa) remove
+	friend constexpr auto stride(array_iterator const& self) -> stride_type { return self.stride_; }  // TODO(correaa) remove
 
 	#if defined(__clang__)
 	#pragma clang diagnostic push
@@ -2705,7 +2713,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<1> const new_layout(this->layout(), 0, 0, (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
+		multi::layout_t<1> const new_layout(this->layout(), 0, 0);  // , (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
 		return subarray<T, 1, typename const_subarray::element_const_ptr>(new_layout, types::base_);
 	}
 

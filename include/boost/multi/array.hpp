@@ -1395,7 +1395,7 @@ struct array : static_array<T, D, Alloc> {
 	}
 
 	auto operator=(std::initializer_list<value_type> values) -> array& {
-		if(!values.size()) {
+		if(values.size() == 0) {
 			this->clear();
 		} else {
 			assign(values.begin(), values.end());
