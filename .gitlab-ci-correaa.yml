@@ -219,7 +219,7 @@ clang++ ubsan:  # more UB is detected on Release
     - non-shared
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libubsan pkg-config
     - export UBSAN_OPTIONS=print_stacktrack=1
     - mkdir build && cd build
     - clang++ --version
