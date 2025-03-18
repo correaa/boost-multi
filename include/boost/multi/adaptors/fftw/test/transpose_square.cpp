@@ -12,6 +12,7 @@
 #include <iostream>    // for basic_ostream, operator<<
 #include <random>      // for uniform_real_distribution
 #include <string>      // for char_traits, operator""s
+#include <string_view>
 #include <utility>     // for move, swap
 
 namespace multi = boost::multi;
@@ -23,7 +24,7 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	time_point  start_ = now();
 
  public:
-	explicit watch(std::string label) : label_{ std::move(label) } {}
+	explicit watch(std::string_view label) : label_{label} {}
 
 	watch(watch const&) = delete;
 	watch(watch&&)      = delete;
