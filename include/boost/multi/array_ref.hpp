@@ -1371,7 +1371,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return const_subarray<T, D+1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
-private:
+ private:
 	constexpr auto diagonal_aux_() const  -> subarray<T, D-1, typename const_subarray::element_ptr> {
 		using boost::multi::detail::get;
 		auto square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
@@ -1381,7 +1381,7 @@ private:
 		return {new_layout, types::base_};
 	}
 
-public:
+ public:
 	// TODO(correaa) : define a diagonal_aux
 	// constexpr auto diagonal()    && {return this->diagonal();}
 
@@ -1526,6 +1526,14 @@ public:
 
  public:
 	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray {return paren_aux_();}  // NOLINT(readability-redundant-access-specifiers,readability-const-return-type)
+
+	template <template<class...> class Container = std::vector, template<class...> class ContainerSub = std::vector, class... As>
+	constexpr auto to(As&&... as) const& {
+		using inner_value_type = typename const_subarray::value_type::value_type;
+		using container_type = Container<ContainerSub<inner_value_type> >;
+
+		return container_type(this->begin(), this->end(), std::forward<As>(as)...);
+	}
 
  private:
 	template<class... As>  BOOST_MULTI_HD  constexpr auto paren_aux_(index_range rng, As... args) const& {return range(rng).rotated().paren_aux_(args...).unrotated();}
@@ -2891,10 +2899,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		return const_subarray<T, 2, ElementPtr>(new_layout, types::base_);
 	}
 
-	template <template<class> class Container = std::vector, class... As>
+	template <template<class...> class Container = std::vector, class... As>
 	constexpr auto to(As&&... as) const& {
-		using value_type = typename const_subarray::value_type;
-		using container_type = Container<value_type>;
+		using inner_value_type = typename const_subarray::value_type;
+		using container_type = Container<inner_value_type>;
 		return container_type(this->begin(), this->end(), std::forward<As>(as)...);
 	}
 
