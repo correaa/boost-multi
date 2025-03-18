@@ -485,15 +485,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr static_array(std::initializer_list<typename static_array<T, D>::value_type> values)
-	: static_array{array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
+	: static_array{(values.size()==0)?array<T, D>{}:array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> values,
 		allocator_type const&                                          alloc
 	)
-	: static_array{static_array<T, D>(values.begin(), values.end()), alloc} {
-		assert(this->stride() != 0);
-	}
+	: static_array{(values.size()==0)?array<T, D>{}:static_array<T, D>(values.begin(), values.end()), alloc} {}
 
 	template<class TT, std::size_t N>
 	constexpr explicit static_array(TT (&array)[N])  // @SuppressWarnings(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
@@ -1186,7 +1184,7 @@ struct array : static_array<T, D, Alloc> {
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
-	: static_{ilv.size()?array<T, D>(ilv.begin(), ilv.end()):array<T,D>{}} {
+	: static_{(ilv.size()==0)?array<T,D>{}:array<T, D>(ilv.begin(), ilv.end())} {
 		assert(ilv.size() || (this->stride() != 0));
 	}
 
@@ -1388,7 +1386,11 @@ struct array : static_array<T, D, Alloc> {
 		}
 		return *this;
 	}
-	void assign(std::initializer_list<value_type> values) { assign(values.begin(), values.end()); }
+	void assign(std::initializer_list<value_type> values) {
+		if(values.size() != 0) {
+			assign(values.begin(), values.end());
+		}
+	}
 
 	template<class Range> auto assign(Range&& other) & -> decltype(assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)))) {  // TODO(correaa) use forward
 		return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
