@@ -2713,7 +2713,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	constexpr auto broadcasted() const& {
-		multi::layout_t<1> const new_layout(this->layout(), 0, 0, (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
+		multi::layout_t<1> const new_layout(this->layout(), 0, 0);  // , (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
 		return subarray<T, 1, typename const_subarray::element_const_ptr>(new_layout, types::base_);
 	}
 
