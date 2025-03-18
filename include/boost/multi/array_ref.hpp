@@ -995,7 +995,9 @@ struct elements_range_t {
 	auto operator=(std::initializer_list<value_type> values) && -> elements_range_t& {operator=(values); return *this;}
 	auto operator=(std::initializer_list<value_type> values) &  -> elements_range_t& {
 		assert(static_cast<size_type>(values.size()) == size());
-		adl_copy_n(values.begin(), values.size(), begin());
+		if(value.size() != 0) {
+			adl_copy_n(values.begin(), values.size(), begin());
+		}
 		return *this;
 	}
 };
@@ -2159,7 +2161,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	auto operator=(std::initializer_list<typename subarray::value_type> values) && -> subarray& {operator=(values); return *this; }
 	auto operator=(std::initializer_list<typename subarray::value_type> values) &  -> subarray& {
 		assert( static_cast<size_type>(values.size()) == this->size() );
-		adl_copy_n(values.begin(), values.size(), this->begin());
+		if(values.size() != 0) {
+			adl_copy_n(values.begin(), values.size(), this->begin());
+		}
 		return *this;
 	}
 
@@ -2822,7 +2826,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto operator&() const& {return const_subarray_ptr<T, 1, ElementPtr, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	BOOST_MULTI_HD constexpr void assign(std::initializer_list<typename const_subarray::value_type> values) const {assert( values.size() == static_cast<std::size_t>(this->size()) );
-		assign(values.begin(), values.end());
+		if(values.size() != 0) { assign(values.begin(), values.end()); }
 	}
 	template<class It>
 	constexpr auto assign(It first) & -> It { adl_copy_n(first, this->size(), this->begin()); std::advance(first, this->size()); return first; }
@@ -3477,7 +3481,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
-	array_ref(std::initializer_list<TT> il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
+	array_ref(std::initializer_list<TT> il) : array_ref((il.size()==0)?nullptr:il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
 
 	using subarray_base::operator=;
 
