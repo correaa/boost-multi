@@ -17,7 +17,7 @@
 #include <numeric>    // for iota
 #include <random>     // for linear_congruential_...
 #include <string>     // for operator""s, operator+
-#include <utility>    // for move
+#include <string_view>     // for operator""s, operator+
 #include <vector>     // for vector
 
 namespace multi = boost::multi;
@@ -30,7 +30,7 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	time_point  start_ = now();
 
  public:
-	explicit watch(std::string label) : label_{std::move(label)} {}
+	explicit watch(std::string_view label) : label_{label} {}
 
 	watch(watch const&) = delete;
 	watch(watch&&)      = delete;
