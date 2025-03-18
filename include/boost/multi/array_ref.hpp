@@ -995,7 +995,7 @@ struct elements_range_t {
 	auto operator=(std::initializer_list<value_type> values) && -> elements_range_t& {operator=(values); return *this;}
 	auto operator=(std::initializer_list<value_type> values) &  -> elements_range_t& {
 		assert(static_cast<size_type>(values.size()) == size());
-		if(value.size() != 0) {
+		if(values.size() != 0) {
 			adl_copy_n(values.begin(), values.size(), begin());
 		}
 		return *this;
