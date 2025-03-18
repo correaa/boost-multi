@@ -485,13 +485,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr static_array(std::initializer_list<typename static_array<T, D>::value_type> values)
-	: static_array{(values.size()==0)?array<T, D>{}:array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
+	: static_array{(values.size()==0)?array<T, D>():array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> values,
 		allocator_type const&                                          alloc
 	)
-	: static_array{(values.size()==0)?array<T, D>{}:static_array<T, D>(values.begin(), values.end()), alloc} {}
+	: static_array{(values.size()==0)?array<T, D>():static_array<T, D>(values.begin(), values.end()), alloc} {}
 
 	template<class TT, std::size_t N>
 	constexpr explicit static_array(TT (&array)[N])  // @SuppressWarnings(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
@@ -1179,12 +1179,12 @@ struct array : static_array<T, D, Alloc> {
 	: static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
 
 	array(typename array::extensions_type exts)
-	: static_array<T, D, Alloc>(exts) {assert(this->stride() != 0);}
+	: static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
 #endif
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
-	: static_{(ilv.size()==0)?array<T,D>{}:array<T, D>(ilv.begin(), ilv.end())} {
+	: static_{(ilv.size()==0)?array<T, D>():array<T, D>(ilv.begin(), ilv.end())} {
 		assert(ilv.size() || (this->stride() != 0));
 	}
 
@@ -1192,9 +1192,9 @@ struct array : static_array<T, D, Alloc> {
 		class OtherT,
 		class = std::enable_if_t<std::is_constructible_v<typename static_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename static_array<T, D>::value_type> && (D == 1)>>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
 	constexpr explicit array(std::initializer_list<OtherT> ilv)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
-	: static_{array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })} {
+	: static_{(ilv.size()==0)?array<T, D>()():array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })} {
 		assert(this->stride() != 0);
-	}  // TODO(correaa) investigate why noexcept is necessary
+	}
 
 	array()             = default;
 	array(array const&) = default;
