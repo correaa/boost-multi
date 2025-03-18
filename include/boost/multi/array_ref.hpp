@@ -995,7 +995,9 @@ struct elements_range_t {
 	auto operator=(std::initializer_list<value_type> values) && -> elements_range_t& {operator=(values); return *this;}
 	auto operator=(std::initializer_list<value_type> values) &  -> elements_range_t& {
 		assert(static_cast<size_type>(values.size()) == size());
-		adl_copy_n(values.begin(), values.size(), begin());
+		if(values.size() != 0) {
+			adl_copy_n(values.begin(), values.size(), begin());
+		}
 		return *this;
 	}
 };
@@ -1369,7 +1371,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return const_subarray<T, D+1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
-private:
+ private:
 	constexpr auto diagonal_aux_() const  -> subarray<T, D-1, typename const_subarray::element_ptr> {
 		using boost::multi::detail::get;
 		auto square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
@@ -1379,7 +1381,7 @@ private:
 		return {new_layout, types::base_};
 	}
 
-public:
+ public:
 	// TODO(correaa) : define a diagonal_aux
 	// constexpr auto diagonal()    && {return this->diagonal();}
 
@@ -1524,6 +1526,14 @@ public:
 
  public:
 	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray {return paren_aux_();}  // NOLINT(readability-redundant-access-specifiers,readability-const-return-type)
+
+	template <template<class...> class Container = std::vector, template<class...> class ContainerSub = std::vector, class... As>
+	constexpr auto to(As&&... as) const& {
+		using inner_value_type = typename const_subarray::value_type::value_type;
+		using container_type = Container<ContainerSub<inner_value_type> >;
+
+		return container_type(this->begin(), this->end(), std::forward<As>(as)...);
+	}
 
  private:
 	template<class... As>  BOOST_MULTI_HD  constexpr auto paren_aux_(index_range rng, As... args) const& {return range(rng).rotated().paren_aux_(args...).unrotated();}
@@ -2159,7 +2169,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	auto operator=(std::initializer_list<typename subarray::value_type> values) && -> subarray& {operator=(values); return *this; }
 	auto operator=(std::initializer_list<typename subarray::value_type> values) &  -> subarray& {
 		assert( static_cast<size_type>(values.size()) == this->size() );
-		adl_copy_n(values.begin(), values.size(), this->begin());
+		if(values.size() != 0) {
+			adl_copy_n(values.begin(), values.size(), this->begin());
+		}
 		return *this;
 	}
 
@@ -2822,7 +2834,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto operator&() const& {return const_subarray_ptr<T, 1, ElementPtr, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	BOOST_MULTI_HD constexpr void assign(std::initializer_list<typename const_subarray::value_type> values) const {assert( values.size() == static_cast<std::size_t>(this->size()) );
-		assign(values.begin(), values.end());
+		if(values.size() != 0) { assign(values.begin(), values.end()); }
 	}
 	template<class It>
 	constexpr auto assign(It first) & -> It { adl_copy_n(first, this->size(), this->begin()); std::advance(first, this->size()); return first; }
@@ -2887,10 +2899,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		return const_subarray<T, 2, ElementPtr>(new_layout, types::base_);
 	}
 
-	template <template<class> class Container = std::vector, class... As>
+	template <template<class...> class Container = std::vector, class... As>
 	constexpr auto to(As&&... as) const& {
-		using value_type = typename const_subarray::value_type;
-		using container_type = Container<value_type>;
+		using inner_value_type = typename const_subarray::value_type;
+		using container_type = Container<inner_value_type>;
 		return container_type(this->begin(), this->end(), std::forward<As>(as)...);
 	}
 
@@ -3477,7 +3489,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
-	array_ref(std::initializer_list<TT> il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
+	array_ref(std::initializer_list<TT> il) : array_ref((il.size()==0)?nullptr:il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
 
 	using subarray_base::operator=;
 

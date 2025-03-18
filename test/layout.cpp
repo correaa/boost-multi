@@ -7,7 +7,6 @@
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
 #include <cstddef>                          // for ptrdiff_t, size_t  // IWYU pragma: keep
-#include <iostream>                         // for basic_ostream, char_traits
 #include <iterator>   // for size
 #if __cplusplus > 201703L
 #   if __has_include(<ranges>)
@@ -36,10 +35,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
 		BOOST_TEST( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
 		BOOST_TEST( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
-
+		
 		multi::extensions_t<3> const exts({0, 10}, {0, 20}, {0, 30});
 		BOOST_TEST( 20 == second_finish(exts) );
 	}
+
+/////
 
 	BOOST_AUTO_TEST_CASE(extensions_to_linear) {
 		multi::extensions_t<3> exts{4, 5, 3};
@@ -137,9 +138,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( (arr.cend().base() - arr.cbegin().base()) % arr.cbegin().stride() == 0 );
 
+
 		// std::copy(arr.data_elements(), std::next(arr.data_elements(), arr.num_elements()), vec2.begin());
 		BOOST_TEST( &*arr.cbegin() == arr.data_elements() );
-		BOOST_TEST( &*arr.cend() == std::next(arr.data_elements(), arr.num_elements()) );
+
+		// vvv this is UB, never dereference an end iterator
+		// BOOST_TEST( &*arr.cend() == std::next(arr.data_elements(), arr.num_elements()) );
 
 		BOOST_TEST( *arr.cbegin() == 1 );
 		BOOST_TEST( *std::next(arr.cbegin(), 1) == 2 );
@@ -154,18 +158,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  vec2[static_cast<std::size_t>(idx)] = arr[idx];
 		// }
 
-		std::cout
-			<< vec2[0] << '\n'
-			<< vec2[1] << '\n'
-			<< vec2[2] << '\n'
-			<< vec2[3] << '\n'
-			<< vec2[4] << '\n';
 
 		BOOST_TEST( vec2[0] == 1 );
 		BOOST_TEST( vec2[1] == 2 );
 		BOOST_TEST( vec2[2] == 3 );
 		BOOST_TEST( vec2[3] == 4 );
 		BOOST_TEST( vec2[4] == 5 );
+
 
 		BOOST_TEST( vec == vec2 );
 	}
@@ -194,6 +193,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !d2D.rotated()[2].is_compact() );
 	}
 
+///
 	BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
 		multi::array<double, 3> arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
@@ -387,6 +387,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( extension(arr) == multi::iextension     {0, 25} ));
 	}
 
+////
+
 	BOOST_AUTO_TEST_CASE(layout_3) {
 		multi::array<double, 2> arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
@@ -462,6 +464,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
 	}
+
+////
 
 	// BOOST_AUTO_TEST_CASE(layout_BB) {
 	//  {
