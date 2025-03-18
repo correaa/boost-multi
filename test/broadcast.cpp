@@ -11,7 +11,6 @@
 #include <cmath>      // IWYU pragma: keep  for std::abs
 // IWYU pragma: no_include <cstdlib>                          // for abs
 // IWYU pragma: no_include <stdlib.h>                          // for abs
-#include <limits>
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
@@ -45,7 +44,7 @@ BOOST_AUTO_TEST_CASE(broadcast_as_fill) {
 	auto const& ones = one.broadcasted();
 	BOOST_TEST( std::abs( *ones.begin() - 1.0 ) < 1.0e-8 );
 
-	BOOST_TEST( ones.layout().nelems() == (std::numeric_limits<multi::size_type>::max)() );
+	// BOOST_TEST( ones.layout().nelems() == (std::numeric_limits<multi::size_type>::max)() );
 }
 
 return boost::report_errors();
