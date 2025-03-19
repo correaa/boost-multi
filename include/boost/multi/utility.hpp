@@ -381,6 +381,18 @@ auto extension(Container const& cont)  // TODO(correaa) consider "extent"
 ->decltype(multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)))) {
 	return multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont))); }
 
+template<dimensionality_type Rank, class Container, std::enable_if_t<!has_extension<Container>::value, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+auto extensions(Container const& cont) {
+	if constexpr(Rank == 0) {
+		return multi::extensions_t<0>{};
+	} else {
+		using std::size;
+		return multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)))
+			*extensions<Rank-1>(cont.front())
+		;
+	}
+}
+
 // template<class T, typename = decltype(std::declval<T>().shape())>
 //        auto has_shape_aux(T const&) -> std::true_type;
 // inline auto has_shape_aux(...     ) -> std::false_type;
@@ -440,15 +452,16 @@ template<dimensionality_type D>
 struct extensions_aux {
 	template<class T>
 	static auto call(T const& array) {
-		return tuple_cat(std::make_tuple(array.extension()), extensions<D-1>(array));
+		return array.extension()*extensions<D-1>(array);
+		// return tuple_cat(std::make_tuple(array.extension()), extensions<D-1>(array));
 	}
 };
 
 template<> struct extensions_aux<0> {
-	template<class T> static auto call(T const& /*unused*/){return std::make_tuple();}
+	template<class T> static auto call(T const& /*unused*/){ return multi::extensions_t<0>{}; }  // std::make_tuple();}
 };
 
-template<dimensionality_type D, class T>
+template<dimensionality_type D, class T, std::enable_if_t<has_extension<T>::value, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto extensions(T const& array) {
 	return extensions_aux<D>::call(array);
 }
