@@ -2197,10 +2197,10 @@ Here is a table comparing with `mdspan`, R. Garcia's [Boost.MultiArray](https://
 # Appendix: Multi for FORTRAN programmers
 
 This section summarizes simple cases translated from FORTRAN syntax to C++ using the library.
-The library strives to give a familiar feeling to those who use arrays in FORTRAN, including the manipulation of arrays with arbitrary dimensionality (e.g. 1D, 2D, 3D, etc.)
-Arrays can be indexes arrays using square-brakers or using parenthesis, which would be more familiar to FORTRAN syntax.
-The most significant difference is that in FORTRAN, array indices start at `1` by default, while in Multi, they start at `0` by default, following C++ conventions.
-Like in FORTRAN, for simple types (e.g., numeric), Multi arrays are not initialized automatically; such initialization needs to be explicit.
+The library strives to give a familiar feeling to those who use multidimensional arrays in FORTRAN.
+Arrays can be indexed using square brackets or parenthesis, which would be more familiar to FORTRAN syntax.
+The most significant differences are that array indices in FORTRAN start at `1`, and that index ranges are specified as closed intervals, while in Multi, they start by default at `0`, and ranges are half-open, following C++ conventions.
+Like in FORTRAN, arrays are not initialized automatically for simple types (e.g., numeric); such initialization needs to be explicit.
 
 |                             | FORTRAN                                          | C++ Multi                                            |
 |---                          | ---                                              | ---                                                  |
@@ -2219,18 +2219,18 @@ In the more general case for the dimensionality, we have the following correspon
 | Construction 1D (3 elements) | `real*8 :: v1D(3)`   (at top)                    | `multi::array<double, 2> v1D({3});` (at scope)       |
 | Assign the 1st column of A2D | `v1D(:) = A2D(:,1)`                              | `v1( _ ) = A2D( _ , 0 );`                            | 
 | Assign the 1st row of A2D    | `v1D(:) = A2D(1,:)`                              | `v1( _ ) = A2D( 0 , _ );`                            |
-| Assign upper part of A2D     | `B2D(:,:) = A2D(1:2,1:2)`                        | `B2D( _ , _ ) = A2D({0, 2}, {0, 2});`                |
+| Assign upper part of A2D     | `B2D(:,:) = A2D(1:2,1:2)`                        | `B2D( _::_ , _ ) = A2D({0, 2}, {0, 2});`                |
 
-Note that these correspondences are notationally logical.
-Internal representation (memory ordering) can still be different, and this could affect operations that interpret 2D arrays as contiguous elements in memory.
+Note that these correspondences are notationally logical;
+internal representation (memory ordering) can still be different, affecting operations that interpret 2D arrays as contiguous elements in memory.
 
-Range notation such as `1:2` is replaced by `{0, 2}`, which takes into account both the difference in the start index and the half-open interval notation in the C++ conventions.
-Stride notation such as `1:10:2` (i.e. from first to tenth included, every 2 elements), is replaced by `{0, 10, 2}`.
+Range notation such as `1:2` is replaced by `{0, 2}`, which considers both the difference in the start index and the half-open interval notation in the C++ conventions.
+Stride notation such as `1:10:2` (i.e., from first to tenth included, every two elements) is replaced by `{0, 10, 2}`.
 Complete range interval (single `:` notation) is replaced by `multi::_`, which can be used simply as `_` after the declaration `using multi::_;`.
-These rules extend to higher dimesionality, such as 3 dimensions.
+These rules extend to higher dimensionality.
 
 Unlike FORTRAN, Multi doesn't provide algebraic operators, using algorithms is encouraged instead.
-For example a FORTRAN statement like `A = A + B` is translated as this in the one-dimensional case:
+For example, a FORTRAN statement like `A = A + B` is translated as this in the one-dimensional case:
 
 ```cpp
 std::transform(A.begin(), A.end(), B.begin(), A.begin(), std::plus{});  // valid for 1D arrays only
@@ -2241,18 +2241,18 @@ In the general dimensionality case we can write:
 ```cpp
 auto&&      Aelems = A.elements();
 auto const& Belems = B.elements();
-std::transform(Aelems.begin(), A.elems.end(), Belems.begin(), Aelems.begin(), std::plus{});  // valid for arbitrary dimension
+std::transform(Aelems.begin(), A.elems.end(), Belems.begin(), Aelems.begin(), std::plus<>{});  // valid for arbitrary dimension
 ```
 
 or
 ```
-std::ranges::transform(Aelems, Belems, Aelems.begin(), std::plus{});  // alternative using C++20 ranges
+std::ranges::transform(A.elements(), B.elements(), A.elements().begin(), std::plus<>{});  // alternative using C++20 ranges
 ```
 
-A FORTRAN statement like `C = 2.0*C` is rewritten as `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) {return 2.0*e;});`.
+A FORTRAN statement like `C = 2.0*C` is rewritten as `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) { return 2.0*e; });`.
 
-It is possible to use C++ operator overloading for functions such as `operartor+=` (`A += B;`) or `operator*=` (`C *= 2.0;`); however, this possibility can become unwindenly complicated beyond simple cases.
-Also it can become inefficient if implemented naively.
+It is possible to use C++ operator overloading for functions such as `operartor+=` (`A += B;`) or `operator*=` (`C *= 2.0;`);
+however, this possibility can become unwindenly complicated beyond simple cases (also it can become inefficient if implemented naively).
 
 Simple loops can be mapped as well, taking into account indexing differences:
 ```fortran
@@ -2262,11 +2262,9 @@ do i = 1, 5         ! for(int i = 0; i != 5; ++i) {
   end do            !   }
 end do              ! }
 ```
-
-However, algorithms like `transform`, `reduce`, `transform_reduce`and `for_each`, and offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
-
-
 [(live)](https://godbolt.org/z/77onne46W)
 
+However, algorithms like `transform`, `reduce`, `transform_reduce`and `for_each`, and offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
+In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will do.
 
-> Thanks to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation and to Matt Borland for his help integrating Boost practices in the testing code.
+> **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation and to Matt Borland for his help integrating Boost practices in the testing code.
