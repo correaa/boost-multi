@@ -49,8 +49,8 @@ ignoreMutators:
 #   - cxx_logical_and_to_or  # Replaces && with ||
 #   - cxx_logical_or_to_and
 timeout: 10000  # in milliseconds
-debug:
- slowIRVerification: true
+# debug:
+#  slowIRVerification: true
 quiet: true  # additional logging?
 excludePaths:
   - .*test.*
