@@ -8,6 +8,7 @@
 #include <boost/multi/array.hpp>  // for array, static_array, num_elements
 
 // IWYU pragma: no_include <algorithm>                        // for fill_n  // bug in iwyu 14.0.6? with GNU stdlib
+#include <initializer_list>                 // for initializer_list
 #include <iterator>     // for size
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for move
