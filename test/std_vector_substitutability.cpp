@@ -257,9 +257,16 @@ BOOST_AUTO_TEST_CASE(construct_from_vector_2D) {
 		BOOST_TEST( AA.num_elements() == 4 );
 
 		std::vector<std::vector<double>> const aa(AA);
+		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
 
 		BOOST_TEST( aa.size() == 2 );
-		// std::vector<std::vector<double>> const aaa = AA;  // doesn't compile, needs implicit conversion
+
+		// multi::what(multi::extensions<2>(AA));
+		// multi::what(multi::extensions(aa));
+		// multi::array<double, 2> const BB({static_cast<multi::size_t>(aa.size()), static_cast<multi::size_t>(aa[0].size())});
+		// std::copy(aa.begin(), aa.end(), BB.begin());
+		// BB = aa;
+		// BOOST_TEST( BB.num_elements() == 4 );
 	}
 	{
 		multi::array<double, 2> const AA = {
