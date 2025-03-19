@@ -35,7 +35,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
 		BOOST_TEST( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
 		BOOST_TEST( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
-		
+
 		multi::extensions_t<3> const exts({0, 10}, {0, 20}, {0, 30});
 		BOOST_TEST( 20 == second_finish(exts) );
 	}

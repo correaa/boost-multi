@@ -23,6 +23,7 @@
 // IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
 
 #include <boost/multi_array.hpp>                 // for multi_array
+#include <boost/multi_array/base.hpp>            // for multi_array
 #include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
 
 #if defined(__clang__)
@@ -36,7 +37,7 @@
 
 #define BOOST_AUTO_TEST_CASE(NamE) /**/
 
-auto main() -> int {
+auto main() -> int {  // NOLINT(bugprone-exception-escape)
 BOOST_AUTO_TEST_CASE(concepts_boost_array) {
 	using BMA [[maybe_unused]] = boost::multi_array<int, 2>;  // maybe_unused for bug in nvcc 11.8
 
