@@ -236,13 +236,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_REQUIRE_CLOSE(Y[2], +blas::dot(a[2], x), 0.00001);
 
 			auto it = blas::gemv(1.0, a, x).begin();
-			// auto res_float = static_cast<float>(*it);
 			BOOST_REQUIRE_CLOSE(*it, Y[0], 0.00001);
 
-			it+=1;
+			++it;
 			BOOST_REQUIRE_CLOSE(*it, Y[1], 0.00001);
 
-			it+=1;
+			++it;
 			BOOST_REQUIRE_CLOSE(*it, Y[2], 0.00001);
 		}
 		{

@@ -138,10 +138,16 @@ class gemv_iterator {
 		// return value_type{0.0};
 	}  // could be std::complex NOLINT(fuchsia-default-arguments-calls)
 
-	auto operator+=(difference_type n) -> gemv_iterator& {
-		m_it_ += n;
-		return *this;
-	}
+	auto operator+=(difference_type n) -> gemv_iterator& { m_it_ += n; return *this; }
+	auto operator-=(difference_type n) -> gemv_iterator& { m_it_ -= n; return *this; }
+
+	auto operator++() -> gemv_iterator& { ++m_it_; return *this; }
+	auto operator--() -> gemv_iterator& { --m_it_; return *this; }
+	auto operator++(int) -> gemv_iterator& { auto ret = *this; m_it_++; return ret; }
+	auto operator--(int) -> gemv_iterator& { auto ret = *this; m_it_--; return ret; }
+
+	auto operator+(difference_type n) const { auto ret = *this; ret += n; return *this; }
+	auto operator-(difference_type n) const { auto ret = *this; ret -= n; return *this; }
 };
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>
