@@ -81,8 +81,30 @@ class gemv_iterator {
 	using difference_type = typename std::iterator_traits<It2D>::difference_type;
 	using value_type = typename std::iterator_traits<It1D>::value_type;
 	using pointer = void;
-	using reference = void;
+	// using reference = void;
 	using iterator_category = std::random_access_iterator_tag;
+
+	class reference {
+		Scalar alpha_ = 1.0;
+		It2D m_it_;
+		It1D v_first_;
+		Context ctxt_;
+
+		reference(Scalar alpha, It2D m_it, It1D v_first, Context ctxt)
+		: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{std::move(ctxt)} {}
+
+		friend class gemv_iterator;
+
+	 public:
+		operator typename It1D::value_type() const {   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) make it explicit
+			typename It1D::value_type result;
+			multi::array_ref<typename It1D::value_type, 1> result_ref({1}, &result);
+			// blas::gemv_n(static_cast<value_type>(alpha_), m_it_, 1, v_first_, Scalar{0.0}, result);
+			if constexpr(std::is_same_v<Context, void>) { blas::gemv_n(       static_cast<value_type>(alpha_), m_it_, 1, v_first_, Scalar{0.0}, result_ref.begin()); }  // NOLINT(fuchsia-default-arguments-calls)
+			else                                        { blas::gemv_n(ctxt_, static_cast<value_type>(alpha_), m_it_, 1, v_first_, Scalar{0.0}, result_ref.begin()); }  // NOLINT(fuchsia-default-arguments-calls)  
+			return result;
+		}
+	};
 
 	friend auto operator-(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
 		assert(self.v_first_ == other.v_first_);
@@ -109,7 +131,17 @@ class gemv_iterator {
 	}
 	gemv_iterator(Scalar alpha, It2D m_it, It1D v_first, Context ctxt)
 	: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt} {}
-	auto operator*() const { return value_type{0.0}; }  // could be std::complex NOLINT(fuchsia-default-arguments-calls)
+	auto operator*() const {
+		return reference{
+			alpha_, m_it_, v_first_, ctxt_
+		};
+		// return value_type{0.0};
+	}  // could be std::complex NOLINT(fuchsia-default-arguments-calls)
+
+	auto operator+=(difference_type n) -> gemv_iterator& {
+		m_it_ += n;
+		return *this;
+	}
 };
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>
