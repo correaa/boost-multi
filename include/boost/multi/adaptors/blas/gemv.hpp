@@ -148,6 +148,14 @@ class gemv_iterator {
 
 	auto operator+(difference_type n) const { auto ret = *this; ret += n; return *this; }
 	auto operator-(difference_type n) const { auto ret = *this; ret -= n; return *this; }
+
+	friend auto operator==(gemv_iterator const& self, gemv_iterator const& other) {
+		assert(self.alpha_ == other.alpha_);
+		assert(self.v_first_ == other.v_first_);
+		// assert(self.ctxt_ == other.ctxt_);
+		return self.m_it_ == other.m_it_;
+	}
+	friend auto operator!=(gemv_iterator const& self, gemv_iterator const& other) { return !(self == other); }
 };
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>
