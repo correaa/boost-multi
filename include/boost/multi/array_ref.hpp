@@ -2800,11 +2800,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  protected:
 	template<class A> constexpr void intersection_assign(A&& other)&& {intersection_assign(std::forward<A>(other));}
 	template<class A> constexpr void intersection_assign(A&& other)&  {  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved,cppcoreguidelines-missing-std-forward) false positive clang-tidy 17
-		std::for_each(
-			intersection(types::extension(), extension(other)).begin(),
-			intersection(types::extension(), extension(other)).end()  ,
-			[&](auto const idx) {operator[](idx) = std::forward<A>(other)[idx];}
-		);
+		auto const isect = intersection(types::extension(), extension(other));
+		// std::for_each(
+		//  isect.begin(), isect.end()  ,
+		//  [&](auto const idx) {operator[](idx) = std::forward<A>(other)[idx];}
+		// );
+		adl_copy_n(other.begin() + isect.front(), isect.size(), this->begin() + isect);
 	}
 
 	const_subarray(const_subarray const&) = default;

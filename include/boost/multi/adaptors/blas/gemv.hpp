@@ -129,6 +129,14 @@ class gemv_iterator {
 		#endif
 		return copy(first, last, result);
 	}
+
+	template<class It1DOut>
+	friend auto uninitialized_copy_n(gemv_iterator first, difference_type count, It1DOut result) {
+		// TODO(correaa) start lifetime?
+		return copy_n(first, count, result);
+	}
+
+	
 	gemv_iterator(Scalar alpha, It2D m_it, It1D v_first, Context ctxt)
 	: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt} {}
 	auto operator*() const {
@@ -149,6 +157,7 @@ class gemv_iterator {
 	auto operator+(difference_type n) const { auto ret = *this; ret += n; return *this; }
 	auto operator-(difference_type n) const { auto ret = *this; ret -= n; return *this; }
 
+	[[deprecated("calling this is a red flag")]]
 	friend auto operator==(gemv_iterator const& self, gemv_iterator const& other) {
 		assert(self.alpha_ == other.alpha_);
 		assert(self.v_first_ == other.v_first_);
