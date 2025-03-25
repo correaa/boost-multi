@@ -243,6 +243,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			++it;
 			BOOST_REQUIRE_CLOSE(*it, Y[2], 0.00001);
+			BOOST_TEST( it == it );
 		}
 		{
 			multi::array<T, 1> const x   = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
