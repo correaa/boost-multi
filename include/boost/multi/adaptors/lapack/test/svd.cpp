@@ -1,6 +1,6 @@
 // Copyright 2025 Alfredo A. Correa
 
-// #include "../../lapack/syev.hpp"
+#include <boost/multi/adaptors/lapack/gesvd.hpp>
 
 #include <boost/multi/adaptors/blas/gemm.hpp>
 #include <boost/multi/array.hpp>
@@ -8,74 +8,9 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
+#include <cmath>  // for std::abs
 
 namespace multi = boost::multi;
-
-extern "C" {
-void dgesvd_(char const& jobu, char const& jobvt, int const& mm, int const& nn, double* aa, int const& lda, double* ss, double* uu, int const& ldu, double* vt, int const& ldvt, double* work, int const& lwork, int& info);  // NOLINT(readability-identifier-naming)
-}
-
-namespace boost::multi::lapack {
-
-template<class Alloc, class AArray2D, class UArray2D, class SArray1D, class VTArray2D>
-void gesvd(AArray2D&& AA, UArray2D&& UU, SArray1D&& ss, VTArray2D&& VV, Alloc alloc) {
-	assert( AA.size() == UU.size() );
-	assert( (~AA).size() == VV.size() );
-
-	assert((~AA).stride() == 1);
-	assert(ss.stride() == 1);
-	assert((~UU).stride() == 1);
-	assert((~VV).stride() == 1);
-
-	int    info;   // NOLINT(cppcoreguidelines-init-variables) init by function
-	double dwork;  // NOLINT(cppcoreguidelines-init-variables) init by function
-
-	dgesvd_(
-		'A' /*all left*/, 'A' /*all right*/, 
-		static_cast<int>(VV.size()), static_cast<int>(UU.size()),
-		AA.base(), static_cast<int>(AA.stride()),
-		ss.base(),
-		VV.base(), static_cast<int>(VV.stride()),
-		UU.base(), static_cast<int>(UU.stride()),
-		&dwork, -1, info
-	);
-	if(info != 0) { throw std::runtime_error("Error in DGESVD work estimation, info: " + std::to_string(info)); }
-
-	int const     lwork = static_cast<int>(dwork);
-	double* const work  = alloc.allocate(lwork);
-
-	dgesvd_(
-		'A' /*all left*/, 'A' /*all right*/,
-		static_cast<int>(VV.size()), static_cast<int>(UU.size()),
-		AA.base(), static_cast<int>(AA.stride()),
-		ss.base(),
-		VV.base(), static_cast<int>(VV.stride()),
-		UU.base(), static_cast<int>(UU.stride()),
-		work, lwork, info
-	);
-	alloc.deallocate(work, lwork);
-
-	if(info != 0) { throw std::runtime_error("Error in DGESVD computation, info: " + std::to_string(info)); }
-
-	(void)std::forward<AArray2D>(AA);
-}
-
-template<
-	template<typename> class AllocT = std::allocator,
-	class AArray2D, class UArray2D, class SArray1D, class VTArray2D,
-	class Alloc = AllocT<typename std::decay_t<AArray2D>::element_type>
->
-void gesvd(AArray2D&& AA, UArray2D&& UU, SArray1D&& ss, VTArray2D&& VV) {
-	return gesvd(std::forward<AArray2D>(AA), std::forward<UArray2D>(UU), std::forward<SArray1D>(ss), std::forward<VTArray2D>(VV), Alloc{});
-}
-
-}  // end namespace boost::multi::lapack
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
@@ -203,6 +138,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	//  BOOST_TEST( std::abs(AA_test[1][1] - AA_gold[1][1]) < 1.0e-4 );
 	// }
 	{
+		// input array (will be destroyed)
 		multi::array<double, 2> AA = {
 			{0.5, 1.0},
 			{2.0, 2.5},
@@ -211,18 +147,18 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto const AA_gold = AA;
 
 		// Output arrays
-		multi::array<double, 1> ss(std::min(AA.size(), (~AA).size()));  // Singular values
-
-		multi::array<double, 2> UU({AA.size(), AA.size()});        // Right singular vectors
+		multi::array<double, 2> UU({  AA .size(),   AA .size()});        // Right singular vectors
 		multi::array<double, 2> VV({(~AA).size(), (~AA).size()});  // Left singular vectors
 
-		multi::lapack::gesvd(AA, UU, ss, VV);  // AA == UU.SS.(VV^T)
+		multi::array<double, 1> ss(std::min(UU.size(), VV.size()));  // Singular values
+
+		multi::lapack::gesvd(AA, UU, ss, VV);  // AA == UU.Diag(ss).(VV^T)
 
 		multi::array<double, 2> SS({ss.extension(), ss.extension()}, 0.0);
 		std::copy(ss.begin(), ss.end(), SS.diagonal().begin());
 
 		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS, ~VV));
-		// AA_test = UU.SS.(VV^T);
+		// AA_test <- UU.SS.(VV^T);
 
 		BOOST_TEST( std::abs(AA_test[0][0] - AA_gold[0][0]) < 1.0e-4 );
 		BOOST_TEST( std::abs(AA_test[0][1] - AA_gold[0][1]) < 1.0e-4 );
