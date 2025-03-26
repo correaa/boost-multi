@@ -160,6 +160,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS, ~VV));
 		// AA_test <- UU.SS.(VV^T);
 
+		std::cout << AA_test[0][0] << ' ' << AA_test[0][1] << '\n';
+		std::cout << AA_test[1][0] << ' ' << AA_test[1][1] << '\n';
+
 		BOOST_TEST( std::abs(AA_test[0][0] - AA_gold[0][0]) < 1.0e-4 );
 		BOOST_TEST( std::abs(AA_test[0][1] - AA_gold[0][1]) < 1.0e-4 );
 		BOOST_TEST( std::abs(AA_test[1][0] - AA_gold[1][0]) < 1.0e-4 );
