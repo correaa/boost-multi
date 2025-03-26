@@ -28,7 +28,7 @@ if [ -z "$1" ]; then
 echo "no arg"
 else
 CMT="--target $1"
-CTR="-R $1"
+CTR="--verbose -R $1"
 fi
 
 if [[ $(uname -m) != 'arm64' ]]; then
