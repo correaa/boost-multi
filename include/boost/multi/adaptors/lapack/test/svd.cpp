@@ -148,7 +148,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto const AA_gold = AA;
 
 		// Output arrays
-		multi::array<double, 2> UU({  AA .size(),   AA .size()});        // Right singular vectors
+		multi::array<double, 2> UU({  AA .size(),   AA .size()});  // Right singular vectors
 		multi::array<double, 2> VV({(~AA).size(), (~AA).size()});  // Left singular vectors
 
 		multi::array<double, 1> ss(std::min(UU.size(), VV.size()));  // Singular values
