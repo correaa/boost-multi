@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cmath>  // for std::abs
+#include <iostream>
 
 namespace multi = boost::multi;
 
