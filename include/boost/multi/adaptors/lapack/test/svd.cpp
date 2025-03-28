@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cmath>  // for std::abs
-#include <iostream>
 
 namespace multi = boost::multi;
 
@@ -139,35 +138,29 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	//  BOOST_TEST( std::abs(AA_test[1][1] - AA_gold[1][1]) < 1.0e-4 );
 	// }
 	{
-		// input array (will be destroyed)
-		multi::array<double, 2> AA = {
+		// input array
+		multi::array<double, 2> const AA = {
 			{0.5, 1.0},
 			{2.0, 2.5},
 		};
 
-		auto const AA_gold = AA;
-
-		// Output arrays
-		multi::array<double, 2> UU({  AA .size(),   AA .size()});  // Right singular vectors
-		multi::array<double, 2> VV({(~AA).size(), (~AA).size()});  // Left singular vectors
-
-		multi::array<double, 1> ss(std::min(UU.size(), VV.size()));  // Singular values
-
-		multi::lapack::gesvd(AA, UU, ss, VV);  // AA == UU.Diag(ss).(VV^T)
+		auto const [UU, ss, VV] = multi::lapack::gesvd(AA);  // AA == UU.Diag(ss).(VV^T)
 
 		multi::array<double, 2> SS({ss.extension(), ss.extension()}, 0.0);
 		std::copy(ss.begin(), ss.end(), SS.diagonal().begin());
 
+		#if !defined(_MULTI_USING_LAPACK_MKL)
 		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS, ~VV));
 		// AA_test <- UU.SS.(VV^T);
-
-		std::cout << AA_test[0][0] << ' ' << AA_test[0][1] << '\n';
-		std::cout << AA_test[1][0] << ' ' << AA_test[1][1] << '\n';
-
-		BOOST_TEST( std::abs(AA_test[0][0] - AA_gold[0][0]) < 1.0e-4 );
-		BOOST_TEST( std::abs(AA_test[0][1] - AA_gold[0][1]) < 1.0e-4 );
-		BOOST_TEST( std::abs(AA_test[1][0] - AA_gold[1][0]) < 1.0e-4 );
-		BOOST_TEST( std::abs(AA_test[1][1] - AA_gold[1][1]) < 1.0e-4 );
+		#else
+		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS,  VV));
+		// AA_test <- UU.SS.(VV);
+		#endif
+ 
+		BOOST_TEST( std::abs(AA_test[0][0] - AA[0][0]) < 1.0e-4 );
+		BOOST_TEST( std::abs(AA_test[0][1] - AA[0][1]) < 1.0e-4 );
+		BOOST_TEST( std::abs(AA_test[1][0] - AA[1][0]) < 1.0e-4 );
+		BOOST_TEST( std::abs(AA_test[1][1] - AA[1][1]) < 1.0e-4 );
 	}
 
 	return boost::report_errors();

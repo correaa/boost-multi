@@ -7,11 +7,16 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 
+#define MLP_INT int32_t  // int64_t  // #define INT int64_t
+
+#include <boost/multi/array.hpp>
+
 extern "C" {
-void dgesvd_(char const& jobu, char const& jobvt, int const& mm, int const& nn, double* aa, int const& lda, double* ss, double* uu, int const& ldu, double* vt, int const& ldvt, double* work, int const& lwork, int& info);  // NOLINT(readability-identifier-naming)
+	void dgesvd_(char const& jobu, char const& jobvt, int const& mm, int const& nn, double* aa, int const& lda, double* ss, double* uu, int const& ldu, double* vt, int const& ldvt, double* work, int const& lwork, int& info);  // NOLINT_INT(readability-identifier-naming)
 }
 
 namespace boost::multi::lapack {
@@ -27,30 +32,30 @@ void gesvd(AArray2D&& AA, UArray2D&& UU, SArray1D&& ss, VTArray2D&& VV, Alloc al
 	assert((~UU).stride() == 1);
 	assert((~VV).stride() == 1);
 
-	int    info;   // NOLINT(cppcoreguidelines-init-variables) init by function
+	MLP_INT    info;   // NOLINT(cppcoreguidelines-init-variables) init by function
 	double dwork;  // NOLINT(cppcoreguidelines-init-variables) init by function
 
 	dgesvd_(
 		'A' /*all left*/, 'A' /*all right*/, 
-		static_cast<int>(VV.size()), static_cast<int>(UU.size()),
-		AA.base(), static_cast<int>(AA.stride()),
+		static_cast<MLP_INT>(VV.size()), static_cast<MLP_INT>(UU.size()),
+		AA.base(), static_cast<MLP_INT>(AA.stride()),
 		ss.base(),
-		VV.base(), static_cast<int>(VV.stride()),
-		UU.base(), static_cast<int>(UU.stride()),
+		VV.base(), static_cast<MLP_INT>(VV.stride()),
+		UU.base(), static_cast<MLP_INT>(UU.stride()),
 		&dwork, -1, info
 	);
 	if(info != 0) { throw std::runtime_error("Error in DGESVD work estimation, info: " + std::to_string(info)); }
 
-	int const     lwork = static_cast<int>(dwork);
-	double* const work  = alloc.allocate(lwork);
+	auto const lwork = static_cast<MLP_INT>(dwork);
+	auto* const work  = alloc.allocate(lwork);
 
 	dgesvd_(
 		'A' /*all left*/, 'A' /*all right*/,
-		static_cast<int>(VV.size()), static_cast<int>(UU.size()),
-		AA.base(), static_cast<int>(AA.stride()),
+		static_cast<MLP_INT>(VV.size()), static_cast<MLP_INT>(UU.size()),
+		AA.base(), static_cast<MLP_INT>(AA.stride()),
 		ss.base(),
-		VV.base(), static_cast<int>(VV.stride()),
-		UU.base(), static_cast<int>(UU.stride()),
+		VV.base(), static_cast<MLP_INT>(VV.stride()),
+		UU.base(), static_cast<MLP_INT>(UU.stride()),
 		work, lwork, info
 	);
 	alloc.deallocate(work, lwork);
@@ -67,6 +72,18 @@ template<
 >
 void gesvd(AArray2D&& AA, UArray2D&& UU, SArray1D&& ss, VTArray2D&& VV) {
 	return gesvd(std::forward<AArray2D>(AA), std::forward<UArray2D>(UU), std::forward<SArray1D>(ss), std::forward<VTArray2D>(VV), Alloc{});
+}
+
+template<class Array2D, typename ElementType = typename Array2D::element_type>
+auto gesvd(Array2D const& AA) {
+	auto AA_copy = AA;
+	auto ret = std::make_tuple(
+		::boost::multi::array<ElementType, 2>({  AA .size(),   AA .size()}),   // UU  // Right singular vectors
+		::boost::multi::array<ElementType, 1>(std::min(AA.size(), (~AA).size())),  // ss  // Singular values
+		::boost::multi::array<ElementType, 2>({(~AA).size(), (~AA).size()})   // VV  // Left singular vectors
+	);
+	gesvd(AA_copy, std::get<0>(ret), std::get<1>(ret), std::get<2>(ret));
+	return ret;
 }
 
 }  // end namespace boost::multi::lapack
