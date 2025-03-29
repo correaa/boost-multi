@@ -11,7 +11,30 @@
 
 namespace multi = boost::multi;
 
+namespace boost::multi {
+	multi::array<double, 2>::diagonal(ss);
+}
+
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
+
+	{
+		multi::array<double, 2> const AA = {
+			{0.5, 1.0},
+			{2.0, 2.5},
+		};
+
+		auto const [UU, ss, VV] = multi::lapack::gesvd(AA);  // AA == UU.Diag(ss).(VV^T)
+
+		multi::array<double, 2> SS({ss.size(), ss.size()}, 0.0);
+		SS.diagonal() = ss;
+
+		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS, ~VV));  // A_test <- UU * SS * VV^T
+ 
+		BOOST_TEST( std::abs(AA_test[0][0] - AA[0][0]) < 1.0e-4 );
+		BOOST_TEST( std::abs(AA_test[0][1] - AA[0][1]) < 1.0e-4 );
+		BOOST_TEST( std::abs(AA_test[1][0] - AA[1][0]) < 1.0e-4 );
+		BOOST_TEST( std::abs(AA_test[1][1] - AA[1][1]) < 1.0e-4 );
+	}
 
 	// {
 	//  multi::array<double, 2> AA = {
@@ -136,25 +159,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	//  BOOST_TEST( std::abs(AA_test[1][0] - AA_gold[1][0]) < 1.0e-4 );
 	//  BOOST_TEST( std::abs(AA_test[1][1] - AA_gold[1][1]) < 1.0e-4 );
 	// }
-	{
-		// input array
-		multi::array<double, 2> const AA = {
-			{0.5, 1.0},
-			{2.0, 2.5},
-		};
-
-		auto const [UU, ss, VV] = multi::lapack::gesvd(AA);  // AA == UU.Diag(ss).(VV^T)
-
-		multi::array<double, 2> SS({ss.size(), ss.size()}, 0.0);
-		SS.diagonal() = ss;
-
-		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS, ~VV));
- 
-		BOOST_TEST( std::abs(AA_test[0][0] - AA[0][0]) < 1.0e-4 );
-		BOOST_TEST( std::abs(AA_test[0][1] - AA[0][1]) < 1.0e-4 );
-		BOOST_TEST( std::abs(AA_test[1][0] - AA[1][0]) < 1.0e-4 );
-		BOOST_TEST( std::abs(AA_test[1][1] - AA[1][1]) < 1.0e-4 );
-	}
 
 	return boost::report_errors();
 }
