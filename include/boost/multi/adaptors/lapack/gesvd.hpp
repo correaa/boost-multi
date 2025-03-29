@@ -83,6 +83,9 @@ auto gesvd(Array2D const& AA) {
 		::boost::multi::array<ElementType, 2>({(~AA).size(), (~AA).size()})   // VV  // Left singular vectors
 	);
 	gesvd(AA_copy, std::get<0>(ret), std::get<1>(ret), std::get<2>(ret));
+	#if defined(_MULTI_USING_LAPACK_MKL)
+	std::get<2>(ret) = +~std::get<2>(ret);  // MKL returns the transpose of the right singular vectors
+	#endif
 	return ret;
 }
 
