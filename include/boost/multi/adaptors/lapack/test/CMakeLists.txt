@@ -67,11 +67,14 @@ include(CTest)
 # add_test(NAME geqrf.cpp.x COMMAND ./geqrf.cpp.x)
 
 add_executable(potrf.cpp.x potrf.cpp)
+add_executable(svd.cpp.x svd.cpp)
 
 if(ENABLE_CUDA)
     set_source_files_properties(potrf.cpp PROPERTIES LANGUAGE CUDA)
 endif()
 
 target_link_libraries(potrf.cpp.x PRIVATE multi-lapack Boost::boost)
+target_link_libraries(svd.cpp.x   PUBLIC multi-lapack Boost::boost)
 
 add_test(NAME potrf.cpp.x COMMAND $<TARGET_FILE:potrf.cpp.x>)
+add_test(NAME svd.cpp.x   COMMAND $<TARGET_FILE:svd.cpp.x>  )
