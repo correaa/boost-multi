@@ -7,7 +7,6 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>
 #include <cmath>  // for std::abs
 
 namespace multi = boost::multi;
@@ -146,16 +145,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 		auto const [UU, ss, VV] = multi::lapack::gesvd(AA);  // AA == UU.Diag(ss).(VV^T)
 
-		multi::array<double, 2> SS({ss.extension(), ss.extension()}, 0.0);
-		std::copy(ss.begin(), ss.end(), SS.diagonal().begin());
+		multi::array<double, 2> SS({ss.size(), ss.size()}, 0.0);
+		SS.diagonal() = ss;
 
-		#if !defined(_MULTI_USING_LAPACK_MKL)
 		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS, ~VV));
-		// AA_test <- UU.SS.(VV^T);
-		#else
-		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS,  VV));
-		// AA_test <- UU.SS.(VV);
-		#endif
  
 		BOOST_TEST( std::abs(AA_test[0][0] - AA[0][0]) < 1.0e-4 );
 		BOOST_TEST( std::abs(AA_test[0][1] - AA[0][1]) < 1.0e-4 );
