@@ -22,7 +22,7 @@ extern "C" {
 namespace boost::multi::lapack {
 
 template<class Alloc, class AArray2D, class UArray2D, class SArray1D, class VTArray2D>
-void gesvd(AArray2D&& AA, UArray2D&& UU, SArray1D&& ss, VTArray2D&& VV, Alloc alloc) {
+void gesvd(AArray2D&& AA, UArray2D& UU, SArray1D& ss, VTArray2D& VV, Alloc alloc) {
 	assert( AA.size() == UU.size() );
 	assert( (~AA).size() == VV.size() );
 	assert( ss.size() == std::min(UU.size(), VV.size()) );
