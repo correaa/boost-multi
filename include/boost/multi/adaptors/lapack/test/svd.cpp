@@ -11,10 +11,6 @@
 
 namespace multi = boost::multi;
 
-namespace boost::multi {
-	multi::array<double, 2>::diagonal(ss);
-}
-
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	{
