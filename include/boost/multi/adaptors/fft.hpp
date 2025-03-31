@@ -115,7 +115,7 @@ namespace boost::multi::fft{
 					multi::subarray<typename std::decay_t<In>::element, dimensionality, typename It::element_ptr>(
 						first_d, first_d + count
 					),
-					dir_
+					static_cast<boost::multi::fftw::sign>(dir_)
 				);
 				return first_d + count;
 			}
