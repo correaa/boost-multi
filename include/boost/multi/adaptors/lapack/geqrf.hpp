@@ -9,7 +9,7 @@ $CXXX $CXXFLAGS $0 -o $0x$OXX `pkg-config --libs blas lapack` -lboost_unit_test_
 #include "../lapack/core.hpp"
 #include "../blas/filling.hpp"
 
-#include "../../config/NODISCARD.hpp"
+// #include "../../config/NODISCARD.hpp"
 
 #include<cassert>
 
@@ -83,3 +83,4 @@ auto syev(blas::filling uplo, Array2D const& a){
 #endif
 
 }}}
+#endif
