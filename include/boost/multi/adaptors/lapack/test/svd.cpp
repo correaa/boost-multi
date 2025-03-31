@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <cmath>  // for std::abs
+// IWYU pragma: no_include <memory>  // for std::allocator
 
 namespace multi = boost::multi;
 
