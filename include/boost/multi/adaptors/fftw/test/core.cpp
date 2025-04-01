@@ -87,8 +87,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::fftw::dft_forward({false, false}, in, out);  // out = in;
 
-		BOOST_TEST( in[2][3].real() == out[2][3].real() );
-		BOOST_TEST( in[2][3].imag() == out[2][3].imag() );
+		BOOST_TEST( in[2][2].real() == out[2][2].real() );
+		BOOST_TEST( in[2][2].imag() == out[2][2].imag() );
 
 		BOOST_TEST( out == in );
 	}
