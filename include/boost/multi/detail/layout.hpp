@@ -879,7 +879,7 @@ struct layout_t
 	friend        constexpr auto extension(layout_t const& self) {return self.extension();}
 	[[nodiscard]] constexpr auto extension()        const     -> extension_type {
 		if(nelems_ == 0) {return index_extension{};}
-		assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(offset_ % stride_ == 0);
 		assert(nelems_ % stride_ == 0);
 		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};

@@ -38,10 +38,9 @@ auto trace_with_accumulate(Array2D const& arr) {
 }
 }  // end unnamed namespace
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(trace_test) {
+	// trace_test)
+	{
 		using int_element = multi::index;
 		multi::array<int_element, 2> arr({5, 5}, 0);
 
@@ -62,7 +61,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( trace_with_diagonal(arr) == trace_with_accumulate(arr) );
 	}
 
-	BOOST_AUTO_TEST_CASE(broadcasted) {
+	// broadcasted
+	{
 		multi::array<int, 2> const arr = {
 			{0, 1,  2},
 			{4, 5,  6},
@@ -73,7 +73,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.diagonal().end() - arr.diagonal().begin() == 3 );
 	}
 
-	BOOST_AUTO_TEST_CASE(broadcasted) {
+	// broadcasted)
+	{
 		multi::array<int, 2> const arr = {
 			{0, 1,  2,  3},
 			{4, 5,  6,  7},
@@ -87,24 +88,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		{
 			auto const& arr_instance = a3D[0];
-			BOOST_TEST( &arr_instance[3][1] == &arr[3][1] );
+			BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
 		}
 		{
 			auto const& arr_instance = a3D[99];
-			BOOST_TEST( &arr_instance[3][1] == &arr[3][1] );
+			BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
 		}
 		{
 			auto const& arr_instance = a3D[-99];
-			BOOST_TEST( &arr_instance[3][1] == &arr[3][1] );
+			BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
 		}
 		{
 			auto const& a3D_self = a3D();
-			BOOST_TEST( &a3D_self[ 4][3][1] == &arr[3][1] );
-			BOOST_TEST( &a3D_self[99][3][1] == &arr[3][1] );
+			BOOST_TEST( &a3D_self[ 4][2][1] == &arr[2][1] );
+			BOOST_TEST( &a3D_self[99][2][1] == &arr[2][1] );
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(broadcast_1D) {
+	// broadcast_1D
+	{
 		multi::array<int, 1> const arr = {0, 1, 2, 3};
 
 		auto const& a2D = arr.broadcasted();
@@ -113,7 +115,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &a2D[1][2] == &arr[2] );
 	}
 
-	BOOST_AUTO_TEST_CASE(broadcast_0D) {
+	// broadcast_0D
+	{
 		multi::array<int, 1>       arr = {0, 1, 2, 3};
 		multi::array<int, 0> const vv(2);
 
