@@ -7,7 +7,7 @@
 
 #include<cassert>
 
-#if defined(BOOST_MULTI_ACCESS_DEBUG) || defined(__CUDACC__)
+#if defined(BOOST_MULTI_ACCESS_DEBUG)  // to activate bounds check compile in debug mode (default) with -DBOOST_MULTI_ACCESS_DEBUG
 	#define BOOST_MULTI_ACCESS_ASSERT(Expr) assert(Expr)  // NOLINT(cppcoreguidelines-macro-usage)
 #else
     #define BOOST_MULTI_ACCESS_ASSERT(Expr) /*empty*/ // NOLINT(cppcoreguidelines-macro-usage
