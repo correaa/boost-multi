@@ -15,7 +15,7 @@
 extern "C" {
 	using integer = int const&;
 
-	void dgeqrf_(  // NOLINIT(readability-identifier-naming) externally linked
+	void dgeqrf_(  // NOLINT(readability-identifier-naming) externally linked
 		integer,  // M,
 		integer,  // N,
 		double*,  // A  double precision, dimension( lda, * )   A,
@@ -32,8 +32,8 @@ namespace boost::multi::lapack {
 
 using blas::filling;
 
-template<class Array2D, class TAU, class Allocator = std::allocator<double>>
-auto geqrf(Array2D&& aa, TAU&& tau, Allocator alloc = {}) -> Array2D&& {
+template<class Array2D, class TAU, class Allocator>
+auto geqrf(Array2D&& aa, TAU&& tau, Allocator alloc) -> Array2D&& {
 //  assert( stride(~a) == 1);
 	assert( size(tau) == std::min(size(~aa), size(aa)) );
 
@@ -65,6 +65,11 @@ auto geqrf(Array2D&& aa, TAU&& tau, Allocator alloc = {}) -> Array2D&& {
 	}
 
 	return std::forward<Array2D>(aa);
+}
+
+template<class Array2D, class TAU, class Allocator = std::allocator<double>>
+auto geqrf(Array2D&& aa, TAU&& tau) -> Array2D&& {
+	return geqrf(std::forward<Array2D>(aa), std::forward<TAU>(tau), Allocator{});
 }
 
 //using ::core::syev;
