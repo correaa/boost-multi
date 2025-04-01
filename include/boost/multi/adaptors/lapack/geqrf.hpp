@@ -37,8 +37,8 @@ auto geqrf(Array2D&& aa, TAU&& tau, Allocator alloc) -> Array2D&& {
 //  assert( stride(~a) == 1);
 	assert( size(tau) == std::min(size(~aa), size(aa)) );
 
-	double dwork;
-	int info;
+	double dwork; // NOLINT(cppcoreguidelines-init-variables) delayed initialization
+	int info;  // NOLINT(cppcoreguidelines-init-variables) delayed initialization
 	dgeqrf_(
 		size(~aa), size(aa), aa.base(), aa.stride(),
 		tau.base(),
@@ -72,8 +72,6 @@ auto geqrf(Array2D&& aa, TAU&& tau) -> Array2D&& {
 	return geqrf(std::forward<Array2D>(aa), std::forward<TAU>(tau), Allocator{});
 }
 
-//using ::core::syev;
-//using ::core::geqrf;
+}  // end namespace boost::multi::lapack
 
-}
 #endif
