@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include <boost/multi/detail/tuple_zip.hpp>
+
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
 #include <string>  // for to_string
@@ -1119,6 +1120,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
+		BOOST_MULTI_ASSERT((this->stride()==0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+
 		#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -1142,11 +1145,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	#endif
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> const_reference {
+		BOOST_MULTI_ASSERT((this->stride()==0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return const_reference(
 			this->layout().sub(),
 			this->base_ + (idx*this->layout().stride() - this->layout().offset())
 		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
-		// return at_aux_(idx);
+		// return at_aux_(idx);  // TODO(correaa) use at_aux
 	}  // TODO(correaa) use return type to cast
 
 	#if defined(__clang__)
@@ -1252,25 +1256,26 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-	#endif
-
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
 		// TODO(correaa) remove first == last condition
-		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		BOOST_MULTI_ACCESS_ASSERT(((first==last) || this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ASSERT(((first==last) || this->extension().contains(first   )) && ("sliced first out of bounds"));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ASSERT(((first==last) || this->extension().contains(last - 1)) && ("sliced last  out of bounds"));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
-		BOOST_MULTI_ACCESS_ASSERT(this->base_ || ((first*this->layout().stride() - this->layout().offset()) == 0) );  // it is UB to offset a nullptr
-		return const_subarray{new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset())};
-	}
+		BOOST_MULTI_ASSERT(this->base_ || ((first*this->layout().stride() - this->layout().offset()) == 0) );  // it is UB to offset a nullptr
 
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunknown-warning-option"
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+		#endif
+	
+		return const_subarray(new_layout, this->base_ + (first*this->layout().stride() - this->layout().offset()));
+
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
+	}
 
  public:
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> const_subarray { return sliced_aux_(first, last); }
@@ -2874,18 +2879,13 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename const_subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-    BOOST_MULTI_ACCESS_ASSERT(this->extension().contains(idx)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ASSERT((this->stride()==0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Wunknown-warning-option"
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 		#endif
-		// auto ba = this->base_;  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		// auto of = (idx*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		// auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		// return *pt;  // in C++17 this is allowed even with syntethic references
 		return *(this->base_ + (idx*this->stride() - this->offset()));
-	//  return *(this->base() + (idx*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
 		#endif
