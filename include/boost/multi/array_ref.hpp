@@ -983,13 +983,13 @@ struct elements_range_t {
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& other)  & -> elements_range_t& {  // NOLINT(cppcoreguidelines-missing-std-forward) std::forward<OtherElementRange>(other) creates a problem with move-only elements
 		BOOST_MULTI_ASSERT(size() == other.size());
-		if(! is_empty()) {adl_copy(std::begin(other), std::end(other), begin());}
+		if(! is_empty()) { adl_copy(std::begin(other), std::end(other), begin()); }
 		return *this;
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
-	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {
-		BOOST_MULTI_ASSERT(size() == other.size());  // NOLINT(cppcoreguidelines-missing-std-forward) std::forward<OtherElementRange>(other) creates a problem with move-only elements
+	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {  // NOLINT(cppcoreguidelines-missing-std-forward) std::forward<OtherElementRange>(other) creates a problem with move-only elements
+		BOOST_MULTI_ASSERT(size() == other.size());
 		if(! is_empty()) { adl_copy(std::begin(other), std::end(other), begin()); } 
 		return *this;
 	}
@@ -997,9 +997,7 @@ struct elements_range_t {
 	auto operator=(std::initializer_list<value_type> values) && -> elements_range_t& {operator=(values); return *this;}
 	auto operator=(std::initializer_list<value_type> values) &  -> elements_range_t& {
 		BOOST_MULTI_ASSERT(static_cast<size_type>(values.size()) == size());
-		if(values.size() != 0) {
-			adl_copy_n(values.begin(), values.size(), begin());
-		}
+		adl_copy_n(values.begin(), values.size(), begin());
 		return *this;
 	}
 };
