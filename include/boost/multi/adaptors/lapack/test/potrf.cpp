@@ -28,8 +28,6 @@
 // IWYU pragma: no_include <type_traits>  // for add_const<>::type
 #include <utility>  // for forward
 
-
-
 namespace multi = boost::multi;
 // namespace lapack = multi::lapack;
 namespace blas = multi::blas;

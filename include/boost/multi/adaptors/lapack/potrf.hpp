@@ -40,7 +40,7 @@ auto potrf(filling uplo, Iterator first, Iterator last)
 }
 
 template<class A2D>
-BOOST_MULTI_NODISCARD("result has information of order of minor through .size() member")
+// BOOST_MULTI_NODISCARD("result has information of order of minor through .size() member")
 auto potrf(filling uplo, A2D&& A)  // NOLINT(readability-identifier-length) conventional lapack name
 ->decltype(potrf(uplo, begin(A), end(A)), A({0, 1}))
 {
