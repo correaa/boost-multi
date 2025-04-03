@@ -21,6 +21,14 @@
 
 #include <fftw3.h>  // external fftw3 library
 
+#ifndef BOOST_MULTI_MARK_FUNCTION
+#ifdef CALI_CXX_MARK_FUNCTION
+#define BOOST_MULTI_MARK_FUNCTION CALI_CXX_MARK_FUNCTION
+#else
+#define BOOST_MULTI_MARK_FUNCTION  /**/
+#endif
+#endif
+
 namespace boost::multi {
 namespace fftw {
 
@@ -336,9 +344,9 @@ inline auto initialize_threads() -> bool {
 }
 
 // enum class sign : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size)
-// 	backward = FFTW_BACKWARD,
-// 	none     = 0,
-// 	forward  = FFTW_FORWARD,
+//  backward = FFTW_BACKWARD,
+//  none     = 0,
+//  forward  = FFTW_FORWARD,
 // };
 
 class sign {
@@ -426,6 +434,8 @@ class plan {
 
 	template<class I, class O>
 	void execute(I* in, O* out) const {
+		BOOST_MULTI_MARK_FUNCTION;
+
 		static_assert(sizeof(in->imag()) == sizeof(double));
 		static_assert(sizeof(out->imag()) == sizeof(double));
 

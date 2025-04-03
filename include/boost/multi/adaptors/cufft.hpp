@@ -22,6 +22,14 @@
 #include <cufftXt.h>
 #endif
 
+#ifndef BOOST_MULTI_MARK_FUNCTION
+#ifdef CALI_CXX_MARK_FUNCTION
+#define BOOST_MULTI_MARK_FUNCTION CALI_CXX_MARK_FUNCTION
+#else
+#define BOOST_MULTI_MARK_FUNCTION  /**/
+#endif
+#endif
+
 namespace boost::multi::cufft {
 
 // cuFFT API errors
@@ -287,7 +295,8 @@ class plan {
  private:
 
 	template<typename = void>
-	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const{
+	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const {
+		BOOST_MULTI_MARK_FUNCTION;
 		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
 		// cudaDeviceSynchronize();
 	}
@@ -300,6 +309,8 @@ class plan {
 		reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata))
 	))
 	{  // TODO(correaa) make const
+		BOOST_MULTI_MARK_FUNCTION;
+
 		if(first_howmany_ == DD) {
 			ExecZ2Z_(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)), reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata)), direction);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) wrap a legacy interface
 			return;
