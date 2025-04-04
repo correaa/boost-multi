@@ -296,7 +296,7 @@ class plan {
  private:
 
 	template<typename = void>
-	[[deprecated("see who calls ExecZ2Z_")]]
+	// [[deprecated("see who calls ExecZ2Z_")]]
 	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const {
 		BOOST_MULTI_MARK_FUNCTION;
 		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
@@ -305,7 +305,7 @@ class plan {
 
  public:
 	template<class IPtr, class OPtr>
-	[[deprecated("see who calls execute")]]
+	// [[deprecated("see who calls execute")]]
 	auto execute(IPtr idata, OPtr odata, int direction)
 	-> decltype((void)(
 		reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)),

@@ -433,6 +433,7 @@ class plan {
 	}
 
 	template<class I, class O>
+	[[deprecate("fftw_execute_dft is being called here")]]
 	void execute(I* in, O* out) const {
 		BOOST_MULTI_MARK_FUNCTION;
 

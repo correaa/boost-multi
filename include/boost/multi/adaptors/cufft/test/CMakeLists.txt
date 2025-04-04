@@ -71,7 +71,7 @@ include(CTest)
 include_directories(${CMAKE_BINARY_DIR})
 
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
-#set(TEST_SRCS cufft.cpp)
+set(TEST_SRCS cufft.cpp)
 
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
