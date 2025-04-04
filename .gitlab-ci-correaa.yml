@@ -54,7 +54,7 @@ g++-m32 sanitize:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libboost-serialization-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -fsanitize=signed-integer-overflow -fsanitize=unsigned-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 1 --output-on-failure
   needs: ["g++"]
