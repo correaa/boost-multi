@@ -296,15 +296,16 @@ class plan {
  private:
 
 	template<typename = void>
+	[[deprecated("see who calls ExecZ2Z_")]]
 	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const {
 		BOOST_MULTI_MARK_FUNCTION;
-		throw std::runtime_error("about to call cufftExecZ2Z in cufft.hpp:301");
 		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
 		// cudaDeviceSynchronize();
 	}
 
  public:
 	template<class IPtr, class OPtr>
+	[[deprecated("see who calls execute")]]
 	auto execute(IPtr idata, OPtr odata, int direction)
 	-> decltype((void)(
 		reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)),
@@ -312,7 +313,6 @@ class plan {
 	))
 	{  // TODO(correaa) make const
 		BOOST_MULTI_MARK_FUNCTION;
-		throw std::runtime_error("about to call cufftExecZ2Z in cufft.hpp:315");
 
 		if(first_howmany_ == DD) {
 			ExecZ2Z_(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)), reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata)), direction);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) wrap a legacy interface
