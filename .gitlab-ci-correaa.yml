@@ -54,7 +54,7 @@ g++-m32 sanitize:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libboost-serialization-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -fsanitize=signed-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 1 --output-on-failure
   needs: ["g++"]
@@ -222,7 +222,7 @@ clang++ ubsan:  # more UB is detected on Release
     - export UBSAN_OPTIONS=print_stacktrack=1
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-g -fsanitize=undefined -fno-sanitize-recover=undefined -DUBSAN=1" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined"
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-g -fsanitize=undefined -fsanitize=signed-integer-overflow -fsanitize=unsigned-integer-overflow  -fno-sanitize-recover=undefined -DUBSAN=1" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined"
     - cmake --build . --parallel 4 || cmake --build . --parallel 1 --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
