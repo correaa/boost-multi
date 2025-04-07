@@ -587,7 +587,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 		// return
 		//     ((0 < stride_) && (ptr_.base() - other.ptr_.base() < 0))
 		//  || ((stride_ < 0) && (0 < ptr_.base() - other.ptr_.base()));  // TODO(correaa) consider the case where stride_ is negative
-		return 0 <= other - *this;
+		return 0 < other - *this;
 	}
 
 	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> const& lyt, index stride)

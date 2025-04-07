@@ -834,13 +834,13 @@ struct layout_t
 	template<class... Indices>
 	constexpr auto reindex(index idx, Indices... rest) -> layout_t& {reindex(idx).rotate().reindex(rest...).unrotate(); return *this;}
 
-	       constexpr auto num_elements()        const        noexcept -> size_type {return size()*sub_.num_elements();}
-	friend constexpr auto num_elements(layout_t const& self) noexcept -> size_type {return self.num_elements();}
+	       constexpr auto num_elements()        const        noexcept -> size_type { return size()*sub_.num_elements(); }
+	friend constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
 
-	       constexpr auto is_empty()        const        noexcept {return nelems_ == 0;}
-	friend constexpr auto is_empty(layout_t const& self) noexcept {return self.is_empty();}
+	       constexpr auto is_empty()        const        noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
+	friend constexpr auto is_empty(layout_t const& self) noexcept { return self.is_empty(); }
 
-	constexpr auto    empty()        const noexcept {return is_empty();}
+	constexpr auto    empty()        const noexcept { return is_empty(); }
 
 	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
 	       constexpr auto size()        const        noexcept -> size_type {

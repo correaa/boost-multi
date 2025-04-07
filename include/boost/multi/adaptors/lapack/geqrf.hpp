@@ -8,9 +8,12 @@
 #include "../lapack/core.hpp"
 #include "../blas/filling.hpp"
 
-// #include "../../config/NODISCARD.hpp"
-
-#include<cassert>
+#include <algorithm>                // for min
+#include <cassert>
+#include <stdexcept>                // for runtime_error
+#include <string>                   // for operator+, to_string, allocator
+#include <utility>                  // for forward
+#include <boost/multi/utility.hpp>  // for size
 
 extern "C" {
 	using integer = int const&;
