@@ -42,10 +42,12 @@ mutators:
   - cxx_sub_to_add  # Replaces - with +
   - cxx_xor_assign_to_or_assign  # Replaces ^= with |=
   - cxx_xor_to_or  # Replaces ^ with |
-#ignoreMutators:
-timeout: 8000  # in milliseconds
-# debug:
-#  slowIRVerification: true
+# ignoreMutators:
+#   - cxx_logical_or_to_and
+#   - cxx_logical_and_to_or
+timeout: 6000  # in milliseconds
+debug:
+  slowIRVerification: true
 quiet: true
 excludePaths:
   - .*test.*
