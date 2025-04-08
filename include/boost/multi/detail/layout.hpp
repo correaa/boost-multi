@@ -842,9 +842,9 @@ struct layout_t
 
 	constexpr auto    empty()        const noexcept { return is_empty(); }
 
-	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
+	friend constexpr auto size(layout_t const& self) noexcept -> size_type { return self.size(); }
 	       constexpr auto size()        const        noexcept -> size_type {
-		if(nelems_ == 0) {return 0;}
+		if(nelems_ == 0) { return 0; }
 		// BOOST_MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
 		// return nelems_ == 0?0:nelems_/stride_;
@@ -852,13 +852,13 @@ struct layout_t
 		return nelems_/stride_;
 	}
 
-	constexpr BOOST_MULTI_HD auto stride()       -> stride_type      & {return stride_;}
-	constexpr BOOST_MULTI_HD auto stride() const -> stride_type const& {return stride_;}
+	constexpr BOOST_MULTI_HD auto stride()       -> stride_type      & { return stride_; }
+	constexpr BOOST_MULTI_HD auto stride() const -> stride_type const& { return stride_; }
 
-	friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index {return self.stride();}
+	friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index { return self.stride(); }
 
-	       BOOST_MULTI_HD constexpr auto strides()        const        -> strides_type {return strides_type{stride(), sub_.strides()};}
-	friend BOOST_MULTI_HD constexpr auto strides(layout_t const& self) -> strides_type {return self.strides();}
+	       BOOST_MULTI_HD constexpr auto strides()        const        -> strides_type { return strides_type{stride(), sub_.strides()}; }
+	friend BOOST_MULTI_HD constexpr auto strides(layout_t const& self) -> strides_type { return self.strides(); }
 
 	constexpr BOOST_MULTI_HD auto offset(dimensionality_type dim) const -> index {return (dim != 0)?sub_.offset(dim - 1):offset_;}
 	       BOOST_MULTI_HD constexpr auto offset() const -> index {return offset_;}
