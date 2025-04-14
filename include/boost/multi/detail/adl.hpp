@@ -196,7 +196,10 @@ constexpr auto to_address(T const& ptr) noexcept
 ->decltype(me_to_address(priority<2>{}/**/, ptr)) {
 	return me_to_address(priority<2>{}    , ptr); }
 
-template<class Alloc, class ForwardIt, class Size, typename Value = typename std::iterator_traits<ForwardIt>::value_type, typename = decltype(std::addressof(*ForwardIt{})), typename = decltype(Value())>
+template<class Alloc, class ForwardIt, class Size,
+	typename Value = typename std::iterator_traits<ForwardIt>::value_type, typename = decltype(std::addressof(*ForwardIt{})),
+	typename = decltype(Value())
+>
 auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size count) -> ForwardIt {
 // ->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first), Value()), first)>
 	ForwardIt current = first;
@@ -393,6 +396,7 @@ auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, Forward
 #endif
 
 template<class Alloc, class InputIt, class Size, class ForwardIt>
+// [[deprecated("check")]]
 auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
 	ForwardIt current = d_first;
 	try {
@@ -644,7 +648,7 @@ class alloc_uninitialized_move_n_t {
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).alloc_uninitialized_move_n(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<3>{}, std::forward<As>(args)...);} \
+	template<class... As> constexpr auto operator()(As&&... args) const { return _(priority<3>{}, std::forward<As>(args)...); }
 };
 inline constexpr alloc_uninitialized_move_n_t adl_alloc_uninitialized_move_n;
 

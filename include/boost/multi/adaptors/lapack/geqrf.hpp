@@ -6,7 +6,7 @@
 #define BOOST_MULTI_ADAPTORS_LAPACK_GEQRF_HPP
 
 #include <boost/multi/adaptors/blas/filling.hpp>
-#include <boost/multi/adaptors/lapack/core.hpp>
+// #include <boost/multi/adaptors/lapack/core.hpp>
 #include <boost/multi/utility.hpp>  // for size
 
 #include <algorithm>  // for min
@@ -36,7 +36,7 @@ namespace boost::multi::lapack {
 using blas::filling;
 
 template<class Array2D, class TAU, class Allocator>
-auto geqrf(Array2D&& aa, TAU&& tau, Allocator alloc) -> Array2D&& {
+auto geqrf(Array2D&& aa, TAU& tau, Allocator alloc) -> Array2D&& {
 	//  assert( stride(~a) == 1);
 	assert(size(tau) == std::min(size(~aa), size(aa)));
 
