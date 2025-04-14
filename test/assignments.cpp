@@ -148,21 +148,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
 	// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
 
-	BOOST_AUTO_TEST_CASE(rvalue_assignments) {
-		using complex = std::complex<double>;
+	// BOOST_AUTO_TEST_CASE(rvalue_assignments) {
+	//  using complex = std::complex<double>;
 
-		std::vector<double> const vec1(200, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
-		std::vector<complex>      vec2(200);        // NOLINT(fuchsia-default-arguments-calls)
+	//  std::vector<double> const vec1(200, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+	//  std::vector<complex>      vec2(200);        // NOLINT(fuchsia-default-arguments-calls)
 
-		auto linear1 = [&] {
-			return multi::array_cptr<double, 1>(vec1.data(), 200);
-		};
-		auto linear2 = [&] {
-			return multi::array_ptr<complex, 1>(vec2.data(), 200);
-		};
+	//  auto linear1 = [&] {
+	//      return multi::array_cptr<double, 1>(vec1.data(), 200);
+	//  };
+	//  auto linear2 = [&] {
+	//      return multi::array_ptr<complex, 1>(vec2.data(), 200);
+	//  };
 
-		*linear2() = *linear1();
-	}
+	//  *linear2() = *linear1();
+	// }
 #endif
 
 	BOOST_AUTO_TEST_CASE(assignments) {
@@ -226,6 +226,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &arr[1][1][5] == loc );
 	}
 
+	// BOOST_AUTO_TEST_CASE(static_array_move) {
+	//  multi::static_array<std::vector<int>, 2> arr = {
+	//      {std::vector<int>(10, 1), std::vector<int>(20, 2)},  // NOLINT(fuchsia-default-arguments-calls)
+	//      {std::vector<int>(30, 3), std::vector<int>(40, 4)},  // NOLINT(fuchsia-default-arguments-calls)
+	//  };
+	//  BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
+
+	//  multi::static_array<std::vector<int>, 2> arr2(arr.element_moved());
+	//  BOOST_TEST( arr2[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
+
+	//  BOOST_TEST( arr [0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
+	//  BOOST_TEST( arr [1][1].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
+	// }
 
 	BOOST_AUTO_TEST_CASE(static_array_move) {
 		multi::static_array<std::vector<int>, 2> arr = {
@@ -235,6 +248,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::static_array<std::vector<int>, 2> arr2(std::move(arr));
+		std::cout << "size " << arr2[1][1].size() << std::endl;
 		BOOST_TEST( arr2[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( arr [0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)

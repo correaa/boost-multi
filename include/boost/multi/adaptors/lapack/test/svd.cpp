@@ -13,7 +13,6 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
-
 	{
 		multi::array<double, 2> const AA = {
 			{0.5, 1.0},
@@ -26,7 +25,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		SS.diagonal() = ss;
 
 		auto const AA_test = +multi::blas::gemm(1.0, UU, +multi::blas::gemm(1.0, SS, ~VV));  // A_test <- UU * SS * VV^T
- 
+
 		BOOST_TEST( std::abs(AA_test[0][0] - AA[0][0]) < 1.0e-4 );
 		BOOST_TEST( std::abs(AA_test[0][1] - AA[0][1]) < 1.0e-4 );
 		BOOST_TEST( std::abs(AA_test[1][0] - AA[1][0]) < 1.0e-4 );
