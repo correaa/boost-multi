@@ -40,7 +40,7 @@ class allocator1 {
 			throw std::bad_alloc{};
 		}  // this cuts branches with UB (null deref) for the sanitizer
 		++*heap_;
-		return static_cast<value_type*>(::operator new(n * sizeof(value_type)));
+		return static_cast<value_type*>(::operator new(n * sizeof(value_type)));  // NOLINT(misc-include-cleaner) bug in clang-tidy 20
 	}
 	void deallocate(value_type* ptr, std::size_t n) noexcept {
 		if(n == 0) {
