@@ -400,7 +400,7 @@ template<class Alloc, class InputIt, class Size, class ForwardIt>
 auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
 	ForwardIt current = d_first;
 	try {
-		for(; count > 0; ++first, ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+		for(; count > 0; ++first, ++current, --count) {  // mull-ignore: cxx_gt_to_ge  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), std::move(*first));
 		}
 		return current;
