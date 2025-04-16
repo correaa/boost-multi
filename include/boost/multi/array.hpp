@@ -12,7 +12,7 @@
 #include <boost/multi/detail/adl.hpp>
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
-#include "detail/adl.hpp"
+// #include "detail/adl.hpp"
 
 #include <memory>  // for std::allocator_traits
 #include <stdexcept>
@@ -949,8 +949,9 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		uninitialized_copy(other.data_elements());
 	}
 
-	static_array(static_array&& other)
-	: array_alloc{other.get_allocator()}, ref{static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()} {
+	static_array(static_array&& other) noexcept(false)  // TODO(correaa) detect if allocation is no except
+	: array_alloc{other.get_allocator()}
+	, ref(static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()) {
 		adl_alloc_uninitialized_move_n(
 			this->alloc(),
 			other.data_elements(),

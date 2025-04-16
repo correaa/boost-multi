@@ -8,7 +8,7 @@
 #include <boost/multi/array.hpp>  // for array, apply, operator==, layout_t
 
 #include <algorithm>  // for fill
-#include <complex>    // for complex
+// #include <complex>    // for complex
 #include <cstddef>    // for size_t
 #include <iterator>   // for size
 #include <memory>     // for std::allocator  // IWYU pragma: keep
@@ -248,11 +248,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::static_array<std::vector<int>, 2> arr2(std::move(arr));
-		std::cout << "size " << arr2[1][1].size() << std::endl;
 		BOOST_TEST( arr2[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST( arr [0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
-		BOOST_TEST( arr [1][1].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
+		BOOST_TEST( arr[0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
+		BOOST_TEST( arr[1][1].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 
 	return boost::report_errors();
