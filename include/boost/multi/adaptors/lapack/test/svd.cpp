@@ -31,7 +31,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		BOOST_TEST( std::abs(AA_test[1][0] - AA[1][0]) < 1.0e-4 );
 		BOOST_TEST( std::abs(AA_test[1][1] - AA[1][1]) < 1.0e-4 );
 	}
-
 	// {
 	//  multi::array<double, 2> AA = {
 	//      { 2.27,  0.94, 1.07,  0.63, -2.35,  0.62},

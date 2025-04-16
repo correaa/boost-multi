@@ -37,8 +37,8 @@ using blas::filling;
 
 template<class Array2D, class TAU, class Allocator>
 auto geqrf(Array2D&& aa, TAU& tau, Allocator alloc) -> Array2D&& {
-	//  assert( stride(~a) == 1);
-	assert(size(tau) == std::min(size(~aa), size(aa)));
+//  assert( stride(~a) == 1);
+	assert( size(tau) == std::min(size(~aa), size(aa)) );
 
 	double dwork;  // NOLINT(cppcoreguidelines-init-variables) delayed initialization
 	int    info;   // NOLINT(cppcoreguidelines-init-variables) delayed initialization
