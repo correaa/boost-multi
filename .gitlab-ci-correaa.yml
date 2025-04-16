@@ -246,7 +246,7 @@ clang++-18 mull-18:  # mull-18 crashes
     - mkdir build && cd build
     - clang++-18 --version
     - mull-runner-18 --version
-    - CXX=clang++-18 cmake .. -DCMAKE_CXX_FLAGS="-DNDEBUG -O3 -fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line"  # -fsanitize=address
+    - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line"
     - cmake --build . --parallel 8 || cmake --build . --parallel 1 --verbose
     - cd test
     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
