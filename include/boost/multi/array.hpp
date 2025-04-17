@@ -12,8 +12,10 @@
 #include <boost/multi/detail/adl.hpp>
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
+// #include "detail/adl.hpp"
 
 #include <memory>  // for std::allocator_traits
+#include <stdexcept>
 #include <tuple>  // needed by a deprecated function
 #include <type_traits>  // for std::common_reference
 #include <utility>  // for std::move
@@ -176,9 +178,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
 
-	template<typename It> auto uninitialized_move_elements(It first) {
-		return array_alloc::uninitialized_move_n(first, this->num_elements(), this->data_elements());
-	}
+	// template<typename It> auto uninitialized_move_elements(It first) {
+	//  return array_alloc::uninitialized_move_n(first, this->num_elements(), this->data_elements());
+	// }
 
 	template<class EP, typename It> auto uninitialized_copy_elements(EP&& ep, It first) {
 		return array_alloc::uninitialized_copy_n(std::forward<EP>(ep), first, this->num_elements(), this->data_elements());
@@ -213,14 +215,28 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::dropped;
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
-	static_array(static_array&& other) noexcept :
-		array_alloc{other.alloc()},
-		ref{
-			array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
-			other.extensions()
-		}
+	// static_array(static_array&& other) noexcept :
+	//  array_alloc{other.alloc()},
+	//  ref{
+	//      array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+	//      other.extensions()
+	//  }
+	// {
+	// }
+
+	static_array(static_array&& other) noexcept
+	: array_alloc{other.alloc()}
+	, ref{
+	      array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+	      other.extensions()
+	} 
 	{
-		uninitialized_move_elements(other.data_elements());
+		adl_alloc_uninitialized_move_n(
+			this->alloc(),
+			other.data_elements(),
+			other.num_elements(),
+			this->data_elements()
+		);
 	}
 
 	constexpr static_array(decay_type&& other, allocator_type const& alloc) noexcept
@@ -282,6 +298,16 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
 	#endif
 	}
+
+	// static_array(array_ref<T, D, typename static_array::element_move_ptr, typename static_array::layout_t>&& other)
+	// : ref{
+	//  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+	//  other.extensions()
+	// }
+	// {
+	//  adl_alloc_uninitialized_move_n(static_array::alloc(), static_cast<T*>(other.data_elements()), other.num_elements(), this->data_elements());
+	//  // uninitialized_move(other.data_elements());
+	// }
 
 	static_array(typename static_array::extensions_type extensions, typename static_array::element_type const& elem, allocator_type const& alloc)  // 2
 	: array_alloc{alloc}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions} {
@@ -923,12 +949,16 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		uninitialized_copy(other.data_elements());
 	}
 
-	static_array(static_array&& other) noexcept  // it is private because it is a valid operation for derived classes //5b
-	: array_alloc{other.get_allocator()}, ref{static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()} {
-		assert(this->stride() != 0);
-		uninitialized_move(std::move(other).data_elements());
+	static_array(static_array&& other) noexcept(false)  // TODO(correaa) detect if allocation is no except
+	: array_alloc{other.get_allocator()}
+	, ref(static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()) {
+		adl_alloc_uninitialized_move_n(
+			this->alloc(),
+			other.data_elements(),
+			other.num_elements(),
+			this->data_elements()
+		);
 	}
-	//  template<class It> static auto distance(It a, It b) {using std::distance; return distance(a, b);}
 
  protected:
 	void deallocate() {  // TODO(correaa) : move this to detail::array_allocator

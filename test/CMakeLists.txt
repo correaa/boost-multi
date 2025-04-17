@@ -223,7 +223,7 @@ else()
 	-Wno-templates # (disallows templates, C-tool)
 	-Wterminate # (gcc 12, not in 11)
 	-Wtrampolines -Wtrigraphs
-	# -Wtrivial-auto-var-init # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wtrivial-auto-var-init>  # (not in gcc 11)
 	# -Wtsan # (gcc 11, not in 10)
 	-Wtype-limits -Wundef -Wuninitialized
 	-Wno-unknown-pragmas  # (see above) -Wunknown-pragmas (other compilers need their own pragmas for their warnings)

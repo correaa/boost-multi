@@ -125,6 +125,8 @@ BOOST_AUTO_TEST_CASE(comparisons_ordering) {
 	swap(ref[0], ref[1]);
 
 	BOOST_TEST(  begin(arr) <  end(arr) );
+	BOOST_TEST( !(begin(arr) <  begin(arr)) );
+
 	BOOST_TEST( cbegin(arr) < cend(arr) );
 
 	BOOST_TEST(  end(arr) -  begin(arr) == size(arr) );
