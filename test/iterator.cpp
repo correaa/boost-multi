@@ -103,6 +103,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( arr.size() == 120 );
 			BOOST_TEST( arr.cbegin() < arr.cend() );
+			BOOST_TEST( !(arr.cend() < arr.cend()) );
 			BOOST_TEST( arr.cend() - arr.cbegin() == arr.size() );
 
 			using iter = multi::array<double, 2>::iterator;

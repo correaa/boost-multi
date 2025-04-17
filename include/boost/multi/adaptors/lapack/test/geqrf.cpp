@@ -11,7 +11,6 @@
 
 #include <algorithm>
 // #include <cmath>  // for std::abs
-// IWYU pragma: no_include <cmath>  // for std::allocator
 // IWYU pragma: no_include <memory>  // for std::allocator
 
 namespace multi = boost::multi;

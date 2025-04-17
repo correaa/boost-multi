@@ -2318,8 +2318,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using element_move_ptr  = multi::move_ptr<typename subarray::element, typename subarray::element_ptr>;
 
-	constexpr auto element_moved()  & {return subarray<T, D, typename subarray::element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_});}
-	constexpr auto element_moved() && {return element_moved();}
+	constexpr auto element_moved()  & { return subarray<T, D, typename subarray::element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_}); }
+	constexpr auto element_moved() && { return element_moved(); }
 
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {
@@ -3456,6 +3456,9 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 
 	       constexpr auto celements()         const&       {return celements_type{array_ref::data_elements(), array_ref::num_elements()};}
 	friend constexpr auto celements(array_ref const& self) {return self.celements();}
+
+	constexpr auto element_moved()  & { return array_ref<T, D, typename array_ref::element_move_ptr, Layout>(this->extensions(), typename array_ref::element_move_ptr{this->base_}); }
+	constexpr auto element_moved() && { return element_moved(); }
 
 	template<typename TT, class... As>
 	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {

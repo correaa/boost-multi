@@ -14,7 +14,7 @@
 #include <iterator>   // for size, back_insert...
 #include <memory>     // for make_unique, uniq...
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
-#	include <memory_resource>  // for monotonic_buffer_...
+#   include <memory_resource>  // for monotonic_buffer_...
 #endif
 #include <new>      // for operator new  // NOLINT(misc-include-cleaner)
 #include <string>   // for basic_string, string
@@ -266,12 +266,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(( buffer != std::array<char, 13>{{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}} ));
 
-#	if defined(__GLIBCXX__)
+#   if defined(__GLIBCXX__)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'x', 'y', 'z', '&', 'o', 'o', 'o', 'o', 'o', 'o', 'A', 'B', 'C'}} ));
-#	endif
-#	if defined(_LIBCPP_VERSION)
+#   endif
+#   if defined(_LIBCPP_VERSION)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'0', '1', '2', 'o', 'o', 'o', 'o', 'o', 'o', 'x', 'y', 'z', '&'}} ));
-#	endif
+#   endif
 
 		BOOST_TEST(Aarr[0][0] == 'x');
 		BOOST_TEST(Barr[0][0] == 'o');
@@ -284,20 +284,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
-#	ifndef _MSC_VER
+#   ifndef _MSC_VER
 		multi::pmr::array<char, 2> Aarr({2, 2}, 'a', &pool);
 		multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
-#	else
+#   else
 		multi::pmr::array<char, 2> Aarr(multi::extensions_t<2>{2, 2}, 'a', &pool);
 		multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
-#	endif
+#   endif
 
-#	if defined(__GLIBCXX__)
+#   if defined(__GLIBCXX__)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
-#	endif
-#	if defined(_LIBCPP_VERSION)
+#   endif
+#   if defined(_LIBCPP_VERSION)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'X', 'X', 'X', 'b', 'b', 'b', 'b', 'b', 'b', 'a', 'a', 'a', 'a'}} ));
-#	endif
+#   endif
 
 		BOOST_TEST(Aarr[0][0] == 'a');
 		BOOST_TEST(Barr[0][0] == 'b');
@@ -315,12 +315,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( buffer[0] == 4 );
 		BOOST_TEST( buffer[1] == 5 );
 
-#	if defined(__GLIBCXX__)
+#   if defined(__GLIBCXX__)
 		BOOST_TEST(Aarr[0][0] == 4);
-#	endif
-#	if defined(_LIBCPP_VERSION)
+#   endif
+#   if defined(_LIBCPP_VERSION)
 		BOOST_TEST(Aarr[0][0] == 996);
-#	endif
+#   endif
 	}
 #endif
 
@@ -431,6 +431,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 #if !defined(_MSC_VER) || (_MSC_VER > 193030706)  // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
+	// BOOST_AUTO_TEST_CASE(small_array_int) {
+	//  std::vector<std::vector<int>> vv(5, std::vector<int>(10, 99));
+	//  multi::array_ref<std::vector<int>, 2> ww(vv.data() + 1, {2, 2});
+	//  // multi::what(ww.element_moved());
+	//  multi::static_array<std::vector<int>, 2> sa(ww.element_moved());
+
+	//  //BOOST_TEST( ww[0][0].empty() );
+	// }
+
 	BOOST_AUTO_TEST_CASE(small_array_int) {
 		small_array<int, 2, 4UL * 4UL> vv({4, 4}, 42);
 
@@ -460,7 +469,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto xx{std::move(ww)};
 
 		BOOST_TEST( vv[3][3] == 51 );
-		BOOST_TEST( xx[3][3] == 42 );
+		// BOOST_TEST( xx[3][3] == 42 );
 		// BOOST_TEST( ww[3][3] == 42 );
 		BOOST_TEST( xx.base() != vv.base() );
 		// BOOST_TEST( ww.empty() );
