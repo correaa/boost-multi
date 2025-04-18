@@ -49,8 +49,8 @@ ignoreMutators:
   - cxx_logical_and_to_or  # bug in mull 16
   - scalar_value_mutator  # bug in mull 17
 timeout: 20000  # in milliseconds
-debug:
-  slowIRVerification: true
+# debug:
+#   slowIRVerification: true
 quiet: true
 excludePaths:
   - .*test.*
