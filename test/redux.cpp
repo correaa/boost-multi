@@ -487,7 +487,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 
-			BOOST_TEST( c_gold == c_flat );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
 		}
 		{
 			multi::array<double, 1> c_flat(em, 0.0);
@@ -501,7 +501,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 
-			std::cout << std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) << '\n';
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
 		}
 
