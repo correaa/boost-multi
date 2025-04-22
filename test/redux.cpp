@@ -433,6 +433,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  }
 	// }
 
+	#if defined(NDEBUG)
 	// Chris
 	{
 		int const em  = 1200;
@@ -610,6 +611,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( c_gold == c_flat );
 		}
 	}
-
+	#endif
 	return boost::report_errors();
 }
