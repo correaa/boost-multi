@@ -437,9 +437,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	#if defined(NDEBUG)
 	// Chris
 	{
-		int const em  = 1200;
-		int const en  = 1000;
-		int const ell = 800;
+		multi::size_t const em  = 1200;
+		multi::size_t const en  = 1000;
+		multi::size_t const ell = 800;
 
 		multi::array<double, 3> a3d({em, en, ell});
 		multi::array<double, 2> b2d({en, ell});
@@ -455,9 +455,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<double, 1> c_gold(em, 0.0);
 		{
-			for(int k = 0; k != em; ++k) {
-				for(int j = 0; j != en; ++j) {       // NOLINT(altera-unroll-loops)
-					for(int i = 0; i != ell; ++i) {  // NOLINT(altera-unroll-loops)
+			for(multi::index k = 0; k != em; ++k) {
+				for(multi::index j = 0; j != en; ++j) {       // NOLINT(altera-unroll-loops)
+					for(multi::index i = 0; i != ell; ++i) {  // NOLINT(altera-unroll-loops)
 						c_gold[k] += a3d[k][j][i] * b2d[j][i];
 					}
 				}
@@ -466,9 +466,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			watch const _("chris raw 3-loop");
 
-			for(int k = 0; k != em; ++k) {
-				for(int j = 0; j != en; ++j) {       // NOLINT(altera-unroll-loops)
-					for(int i = 0; i != ell; ++i) {  // NOLINT(altera-unroll-loops)
+			for(multi::index k = 0; k != em; ++k) {
+				for(multi::index j = 0; j != en; ++j) {       // NOLINT(altera-unroll-loops)
+					for(multi::index i = 0; i != ell; ++i) {  // NOLINT(altera-unroll-loops)
 						c_gold[k] += a3d[k][j][i] * b2d[j][i];
 					}
 				}
