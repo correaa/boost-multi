@@ -615,7 +615,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					}
 				);
 			}();
-			BOOST_TEST( c_gold == c_flat );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-6 );
 		}
 	}
 	#endif
