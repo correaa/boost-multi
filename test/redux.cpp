@@ -4,14 +4,13 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(__GNUC__)
-	#pragma GCC diagnostic ignored "-Wdouble-promotion"
+#   pragma GCC diagnostic ignored "-Wdouble-promotion"
 #elif defined(_MSC_VER)
-	#pragma warning( disable : 4244 )  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
+#   pragma warning(disable : 4244)  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
 #endif
 
-#include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
-
 #include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
+#include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -30,11 +29,11 @@
 // IWYU pragma: no_include <new>                              // for bad_alloc
 
 #ifndef __NVCC__
-	#if defined(__has_include) && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
-		#if !(defined(__clang__) && defined(__CUDA__))
-			#include <execution>  // IWYU pragma: keep
-		#endif
-	#endif
+#   if defined(__has_include) && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+#       if !(defined(__clang__) && defined(__CUDA__))
+#           include <execution>  // IWYU pragma: keep
+#       endif
+#   endif
 #endif
 
 namespace multi = boost::multi;
@@ -188,7 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
+#   if (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
 	{
 		auto const accumulator = [&] {
 			watch const _("reduce transform forward");
@@ -205,7 +204,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
-	#endif
+#   endif
 
 	{
 		auto const accumulator = [&] {
@@ -223,7 +222,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
+#   if (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20190502))
 	{
 		auto const accumulator = [&] {
 			watch const _("transform reduce element zero");
@@ -239,7 +238,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
-	#endif
+#   endif
 
 	{
 		auto const accumulator = [&](auto&& init) {
@@ -255,7 +254,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20200000))
+#   if (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20200000))
 	{
 		auto const accumulator = [&](auto&& init) {
 			watch const _("> transform reduce");
@@ -269,15 +268,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-8);
 		}
 	}
-	#endif
+#   endif
 
-	#if(__cplusplus >=  202002L)
-		#if(defined(__has_include) && __has_include(<execution>))
-			#if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7))
-				#if(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20220000)) && !defined(_LIBCPP_VERSION)
-					#if !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+#   if (__cplusplus >= 202002L)
+#       if (defined(__has_include) && __has_include(<execution>))
+#           if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__)) && (!defined(__clang_major__) || (__clang_major__ > 7))
+#               if (!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20220000)) && !defined(_LIBCPP_VERSION)
+#                   if !defined(__apple_build_version__) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 	{
-		auto const accumulator = [&] (watch = watch("transform reduce[unseq]")) {  // NOLINT(fuchsia-default-arguments-declarations)
+		auto const accumulator = [&](watch = watch("transform reduce[unseq]")) {  // NOLINT(fuchsia-default-arguments-declarations)
 			multi::array<double, 1> ret(K2D.extension(), 0.0);
 			std::transform(
 				K2D.begin(), K2D.end(),
@@ -402,12 +401,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( accumulator[ix] - static_cast<double>(ix) * ny * (ny - 1.0) / 2.0 ) < 1.0e-6);
 		}
 	}
-						#endif
-					#endif
-				#endif
-			#endif
-		#endif  // __NVCC__
-	#endif
+#                   endif
+#               endif
+#           endif
+#       endif
+#   endif  // __NVCC__
+#endif
 
 	// {
 	//  auto const accumulator = [&](auto&& init) {
@@ -436,20 +435,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// Chris
 	{
-		int const em = 1200;
-		int const en = 1000;
+		int const em  = 1200;
+		int const en  = 1000;
 		int const ell = 800;
-		
+
 		multi::array<double, 3> a3d({em, en, ell});
 		multi::array<double, 2> b2d({en, ell});
-		
+
 		std::iota(a3d.elements().begin(), a3d.elements().end(), 20.0);
 		std::iota(b2d.elements().begin(), b2d.elements().end(), 30.0);
 
 		multi::array<double, 1> c_gold(em, 0.0);
 		{
 			for(int k = 0; k != em; ++k) {
-				for(int j = 0; j != en; ++j) {  // NOLINT(altera-unroll-loops)
+				for(int j = 0; j != en; ++j) {       // NOLINT(altera-unroll-loops)
 					for(int i = 0; i != ell; ++i) {  // NOLINT(altera-unroll-loops)
 						c_gold[k] += a3d[k][j][i] * b2d[j][i];
 					}
@@ -460,7 +459,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			watch const _("chris raw 3-loop");
 
 			for(int k = 0; k != em; ++k) {
-				for(int j = 0; j != en; ++j) {  // NOLINT(altera-unroll-loops)
+				for(int j = 0; j != en; ++j) {       // NOLINT(altera-unroll-loops)
 					for(int i = 0; i != ell; ++i) {  // NOLINT(altera-unroll-loops)
 						c_gold[k] += a3d[k][j][i] * b2d[j][i];
 					}
@@ -503,11 +502,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				watch const _("chris raw 1-loop flat reversed transform");
 
 				for(auto const ji : b2d.elements().extension()) {  // NOLINT(altera-unroll-loops)
-					std::transform(c_flat.begin(), c_flat.end(), a3d.begin(), c_flat.begin(),
-						[&](auto&& c_flat_elem, auto const& a3d_row) {
-							return std::forward<decltype(c_flat_elem)>(c_flat_elem) + a3d_row.elements()[ji] * b2d.elements()[ji];
-						}
-					);
+					std::transform(c_flat.begin(), c_flat.end(), a3d.begin(), c_flat.begin(), [&](auto&& c_flat_elem, auto const& a3d_row) {
+						return std::forward<decltype(c_flat_elem)>(c_flat_elem) + a3d_row.elements()[ji] * b2d.elements()[ji];
+					});
 				}
 			}
 
@@ -559,7 +556,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					[&](auto const& acc, auto const& ij) {
 						multi::array<double, 1> ret = acc;
 						for(auto const k : ret.extension()) {
-							ret[k] += a3d[k].elements()[ij]*b2d.elements()[ij];
+							ret[k] += a3d[k].elements()[ij] * b2d.elements()[ij];
 						}
 						return ret;
 					}
@@ -578,41 +575,41 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				[&](auto&& acc, auto const& ij) {
 					std::transform(
 						acc.begin(), acc.end(), a3d.begin(), acc.begin(),
-						[&](auto&& acce, auto const& a3de) { return std::move(acce) + a3de.elements()[ij]*b2d.elements()[ij]; }
+						[&](auto&& acce, auto const& a3de) { return std::move(acce) + a3de.elements()[ij] * b2d.elements()[ij]; }
 					);
 					return std::forward<decltype(acc)>(acc);
 				}
 			);
-			BOOST_TEST( c_gold == c_flat ); 
+			BOOST_TEST( c_gold == c_flat );
 		}
 
 		{
-			watch const _("chris transform reduce move transforms");
+			auto const c_flat = [&] {
+				watch const _("chris transform reduce move transforms");
 
-			auto const c_flat = [&]{
-				std::transform_reduce(
-				b2d.elements().extension().begin(), b2d.elements().extension().end(),
-				multi::array<double, 1>(em, 0.0),
-				[&](auto&& acc, auto const& rhs) {
-					std::transform(
-						acc.begin(), acc.end(), rhs.begin(), acc.begin(),
-						[&](auto&& acce, auto const& rhse) { return std::move(acce) + rhse; }
-					);
-					return std::forward<decltype(acc)>(acc);
-				},
-				[&](auto const& ij) {
-					multi::array<double, 1> ret(em);
-					std::transform(
-						a3d.begin(), a3d.end(), ret.begin(),
-						[&](auto const& a3de) { return a3de.elements()[ij]*b2d.elements()[ij]; }
-					);
-					return ret;
-				}
-				)
-			};
-			BOOST_TEST( c_gold == c_flat ); 
+				return std::transform_reduce(
+					b2d.elements().extension().begin(), b2d.elements().extension().end(),
+					multi::array<double, 1>(em, 0.0),
+					[&](auto&& acc, auto const& rhs) {
+						std::transform(
+							acc.begin(), acc.end(), rhs.begin(), acc.begin(),
+							[&](auto&& acce, auto const& rhse) { return std::move(acce) + rhse; }
+						);
+						return std::forward<decltype(acc)>(acc);
+					},
+					[&](auto const& ij) {
+						multi::array<double, 1> ret(em);
+						std::transform(
+							a3d.begin(), a3d.end(), ret.begin(),
+							[&](auto const& a3de) { return a3de.elements()[ij] * b2d.elements()[ij]; }
+						);
+						return ret;
+					}
+				);
+			}();
+			BOOST_TEST( c_gold == c_flat );
 		}
 	}
-	
+
 	return boost::report_errors();
 }
