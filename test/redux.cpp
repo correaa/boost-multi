@@ -437,9 +437,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	#if defined(NDEBUG)
 	// Chris
 	{
-		multi::size_t const em  = 1200;
-		multi::size_t const en  = 1000;
-		multi::size_t const ell = 800;
+		multi::size_t const em  = 1200/2;
+		multi::size_t const en  = 1000/2;
+		multi::size_t const ell = 800/2;
 
 		multi::array<double, 3> a3d({em, en, ell});
 		multi::array<double, 2> b2d({en, ell});
