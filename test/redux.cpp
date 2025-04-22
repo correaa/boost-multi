@@ -19,6 +19,7 @@
 #include <cmath>      // IWYU pragma: keep
 #include <iostream>
 #include <numeric>  // IWYU pragma: keep
+#include <random>  // IWYU pragma: keep
 #include <string>
 #include <string_view>
 // ssssIsWsYsUs pragma: no_include <stdlib.h>                         // for abs
@@ -443,8 +444,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 3> a3d({em, en, ell});
 		multi::array<double, 2> b2d({en, ell});
 
-		std::iota(a3d.elements().begin(), a3d.elements().end(), 20.0);
-		std::iota(b2d.elements().begin(), b2d.elements().end(), 30.0);
+		std::mt19937 gen(42);  // std::random_device{}
+		std::uniform_real_distribution<> distrib;
+	
+		std::generate(a3d.elements().begin(), a3d.elements().end(), [&]() { return distrib(gen); });
+		std::generate(b2d.elements().begin(), b2d.elements().end(), [&]() { return distrib(gen); });
+
+		// std::iota(a3d.elements().begin(), a3d.elements().end(), 20.0);
+		// std::iota(b2d.elements().begin(), b2d.elements().end(), 30.0);
 
 		multi::array<double, 1> c_gold(em, 0.0);
 		{
@@ -494,8 +501,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 
-			std::cout << c_gold[37] <<" - "<< c_flat[37] <<" = "<< c_gold[37] - c_flat[37] <<'\n';
-			BOOST_TEST( c_gold == c_flat );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-6 );
 		}
 
 		{
@@ -510,7 +516,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 
-			BOOST_TEST( c_gold == c_flat );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-6 );
 		}
 
 		{
@@ -526,7 +532,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 
-			BOOST_TEST( c_gold == c_flat );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-6 );
 		}
 
 		{
@@ -545,7 +551,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				);
 			}
 
-			BOOST_TEST( c_gold == c_flat );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-6 );
 		}
 		{
 			multi::array<double, 1> c_flat(em, 0.0);
@@ -565,7 +571,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				);
 			}
 
-			BOOST_TEST( c_gold == c_flat );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-6 );
 		}
 
 		{
@@ -582,7 +588,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					return std::forward<decltype(acc)>(acc);
 				}
 			);
-			BOOST_TEST( c_gold == c_flat );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-6 );
 		}
 
 		{
