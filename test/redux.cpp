@@ -501,6 +501,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 
+			std::cout << std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) << '\n';
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-6 );
 		}
 
