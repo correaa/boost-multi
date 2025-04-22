@@ -927,6 +927,10 @@ struct elements_range_t {
 
 	constexpr auto size() const -> size_type {return l_.num_elements();}
 
+	using extension_type = multi::extension_t<index>;
+
+	constexpr auto extension() const { return extension_type{0, size()}; }
+
 	[[nodiscard]]
 	constexpr auto    empty() const -> bool {return l_.   empty();}
 	constexpr auto is_empty() const -> bool {return l_.is_empty();}
