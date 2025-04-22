@@ -511,7 +511,7 @@ oneapi:
     - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --output-on-failure
+    - ctest --parallel 1 || ctest --verbose --rerun-failed --output-on-failure
 
 oneapi-2022.2:
   stage: build

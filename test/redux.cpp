@@ -494,6 +494,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 
+			std::cout << c_gold[37] <<" - "<< c_flat[37] <<" = "<< c_gold[37] - c_flat[37] <<'\n';
 			BOOST_TEST( c_gold == c_flat );
 		}
 
