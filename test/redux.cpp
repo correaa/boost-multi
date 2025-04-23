@@ -49,12 +49,34 @@ class watch {
 	std::chrono::time_point<std::chrono::high_resolution_clock> start_ = std::chrono::high_resolution_clock::now();
 
 	std::string msg_;
+	bool running_ = true;
 
  public:
 	explicit watch(std::string_view msg) : msg_(msg) {}  // NOLINT(fuchsia-default-arguments-calls)
-	~watch() {
+	template<class T>
+	void lap(T&& some) const {
+		do_not_optimize_(const_cast<std::decay_t<T>*>(&std::forward<T>(some)));
 		std::cerr << msg_ << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_).count() << " ms\n";
 	}
+	template<class T>
+	void stop(T&& some) {
+		if(running_) {
+			running_ = false;
+			lap(std::forward<T>(some));
+		}
+	}
+
+	template< class T >
+	inline __attribute__((always_inline)) 
+	static void do_not_optimize_( T&& value ) noexcept {
+		if constexpr( std::is_pointer_v< T > ) {
+			asm volatile("":"+m"(value)::"memory");
+		} else {
+			asm volatile("":"+r"(value)::);
+		}
+	}
+
+	~watch() { if(running_) { stop(*this); } }
 	watch(watch const&)          = delete;
 	watch(watch&&)               = delete;
 	auto operator=(watch const&) = delete;
@@ -483,7 +505,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 		{
-			watch const _("chris raw 3-loop");
+			watch _("chris raw 3-loop");
 
 			multi::array<double, 1> c_flat(em, 0.0);
 
@@ -497,12 +519,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					}
 				}
 			}
+			_.stop(c_flat);
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			watch const _("chris raw 2-loop flat");
+			watch _("chris raw 2-loop flat");
 
 			multi::array<double, 1> c_flat(em, 0.0);
 
@@ -513,12 +536,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					c_flat[k] += a3d_rowes[ji] * b2d_elements[ji];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
+			_.stop(c_flat);
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			watch const _("chris raw 2-loop flat reversed");
+			watch _("chris raw 2-loop flat reversed");
 
 			multi::array<double, 1> c_flat(em, 0.0);
 
@@ -528,12 +552,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					c_flat[k] += a3d[k].elements().base()[ji] * b2deji;
 				}
 			}
+			_.stop(c_flat);
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			watch const _("chris raw 1-loop flat reversed transform");
+			watch _("chris raw 1-loop flat reversed transform");
 
 			multi::array<double, 1> c_flat(em, 0.0);
 
@@ -542,12 +567,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					return std::forward<decltype(c_flat_elem)>(c_flat_elem) + a3d_row.elements().base()[ji] * b2d.elements().base()[ji];
 				});
 			}
+			_.stop(c_flat);
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			watch const _("chris raw 1-loop transform_reduce");
+			watch _("chris raw 1-loop transform_reduce");
 
 			multi::array<double, 1> c_flat(em);
 
@@ -558,12 +584,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					b2d.elements().base(), 0.0
 				);
 			}
+			_.stop(c_flat);
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			watch const _("chris transform transform_reduce");
+			watch _("chris transform transform_reduce");
 			multi::array<double, 1> c_flat(em);
 
 			std::transform(
@@ -575,11 +602,31 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					);
 				}
 			);
+			_.stop(c_flat);
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 		{
-			watch const _("chris accumulate");
+			watch _("chris transform(par) transform_reduce");
+			multi::array<double, 1> c_flat(em);
+
+			std::transform(
+				std::execution::par,
+				a3d.begin(), a3d.end(), c_flat.begin(),
+				[&](auto const& a3d_row) {
+					return std::transform_reduce(
+						std::execution::par,
+						a3d_row.base(), a3d_row.base() + a3d_row.elements().size(),
+						b2d.base(), 0.0
+					);
+				}
+			);
+			_.stop(c_flat);
+
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+		}
+		{
+			watch _("chris accumulate");
 
 			auto const c_flat = std::accumulate(
 				b2d.elements().extension().begin(), b2d.elements().extension().end(),
@@ -591,12 +638,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					return std::forward<decltype(acc)>(acc);
 				}
 			);
+			_.stop(c_flat);
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			watch const _("chris accumulate move");
+			watch _("chris accumulate move");
 
 			auto const c_flat = std::accumulate(
 				b2d.elements().extension().begin(), b2d.elements().extension().end(),
@@ -609,12 +657,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					return std::forward<decltype(acc)>(acc);
 				}
 			);
+			_.stop(c_flat);
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			watch const _("chris transform reduce move transforms");
+			watch _("chris transform reduce move transforms");
 
 			auto const c_flat = [&] {
 				return std::transform_reduce(
@@ -637,7 +686,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					}
 				);
 			}();
-
+			_.stop(c_flat);
+	
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 	}
