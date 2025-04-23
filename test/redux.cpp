@@ -24,7 +24,7 @@
 #include <algorithm>  // IWYU pragma: keep
 #include <chrono>     // NOLINT(build/c++11)
 #include <cmath>      // IWYU pragma: keep
-#include <functional>  // for std::plus
+#include <functional>  // for std::plus  // IWYU pragma: keep
 #include <iostream>
 #include <numeric>  // IWYU pragma: keep
 #include <random>  // IWYU pragma: keep
