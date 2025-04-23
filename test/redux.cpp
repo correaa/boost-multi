@@ -510,7 +510,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				auto const& a3d_rowes = a3d[k].elements().base();
 				auto const& b2d_elements = b2d.elements().base();
 				for(auto const ji : b2d.elements().extension()) {  // NOLINT(altera-unroll-loops)
-					c_flat[k] += a3d_rowes[ji] * b2d_elements[ji];
+					c_flat[k] += a3d_rowes[ji] * b2d_elements[ji];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
 
