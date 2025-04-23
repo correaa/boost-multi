@@ -17,6 +17,7 @@
 #endif
 
 #include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
+
 #include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
 
 #include <boost/core/lightweight_test.hpp>
