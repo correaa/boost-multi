@@ -61,6 +61,7 @@ class data {
 	MPI_Datatype datatype_;
 
  public:
+	data(void* buf, MPI_Datatype datatype) : buf_(buf), datatype_(datatype) {}
 	template<class It>
 	explicit data(It first)                                            // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 	: buf_{const_cast<void*>(static_cast<void const*>(first.base()))}  // NOLINT(cppcoreguidelines-pro-type-const-cast)
