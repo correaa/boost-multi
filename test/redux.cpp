@@ -10,7 +10,7 @@
 #   pragma clang diagnostic ignored "-Wunknown-warning-option"
 #   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
-#if defined defined(_MSC_VER)
+#if defined(_MSC_VER)
 #   pragma warning(disable : 4244)  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
 #endif
 
