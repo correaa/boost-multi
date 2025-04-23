@@ -5,6 +5,7 @@
 
 #if defined(__GNUC__)
 #   pragma GCC diagnostic ignored "-Wdouble-promotion"
+#   pragma GCC diagnostic ignored "-Wunused-macros"
 #endif
 #if defined(__clang__)
 #   pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -40,6 +41,7 @@
 #   if defined(__has_include) && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 #       if !(defined(__clang__) && defined(__CUDA__))
 #           include <execution>  // IWYU pragma: keep
+#           define HAS_STD_EXECUTION 1
 #       endif
 #   endif
 #endif
@@ -53,7 +55,7 @@ class watch {
 	bool running_ = true;
 
 	template< class T >
-	inline __attribute__((always_inline)) 
+	inline __attribute__((always_inline))  // NOLINT(readability-redundant-inline-specifier)
 	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
 		if constexpr( std::is_pointer_v< T > ) {
 			asm volatile("":"+m"(value)::"memory");  // NOLINT(hicpp-no-assembler)
@@ -609,6 +611,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
+		#if defined(HAS_STD_EXECUTION)
 		{
 			watch _("chris transform(par) transform_reduce");
 			multi::array<double, 1> c_flat(em);
@@ -628,6 +631,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
+		#endif
 		{
 			watch _("chris accumulate");
 
