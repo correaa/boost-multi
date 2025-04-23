@@ -17,6 +17,7 @@
 #include <algorithm>  // IWYU pragma: keep
 #include <chrono>     // NOLINT(build/c++11)
 #include <cmath>      // IWYU pragma: keep
+#include <functional>  // for std::plus
 #include <iostream>
 #include <numeric>  // IWYU pragma: keep
 #include <random>  // IWYU pragma: keep
@@ -444,7 +445,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 3> a3d({em, en, ell});
 		multi::array<double, 2> b2d({en, ell});
 
-		std::mt19937 gen(42);  // std::random_device{}
+		std::mt19937 gen(42);  // NOLINT(cert-msc32-c,cert-msc51-cpp) use for unpredictable std::random_device{}
 		std::uniform_real_distribution<> distrib;
 	
 		std::generate(a3d.elements().begin(), a3d.elements().end(), [&]() { return distrib(gen); });
@@ -464,114 +465,129 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			c_gold = multi::array<double, 1>(em, 0.0);
 
+			for(multi::index const k : a3d.extension()) {
+				auto const& a3dk = a3d[k];
+				for(multi::index const j : b2d.extension()) {       // NOLINT(altera-unroll-loops)
+					auto const& a3dkj = a3dk[j];
+					auto const& b2dj = b2d[j];
+					for(multi::index const i : b2dj.extension()) {  // NOLINT(altera-unroll-loops)
+						c_gold[k] += a3dkj[i] * b2dj[i];
+					}
+				}
+			}
+		}
+
+		{
 			watch const _("chris raw 3-loop");
 
-			for(multi::index k = 0; k != em; ++k) {
-				for(multi::index j = 0; j != en; ++j) {       // NOLINT(altera-unroll-loops)
-					for(multi::index i = 0; i != ell; ++i) {  // NOLINT(altera-unroll-loops)
-						c_gold[k] += a3d[k][j][i] * b2d[j][i];
-					}
-				}
-			}
-		}
-
-		{
 			multi::array<double, 1> c_flat(em, 0.0);
-			{
-				watch const _("chris raw 2-loop flat");
 
-				for(auto const k : c_flat.extension()) {
-					for(auto const ji : b2d.elements().extension()) {  // NOLINT(altera-unroll-loops)
-						c_flat[k] += a3d[k].elements()[ji] * b2d.elements()[ji];
+			for(multi::index const k : a3d.extension()) {
+				auto const& a3dk = a3d[k];
+				for(multi::index const j : b2d.extension()) {       // NOLINT(altera-unroll-loops)
+					auto const& a3dkj = a3dk[j];
+					auto const& b2dj = b2d[j];
+					for(multi::index const i : b2dj.extension()) {  // NOLINT(altera-unroll-loops)
+						c_flat[k] += a3dkj[i] * b2dj[i];
 					}
 				}
 			}
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
-		{
-			multi::array<double, 1> c_flat(em, 0.0);
-			{
-				watch const _("chris raw 2-loop flat reversed");
 
+		{
+			watch const _("chris raw 2-loop flat");
+
+			multi::array<double, 1> c_flat(em, 0.0);
+
+			for(auto const k : c_flat.extension()) {
+				auto const& a3d_rowes = a3d[k].elements().base();
+				auto const& b2d_elements = b2d.elements().base();
 				for(auto const ji : b2d.elements().extension()) {  // NOLINT(altera-unroll-loops)
-					for(auto const k : c_flat.extension()) {
-						c_flat[k] += a3d[k].elements()[ji] * b2d.elements()[ji];
-					}
+					c_flat[k] += a3d_rowes[ji] * b2d_elements[ji];
 				}
 			}
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			multi::array<double, 1> c_flat(em, 0.0);
-			{
-				watch const _("chris raw 1-loop flat reversed transform");
+			watch const _("chris raw 2-loop flat reversed");
 
-				for(auto const ji : b2d.elements().extension()) {  // NOLINT(altera-unroll-loops)
-					std::transform(c_flat.begin(), c_flat.end(), a3d.begin(), c_flat.begin(), [&](auto&& c_flat_elem, auto const& a3d_row) {
-						return std::forward<decltype(c_flat_elem)>(c_flat_elem) + a3d_row.elements()[ji] * b2d.elements()[ji];
-					});
+			multi::array<double, 1> c_flat(em, 0.0);
+
+			for(auto const ji : b2d.elements().extension()) {  // NOLINT(altera-unroll-loops)
+				auto const& b2deji = b2d.elements().base()[ji];
+				for(auto const k : c_flat.extension()) {  // NOLINT(altera-unroll-loops)
+					c_flat[k] += a3d[k].elements().base()[ji] * b2deji;
 				}
 			}
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			multi::array<double, 1> c_flat(em, 0.0);
-			{
-				watch const _("chris raw 1-loop transform_reduce");
+			watch const _("chris raw 1-loop flat reversed transform");
 
-				for(auto const k : c_flat.extension()) {
-					c_flat[k] = std::transform_reduce(
-						a3d[k].elements().begin(), a3d[k].elements().end(),
-						b2d.elements().begin(), c_flat[k]
+			multi::array<double, 1> c_flat(em, 0.0);
+
+			for(auto const ji : b2d.elements().extension()) {  // NOLINT(altera-unroll-loops)
+				std::transform(c_flat.begin(), c_flat.end(), a3d.begin(), c_flat.begin(), [&](auto&& c_flat_elem, auto const& a3d_row) {
+					return std::forward<decltype(c_flat_elem)>(c_flat_elem) + a3d_row.elements().base()[ji] * b2d.elements().base()[ji];
+				});
+			}
+
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+		}
+
+		{
+			watch const _("chris raw 1-loop transform_reduce");
+
+			multi::array<double, 1> c_flat(em);
+
+			for(auto const k : c_flat.extension()) {  // NOLINT(altera-unroll-loops)
+				auto const& a3dkes = a3d[k].elements();
+				c_flat[k] = std::transform_reduce(
+					a3dkes.base(), a3dkes.base() + a3dkes.size(),
+					b2d.elements().base(), 0.0
+				);
+			}
+
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+		}
+
+		{
+			watch const _("chris transform transform_reduce");
+			multi::array<double, 1> c_flat(em);
+
+			std::transform(
+				a3d.begin(), a3d.end(), c_flat.begin(),
+				[&](auto const& a3d_row) {
+					return std::transform_reduce(
+						a3d_row.base(), a3d_row.base() + a3d_row.elements().size(),
+						b2d.base(), 0.0
 					);
 				}
-			}
+			);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
-		}
-
-		{
-			multi::array<double, 1> c_flat(em, 0.0);
-			{
-				watch const _("chris transform transform_reduce");
-
-				std::transform(
-					a3d.begin(), a3d.end(), c_flat.begin(), c_flat.begin(),
-					[&](auto const& a3d_row, auto&& c_flat_elem) {
-						return std::transform_reduce(
-							a3d_row.elements().begin(), a3d_row.elements().end(),
-							b2d.elements().begin(), std::forward<decltype(c_flat_elem)>(c_flat_elem)
-						);
-					}
-				);
-			}
-
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 		{
-			multi::array<double, 1> c_flat(em, 0.0);
-			{
-				watch const _("chris accumulate");
+			watch const _("chris accumulate");
 
-				c_flat = std::accumulate(
-					b2d.elements().extension().begin(), b2d.elements().extension().end(),
-					multi::array<double, 1>(em, 0.0),
-					[&](auto const& acc, auto const& ij) {
-						multi::array<double, 1> ret = acc;
-						for(auto const k : ret.extension()) {
-							ret[k] += a3d[k].elements()[ij] * b2d.elements()[ij];
-						}
-						return ret;
+			auto const c_flat = std::accumulate(
+				b2d.elements().extension().begin(), b2d.elements().extension().end(),
+				multi::array<double, 1>(em, 0.0),
+				[&](auto&& acc, auto const ij) {
+					for(auto const k : acc.extension()) {  // NOLINT(altera-unroll-loops)
+						acc[k] += a3d[k].base()[ij] * b2d.base()[ij];
 					}
-				);
-			}
+					return std::forward<decltype(acc)>(acc);
+				}
+			);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
@@ -580,42 +596,44 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto const c_flat = std::accumulate(
 				b2d.elements().extension().begin(), b2d.elements().extension().end(),
 				multi::array<double, 1>(em, 0.0),
-				[&](auto&& acc, auto const& ij) {
+				[&](auto&& acc, auto const ij) {
 					std::transform(
 						acc.begin(), acc.end(), a3d.begin(), acc.begin(),
-						[&](auto&& acce, auto const& a3de) { return std::move(acce) + a3de.elements()[ij] * b2d.elements()[ij]; }
+						[&](auto&& acce, auto const& a3de) { return std::forward<decltype(acce)>(acce) + a3de.base()[ij] * b2d.base()[ij]; }
 					);
 					return std::forward<decltype(acc)>(acc);
 				}
 			);
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
+
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			auto const c_flat = [&] {
-				watch const _("chris transform reduce move transforms");
+			watch const _("chris transform reduce move transforms");
 
+			auto const c_flat = [&] {
 				return std::transform_reduce(
 					b2d.elements().extension().begin(), b2d.elements().extension().end(),
 					multi::array<double, 1>(em, 0.0),
 					[&](auto&& acc, auto const& rhs) {
 						std::transform(
 							acc.begin(), acc.end(), rhs.begin(), acc.begin(),
-							[&](auto&& acce, auto const& rhse) { return std::move(acce) + rhse; }
+							[&](auto&& acce, auto const& rhse) { return std::forward<decltype(acce)>(acce) + rhse; }
 						);
 						return std::forward<decltype(acc)>(acc);
 					},
-					[&](auto const& ij) {
+					[&](auto const ij) {
 						multi::array<double, 1> ret(em);
 						std::transform(
 							a3d.begin(), a3d.end(), ret.begin(),
-							[&](auto const& a3de) { return a3de.elements()[ij] * b2d.elements()[ij]; }
+							[&](auto const& a3de) { return a3de.base()[ij] * b2d.base()[ij]; }
 						);
 						return ret;
 					}
 				);
 			}();
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& a, auto const& b) { return std::abs(a - b); }) < 1.0e-5 );
+
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 	}
 	#endif
