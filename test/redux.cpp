@@ -58,9 +58,11 @@ class watch {
 	template< class T >
 	#if defined(_MSC_VER)
 	inline __forceinline
+	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
+		return std::forward<T>(value);
+	}
 	#else
 	inline __attribute__((always_inline))  // NOLINT(readability-redundant-inline-specifier)
-	#endif
 	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
 		if constexpr( std::is_pointer_v< T > ) {
 			asm volatile("":"+m"(value)::"memory");  // NOLINT(hicpp-no-assembler)
@@ -69,6 +71,7 @@ class watch {
 		}
 		return std::forward<T>(value);
 	}
+	#endif
 
  public:
 	explicit watch(std::string_view msg) : msg_(msg) {}  // NOLINT(fuchsia-default-arguments-calls)
