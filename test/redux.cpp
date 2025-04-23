@@ -5,6 +5,9 @@
 
 #if defined(__GNUC__)
 #   pragma GCC diagnostic ignored "-Wdouble-promotion"
+#elif(__clang__)
+#   pragma clang diagnostic ignored "-Wunknown-warning-option"
+#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #elif defined(_MSC_VER)
 #   pragma warning(disable : 4244)  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
 #endif
