@@ -54,8 +54,13 @@ class watch {
 	std::string msg_;
 	bool running_ = true;
 
+
 	template< class T >
+	#if defined(_MSC_VER)
+	inline __forceinline
+	#else
 	inline __attribute__((always_inline))  // NOLINT(readability-redundant-inline-specifier)
+	#endif
 	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
 		if constexpr( std::is_pointer_v< T > ) {
 			asm volatile("":"+m"(value)::"memory");  // NOLINT(hicpp-no-assembler)
