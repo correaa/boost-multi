@@ -47,6 +47,15 @@ template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(mi
 
 // MPI3_DECLARE_DATATYPE(bool                   , MPI_C_BOOL);  // C++ binding not used MPI_CXX_BOOL);
 
+template<typename T>
+struct datatype_t {
+	static const_MPI_Datatype const value;  // = datatype<T>;
+	auto operator()() const -> MPI_Datatype { return value; }
+};
+
+template<typename T>
+const_MPI_Datatype const datatype_t<T>::value = datatype<T>;
+
 class data {
 	void*        buf_;
 	MPI_Datatype datatype_;
@@ -112,7 +121,7 @@ auto create_subarray_aux(
 	return MPI_SUCCESS;
 }
 
-template<class T = void, class Size = int>
+template<class T = void, template<typename> class DatatypeT = mpi::datatype_t, class Size = int>
 class skeleton {
 	Size         count_;
 	MPI_Datatype datatype_;
@@ -166,7 +175,7 @@ class skeleton {
 	}
 
 	template<class Layout>
-	explicit skeleton(Layout const& lyt) : skeleton{lyt, mpi::datatype<T>} {}
+	explicit skeleton(Layout const& lyt) : skeleton{lyt, DatatypeT<T>{}()} {}
 
 	skeleton(skeleton const&) = delete;
 
@@ -205,11 +214,11 @@ auto create_subarray(Layout const& lyt, MPI_Datatype old_datatype, MPI_Datatype*
 	return MPI_SUCCESS;
 }
 
-template<typename Size = int>
-class message : skeleton<void, Size> {
+template<template<typename> class DatatypeT = mpi::datatype_t, typename Size = int>
+class message : skeleton<void, DatatypeT, Size> {
 	void* buf_;
 
-	using skeleton_type = skeleton<void, Size>;
+	using skeleton_type = skeleton<void, DatatypeT, Size>;
 
  public:
 	message(void* buf, skeleton_type&& sk) : skeleton_type{std::move(sk)}, buf_{buf} {}
