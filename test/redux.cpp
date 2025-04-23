@@ -9,6 +9,7 @@
 #if defined(__clang__)
 #   pragma clang diagnostic ignored "-Wunknown-warning-option"
 #   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#   pragma clang diagnostic ignored "-Wpadded"
 #endif
 #if defined(_MSC_VER)
 #   pragma warning(disable : 4244)  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
@@ -28,7 +29,7 @@
 #include <random>  // IWYU pragma: keep
 #include <string>
 #include <string_view>
-// ssssIsWsYsUs pragma: no_include <stdlib.h>                         // for abs
+#include <type_traits>  // for std::decay_t
 #include <utility>  // for move  // IWYU pragma: keep  // NOLINT(misc-include-cleaner) bug in clang-tidy 19
 
 // IWYU pragma: no_include <pstl/glue_numeric_impl.h>         // for reduce, transform_reduce
@@ -51,28 +52,30 @@ class watch {
 	std::string msg_;
 	bool running_ = true;
 
+	template< class T >
+	inline __attribute__((always_inline)) 
+	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
+		if constexpr( std::is_pointer_v< T > ) {
+			asm volatile("":"+m"(value)::"memory");  // NOLINT(hicpp-no-assembler)
+		} else {
+			asm volatile("":"+r"(value)::);  // NOLINT(hicpp-no-assembler)
+		}
+		return std::forward<T>(value);
+	}
+
  public:
 	explicit watch(std::string_view msg) : msg_(msg) {}  // NOLINT(fuchsia-default-arguments-calls)
 	template<class T>
-	void lap(T&& some) const {
-		do_not_optimize_(const_cast<std::decay_t<T>*>(&std::forward<T>(some)));
+	auto lap(T&& some) const -> T&& {
+		do_not_optimize_(const_cast<std::decay_t<T>*>(&some));
 		std::cerr << msg_ << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_).count() << " ms\n";
+		return std::forward<T>(some);
 	}
 	template<class T>
 	void stop(T&& some) {
 		if(running_) {
 			running_ = false;
 			lap(std::forward<T>(some));
-		}
-	}
-
-	template< class T >
-	inline __attribute__((always_inline)) 
-	static void do_not_optimize_( T&& value ) noexcept {
-		if constexpr( std::is_pointer_v< T > ) {
-			asm volatile("":"+m"(value)::"memory");
-		} else {
-			asm volatile("":"+r"(value)::);
 		}
 	}
 
