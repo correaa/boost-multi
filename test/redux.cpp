@@ -5,16 +5,19 @@
 
 #if defined(__GNUC__)
 #   pragma GCC diagnostic ignored "-Wdouble-promotion"
+#   pragma GCC diagnostic ignored "-Wunused-macros"
 #endif
 #if defined(__clang__)
 #   pragma clang diagnostic ignored "-Wunknown-warning-option"
 #   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#   pragma clang diagnostic ignored "-Wpadded"
 #endif
 #if defined(_MSC_VER)
 #   pragma warning(disable : 4244)  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
 #endif
 
 #include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
+
 #include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
 
 #include <boost/core/lightweight_test.hpp>
@@ -22,13 +25,13 @@
 #include <algorithm>  // IWYU pragma: keep
 #include <chrono>     // NOLINT(build/c++11)
 #include <cmath>      // IWYU pragma: keep
-#include <functional>  // for std::plus
+#include <functional>  // IWYU pragma: keep
 #include <iostream>
 #include <numeric>  // IWYU pragma: keep
 #include <random>  // IWYU pragma: keep
 #include <string>
 #include <string_view>
-// ssssIsWsYsUs pragma: no_include <stdlib.h>                         // for abs
+#include <type_traits>  // for std::decay_t
 #include <utility>  // for move  // IWYU pragma: keep  // NOLINT(misc-include-cleaner) bug in clang-tidy 19
 
 // IWYU pragma: no_include <pstl/glue_numeric_impl.h>         // for reduce, transform_reduce
@@ -39,6 +42,7 @@
 #   if defined(__has_include) && __has_include(<execution>) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 #       if !(defined(__clang__) && defined(__CUDA__))
 #           include <execution>  // IWYU pragma: keep
+#           define HAS_STD_EXECUTION 1
 #       endif
 #   endif
 #endif
@@ -51,28 +55,38 @@ class watch {
 	std::string msg_;
 	bool running_ = true;
 
+
+	template< class T >
+	#if defined(_MSC_VER)
+	inline __forceinline
+	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
+		return std::forward<T>(value);
+	}
+	#else
+	inline __attribute__((always_inline))  // NOLINT(readability-redundant-inline-specifier)
+	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
+		if constexpr( std::is_pointer_v< T > ) {
+			asm volatile("":"+m"(value)::"memory");  // NOLINT(hicpp-no-assembler)
+		} else {
+			asm volatile("":"+r"(value)::);  // NOLINT(hicpp-no-assembler)
+		}
+		return std::forward<T>(value);
+	}
+	#endif
+
  public:
 	explicit watch(std::string_view msg) : msg_(msg) {}  // NOLINT(fuchsia-default-arguments-calls)
 	template<class T>
-	void lap(T&& some) const {
-		do_not_optimize_(const_cast<std::decay_t<T>*>(&std::forward<T>(some)));
+	auto lap(T&& some) const -> T&& {
+		do_not_optimize_(const_cast<std::decay_t<T>*>(&some));  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		std::cerr << msg_ << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_).count() << " ms\n";
+		return std::forward<T>(some);
 	}
 	template<class T>
 	void stop(T&& some) {
 		if(running_) {
 			running_ = false;
 			lap(std::forward<T>(some));
-		}
-	}
-
-	template< class T >
-	inline __attribute__((always_inline)) 
-	static void do_not_optimize_( T&& value ) noexcept {
-		if constexpr( std::is_pointer_v< T > ) {
-			asm volatile("":"+m"(value)::"memory");
-		} else {
-			asm volatile("":"+r"(value)::);
 		}
 	}
 
@@ -606,6 +620,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
+		#if defined(HAS_STD_EXECUTION)
+		#if defined(__cpp_lib_execution)
 		{
 			watch _("chris transform(par) transform_reduce");
 			multi::array<double, 1> c_flat(em);
@@ -625,6 +641,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
+		#endif
+		#endif
 		{
 			watch _("chris accumulate");
 
