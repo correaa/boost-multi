@@ -181,10 +181,7 @@ In this example, we are going to use memory that is not managed by the library a
 We can create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
 ```cpp
-#include <multi/array.hpp>
-
-#include <algorithm>  // for sort
-#include <iostream>  // for print
+#include <boost/multi/array.hpp>
 
 namespace multi = boost::multi;
 
@@ -195,23 +192,22 @@ int main() {
 		100.0, 11.0, 12.0, 13.0, 14.0,
 		 50.0,  6.0,  7.0,  8.0,  9.0
 	};  // block of 20 elements ...
-	multi::array_ref<double, 2> d2D_ref{&d_data[0], {4, 5}};  // .. interpreted as a 4 by 5 array
+	multi::array_ref<double, 2> d2D_ref(&d_data[0], {4, 5});  // .. interpreted as a 4 by 5 array
 	...
 ```
 
 Next, we print the elements in a way that corresponds to the logical arrangement:
 
 ```cpp
+#include <iostream>  // for print
 	...
 	auto [is, js] = d2D_ref.extensions();
 	for(auto i : is) {
-		using std::cout;
 		for(auto j : js) {
-			cout<< d2D_ref[i][j] <<' ';
+			std::cout<< d2D_ref[i][j] <<' ';
 		}
-		cout <<'\n';
+		std::cout <<'\n';
 	}
-	...
 ```
 
 This will output:
@@ -229,12 +225,12 @@ It is sometimes said (by Sean Parent) that the whole of STL algorithms can be se
 Presumably, if one can sort over a range, one can perform any other standard algorithm.
 
 ```cpp
-		...
-		std::stable_sort( d2D_ref.begin(), d2D_ref.end() );
-		...
+#include <algorithm>  // for sort
+	...
+	std::stable_sort( d2D_ref.begin(), d2D_ref.end() );
 ```
 
-If we print the result, we will get:
+If we print the result again, we get:
 
 > ```
 > 30 1 2 3 4
@@ -247,15 +243,15 @@ The array has been changed to be in row-based lexicographical order.
 Since the sorted array is a reference to the original data, the original C-array has changed.
 
 (Note that `std::sort` cannot be applied directly to a multidimensional C-array or to other libraries, such as Boost.MultiArray.
-The arrays implemented by this library are, to the best of my knowledge, the only ones that support all STL algorithms directly.)
+The library here are supports all STL algorithms directly.)
 
 If we want to order the matrix on a per-column basis, we need to "view" the matrix as a range of columns.
 This is done in the bidimensional case, by accessing the matrix as a range of columns:
 
 ```cpp
-		...
-		std::stable_sort( rotated(d2D_ref).begin(), rotated(d2D_ref).end() );
-	}
+	...
+	std::stable_sort( d2D_ref.rotated().begin(), d2D_ref.rotated().end() );
+}
 ```
 
 The `rotate` operation rotates indices, providing a new logical view of the original array without modifying it.
@@ -268,6 +264,7 @@ In this case, the original array will be transformed by sorting the matrix into:
 > 11 12 13 14 100
 > 16 17 18 19 150
 > ```
+([live code](https://godbolt.org/z/4zWTPcoK6))
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
