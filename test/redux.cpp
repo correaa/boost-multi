@@ -78,7 +78,7 @@ class watch {
 	explicit watch(std::string_view msg) : msg_(msg) {}  // NOLINT(fuchsia-default-arguments-calls)
 	template<class T>
 	auto lap(T&& some) const -> T&& {
-		do_not_optimize_(const_cast<std::decay_t<T>*>(&some));
+		do_not_optimize_(const_cast<std::decay_t<T>*>(&some));  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		std::cerr << msg_ << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_).count() << " ms\n";
 		return std::forward<T>(some);
 	}
