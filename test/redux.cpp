@@ -535,7 +535,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(
+				c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{},
+				[](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }
+			) < 1.0e-5 );
 		}
 
 		{
@@ -552,7 +555,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(
+					c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, 
+					[](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }
+			) < 1.0e-5 );
 		}
 
 		{
@@ -620,7 +626,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
-		#if defined(HAS_STD_EXECUTION)
+//      #if defined(HAS_STD_EXECUTION)
 		#if defined(__cpp_lib_execution)
 		{
 			watch _("chris transform(par) transform_reduce");
@@ -642,7 +648,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 		#endif
-		#endif
+//      #endif
 		{
 			watch _("chris accumulate");
 
