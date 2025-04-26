@@ -671,6 +671,8 @@ class contiguous_layout {
 	}
 };
 
+
+
 template<dimensionality_type D, typename SSize>
 struct layout_t
 : multi::equality_comparable<layout_t<D, SSize>>

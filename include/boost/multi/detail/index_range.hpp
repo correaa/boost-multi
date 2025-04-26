@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -10,6 +10,8 @@
 #include <boost/multi/detail/serialization.hpp>
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/detail/types.hpp>
+
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <algorithm>    // for min, max
 #include <cassert>
@@ -72,26 +74,27 @@ class iterator_facade {
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<>>
 class range {
+	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	IndexType     first_ = {};
 	IndexTypeLast last_  = first_;  // TODO(correaa) check how to do partially initialzed
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
-		arxiv& multi::archive_traits<Archive>::make_nvp("first", first_);
-		// arxiv &                  BOOST_SERIALIZATION_NVP(         first_);
-		// arxiv &                        cereal:: make_nvp("first", first_);
-		// arxiv &                               CEREAL_NVP(         first_);
-		// arxiv &                                                   first_ ;
+		arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
+		// arxiv &               BOOST_SERIALIZATION_NVP(         first_);
+		// arxiv &                     cereal:: make_nvp("first", first_);
+		// arxiv &                            CEREAL_NVP(         first_);
+		// arxiv &                                                first_ ;
 
-		arxiv& multi::archive_traits<Archive>::make_nvp("last", last_);
+		arxiv & multi::archive_traits<Archive>::make_nvp("last", last_);
 		// arxiv &                  BOOST_SERIALIZATION_NVP(         last_ );
 		// arxiv &                        cereal:: make_nvp("last" , last_ );
 		// arxiv &                               CEREAL_NVP(         last_ );
 		// arxiv &                                                   last_  ;
 	}
 
-	using value_type      = IndexType;
+	using value_type      = decltype(IndexTypeLast{} + IndexType{});
 	using difference_type = decltype(IndexTypeLast{} - IndexType{});  // std::make_signed_t<value_type>;
 	using size_type       = difference_type;
 	using const_reference = value_type;
@@ -170,8 +173,8 @@ class range {
 	using reverse_iterator       = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-	[[nodiscard]] constexpr auto first() const -> const_reference { return first_; }
-	[[nodiscard]] constexpr auto last() const -> const_reference { return last_; }
+	[[nodiscard]] constexpr auto first() const { return first_; }
+	[[nodiscard]] constexpr auto last() const { return last_; }
 
 	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
 
