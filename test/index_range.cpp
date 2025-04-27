@@ -173,7 +173,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::range<std::integral_constant<int, 0>, int> const irng({}, 12);
 
-		#if (__cplusplus >= 202002L)
+		#if (__cplusplus >= 202002L) && !defined(__NVCC__)
 			static_assert( sizeof(irng) == sizeof(int) );
 		#endif
 
