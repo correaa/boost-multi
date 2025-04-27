@@ -318,16 +318,16 @@ template<class IndexType, class IndexTypeLast>
 extension_t(IndexType, IndexTypeLast) -> extension_t<IndexType, IndexTypeLast>;
 
 template<class IndexType>
-extension_t(IndexType) -> extension_t<IndexType>;
+extension_t(IndexType) -> extension_t<std::integral_constant<IndexType, 0>, IndexType>;
 #endif
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
-constexpr auto make_extension_t(IndexType first, IndexTypeLast last) -> extension_t<IndexType, IndexTypeLast> {
-	return {first, last};
+constexpr auto make_extension_t(IndexType first, IndexTypeLast last) {
+	return extension_t<IndexType, IndexTypeLast>{first, last};
 }
 
-template<class IndexTypeLast = std::ptrdiff_t>
-constexpr auto make_extension_t(IndexTypeLast last) { return make_extension_t(IndexTypeLast{0}, last); }
+template<class IndexType = boost::multi::size_t>
+constexpr auto make_extension_t(IndexType last) { return make_extension_t(std::integral_constant<IndexType, 0>{}, last); }
 
 using index_range     = range<index>;
 using index_extension = extension_t<index>;
