@@ -90,7 +90,9 @@ class watch {
 		}
 	}
 
-	~watch() { if(running_) { stop(*this); } }
+	~watch() { if(running_) {
+		stop(*this);
+	} }
 	watch(watch const&)          = delete;
 	watch(watch&&)               = delete;
 	auto operator=(watch const&) = delete;
@@ -488,7 +490,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::mt19937 gen(42);  // NOLINT(cert-msc32-c,cert-msc51-cpp) use for unpredictable std::random_device{}
 		std::uniform_real_distribution<> distrib;
-	
+
 		std::generate(a3d.elements().begin(), a3d.elements().end(), [&]() { return distrib(gen); });
 		std::generate(b2d.elements().begin(), b2d.elements().end(), [&]() { return distrib(gen); });
 
