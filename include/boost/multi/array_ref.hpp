@@ -181,6 +181,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using typename layout_t::sizes_type;
 	using          layout_t::sizes;
 
+	using typename layout_t::indexes;
+
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
 	static constexpr auto num_dimensions() { return dimensionality; }
 
