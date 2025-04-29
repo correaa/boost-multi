@@ -49,6 +49,33 @@
 
 namespace multi = boost::multi;
 
+#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
+#   include <generator>
+
+template<class Arr2D>
+std::generator<typename Arr2D::indexes>
+co_extensions_elements(Arr2D const& arr2d) {
+	auto const [is, js] = arr2d.extensions();
+	for(auto const i : is) {
+		for(auto const j : js) {
+			co_yield typename Arr2D::indexes{i, j};
+		}
+	}
+}
+
+template<class Arr2D>
+std::generator<typename Arr2D::element_cref>
+co_celements(Arr2D const& arr2d) {
+	auto const [is, js] = arr2d.extensions();
+	for(auto const i : is) {
+		for(auto const j : js) {
+			co_yield arr2d[i][j];
+		}
+	}
+}
+
+#endif
+
 class watch {
 	std::chrono::time_point<std::chrono::high_resolution_clock> start_ = std::chrono::high_resolution_clock::now();
 
@@ -606,7 +633,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 		{
-			watch _("chris transform transform_reduce");
+			watch _("chris transform transform_reduce pointer");
 			multi::array<double, 1> c_flat(em);
 
 			std::transform(
@@ -622,6 +649,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
+		#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
+		{
+			watch _("chris transform transform_reduce elements");
+			multi::array<double, 1> c_flat(em);
+
+			std::transform(
+				a3d.begin(), a3d.end(), c_flat.begin(),
+				[&](auto const& a3d_row) {
+					return std::transform_reduce(
+						co_celements(a3d_row).begin(), co_celements(a3d_row).end(),
+						co_celements(b2d).begin(), 0.0
+					);
+				}
+			);
+			_.stop(c_flat);
+
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+		}
+		#endif
+
 		#if defined(HAS_STD_EXECUTION)
 		#if defined(__cpp_lib_execution)
 		{
