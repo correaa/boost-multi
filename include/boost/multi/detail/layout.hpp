@@ -564,6 +564,8 @@ class contiguous_stride_t {
 	#endif
 };
 
+using multi::detail::tuple;
+
 template<typename SSize = multi::index>
 class contiguous_layout {
 
@@ -581,6 +583,8 @@ class contiguous_layout {
 	using index = size_type;
 	using index_range = multi::range<index>;
 	using index_extension = multi::extension_t<index>;
+
+	using indexes = tuple<index>;
 
 	using extension_type = multi::extension_t<index>;
 	using extensions_type = multi::extensions_t<1>;
@@ -700,6 +704,8 @@ struct layout_t
 
 	using extensions_type = extensions_t<rank::value>;
 	using sizes_type      = typename boost::multi::detail::tuple_prepend<size_type  , typename sub_type::sizes_type  >::type;
+
+	using indexes = typename boost::multi::detail::tuple_prepend<index, typename sub_type::indexes>::type;
 
 	static constexpr dimensionality_type rank_v = rank::value;
 	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa): consider deprecation
@@ -1021,6 +1027,7 @@ struct layout_t<0, SSize>
 
 	using extensions_type = extensions_t<rank::value>;
 	using sizes_type      = tuple<>;
+	using indexes = tuple<>;
 
 	static constexpr dimensionality_type rank_v = rank::value;
 	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
