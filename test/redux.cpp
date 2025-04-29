@@ -17,22 +17,21 @@
 #endif
 
 #include <boost/multi/adaptors/blas.hpp>  // IWYU pragma: keep
-
 #include <boost/multi/array.hpp>          // for array, implicit_cast, explicit_cast
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // IWYU pragma: keep
-#include <chrono>     // NOLINT(build/c++11)
-#include <cmath>      // IWYU pragma: keep
+#include <algorithm>   // IWYU pragma: keep
+#include <chrono>      // NOLINT(build/c++11)
+#include <cmath>       // IWYU pragma: keep
 #include <functional>  // IWYU pragma: keep
 #include <iostream>
 #include <numeric>  // IWYU pragma: keep
-#include <random>  // IWYU pragma: keep
+#include <random>   // IWYU pragma: keep
 #include <string>
 #include <string_view>
 #include <type_traits>  // for std::decay_t
-#include <utility>  // for move  // IWYU pragma: keep  // NOLINT(misc-include-cleaner) bug in clang-tidy 19
+#include <utility>      // for move  // IWYU pragma: keep  // NOLINT(misc-include-cleaner) bug in clang-tidy 19
 
 // IWYU pragma: no_include <pstl/glue_numeric_impl.h>         // for reduce, transform_reduce
 // IWYU pragma: no_include <cstdlib>                          // for abs
@@ -49,9 +48,13 @@
 
 namespace multi = boost::multi;
 
-#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
+#if (__cplusplus >= 202302L)
+#if __has_include(<generator>)
 #   include <generator>
+#endif
+#endif
 
+#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
 template<class Arr2D>
 std::generator<typename Arr2D::indexes>
 co_extensions_elements(Arr2D const& arr2d) {
@@ -80,26 +83,25 @@ class watch {
 	std::chrono::time_point<std::chrono::high_resolution_clock> start_ = std::chrono::high_resolution_clock::now();
 
 	std::string msg_;
-	bool running_ = true;
+	bool        running_ = true;
 
-
-	template< class T >
-	#if defined(_MSC_VER)
-	inline __forceinline
-	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
+	template<class T>
+#if defined(_MSC_VER)
+	inline __forceinline static auto do_not_optimize_(T&& value) noexcept -> T&& {
 		return std::forward<T>(value);
 	}
-	#else
+#else
 	inline __attribute__((always_inline))  // NOLINT(readability-redundant-inline-specifier)
-	static auto do_not_optimize_( T&& value ) noexcept -> T&& {
-		if constexpr( std::is_pointer_v< T > ) {
-			asm volatile("":"+m"(value)::"memory");  // NOLINT(hicpp-no-assembler)
+	static auto
+	do_not_optimize_(T&& value) noexcept -> T&& {
+		if constexpr(std::is_pointer_v<T>) {
+			asm volatile("" : "+m"(value)::"memory");  // NOLINT(hicpp-no-assembler)
 		} else {
-			asm volatile("":"+r"(value)::);  // NOLINT(hicpp-no-assembler)
+			asm volatile("" : "+r"(value)::);  // NOLINT(hicpp-no-assembler)
 		}
 		return std::forward<T>(value);
 	}
-	#endif
+#endif
 
  public:
 	explicit watch(std::string_view msg) : msg_(msg) {}  // NOLINT(fuchsia-default-arguments-calls)
@@ -117,9 +119,11 @@ class watch {
 		}
 	}
 
-	~watch() { if(running_) {
-		stop(*this);
-	} }
+	~watch() {
+		if(running_) {
+			stop(*this);
+		}
+	}
 	watch(watch const&)          = delete;
 	watch(watch&&)               = delete;
 	auto operator=(watch const&) = delete;
@@ -505,17 +509,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  }
 	// }
 
-	#if defined(NDEBUG)
+#if defined(NDEBUG)
 	// Chris
 	{
-		multi::size_t const em  = 1200/2;
-		multi::size_t const en  = 1000/2;
-		multi::size_t const ell = 800/2;
+		multi::size_t const em  = 1200 / 2;
+		multi::size_t const en  = 1000 / 2;
+		multi::size_t const ell = 800 / 2;
 
 		multi::array<double, 3> a3d({em, en, ell});
 		multi::array<double, 2> b2d({en, ell});
 
-		std::mt19937 gen(42);  // NOLINT(cert-msc32-c,cert-msc51-cpp) use for unpredictable std::random_device{}
+		std::mt19937                     gen(42);  // NOLINT(cert-msc32-c,cert-msc51-cpp) use for unpredictable std::random_device{}
 		std::uniform_real_distribution<> distrib;
 
 		std::generate(a3d.elements().begin(), a3d.elements().end(), [&]() { return distrib(gen); });
@@ -537,9 +541,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			for(multi::index const k : a3d.extension()) {
 				auto const& a3dk = a3d[k];
-				for(multi::index const j : b2d.extension()) {       // NOLINT(altera-unroll-loops)
+				for(multi::index const j : b2d.extension()) {  // NOLINT(altera-unroll-loops)
 					auto const& a3dkj = a3dk[j];
-					auto const& b2dj = b2d[j];
+					auto const& b2dj  = b2d[j];
 					for(multi::index const i : b2dj.extension()) {  // NOLINT(altera-unroll-loops)
 						c_gold[k] += a3dkj[i] * b2dj[i];
 					}
@@ -554,9 +558,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			for(multi::index const k : a3d.extension()) {
 				auto const& a3dk = a3d[k];
-				for(multi::index const j : b2d.extension()) {       // NOLINT(altera-unroll-loops)
+				for(multi::index const j : b2d.extension()) {  // NOLINT(altera-unroll-loops)
 					auto const& a3dkj = a3dk[j];
-					auto const& b2dj = b2d[j];
+					auto const& b2dj  = b2d[j];
 					for(multi::index const i : b2dj.extension()) {  // NOLINT(altera-unroll-loops)
 						c_flat[k] += a3dkj[i] * b2dj[i];
 					}
@@ -564,7 +568,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
@@ -573,15 +578,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<double, 1> c_flat(em, 0.0);
 
 			for(auto const k : c_flat.extension()) {
-				auto const& a3d_rowes = a3d[k].elements().base();
+				auto const& a3d_rowes    = a3d[k].elements().base();
 				auto const& b2d_elements = b2d.elements().base();
-				for(auto const ji : b2d.elements().extension()) {  // NOLINT(altera-unroll-loops)
+				for(auto const ji : b2d.elements().extension()) {   // NOLINT(altera-unroll-loops)
 					c_flat[k] += a3d_rowes[ji] * b2d_elements[ji];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
@@ -597,7 +603,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
@@ -612,7 +619,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
@@ -622,18 +630,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			for(auto const k : c_flat.extension()) {  // NOLINT(altera-unroll-loops)
 				auto const& a3dkes = a3d[k].elements();
-				c_flat[k] = std::transform_reduce(
-					a3dkes.base(), a3dkes.base() + a3dkes.size(),
-					b2d.elements().base(), 0.0
-				);
+				c_flat[k]          = std::transform_reduce(
+                    a3dkes.base(), a3dkes.base() + a3dkes.size(),
+                    b2d.elements().base(), 0.0
+                );
 			}
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
-			watch _("chris transform transform_reduce pointer");
+			watch                   _("chris transform transform_reduce pointer");
 			multi::array<double, 1> c_flat(em);
 
 			std::transform(
@@ -647,11 +656,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
-		#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
+#   if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
 		{
-			watch _("chris transform transform_reduce elements");
+			sasa
+				watch               _("chris transform transform_reduce elements");
 			multi::array<double, 1> c_flat(em);
 
 			std::transform(
@@ -665,14 +676,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
-		#endif
+#   endif
 
-		#if defined(HAS_STD_EXECUTION)
-		#if defined(__cpp_lib_execution)
+#   if defined(HAS_STD_EXECUTION)
+#       if defined(__cpp_lib_execution)
 		{
-			watch _("chris transform(par) transform_reduce");
+			watch                   _("chris transform(par) transform_reduce");
 			multi::array<double, 1> c_flat(em);
 
 			std::transform(
@@ -688,10 +700,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
-		#endif
-		#endif
+#       endif
+#   endif
 		{
 			watch _("chris accumulate");
 
@@ -707,7 +720,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
@@ -726,7 +740,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			);
 			_.stop(c_flat);
 
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 
 		{
@@ -754,10 +769,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				);
 			}();
 			_.stop(c_flat);
-	
-			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) { return std::abs(alpha - omega); }) < 1.0e-5 );
+
+			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
+																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
 	}
-	#endif
+#endif
 	return boost::report_errors();
 }
