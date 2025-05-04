@@ -148,29 +148,17 @@ namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 comp
 
 template<class T, class = std::enable_if_t<std::is_rvalue_reference_v<T&&> > >
 inline auto make_nvp(char const* name, T&& value) noexcept -> ::boost::serialization::nvp<T> {
-	return ::boost::serialization::nvp<T>(name, value);
-	// return boost::serialization::make_nvp(name, value);
+	auto& val = std::forward<T>(value);
+	return ::boost::serialization::nvp<T>(name, val);
 }
-
-// // template<class T, class = std::enable_if_t<std::is_same_v<T, std::decay_t<T>>> >
-// template<typename Element, std::ptrdiff_t D, typename Ptr, class Layout>
-// inline auto make_nvp(char const* name, boost::multi::const_subarray<Element, D, Ptr, Layout>&& value)
-// -> boost::serialization::nvp<boost::multi::const_subarray<Element, D, Ptr, Layout>> {
-//  auto&& val = value;
-//  return boost::make_nvp(name, val);
-//  // return boost::serialization::make_nvp(name, static_cast<T&>(std::forward<T>(value)));
-// }
 
 namespace serialization {
 
-// // template<class T, class = std::enable_if_t<std::is_same_v<T, std::decay_t<T>>> >
-// template<typename Element, std::ptrdiff_t D, typename Ptr, class Layout>
-// inline auto make_nvp(char const* name, boost::multi::const_subarray<Element, D, Ptr, Layout>&& value)
-// -> boost::serialization::nvp<boost::multi::const_subarray<Element, D, Ptr, Layout>> {
-//  auto&& val = value;
-//  return boost::serialization::make_nvp(name, val);
-//  // return boost::serialization::make_nvp(name, static_cast<T&>(std::forward<T>(value)));
-// }
+template<class T, class = std::enable_if_t<std::is_rvalue_reference_v<T&&> > >
+inline auto make_nvp(char const* name, T&& value) noexcept -> ::boost::serialization::nvp<T> {
+	auto& val = std::forward<T>(value);
+	return ::boost::serialization::nvp<T>(name, val);
+}
 
 }  // end namespace serialization
 
