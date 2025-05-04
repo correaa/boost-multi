@@ -33,7 +33,6 @@ namespace multi = boost::multi;
 // }
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
-
 	multi::array<double, 2> AA = {
 		{1.0, 2.0, 3.0},
 		{4.0, 5.0, 6.0},

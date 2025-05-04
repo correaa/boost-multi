@@ -7,7 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
 #include <iostream>
+#endif
 
 namespace multi = boost::multi;
 
