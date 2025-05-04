@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
 #define BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
-#include <atomic>
 #pragma once
 
 #include <algorithm>    // for std::for_each  // IWYU pragma: keep  // bug in iwyu 0.18
@@ -30,15 +29,6 @@ namespace boost::serialization { template <class T> class nvp; }
 namespace cereal { template <class ArchiveType, std::uint32_t Flags> struct InputArchive; }
 namespace cereal { template <class ArchiveType, std::uint32_t Flags> struct OutputArchive; }
 namespace cereal { template <class T> class NameValuePair; }  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // IWYU pragma: keep  // bug in iwyu 0.18
-
-// namespace boost {
-// namespace serialization {
-
-// template<class Archive, class T>//, std::enable_if_t<std::is_same<T, std::decay_t<T>>{}, int> =0>
-// auto operator>>(Archive& ar, T&& t) -> Archive& {return ar>> t;}
-
-// }  // end namespace serialization
-// }  // end namespace boost
 
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {
@@ -130,39 +120,23 @@ struct archive_traits<
 }  // end namespace multi
 }  // end namespace boost
 
-// namespace boost {
-
-// template<class T, std::size_t D, class As>
-// class multi_array;
-
-// }  // end namespace boost
-
-// namespace boost {
-//  namespace multi {
-//      template<typename Element, std::ptrdiff_t D, typename Ptr, class Layout>
-//      struct const_subarray;
-//  }
-// }
-
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 
+// workaround for rvalue subarrays
 template<class T, class = std::enable_if_t<std::is_rvalue_reference_v<T&&> > >
 inline auto make_nvp(char const* name, T&& value) noexcept -> ::boost::serialization::nvp<T> {
-	auto& val = std::forward<T>(value);
-	return ::boost::serialization::nvp<T>(name, val);
+	return ::boost::serialization::nvp<T>(name, static_cast<T&>(std::forward<T>(value)));
 }
 
 namespace serialization {
 
+// workaround for rvalue subarrays
 template<class T, class = std::enable_if_t<std::is_rvalue_reference_v<T&&> > >
 inline auto make_nvp(char const* name, T&& value) noexcept -> ::boost::serialization::nvp<T> {
-	auto& val = std::forward<T>(value);
-	return ::boost::serialization::nvp<T>(name, val);
+	return ::boost::serialization::nvp<T>(name, static_cast<T&>(std::forward<T>(value)));
 }
-
+	
 }  // end namespace serialization
-
-// using boost::serialization::make_nvp;
 
 }  // end namespace boost
 
