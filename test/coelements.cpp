@@ -7,6 +7,10 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
+#include <iostream>
+#endif
+
 namespace multi = boost::multi;
 
 // https://godbolt.org/z/7MqxhWvz3
@@ -39,7 +43,6 @@ co_celements(Arr2D const& arr2d) {
 #endif
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	multi::array<int, 2> const arr = {
 		{0, 1, 2},
 		{3, 4, 5}
@@ -56,7 +59,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	for(auto const& [i, j] : co_extensions_elements(arr)) {
 		std::cout << i << ' ' << j << '\n';
 	}
-
 	{
 		auto const [i, j] = *co_extensions_elements(arr).begin();
 		BOOST_TEST( i == 0 );
