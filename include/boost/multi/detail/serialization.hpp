@@ -30,15 +30,6 @@ namespace cereal { template <class ArchiveType, std::uint32_t Flags> struct Inpu
 namespace cereal { template <class ArchiveType, std::uint32_t Flags> struct OutputArchive; }
 namespace cereal { template <class T> class NameValuePair; }  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // IWYU pragma: keep  // bug in iwyu 0.18
 
-// namespace boost {
-// namespace serialization {
-
-// template<class Archive, class T>//, std::enable_if_t<std::is_same<T, std::decay_t<T>>{}, int> =0>
-// auto operator>>(Archive& ar, T&& t) -> Archive& {return ar>> t;}
-
-// }  // end namespace serialization
-// }  // end namespace boost
-
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {
 
@@ -129,24 +120,24 @@ struct archive_traits<
 }  // end namespace multi
 }  // end namespace boost
 
-// namespace boost {
-
-// template<class T, std::size_t D, class As>
-// class multi_array;
-
-// }  // end namespace boost
-
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
+
 namespace serialization {
 
-template<class T>  // , class = std::enable_if_t<std::is_same_v<T&&, T&>> >
-inline auto make_nvp(char const* name, T&& value) -> boost::serialization::nvp<T> {
-	return boost::serialization::make_nvp(name, static_cast<T&>(std::forward<T>(value)));
+// workaround for rvalue subarrays
+template<class T, class = std::enable_if_t<std::is_rvalue_reference_v<T&&> > >  // NOLINT(modernize-use-constraints) for C++20
+inline auto make_nvp(char const* name, T&& value) noexcept -> ::boost::serialization::nvp<T> {
+	return ::boost::serialization::nvp<T>(name, static_cast<T&>(std::forward<T>(value)));
 }
 
 }  // end namespace serialization
 
-using boost::serialization::make_nvp;
+// workaround for rvalue subarrays
+// template<class T, class = std::enable_if_t<std::is_rvalue_reference_v<T&&> > >  // NOLINT(modernize-use-constraints) for C++20
+// inline auto make_nvp(char const* name, T&& value) noexcept -> ::boost::serialization::nvp<T> {
+//  return ::boost::serialization::nvp<T>(name, static_cast<T&>(std::forward<T>(value)));
+// }
+using ::boost::serialization::make_nvp;
 
 }  // end namespace boost
 
