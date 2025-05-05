@@ -24,6 +24,7 @@ else()
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
 	find_package(Boost CONFIG)
+	find_package(Boost COMPONENTS core)
 	find_package(Boost COMPONENTS serialization)
 
 	if(ENABLE_CUDA)
@@ -340,8 +341,7 @@ else()
 		RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 		*.cpp
 	)
-
-	if(NOT Boost_FOUND)
+	if(NOT Boost_CORE_FOUND)
 		message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
