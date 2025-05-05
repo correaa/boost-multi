@@ -25,7 +25,7 @@ else()
 
 	find_package(Boost CONFIG)
 	find_package(Boost COMPONENTS serialization)
-	find_package(Boost COMPONENTS core)  # should be last
+	find_package(Boost COMPONENTS headers)  # should be last
 
 	if(NOT Boost_FOUND)
 		message(WARNING "preliminary: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
