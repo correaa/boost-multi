@@ -27,6 +27,10 @@ else()
 	find_package(Boost COMPONENTS core)
 	find_package(Boost COMPONENTS serialization)
 
+	if(NOT Boost_CORE_FOUND)
+		message(WARNING "preliminary: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
+	endif()
+
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
 		set(CMAKE_CUDA_EXTENSIONS OFF)
