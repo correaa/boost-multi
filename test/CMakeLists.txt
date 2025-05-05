@@ -27,7 +27,7 @@ else()
 	find_package(Boost COMPONENTS core)
 	find_package(Boost COMPONENTS serialization)
 
-	if((NOT Boost_CORE_FOUND) AND (NOT Boost_FOUND))
+	if(NOT Boost_FOUND)
 		message(WARNING "preliminary: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 	endif()
 
@@ -344,7 +344,7 @@ else()
 		*.cpp
 	)
 
-	if((NOT Boost_CORE_FOUND) AND (NOT Boost_FOUND))
+	if(NOT Boost_FOUND)
 		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
