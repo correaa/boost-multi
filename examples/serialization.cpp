@@ -12,14 +12,16 @@ exit
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
+
 #include <boost/core/lightweight_test.hpp>
+
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
+
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/complex.hpp>
 #include <boost/serialization/nvp.hpp>
 
-// #include <experimental/filesystem>
 #include <boost/multi_array.hpp>
 #include <boost/serialization/vector.hpp>
 
@@ -31,14 +33,14 @@ exit
 
 namespace multi = boost::multi;
 
-// namespace fs = std::experimental::filesystem;
 namespace fs = std::filesystem;
 
 struct watch : private std::chrono::high_resolution_clock {
 	std::string  name_;
 	time_point   start_  = std::chrono::high_resolution_clock::now();
 	mutable bool engaged = true;
-	watch(std::string name = "") : name_{std::move(name)} {}
+	watch() = default;
+	watch(std::string name) : name_{std::move(name)} {}
 	auto operator*() const {
 		engaged = false;
 		return std::chrono::duration<double>(now() - start_).count();

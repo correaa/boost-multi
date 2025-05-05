@@ -127,16 +127,11 @@ namespace serialization {
 // workaround for rvalue subarrays
 template<class T, class = std::enable_if_t<std::is_rvalue_reference_v<T&&> > >  // NOLINT(modernize-use-constraints) for C++20
 inline auto make_nvp(char const* name, T&& value) noexcept -> ::boost::serialization::nvp<T> {
-	return ::boost::serialization::nvp<T>(name, static_cast<T&>(std::forward<T>(value)));
+	return ::boost::serialization::nvp<T>(name, value);  // NOLINT(cppcoreguidelines-missing-std-forward) workaround legacy interface
 }
 
 }  // end namespace serialization
 
-// workaround for rvalue subarrays
-// template<class T, class = std::enable_if_t<std::is_rvalue_reference_v<T&&> > >  // NOLINT(modernize-use-constraints) for C++20
-// inline auto make_nvp(char const* name, T&& value) noexcept -> ::boost::serialization::nvp<T> {
-//  return ::boost::serialization::nvp<T>(name, static_cast<T&>(std::forward<T>(value)));
-// }
 using ::boost::serialization::make_nvp;
 
 }  // end namespace boost
