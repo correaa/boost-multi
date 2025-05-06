@@ -30,3 +30,16 @@ add_executable(gj_solve.cpp.x gj_solve.cpp)
 target_link_libraries(gj_solve.cpp.x PUBLIC multi)
 target_link_libraries(gj_solve.cpp.x PRIVATE ${Boost_LIBRARIES})
 add_test(NAME gj_solve.cpp.x COMMAND gj_solve.cpp.x)
+
+add_executable(redux.cpp.x redux.cpp)
+target_link_libraries(redux.cpp.x PUBLIC multi)
+target_link_libraries(redux.cpp.x PRIVATE ${Boost_LIBRARIES})
+
+find_package(TBB)
+
+if(TBB_FOUND)
+	target_link_libraries     (redux.cpp.x PRIVATE TBB::tbb)
+	target_compile_definitions(redux.cpp.x PUBLIC  TBB_FOUND=1)
+endif()
+
+add_test(NAME redux.cpp.x COMMAND redux.cpp.x)
