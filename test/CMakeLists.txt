@@ -24,7 +24,6 @@ else()
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
 	find_package(Boost CONFIG)
-	find_package(Boost COMPONENTS serialization)
 	find_package(Boost COMPONENTS headers)  # should be last
 
 	if(NOT Boost_FOUND)
@@ -39,7 +38,7 @@ else()
 		endif()
 	endif()
 
-	find_package(TBB)
+#   find_package(TBB)
 
 	enable_testing()
 	include(CTest)
@@ -218,16 +217,16 @@ else()
 	-Wswitch -Wswitch-bool
 	-Wno-switch-default
 	-Wswitch-enum
-	# -Wswitch-outside-range # (gcc 11, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wswitch-outside-range>  # (gcc 11, not in gcc 9)
 	-Wswitch-unreachable
 	-Wsync-nand -Wsynth
 	-Wno-system-headers  # (expects system headers to be warning-compliant which they are not)
 	-Wtautological-compare
 	-Wno-templates # (disallows templates, C-tool)
-	-Wterminate # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wterminate>  # (gcc 12, not in 11)
 	-Wtrampolines -Wtrigraphs
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wtrivial-auto-var-init>  # (not in gcc 11)
-	# -Wtsan # (gcc 11, not in 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wtsan>  # (gcc 11, not in 10)
 	-Wtype-limits -Wundef -Wuninitialized
 	-Wno-unknown-pragmas  # (see above) -Wunknown-pragmas (other compilers need their own pragmas for their warnings)
 	-Wunreachable-code -Wunsafe-loop-optimizations
@@ -253,7 +252,7 @@ else()
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 	-Wno-poison-system-directories
-	-Wlarge-by-value-copy  # subarray references can be large
+	#-Wlarge-by-value-copy  # subarray references can be large
 	-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
 	# -Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4
@@ -387,8 +386,5 @@ else()
 			endif()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
-
-		# target_link_libraries    (serialization.cpp.x PRIVATE Boost::serialization)
-
 	endif()
 endif()
