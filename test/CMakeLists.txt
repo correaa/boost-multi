@@ -25,6 +25,11 @@ else()
 
 	find_package(Boost CONFIG)
 	find_package(Boost COMPONENTS serialization)
+	find_package(Boost COMPONENTS headers)  # should be last
+
+	if(NOT Boost_FOUND)
+		message(WARNING "preliminary: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
+	endif()
 
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
@@ -44,9 +49,7 @@ else()
 		-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
 		#--Werror=cross-execution-space-call
 		--Werror ext-lambda-captures-this
-		--use_fast_math
-		--extra-device-vectorization
-		--restrict
+		--use_fast_math --extra-device-vectorization --restrict
 		-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 	>
 	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror
@@ -79,14 +82,14 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++20-extensions -Wc++23-extensions>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++2a-compat>
 	#-Wcannot-profile # (gcc 9, not in gcc 8)
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type> # (gcc 8, not in gcc 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type>  # (gcc 8, not in gcc 7)
 	-Wcast-qual
-	#-Wcatch-value  #=<0, 3> # (gcc 8, not in gcc 7)
+	#-Wcatch-value  #=<0, 3>  # (gcc 8, not in gcc 7)
 	-Wchar-subscripts
-	#-Wclass-conversion # (gcc 11, not in 8)
-	#-Wclass-memaccess # (gcc 12, not in 11, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wclass-conversion>  # (gcc 11, not in 8)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wclass-memaccess>   # (gcc 12, not in 11)
 	-Wclobbered
-	# -Wcomma-subscript # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wcomma-subscript>  # (gcc 12, not in 11)
 	-Wcomment  # (same as -Wcomments)
 	-Wconditionally-supported
 	-Wconversion -Wconversion-null
@@ -94,8 +97,8 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wctad-maybe-unsupported>
 	-Wctor-dtor-privacy
 	-Wdangling-else
-	# -Wdangling-pointer # (gcc 12, not in 11)
-	# -Wdangling-reference # (gcc 13, not in 12)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdangling-pointer>  # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,13>:-Wdangling-reference>  # (gcc 13, not in 12)
 	-Wdate-time
 	-Wdelete-incomplete -Wdelete-non-virtual-dtor
 	-Wdeprecated
@@ -342,11 +345,11 @@ else()
 	)
 
 	if(NOT Boost_FOUND)
-		message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
+		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
 
-		# target_link_libraries(main PRIVATE multi)
+		target_link_libraries(main PUBLIC multi)
 		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
