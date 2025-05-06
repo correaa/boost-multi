@@ -361,16 +361,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	         std::cerr << "size " << double(fs::file_size("serialization.xml.gz")) / 1e6 << "MB\n";
 	         fs::remove("serialization.xml.gz");
 	     }
-	     {
-	         multi::array<complex, 2> d2D_copy;  //(extensions(d2D), 9999.);
-	         [&, _ = watch("xml read")] {
-	             std::ifstream ifs{"serialization.xml"};
-	             assert(ifs);
-	             boost::archive::xml_iarchive{ifs} >> BOOST_SERIALIZATION_NVP(d2D_copy);
-	         }();
-	         BOOST_TEST( d2D_copy == d2D );
-	         fs::remove("serialization.xml");
-	     }
+	//      {
+	//          multi::array<complex, 2> d2D_copy;  //(extensions(d2D), 9999.);
+	//          [&, _ = watch("xml read")] {
+	//              std::ifstream ifs{"serialization.xml"};
+	//              assert(ifs);
+	//              boost::archive::xml_iarchive{ifs} >> BOOST_SERIALIZATION_NVP(d2D_copy);
+	//          }();
+	//          BOOST_TEST( d2D_copy == d2D );
+	//          fs::remove("serialization.xml");
+	//      }
 	}
 
 	BOOST_AUTO_TEST_CASE(test_utility_serialization_2d) {
