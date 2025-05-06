@@ -506,7 +506,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		uninitialized_copy_elements(other.data_elements());
 	}
 
-	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename static_array::extensions_type>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename static_array::extensions_type>, int> =0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
 	static_array(ExecutionPolicy&& policy, static_array const& other)
 	: array_alloc{multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		assert(this->stride() != 0);

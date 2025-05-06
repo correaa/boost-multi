@@ -54,10 +54,9 @@ namespace multi = boost::multi;
 #endif
 #endif
 
-#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
+#if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L) && !defined(_MSC_VER)
 template<class Arr2D>
-std::generator<typename Arr2D::indexes>
-co_extensions_elements(Arr2D const& arr2d) {
+auto co_extensions_elements(Arr2D const& arr2d) -> std::generator<typename Arr2D::indexes> {
 	auto const [is, js] = arr2d.extensions();
 	for(auto const i : is) {
 		for(auto const j : js) {
@@ -661,7 +660,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::transform_reduce(c_gold.begin(), c_gold.end(), c_flat.begin(), 0.0, std::plus<>{}, [](auto const& alpha, auto const& omega) {
 																								return std::abs(alpha - omega); }) < 1.0e-5 );
 		}
-#   if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
+#   if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L) && !defined(_MSC_VER)
 		{
 			sasa
 				watch               _("chris transform transform_reduce elements");
