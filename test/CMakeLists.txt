@@ -205,8 +205,8 @@ else()
 	# -Wstrict-overflow=5  # not compatible with Boost.Test
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wstring-compare>  # (not in gcc 9)
 	-Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
-	# -Wstringop-overread # (gcc 11, not in 10)
-	# -Wstringop-truncation # (gcc 8, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wstringop-overread>  # (gcc 11, not in 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wstringop-truncation>  # (gcc 8, not in 7)
 	-Wsubobject-linkage
 	# -Wsuggest-attribute=cold # (gcc 12, not in 11, not in 7)
 	-Wsuggest-attribute=const -Wsuggest-attribute=format
@@ -344,15 +344,12 @@ else()
 	)
 
 	if(NOT Boost_FOUND)
-		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
+		message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
 
 		target_link_libraries(main PUBLIC multi)
-		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
-
-		# target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
 		if(NOT DEFINED ENABLE_CIRCLE)
 			target_compile_options(main PRIVATE ${WARNS})
@@ -360,7 +357,6 @@ else()
 			target_compile_options    (main PRIVATE -Werror -Wall)
 		endif()
 		add_test(NAME main COMMAND $<TARGET_FILE:main>)
-
 	else()
 
 		foreach(TEST_FILE ${TEST_SRCS})
@@ -371,13 +367,14 @@ else()
 				set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 			endif()
 
-			target_link_libraries(${TEST_EXE} PRIVATE multi)
-			target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+			target_link_libraries(${TEST_EXE} PUBLIC multi)
+			target_link_libraries(${TEST_EXE} PUBLIC Boost::headers)
+			# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 
-			if(TBB_FOUND)
-				target_link_libraries    (${TEST_EXE} PRIVATE TBB::tbb)
-				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
-			endif()
+			# if(TBB_FOUND)
+			#   target_link_libraries    (${TEST_EXE} PRIVATE TBB::tbb)
+			#   target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
+			# endif()
 
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
