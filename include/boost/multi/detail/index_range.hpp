@@ -76,7 +76,7 @@ template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType
 class range {
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	IndexType     first_ = {};
-	IndexTypeLast last_  = first_;  // TODO(correaa) check how to do partially initialzed
+	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
@@ -132,6 +132,10 @@ class range {
 		friend class range;
 
 	 public:
+		template<class T> using rebind = typename range<std::decay_t<T>>::const_iterator;
+		using pointer = const_iterator;
+		using element_type = IndexTypeLast;
+ 
 		const_iterator() = default;
 
 		constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
