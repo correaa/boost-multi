@@ -28,17 +28,30 @@ constexpr auto iota(Es... es) {
 	return iota<sizeof...(Es)>(multi::extensions_t<static_cast<multi::dimensionality_type>(sizeof...(Es))>{es...});
 }
 
-// template<multi::dimensionality_type D>
-// auto iota(multi::extensions_t<D> const& exts) {
-//  auto beg = multi::extension_t(0L, exts.num_elements()).begin();  // std::views::iota(0, exts.num_elements()).begin();
-//  return multi::array_ref<typename decltype(beg)::value_type, D, decltype(beg)>(exts, beg);
-// }
-
-
 template<class... Es> auto ι(Es... es) { return iota(es...); }
-// #if defined(__clang_major__)
-constexpr auto const θ = iota(0L);
-// #endif
+
+[[maybe_unused]] constexpr auto const Zilde = iota(0L);
+[[maybe_unused]] constexpr auto const& θ = Zilde;  // NOLINT(misc-confusable-identifiers)
+[[maybe_unused]] constexpr auto const& Ө = Zilde;  // NOLINT(misc-confusable-identifiers)
+[[maybe_unused]] constexpr auto const& ϑ = Zilde;  // NOLINT(misc-confusable-identifiers)
+[[maybe_unused]] constexpr auto const& Ø = Zilde;
+
+#pragma clang diagnostic ignored "-Wc99-compat"
+[[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
+
+template<class T, multi::dimensionality_type D, class... Ts>
+struct _ : multi::array<T, D, Ts...> {
+	using multi::array<T, D, Ts...>::array;
+};
+
+// template<class T>
+// auto oo(std::initializer_list<T> il) {
+//  return multi::array{il};
+// }
+// template<class T>
+// auto oo(std::initializer_list<std::initializer_list<T>> il) {
+//  return multi::array{il};
+// }
 
 }  // end anonymous namespace
 
@@ -51,6 +64,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	using apl::ι;
 	using apl::θ;
+	// using apl::oo;
 
 	BOOST_TEST(( ι(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
 	BOOST_TEST(( ι(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
