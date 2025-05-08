@@ -1516,11 +1516,12 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 	template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {
-		this->layout_mutable().reindex(idxs...);
+		this->layout_mutable() = this->layout_mutable().creindex(idxs...);
 		return std::move(*this);
 	}
 	template<class... Indices> constexpr auto reindex(Indices... idxs) & -> array& {
-		this->layout_mutable().reindex(idxs...);
+		this->layout_mutable() = this->layout_mutable().creindex(idxs...);
+		// this->layout_mutable().reindex(idxs...);
 		return *this;
 	}
 
