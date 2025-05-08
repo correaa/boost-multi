@@ -244,7 +244,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		int start_;
 		int finish_;
 
-	 public:
+	 public:  // NOLINT(whitespace/indent) bug in cpplint
 		rng3_t(int start, int finish) : start_{start}, finish_{finish} {}  // NOLINT(bugprone-easily-swappable-parameters)
 		auto first() const { return start_; }
 		auto last() const { return finish_; }
