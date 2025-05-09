@@ -33,6 +33,7 @@ template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 [[maybe_unused]] constexpr auto const Zilde = iota(0L);
 
 [[maybe_unused]] constexpr auto const& Ɵ = Zilde;  // NOLINT(misc-confusable-identifiers)
+#if !defined(_MSC_VER)
 [[maybe_unused]] constexpr auto const& θ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ө = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& ϑ = Zilde;  // NOLINT(misc-confusable-identifiers)
@@ -42,6 +43,7 @@ template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 #   pragma clang diagnostic ignored "-Wc99-compat"
 #endif
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
+#endif
 
 [[maybe_unused]] constexpr struct {
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
@@ -83,14 +85,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(( apl::iota(4) == multi::array{0, 1, 2, 3} ));
 
 	using apl::_;
-	using apl::θ;
+	using apl::Ɵ;
 	using apl::ι;
 
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
-	BOOST_TEST(( θ == ι(0) ));
+	BOOST_TEST(( Ɵ == ι(0) ));
 
 #endif
 
