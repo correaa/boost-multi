@@ -8,6 +8,7 @@
 #if (__cplusplus >= 202002L)
 #   include <ranges>
 #endif
+#include <type_traits>
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -21,7 +22,7 @@ template<multi::dimensionality_type D, class Extensions = multi::extensions_t<D>
 constexpr auto iota(Extensions const& exts) {
 	auto beg = multi::extension_t(0L, exts.num_elements()).begin();  // std::views::iota(0, exts.num_elements()).begin();
 	// multi::what(beg);
-	return multi::array_ref<typename decltype(beg)::value_type, Extensions::dimensionality, std::decay_t<decltype(beg)>>(exts, beg);
+	return multi::array_ref<typename decltype(beg)::value_type, Extensions::dimensionality, std::remove_const_t<decltype(beg)>>(exts, beg);
 }
 
 template<class... Es>
