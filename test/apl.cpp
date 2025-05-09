@@ -30,10 +30,21 @@ constexpr auto iota(Es... es) {
 	return iota<sizeof...(Es)>(multi::extensions_t<static_cast<multi::dimensionality_type>(sizeof...(Es))>{es...});
 }
 
+}  // end namespace
+
+namespace symbols {
+
+namespace {
 template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
+}  // end namespace
+
+}  // end namespace symbols
 
 [[maybe_unused]] constexpr auto const Zilde = iota(0L);
 
+namespace symbols {
+
+namespace {
 [[maybe_unused]] constexpr auto const& Ɵ = Zilde;  // NOLINT(misc-confusable-identifiers)
 #if !defined(_MSC_VER)
 [[maybe_unused]] constexpr auto const& θ = Zilde;  // NOLINT(misc-confusable-identifiers)
@@ -47,7 +58,7 @@ template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
 #endif
 
-struct _t {
+struct underscore_t {
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class U, class... Us>
 	[[maybe_unused]]
@@ -68,18 +79,10 @@ struct _t {
 #endif
 };
 
-[[maybe_unused]] constexpr _t _;
+[[maybe_unused]] constexpr underscore_t _;
+}  // end namespace
 
-// template<class T>
-// auto oo(std::initializer_list<T> il) {
-//  return multi::array{il};
-// }
-// template<class T>
-// auto oo(std::initializer_list<std::initializer_list<T>> il) {
-//  return multi::array{il};
-// }
-
-}  // end anonymous namespace
+}  // end namespace symbols
 
 }  // end namespace apl
 
@@ -88,16 +91,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(( apl::iota(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
 	BOOST_TEST(( apl::iota(4) == multi::array{0, 1, 2, 3} ));
 
-	using apl::_;
-	using apl::Ɵ;
-	using apl::ι;
+	using namespace apl::symbols;  // NOLINT(google-build-using-namespace)
 
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
-
-	// BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
-	// BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
-	// BOOST_TEST(( Ɵ == ι(0) ));
-
+	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
+	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
+	BOOST_TEST(( Ɵ == ι(0) ));
 #endif
 
 	return boost::report_errors();
