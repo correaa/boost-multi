@@ -5,8 +5,8 @@
 
 #include <boost/multi/array.hpp>
 
-#if(__cplusplus >= 202002L)
-#include <ranges>
+#if (__cplusplus >= 202002L)
+#   include <ranges>
 #endif
 
 #include <boost/core/lightweight_test.hpp>
@@ -28,21 +28,41 @@ constexpr auto iota(Es... es) {
 	return iota<sizeof...(Es)>(multi::extensions_t<static_cast<multi::dimensionality_type>(sizeof...(Es))>{es...});
 }
 
-template<class... Es> auto ι(Es... es) { return iota(es...); }
+template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 
 [[maybe_unused]] constexpr auto const Zilde = iota(0L);
+
+[[maybe_unused]] constexpr auto const& Ɵ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& θ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ө = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& ϑ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ø = Zilde;
 
-#pragma clang diagnostic ignored "-Wc99-compat"
+#if defined(__clang__)
+#   pragma clang diagnostic ignored "-Wc99-compat"
+#endif
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
 
-template<class T, multi::dimensionality_type D, class... Ts>
-struct _ : multi::array<T, D, Ts...> {
-	using multi::array<T, D, Ts...>::array;
-};
+[[maybe_unused]] constexpr struct {
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	template<class U, class... Us>
+	[[maybe_unused]]
+#   if (__cpp_multidimensional_subscript >= 202211L)
+	static
+#   endif
+		constexpr auto operator[](U u, Us... us)
+#   if !(__cpp_multidimensional_subscript >= 202211L)
+			const
+#   endif
+	{
+		if constexpr(std::is_same_v<U, int>) {
+			return multi::array<U, 1>{u, us...};
+		} else {
+			return multi::array<typename U::element_type, U::dimensionality + 1>{u, us...};
+		}
+	}
+#endif
+} _;
 
 // template<class T>
 // auto oo(std::initializer_list<T> il) {
@@ -62,13 +82,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(( apl::iota(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
 	BOOST_TEST(( apl::iota(4) == multi::array{0, 1, 2, 3} ));
 
-	using apl::ι;
+	using apl::_;
 	using apl::θ;
-	// using apl::oo;
+	using apl::ι;
 
-	BOOST_TEST(( ι(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
-	BOOST_TEST(( ι(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+
+	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
+	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
 	BOOST_TEST(( θ == ι(0) ));
+
+#endif
 
 	return boost::report_errors();
 }
