@@ -81,7 +81,6 @@ struct underscore_t {
 
 [[maybe_unused]] constexpr underscore_t _
 #if defined(_MSC_VER)
-__attribute__ ((unused))
 #endif
 ;
 
@@ -97,9 +96,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(( apl::iota(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
 	BOOST_TEST(( apl::iota(4) == multi::array{0, 1, 2, 3} ));
 
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	using namespace apl::symbols;  // NOLINT(google-build-using-namespace)
 
-#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
 	BOOST_TEST(( Ɵ == ι(0) ));
