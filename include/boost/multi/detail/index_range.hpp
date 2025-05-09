@@ -126,6 +126,7 @@ class range {
 
 	constexpr range(IndexType first, IndexTypeLast last) : first_{first}, last_{last} {}
 
+	// TODO(correaa) make this iterator SCARY
 	class const_iterator : public boost::multi::iterator_facade<const_iterator, value_type, std::random_access_iterator_tag, const_reference, difference_type> {
 		typename const_iterator::value_type curr_;
 		constexpr explicit const_iterator(value_type current) : curr_{current} {}
@@ -137,6 +138,9 @@ class range {
 		using element_type = IndexTypeLast;
  
 		const_iterator() = default;
+
+		template<class OtherConstIterator, class = decltype(std::declval<typename const_iterator::value_type&>() = *OtherConstIterator{})>
+		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 		constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
 		constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
