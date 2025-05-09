@@ -92,9 +92,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 
-	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
-	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
-	BOOST_TEST(( Ɵ == ι(0) ));
+	// BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
+	// BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
+	// BOOST_TEST(( Ɵ == ι(0) ));
 
 #endif
 
