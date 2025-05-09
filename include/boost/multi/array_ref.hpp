@@ -3474,7 +3474,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 		#endif
 
 		return adl_equal(
-			other.data_elements(), other.data_elements() + other.num_elements(),
+			other.data_elements(), other.data_elements() + other.num_elements(),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) use span?
 			self .data_elements()
 		);
 
@@ -3494,7 +3494,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) { return true; }
 		return !adl_equal(
-			other.data_elements(), other.data_elements() + other.num_elements(),
+			other.data_elements(), other.data_elements() + other.num_elements(),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) use span?
 			self .data_elements()
 		);
 		// return ! operator==(self, other);  // commented due to bug in nvcc 22.11
