@@ -8,9 +8,9 @@
 #if (__cplusplus >= 202002L)
 #   include <ranges>
 #endif
-#include <type_traits>
-
 #include <boost/core/lightweight_test.hpp>
+
+#include <type_traits>
 
 namespace multi = boost::multi;
 
@@ -52,9 +52,9 @@ namespace {
 [[maybe_unused]] constexpr auto const& ϑ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ø = Zilde;
 
-#if defined(__clang__)
-#   pragma clang diagnostic ignored "-Wc99-compat"
-#endif
+#   if defined(__clang__)
+#       pragma clang diagnostic ignored "-Wc99-compat"
+#   endif
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
 #endif
 
@@ -79,10 +79,9 @@ struct underscore_t {
 #endif
 };
 
-[[maybe_unused]] constexpr underscore_t _
 #if defined(_MSC_VER)
+[[maybe_unused]] constexpr underscore_t _;
 #endif
-;
 
 }  // end namespace
 
@@ -91,18 +90,19 @@ struct underscore_t {
 }  // end namespace apl
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-#if !defined(_MSC_VER)
 	BOOST_TEST(( apl::iota<2>({2, 3}) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
+
+#if !defined(_MSC_VER)
 	BOOST_TEST(( apl::iota(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
 	BOOST_TEST(( apl::iota(4) == multi::array{0, 1, 2, 3} ));
 
-#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+#   if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	using namespace apl::symbols;  // NOLINT(google-build-using-namespace)
 
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
 	BOOST_TEST(( Ɵ == ι(0) ));
-#endif
+#   endif
 #endif
 
 	return boost::report_errors();
