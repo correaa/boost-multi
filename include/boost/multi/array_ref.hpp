@@ -3289,8 +3289,8 @@ template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layo
 	std::conditional_t<
 		(D == 1),
 		// contiguous_layout<>,  // 1, typename std::pointer_traits<ElementPtr>::difference_type>,
-		multi::layout_t<D, typename std::iterator_traits<ElementPtr>::difference_type>,
-		multi::layout_t<D, typename std::iterator_traits<ElementPtr>::difference_type>
+		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
 	>
 >
 class array_ref : public subarray<T, D, ElementPtr, Layout>

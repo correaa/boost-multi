@@ -20,7 +20,8 @@ namespace {
 template<multi::dimensionality_type D, class Extensions = multi::extensions_t<D>>
 constexpr auto iota(Extensions const& exts) {
 	auto beg = multi::extension_t(0L, exts.num_elements()).begin();  // std::views::iota(0, exts.num_elements()).begin();
-	return multi::array_ref<typename decltype(beg)::value_type, Extensions::dimensionality, decltype(beg)>(exts, beg);
+	// multi::what(beg);
+	return multi::array_ref<typename decltype(beg)::value_type, Extensions::dimensionality, std::decay_t<decltype(beg)>>(exts, beg);
 }
 
 template<class... Es>
