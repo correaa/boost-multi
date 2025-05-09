@@ -47,7 +47,7 @@ template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
 #endif
 
-[[maybe_unused]] constexpr struct {
+struct _t {
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class U, class... Us>
 	[[maybe_unused]]
@@ -66,7 +66,9 @@ template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 		}
 	}
 #endif
-} _;
+};
+
+[[maybe_unused]] constexpr _t _;
 
 // template<class T>
 // auto oo(std::initializer_list<T> il) {
