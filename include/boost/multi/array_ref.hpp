@@ -232,12 +232,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		typename std::iterator_traits<element_const_ptr>::reference
 	>;
 
-	// BOOST_MULTI_HD constexpr auto base() &      -> element_ptr       {return base_;}
-	// BOOST_MULTI_HD constexpr auto base() &&     -> element_ptr       {return base_;}
-	// BOOST_MULTI_HD constexpr auto base() const& -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }
 
-	BOOST_MULTI_HD constexpr auto  mutable_base() const -> element_ptr {return base_;}
+	BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr {return base_;}
 
 	BOOST_MULTI_HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
