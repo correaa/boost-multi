@@ -153,15 +153,15 @@ auto main() -> int {
 		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu());
 		BOOST_TEST( fw_cpu_out == in_cpu );
 	}
-	// // constructor none
-	// {
-	//  multi::array<complex, 2> const fw_cpu_out = in_cpu.transposed();
-	//  BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
-	// }
-	// // constructor none
+	// transposed
+	{
+		multi::array<complex, 2> const fw_cpu_out = in_cpu.transposed();
+		BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
+	}
+	// transposed
 	// {
 	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu.transposed());
-	//  // BOOST_TEST( fw_cpu_out == in_cpu );
+	//  BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
 	// }
 
 	return boost::report_errors();

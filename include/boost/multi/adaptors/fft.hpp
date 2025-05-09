@@ -190,7 +190,6 @@ namespace boost::multi::fft{
 // #elif defined(__GNUC__)
 // #pragma GCC diagnostic pop
 // #endif
-
 	template<class In, class Direction>
 	auto idft(std::array<bool, In::dimensionality> which, In&& in) {
 		return dft(which, std::forward<In>(in), fft::forward);
