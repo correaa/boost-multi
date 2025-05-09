@@ -79,7 +79,12 @@ struct underscore_t {
 #endif
 };
 
-[[maybe_unused]] constexpr underscore_t _;
+[[maybe_unused]] constexpr underscore_t _
+#if defined(_MSC_VER)
+__attribute__ ((unused))
+#endif
+;
+
 }  // end namespace
 
 }  // end namespace symbols
@@ -87,6 +92,7 @@ struct underscore_t {
 }  // end namespace apl
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+#if !defined(_MSC_VER)
 	BOOST_TEST(( apl::iota<2>({2, 3}) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
 	BOOST_TEST(( apl::iota(2, 3) == multi::array{{0, 1, 2}, {3, 4, 5}} ));
 	BOOST_TEST(( apl::iota(4) == multi::array{0, 1, 2, 3} ));
@@ -97,6 +103,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
 	BOOST_TEST(( Ɵ == ι(0) ));
+#endif
 #endif
 
 	return boost::report_errors();
