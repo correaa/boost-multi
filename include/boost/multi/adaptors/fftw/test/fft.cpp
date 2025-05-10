@@ -32,17 +32,17 @@ namespace {
 void zip_iterator_test(multi::array<complex, 2> const& in_cpu) {
 	multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
 	auto zit = multi::fftw::io_zip_iterator(
-		{true}, 
+		{true},
 		in_cpu.begin(),
 		fw_cpu_out.begin(),
 		multi::fftw::forward
 	);
 
-	*zit;
+	zit.execute();
 	zit+=1;
 	auto zit2 = zit;
 	for(int i = 1; i != in_cpu.size(); ++i) {  // NOLINT(altera-unroll-loops)
-		*zit;
+		zit.execute();
 		++zit;
 	}
 

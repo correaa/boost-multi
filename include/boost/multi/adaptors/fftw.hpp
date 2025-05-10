@@ -517,11 +517,11 @@ class io_zip_iterator {
 		out_base_ += out_stride_*n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
-
-	auto operator*() const -> decltype(auto) {
+	void execute() const {
 		planP_->execute(in_base_, out_base_);
-		// return *out_base_;
 	}
+
+	void operator*() const { execute(); }
 
 	io_zip_iterator(io_zip_iterator const&) = default;
 	io_zip_iterator(io_zip_iterator&&) = default;
