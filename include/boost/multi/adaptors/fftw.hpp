@@ -336,9 +336,9 @@ inline auto initialize_threads() -> bool {
 }
 
 // enum class sign : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size)
-// 	backward = FFTW_BACKWARD,
-// 	none     = 0,
-// 	forward  = FFTW_FORWARD,
+//  backward = FFTW_BACKWARD,
+//  none     = 0,
+//  forward  = FFTW_FORWARD,
 // };
 
 class sign {
@@ -403,7 +403,7 @@ class plan {
 
  public:
 	plan(plan const&) = delete;
-	plan(plan&&)      = delete;
+	plan(plan&&)      = default;
 	~plan()           = default;
 
 	template<class InPtr, class In, class OutPtr, class Out>
@@ -442,7 +442,7 @@ class plan {
 	// template<class I, class O> void execute(I&& in, O&& out) const { execute_dft(std::forward<I>(in), std::forward<O>(out)); }
 	// friend void                     execute(plan const& self) { self.execute(); }
 
-	auto operator=(plan&&) -> plan&      = delete;
+	auto operator=(plan&&) -> plan&      = default;
 	auto operator=(plan const&) -> plan& = delete;
 
 	[[nodiscard]] auto cost() const -> double { return fftw_cost(const_cast<fftw_plan>(impl_.get())); }  // NOLINT(cppcoreguidelines-pro-type-const-cast)
@@ -484,6 +484,52 @@ class plan {
 	static constexpr auto nthreads() -> bool { return true; }
 	static constexpr auto with_nthreads() -> int { return 1; }
 #endif
+};
+
+class io_zip_iterator {
+	std::complex<double> const* in_base_;
+	std::complex<double>* out_base_;
+
+	std::ptrdiff_t in_stride_;
+	std::ptrdiff_t out_stride_;
+
+	std::shared_ptr<plan> planP_;
+ public:
+	template<class InIt, class OutIt>
+	io_zip_iterator(std::array<bool, 1> which, InIt in, OutIt out, sign ss)
+	: in_base_{in.base()}, out_base_{out.base()}, in_stride_{in.stride()}, out_stride_{out.stride()},
+	planP_{std::make_shared<plan>(
+		which,
+		in.base(), in->layout(),
+		out.base(), out->layout(),
+		ss
+	)}
+	{}
+
+	auto operator++() -> io_zip_iterator& {
+		in_base_ += in_stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		out_base_ += out_stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return *this;
+	}
+
+	auto operator+=(std::ptrdiff_t n) -> io_zip_iterator& {
+		in_base_ += in_stride_*n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		out_base_ += out_stride_*n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return *this;
+	}
+
+	auto operator*() const -> decltype(auto) {
+		planP_->execute(in_base_, out_base_);
+		// return *out_base_;
+	}
+
+	io_zip_iterator(io_zip_iterator const&) = default;
+	io_zip_iterator(io_zip_iterator&&) = default;
+
+	~io_zip_iterator() = default;
+
+	auto operator=(io_zip_iterator const&) -> io_zip_iterator& = default;
+	auto operator=(io_zip_iterator&&) -> io_zip_iterator& = default;
 };
 
 template<class In, class Out>

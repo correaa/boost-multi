@@ -57,8 +57,12 @@ namespace boost::multi::fft{
 	class dft_range {
 	 public:
 		static constexpr auto dimensionality = std::decay_t<In>::dimensionality;
+		auto operator+() const { 
+			multi::array<typename std::decay_t<In>::element_type, dimensionality> ret = *this;
+			return ret;
+		}
 
-	 private:
+		private:
 		std::array<bool, dimensionality> which_;
 		In in_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 		Direction dir_;
