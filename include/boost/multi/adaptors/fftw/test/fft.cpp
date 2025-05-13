@@ -34,7 +34,7 @@ void zip_iterator_test(multi::array<complex, 2> const& in_cpu) {
 	auto zit = multi::fftw::io_zip_iterator(
 		{true},
 		in_cpu.begin(),
-		fw_cpu_out.element_moved().begin(),
+		fw_cpu_out.begin(),
 		multi::fftw::forward
 	);
 
