@@ -40,7 +40,7 @@ template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 
 }  // end namespace symbols
 
-[[maybe_unused]] constexpr auto const Zilde = iota({std::ptrdiff_t{0}});
+[[maybe_unused]] constexpr auto const Zilde = iota<1>(multi::extensions_t<1>{std::ptrdiff_t{0}});
 
 namespace symbols {
 

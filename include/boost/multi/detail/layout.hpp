@@ -49,11 +49,6 @@ struct stride_traits<std::ptrdiff_t> {
 	using category = std::random_access_iterator_tag;
 };
 
-template<>
-struct stride_traits<long int> {
-	using category = std::random_access_iterator_tag;
-};
-
 template<typename Integer>
 struct stride_traits<std::integral_constant<Integer, 1> > {
 	#if (__cplusplus >= 202002L)
