@@ -128,7 +128,7 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
     - valgrind --version
     - mkdir build && cd build
     - export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind-suppressions --gen-suppressions=all --error-exitcode=1 "
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
@@ -378,7 +378,7 @@ vs2022-shell c++17:
     - .\vcpkg\vcpkg install fftw3  # boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -DBOOST_ROOT="C:\local\boost_1_86_0" -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake  # -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.3"
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -DBOOST_ROOT="C:\local\boost_1_86_0" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/installed/x64-windows/scripts/buildsystems/vcpkg.cmake" # -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.3"
     - cmake --build build --config Debug --parallel 4 --verbose
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
