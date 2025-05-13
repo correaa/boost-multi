@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.11)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(PkgConfig)
+add_library(multi_fftw3 INTERFACE)
 
+find_package(PkgConfig)
 if(PKG_CONFIG_FOUND)
 	pkg_search_module(
 		FFTW
@@ -13,6 +14,7 @@ if(PKG_CONFIG_FOUND)
 	if(FFTW_FOUND)
 		# include_directories(PkgConfig::FFTW) this seems to be always incorrect
 		link_libraries(PkgConfig::FFTW)
+		target_link_libraries(multi_fftw3 INTERFACE PkgConfig::FFTW)
 
 		include_directories(${CMAKE_BINARY_DIR})
 
@@ -36,6 +38,8 @@ else()
 
 	if(FFTW3_FOUND)
 		message(WARNING "Found FFTW3")
+		target_link_libraries(multi_fftw3 INTERFACE FFTW3::FFTW)
+
 	else()
 		message(WARNING "Cannot find FFTW3, FFTW3-adaptor will not be tested. If you want this feature install PkgConfig and FFTW, for example please run:"
 						"\n    sudo apt install libfftw3-dev"

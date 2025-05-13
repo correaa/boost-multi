@@ -67,7 +67,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 
-	target_link_libraries(${TEST_EXE} PRIVATE multi PkgConfig::FFTW)
+	target_link_libraries(${TEST_EXE} PRIVATE multi multi_fftw3)  # PkgConfig::FFTW)
 
 	if(NOT DEFINED ENABLE_CIRCLE)
 		target_compile_options(
