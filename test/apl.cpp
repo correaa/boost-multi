@@ -35,6 +35,7 @@ constexpr auto iota(Es... es) {
 namespace symbols {
 
 namespace {
+// cppcheck-suppress [syntaxError]
 template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 }  // end namespace
 
@@ -97,7 +98,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(( apl::iota(4) == multi::array{0, 1, 2, 3} ));
 
 #   if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
-	using namespace apl::symbols;  // NOLINT(google-build-using-namespace)
+	// NOLINTNEXTLINE(google-build-using-namespace)
+	using namespace apl::symbols;  // NOLINT(build/namespaces)
 
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
