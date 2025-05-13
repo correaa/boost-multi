@@ -317,7 +317,7 @@ assert( A3.num_elements() == 3 * 2 * 2 );
 
 In all cases, constness (`const` declaration) is honored in the expected way.
 
-## Copy and assigment (and aliasing)
+## Copy, and assigment (, and aliasing)
 
 The library offers value semantics for the `multi::array<T, D>` family of classes.
 Constructing or assigning from an existing array generates a copy of the original object, independent of the original one but equal in value.
@@ -361,21 +361,22 @@ Notably, this instruction does not transpose the array but produces an undefined
 A2 = A2.transposed();  // undefined result, this is an error
 ```
 
-While this below instead does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
+This is an instance of the problem of _data aliasing_, which describes a common situation in which a data location in memory can be accessed through different parts of an expression or function call.
+
+This below statement below, instead, does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
 
 ```cpp
 A2 = + A2.transposed();  // ok, (might allocate)
 ```
 
-This is an instance of the problem of _data aliasing_, which describes a common situation in which a data location in memory can be accessed through different parts of an expression or function call.
-Within the confines of the library interface, this pitfall can only occur on assignment as illustrated above.
+Within the confines of the library interface, this pitfall can only occur on assignment.
+A generic workaround is to use the prefix `operator+`, to break "aliasing" as above.
 
-However the problem of aliasing can persist when taking mutable array-references in function arguments.
-The most general solution to this problem is to make copies or directly work with completely disjoint objects; 
-but other case-by-case solutions might be possible.
-
-For example, in-place transposition (as attempted above) is an active subject of research;
-_optimal_ speed and memory transpositions might require specially designed libraries.
+In general, the problem of aliasing can persist when taking mutable array-references in function arguments.
+The most general solution to this problem is to make copies or directly work with completely disjoint objects.
+Other case-by-case solutions might be possible.
+(For example, in-place transposition (as attempted above) is an active subject of research;
+_optimal_ speed and memory transpositions might require specially designed libraries.)
 
 Finally, arrays can be efficiently moved by transferring ownership of the internal data.
 
