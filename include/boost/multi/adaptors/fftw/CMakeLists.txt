@@ -34,4 +34,14 @@ else()
 	message(WARNING "Cannot find PkgConfig and/or FFTW, FFTW-adaptor will not be tested. If you want this feature install PkgConfig and FFTW, for example please run:"
 					"\n    sudo apt install pkg-config libfftw3-dev"
 					"\n    sudo dnf install fftw-devel  # in Fedora")
+
+	find_package(FFTW3)  # or find_package(FFTW3 COMPONENTS fftw3f fftw3) for specific components
+
+	if(FFTW3_FOUND)
+	else()
+		message(WARNING "Cannot find FFTW3, FFTW3-adaptor will not be tested. If you want this feature install PkgConfig and FFTW, for example please run:"
+						"\n    sudo apt install libfftw3-dev"
+						"\n    sudo dnf install fftw-devel  # in Fedora"
+						"\n    vcpkg install fftw3  # on Windows")
+	endif()
 endif()
