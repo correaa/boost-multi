@@ -35,8 +35,9 @@ constexpr auto iota(Es... es) {
 namespace symbols {
 
 namespace {
-// cppcheck-suppress [syntaxError]
+// cppcheck-suppress [syntaxError] -begin
 template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
+// cppcheck-suppress [syntaxError] -end
 }  // end namespace
 
 }  // end namespace symbols

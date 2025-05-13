@@ -533,12 +533,12 @@ class io_zip_iterator {
 	auto operator*() const -> decltype(*out_) { execute(); return *out_; }
 
 	io_zip_iterator(io_zip_iterator const&) = default;
-	io_zip_iterator(io_zip_iterator&&) = default;
+	io_zip_iterator(io_zip_iterator&&) noexcept = default;
 
 	~io_zip_iterator() = default;
 
 	auto operator=(io_zip_iterator const&) -> io_zip_iterator& = default;
-	auto operator=(io_zip_iterator&&) -> io_zip_iterator& = default;
+	auto operator=(io_zip_iterator&&) noexcept -> io_zip_iterator& = default;
 };
 
 template<class In, class Out>
