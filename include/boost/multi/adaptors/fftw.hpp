@@ -305,14 +305,26 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 
 	assert((sign == -1) || (sign == +1));
 
+	decltype(FFTW_ESTIMATE) flags = FFTW_MEASURE;
+	if(!std::is_rvalue_reference_v<decltype(*out_base)> && out_base) {
+		flags = FFTW_ESTIMATE;
+	}
+	if(std::is_rvalue_reference_v<decltype(*in_base)> && in_base) {
+		flags |= FFTW_DESTROY_INPUT;
+	} else {
+		flags |= FFTW_PRESERVE_INPUT;
+	}
+
+	auto* const out_base_digested = [](auto&& ref) { return &ref; }(out_base);  // workaround to take address of out_base when it returns an rvalue
+
 	fftw_plan ret = fftw_plan_guru64_dft(
 		/*int                 rank         */ dims_end - dims.begin(),
 		/*const fftw_iodim64 *dims         */ dims.data(),
 		/*int                 howmany_rank */ howmany_dims_end - howmany_dims.begin(),
 		/*const fftw_iodim   *howmany_dims */ howmany_dims.data(),
 		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ (in_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR FFTW is taken as non-const while it is really not touched
-		/*fftw_complex       *out          */ (reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>       *>*/ (out_base))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-		sign, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
+		/*fftw_complex       *out          */ (reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>       *>*/ out_base_digested)),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		sign, flags  // FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
 	);
 
 	assert(ret && "fftw lib returned a null plan, if you are using MKL check the limitations of their fftw interface");
@@ -424,8 +436,8 @@ class plan {
 		return plan(which, in_base, in_layout, out_base, out_layout, fftw::backward);
 	}
 
-	template<class I, class O>
-	void execute(I* in, O* out) const {
+	template<class In, class Out>
+	void execute(In* in, Out* out) const {  // this is `const` because https://github.com/FFTW/fftw3/pull/314#issuecomment-1712818399
 		static_assert(sizeof(in->imag()) == sizeof(double));
 		static_assert(sizeof(out->imag()) == sizeof(double));
 
@@ -486,42 +498,39 @@ class plan {
 #endif
 };
 
+template<class InIt, class OutIt>
 class io_zip_iterator {
-	std::complex<double> const* in_base_;
-	std::complex<double>* out_base_;
-
-	std::ptrdiff_t in_stride_;
-	std::ptrdiff_t out_stride_;
+	InIt in_;
+	OutIt out_;
 
 	std::shared_ptr<plan> planP_;
  public:
-	template<class InIt, class OutIt>
-	io_zip_iterator(std::array<bool, 1> which, InIt in, OutIt out, sign ss)
-	: in_base_{in.base()}, out_base_{out.base()}, in_stride_{in.stride()}, out_stride_{out.stride()},
+	io_zip_iterator(std::array<bool, InIt::reference::rank_v> which, InIt in, OutIt out, sign ss)
+	: in_{in}, out_{out}, 
 	planP_{std::make_shared<plan>(
 		which,
-		in.base(), in->layout(),
-		out.base(), out->layout(),
+		in_.base(), in_->layout(),
+		out_.base(), out_->layout(),
 		ss
 	)}
 	{}
 
 	auto operator++() -> io_zip_iterator& {
-		in_base_ += in_stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		out_base_ += out_stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		++in_;
+		++out_;
 		return *this;
 	}
 
 	auto operator+=(std::ptrdiff_t n) -> io_zip_iterator& {
-		in_base_ += in_stride_*n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		out_base_ += out_stride_*n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		in_ += n;
+		out_ += n;
 		return *this;
 	}
 	void execute() const {
-		planP_->execute(in_base_, out_base_);
+		auto out_base = [](auto&& ref) {return &ref; }(*out_.base());
+		planP_->execute(in_.base(), out_base);
 	}
-
-	void operator*() const { execute(); }
+	auto operator*() const -> decltype(*out_) { execute(); return *out_; }
 
 	io_zip_iterator(io_zip_iterator const&) = default;
 	io_zip_iterator(io_zip_iterator&&) = default;
