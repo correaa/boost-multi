@@ -10,6 +10,7 @@
 #endif
 #include <boost/core/lightweight_test.hpp>
 
+#include <cstddef>
 #include <type_traits>
 
 namespace multi = boost::multi;
