@@ -53,6 +53,11 @@ multi::fftw::environment const env;
 
 BOOST_AUTO_TEST_CASE(fft_combinations) {  // , *boost::unit_test::tolerance(0.00001)) {
 	using complex = std::complex<double>;
+	{
+		multi::static_array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
+		ret[1][2][3][4] = std::complex<double>{1.0, 2.0};
+		BOOST_TEST(( ret[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
+	}
 
 	auto const in = [] {
 		// marray<complex, 4> ret(exts);
