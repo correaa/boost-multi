@@ -403,7 +403,7 @@ vs2022-shell c++23:
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_STANDARD=23 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" # -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.3"
-    - cmake --build build --config Debug --parallel 4 -ErrorAction Stop ; if ($LASTEXITCODE -ne 0) { cmake --build build --config Debug --verbose }
+    - cmake --build build --config Debug --parallel 4 -ErrorAction Stop ; if ($LASTEXITCODE -ne 0) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
     - windows, shell
