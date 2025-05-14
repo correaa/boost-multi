@@ -33,7 +33,7 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	explicit watch(std::string_view label) : label_{label} {}
 
 	watch(watch const&) = delete;
-	watch(watch&&)      = delete;
+	watch(watch&&)      = default;
 
 	auto operator=(watch const&) = delete;
 	auto operator=(watch&&)      = delete;
