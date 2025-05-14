@@ -306,10 +306,10 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 	assert((sign == -1) || (sign == +1));
 
 	decltype(FFTW_ESTIMATE) flags = FFTW_MEASURE;
-	if(!std::is_rvalue_reference_v<decltype(*out_base)> && out_base) {
+	if(out_base || (!std::is_rvalue_reference_v<decltype(*out_base)>)) {
 		flags = FFTW_ESTIMATE;
 	}
-	if(std::is_rvalue_reference_v<decltype(*in_base)> && in_base) {
+	if(in_base && std::is_rvalue_reference_v<decltype(*in_base)>) {
 		flags |= FFTW_DESTROY_INPUT;
 	} else {
 		flags |= FFTW_PRESERVE_INPUT;
@@ -318,9 +318,9 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 	auto* const out_base_digested = [](auto&& ref) { return &ref; }(out_base);  // workaround to take address of out_base when it returns an rvalue
 
 	fftw_plan ret = fftw_plan_guru64_dft(
-		/*int                 rank         */ dims_end - dims.begin(),
+		/*int                 rank         */ static_cast<int>(dims_end - dims.begin()),
 		/*const fftw_iodim64 *dims         */ dims.data(),
-		/*int                 howmany_rank */ howmany_dims_end - howmany_dims.begin(),
+		/*int                 howmany_rank */ static_cast<int>(howmany_dims_end - howmany_dims.begin()),
 		/*const fftw_iodim   *howmany_dims */ howmany_dims.data(),
 		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ (in_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR FFTW is taken as non-const while it is really not touched
 		/*fftw_complex       *out          */ (reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>       *>*/ out_base_digested)),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
