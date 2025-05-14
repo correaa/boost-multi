@@ -64,7 +64,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(( ret[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
 		}
 
-		auto const in = [] {
+		auto const in = [&] {
 			// marray<complex, 4> ret(exts);
 			multi::array<complex, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
 			std::generate(
@@ -178,7 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		using complex = std::complex<double>;
 
-		auto const in = [] {
+		auto const in = [&] {
 			marray<complex, 4> ret(exts);
 			std::generate(
 				ret.data_elements(), ret.data_elements() + ret.num_elements(),
