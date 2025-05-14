@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -10,6 +10,7 @@
 
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
+#include <complex>    // for complex
 #include <cstddef>    // for __GLIBCXX__, size_t
 #include <iterator>   // for size, back_insert...
 #include <memory>     // for make_unique, uniq...
@@ -48,6 +49,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST(size(ma0) == 0);
 #endif
+	}
+
+	// 4D array
+	{
+		multi::array<std::complex<double>, 4> ma(multi::extensions_t<4>({6, 12, 24, 12}));
+		BOOST_TEST( ma.size() == 6);
+
+		ma[1][2][3][4] = std::complex<double>{1.0, 2.0};
+		BOOST_TEST(( ma[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
 	}
 
 	BOOST_AUTO_TEST_CASE(std_vector_of_arrays_check_size) {
