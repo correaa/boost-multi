@@ -420,7 +420,7 @@ clang++-m32:
   interruptible: true
   script:
     - dpkg --add-architecture i386
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake make libboost-serialization-dev:i386 tar wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake make libboost-serialization-dev:i386 tar wget pkg-config
     - mkdir build && cd build
     - c++ --version
     - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_BUILD_TYPE=Debug
