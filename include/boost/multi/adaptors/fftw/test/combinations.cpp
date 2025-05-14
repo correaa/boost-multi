@@ -92,7 +92,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(auto which : which_cases) {  // NOLINT(altera-unroll-loops)
 			cout << "case ";
-			std::for_each(which.begin(), which.end(), [](auto elem) { cout << elem << ", "; });
+			std::for_each(which.begin(), which.end(), [](auto elem) { std::cout << elem << ", "; });
 			// copy(which.begin(), which.end(), std::ostream_iterator<bool>{cout, ", "});
 			cout << "\n";
 
