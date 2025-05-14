@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations) {  // , *boost::unit_test::tolerance(0.00
 
 	auto const in = [] {
 		// marray<complex, 4> ret(exts);
-		multi::array<complex, 4> ret(exts);
+		multi::array<complex, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
 		std::generate(
 			ret.data_elements(), ret.data_elements() + ret.num_elements(),
 			[eng        = std::default_random_engine{std::random_device{}()},
