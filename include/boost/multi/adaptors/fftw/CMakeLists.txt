@@ -38,7 +38,7 @@ else()
 
 	if(FFTW3_FOUND)
 		message(WARNING "Found FFTW3")
-		target_link_libraries(multi_fftw3 INTERFACE FFTW3::FFTW)
+		target_link_libraries(multi_fftw3 INTERFACE FFTW3::fftw3)
 
 	else()
 		message(WARNING "Cannot find FFTW3, FFTW3-adaptor will not be tested. If you want this feature install PkgConfig and FFTW, for example please run:"
