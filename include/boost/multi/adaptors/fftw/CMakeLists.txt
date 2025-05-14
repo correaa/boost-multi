@@ -31,14 +31,12 @@ else()
 					"\n    sudo apt install pkg-config libfftw3-dev"
 					"\n    sudo dnf install fftw-devel  # in Fedora")
 
-	find_package(FFTW3)  # or find_package(FFTW3 COMPONENTS fftw3f fftw3) for specific components
-	link_libraries(FFTW3::fftw3)
-
-	add_subdirectory(test)
+	find_package(FFTW3 COMPONENTS fftw3)  # or find_package(FFTW3 COMPONENTS fftw3f fftw3) for specific components
 
 	if(FFTW3_FOUND)
 		message(WARNING "Found FFTW3")
 		target_link_libraries(multi_fftw3 INTERFACE FFTW3::fftw3)
+		add_subdirectory(test)
 
 	else()
 		message(WARNING "Cannot find FFTW3, FFTW3-adaptor will not be tested. If you want this feature install PkgConfig and FFTW, for example please run:"
