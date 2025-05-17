@@ -27,6 +27,7 @@ constexpr auto iota(Extensions const& exts) {
 
 template<class... Es>
 constexpr auto iota(Es... es) {
+	(void)es...;  // for nvcc 14
 	return iota<sizeof...(Es)>(multi::extensions_t<static_cast<multi::dimensionality_type>(sizeof...(Es))>{es...});
 }
 
