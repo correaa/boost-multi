@@ -502,8 +502,8 @@ template<class InIt, class OutIt>
 class io_zip_iterator {
 	InIt in_;
 	OutIt out_;
-
 	std::shared_ptr<plan> planP_;
+
  public:
 	io_zip_iterator(std::array<bool, InIt::reference::rank_v> which, InIt in, OutIt out, sign ss)
 	: in_{in}, out_{out}, 
@@ -526,6 +526,12 @@ class io_zip_iterator {
 		out_ += n;
 		return *this;
 	}
+	auto operator==(io_zip_iterator const& other) const {
+		assert(planP_ == other.planP_);  // provenance
+		return in_ == other.in_ && out_ == other.out_;
+	}
+	auto operator!=(io_zip_iterator const& other) const { return !(*this == other); }
+
 	void execute() const {
 		auto out_base = [](auto&& ref) {return &ref; }(*out_.base());
 		planP_->execute(in_.base(), out_base);
