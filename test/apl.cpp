@@ -26,8 +26,7 @@ constexpr auto iota(Extensions const& exts) {
 }
 
 template<class... Es>
-constexpr auto iota(Es... es) {
-	((void)es, ...);  // for nvcc 14
+constexpr auto iota([[maybe_unused]] Es... es) {  // for nvcc 14
 	return iota<sizeof...(Es)>(multi::extensions_t<static_cast<multi::dimensionality_type>(sizeof...(Es))>{es...});
 }
 
@@ -36,8 +35,10 @@ constexpr auto iota(Es... es) {
 namespace symbols {
 
 namespace {
+#if !defined(__NVCOMPILER)
 // cppcheck-suppress [syntaxError] -begin
 template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
+#endif
 // cppcheck-suppress [syntaxError] -end
 }  // end namespace
 
@@ -82,7 +83,7 @@ struct underscore_t {
 #endif
 };
 
-#if!defined(_MSC_VER)
+#if !defined(_MSC_VER)
 [[maybe_unused]] constexpr underscore_t _;
 #endif
 
@@ -102,10 +103,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #   if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	// NOLINTNEXTLINE(google-build-using-namespace)
 	using namespace apl::symbols;  // NOLINT(build/namespaces)
-
+#       if !defined(__NVCOMPILER)
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
 	BOOST_TEST(( Ɵ == ι(0) ));
+#       endif
 #   endif
 #endif
 
