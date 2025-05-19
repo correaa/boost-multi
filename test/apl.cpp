@@ -3,6 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#if defined(__NVCC__)
+#pragma diag_suppress 177 // Suppress warning number 177 variable "apl::symbols::<unnamed>::\u019f" was declared but never referenced
+#endif
+
 #include <boost/multi/array.hpp>
 
 #if (__cplusplus >= 202002L)
@@ -49,17 +53,20 @@ template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 namespace symbols {
 
 namespace {
+
+#if !defined(__NVCOMPILER)
 [[maybe_unused]] constexpr auto const& Ɵ = Zilde;  // NOLINT(misc-confusable-identifiers)
-#if !defined(_MSC_VER)
+#   if !defined(_MSC_VER)
 [[maybe_unused]] constexpr auto const& θ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ө = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& ϑ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ø = Zilde;
 
-#   if defined(__clang__)
-#       pragma clang diagnostic ignored "-Wc99-compat"
-#   endif
+#       if defined(__clang__)
+#           pragma clang diagnostic ignored "-Wc99-compat"
+#       endif
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
+#   endif
 #endif
 
 struct underscore_t {
