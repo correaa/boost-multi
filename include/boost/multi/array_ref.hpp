@@ -232,12 +232,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		typename std::iterator_traits<element_const_ptr>::reference
 	>;
 
-	// BOOST_MULTI_HD constexpr auto base() &      -> element_ptr       {return base_;}
-	// BOOST_MULTI_HD constexpr auto base() &&     -> element_ptr       {return base_;}
-	// BOOST_MULTI_HD constexpr auto base() const& -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }
 
-	BOOST_MULTI_HD constexpr auto  mutable_base() const -> element_ptr {return base_;}
+	BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr {return base_;}
 
 	BOOST_MULTI_HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
@@ -3391,7 +3388,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	}
 
  public:
-	BOOST_MULTI_HD constexpr auto data_elements() const& -> typename array_ref::element_const_ptr { return array_ref::base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(array_ref::base_); }
 
 	template<class TT, class... As, std::enable_if_t<! std::is_base_of_v<array_ref, array_ref<TT, D, As...>> ,int> =0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
@@ -3477,7 +3474,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 		#endif
 
 		return adl_equal(
-			other.data_elements(), other.data_elements() + other.num_elements(),
+			other.data_elements(), other.data_elements() + other.num_elements(),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) use span?
 			self .data_elements()
 		);
 
@@ -3497,7 +3494,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) { return true; }
 		return !adl_equal(
-			other.data_elements(), other.data_elements() + other.num_elements(),
+			other.data_elements(), other.data_elements() + other.num_elements(),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) use span?
 			self .data_elements()
 		);
 		// return ! operator==(self, other);  // commented due to bug in nvcc 22.11
