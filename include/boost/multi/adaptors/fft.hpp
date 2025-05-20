@@ -5,6 +5,8 @@
 
 #include <boost/multi/adaptors/fftw.hpp>
 
+#include <boost/multi/array.hpp>          // for extensions_t, get, array
+
 #if defined(__CUDA__) || defined(__NVCC__)
 #include <boost/multi/adaptors/cufft.hpp>
 #elif defined(__HIPCC__)
