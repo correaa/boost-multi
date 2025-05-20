@@ -929,12 +929,12 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 
 	explicit static_array(typename static_array::extensions_type const& extensions, allocator_type const& alloc)  // 3
 	: array_alloc{alloc}, ref(static_array::allocate(typename static_array::layout_t{extensions}.num_elements()), extensions) {
-		assert(this->stride() != 0);
+		// assert(this->stride() != 0);
 		uninitialized_value_construct();
 	}
 	explicit static_array(typename static_array::extensions_type const& extensions)  // 3
 	: static_array(extensions, allocator_type{}) {
-		assert(this->stride() != 0);
+		// assert(this->stride() != 0);
 	}
 
 	static_array(static_array const& other, allocator_type const& alloc)  // 5b

@@ -4,7 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(__NVCC__)
-#pragma diag_suppress 177 // Suppress warning number 177 variable "apl::symbols::<unnamed>::\u019f" was declared but never referenced
+#pragma diag_suppress 177  // Suppress warning number 177 variable "apl::symbols::<unnamed>::\u019f" was declared but never referenced
 #endif
 
 #include <boost/multi/array.hpp>
