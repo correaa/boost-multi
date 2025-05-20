@@ -920,6 +920,18 @@ auto outer = [&]<typename T>(auto const& a, auto const& b, T&& C) {
 
 Note that the function `hadamard`, acting on 2D arrays, doesn't use the undefined (infinite) sizes (second dimension of `A` and first dimension of `B`).
 
+NB: A zero-dimensional broadcasts into a one-dimensional.
+Zero-dimensional arrays can contain, at most, one element; and after a broadcast, it can represent an infinite sequence of such element.
+
+```cpp
+multi::array<int, 0> const single{7};
+multi::array<int, 1> const sevens = {7, 7, 7};
+
+single.broadcasted().front() == 7;
+assert( std::equal(sevens.begin(), sevens.end(), single.broadcasted().begin()) );
+```
+(https://godbolt.org/z/nnxjsrvM1)
+
 ## Uninitialized vs. initialized elements
 
 If available, the library can take advantage of trivial initialization for the specific element type.
