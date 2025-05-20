@@ -151,6 +151,9 @@ jobs:
           git clone https://github.com/microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
 
+    - name: Install FFTW
+      run: .\vcpkg\vcpkg install fftw3
+
     - name: Install Boost
       run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization fftw3
 
@@ -170,4 +173,3 @@ jobs:
     - name: Run tests
       run: ctest --test-dir build --timeout 120 --output-on-failure -C Release
       timeout-minutes: 10
-
