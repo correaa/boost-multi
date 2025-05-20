@@ -22,13 +22,44 @@ template<>
 constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 
 namespace {
+#if !defined(_MSC_VER)
 template<class T>
 __attribute__((always_inline)) inline void DoNotOptimize(T const& value) {  // NOLINT(readability-identifier-naming) consistency with Google benchmark
 	asm volatile("" : "+m"(const_cast<T&>(value)));                         // NOLINT(hicpp-no-assembler,cppcoreguidelines-pro-type-const-cast) hack
 }
+#else
+template<class T>
+inline void DoNotOptimize(T const& value) { /*nothihg*/ }
+#endif
 }  // end namespace
 
-auto main() -> int {
+namespace {
+void zip_iterator_test(multi::array<complex, 2> const& in_cpu) {
+	multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
+	auto zit = multi::fftw::io_zip_iterator(
+		{true},
+		in_cpu.begin(),
+		fw_cpu_out.begin(),
+		multi::fftw::forward
+	);
+
+	zit.execute();
+	zit+=1;
+	auto zit2 = zit;
+	BOOST_TEST(zit2 == zit);
+
+	for(int i = 1; i != in_cpu.size(); ++i) {  // NOLINT(altera-unroll-loops)
+		zit.execute();
+		++zit;
+	}
+
+	multi::array<complex, 2> const fw_cpu = multi::fft::dft_forward({false, true}, in_cpu);
+
+	BOOST_TEST( fw_cpu_out == fw_cpu );
+}
+}  // end namespace
+
+auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	auto const in_cpu = multi::array<complex, 2>{
@@ -148,21 +179,22 @@ auto main() -> int {
 		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu);
 		BOOST_TEST( fw_cpu_out == in_cpu );
 	}
+	{
+		auto const fw_cpu_out = +multi::fft::dft({}, in_cpu);
+		BOOST_TEST( fw_cpu_out == in_cpu );
+	}
 	// constructor none
 	{
 		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu());
 		BOOST_TEST( fw_cpu_out == in_cpu );
 	}
-	// // constructor none
-	// {
-	//  multi::array<complex, 2> const fw_cpu_out = in_cpu.transposed();
-	//  BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
-	// }
-	// // constructor none
-	// {
-	//  multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({}, in_cpu.transposed());
-	//  // BOOST_TEST( fw_cpu_out == in_cpu );
-	// }
+	// transposed
+	{
+		multi::array<complex, 2> const fw_cpu_out = in_cpu.transposed();
+		BOOST_TEST( fw_cpu_out == in_cpu.transposed() );
+	}
+
+	zip_iterator_test(in_cpu);
 
 	return boost::report_errors();
 }

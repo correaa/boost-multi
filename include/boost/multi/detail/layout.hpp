@@ -39,14 +39,17 @@ namespace boost::multi::detail { template <class ...Ts> class tuple; }
 
 namespace boost::multi {
 
-template<class Stride>
-struct stride_traits {
-	using category = typename Stride::category;
-};
+template<typename Stride>
+struct stride_traits;
 
 template<>
 struct stride_traits<std::ptrdiff_t> {
 	using category = std::random_access_iterator_tag;
+};
+
+template<typename Stride>
+struct stride_traits {
+	using category = typename Stride::category;
 };
 
 template<typename Integer>
