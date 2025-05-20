@@ -76,7 +76,7 @@ template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType
 class range {
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	IndexType     first_ = {};
-	IndexTypeLast last_  = first_;  // TODO(correaa) check how to do partially initialzed
+	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
@@ -126,13 +126,21 @@ class range {
 
 	constexpr range(IndexType first, IndexTypeLast last) : first_{first}, last_{last} {}
 
+	// TODO(correaa) make this iterator SCARY
 	class const_iterator : public boost::multi::iterator_facade<const_iterator, value_type, std::random_access_iterator_tag, const_reference, difference_type> {
 		typename const_iterator::value_type curr_;
 		constexpr explicit const_iterator(value_type current) : curr_{current} {}
 		friend class range;
 
 	 public:
+		template<class T> using rebind = typename range<std::decay_t<T>>::const_iterator;
+		using pointer = const_iterator;
+		using element_type = IndexTypeLast;
+ 
 		const_iterator() = default;
+
+		template<class OtherConstIterator, class = decltype(std::declval<typename const_iterator::value_type&>() = *OtherConstIterator{})>
+		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 		constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
 		constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
@@ -279,7 +287,7 @@ class intersecting_range {
 // [[maybe_unused]] constexpr intersecting_range<> ∀ = V;
 // [[maybe_unused]] constexpr intersecting_range<> https://www.compart.com/en/unicode/U+2200 = V;
 
-template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
+template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + IndexType{1})>
 struct extension_t : public range<IndexType, IndexTypeLast> {
 	using range<IndexType, IndexTypeLast>::range;
 

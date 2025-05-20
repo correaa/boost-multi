@@ -8,9 +8,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 #   LANGUAGES CXX
 #)
 
-#set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
+
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
@@ -67,7 +68,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 
-	target_link_libraries(${TEST_EXE} PRIVATE multi PkgConfig::FFTW)
+	target_link_libraries(${TEST_EXE} PRIVATE multi multi_fftw3)  # PkgConfig::FFTW)
 
 	if(NOT DEFINED ENABLE_CIRCLE)
 		target_compile_options(
