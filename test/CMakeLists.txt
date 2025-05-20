@@ -80,7 +80,7 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++20-compat>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++20-extensions -Wc++23-extensions>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++2a-compat>
-	#-Wcannot-profile # (gcc 9, not in gcc 8)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wcannot-profile>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type>  # (gcc 8, not in gcc 7)
 	-Wcast-qual
 	#-Wcatch-value  #=<0, 3>  # (gcc 8, not in gcc 7)
@@ -101,7 +101,7 @@ else()
 	-Wdate-time
 	-Wdelete-incomplete -Wdelete-non-virtual-dtor
 	-Wdeprecated
-	#-Wdeprecated-copy -Wdeprecated-copy-dtor # (gcc 11, not in gcc 8)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdeprecated-copy -Wdeprecated-copy-dtor>  # (gcc 11, not in gcc 8)
 	-Wdeprecated-declarations
 	# -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion # (gcc 11, not in gcc 10)
 	-Wdisabled-optimization
