@@ -1,12 +1,14 @@
 // Copyright 2025 Alfredo A. Correa
 
 #include <boost/multi/adaptors/blas/gemm.hpp>
+#include <boost/multi/adaptors/blas/traits.hpp>  // IWYU pragma: keep
 #include <boost/multi/adaptors/lapack/gesvd.hpp>
+
 #include <boost/multi/array.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <cmath>        // for std::abs
+#include <cmath>        // IWYU pragma: keep  // for std::abs
 #include <cstdlib>      // for abs
 #include <tuple>        // for tuple_element<>::type
 #include <type_traits>  // IWYU pragma: keep  // for add_const<>::type
