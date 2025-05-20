@@ -152,7 +152,7 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
 
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
+      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization fftw3
 
     - name: Set up Boost environment variables
       run: |
