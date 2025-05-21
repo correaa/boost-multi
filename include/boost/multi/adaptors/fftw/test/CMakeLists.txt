@@ -62,6 +62,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 		# target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
 	endif()
 
+	target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
+
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 
