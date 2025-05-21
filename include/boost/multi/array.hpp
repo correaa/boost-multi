@@ -365,7 +365,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		assert(this->stride() != 0);
 	}
 
-	constexpr explicit static_array(typename static_array::extensions_type const& extensions)
+	constexpr explicit static_array(typename static_array::extensions_type extensions)
 	: static_array(extensions, allocator_type{}) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
@@ -1209,10 +1209,10 @@ struct array : static_array<T, D, Alloc> {
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
 #ifdef _MSC_VER
-	array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
+	constexpr explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
 	: static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
 
-	array(typename array::extensions_type exts)
+	constexpr explicit array(typename array::extensions_type exts)
 	: static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
 #endif
 
