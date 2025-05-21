@@ -557,7 +557,7 @@ auto environment::make_plan_backward(std::array<bool, +In::rank_v> which, In con
 	return plan::backward(which, in, std::forward<Out>(out));
 }
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
 int  plan::nthreads_       = (initialize_threads(), with_nthreads());
 #endif
