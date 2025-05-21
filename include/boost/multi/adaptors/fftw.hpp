@@ -15,7 +15,7 @@
 #include <complex>
 #include <numeric>  // accumulate
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 #include <thread>
 #endif
 
