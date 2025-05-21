@@ -526,7 +526,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		std::initializer_list<typename static_array<T, D>::value_type> values,
 		allocator_type const&                                          alloc
 	)
-	: static_array{(values.size()==0)?array<T, D>():static_array<T, D>(values.begin(), values.end()), alloc} {}
+	: static_array{(values.size()==0)?static_array<T, D>():static_array<T, D>(values.begin(), values.end()), alloc} {}
 
 	template<class TT, std::size_t N>
 	constexpr explicit static_array(TT (&array)[N])  // @SuppressWarnings(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
