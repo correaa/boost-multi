@@ -365,7 +365,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		assert(this->stride() != 0);
 	}
 
-	constexpr explicit static_array(typename static_array::extensions_type extensions)
+	constexpr explicit static_array(typename static_array::extensions_type const& extensions)
 	: static_array(extensions, allocator_type{}) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
