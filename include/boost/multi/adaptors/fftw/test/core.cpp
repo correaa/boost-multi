@@ -163,7 +163,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> out(extensions(in));
 		auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-7 );
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(out.num_elements()) < 1e-7 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
