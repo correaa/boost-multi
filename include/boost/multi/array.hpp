@@ -365,13 +365,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		assert(this->stride() != 0);
 	}
 
-	constexpr explicit static_array(typename static_array::extensions_type extensions)
+	constexpr explicit static_array(typename static_array::extensions_type const& extensions)
 	: static_array(extensions, allocator_type{}) {}
 
-#if defined(_MSC_VER)
-	constexpr explicit static_array(multi::extensions_t<1> exts)
-	: static_array(exts, allocator_type{}) {}
-#endif
+// #if defined(_MSC_VER)
+//  constexpr explicit static_array(multi::extensions_t<1> exts)
+//  : static_array(exts, allocator_type{}) {}
+// #endif
 
 	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
 	         class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>,
@@ -1217,11 +1217,8 @@ struct array : static_array<T, D, Alloc> {
 	constexpr explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
 	: static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
 
-	constexpr explicit array(typename array::extensions_type exts)
+	constexpr explicit array(typename array::extensions_type const& exts)
 	: static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
-
-	constexpr explicit array(multi::extensions_t<1> exts)
-	: static_array<T, D, Alloc>(exts) { }
 #endif
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
