@@ -469,7 +469,7 @@ class plan {
 		return ret;
 	}
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
  public:
 	static void make_thread_safe() {
 		fftw_make_planner_thread_safe();  // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
