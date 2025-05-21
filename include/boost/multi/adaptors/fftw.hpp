@@ -8,7 +8,7 @@
 
 #include <boost/multi/array.hpp>
 
-#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export
+#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export©343
 
 #include <algorithm>  // sort
 #include <chrono>
@@ -340,7 +340,7 @@ auto fftw_plan_dft(In const& in, Out&& out, int dir) {
 namespace fftw {
 
 inline auto initialize_threads() -> bool {
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 	return fftw_init_threads();
 #else
 	return false;
