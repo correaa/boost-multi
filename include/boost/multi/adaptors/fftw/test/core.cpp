@@ -163,7 +163,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> out(extensions(in));
 		auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/static_cast<double>(out.num_elements()) < 1e-7 );
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-7 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
@@ -176,7 +176,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> out(extensions(in));
 		auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
@@ -189,7 +189,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> out(extensions(in));
 		auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_dft) {
@@ -200,7 +200,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
 		multi::fftw::dft_forward({true, true}, in, out);
-		BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
