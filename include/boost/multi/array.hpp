@@ -368,6 +368,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr explicit static_array(typename static_array::extensions_type extensions)
 	: static_array(extensions, allocator_type{}) {}
 
+#if defined(_MSC_VER)
+	constexpr explicit static_array(multi::extensions_t<1> exts)
+	: static_array(exts, allocator_type{}) {}
+#endif
+
 	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
 	         class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>,
 	         class = decltype(adl_copy(std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().begin(), std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
