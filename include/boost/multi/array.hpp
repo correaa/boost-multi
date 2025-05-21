@@ -1214,6 +1214,9 @@ struct array : static_array<T, D, Alloc> {
 
 	constexpr explicit array(typename array::extensions_type exts)
 	: static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
+
+	constexpr explicit array(multi::extensions_t<1> exts)
+	: static_array<T, D, Alloc>(exts) { }
 #endif
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
