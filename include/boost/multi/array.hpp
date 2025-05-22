@@ -270,7 +270,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
-	constexpr explicit static_array(typename static_array::extensions_type const& extensions)
+	#if !defined(_MSC_VER)
+	constexpr
+	#endif
+	explicit static_array(typename static_array::extensions_type const& extensions)
 	: static_array(extensions, allocator_type{}) {}
 
 	template<
@@ -367,11 +370,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		uninitialized_default_construct();
 		assert(this->stride() != 0);
 	}
-
-// #if defined(_MSC_VER)
-//  constexpr explicit static_array(multi::extensions_t<1> exts)
-//  : static_array(exts, allocator_type{}) {}
-// #endif
 
 	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
 	         class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>,
@@ -1213,11 +1211,12 @@ struct array : static_array<T, D, Alloc> {
 	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 	constexpr explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
 	: static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
 
-	constexpr explicit array(typename array::extensions_type const& exts)
+	// constexpr 
+	explicit array(typename array::extensions_type const& exts)
 	: static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
 #endif
 
