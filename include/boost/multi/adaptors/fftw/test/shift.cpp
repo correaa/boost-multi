@@ -68,7 +68,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto elapsed_sec() const { return std::chrono::duration<double>(now() - start_).count(); }
 		};
 
-		multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);
+		multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(static_cast<std::size_t>(19586));
 		BOOST_TEST(arr.size() == 19586);
 		multi::array<std::complex<double>, 1> res(arr.extensions());
 		BOOST_TEST(res.size() == 19586);
