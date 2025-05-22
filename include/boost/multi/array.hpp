@@ -270,7 +270,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
-	#if !defined(_MSC_VER)
+	#if !defined(_MSC_VER) || (__cplusplus >= 202002L)
 	constexpr
 	#endif
 	explicit static_array(typename static_array::extensions_type const& extensions)
@@ -1212,7 +1212,10 @@ struct array : static_array<T, D, Alloc> {
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
 #if defined(_MSC_VER)
-	constexpr explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
+#if(__cplusplus >= 202002L)
+	constexpr
+#endif
+	explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
 	: static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
 
 	// constexpr 
