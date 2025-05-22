@@ -30,6 +30,8 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 		std::size_t                n_;
 
 	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
+		using difference_type = std::ptrdiff_t;
+
 		iterator(n_random_complex<T> const* ptr, std::size_t n) : ptr_{ptr}, n_{n} {}
 
 		auto operator*() const { return std::complex<T>{ptr_->dist_(ptr_->gen_), ptr_->dist_(ptr_->gen_)}; }
