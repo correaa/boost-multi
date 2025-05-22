@@ -276,9 +276,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// explicit static_array(typename static_array::extensions_type const& extensions)
 	// : static_array(extensions, allocator_type{}) {}
 
-	explicit static_array(::boost::multi::extensions_t<D> const& exts) 
-	: static_array(exts, allocator_type{}) {}
-
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
@@ -374,6 +371,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		uninitialized_default_construct();
 		assert(this->stride() != 0);
 	}
+
+	explicit static_array(::boost::multi::extensions_t<D> const& exts) 
+	: static_array(exts, allocator_type{}) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
 	         class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>,
