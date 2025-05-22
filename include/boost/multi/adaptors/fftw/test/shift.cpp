@@ -41,7 +41,7 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 		auto operator==(iterator const& other) const { return n_ == other.n_; }
 		auto operator!=(iterator const& other) const { return n_ != other.n_; }
 
-		auto operator-(iterator const& other) const { return n_ - other.n_; }
+		auto operator-(iterator const& other) const { return static_cast<std::ptrdiff_t>(n_ - other.n_); }
 
 		auto operator+(std::ptrdiff_t delta) const { return iterator{ptr_, n_ + delta}; }  // mmm, needed by culang?
 	};
