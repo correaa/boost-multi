@@ -1280,7 +1280,9 @@ struct array : static_array<T, D, Alloc> {
 	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
-	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_array<T, D, Alloc>{std::move(other), alloc} {
+	// typename array::allocator_type
+	array(array&& other, Alloc const& alloc) noexcept 
+	: static_array<T, D, Alloc>{std::move(other), alloc} {
 		assert(this->stride() != 0);
 	}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
