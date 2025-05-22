@@ -369,7 +369,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(extension, value, allocator_type{}) {}
 
 	// constexpr
-	explicit static_array(typename static_array::extensions_type extensions, allocator_type const& alloc)
+	explicit static_array(::boost::multi::extensions_t<D> extensions, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_default_construct();
 		assert(this->stride() != 0);
