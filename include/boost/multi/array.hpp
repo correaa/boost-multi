@@ -270,6 +270,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
+	constexpr explicit static_array(typename static_array::extensions_type const& extensions)
+	: static_array(extensions, allocator_type{}) {}
+
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
@@ -364,9 +367,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		uninitialized_default_construct();
 		assert(this->stride() != 0);
 	}
-
-	constexpr explicit static_array(typename static_array::extensions_type const& extensions)
-	: static_array(extensions, allocator_type{}) {}
 
 // #if defined(_MSC_VER)
 //  constexpr explicit static_array(multi::extensions_t<1> exts)
