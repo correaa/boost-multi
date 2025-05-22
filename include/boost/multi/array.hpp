@@ -270,11 +270,14 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
-	#if !defined(_MSC_VER) || (__cplusplus >= 202002L)
-	constexpr
-	#endif
-	explicit static_array(typename static_array::extensions_type const& extensions)
-	: static_array(extensions, allocator_type{}) {}
+	// #if !defined(_MSC_VER) || (__cplusplus >= 202002L)
+	// constexpr
+	// #endif
+	// explicit static_array(typename static_array::extensions_type const& extensions)
+	// : static_array(extensions, allocator_type{}) {}
+
+	explicit static_array(::boost::multi::extensions_t<D> const& exts) 
+	: static_array(exts, allocator_type{}) {}
 
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
