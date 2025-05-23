@@ -3,7 +3,7 @@
 -->
 # Multi MPI Adaptor
 
-_© Alfredo A. Correa, 2024_
+_© Alfredo A. Correa, 2025_
 
 (documentation in progress)
 
