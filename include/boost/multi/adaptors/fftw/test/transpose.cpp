@@ -44,7 +44,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	using complex = std::complex<double>;
 
 	auto const in = std::invoke([] {
-		multi::array<complex, 2> ret(multi::extensions_t<2>{101, 99});  // ({1013, 997});  // ({10137, 9973});
+		multi::array<complex, 2> ret({101, 99});  // ({1013, 997});  // ({10137, 9973});
 		std::generate(
 			ret.data_elements(), ret.data_elements() + ret.num_elements(),
 			[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable {
