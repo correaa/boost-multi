@@ -217,7 +217,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
 
 		fftw::dft_forward(
-			{true, true, true},
+			{{true, true, true}},
 			multi::array_ref<complex, 3>(data_elements(io), extensions(io)),
 			multi::array_ref<complex, 3>(data_elements(io), extensions(io))
 		);
