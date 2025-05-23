@@ -132,8 +132,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 				>
 				$<$<CXX_COMPILER_ID:MSVC>:
-					/GS  # Enables buffer security check (can help detect stack-based buffer overflows)
-					/Wall /EHsc  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
+					/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
+					/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 					/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
 					/wd4514  # unreferenced inline function has been removed
 					/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
@@ -148,7 +148,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					/wd5026  # move constructor was implicitly defined as deleted
 					/wd5027  # move assignment operator was implicitly defined as deleted
 					/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
-					/wd5246  # '_Elems': the initialization of a subobject should be wrapped in braces
+					# /wd5246  # '_Elems': the initialization of a subobject should be wrapped in braces
 				>
 		)
 	endif()
