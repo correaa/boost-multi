@@ -8,14 +8,14 @@
 
 #include <boost/multi/array.hpp>
 
-#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export
+#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export©343
 
 #include <algorithm>  // sort
 #include <chrono>
 #include <complex>
 #include <numeric>  // accumulate
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 #include <thread>
 #endif
 
@@ -340,7 +340,7 @@ auto fftw_plan_dft(In const& in, Out&& out, int dir) {
 namespace fftw {
 
 inline auto initialize_threads() -> bool {
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 	return fftw_init_threads();
 #else
 	return false;
@@ -469,7 +469,7 @@ class plan {
 		return ret;
 	}
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
  public:
 	static void make_thread_safe() {
 		fftw_make_planner_thread_safe();  // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
@@ -557,7 +557,7 @@ auto environment::make_plan_backward(std::array<bool, +In::rank_v> which, In con
 	return plan::backward(which, in, std::forward<Out>(out));
 }
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
 int  plan::nthreads_       = (initialize_threads(), with_nthreads());
 #endif

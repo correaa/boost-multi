@@ -841,9 +841,25 @@ struct layout_t
 		;
 	}
 
+	constexpr auto creindex() const { return *this; }
+	constexpr auto creindex(index idx) const {
+		return layout_t{
+			sub(),
+			stride(),
+			offset() + (idx*stride()),
+			nelems()
+		};
+	}
+	template<class... Indices>
+	constexpr auto creindex(index idx, Indices... rest) const {
+		return creindex(idx).rotate().creindex(rest...).unrotate();
+	}
+
 	constexpr auto reindex(index idx) -> layout_t& {offset_ = idx*stride_; return *this;}
 	template<class... Indices>
-	constexpr auto reindex(index idx, Indices... rest) -> layout_t& {reindex(idx).rotate().reindex(rest...).unrotate(); return *this;}
+	constexpr auto reindex(index idx, Indices... rest) -> layout_t& {
+		reindex(idx).rotate().reindex(rest...).unrotate(); return *this;
+	}
 
 	       constexpr auto num_elements()        const        noexcept -> size_type { return size()*sub_.num_elements(); }
 	friend constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
@@ -943,21 +959,73 @@ struct layout_t
 		t2 = tmp;
 	}
 
-	constexpr auto transpose() -> layout_t& {
-		// using std::swap;
-		ce_swap(stride_, sub_.stride_);
-		ce_swap(offset_, sub_.offset_);
-		ce_swap(nelems_, sub_.nelems_);
-		return *this;
-	}
-	constexpr auto reverse() -> layout_t& {
-		unrotate();
-		sub_.reverse();
-		return *this;
+	constexpr auto transpose() const {
+		return layout_t(
+			sub_type(
+				sub().sub(),
+				stride(),
+				offset(),
+				nelems()
+			),
+			sub().stride(),
+			sub().offset(),
+			sub().nelems()
+		);
 	}
 
-	constexpr auto   rotate() -> layout_t& {if constexpr(D > 1) {transpose(); sub_.  rotate();} return *this;}
-	constexpr auto unrotate() -> layout_t& {if constexpr(D > 1) {sub_.unrotate(); transpose();} return *this;}
+	// constexpr auto transpose() -> layout_t& {
+	//  // using std::swap;
+	//  ce_swap(stride_, sub_.stride_);
+	//  ce_swap(offset_, sub_.offset_);
+	//  ce_swap(nelems_, sub_.nelems_);
+	//  return *this;
+	// }
+
+	constexpr auto reverse() const {
+		auto ret = unrotate();
+		return layout_t(
+			ret.sub().reverse(),
+			ret.stride(),
+			ret.offset(),
+			ret.nelems()
+		);
+	}
+
+	// constexpr auto reverse() -> layout_t& {
+	//  *this = creverse();
+	//  return *this;
+	// }
+
+	constexpr auto rotate() const {
+		if constexpr(D > 1) {
+			auto const ret = transpose();
+			return layout_t(
+				ret.sub().rotate(),
+				ret.stride(),
+				ret.offset(),
+				ret.nelems()
+			);
+		} else {
+			return *this;
+		}
+	}
+
+	constexpr auto unrotate() const {
+		if constexpr(D > 1) {
+			auto const ret = layout_t(
+				sub().unrotate(),
+				stride(),
+				offset(),
+				nelems()
+			);
+			return ret.transpose();
+		} else {
+			return *this;
+		}
+	}
+
+	// [[deprecated]] constexpr auto   rotate() -> layout_t& {if constexpr(D > 1) {transpose(); sub_.  rotate();} return *this;}
+	// constexpr auto unrotate() -> layout_t& {if constexpr(D > 1) {sub_.unrotate(); transpose();} return *this;}
 
 	constexpr auto hull_size() const -> size_type {
 		if(is_empty()) {return 0;}
@@ -1104,7 +1172,8 @@ struct layout_t<0, SSize>
 	constexpr auto base_size() const -> size_type   {return 0;}
 	constexpr auto origin()    const -> offset_type {return 0;}
 
-	constexpr auto reverse()          -> layout_t& {return *this;}
+	constexpr auto reverse() const { return *this; }
+	// constexpr auto reverse()          -> layout_t& {return *this;}
 
 	BOOST_MULTI_HD constexpr auto take(size_type /*n*/) const {
 		return layout_t<0, SSize>{};
@@ -1136,8 +1205,11 @@ struct layout_t<0, SSize>
 		return std::tie(offset_, nelems_) < std::tie(other.offset_, other.nelems_);
 	}
 
-	constexpr auto   rotate() -> layout_t& {return *this;}
-	constexpr auto unrotate() -> layout_t& {return *this;}
+	constexpr auto   rotate() const { return *this; }
+	constexpr auto unrotate() const { return *this; }
+
+	// constexpr auto   rotate() -> layout_t& {return *this;}
+	// constexpr auto unrotate() -> layout_t& {return *this;}
 
 	constexpr auto hull_size() const -> size_type {return num_elements();}  // not in bytes
 };

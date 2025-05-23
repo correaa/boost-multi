@@ -37,7 +37,7 @@ namespace {
 void zip_iterator_test(multi::array<complex, 2> const& in_cpu) {
 	multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
 	auto zit = multi::fftw::io_zip_iterator(
-		{true},
+		{{true}},
 		in_cpu.begin(),
 		fw_cpu_out.begin(),
 		multi::fftw::forward
@@ -53,7 +53,7 @@ void zip_iterator_test(multi::array<complex, 2> const& in_cpu) {
 		++zit;
 	}
 
-	multi::array<complex, 2> const fw_cpu = multi::fft::dft_forward({false, true}, in_cpu);
+	multi::array<complex, 2> const fw_cpu = multi::fft::dft_forward({{false, true}}, in_cpu);
 
 	BOOST_TEST( fw_cpu_out == fw_cpu );
 }
@@ -71,14 +71,14 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	};
 
 	auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
-	multi::fftw::dft_forward({true, true}, in_cpu, fw_cpu);
+	multi::fftw::dft_forward({{true, true}}, in_cpu, fw_cpu);
 
 	BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 	BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
 
 	// check properties
 	{
-		auto const& dft = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		auto const& dft = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( dft.extensions() == in_cpu.extensions() );
 		BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
@@ -89,7 +89,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
 		complex* const           persistent_base = fw_cpu_out.base();
 
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 		BOOST_TEST( persistent_base == fw_cpu_out.base() );
@@ -98,7 +98,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<complex, 2> fw_cpu_out({2, 2});
 
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}
@@ -106,18 +106,18 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<complex, 2> fw_cpu_out;
 
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}
 	// constructor
 	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}
 	// check properties
 	{
-		auto const& dft = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		auto const& dft = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( dft.extensions() == in_cpu.extensions() );
 		BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
@@ -128,7 +128,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
 		complex* const           persistent_base = fw_cpu_out.base();
 
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 		BOOST_TEST( persistent_base == fw_cpu_out.base() );
@@ -137,7 +137,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<complex, 2> fw_cpu_out({2, 2});
 
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}
@@ -145,23 +145,23 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<complex, 2> fw_cpu_out;
 
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}
 	// constructor
 	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}
 	// constructor forward
 	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft_forward({true, true}, in_cpu);
+		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft_forward({{true, true}}, in_cpu);
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}
 	// constructor forward default
 	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({true, true}, in_cpu);
+		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu);
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}
 	// constructor all default
@@ -171,7 +171,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	// constructor none
 	{
-		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({false, false}, in_cpu);
+		multi::array<complex, 2> const fw_cpu_out = multi::fft::dft({{false, false}}, in_cpu);
 		BOOST_TEST( fw_cpu_out == in_cpu );
 	}
 	// constructor none
