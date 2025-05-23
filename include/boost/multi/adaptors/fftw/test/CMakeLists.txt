@@ -132,7 +132,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 				>
 				$<$<CXX_COMPILER_ID:MSVC>:
-					/permissive-
 					/GS  # Enables buffer security check (can help detect stack-based buffer overflows)
 					/Wall /EHsc  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
 					/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member

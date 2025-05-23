@@ -54,7 +54,10 @@ message(STATUS "Boost.Multi: standalone mode ON")
 add_library(multi INTERFACE)
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
-target_compile_options(multi INTERFACE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>)
+target_compile_options(multi INTERFACE
+  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
+  $<$<CXX_COMPILER_ID:MSVC>:/EHsc /permissive- >  # this is needed for MSVC in C++17 mode
+)
 
 # https://youtrack.jetbrains.com/issue/CPP-25608
 target_compile_features(multi INTERFACE cxx_std_17)
