@@ -14,12 +14,12 @@ namespace multi = boost::multi;
 namespace {
 template<class Array>
 auto flatted_last(Array&& arr) {
-	return reversed(reversed(std::forward<Array>(arr)).transposed().flatted());
+	return std::forward<Array>(arr).reversed().transposed().flatted().reversed();
 }
 
 template<class Array>
 auto partitioned_last(Array&& arr, multi::size_type n) {
-	return reversed( reversed(std::forward<Array>(arr)).partitioned(n).transposed().transposed());
+	return std::forward<Array>(arr).reversed().partitioned(n).transposed().transposed().reversed();
 }
 }  // end unnamed namespace
 

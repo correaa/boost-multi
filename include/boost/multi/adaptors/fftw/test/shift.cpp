@@ -30,6 +30,8 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 		std::size_t                n_;
 
 	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
+		using difference_type = std::ptrdiff_t;
+
 		iterator(n_random_complex<T> const* ptr, std::size_t n) : ptr_{ptr}, n_{n} {}
 
 		auto operator*() const { return std::complex<T>{ptr_->dist_(ptr_->gen_), ptr_->dist_(ptr_->gen_)}; }
@@ -41,7 +43,7 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 		auto operator==(iterator const& other) const { return n_ == other.n_; }
 		auto operator!=(iterator const& other) const { return n_ != other.n_; }
 
-		auto operator-(iterator const& other) const { return n_ - other.n_; }
+		auto operator-(iterator const& other) const { return static_cast<std::ptrdiff_t>(n_ - other.n_); }
 
 		auto operator+(std::ptrdiff_t delta) const { return iterator{ptr_, n_ + delta}; }  // mmm, needed by culang?
 	};
@@ -68,13 +70,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto elapsed_sec() const { return std::chrono::duration<double>(now() - start_).count(); }
 		};
 
-		multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);
+		multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(static_cast<std::size_t>(19586));
 		BOOST_TEST(arr.size() == 19586);
 		multi::array<std::complex<double>, 1> res(arr.extensions());
 		BOOST_TEST(res.size() == 19586);
 
-		auto fdft = fftw::plan::forward({true}, arr.base(), arr.layout(), res.base(), res.layout());
-		// fftw::plan fdft({true}, arr.layout(), res.layout(), multi::fftw::forward);
+		auto fdft = fftw::plan::forward({{true}}, arr.base(), arr.layout(), res.base(), res.layout());
+		// fftw::plan fdft({{true}}, arr.layout(), res.layout(), multi::fftw::forward);
 
 		[&, unnamed = watch{}] {
 			auto const repeat = 40;

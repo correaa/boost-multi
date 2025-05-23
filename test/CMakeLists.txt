@@ -83,7 +83,7 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wcannot-profile>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type>  # (gcc 8, not in gcc 7)
 	-Wcast-qual
-	#-Wcatch-value  #=<0, 3>  # (gcc 8, not in gcc 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcatch-value>  #=<0, 3>  # (gcc 8, not in gcc 7)
 	-Wchar-subscripts
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wclass-conversion>  # (gcc 11, not in 8)
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wclass-memaccess>   # (gcc 12, not in 11)
@@ -110,9 +110,9 @@ else()
 	# -Weffc++ # (doesn't allow some advanced techniques, such as CRTP)
 	-Wempty-body -Wendif-labels
 	-Wenum-compare
-	# -Wenum-conversion # (gcc 11, not in 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wenum-conversion>  # (gcc 11, not in 10)
 	-Wexpansion-to-defined
-	# -Wexceptions  # (gcc 11, not in 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wexceptions>  # (gcc 11, not in 10)
 	# -Wextra-semi # (gcc 8, not in 7)
 	-Wfloat-conversion -Wfloat-equal
 	-Wformat=2
@@ -318,8 +318,8 @@ else()
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
-	/GS  # Enables buffer security check (can help detect stack-based buffer overflows)
-	/Wall /EHsc  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
+	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
+	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
 	/wd4514  # unreferenced inline function has been removed
 	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate

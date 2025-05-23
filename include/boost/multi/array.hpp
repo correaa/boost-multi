@@ -270,6 +270,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
 
+	// #if !defined(_MSC_VER) || (__cplusplus >= 202002L)
+	// constexpr
+	// #endif
+	// explicit static_array(typename static_array::extensions_type const& extensions)
+	// : static_array(extensions, allocator_type{}) {}
+
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
@@ -359,14 +365,15 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value)  // fill constructor
 	: static_array(extension, value, allocator_type{}) {}
 
-	constexpr explicit static_array(typename static_array::extensions_type extensions, allocator_type const& alloc)
+	// constexpr
+	explicit static_array(::boost::multi::extensions_t<D> extensions, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_default_construct();
 		assert(this->stride() != 0);
 	}
 
-	constexpr explicit static_array(typename static_array::extensions_type extensions)
-	: static_array(extensions, allocator_type{}) {}
+	explicit static_array(::boost::multi::extensions_t<D> const& exts) 
+	: static_array(exts, allocator_type{}) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout,  // class... Args,
 	         class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>,
@@ -521,7 +528,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		std::initializer_list<typename static_array<T, D>::value_type> values,
 		allocator_type const&                                          alloc
 	)
-	: static_array{(values.size()==0)?array<T, D>():static_array<T, D>(values.begin(), values.end()), alloc} {}
+	: static_array{(values.size()==0)?static_array<T, D>():static_array<T, D>(values.begin(), values.end()), alloc} {}
 
 	template<class TT, std::size_t N>
 	constexpr explicit static_array(TT (&array)[N])  // @SuppressWarnings(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility // NOSONAR
@@ -1208,13 +1215,17 @@ struct array : static_array<T, D, Alloc> {
 	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
-#ifdef _MSC_VER
-	array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
-	: static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
+// #if defined(_MSC_VER)
+// #if(__cplusplus >= 202002L)
+//  constexpr
+// #endif
+//  explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
+//  : static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
 
-	array(typename array::extensions_type exts)
-	: static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
-#endif
+//  // constexpr 
+//  explicit array(typename array::extensions_type const& exts)
+//  : static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
+// #endif
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
@@ -1270,7 +1281,9 @@ struct array : static_array<T, D, Alloc> {
 	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
-	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_array<T, D, Alloc>{std::move(other), alloc} {
+	// typename array::allocator_type
+	array(array&& other, Alloc const& alloc) noexcept 
+	: static_array<T, D, Alloc>{std::move(other), alloc} {
 		assert(this->stride() != 0);
 	}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
@@ -1516,11 +1529,12 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 	template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {
-		this->layout_mutable().reindex(idxs...);
+		this->layout_mutable() = this->layout_mutable().creindex(idxs...);
 		return std::move(*this);
 	}
 	template<class... Indices> constexpr auto reindex(Indices... idxs) & -> array& {
-		this->layout_mutable().reindex(idxs...);
+		this->layout_mutable() = this->layout_mutable().creindex(idxs...);
+		// this->layout_mutable().reindex(idxs...);
 		return *this;
 	}
 

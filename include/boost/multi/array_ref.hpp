@@ -1464,66 +1464,38 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	constexpr auto reversed_aux_() const -> const_subarray {
-		auto new_layout = this->layout();
-		new_layout.reverse();
-		return {new_layout, types::base_};
-	}
+	constexpr auto reversed_aux_() const { return const_subarray(layout().reverse(), types::base_);}
 
  public:
 	       constexpr auto reversed()           const&    -> basic_const_array { return reversed_aux_(); }
 	       constexpr auto reversed()                &    ->          const_subarray { return reversed_aux_(); }
 	       constexpr auto reversed()               &&    ->          const_subarray { return reversed_aux_(); }
-	friend constexpr auto reversed(const_subarray const& self) -> basic_const_array { return           self .reversed(); }
-	friend constexpr auto reversed(const_subarray      & self) ->          const_subarray { return           self .reversed(); }
-	friend constexpr auto reversed(const_subarray     && self) ->          const_subarray { return std::move(self).reversed(); }
+	// friend constexpr auto reversed(const_subarray const& self) -> basic_const_array { return           self .reversed(); }
+	// friend constexpr auto reversed(const_subarray      & self) ->          const_subarray { return           self .reversed(); }
+	// friend constexpr auto reversed(const_subarray     && self) ->          const_subarray { return std::move(self).reversed(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto transposed_aux_() const {
-		auto new_layout = this->layout();
-		new_layout.transpose();
-		return const_subarray(new_layout, types::base_);
+		return const_subarray(layout().transpose(), types::base_);
 	}
 
  public:
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }
-	// BOOST_MULTI_HD constexpr auto transposed()      & -> const_subarray { return transposed_aux_(); }
-	// BOOST_MULTI_HD constexpr auto transposed()     && -> const_subarray { return transposed_aux_(); }
-
-	// friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray const& self) -> basic_const_array { return           self .transposed(); }
-	// friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray      & self) ->    const_subarray { return           self .transposed(); }
-	// friend BOOST_MULTI_HD /*constexpr*/ auto transposed(const_subarray     && self) ->    const_subarray { return std::move(self).transposed(); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
 	auto operator~ (const_subarray const& self) -> const_subarray {return self.transposed();}
-	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
-	// auto operator~ (const_subarray& self) -> const_subarray {return self.transposed();}
-	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
-	// auto operator~ (const_subarray&& self) -> const_subarray {return std::move(self).transposed();}
 
  private:
 	BOOST_MULTI_HD constexpr auto rotated_aux_() const {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.rotate();
-		return const_subarray(new_layout, types::base_);
+		return const_subarray(layout().rotate(), types::base_);
 	}
 	BOOST_MULTI_HD constexpr auto unrotated_aux_() const {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.unrotate();
-		return const_subarray(new_layout, types::base_);
+		return const_subarray(layout().unrotate(), types::base_);
 	}
 
  public:
 	BOOST_MULTI_HD constexpr auto   rotated() const& -> const_subarray { return   rotated_aux_(); }
 	BOOST_MULTI_HD constexpr auto unrotated() const& -> const_subarray { return unrotated_aux_(); }
-
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray const& self) { return           self .unrotated(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray      & self) { return           self .unrotated(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto unrotated(const_subarray     && self) { return std::move(self).unrotated(); }
-
-	// constexpr auto operator|(typename const_subarray::size_type n)      & -> decltype(auto) { return                  partitioned(n); }
-	// constexpr auto operator|(typename const_subarray::size_type n)     && -> decltype(auto) { return std::move(*this).partitioned(n); }
-	// constexpr auto operator|(typename const_subarray::size_type n) const& -> decltype(auto) { return                  partitioned(n); }
 
  private:
 	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct const_subarray;

@@ -79,12 +79,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 		std::vector<std::array<bool, 4>> const which_cases = {
-			{false,  true,  true,  true},
-			{false,  true,  true, false},
-			{ true, false, false, false},
-			{ true,  true, false, false},
-			{false, false,  true, false},
-			{false, false, false, false},
+			{{false,  true,  true,  true}},
+			{{false,  true,  true, false}},
+			{{ true, false, false, false}},
+			{{ true,  true, false, false}},
+			{{false, false,  true, false}},
+			{{false, false, false, false}},
 		};
 
 		using std::cout;
@@ -169,12 +169,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 		// NOLINTNEXTLINE(fuchsia-default-arguments-calls) use of std::vector
 		std::vector<std::array<bool, 4>> const which_cases = {
-			{false,  true,  true,  true},
-			{false,  true,  true, false},
-			{ true, false, false, false},
-			{ true,  true, false, false},
-			{false, false,  true, false},
-			{false, false, false, false},
+			{{false,  true,  true,  true}},
+			{{false,  true,  true, false}},
+			{{ true, false, false, false}},
+			{{ true,  true, false, false}},
+			{{false, false,  true, false}},
+			{{false, false, false, false}},
 		};
 		using complex = std::complex<double>;
 

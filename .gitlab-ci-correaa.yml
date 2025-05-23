@@ -365,9 +365,6 @@ vs2022-shell c++17:
   stage: build
   allow_failure: true
   interruptible: true
-  variables:
-    #BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    BOOST_ROOT: C:\local\boost_1_86_0  # C:/vcpkg/installed/x64-windows
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
@@ -378,9 +375,7 @@ vs2022-shell c++17:
     - .\vcpkg\vcpkg install fftw3  # boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    # -DBOOST_ROOT="C:\local\boost_1_86_0"
-    # -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" # -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.3"
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
@@ -392,9 +387,6 @@ vs2022-shell c++23:
   stage: build
   allow_failure: true
   interruptible: true
-  variables:
-    #BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    BOOST_ROOT: C:\local\boost_1_86_0  # C:/vcpkg/installed/x64-windows
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
