@@ -98,7 +98,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<complex, 2> fw_cpu_out({2, 2});
 
-		fw_cpu_out = multi::fft::dft({true, true}, in_cpu, multi::fft::forward);
+		fw_cpu_out = multi::fft::dft({{true, true}}, in_cpu, multi::fft::forward);
 
 		BOOST_TEST( fw_cpu_out == fw_cpu );
 	}

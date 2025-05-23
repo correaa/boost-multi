@@ -75,8 +75,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::complex<double>, 1> res(arr.extensions());
 		BOOST_TEST(res.size() == 19586);
 
-		auto fdft = fftw::plan::forward({true}, arr.base(), arr.layout(), res.base(), res.layout());
-		// fftw::plan fdft({true}, arr.layout(), res.layout(), multi::fftw::forward);
+		auto fdft = fftw::plan::forward({{true}}, arr.base(), arr.layout(), res.base(), res.layout());
+		// fftw::plan fdft({{true}}, arr.layout(), res.layout(), multi::fftw::forward);
 
 		[&, unnamed = watch{}] {
 			auto const repeat = 40;
