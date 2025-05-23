@@ -1215,17 +1215,17 @@ struct array : static_array<T, D, Alloc> {
 	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
-#if defined(_MSC_VER)
-#if(__cplusplus >= 202002L)
-	constexpr
-#endif
-	explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
-	: static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
+// #if defined(_MSC_VER)
+// #if(__cplusplus >= 202002L)
+//  constexpr
+// #endif
+//  explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
+//  : static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
 
-	// constexpr 
-	explicit array(typename array::extensions_type const& exts)
-	: static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
-#endif
+//  // constexpr 
+//  explicit array(typename array::extensions_type const& exts)
+//  : static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
+// #endif
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
