@@ -365,9 +365,6 @@ vs2022-shell c++17:
   stage: build
   allow_failure: true
   interruptible: true
-  variables:
-    #BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    BOOST_ROOT: C:\local\boost_1_86_0  # C:/vcpkg/installed/x64-windows
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
@@ -390,9 +387,6 @@ vs2022-shell c++23:
   stage: build
   allow_failure: true
   interruptible: true
-  variables:
-    #BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
-    BOOST_ROOT: C:\local\boost_1_86_0  # C:/vcpkg/installed/x64-windows
   script:
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
