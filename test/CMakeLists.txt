@@ -112,7 +112,7 @@ else()
 	-Wenum-compare
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wenum-conversion>  # (gcc 11, not in 10)
 	-Wexpansion-to-defined
-	# -Wexceptions  # (gcc 11, not in 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wexceptions>  # (gcc 11, not in 10)
 	# -Wextra-semi # (gcc 8, not in 7)
 	-Wfloat-conversion -Wfloat-equal
 	-Wformat=2
