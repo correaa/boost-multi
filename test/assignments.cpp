@@ -113,12 +113,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		[[maybe_unused]] multi::array<int, 5> const src_test(ext5);
 
-		multi::array<int, 5> src(
-#ifdef _MSC_VER  // problem with 14.3 c++17
-			multi::extensions_t<5>
-#endif
-			{2, 14, 14, 7, 2}
-		);
+		multi::array<int, 5> src({2, 14, 14, 7, 2});
 
 		src[0][1][2][3][1] = 99;
 
