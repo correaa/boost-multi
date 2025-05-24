@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Alfredo A. Correa
+// Copyright 2021-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -42,7 +42,6 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-#ifndef _MSC_VER      // msvc 14.40 gets confused with constexpr
 	BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end) {
 		constexpr auto test = [] {
 			std::array<int,
@@ -117,8 +116,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 		#endif
 	#endif
-
-#endif  // MSVC
 
 	BOOST_AUTO_TEST_CASE(multi_2d_const) {
 		multi::array<int, 2> const arr = {
