@@ -104,32 +104,32 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			[](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
 		);
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va[0]) == 0 );
 		BOOST_TEST( size(va[1]) == 1 );
 		BOOST_TEST( size(va[2]) == 2 );
-#endif
+// #endif
 
 		BOOST_TEST( va[1] [0][0] == 1 );
 		BOOST_TEST( va[2] [0][0] == 2 );
 
 		using namespace std::string_literals;  // NOLINT(build/namespaces)
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 		std::vector<multi::array<int, 2>> const wa = {
 			multi::array<int, 2>({0, 0}, 0),
 			multi::array<int, 2>({1, 1}, 1),
 			multi::array<int, 2>({2, 2}, 2),
 		};
-#else
-		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
-		std::vector<multi::array<int, 2>> const wa = {
-			multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
-			multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
-			multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
-		};
-#endif
+// #else
+//      // NOLINTNEXTLINE(fuchsia-default-arguments-calls)
+//      std::vector<multi::array<int, 2>> const wa = {
+//          multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
+//          multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
+//          multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
+//      };
+// #endif
 
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );
@@ -155,29 +155,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			[](auto idx) { return multi::array<std::string, 2>({idx, idx}, std::to_string(idx)); }
 		);
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va[0]) == 0 );
 		BOOST_TEST( size(va[1]) == 1 );
 		BOOST_TEST( size(va[2]) == 2 );
-#endif
+// #endif
 		using namespace std::string_literals;  // NOLINT(build/namespaces)
 
 		BOOST_TEST( va[1] [0][0] == "1"s );  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 		BOOST_TEST( va[2] [0][0] == "2"s );
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		std::vector<multi::array<std::string, 2>> const wa = {
 			multi::array<std::string, 2>({0, 0}, "0"s),
 			multi::array<std::string, 2>({1, 1}, "1"s),
 			multi::array<std::string, 2>({2, 2}, "2"s),
 		};
-#else
-		std::vector<multi::array<std::string, 2>> const wa = {
-			multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
-			multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
-			multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
-		};
-#endif
+// #else
+//      std::vector<multi::array<std::string, 2>> const wa = {
+//          multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
+//          multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
+//          multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
+//      };
+// #endif
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va) == size(wa) );

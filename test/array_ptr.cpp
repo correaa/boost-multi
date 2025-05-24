@@ -19,25 +19,11 @@ namespace {
 template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
 }  // end unnamed namespace
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	namespace multi = boost::multi;
 
-#ifndef _MSC_VER  // MSVC 14.40 is not constexpr ready?
-				  // BOOST_AUTO_TEST_CASE(constexpr_ptr_access) {
-				  //  static constexpr auto test = [] {
-				  //    std::array<int, 12>      buffer{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
-				  //    multi::array_ref<int, 2> arr({3, 3}, buffer.data());
-				  //    auto                     ptr = &arr;
-
-	//    return (ptr->base() == buffer.data());
-	//  }();
-	//  static_assert(test);
-	// }
-#endif
-
-	BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
+	// BOOST_AUTO_TEST_CASE(multi_array_ptr_equality)
+	{
 		multi::array<int, 2> arr = {
 			{10, 20, 30},
 			{40, 50, 60},
@@ -101,17 +87,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( pac2 == parr2 );
 	}
 
-	// BOOST_AUTO_TEST_CASE(subarray_ptr_1D) {
-	//  multi::subarray_ptr<double, 1> const ptr = nullptr;
-	//  BOOST_TEST(( ptr == multi::subarray_ptr<double, 1>{nullptr} ));
-	// }
-
-	// BOOST_AUTO_TEST_CASE(subarray_ptr_2D) {
-	//  multi::subarray_ptr<double, 2> const ptr = nullptr;
-	//  BOOST_TEST(( ptr == multi::subarray_ptr<double, 2>{nullptr} ));
-	// }
-
-	BOOST_AUTO_TEST_CASE(multi_array_ptr) {
+	// BOOST_AUTO_TEST_CASE(multi_array_ptr)
+	{
 		{
 			// clang-format off
 		std::array<std::array<double, 5>, 4> arr{
@@ -127,19 +104,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			static_assert(std::is_trivially_copy_assignable_v<multi::array_ptr<double, 2>>);
 			static_assert(std::is_trivially_copyable_v<multi::array_ptr<double, 2>>);
 
-#ifndef _MSC_VER
+// #ifndef _MSC_VER
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<0>>);
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<1>>);
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<2>>);
-#endif
+// #endif
 
 			static_assert(std::is_trivially_copyable_v<multi::layout_t<0>>);
 			static_assert(std::is_trivially_copyable_v<multi::layout_t<1>>);
 			static_assert(std::is_trivially_copyable_v<multi::layout_t<2>>);
 
-#ifndef _MSC_VER
-			// static_assert(std::is_trivially_default_constructible_v<multi::subarray_ptr<double, 2>>);
-#endif
 			// static_assert(std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>>);
 			// static_assert(std::is_trivially_copyable_v<multi::subarray_ptr<double, 2>>);
 
@@ -214,7 +188,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(span_like) {
+	// BOOST_AUTO_TEST_CASE(span_like)
+	{
 		std::vector<int> vec = {00, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
 		using my_span = multi::array_ref<int, 1>;
@@ -249,7 +224,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( vec[2] == 990 );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
+	// BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment)
+	{
 		multi::array<double, 2> arr = {
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
