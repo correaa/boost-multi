@@ -95,7 +95,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
+//  #if !defined(_MSC_VER)  // problems with MSVC 14.3 c++17
 	BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 		//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 		auto* resp = std::pmr::get_default_resource();
@@ -127,7 +127,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto time = std::chrono::high_resolution_clock::now() - start_time;
 		std::cout << time.count() / count << "          " << acc << '\n';
 	}
-	#endif
+//  #endif
 
 #endif
 	return boost::report_errors();
