@@ -211,7 +211,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #   pragma clang diagnostic pop
 #endif
 
-#ifndef _MSC_VER  // problem with MVSC 14.3 c++17
 		{
 			multi::array<vector3, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
 			BOOST_TEST( &arr.reinterpret_array_cast<double>(3)[2][1] == &std::get<1>(arr[2]) );
@@ -221,10 +220,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &arr.reinterpret_array_cast<double>(3)[5][7][2] == &std::get<2>(arr[5][7]) );
 		}
 		{
-			multi::array<vector3, 2> const arr({
-												   4, 5
-            },
-											   vector3{{1.0, 2.0, 3.0}});
+			multi::array<vector3, 2> const arr({4, 5}, vector3{{1.0, 2.0, 3.0}});
 
 			BOOST_TEST( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
 			BOOST_TEST( decltype(arr.reinterpret_array_cast<double>(3))::dimensionality == 3 );
@@ -246,7 +242,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto arr3 = +arr.reinterpret_array_cast<double>(3);
 			BOOST_TEST( arr3 == arr2 );
 		}
-#endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast)
@@ -286,7 +281,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( ceePC );
 			BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );
 		}
-#ifndef _MSC_VER  // problem with MSVC 14.3 c++17
 		{
 			multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
 
@@ -297,7 +291,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST(( arr[8] == std::complex<double>{1000.0, 2000.0} ));
 		}
-#endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex)
@@ -314,10 +307,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &Apair_block[1][2] == static_cast<void*>(&arr[1][2]) );
 
-#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 		auto&& Adoubles_block = A_block.reinterpret_array_cast<double const>(2);
 		BOOST_TEST( &Adoubles_block[1][2][0] == static_cast<void*>(&arr[1][2]) );
-#endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pointer)
