@@ -7,20 +7,13 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for fill_n
-#include <chrono>     // for high_resolution_clock, operator-  // NOLINT(build/c++11)
 #include <cmath>      // for abs  // IWYU pragma: keep
 // IWYU pragma: no_include <cstdlib>                          // for abs
-#include <cstdint>     // for int64_t
-#include <functional>  // for plus  // IWYU pragma: keep
-#include <iostream>    // for char_traits, basic_ostream, oper...
 #include <iterator>    // for size, data
 
 #if __has_include(<memory_resource>)
 #   include <memory_resource>  // for polymorphic_allocator, monotonic...
 #endif
-
-#include <numeric>  // for accumulate, transform_reduce
 
 namespace multi = boost::multi;
 
