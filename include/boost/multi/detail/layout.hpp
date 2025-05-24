@@ -841,27 +841,26 @@ struct layout_t
 		;
 	}
 
-	constexpr auto creindex() const { return *this; }
-	constexpr auto creindex(index idx) const {
+	constexpr auto reindex() const { return *this; }
+	constexpr auto reindex(index idx) const {
 		return layout_t{
 			sub(),
 			stride(),
-			offset() + (idx*stride()),
+			idx * stride(),
 			nelems()
 		};
 	}
-	template<class... Indices>
-	constexpr auto creindex(index idx, Indices... rest) const {
-		return creindex(idx).rotate().creindex(rest...).unrotate();
+	template<class... Indexes>
+	constexpr auto reindexed(index first, Indexes... idxs) const {
+		return ((reindexed(first).rotate()).reindexed(idxs...)).unrotate();
 	}
 
-	constexpr auto reindex(index idx) -> layout_t& {offset_ = idx*stride_; return *this;}
-	template<class... Indices>
-	constexpr auto reindex(index idx, Indices... rest) -> layout_t& {
-		reindex(idx).rotate().reindex(rest...).unrotate(); return *this;
-	}
+	// template<class... Indices>
+	// constexpr auto reindex(index idx, Indices... rest) const {
+	//  return reindex(idx).rotate().ceindex(rest...).unrotate();
+	// }
 
-	       constexpr auto num_elements()        const        noexcept -> size_type { return size()*sub_.num_elements(); }
+		   constexpr auto num_elements()        const        noexcept -> size_type { return size()*sub_.num_elements(); }
 	friend constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
 
 	       constexpr auto is_empty()        const        noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
