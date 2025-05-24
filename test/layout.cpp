@@ -6,14 +6,14 @@
 
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
-#include <cstddef>                          // for ptrdiff_t, size_t  // IWYU pragma: keep
+#include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iterator>   // for size
 #if __cplusplus > 201703L
 #   if __has_include(<ranges>)
 #       include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #   endif
 #endif
-#include <tuple>  // for make_tuple, tuple_element<>::type
+#include <tuple>   // for make_tuple, tuple_element<>::type
 #include <vector>  // for vector
 // IWYU pragma: no_include <version>
 #include <type_traits>
@@ -39,8 +39,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::extensions_t<3> const exts({0, 10}, {0, 20}, {0, 30});
 		BOOST_TEST( 20 == second_finish(exts) );
 	}
-
-/////
 
 	BOOST_AUTO_TEST_CASE(extensions_to_linear) {
 		multi::extensions_t<3> exts{4, 5, 3};
@@ -78,19 +76,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				std::random_access_iterator_tag, ArrayRef::const_iterator::iterator_category>
 		);
 
-// #if (__cplusplus >= 202002L)
-//      static_assert(
-//          std::is_base_of_v<
-//              std::contiguous_iterator_tag, ArrayRef::const_iterator::iterator_category>
-//      );
-// #endif
+		// #if (__cplusplus >= 202002L)
+		//      static_assert(
+		//          std::is_base_of_v<
+		//              std::contiguous_iterator_tag, ArrayRef::const_iterator::iterator_category>
+		//      );
+		// #endif
 	}
 
 	{
 		std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
-		std::vector<int> vec2(5);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> vec2(5);                // NOLINT(fuchsia-default-arguments-calls)
 
-		multi::array_ref<int, 1, int*, multi::contiguous_layout<> > const arr(static_cast<std::ptrdiff_t>(vec.size()), vec.data());
+		multi::array_ref<int, 1, int*, multi::contiguous_layout<>> const arr(static_cast<std::ptrdiff_t>(vec.size()), vec.data());
 
 		auto&& arr_d = arr.dropped(1);
 		BOOST_TEST(  arr_d.size() == arr.size() - 1 );
@@ -102,23 +100,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(
 			std::is_base_of_v<
 				std::random_access_iterator_tag,
-				decltype(arr.cbegin())::iterator_category
-			>
+				decltype(arr.cbegin())::iterator_category>
 		);
 
 #if (__cplusplus >= 202002L)
 		static_assert(
 			std::is_base_of_v<
 				std::contiguous_iterator_tag,
-				decltype(arr.cbegin())::iterator_category
-			>
+				decltype(arr.cbegin())::iterator_category>
 		);
 
-		static_assert( std::contiguous_iterator<decltype(arr.begin())> );
-		static_assert( std::contiguous_iterator<decltype(arr.end()  )> );
+		static_assert(std::contiguous_iterator<decltype(arr.begin())>);
+		static_assert(std::contiguous_iterator<decltype(arr.end())>);
 
-		static_assert( std::contiguous_iterator<decltype(arr.cbegin())> );
-		static_assert( std::contiguous_iterator<decltype(arr.cend()  )> );
+		static_assert(std::contiguous_iterator<decltype(arr.cbegin())>);
+		static_assert(std::contiguous_iterator<decltype(arr.cend())>);
 
 		int const* beg(arr.begin());
 		BOOST_TEST( beg == &arr.front() );
@@ -137,7 +133,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.cend().base() - arr.cbegin().base() == 5 );
 
 		BOOST_TEST( (arr.cend().base() - arr.cbegin().base()) % arr.cbegin().stride() == 0 );
-
 
 		// std::copy(arr.data_elements(), std::next(arr.data_elements(), arr.num_elements()), vec2.begin());
 		BOOST_TEST( &*arr.cbegin() == arr.data_elements() );
@@ -158,13 +153,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  vec2[static_cast<std::size_t>(idx)] = arr[idx];
 		// }
 
-
 		BOOST_TEST( vec2[0] == 1 );
 		BOOST_TEST( vec2[1] == 2 );
 		BOOST_TEST( vec2[2] == 3 );
 		BOOST_TEST( vec2[3] == 4 );
 		BOOST_TEST( vec2[4] == 5 );
-
 
 		BOOST_TEST( vec == vec2 );
 	}
@@ -193,14 +186,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !d2D.rotated()[2].is_compact() );
 	}
 
-///
 	BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
-		multi::array<double, 3> arr(
-#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<3>
-#endif
-			{40, 50, 80}
-		);
+		multi::array<double, 3> arr({40, 50, 80});
 
 		auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
@@ -387,7 +374,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( extension(arr) == multi::iextension     {0, 25} ));
 	}
 
-////
+	////
 
 	BOOST_AUTO_TEST_CASE(layout_3) {
 		multi::array<double, 2> arr(
@@ -465,7 +452,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
 	}
 
-////
+	////
 
 	// BOOST_AUTO_TEST_CASE(layout_BB) {
 	//  {

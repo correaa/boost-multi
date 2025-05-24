@@ -51,7 +51,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[8] = {1.0, 2.0, 3.0};
 		BOOST_TEST( std::abs( arr[8].y - 2.0 ) < 1E-6 );
 
-#ifndef _MSC_VER  // problems with MSVC 14.3 c++17
 		BOOST_TEST( std::abs( arr.reinterpret_array_cast<double>(3)[8][1] - arr[8].y ) < 1E-6 );
 
 		multi::array<double, 2> A2D{arr.reinterpret_array_cast<double>(3)};
@@ -66,7 +65,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( & arr[8].x == & arr.reinterpret_array_cast<double>(3)[8][0] );
 		BOOST_TEST( & arr[8].y == & arr.reinterpret_array_cast<double>(3)[8][1] );
 		BOOST_TEST( & arr[8].z == & arr.reinterpret_array_cast<double>(3)[8][2] );
-#endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_lower_dimension)
@@ -176,7 +174,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::abs( arr[0] - complex{1.0, 2.0} ) < 1E-6 );
 
-#ifndef _MSC_VER  // problem with MVSC 14.3 c++17
 		multi::array<double, 1> arr2{arr.reinterpret_array_cast<double>()};
 		BOOST_TEST( dimensionality(arr2) == dimensionality(arr) );
 		BOOST_TEST( std::abs( arr2[0] - 1.0 ) < 1E-6 );
@@ -193,7 +190,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		arr().reinterpret_array_cast<double>(2)[0][0] = 99.9;
 		BOOST_TEST( std::abs( arr().reinterpret_array_cast<double>(2)[0][0] - 99.9) < 1E-6 );
-#endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension)
