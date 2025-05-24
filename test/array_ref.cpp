@@ -339,11 +339,6 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	arr[5] = "d";
 	arr[6] = "e";
 	BOOST_TEST( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );
-
-	auto arrB = multi::array<std::string, 1>({"a", "b", "c", "d", "e"}).reindex(2);  // std::string NOLINT(fuchsia-default-arguments-calls)
-	BOOST_TEST( size(arrB) == 5 );
-	BOOST_TEST( arrB[2] == "a" );
-	BOOST_TEST( arrB[6] == "e" );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {

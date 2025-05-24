@@ -570,16 +570,16 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		this->layout_mutable() = typename static_array::layout_type(typename static_array::extensions_type{});
 		assert(this->stride() != 0);
 	}
-	template<class... Indices>
-	constexpr auto reindex(Indices... idxs) & -> static_array& {
-		static_array::layout_t::reindex(idxs...);
-		return *this;
-	}
-	template<class... Indices>
-	constexpr auto reindex(Indices... idxs) && -> static_array&& {
-		reindex(idxs...);
-		return std::move(*this);
-	}
+	// template<class... Indices>
+	// constexpr auto reindex(Indices... idxs) & -> static_array& {
+	//  static_array::layout_t::reindex(idxs...);
+	//  return *this;
+	// }
+	// template<class... Indices>
+	// constexpr auto reindex(Indices... idxs) && -> static_array&& {
+	//  reindex(idxs...);
+	//  return std::move(*this);
+	// }
 
  public:
 	constexpr static_array() noexcept
@@ -1528,15 +1528,15 @@ struct array : static_array<T, D, Alloc> {
 
 		return *this;
 	}
-	template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {
-		this->layout_mutable() = this->layout_mutable().creindex(idxs...);
-		return std::move(*this);
-	}
-	template<class... Indices> constexpr auto reindex(Indices... idxs) & -> array& {
-		this->layout_mutable() = this->layout_mutable().creindex(idxs...);
-		// this->layout_mutable().reindex(idxs...);
-		return *this;
-	}
+	// template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {
+	//  this->layout_mutable() = this->layout_mutable().creindex(idxs...);
+	//  return std::move(*this);
+	// }
+	// template<class... Indices> constexpr auto reindex(Indices... idxs) & -> array& {
+	//  this->layout_mutable() = this->layout_mutable().creindex(idxs...);
+	//  // this->layout_mutable().reindex(idxs...);
+	//  return *this;
+	// }
 
 	// ~array() {
 	//  assert(this->stride() != 0);
