@@ -1186,20 +1186,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using typename types::index;
 
 	constexpr auto reindexed(index first) const& {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.reindex(first);
-		return const_subarray(new_layout, types::base_);
+		// typename types::layout_t new_layout = this->layout();
+		// new_layout.reindex(first);
+		return const_subarray(this->layout().reindex(first), types::base_);
 	}
-	constexpr auto reindexed(index first)& {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.reindex(first);
-		return const_subarray(new_layout, types::base_);
+	constexpr auto reindexed(index first) & {
+		return const_subarray(this->layout().reindex(first), types::base_);
 	}
-	constexpr auto reindexed(index first)&& -> const_subarray {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.reindex(first);
-		return {new_layout, types::base_};
-	}
+	constexpr auto reindexed(index first) && { return const_subarray(this->layout().reindex(first), types::base_); }
 
 	// TODO(correaa) : implement reindexed_aux
 	template<class... Indexes>
@@ -1210,8 +1204,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto taked_aux_(difference_type n) const {
 		BOOST_MULTI_ASSERT( n <= this->size() );
-		auto const new_layout = this->layout().take(n);
-		return const_subarray(new_layout, this->base_);
+		return const_subarray(this->layout().take(n), this->base_);
 	}
 
  public:
@@ -2850,12 +2843,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto elements_at(size_type idx)     && -> decltype(auto) { BOOST_MULTI_ASSERT(idx < this->num_elements()); return operator[](idx); }
 	BOOST_MULTI_HD constexpr auto elements_at(size_type idx)      & -> decltype(auto) { BOOST_MULTI_ASSERT(idx < this->num_elements()); return operator[](idx); }
 
-	constexpr auto reindexed(index first) && {return reindexed(first);}
-	constexpr auto reindexed(index first)  & {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.reindex(first);
-		return const_subarray{new_layout, types::base_};
-	}
+	constexpr auto reindexed(index first) && { return reindexed(first); }
+	constexpr auto reindexed(index first)  & { return const_subarray{this->layout().reindex(first), types::base_}; }
 
  private:
 	BOOST_MULTI_HD constexpr auto taked_aux_(difference_type count) const {
