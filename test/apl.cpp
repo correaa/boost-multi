@@ -9,9 +9,9 @@
 
 #include <boost/multi/array.hpp>
 
-#if (__cplusplus >= 202002L)
-#   include <ranges>
-#endif
+// #if (__cplusplus >= 202002L)
+// #   include <ranges>
+// #endif
 #include <boost/core/lightweight_test.hpp>
 
 #include <cstddef>

@@ -8,6 +8,8 @@
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
+#include <fftw3.h>  // external fftw3 library
+
 #include <boost/core/lightweight_test.hpp>
 
 // IWYU pragma: no_include <array>
@@ -195,6 +197,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 
 	zip_iterator_test(in_cpu);
+
+	fftw_cleanup();
 
 	return boost::report_errors();
 }

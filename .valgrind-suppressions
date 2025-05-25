@@ -478,3 +478,67 @@
    fun:PMPI_Init
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/aarch64-linux-gnu/libtbb.so.12.11
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:malloc
+   fun:strdup
+   fun:_dl_map_object
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen_implementation
+   fun:dlopen@@GLIBC_2.34
+   obj:/usr/lib/aarch64-linux-gnu/libtbb.so.12.11
+   obj:/usr/lib/aarch64-linux-gnu/libtbb.so.12.11
+   obj:/usr/lib/aarch64-linux-gnu/libtbb.so.12.11
+   fun:__pthread_once_slow
+   obj:/usr/lib/aarch64-linux-gnu/libtbb.so.12.11
+   obj:/usr/lib/aarch64-linux-gnu/libtbb.so.12.11
+   obj:/usr/lib/aarch64-linux-gnu/libtbb.so.12.11
+   fun:_ZN3tbb6detail2r120isolate_within_arenaERNS0_2d113delegate_baseEl
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:malloc
+   fun:add_to_global_resize
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen_implementation
+   fun:dlopen@@GLIBC_2.34
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:blas_thread_init
+   fun:gotoblas_init
+   ...
+}
