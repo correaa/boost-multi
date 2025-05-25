@@ -19,8 +19,6 @@ else()
 
 	enable_testing()
 
-	set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=/workspaces/boost-multi/.valgrind-suppressions --gen-suppressions=all --error-exitcode=1")
-
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
