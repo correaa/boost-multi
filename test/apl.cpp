@@ -103,7 +103,7 @@ struct underscore_t {
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_TEST(( apl::iota<2>({2, 3}) == multi::array({{0, 1, 2}, {3, 4, 5}}) ));
 
-#if !defined(_MSC_VER)
+// #if !defined(_MSC_VER)
 	BOOST_TEST(( apl::iota(2, 3) == multi::array({{0, 1, 2}, {3, 4, 5}}) ));
 	BOOST_TEST(( apl::iota(4) == multi::array({0, 1, 2, 3}) ));
 
@@ -116,7 +116,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(( Ɵ == ι(0) ));
 #       endif
 #   endif
-#endif
+// #endif
 
 	return boost::report_errors();
 }

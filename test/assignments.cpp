@@ -105,12 +105,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-		multi::array<int, 4> const tmp(
-#ifdef _MSC_VER  // problem with 14.3 c++17
-			multi::extensions_t<4>
-#endif
-			{14, 14, 7, 4}
-		);
+		multi::array<int, 4> const tmp({14, 14, 7, 4});
 
 		auto const ext5 = multi::extensions_t<5>{2, 14, 14, 7, 2};
 
@@ -118,12 +113,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		[[maybe_unused]] multi::array<int, 5> const src_test(ext5);
 
-		multi::array<int, 5> src(
-#ifdef _MSC_VER  // problem with 14.3 c++17
-			multi::extensions_t<5>
-#endif
-			{2, 14, 14, 7, 2}
-		);
+		multi::array<int, 5> src({2, 14, 14, 7, 2});
 
 		src[0][1][2][3][1] = 99;
 
