@@ -113,7 +113,7 @@ coverage:
         path: build/coverage.xml
   needs: ["g++"]
 
-g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
+g++ cppcheck cpplint memcheck:
   stage: build
   allow_failure: false
   interruptible: true
@@ -127,12 +127,12 @@ g++ cppcheck cpplint memcheck:  # debian-stable: gcc 12 as of Dec 2023
     - cppcheck --version
     - valgrind --version
     - mkdir build && cd build
-    - export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind-suppressions --gen-suppressions=all --error-exitcode=1 "
+    # - export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind-suppressions --gen-suppressions=all --error-exitcode=1 "
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-    - ctest -j 2 --output-on-failure -T memcheck || ctest --verbose --output-on-failure --rerun-failed -T memcheck
+    - ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions=" --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/.valgrind-suppressions -T memcheck
   needs: ["g++"]
 
 # clang++ sanitizer:
