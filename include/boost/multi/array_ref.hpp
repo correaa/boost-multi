@@ -148,8 +148,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_t::num_elements;
 	using layout_t::offset;
 
-	// using layout_t::offsets;
-
 	using typename layout_t::index;
 	using typename layout_t::index_range;
 	using typename layout_t::index_extension;
@@ -238,10 +236,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	BOOST_MULTI_HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
-
-	// friend /*constexpr*/ auto  base(array_types & self) -> element_ptr  {return self.base_;}
-	// friend /*constexpr*/ auto  base(array_types && self) -> element_ptr  {return std::move(self).base_;}
-	// friend /*constexpr*/ auto  base(array_types const& self) -> element_const_ptr  {return self.base_;}
 
 	    BOOST_MULTI_HD constexpr auto layout()           const        -> layout_t const& {return *this;}
 	friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
@@ -2787,7 +2781,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto broadcasted() const& {
 		multi::layout_t<1> const self_layout{this->layout()};
 		// TODO(correaa) introduce a broadcasted_layout?
-		multi::layout_t<2> const new_layout(self_layout, 0, 0);  // , (std::numeric_limits<size_type>::max)()};
+		multi::layout_t<2> const new_layout(self_layout, 0, 0, 1);  // , (std::numeric_limits<size_type>::max)()};
 		return const_subarray<T, 2, ElementPtr>(new_layout, types::base_);
 	}
 
