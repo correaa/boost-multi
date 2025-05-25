@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -10,6 +10,8 @@
 #include <boost/multi/detail/serialization.hpp>
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/detail/types.hpp>
+
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <algorithm>    // for min, max
 #include <cassert>
@@ -72,26 +74,27 @@ class iterator_facade {
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<>>
 class range {
+	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	IndexType     first_ = {};
-	IndexTypeLast last_  = first_;  // TODO(correaa) check how to do partially initialzed
+	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
-		arxiv& multi::archive_traits<Archive>::make_nvp("first", first_);
-		// arxiv &                  BOOST_SERIALIZATION_NVP(         first_);
-		// arxiv &                        cereal:: make_nvp("first", first_);
-		// arxiv &                               CEREAL_NVP(         first_);
-		// arxiv &                                                   first_ ;
+		arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
+		// arxiv &               BOOST_SERIALIZATION_NVP(         first_);
+		// arxiv &                     cereal:: make_nvp("first", first_);
+		// arxiv &                            CEREAL_NVP(         first_);
+		// arxiv &                                                first_ ;
 
-		arxiv& multi::archive_traits<Archive>::make_nvp("last", last_);
+		arxiv & multi::archive_traits<Archive>::make_nvp("last", last_);
 		// arxiv &                  BOOST_SERIALIZATION_NVP(         last_ );
 		// arxiv &                        cereal:: make_nvp("last" , last_ );
 		// arxiv &                               CEREAL_NVP(         last_ );
 		// arxiv &                                                   last_  ;
 	}
 
-	using value_type      = IndexType;
+	using value_type      = decltype(IndexTypeLast{} + IndexType{});
 	using difference_type = decltype(IndexTypeLast{} - IndexType{});  // std::make_signed_t<value_type>;
 	using size_type       = difference_type;
 	using const_reference = value_type;
@@ -123,13 +126,21 @@ class range {
 
 	constexpr range(IndexType first, IndexTypeLast last) : first_{first}, last_{last} {}
 
+	// TODO(correaa) make this iterator SCARY
 	class const_iterator : public boost::multi::iterator_facade<const_iterator, value_type, std::random_access_iterator_tag, const_reference, difference_type> {
 		typename const_iterator::value_type curr_;
 		constexpr explicit const_iterator(value_type current) : curr_{current} {}
 		friend class range;
 
 	 public:
+		template<class T> using rebind = typename range<std::decay_t<T>>::const_iterator;
+		using pointer = const_iterator;
+		using element_type = IndexTypeLast;
+ 
 		const_iterator() = default;
+
+		template<class OtherConstIterator, class = decltype(std::declval<typename const_iterator::value_type&>() = *OtherConstIterator{})>
+		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 		constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
 		constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
@@ -170,8 +181,8 @@ class range {
 	using reverse_iterator       = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-	[[nodiscard]] constexpr auto first() const -> const_reference { return first_; }
-	[[nodiscard]] constexpr auto last() const -> const_reference { return last_; }
+	[[nodiscard]] constexpr auto first() const { return first_; }
+	[[nodiscard]] constexpr auto last() const { return last_; }
 
 	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
 
@@ -211,8 +222,8 @@ class range {
 		}
 		return begin() + (value - front());
 	}
-	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const -> bool { return (value < last_) && (first_ <= value); }
-	template<class Value> [[nodiscard]] constexpr auto count(Value const& value) const -> value_type { return contains(value); }
+	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const -> bool { return (first_ <= value) && (value < last_); }
+	template<class Value> [[nodiscard]] constexpr auto count(Value const& value) const -> size_type { return contains(value); }
 
 	friend constexpr auto intersection(range const& self, range const& other) {
 		using std::max;
@@ -276,7 +287,7 @@ class intersecting_range {
 // [[maybe_unused]] constexpr intersecting_range<> ∀ = V;
 // [[maybe_unused]] constexpr intersecting_range<> https://www.compart.com/en/unicode/U+2200 = V;
 
-template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
+template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + IndexType{1})>
 struct extension_t : public range<IndexType, IndexTypeLast> {
 	using range<IndexType, IndexTypeLast>::range;
 
@@ -315,16 +326,16 @@ template<class IndexType, class IndexTypeLast>
 extension_t(IndexType, IndexTypeLast) -> extension_t<IndexType, IndexTypeLast>;
 
 template<class IndexType>
-extension_t(IndexType) -> extension_t<IndexType>;
+extension_t(IndexType) -> extension_t<std::integral_constant<IndexType, 0>, IndexType>;
 #endif
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
-constexpr auto make_extension_t(IndexType first, IndexTypeLast last) -> extension_t<IndexType, IndexTypeLast> {
-	return {first, last};
+constexpr auto make_extension_t(IndexType first, IndexTypeLast last) {
+	return extension_t<IndexType, IndexTypeLast>{first, last};
 }
 
-template<class IndexTypeLast = std::ptrdiff_t>
-constexpr auto make_extension_t(IndexTypeLast last) { return make_extension_t(IndexTypeLast{0}, last); }
+template<class IndexType = boost::multi::size_t>
+constexpr auto make_extension_t(IndexType last) { return make_extension_t(std::integral_constant<IndexType, 0>{}, last); }
 
 using index_range     = range<index>;
 using index_extension = extension_t<index>;

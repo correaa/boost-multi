@@ -151,8 +151,11 @@ jobs:
           git clone https://github.com/microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
 
+    - name: Install FFTW
+      run: .\vcpkg\vcpkg install fftw3
+
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
+      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization fftw3
 
     - name: Set up Boost environment variables
       run: |
@@ -171,3 +174,45 @@ jobs:
       run: ctest --test-dir build --timeout 120 --output-on-failure -C Release
       timeout-minutes: 10
 
+  windows17:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up CMake
+      uses: lukka/get-cmake@latest
+
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Install vcpkg
+      run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+
+    - name: Install FFTW
+      run: .\vcpkg\vcpkg install fftw3
+
+    - name: Install Boost
+      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
+
+    - name: Set up Boost environment variables
+      run: |
+        echo "BOOST_ROOT=$(Get-Location)\vcpkg\installed\x64-windows" >> $env:GITHUB_ENV
+        echo "BOOST_INCLUDEDIR=$(Get-Location)\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
+        echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
+        echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
+
+    - name: Configure CMake
+      run: cmake -S . -B build -A x64 -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Run tests
+      run: ctest --test-dir build --timeout 120 --output-on-failure -C Release
+      timeout-minutes: 10

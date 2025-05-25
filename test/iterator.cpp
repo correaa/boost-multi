@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -18,11 +18,6 @@
 
 namespace multi = boost::multi;
 
-// namespace {
-// template<class Array> auto take(Array&& array) -> auto& { return std::forward<Array>(array)[0]; }
-// }  // end unnamed namespace
-
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// iterator_1d
@@ -89,7 +84,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(iterator_2d) {
+	// iterator_2d
+	{
 		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<2>>));
 		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<2>>));
 		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<2>>));
@@ -107,6 +103,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( arr.size() == 120 );
 			BOOST_TEST( arr.cbegin() < arr.cend() );
+			BOOST_TEST( !(arr.cend() < arr.cend()) );
 			BOOST_TEST( arr.cend() - arr.cbegin() == arr.size() );
 
 			using iter = multi::array<double, 2>::iterator;
@@ -137,7 +134,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(iterator_interface) {
+	// iterator_interface
+	{
 		multi::array<int, 3> arr = {
 			{ {12, 11},  {24, 10}},
 			{{112, 30}, {344, 40}},
@@ -184,7 +182,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &((  cbegin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );    // NOLINT(readability-container-data-pointer) test access
 	}
 
-	BOOST_AUTO_TEST_CASE(iterator_semantics) {
+	// iterator_semantics
+	{
 		multi::array<double, 3> arr = {
 			{ {1.2, 1.1},  {2.4, 1.0}},
 			{{11.2, 3.0}, {34.4, 4.0}},
@@ -229,7 +228,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( cit == it3 );  // TODO(correaa)
 		// BOOST_TEST( it3 == cit );  // TODO(correaa)
 
-		BOOST_TEST( &arr[0][2][1] == &begin(arr)[0][2][1] );
+		BOOST_TEST( &arr[0][1][1] == &begin(arr)[0][1][1] );
 
 		[[maybe_unused]] multi::array<double, 3>::const_iterator const cit2 = it3;
 
@@ -252,7 +251,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( &multi::ref(begin(arr), end(arr)) == &arr );
 	}
 
-	BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
+	// iterator_arrow_operator
+	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls) std::string has a default constructor
 		multi::array<std::string, 2> arr = {
 			{"00", "01"},
@@ -279,7 +279,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &(  begin( arr.rotated() )->operator[](1)) == &(arr[1][0]) );
 	}
 
-	BOOST_AUTO_TEST_CASE(index_range_iteration) {
+	// index_range_iteration
+	{
 		multi::index_range irng(0, 5);  // semiopen interval
 		std::ostringstream out;
 		std::copy(irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>{out, ","});  // NOLINT(boost-use-ranges)
@@ -293,7 +294,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::accumulate(begin(irng), end(irng), multi::index_range::value_type{}, sum_of_cubes) > 0 );  // NOLINT(boost-use-ranges)
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {
+	// multi_reverse_iterator_1D
+	{
 		multi::array<double, 1> arr(100, 66.0);
 		BOOST_TEST( &arr[99] == &*std::make_reverse_iterator(arr.end()) );
 
@@ -303,7 +305,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( begin  == arr.begin() );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D) {
+	// multi_reverse_iterator_2D
+	{
 		multi::array<int, 2> arr = {
 			{  10,   20},
 			{ 100,  200},

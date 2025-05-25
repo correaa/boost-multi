@@ -39,14 +39,17 @@ namespace boost::multi::detail { template <class ...Ts> class tuple; }
 
 namespace boost::multi {
 
-template<class Stride>
-struct stride_traits {
-	using category = typename Stride::category;
-};
+template<typename Stride>
+struct stride_traits;
 
 template<>
 struct stride_traits<std::ptrdiff_t> {
 	using category = std::random_access_iterator_tag;
+};
+
+template<typename Stride>
+struct stride_traits {
+	using category = typename Stride::category;
 };
 
 template<typename Integer>
@@ -564,6 +567,8 @@ class contiguous_stride_t {
 	#endif
 };
 
+using multi::detail::tuple;
+
 template<typename SSize = multi::index>
 class contiguous_layout {
 
@@ -581,6 +586,8 @@ class contiguous_layout {
 	using index = size_type;
 	using index_range = multi::range<index>;
 	using index_extension = multi::extension_t<index>;
+
+	using indexes = tuple<index>;
 
 	using extension_type = multi::extension_t<index>;
 	using extensions_type = multi::extensions_t<1>;
@@ -671,6 +678,8 @@ class contiguous_layout {
 	}
 };
 
+
+
 template<dimensionality_type D, typename SSize>
 struct layout_t
 : multi::equality_comparable<layout_t<D, SSize>>
@@ -698,6 +707,8 @@ struct layout_t
 
 	using extensions_type = extensions_t<rank::value>;
 	using sizes_type      = typename boost::multi::detail::tuple_prepend<size_type  , typename sub_type::sizes_type  >::type;
+
+	using indexes = typename boost::multi::detail::tuple_prepend<index, typename sub_type::indexes>::type;
 
 	static constexpr dimensionality_type rank_v = rank::value;
 	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa): consider deprecation
@@ -830,21 +841,36 @@ struct layout_t
 		;
 	}
 
-	constexpr auto reindex(index idx) -> layout_t& {offset_ = idx*stride_; return *this;}
-	template<class... Indices>
-	constexpr auto reindex(index idx, Indices... rest) -> layout_t& {reindex(idx).rotate().reindex(rest...).unrotate(); return *this;}
+	constexpr auto reindex() const { return *this; }
+	constexpr auto reindex(index idx) const {
+		return layout_t{
+			sub(),
+			stride(),
+			idx * stride(),
+			nelems()
+		};
+	}
+	template<class... Indexes>
+	constexpr auto reindexed(index first, Indexes... idxs) const {
+		return ((reindexed(first).rotate()).reindexed(idxs...)).unrotate();
+	}
 
-	       constexpr auto num_elements()        const        noexcept -> size_type {return size()*sub_.num_elements();}
-	friend constexpr auto num_elements(layout_t const& self) noexcept -> size_type {return self.num_elements();}
+	// template<class... Indices>
+	// constexpr auto reindex(index idx, Indices... rest) const {
+	//  return reindex(idx).rotate().ceindex(rest...).unrotate();
+	// }
 
-	       constexpr auto is_empty()        const        noexcept {return nelems_ == 0;}
-	friend constexpr auto is_empty(layout_t const& self) noexcept {return self.is_empty();}
+		   constexpr auto num_elements()        const        noexcept -> size_type { return size()*sub_.num_elements(); }
+	friend constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
 
-	constexpr auto    empty()        const noexcept {return is_empty();}
+	       constexpr auto is_empty()        const        noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
+	friend constexpr auto is_empty(layout_t const& self) noexcept { return self.is_empty(); }
 
-	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
+	constexpr auto    empty()        const noexcept { return is_empty(); }
+
+	friend constexpr auto size(layout_t const& self) noexcept -> size_type { return self.size(); }
 	       constexpr auto size()        const        noexcept -> size_type {
-		if(nelems_ == 0) {return 0;}
+		if(nelems_ == 0) { return 0; }
 		// BOOST_MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
 		// return nelems_ == 0?0:nelems_/stride_;
@@ -852,13 +878,13 @@ struct layout_t
 		return nelems_/stride_;
 	}
 
-	constexpr BOOST_MULTI_HD auto stride()       -> stride_type      & {return stride_;}
-	constexpr BOOST_MULTI_HD auto stride() const -> stride_type const& {return stride_;}
+	constexpr BOOST_MULTI_HD auto stride()       -> stride_type      & { return stride_; }
+	constexpr BOOST_MULTI_HD auto stride() const -> stride_type const& { return stride_; }
 
-	friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index {return self.stride();}
+	friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index { return self.stride(); }
 
-	       BOOST_MULTI_HD constexpr auto strides()        const        -> strides_type {return strides_type{stride(), sub_.strides()};}
-	friend BOOST_MULTI_HD constexpr auto strides(layout_t const& self) -> strides_type {return self.strides();}
+	       BOOST_MULTI_HD constexpr auto strides()        const        -> strides_type { return strides_type{stride(), sub_.strides()}; }
+	friend BOOST_MULTI_HD constexpr auto strides(layout_t const& self) -> strides_type { return self.strides(); }
 
 	constexpr BOOST_MULTI_HD auto offset(dimensionality_type dim) const -> index {return (dim != 0)?sub_.offset(dim - 1):offset_;}
 	       BOOST_MULTI_HD constexpr auto offset() const -> index {return offset_;}
@@ -879,7 +905,7 @@ struct layout_t
 	friend        constexpr auto extension(layout_t const& self) {return self.extension();}
 	[[nodiscard]] constexpr auto extension()        const     -> extension_type {
 		if(nelems_ == 0) {return index_extension{};}
-		assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(offset_ % stride_ == 0);
 		assert(nelems_ % stride_ == 0);
 		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
@@ -932,21 +958,73 @@ struct layout_t
 		t2 = tmp;
 	}
 
-	constexpr auto transpose() -> layout_t& {
-		// using std::swap;
-		ce_swap(stride_, sub_.stride_);
-		ce_swap(offset_, sub_.offset_);
-		ce_swap(nelems_, sub_.nelems_);
-		return *this;
-	}
-	constexpr auto reverse() -> layout_t& {
-		unrotate();
-		sub_.reverse();
-		return *this;
+	constexpr auto transpose() const {
+		return layout_t(
+			sub_type(
+				sub().sub(),
+				stride(),
+				offset(),
+				nelems()
+			),
+			sub().stride(),
+			sub().offset(),
+			sub().nelems()
+		);
 	}
 
-	constexpr auto   rotate() -> layout_t& {if constexpr(D > 1) {transpose(); sub_.  rotate();} return *this;}
-	constexpr auto unrotate() -> layout_t& {if constexpr(D > 1) {sub_.unrotate(); transpose();} return *this;}
+	// constexpr auto transpose() -> layout_t& {
+	//  // using std::swap;
+	//  ce_swap(stride_, sub_.stride_);
+	//  ce_swap(offset_, sub_.offset_);
+	//  ce_swap(nelems_, sub_.nelems_);
+	//  return *this;
+	// }
+
+	constexpr auto reverse() const {
+		auto ret = unrotate();
+		return layout_t(
+			ret.sub().reverse(),
+			ret.stride(),
+			ret.offset(),
+			ret.nelems()
+		);
+	}
+
+	// constexpr auto reverse() -> layout_t& {
+	//  *this = creverse();
+	//  return *this;
+	// }
+
+	constexpr auto rotate() const {
+		if constexpr(D > 1) {
+			auto const ret = transpose();
+			return layout_t(
+				ret.sub().rotate(),
+				ret.stride(),
+				ret.offset(),
+				ret.nelems()
+			);
+		} else {
+			return *this;
+		}
+	}
+
+	constexpr auto unrotate() const {
+		if constexpr(D > 1) {
+			auto const ret = layout_t(
+				sub().unrotate(),
+				stride(),
+				offset(),
+				nelems()
+			);
+			return ret.transpose();
+		} else {
+			return *this;
+		}
+	}
+
+	// [[deprecated]] constexpr auto   rotate() -> layout_t& {if constexpr(D > 1) {transpose(); sub_.  rotate();} return *this;}
+	// constexpr auto unrotate() -> layout_t& {if constexpr(D > 1) {sub_.unrotate(); transpose();} return *this;}
 
 	constexpr auto hull_size() const -> size_type {
 		if(is_empty()) {return 0;}
@@ -1019,6 +1097,7 @@ struct layout_t<0, SSize>
 
 	using extensions_type = extensions_t<rank::value>;
 	using sizes_type      = tuple<>;
+	using indexes = tuple<>;
 
 	static constexpr dimensionality_type rank_v = rank::value;
 	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
@@ -1092,7 +1171,8 @@ struct layout_t<0, SSize>
 	constexpr auto base_size() const -> size_type   {return 0;}
 	constexpr auto origin()    const -> offset_type {return 0;}
 
-	constexpr auto reverse()          -> layout_t& {return *this;}
+	constexpr auto reverse() const { return *this; }
+	// constexpr auto reverse()          -> layout_t& {return *this;}
 
 	BOOST_MULTI_HD constexpr auto take(size_type /*n*/) const {
 		return layout_t<0, SSize>{};
@@ -1124,8 +1204,11 @@ struct layout_t<0, SSize>
 		return std::tie(offset_, nelems_) < std::tie(other.offset_, other.nelems_);
 	}
 
-	constexpr auto   rotate() -> layout_t& {return *this;}
-	constexpr auto unrotate() -> layout_t& {return *this;}
+	constexpr auto   rotate() const { return *this; }
+	constexpr auto unrotate() const { return *this; }
+
+	// constexpr auto   rotate() -> layout_t& {return *this;}
+	// constexpr auto unrotate() -> layout_t& {return *this;}
 
 	constexpr auto hull_size() const -> size_type {return num_elements();}  // not in bytes
 };

@@ -17,6 +17,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	// input array
 	auto const x = std::invoke([] {  // NOLINT(readability-identifier-length)
+		multi::static_array<complex, 1> const ret2(8); (void)ret2;
+
 		multi::array<complex, 1> ret(8);
 		// fill the first array with some numbers
 		std::iota(ret.begin(), ret.end(), 1.0);

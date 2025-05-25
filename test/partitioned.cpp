@@ -505,7 +505,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::is_sorted(strides.rbegin(), strides.rend()) && arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 
-#ifndef _MSC_VER  // problem with MSVC 14.3 c++17
+// #ifndef _MSC_VER  // problem with MSVC 14.3 c++17
 		auto&& A4 = arr.reinterpret_array_cast<double>(1);
 
 		BOOST_TEST(( arr.extensions() == decltype(arr.extensions()){2, 4, 6} ));
@@ -515,7 +515,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  BOOST_TEST( A4.flatted().is_flattable() );
 
 		BOOST_TEST( &A4[1][2][3][0] == &arr[1][2][3] );
-#endif
+// #endif
 	}
 
 	BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {

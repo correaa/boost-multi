@@ -8,14 +8,14 @@
 
 #include <boost/multi/array.hpp>
 
-#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export
+#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export©343
 
 #include <algorithm>  // sort
 #include <chrono>
 #include <complex>
 #include <numeric>  // accumulate
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 #include <thread>
 #endif
 
@@ -305,14 +305,26 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 
 	assert((sign == -1) || (sign == +1));
 
+	decltype(FFTW_ESTIMATE) flags = FFTW_MEASURE;
+	if(out_base || (!std::is_rvalue_reference_v<decltype(*out_base)>)) {
+		flags = FFTW_ESTIMATE;
+	}
+	if(in_base && std::is_rvalue_reference_v<decltype(*in_base)>) {
+		flags |= FFTW_DESTROY_INPUT;
+	} else {
+		flags |= FFTW_PRESERVE_INPUT;
+	}
+
+	auto* const out_base_digested = [](auto&& ref) { return &ref; }(out_base);  // workaround to take address of out_base when it returns an rvalue
+
 	fftw_plan ret = fftw_plan_guru64_dft(
-		/*int                 rank         */ dims_end - dims.begin(),
+		/*int                 rank         */ static_cast<int>(dims_end - dims.begin()),
 		/*const fftw_iodim64 *dims         */ dims.data(),
-		/*int                 howmany_rank */ howmany_dims_end - howmany_dims.begin(),
+		/*int                 howmany_rank */ static_cast<int>(howmany_dims_end - howmany_dims.begin()),
 		/*const fftw_iodim   *howmany_dims */ howmany_dims.data(),
 		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ (in_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR FFTW is taken as non-const while it is really not touched
-		/*fftw_complex       *out          */ (reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>       *>*/ (out_base))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-		sign, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
+		/*fftw_complex       *out          */ (reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>       *>*/ out_base_digested)),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		sign, flags  // FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
 	);
 
 	assert(ret && "fftw lib returned a null plan, if you are using MKL check the limitations of their fftw interface");
@@ -328,7 +340,7 @@ auto fftw_plan_dft(In const& in, Out&& out, int dir) {
 namespace fftw {
 
 inline auto initialize_threads() -> bool {
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 	return fftw_init_threads();
 #else
 	return false;
@@ -336,9 +348,9 @@ inline auto initialize_threads() -> bool {
 }
 
 // enum class sign : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size)
-// 	backward = FFTW_BACKWARD,
-// 	none     = 0,
-// 	forward  = FFTW_FORWARD,
+//  backward = FFTW_BACKWARD,
+//  none     = 0,
+//  forward  = FFTW_FORWARD,
 // };
 
 class sign {
@@ -403,7 +415,7 @@ class plan {
 
  public:
 	plan(plan const&) = delete;
-	plan(plan&&)      = delete;
+	plan(plan&&)      = default;
 	~plan()           = default;
 
 	template<class InPtr, class In, class OutPtr, class Out>
@@ -424,8 +436,8 @@ class plan {
 		return plan(which, in_base, in_layout, out_base, out_layout, fftw::backward);
 	}
 
-	template<class I, class O>
-	void execute(I* in, O* out) const {
+	template<class In, class Out>
+	void execute(In* in, Out* out) const {  // this is `const` because https://github.com/FFTW/fftw3/pull/314#issuecomment-1712818399
 		static_assert(sizeof(in->imag()) == sizeof(double));
 		static_assert(sizeof(out->imag()) == sizeof(double));
 
@@ -442,7 +454,7 @@ class plan {
 	// template<class I, class O> void execute(I&& in, O&& out) const { execute_dft(std::forward<I>(in), std::forward<O>(out)); }
 	// friend void                     execute(plan const& self) { self.execute(); }
 
-	auto operator=(plan&&) -> plan&      = delete;
+	auto operator=(plan&&) -> plan&      = default;
 	auto operator=(plan const&) -> plan& = delete;
 
 	[[nodiscard]] auto cost() const -> double { return fftw_cost(const_cast<fftw_plan>(impl_.get())); }  // NOLINT(cppcoreguidelines-pro-type-const-cast)
@@ -457,7 +469,7 @@ class plan {
 		return ret;
 	}
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
  public:
 	static void make_thread_safe() {
 		fftw_make_planner_thread_safe();  // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
@@ -486,6 +498,55 @@ class plan {
 #endif
 };
 
+template<class InIt, class OutIt>
+class io_zip_iterator {
+	InIt in_;
+	OutIt out_;
+	std::shared_ptr<plan> planP_;
+
+ public:
+	io_zip_iterator(std::array<bool, InIt::reference::rank_v> which, InIt in, OutIt out, sign ss)
+	: in_{in}, out_{out}, 
+	planP_{std::make_shared<plan>(
+		which,
+		in_.base(), in_->layout(),
+		out_.base(), out_->layout(),
+		ss
+	)}
+	{}
+
+	auto operator++() -> io_zip_iterator& {
+		++in_;
+		++out_;
+		return *this;
+	}
+
+	auto operator+=(std::ptrdiff_t n) -> io_zip_iterator& {
+		in_ += n;
+		out_ += n;
+		return *this;
+	}
+	auto operator==(io_zip_iterator const& other) const {
+		assert(planP_ == other.planP_);  // provenance
+		return in_ == other.in_ && out_ == other.out_;
+	}
+	auto operator!=(io_zip_iterator const& other) const { return !(*this == other); }
+
+	void execute() const {
+		auto out_base = [](auto&& ref) {return &ref; }(*out_.base());
+		planP_->execute(in_.base(), out_base);
+	}
+	auto operator*() const -> decltype(*out_) { execute(); return *out_; }
+
+	io_zip_iterator(io_zip_iterator const&) = default;
+	io_zip_iterator(io_zip_iterator&&) noexcept = default;
+
+	~io_zip_iterator() = default;
+
+	auto operator=(io_zip_iterator const&) -> io_zip_iterator& = default;
+	auto operator=(io_zip_iterator&&) noexcept -> io_zip_iterator& = default;
+};
+
 template<class In, class Out>
 auto environment::make_plan_forward(std::array<bool, +In::rank_v> which, In const& in, Out&& out) {
 	return plan::forward(which, in, std::forward<Out>(out));
@@ -496,7 +557,7 @@ auto environment::make_plan_backward(std::array<bool, +In::rank_v> which, In con
 	return plan::backward(which, in, std::forward<Out>(out));
 }
 
-#if HAVE_FFTW3_THREADS
+#if defined(HAVE_FFTW3_THREADS)
 bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
 int  plan::nthreads_       = (initialize_threads(), with_nthreads());
 #endif

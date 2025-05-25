@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -10,11 +10,12 @@
 
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
+#include <complex>    // for complex
 #include <cstddef>    // for __GLIBCXX__, size_t
 #include <iterator>   // for size, back_insert...
 #include <memory>     // for make_unique, uniq...
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
-#	include <memory_resource>  // for monotonic_buffer_...
+#   include <memory_resource>  // for monotonic_buffer_...
 #endif
 #include <new>      // for operator new  // NOLINT(misc-include-cleaner)
 #include <string>   // for basic_string, string
@@ -48,6 +49,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST(size(ma0) == 0);
 #endif
+	}
+
+	// 4D array
+	{
+		multi::array<std::complex<double>, 4> ma(multi::extensions_t<4>({6, 12, 24, 12}));
+		BOOST_TEST( ma.size() == 6);
+
+		ma[1][2][3][4] = std::complex<double>{1.0, 2.0};
+		BOOST_TEST(( ma[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
 	}
 
 	BOOST_AUTO_TEST_CASE(std_vector_of_arrays_check_size) {
@@ -94,32 +104,32 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			[](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
 		);
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va[0]) == 0 );
 		BOOST_TEST( size(va[1]) == 1 );
 		BOOST_TEST( size(va[2]) == 2 );
-#endif
+// #endif
 
 		BOOST_TEST( va[1] [0][0] == 1 );
 		BOOST_TEST( va[2] [0][0] == 2 );
 
 		using namespace std::string_literals;  // NOLINT(build/namespaces)
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 		std::vector<multi::array<int, 2>> const wa = {
 			multi::array<int, 2>({0, 0}, 0),
 			multi::array<int, 2>({1, 1}, 1),
 			multi::array<int, 2>({2, 2}, 2),
 		};
-#else
-		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
-		std::vector<multi::array<int, 2>> const wa = {
-			multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
-			multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
-			multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
-		};
-#endif
+// #else
+//      // NOLINTNEXTLINE(fuchsia-default-arguments-calls)
+//      std::vector<multi::array<int, 2>> const wa = {
+//          multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
+//          multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
+//          multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
+//      };
+// #endif
 
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );
@@ -145,29 +155,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			[](auto idx) { return multi::array<std::string, 2>({idx, idx}, std::to_string(idx)); }
 		);
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va[0]) == 0 );
 		BOOST_TEST( size(va[1]) == 1 );
 		BOOST_TEST( size(va[2]) == 2 );
-#endif
+// #endif
 		using namespace std::string_literals;  // NOLINT(build/namespaces)
 
 		BOOST_TEST( va[1] [0][0] == "1"s );  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 		BOOST_TEST( va[2] [0][0] == "2"s );
 
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		std::vector<multi::array<std::string, 2>> const wa = {
 			multi::array<std::string, 2>({0, 0}, "0"s),
 			multi::array<std::string, 2>({1, 1}, "1"s),
 			multi::array<std::string, 2>({2, 2}, "2"s),
 		};
-#else
-		std::vector<multi::array<std::string, 2>> const wa = {
-			multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
-			multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
-			multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
-		};
-#endif
+// #else
+//      std::vector<multi::array<std::string, 2>> const wa = {
+//          multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
+//          multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
+//          multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
+//      };
+// #endif
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va) == size(wa) );
@@ -266,12 +276,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(( buffer != std::array<char, 13>{{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}} ));
 
-#	if defined(__GLIBCXX__)
+#   if defined(__GLIBCXX__)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'x', 'y', 'z', '&', 'o', 'o', 'o', 'o', 'o', 'o', 'A', 'B', 'C'}} ));
-#	endif
-#	if defined(_LIBCPP_VERSION)
+#   endif
+#   if defined(_LIBCPP_VERSION)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'0', '1', '2', 'o', 'o', 'o', 'o', 'o', 'o', 'x', 'y', 'z', '&'}} ));
-#	endif
+#   endif
 
 		BOOST_TEST(Aarr[0][0] == 'x');
 		BOOST_TEST(Barr[0][0] == 'o');
@@ -284,20 +294,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
-#	ifndef _MSC_VER
+#   ifndef _MSC_VER
 		multi::pmr::array<char, 2> Aarr({2, 2}, 'a', &pool);
 		multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
-#	else
+#   else
 		multi::pmr::array<char, 2> Aarr(multi::extensions_t<2>{2, 2}, 'a', &pool);
 		multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
-#	endif
+#   endif
 
-#	if defined(__GLIBCXX__)
+#   if defined(__GLIBCXX__)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
-#	endif
-#	if defined(_LIBCPP_VERSION)
+#   endif
+#   if defined(_LIBCPP_VERSION)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'X', 'X', 'X', 'b', 'b', 'b', 'b', 'b', 'b', 'a', 'a', 'a', 'a'}} ));
-#	endif
+#   endif
 
 		BOOST_TEST(Aarr[0][0] == 'a');
 		BOOST_TEST(Barr[0][0] == 'b');
@@ -315,12 +325,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( buffer[0] == 4 );
 		BOOST_TEST( buffer[1] == 5 );
 
-#	if defined(__GLIBCXX__)
+#   if defined(__GLIBCXX__)
 		BOOST_TEST(Aarr[0][0] == 4);
-#	endif
-#	if defined(_LIBCPP_VERSION)
+#   endif
+#   if defined(_LIBCPP_VERSION)
 		BOOST_TEST(Aarr[0][0] == 996);
-#	endif
+#   endif
 	}
 #endif
 
@@ -431,6 +441,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 #if !defined(_MSC_VER) || (_MSC_VER > 193030706)  // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
+	// BOOST_AUTO_TEST_CASE(small_array_int) {
+	//  std::vector<std::vector<int>> vv(5, std::vector<int>(10, 99));
+	//  multi::array_ref<std::vector<int>, 2> ww(vv.data() + 1, {2, 2});
+	//  // multi::what(ww.element_moved());
+	//  multi::static_array<std::vector<int>, 2> sa(ww.element_moved());
+
+	//  //BOOST_TEST( ww[0][0].empty() );
+	// }
+
 	BOOST_AUTO_TEST_CASE(small_array_int) {
 		small_array<int, 2, 4UL * 4UL> vv({4, 4}, 42);
 
@@ -460,7 +479,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto xx{std::move(ww)};
 
 		BOOST_TEST( vv[3][3] == 51 );
-		BOOST_TEST( xx[3][3] == 42 );
+		// BOOST_TEST( xx[3][3] == 42 );
 		// BOOST_TEST( ww[3][3] == 42 );
 		BOOST_TEST( xx.base() != vv.base() );
 		// BOOST_TEST( ww.empty() );

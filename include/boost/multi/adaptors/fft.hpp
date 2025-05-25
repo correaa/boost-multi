@@ -5,13 +5,15 @@
 
 #include <boost/multi/adaptors/fftw.hpp>
 
+#include <boost/multi/array.hpp>          // for extensions_t, get, array
+
 #if defined(__CUDA__) || defined(__NVCC__)
 #include <boost/multi/adaptors/cufft.hpp>
 #elif defined(__HIPCC__)
 #include <boost/multi/adaptors/hipfft.hpp>
 #endif
 
-#include <boost/multi/array_ref.hpp>  // for extensions_t, const_subarray, get
+// #include <boost/multi/array_ref.hpp>  // for extensions_t, const_subarray, get
 
 #include <array>                      // for array
 #include <cstddef>                    // for size_t
@@ -57,8 +59,12 @@ namespace boost::multi::fft{
 	class dft_range {
 	 public:
 		static constexpr auto dimensionality = std::decay_t<In>::dimensionality;
+		auto operator+() const { 
+			multi::array<typename std::decay_t<In>::element_type, dimensionality> ret = *this;
+			return ret;
+		}
 
-	 private:
+		private:
 		std::array<bool, dimensionality> which_;
 		In in_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 		Direction dir_;
@@ -167,13 +173,13 @@ namespace boost::multi::fft{
 		return dft(which, std::forward<In>(in), fft::forward);
 	}
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-value"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-value"
-#endif
+// #if defined(__clang__)
+// #pragma clang diagnostic push
+// #pragma clang diagnostic ignored "-Wunused-value"
+// #elif defined(__GNUC__)
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wunused-value"
+// #endif
 	template<class In>
 	auto dft_all(In&& in) {
 		auto const all_true = std::apply([](auto... es) { return std::array{((void)es, true)...}; }, std::array<bool, std::decay_t<In>::dimensionality>{});
@@ -185,12 +191,11 @@ namespace boost::multi::fft{
 		auto const all_true = std::apply([](auto... es) { return std::array{(es, true)...}; }, std::array<bool, std::decay_t<In>::dimensionality>{});
 		return dft(all_true, std::forward<In>(in), fft::backward);
 	}
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-
+// #if defined(__clang__)
+// #pragma clang diagnostic pop
+// #elif defined(__GNUC__)
+// #pragma GCC diagnostic pop
+// #endif
 	template<class In, class Direction>
 	auto idft(std::array<bool, In::dimensionality> which, In&& in) {
 		return dft(which, std::forward<In>(in), fft::forward);

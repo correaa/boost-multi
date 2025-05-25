@@ -85,10 +85,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		multi::array<complex, 2> out(extensions(in));
 
-		multi::fftw::dft_forward({false, false}, in, out);  // out = in;
+		multi::fftw::dft_forward({{false, false}}, in, out);  // out = in;
 
-		BOOST_TEST( in[2][3].real() == out[2][3].real() );
-		BOOST_TEST( in[2][3].imag() == out[2][3].imag() );
+		BOOST_TEST( in[2][2].real() == out[2][2].real() );
+		BOOST_TEST( in[2][2].imag() == out[2][2].imag() );
 
 		BOOST_TEST( out == in );
 	}
@@ -109,7 +109,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using multi::fftw::dft_forward;
 
-		multi::fftw::dft_forward({false, false}, in.rotated(), out.rotated());
+		multi::fftw::dft_forward({{false, false}}, in.rotated(), out.rotated());
 		BOOST_TEST( in == out );
 	}
 
@@ -122,11 +122,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> in({3, 10});
 		randomizer<complex>{dev()}(in);
 		multi::array<complex, 2> out({3, 10});
-		fftw::dft_forward({false, true}, in, out);
+		fftw::dft_forward({{false, true}}, in, out);
 
 		multi::array<complex, 2> out2({3, 10});
 		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {
-			fftw::dft_forward({true}, in_elem, out2_elem);
+			fftw::dft_forward({{true}}, in_elem, out2_elem);
 			return std::forward<decltype(out2_elem)>(out2_elem);
 		});
 
@@ -142,7 +142,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 3> in({3, 5, 6});
 		randomizer<complex>{dev()}(in);
 		multi::array<complex, 3> out({3, 5, 6});
-		fftw::dft_forward({false, true, true}, in, out);
+		fftw::dft_forward({{false, true, true}}, in, out);
 
 		multi::array<complex, 3> out2({3, 5, 6});
 		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {
@@ -161,9 +161,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> in({16, 16});
 		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
-		auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
+
+		auto const pln = multi::fftw::plan::forward({{true, true}}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-7 );
+
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-7 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
@@ -174,9 +176,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> in({16, 16});
 		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
-		auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
+		auto const               pln = multi::fftw::plan::forward({{true, true}}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
@@ -187,9 +189,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> in({16, 16});
 		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
-		auto const               pln = multi::fftw::plan::forward({true, true}, in.base(), in.layout(), out.base(), out.layout());
+		auto const               pln = multi::fftw::plan::forward({{true, true}}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_dft) {
@@ -199,8 +201,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> in({16, 16});
 		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
-		multi::fftw::dft_forward({true, true}, in, out);
-		BOOST_TEST( power(in) - power(out)/num_elements(out) < 1e-8 );
+		multi::fftw::dft_forward({{true, true}}, in, out);
+		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
@@ -215,11 +217,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
 
 		fftw::dft_forward(
-			{true, true, true},
+			{{true, true, true}},
 			multi::array_ref<complex, 3>(data_elements(io), extensions(io)),
 			multi::array_ref<complex, 3>(data_elements(io), extensions(io))
 		);
-		BOOST_TEST( powerin - power(io)/num_elements(io) < 1e-10 );
+		BOOST_TEST( powerin - power(io)/static_cast<double>(num_elements(io)) < 1e-10 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {

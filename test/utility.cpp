@@ -34,21 +34,14 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 	BOOST_TEST(( multi::extensions(arr) ==  decltype(multi::extensions(arr))({3, 4, 5})  ));
 	BOOST_TEST(( multi::extensions(arr) ==  decltype(multi::extensions(arr)) {3, 4, 5}   ));
 
-#ifndef _MSC_VER  // problem with 14.3 c++17
 	using multi::data_elements;
 	BOOST_TEST( data_elements(arr) == &arr[0][0][0] );  // NOLINT(readability-container-data-pointer)
 	BOOST_TEST( data_elements(arr) ==  arr[0][0].data() );
 
 	using multi::num_elements;
 	BOOST_TEST( num_elements(arr) == 60 );
-#endif
 
-	multi::array<double, 3> const marr(
-#ifdef _MSC_VER  // problem with 14.3 c++17
-		multi::extensions_t<3>
-#endif
-		{ 3, 4, 5 }
-	);
+	multi::array<double, 3> const marr({ 3, 4, 5 });
 	using multi::layout;
 	BOOST_TEST( layout(arr) == layout(marr) );
 
@@ -62,9 +55,6 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
 
 	using multi::dimensionality;
 	BOOST_TEST( dimensionality(arr) == 2 );
-
-	// using multi::extension;
-	// BOOST_TEST( extension(arr) == 3 );
 
 	using multi::extensions;
 	BOOST_TEST(( extensions(arr) == decltype(extensions(arr)){3, 4} ));

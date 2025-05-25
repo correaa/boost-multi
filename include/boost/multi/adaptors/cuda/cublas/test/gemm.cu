@@ -16,6 +16,8 @@
 
 #include<thrust/complex.h>
 
+#include <numeric>  // for std::iota
+
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
@@ -101,6 +103,46 @@ BOOST_AUTO_TEST_CASE(cublas_gemm_nh) {
 		multi::array<complex, 2> const c_copy = c;
 		BOOST_TEST( c_copy[1][0] == 16.0 -  2.0*I );
 		BOOST_TEST( c_copy[0][1] == 14.0 - 38.0*I );
+	}
+
+	// Chris
+	{
+		int m = 12;
+		int n = 10;
+		int ell = 8;
+
+		
+		multi::array<double, 3> a({m, n, ell});
+		multi::array<double, 2> b({n, ell});
+		
+		std::iota(a.elements().begin(), a.elements().end(), 20.0);
+		std::iota(b.elements().begin(), b.elements().end(), 30.0);
+		
+		multi::array<double, 1> c_gold(m, 0.0);
+
+		for(int k = 0; k != m; ++k) {
+			for(int j = 0; j != n; ++j) {
+				for(int i = 0; i != ell; ++i) {
+					c_gold[k] += a[k][j][i] * b[j][i];
+				}
+			}
+		}
+
+		multi::array<double, 1> c_flat(m, 0.0);
+
+		for(int k = 0; k != m; ++k) {
+			for(int ji = 0; ji != a[k].elements().size(); ++ji) {
+				c_flat[k] += a[k].elements()[ji] * b.elements()[ji];
+			}
+		}
+
+		BOOST_TEST( c_gold == c_flat );
+
+		// gpu::run(m, n, [...] (auto k, auto j) {
+		//      for (int i =0; i <l ; ++i) {
+		//        c[k] +=a[k][j][i]) * b[j][i];
+		//        }
+		//  });
 	}
 }
 

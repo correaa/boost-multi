@@ -3,7 +3,7 @@
 -->
 # Multi MPI Adaptor
 
-_© Alfredo A. Correa, 2024_
+_© Alfredo A. Correa, 2025_
 
 (documentation in progress)
 
@@ -160,7 +160,7 @@ int main() {
 
 ### Iteration and skeletons
 
-If subelements of an array need to be communicated repeatedly, it is wasteful to produce a new message for each type.
+If subelements of an array need to be communicated repeatedly, it is wasteful to produce a new message each time.
 The key is that all subarrays of a larger array have the same layout.
 
 Suppose we want to communicate the rows of an array in random order.
@@ -216,35 +216,38 @@ In the examples above, the arrays can be replaced with `multi::array<int, 2, thr
 The advantage of using datatypes and messages is that data doesn't need to be copied explicitly into a local buffer.
 However, in certain cases it is possible that communication using datatypes is slower than compacting the array data into a contiguous buffer.
 
-A completely alternative to the use of message and datatypes is to use serialization.
+A completely different alternative to the use of message and datatypes is to use serialization.
 
 ```cpp
-#include<sstream>
+#include <sstream>
 
 int main() {
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
 	auto const A = multi::array<int, 2>({
 		{1, 2, 3},
 		{4, 5, 6}
 	});
 
-	if(world_rank == 0) {
+	int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	if(rank == 0) {
 		std::ostringstream oss;
 		boost::archive:::binary_oarchive oa(oss);
 		oa << A();
 		
 		MPI_Send(A_msg.str().data(), A_msg.str().data(), MPI_CHAR, 1, 0, MPI_COMM_WORLD);
-	} else if(world_rank == 1) {
-		multi::array<int, 2> B({2, 3});
-		std::istringstream iss;
+	} else if(rank == 1) {
+		auto B = multi::array<int, 2>({2, 3});
 
-		MPI_Recv(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Status status; MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
+		int count; MPI_Get_count(&status, MPI_CHAR, &count);
+
+		std::string buffer(count);
+		MPI_Recv(buffer.data(), bufer.size(), MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+		std::istringstream iss(std::move(buffer));
+		boost::archive::binary_iarchive ia(iss);
+		ia >> B();
 
 		assert(B == A);
 	}
 }
 ```
-
-

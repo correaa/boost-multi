@@ -40,7 +40,6 @@ endif()
 # target_link_libraries(${PROJECT_NAME} boost-multi::boost-multi)
 # ~~~
 
-
 message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
 project(
@@ -55,15 +54,16 @@ message(STATUS "Boost.Multi: standalone mode ON")
 add_library(multi INTERFACE)
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
-target_compile_options(multi INTERFACE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>)
+target_compile_options(multi INTERFACE
+  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
+  $<$<CXX_COMPILER_ID:MSVC>:/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:/permissive- > >  # this is needed for MSVC in C++17 mode
+)
 
 # https://youtrack.jetbrains.com/issue/CPP-25608
-target_compile_features(multi INTERFACE cxx_std_17)  # $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
+target_compile_features(multi INTERFACE cxx_std_17)
 if(ENABLE_CUDA)
-  target_compile_features(multi INTERFACE cuda_std_17)  # $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
+  target_compile_features(multi INTERFACE cuda_std_17)
 endif()
-
-# target_compile_options(multi INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_library(correaa::multi ALIAS multi)

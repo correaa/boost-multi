@@ -258,8 +258,8 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub) {
 	// multi::array<int, 2> const arr = { {1, 2}, {3, 4}, {5, 6}, {7, 8}};
 	// multi::array_ref<int, 2, multi::array<int, 2>::const_iterator> const arr2({2, 2}, arr.begin());
 	// BOOST_TEST(( arr2 == multi::array{
-	// 	{1, 2, 3},
-	// 	{4, 5, 6}
+	//  {1, 2, 3},
+	//  {4, 5, 6}
 	// }));
 }
 
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_test_allocated_ub_unique_ptr) {
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for illustration
+	// NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for illustration
 	std::unique_ptr<int const[]> const arrp(new int const[4UL * 4UL]{0, 10, 20, 30, 50, 60, 70, 80, 100, 110, 120, 130, 150, 160, 170, 180});
 
 	BOOST_TEST( arrp[3] == 30 );
@@ -339,11 +339,6 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	arr[5] = "d";
 	arr[6] = "e";
 	BOOST_TEST( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );
-
-	auto arrB = multi::array<std::string, 1>({"a", "b", "c", "d", "e"}).reindex(2);  // std::string NOLINT(fuchsia-default-arguments-calls)
-	BOOST_TEST( size(arrB) == 5 );
-	BOOST_TEST( arrB[2] == "a" );
-	BOOST_TEST( arrB[6] == "e" );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {

@@ -38,7 +38,9 @@ struct move_ptr : private std::move_iterator<Ptr> {
 
 	using std::move_iterator<Ptr>::move_iterator;
 
-	BOOST_MULTI_HD constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) decay to lvalue should be easy
+	// TODO(correaa) implement auto& operator++()
+
+	BOOST_MULTI_HD constexpr /*implicit*/ operator Ptr() const { return std::move_iterator<Ptr>::base(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) decay to lvalue should be easy
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> move_ptr& { static_cast<std::move_iterator<Ptr>&>(*this) += n; return *this; }
 	BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> move_ptr& { static_cast<std::move_iterator<Ptr>&>(*this) -= n; return *this; }
 

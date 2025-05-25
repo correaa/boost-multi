@@ -181,10 +181,7 @@ In this example, we are going to use memory that is not managed by the library a
 We can create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
 ```cpp
-#include <multi/array.hpp>
-
-#include <algorithm>  // for sort
-#include <iostream>  // for print
+#include <boost/multi/array.hpp>
 
 namespace multi = boost::multi;
 
@@ -195,23 +192,22 @@ int main() {
 		100.0, 11.0, 12.0, 13.0, 14.0,
 		 50.0,  6.0,  7.0,  8.0,  9.0
 	};  // block of 20 elements ...
-	multi::array_ref<double, 2> d2D_ref{&d_data[0], {4, 5}};  // .. interpreted as a 4 by 5 array
+	multi::array_ref<double, 2> d2D_ref(&d_data[0], {4, 5});  // .. interpreted as a 4 by 5 array
 	...
 ```
 
 Next, we print the elements in a way that corresponds to the logical arrangement:
 
 ```cpp
+#include <iostream>  // for print
 	...
 	auto [is, js] = d2D_ref.extensions();
 	for(auto i : is) {
-		using std::cout;
 		for(auto j : js) {
-			cout<< d2D_ref[i][j] <<' ';
+			std::cout<< d2D_ref[i][j] <<' ';
 		}
-		cout <<'\n';
+		std::cout <<'\n';
 	}
-	...
 ```
 
 This will output:
@@ -229,12 +225,12 @@ It is sometimes said (by Sean Parent) that the whole of STL algorithms can be se
 Presumably, if one can sort over a range, one can perform any other standard algorithm.
 
 ```cpp
-		...
-		std::stable_sort( d2D_ref.begin(), d2D_ref.end() );
-		...
+#include <algorithm>  // for sort
+	...
+	std::stable_sort( d2D_ref.begin(), d2D_ref.end() );
 ```
 
-If we print the result, we will get:
+If we print the result again, we get:
 
 > ```
 > 30 1 2 3 4
@@ -247,15 +243,15 @@ The array has been changed to be in row-based lexicographical order.
 Since the sorted array is a reference to the original data, the original C-array has changed.
 
 (Note that `std::sort` cannot be applied directly to a multidimensional C-array or to other libraries, such as Boost.MultiArray.
-The arrays implemented by this library are, to the best of my knowledge, the only ones that support all STL algorithms directly.)
+The library here are supports all STL algorithms directly.)
 
 If we want to order the matrix on a per-column basis, we need to "view" the matrix as a range of columns.
 This is done in the bidimensional case, by accessing the matrix as a range of columns:
 
 ```cpp
-		...
-		std::stable_sort( rotated(d2D_ref).begin(), rotated(d2D_ref).end() );
-	}
+	...
+	std::stable_sort( d2D_ref.rotated().begin(), d2D_ref.rotated().end() );
+}
 ```
 
 The `rotate` operation rotates indices, providing a new logical view of the original array without modifying it.
@@ -268,6 +264,7 @@ In this case, the original array will be transformed by sorting the matrix into:
 > 11 12 13 14 100
 > 16 17 18 19 150
 > ```
+([live code](https://godbolt.org/z/4zWTPcoK6))
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
@@ -320,7 +317,7 @@ assert( A3.num_elements() == 3 * 2 * 2 );
 
 In all cases, constness (`const` declaration) is honored in the expected way.
 
-## Copy and assigment (and aliasing)
+## Copy, and assigment (, and aliasing)
 
 The library offers value semantics for the `multi::array<T, D>` family of classes.
 Constructing or assigning from an existing array generates a copy of the original object, independent of the original one but equal in value.
@@ -364,21 +361,22 @@ Notably, this instruction does not transpose the array but produces an undefined
 A2 = A2.transposed();  // undefined result, this is an error
 ```
 
-While this below instead does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
+This is an instance of the problem of _data aliasing_, which describes a common situation in which a data location in memory can be accessed through different parts of an expression or function call.
+
+This below statement below, instead, does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
 
 ```cpp
 A2 = + A2.transposed();  // ok, (might allocate)
 ```
 
-This is an instance of the problem of _data aliasing_, which describes a common situation in which a data location in memory can be accessed through different parts of an expression or function call.
-Within the confines of the library interface, this pitfall can only occur on assignment as illustrated above.
+Within the confines of the library interface, this pitfall can only occur on assignment.
+A generic workaround is to use the prefix `operator+`, to break "aliasing" as above.
 
-However the problem of aliasing can persist when taking mutable array-references in function arguments.
-The most general solution to this problem is to make copies or directly work with completely disjoint objects; 
-but other case-by-case solutions might be possible.
-
-For example, in-place transposition (as attempted above) is an active subject of research;
-_optimal_ speed and memory transpositions might require specially designed libraries.
+In general, the problem of aliasing can persist when taking mutable array-references in function arguments.
+The most general solution to this problem is to make copies or directly work with completely disjoint objects.
+Other case-by-case solutions might be possible.
+(For example, in-place transposition (as attempted above) is an active subject of research;
+_optimal_ speed and memory transpositions might require specially designed libraries.)
 
 Finally, arrays can be efficiently moved by transferring ownership of the internal data.
 
@@ -921,6 +919,18 @@ auto outer = [&]<typename T>(auto const& a, auto const& b, T&& C) {
 (https://godbolt.org/z/5o95qGdKz)
 
 Note that the function `hadamard`, acting on 2D arrays, doesn't use the undefined (infinite) sizes (second dimension of `A` and first dimension of `B`).
+
+NB: A zero-dimensional broadcasts into a one-dimensional.
+Zero-dimensional arrays can contain, at most, one element; and after a broadcast, it can represent an infinite sequence of such element.
+
+```cpp
+multi::array<int, 0> const single{7};
+multi::array<int, 1> const sevens = {7, 7, 7};
+
+single.broadcasted().front() == 7;
+assert( std::equal(sevens.begin(), sevens.end(), single.broadcasted().begin()) );
+```
+(https://godbolt.org/z/nnxjsrvM1)
 
 ## Uninitialized vs. initialized elements
 

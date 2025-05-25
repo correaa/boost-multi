@@ -24,7 +24,11 @@ else()
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
 	find_package(Boost CONFIG)
-	find_package(Boost COMPONENTS serialization)
+	find_package(Boost COMPONENTS headers)  # should be last
+
+	if(NOT Boost_FOUND)
+		message(WARNING "preliminary: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
+	endif()
 
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
@@ -34,7 +38,7 @@ else()
 		endif()
 	endif()
 
-	find_package(TBB)
+#   find_package(TBB)
 
 	enable_testing()
 	include(CTest)
@@ -44,9 +48,7 @@ else()
 		-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
 		#--Werror=cross-execution-space-call
 		--Werror ext-lambda-captures-this
-		--use_fast_math
-		--extra-device-vectorization
-		--restrict
+		--use_fast_math --extra-device-vectorization --restrict
 		-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 	>
 	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror
@@ -78,15 +80,15 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++20-compat>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wc++20-extensions -Wc++23-extensions>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wc++2a-compat>
-	#-Wcannot-profile # (gcc 9, not in gcc 8)
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type> # (gcc 8, not in gcc 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wcannot-profile>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type>  # (gcc 8, not in gcc 7)
 	-Wcast-qual
-	#-Wcatch-value  #=<0, 3> # (gcc 8, not in gcc 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcatch-value>  #=<0, 3>  # (gcc 8, not in gcc 7)
 	-Wchar-subscripts
-	#-Wclass-conversion # (gcc 11, not in 8)
-	#-Wclass-memaccess # (gcc 12, not in 11, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wclass-conversion>  # (gcc 11, not in 8)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wclass-memaccess>   # (gcc 12, not in 11)
 	-Wclobbered
-	# -Wcomma-subscript # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wcomma-subscript>  # (gcc 12, not in 11)
 	-Wcomment  # (same as -Wcomments)
 	-Wconditionally-supported
 	-Wconversion -Wconversion-null
@@ -94,12 +96,12 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wctad-maybe-unsupported>
 	-Wctor-dtor-privacy
 	-Wdangling-else
-	# -Wdangling-pointer # (gcc 12, not in 11)
-	# -Wdangling-reference # (gcc 13, not in 12)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdangling-pointer>  # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,13>:-Wdangling-reference>  # (gcc 13, not in 12)
 	-Wdate-time
 	-Wdelete-incomplete -Wdelete-non-virtual-dtor
 	-Wdeprecated
-	#-Wdeprecated-copy -Wdeprecated-copy-dtor # (gcc 11, not in gcc 8)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdeprecated-copy -Wdeprecated-copy-dtor>  # (gcc 11, not in gcc 8)
 	-Wdeprecated-declarations
 	# -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion # (gcc 11, not in gcc 10)
 	-Wdisabled-optimization
@@ -108,9 +110,9 @@ else()
 	# -Weffc++ # (doesn't allow some advanced techniques, such as CRTP)
 	-Wempty-body -Wendif-labels
 	-Wenum-compare
-	# -Wenum-conversion # (gcc 11, not in 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wenum-conversion>  # (gcc 11, not in 10)
 	-Wexpansion-to-defined
-	# -Wexceptions  # (gcc 11, not in 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wexceptions>  # (gcc 11, not in 10)
 	# -Wextra-semi # (gcc 8, not in 7)
 	-Wfloat-conversion -Wfloat-equal
 	-Wformat=2
@@ -215,16 +217,16 @@ else()
 	-Wswitch -Wswitch-bool
 	-Wno-switch-default
 	-Wswitch-enum
-	# -Wswitch-outside-range # (gcc 11, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wswitch-outside-range>  # (gcc 11, not in gcc 9)
 	-Wswitch-unreachable
 	-Wsync-nand -Wsynth
 	-Wno-system-headers  # (expects system headers to be warning-compliant which they are not)
 	-Wtautological-compare
 	-Wno-templates # (disallows templates, C-tool)
-	-Wterminate # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wterminate>  # (gcc 12, not in 11)
 	-Wtrampolines -Wtrigraphs
-	# -Wtrivial-auto-var-init # (gcc 12, not in 11)
-	# -Wtsan # (gcc 11, not in 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wtrivial-auto-var-init>  # (not in gcc 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wtsan>  # (gcc 11, not in 10)
 	-Wtype-limits -Wundef -Wuninitialized
 	-Wno-unknown-pragmas  # (see above) -Wunknown-pragmas (other compilers need their own pragmas for their warnings)
 	-Wunreachable-code -Wunsafe-loop-optimizations
@@ -249,8 +251,9 @@ else()
 	-Werror -Wall -Wextra -Weverything
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
-	-Wlarge-by-value-copy  # subarray references can be large
-	# -Wno-padded  # most classes, e.g. layouts, need padding
+	-Wno-poison-system-directories
+	#-Wlarge-by-value-copy  # subarray references can be large
+	-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
 	# -Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4
 	-Wstrict-overflow=5
@@ -315,8 +318,8 @@ else()
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
-	/GS  # Enables buffer security check (can help detect stack-based buffer overflows)
-	/Wall /EHsc  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /W4
+	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
+	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
 	/wd4514  # unreferenced inline function has been removed
 	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
@@ -341,11 +344,11 @@ else()
 	)
 
 	if(NOT Boost_FOUND)
-		message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
+		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
 
-		# target_link_libraries(main PRIVATE multi)
+		target_link_libraries(main PUBLIC multi)
 		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
@@ -383,8 +386,5 @@ else()
 			endif()
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
-
-		# target_link_libraries    (serialization.cpp.x PRIVATE Boost::serialization)
-
 	endif()
 endif()
