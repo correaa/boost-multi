@@ -157,7 +157,6 @@ class gemv_iterator {
 	auto operator+(difference_type n) const { auto ret = *this; ret += n; return *this; }
 	auto operator-(difference_type n) const { auto ret = *this; ret -= n; return *this; }
 
-	[[deprecated("calling this is a red flag")]]
 	friend auto operator==(gemv_iterator const& self, gemv_iterator const& other) {
 		assert(self.alpha_ == other.alpha_);
 		assert(self.v_first_ == other.v_first_);

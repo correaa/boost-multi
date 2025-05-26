@@ -230,25 +230,39 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs(y[1] - y3[1]) < 2e-14 );
 		}
 		if constexpr(!std::is_same_v<T, float>) {
-			auto Y = +blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
+			auto const Y = +blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
 			BOOST_REQUIRE_CLOSE(Y[0], +blas::dot(a[0], x), 0.00001);
 			BOOST_REQUIRE_CLOSE(Y[1], +blas::dot(a[1], x), 0.00001);
 			BOOST_REQUIRE_CLOSE(Y[2], +blas::dot(a[2], x), 0.00001);
 
-			auto it = blas::gemv(1.0, a, x).begin();
-			BOOST_REQUIRE_CLOSE(*it, Y[0], 0.00001);
+			{
+				auto it = blas::gemv(1.0, a, x).begin();
+				BOOST_REQUIRE_CLOSE(*it, Y[0], 0.00001);
 
-			++it;
-			BOOST_REQUIRE_CLOSE(*it, Y[1], 0.00001);
+				++it;
+				BOOST_REQUIRE_CLOSE(*it, Y[1], 0.00001);
 
-			++it;
-			BOOST_REQUIRE_CLOSE(*it, Y[2], 0.00001);
-			// BOOST_TEST( it == it );
+				++it;
+				BOOST_REQUIRE_CLOSE(*it, Y[2], 0.00001);
+				BOOST_TEST( it == it );
+				BOOST_TEST( !(it != it) );
+
+				++it;
+				BOOST_TEST( it == blas::gemv(1.0, a, x).end() );
+			}
+			{
+				auto YY = multi::array<T, 1>(3);
+				std::copy(
+					blas::gemv(1.0, a, x).begin(), blas::gemv(1.0, a, x).end(),
+					YY.begin()
+				);
+				BOOST_TEST( Y == YY );
+			}
 		}
 		{
 			multi::array<T, 1> const x   = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
 			multi::array<T, 1> const y   = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
-			multi::array<T, 1> const dot = blas::gemv(1., multi::array<T, 2>({x}), y);
+			multi::array<T, 1> const dot = blas::gemv(1.0, multi::array<T, 2>({x}), y);
 			if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
 				BOOST_TEST( dot[0] == blas::dot(x, y) );
 			}
