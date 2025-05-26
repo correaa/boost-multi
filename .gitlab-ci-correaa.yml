@@ -944,7 +944,7 @@ qmcpack:
     # - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     # - ctest -R ppconvert --output-on-failure
     # - ctest -R afqmc     --output-on-failure
-    - cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations" -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DMPIEXEC_PREFLAGS="--allow-run-as-root;--bind-to;none" ..
+    - cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations" -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DMPIEXEC_PREFLAGS="--oversubscribe;--allow-run-as-root;--bind-to;none" ..
     - make -j 10  # ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest --output-on-failure -R ppconvert
     - ctest --output-on-failure -R afqmc
@@ -971,7 +971,7 @@ qmcpack-complex:
     # - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     # - ctest -R ppconvert --output-on-failure
     # - ctest -R afqmc     --output-on-failure
-    - cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations" -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DQMC_COMPLEX=ON -DMPIEXEC_PREFLAGS="--allow-run-as-root;--bind-to;none" ..
+    - cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations" -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DQMC_COMPLEX=ON -DMPIEXEC_PREFLAGS="--oversubscribe;--allow-run-as-root;--bind-to;none" ..
     - make -j 10  # ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest --output-on-failure -R ppconvert
     - ctest --output-on-failure -R afqmc
