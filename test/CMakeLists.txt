@@ -252,15 +252,14 @@ else()
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 	-Wno-poison-system-directories
-	#-Wlarge-by-value-copy  # subarray references can be large
+	-Wno-large-by-value-copy  # subarray references can be large
 	-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
-	# -Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4
-	-Wstrict-overflow=5
-	-Wundefined-reinterpret-cast  # needed to cast to c-array
+	-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5
+	-Wno-undefined-reinterpret-cast  # needed to cast to c-array
 	-Wunknown-pragmas  # other compilers need their own pragmas
 	# -Rpass -Rpass-analysis -Rpass-missed
-	-Rsanitize-address # -Rsearch-path-usage
+	# -Rsanitize-address # -Rsearch-path-usage
 	>
 	$<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra # also IntelLLVM, XL (ibm), XLClang (ibm)
 	-diag-disable=remark
