@@ -277,6 +277,7 @@ multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};
 
 y = blas::gemv(5.0, A, x);  // y <-  5.0 A * x
 ```
+[(live)](https://godbolt.org/z/oP9KExfro)
 
 The gemv expression can be used for addition and subtraction,
 
@@ -301,7 +302,7 @@ int main() {
     auto const C2 = + multi::blas::gemm(1.0, A, B);
 }
 ```
-https://godbolt.org/z/d1E7donWM
+[(live)](https://godbolt.org/z/YGjq18vz3)
 
 (need linking to BLAS to work, e.g. `-lblas` or `-lopenblas` or `-lmkl`)
 
