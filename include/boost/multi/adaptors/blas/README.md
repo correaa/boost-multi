@@ -3,7 +3,7 @@
 -->
 # Multi BLAS Adaptor
 
-_© Alfredo A. Correa, 2018-2024_
+_© Alfredo A. Correa, 2018-2025_
 
 (documentation in progress)
 
@@ -277,7 +277,7 @@ multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};
 
 y = blas::gemv(5.0, A, x);  // y <-  5.0 A * x
 ```
-[(live)](https://godbolt.org/z/oP9KExfro)
+[(live)](https://godbolt.org/z/hKMh69xac)
 
 The gemv expression can be used for addition and subtraction,
 
