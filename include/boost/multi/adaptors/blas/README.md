@@ -81,6 +81,12 @@ The main difference with other BLAS adaptors is that this library aims to offer 
 Just as with BLAS, the library supports element of real (`double` and `float`) and complex (`std::complex<double>` and `std::complex<float>`) types.
 Other types that are semantically equivalent and binary-compatible (such as `thrust::complex`) also work directly.
 
+## GPU (cublas/hipblas)
+
+The library can be used with both CPU and GPU arrays, the interface is the same.
+Calls to BLAS function on array with GPU pointer types or allocated with `cuda::allocator` or `cuda::universal_allocator` will use cuBLAS automatically. 
+(https://godbolt.org/z/xeTM3ncnc)
+
 ## View manipulators
 
 These functions produce views (not copies) related to conjugation, and transposition.
