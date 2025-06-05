@@ -132,7 +132,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array_ref<int, 2> const& Ar2 = *multi::array_ptr<int, 2>(
 			arr[0].data(),
-			{{1, 1 + 3}, {1, 1 + 5},}
+			{{1, 1 + 3}, {1, 1 + 5}, }
 		);
 
 		BOOST_TEST( sizes(Ar) == sizes(Ar2) );
