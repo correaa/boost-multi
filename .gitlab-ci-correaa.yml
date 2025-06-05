@@ -947,7 +947,7 @@ qmcpack:
   needs: ["g++"]
 
 github:
-  stage: test
+  stage: basic
   image: debian:latest
   tags:
     - non-shared
