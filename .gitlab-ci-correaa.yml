@@ -946,6 +946,22 @@ qmcpack:
     - ctest -R afqmc     --output-on-failure
   needs: ["g++"]
 
+github:
+  stage: test
+  image: debian:latest
+  tags:
+    - non-shared
+    - docker
+  interruptible: true
+  before_script:
+    # - apt-get -qq update  # && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
+    - apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+    - apt-add-repository https://cli.github.com/packages
+    - apt update
+    - apt install gh
+  script:
+    - gh --help
+
 qmcpack cuda-12.3.1:
   stage: test
   image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
