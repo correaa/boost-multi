@@ -961,6 +961,7 @@ github:
     - apt install gh
   script:
     - gh --help
+needs: ["g++"]
 
 qmcpack cuda-12.3.1:
   stage: test
