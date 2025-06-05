@@ -1,5 +1,6 @@
 # Copyright 2021-2022 Andrey Semashev
 # Copyright 2023 Matt Borland
+# Copyright 2025 Alfredo A. Correa
 #
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
@@ -467,7 +468,7 @@ jobs:
           - toolset: msvc-14.3
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
-            # cxxflags: "/permissive-"
+            cxxflags: "/permissive-"
             os: windows-2022
           - toolset: gcc
             cxxstd: "03,11,14,17,2a"
