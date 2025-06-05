@@ -2259,8 +2259,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 		BOOST_MULTI_ASSERT( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(count) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 
+		layout_t<D+1> const l1{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count};
+		auto const l2 = l1.rotate();
 		return subarray<T2, D + 1, P2>(
-			::boost::multi::layout_t<(D+1)>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count}.rotate(),
+			l2,
 			reinterpret_pointer_cast_<P2>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		);
 	}

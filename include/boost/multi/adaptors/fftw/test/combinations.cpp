@@ -45,8 +45,8 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	constexpr auto exts = multi::extensions_t<4>({6, 12, 24, 12});
 
 	multi::fftw::environment const env;
