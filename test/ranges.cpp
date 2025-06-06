@@ -11,7 +11,7 @@
 #include <functional>  // for plus<>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #include <memory>  // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
-#if (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
 	#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #endif
 
