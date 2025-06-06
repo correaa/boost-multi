@@ -587,11 +587,11 @@ jobs:
           - toolset: clang-win
             cxxstd: "14,17,latest"
             addrmd: "32"
-            os: windows-2022
+            os: windows-latest
           - toolset: clang-win
             cxxstd: "14,17,latest"
             addrmd: "64"
-            os: windows-2022
+            os: windows-latest
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
