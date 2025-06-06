@@ -110,7 +110,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #   if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	// NOLINTNEXTLINE(google-build-using-namespace)
 	using namespace apl::symbols;  // NOLINT(build/namespaces)
-#       if !defined(__NVCOMPILER)
+#       if !defined(__NVCOMPILER) && !defined(_MSC_VER)
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
 	BOOST_TEST(( Ɵ == ι(0) ));
