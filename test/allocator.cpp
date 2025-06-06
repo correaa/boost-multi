@@ -348,10 +348,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 #if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L)
-	constexpr auto f() {
+	auto f = [](){
 		std::vector<int> v = {1, 2, 3};
 		return v.size();
-	}
+	};
 
 	BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
 		static_assert(f() == 3);
