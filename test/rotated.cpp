@@ -9,7 +9,7 @@
 
 #include <array>    // for array
 #include <numeric>  // for iota
-#if(__cplusplus >= 202002L)
+#if __has_include(<ranges>) && defined(__cplusplus) && (__cplusplus >= 202002L)
 	#include <ranges>  // IWYU pragma: keep
 #endif
 #include <type_traits>  // for is_assignable_v
