@@ -103,7 +103,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				decltype(arr.cbegin())::iterator_category>
 		);
 
-#if (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && defined(__cpp_lib_ranges) && (!defined(__clang__) || __clang_major__ != 10)
 		static_assert(
 			std::is_base_of_v<
 				std::contiguous_iterator_tag,
