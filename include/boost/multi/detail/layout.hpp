@@ -54,7 +54,7 @@ struct stride_traits {
 
 template<typename Integer>
 struct stride_traits<std::integral_constant<Integer, 1> > {
-	#if (__cplusplus >= 202002L)
+	#if defined(__cplusplus) && (__cplusplus >= 202002L) && (!defined(__clang__) || __clang_major__ != 10)
 	using category = std::contiguous_iterator_tag;
 	#else
 	using category = std::random_access_iterator_tag;
