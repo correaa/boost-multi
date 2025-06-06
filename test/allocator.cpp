@@ -358,7 +358,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( f() == 3 );
 	}
 
-	constexpr auto g() {
+	auto g = []() {
 		multi::array<int, 2> arr = {
 			{4, 5, 6},
 			{1, 2, 3},
