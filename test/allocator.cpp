@@ -353,7 +353,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		return v.size();
 	};
 
-	BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
+	// constexpr_allocator_vector 
+	{
 		static_assert(f() == 3);
 		BOOST_TEST( f() == 3 );
 	}
@@ -370,9 +371,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		auto ret = arr[1][1];
 		return ret;
-	}
+	};
 
-	BOOST_AUTO_TEST_CASE(constexpr_allocator) {
+	// constexpr_allocator 
+	{
 		constexpr auto gg = g();
 		static_assert(gg == 10);
 		BOOST_TEST( gg == 10 );
