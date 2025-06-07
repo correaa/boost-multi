@@ -1,9 +1,6 @@
-// Copyright 2023 Alfredo A. Correa
+// Copyright 2023-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS all"
-// #include <boost/test/unit_test.hpp>
 
 #include <boost/multi/adaptors/cuda/cublas.hpp>
 
