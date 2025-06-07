@@ -1,9 +1,6 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
-
-// #include <boost/test/tools/fpc_tolerance.hpp>  // TODO(correaa) use lightweight
-// #include <boost/test/included/unit_test.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>

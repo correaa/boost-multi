@@ -1,17 +1,10 @@
-// Copyright 2022-2024 Alfredo A. Correa
+// Copyright 2022-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust universal copy and assignment"
-// #include<boost/test/unit_test.hpp>
-
 #include <boost/multi/array.hpp>
-//#include<thrust/system/cuda/memory.h>
 
 #include <boost/multi/adaptors/thrust.hpp>
-
-//#include <multi/adaptors/thrust/fix_complex_traits.hpp>
-
 
 #include <thrust/complex.h>
 
@@ -22,7 +15,6 @@ template <typename T>
 void doNotOptimize(T const& val) {
   asm volatile("" : : "g"(val) : "memory");
 }
-
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
