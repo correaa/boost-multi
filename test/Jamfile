@@ -7,7 +7,7 @@ import ../../config/checks/config : requires ;
 
 project : requirements
 
-  <library>/boost/test//boost_unit_test_framework
+  # <library>/boost/test//boost_unit_test_framework
 
   <toolset>gcc:<cxxflags>-Wall
   <toolset>gcc:<cxxflags>-Wextra
