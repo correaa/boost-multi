@@ -1,6 +1,6 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust"
 #define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
+// #include<boost/test/unit_test.hpp>
 
 #include "../../cuda/managed.hpp"
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(vector)
 	assert( p[11] == 99. );
 	p[33] = 123.;
 	p[99] = 321.;
-//	p[33] += 1;
+//  p[33] += 1;
 	add_one(p[33]);
 	double p33 = p[33];
 	assert( p33 == 124. );
