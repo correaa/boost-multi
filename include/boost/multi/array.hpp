@@ -12,6 +12,7 @@
 #include <boost/multi/detail/adl.hpp>
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
+#include "detail/layout.hpp"
 // #include "detail/adl.hpp"
 
 #include <memory>  // for std::allocator_traits
@@ -1054,12 +1055,6 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	friend constexpr auto unrotated(static_array& self) -> decltype(auto) { return self.unrotated(); }
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) { return self.unrotated(); }
 
-	//  TODO(correaa) find a symbolic way to express rotations, A << 1, A >> 1, A <<o; A >>o; ~A; !A; ++A; A++; --A; A--; -A; +A; e<<A; A>>e; e>>A; <<A; ~A;
-	//  constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
-	//  constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
-	//  constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
-	//  constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
-
 	constexpr auto operator=(static_array const& other) -> static_array& {
 		assert(extensions(other) == static_array::extensions());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		if(this == &other) {
@@ -1069,11 +1064,6 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		return *this;
 	}
 
- private:
-	constexpr auto equal_extensions_if_(std::true_type /*true */, static_array const& other) { return this->extensions() == extensions(other); }
-	constexpr auto equal_extensions_if_(std::false_type /*false*/, static_array const& /*other*/) { return true; }
-
- public:
 	#if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -1081,7 +1071,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	#endif
 
 	constexpr auto operator=(static_array&& other) noexcept -> static_array& {
-		assert(equal_extensions_if_(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		assert( this->extensions() == other.extensions() );
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
 		return *this;
 	}
@@ -1091,9 +1081,9 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	#endif
 
 	template<class TT, class... As,
-		class = std::enable_if_t<std::is_assignable<typename static_array::element_ref, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+		class = std::enable_if_t<std::is_assignable_v<typename static_array::element_ref, TT> > >  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	auto operator=(static_array<TT, 0, As...> const& other) & -> static_array& {
-		assert(extensions(other) == static_array::extensions());
+		assert( this->extensions() == other.extensions() );
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
@@ -1111,27 +1101,32 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 
 template<typename T, class Alloc>
 struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
-	// using static_ = static_array<T, 0, Alloc>;
 	using static_array<T, 0, Alloc>::static_array;
-
 
 	using static_array<T, 0, Alloc>::operator=;
 
 	#if !defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ > 22 || (__NVCOMPILER_MAJOR__ == 22 && __NVCOMPILER_MINOR__ > 5))  // bug in nvcc 22.5: error: "operator=" has already been declared in the current scope
-	template<class TT, class... Args>
-	auto operator=(multi::array<TT, 0, Args...> const& other) & -> array& {
-		if(other.base()) {
-			adl_copy_n(other.base(), other.num_elements(), this->base());
+	// template<class TT, class... Args>
+	// auto operator=(multi::array<TT, 0, Args...> const& other) & -> array& {
+	//  if(this->num_elements() == other.num_elements()) {
+	//    adl_copy_n(other.base(), other.num_elements(), this->base());
+	//  }
+	//  return *this;
+	// }
+
+	template<typename OtherT, typename OtherEP, class OtherLayout>
+	auto operator=(multi::const_subarray<OtherT, 0, OtherEP, OtherLayout> const& other) & -> array& {
+		if(this->num_elements() == other.num_elements()) {
+			static_array<T, 0, Alloc>::operator=(other);  // TODO(correaa) : protect for self assigment
+		} else {
+			operator=(array{other});
 		}
 		return *this;
 	}
 
-	template<class TT, class... Args>
-	auto operator=(multi::array<TT, 0, Args...> const& other) && -> array&& {  // NOLINT(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator) should assigment return auto& ?
-		if(other.base()) {
-			adl_copy_n(other.base(), other.num_elements(), this->base());
-		}
-		return std::move(*this);
+	template<typename OtherT, typename OtherEP, class OtherLayout>
+	auto operator=(multi::const_subarray<OtherT, 0, OtherEP, OtherLayout> const& other) && -> array&& {
+		return std::move(operator=(other));
 	}
 	#endif
 	
