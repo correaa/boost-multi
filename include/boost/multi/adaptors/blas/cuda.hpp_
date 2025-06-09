@@ -140,7 +140,7 @@ template<> struct cublas1<void>{
 // 2.5.7. cublas<t>nrm2() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-nrm2
 	template<class T> static auto nrm2(cublasHandle_t handle, int n,
                             const T           *x, int incx, typename nrm2_result<T>::type  *result){return cublas1<T>::nrm2(handle, n, x, incx, result);}
-// 2.5.12. cublas<t>scal()	https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-scale
+// 2.5.12. cublas<t>scal()  https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-scale
 	template<class T> static cublasStatus_t scal(cublasHandle_t handle, int n,
                             const T           *alpha,
                             T           *x, int incx){return cublas1<T>::scal(handle, n, alpha, x, incx);}
@@ -162,13 +162,13 @@ template<> struct cublas2<Z>{template<class...A> static auto trsv(A...a){return 
 template<> struct cublas3<S>{
 	template<class...As> static auto gemm (As...as){CUBLAS_CALL(cublasSgemm(as...));}
 	template<class...As> static auto syrk (As...as){CUBLAS_CALL(cublasSsyrk(as...));}
-//	template<class...As> static auto herk (As...as){return CUBLAS_CALL(cublasSherk)(as...);}
+//  template<class...As> static auto herk (As...as){return CUBLAS_CALL(cublasSherk)(as...);}
 	template<class...As> static auto trsm (As...as){CUBLAS_CALL(cublasStrsm(as...));}
 };
 template<> struct cublas3<D>{
 	template<class...As> static auto gemm (As...as){ CUBLAS_CALL(cublasDgemm(as...));}
 	template<class...As> static auto syrk (As...as){ CUBLAS_CALL(cublasDsyrk(as...));}
-//	template<class...As> static auto herk (As...as){return cublas_call(cublasDherk)(as...);}
+//  template<class...As> static auto herk (As...as){return cublas_call(cublasDherk)(as...);}
 	template<class...As> static auto trsm (As...as){ CUBLAS_CALL(cublasDtrsm(as...));}
 };
 template<> struct cublas3<C>{
@@ -261,56 +261,56 @@ auto translate(char O)->cublasOperation_t{
 }
 
 //struct context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>{
-//	context()  : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>(
-//		[]{MULTI_MARK_SCOPE("multi::cublas::create context"); cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy
-//	){}
-//	int version() const{
-//		int ret; cublasGetVersion(get(), &ret); return ret;
-//	}
-//	context(context&& other) noexcept = default;
-//	~context() noexcept = default;
+//  context()  : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>(
+//    []{MULTI_MARK_SCOPE("multi::cublas::create context"); cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy
+//  ){}
+//  int version() const{
+//    int ret; cublasGetVersion(get(), &ret); return ret;
+//  }
+//  context(context&& other) noexcept = default;
+//  ~context() noexcept = default;
 //// 2.4.7. cublasGetPointerMode()
-//	auto get_pointer_mode() const{
-//		cublasPointerMode_t ret; cublasGetPointerMode(get(), &ret);
-//		return static_cast<enum pointer_mode>(ret);
-//	}
+//  auto get_pointer_mode() const{
+//    cublasPointerMode_t ret; cublasGetPointerMode(get(), &ret);
+//    return static_cast<enum pointer_mode>(ret);
+//  }
 //// 2.4.8. cublasSetPointerMode() https://docs.nvidia.com/cuda/cublas/index.html#cublassetpointermode
-//	context& set_pointer_mode(enum pointer_mode m){
-//		cublasSetPointerMode(get(), static_cast<cublasPointerMode_t>(m)); return *this;
-//	}
-//	//set_stream https://docs.nvidia.com/cuda/cublas/index.html#cublassetstream
-//	//get_stream https://docs.nvidia.com/cuda/cublas/index.html#cublasgetstream
-//	//get_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
-//	//set_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
-//	template<class...As> auto iamax(As...as) const DECLRETURN(cublas1<>::iamax(get(), translate(as)...))
-//	template<class...As> auto asum (As...as) const DECLRETURN(cublas1<>::asum (get(), translate(as)...))
-//	template<class...As> auto scal (As...as) const DECLRETURN(cublas1<>::scal (get(), translate(as)...))
-//	template<class...As> auto dot  (As...as) const DECLRETURN(cublas1<>::dot  (get(), translate(as)...))
-//	template<class...As> auto dotu (As...as) const DECLRETURN(cublas1<>::dotu (get(), translate(as)...))
-//	template<class...As> auto dotc (As...as) const DECLRETURN(cublas1<>::dotc (get(), translate(as)...))
-//	template<class S, class Ptr, class T>
-//	auto nrm2(S n, Ptr p, S incx, memory::cuda::ptr<T> result) // no const because the method is not thread safe
-//	->decltype(cublas1<>::nrm2 (get(), translate(n), translate(p), translate(incx), translate(result))){set_pointer_mode(pointer_mode::device);
-//		auto r=cublas1<>::nrm2 (get(), translate(n), translate(p), translate(incx), translate(result)); set_pointer_mode(pointer_mode::host);
-//		return r;
-//	}
-//	template<class S, class Ptr, class T>
-//	auto nrm2(S n, Ptr p, S incx, T* result) const{
-//		return cublas1<>::nrm2 (get(), translate(n), translate(p), translate(incx), translate(result));
-//	}
-//	template<class...As> auto copy (As...as) const DECLRETURN(cublas1<>::copy (get(), translate(as)...))
-//	template<class...As> auto trsv (As...as) const{return cublas2<>::trsv(get(), translate(as)...);}
+//  context& set_pointer_mode(enum pointer_mode m){
+//    cublasSetPointerMode(get(), static_cast<cublasPointerMode_t>(m)); return *this;
+//  }
+//  //set_stream https://docs.nvidia.com/cuda/cublas/index.html#cublassetstream
+//  //get_stream https://docs.nvidia.com/cuda/cublas/index.html#cublasgetstream
+//  //get_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
+//  //set_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
+//  template<class...As> auto iamax(As...as) const DECLRETURN(cublas1<>::iamax(get(), translate(as)...))
+//  template<class...As> auto asum (As...as) const DECLRETURN(cublas1<>::asum (get(), translate(as)...))
+//  template<class...As> auto scal (As...as) const DECLRETURN(cublas1<>::scal (get(), translate(as)...))
+//  template<class...As> auto dot  (As...as) const DECLRETURN(cublas1<>::dot  (get(), translate(as)...))
+//  template<class...As> auto dotu (As...as) const DECLRETURN(cublas1<>::dotu (get(), translate(as)...))
+//  template<class...As> auto dotc (As...as) const DECLRETURN(cublas1<>::dotc (get(), translate(as)...))
+//  template<class S, class Ptr, class T>
+//  auto nrm2(S n, Ptr p, S incx, memory::cuda::ptr<T> result) // no const because the method is not thread safe
+//  ->decltype(cublas1<>::nrm2 (get(), translate(n), translate(p), translate(incx), translate(result))){set_pointer_mode(pointer_mode::device);
+//    auto r=cublas1<>::nrm2 (get(), translate(n), translate(p), translate(incx), translate(result)); set_pointer_mode(pointer_mode::host);
+//    return r;
+//  }
+//  template<class S, class Ptr, class T>
+//  auto nrm2(S n, Ptr p, S incx, T* result) const{
+//    return cublas1<>::nrm2 (get(), translate(n), translate(p), translate(incx), translate(result));
+//  }
+//  template<class...As> auto copy (As...as) const DECLRETURN(cublas1<>::copy (get(), translate(as)...))
+//  template<class...As> auto trsv (As...as) const{return cublas2<>::trsv(get(), translate(as)...);}
 
-//	template<typename... As> auto gemm(As... as) DECLRETURN(cublas3<>::gemm(get(), translate(as)...))
+//  template<typename... As> auto gemm(As... as) DECLRETURN(cublas3<>::gemm(get(), translate(as)...))
 
-//	template<class...As> auto syrk (As...as) const{return cublas3<>::syrk(get(), translate(as)...);}
-//	template<class...As> auto herk (As...as) const{return cublas3<>::herk(get(), translate(as)...);}
-//	template<class...As> auto trsm (As...as) const{return cublas3<>::trsm(get(), translate(as)...);}
+//  template<class...As> auto syrk (As...as) const{return cublas3<>::syrk(get(), translate(as)...);}
+//  template<class...As> auto herk (As...as) const{return cublas3<>::herk(get(), translate(as)...);}
+//  template<class...As> auto trsm (As...as) const{return cublas3<>::trsm(get(), translate(as)...);}
 //};
 
 //context* get_default_context(){
-//	thread_local context instance;
-//	return &instance;
+//  thread_local context instance;
+//  return &instance;
 //}
 
 }
@@ -334,7 +334,7 @@ template<class T> boost::multi::cublas::context* default_context_of(memory::cuda
 //}
 
 //namespace memory{namespace cuda{
-//	using boost::multi::blas::default_context_of; // to please nvcc 'default_context_of' should be declared prior to the call site or in namespace 'boost::multi::memory::cuda'
+//  using boost::multi::blas::default_context_of; // to please nvcc 'default_context_of' should be declared prior to the call site or in namespace 'boost::multi::memory::cuda'
 //}}
 }
 
@@ -438,7 +438,7 @@ auto trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cubl
 			case 'C': return CUBLAS_OP_C;
 		} __builtin_unreachable();
 	}();
-//	T alpha_{alpha};
+//  T alpha_{alpha};
 	return cublas::context{}.trsm(
 		side=='L'?CUBLAS_SIDE_LEFT:CUBLAS_SIDE_RIGHT, uplo=='L'?CUBLAS_FILL_MODE_LOWER:CUBLAS_FILL_MODE_UPPER, trans_cu, diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT, m, n, &alpha, raw_pointer_cast(A), lda, raw_pointer_cast(B), ldb);
 }
@@ -479,7 +479,7 @@ auto trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cubl
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS"
 #define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
+// #include<boost/test/unit_test.hpp>
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
