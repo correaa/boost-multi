@@ -99,6 +99,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto arr_val = int{arr};
 			BOOST_TEST( arr_val == 5 );
 		}
+		{
+			multi::array<int, 0> arr1(5);
+			BOOST_TEST( arr1.num_elements() == 1 );
+			auto const arr2 = std::move(arr1);
+			BOOST_TEST( arr2.num_elements() == 1 );
+			BOOST_TEST( int{arr2} == 5 );
+
+			BOOST_TEST( arr1.num_elements() == 0 );
+		}
 	}
 
 	return boost::report_errors();
