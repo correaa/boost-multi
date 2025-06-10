@@ -274,7 +274,7 @@ Again, we use `multi::array<T, 1>` as representative of a vector, but a one-dime
 `multi::array<T, 2>` as representative of a matrices, but a two-dimensional subarray or larger of higher dimensional arrays can be used as long as one of the two interternal strides in 1.
 This is limitation of BLAS, that only acts on certain layouts of 2D arrays.
 
-### `auto multi::blas::gemv(`_complex/real scalar_ `,` _complex/real matrix_`) -> `_convertible to complex/real vector_
+### `auto multi::blas::gemv(`_complex/real scalar_`,` _complex/real matrix_`) -> `_convertible to complex/real vector_`
 
 ```cpp
 multi::array<double, 2> const A({4, 3});
@@ -292,7 +292,9 @@ y += blas::gemv(1.0, A, x);  // y <-  + A * x + y
 y -= blas::gemv(1.0, A, x);  // y <-  - A * x + y
 ```
 
-### GEMM
+## BLAS level 3
+
+### `auto multi::blas::gemm(`_complex/real scalar_`, `_complex/real_ matrix`, `_complex/real_ matrix`) -> `_convertible to complex/real matrix_`
 
 ```cpp
 #include<multi/array.hpp>
@@ -301,16 +303,38 @@ y -= blas::gemv(1.0, A, x);  // y <-  - A * x + y
 namespace multi = boost::multi;
 
 int main() {
- multi::array<double, 2> const A({2, 2});
- multi::array<double, 2> const B({2, 2});
+  multi::array<double, 2> const A({2, 2});
+  multi::array<double, 2> const B({2, 2});
 
- multi::array<double, 2> const C1 = multi::blas::gemm(1.0, A, B);
-    auto const C2 = + multi::blas::gemm(1.0, A, B);
+  multi::array<double, 2> const C1 = multi::blas::gemm(1.0, A, B);
+   auto const C2 = + multi::blas::gemm(1.0, A, B);
 }
 ```
-[(live)](https://godbolt.org/z/YGjq18vz3)
+[(live)](https://godbolt.org/z/P9qWrW1br)
 
-(need linking to BLAS to work, e.g. `-lblas` or `-lopenblas` or `-lmkl`, or throught [CMake](https://godbolt.org/z/jdbEe59ej))
+(needs linking to BLAS to work, e.g. `-lblas` or `-lopenblas` or `-lmkl`, or throught [CMake](https://godbolt.org/z/jdbEe59ej))
+
+```cpp
+#include <boost/multi/adaptors/blas/herk.hpp>
+
+namespace multi = boost::multi;
+namespace blas = multi::blas;
+
+int main() {
+    using complex  = std::complex<double>;
+    auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+    multi::array<complex, 2> const A = {
+        {1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I},
+        {9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I},
+    };
+
+    multi::array<complex, 2> const C = blas::herk(1.0, A);
+
+    assert( +blas::gemm(1.0, A, blas::H(A)) == C );
+}
+```
+[(live)](https://godbolt.org/z/71P5xT6qx)
 
 ## Table of features
 
