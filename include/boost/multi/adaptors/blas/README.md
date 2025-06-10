@@ -314,6 +314,8 @@ int main() {
 
 (needs linking to BLAS to work, e.g. `-lblas` or `-lopenblas` or `-lmkl`, or throught [CMake](https://godbolt.org/z/jdbEe59ej))
 
+### `auto multi::blas::herk(`_complex/real scalar_`, `_complex/real_ matrix`) -> `_convertible to complex/real matrix_`
+
 ```cpp
 #include <boost/multi/adaptors/blas/herk.hpp>
 
