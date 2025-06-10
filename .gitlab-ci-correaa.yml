@@ -588,9 +588,26 @@ nvhpc-22.7:
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["nvhpc"]
 
-nvhpc-25.1:
+# nvhpc-25.1:
+#   stage: build
+#   image: nvcr.io/nvidia/nvhpc:25.1-devel-cuda12.6-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+#   tags:
+#     - non-shared
+#     - large-disk-space
+#     - x86_64
+#   interruptible: true
+#   script:
+#     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
+#     - /opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ --version
+#     - mkdir build && cd build
+#     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release  # -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdpar=multicore"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
+#   needs: ["nvhpc"]
+
+nvhpc-25.5:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:25.1-devel-cuda12.6-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  image: nvcr.io/nvidia/nvhpc:25.5-devel-cuda12.9-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
     - non-shared
     - large-disk-space
@@ -600,7 +617,7 @@ nvhpc-25.1:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release  # -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdpar=multicore"
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdpar=multicore"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["nvhpc"]
