@@ -2,13 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/multi/adaptors/cuda/cublas.hpp>  // needs to be first?
+
 #include <boost/multi/adaptors/blas/trsm.hpp>
-#include <boost/multi/adaptors/cuda/cublas.hpp>
 #include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/complex.h>
 
 namespace multi = boost::multi;
+namespace blas = multi::blas;
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
@@ -17,7 +19,6 @@ namespace multi = boost::multi;
 
 int main() {
 	BOOST_AUTO_TEST_CASE(unit_trsm_multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
-		namespace blas = multi::blas;
 		using complex  = thrust::complex<double>;
 		complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
