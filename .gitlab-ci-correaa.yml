@@ -726,7 +726,7 @@ cuda-12.9.0:
     - mkdir build && cd build
     - g++ --version
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=75 -DCMAKE_CUDA_HOST_COMPILER=g++
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
