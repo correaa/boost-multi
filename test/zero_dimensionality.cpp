@@ -9,7 +9,7 @@
 #include <complex>  // for complex
 #include <memory>  // for allocator  // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
-// #include <utility>  // for move
+#include <utility>  // for move
 #include <vector>  // for vector, allocator
 
 namespace multi = boost::multi;
@@ -98,6 +98,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( arr.num_elements() == 1 );
 			auto arr_val = int{arr};
 			BOOST_TEST( arr_val == 5 );
+		}
+		{
+			multi::array<int, 0> arr1(5);
+			BOOST_TEST( arr1.num_elements() == 1 );
+
+			auto const* arr1_base = arr1.base();
+
+			auto const arr2 = std::move(arr1);
+			BOOST_TEST( arr2.num_elements() == 1 );
+			BOOST_TEST( int{arr2} == 5 );
+			BOOST_TEST( arr2.base() == arr1_base );
 		}
 	}
 
