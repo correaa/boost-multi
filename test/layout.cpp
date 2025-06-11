@@ -426,12 +426,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( size(A2) == 3 );
 
-		multi::array<int, 2> B2(
-#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<2>
-#endif
-			{4, 4}
-		);
+		multi::array<int, 2> B2({4, 4}, 5);
 
 		BOOST_TEST( size(B2) == 4 );
 		B2[3][3] = 99;
@@ -457,20 +452,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
 	}
 
-	////
+	BOOST_AUTO_TEST_CASE(layout_BB) {
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+		double arr[3][4][5] = {};
 
-	// BOOST_AUTO_TEST_CASE(layout_BB) {
-	//  {
-	//      // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	//      double arr[3][4][5] = {};
-	//      using multi::dimensionality;
-	//      static_assert(dimensionality(arr) == 3);
-	//      using multi::extensions;
-	//      auto xA = extensions(arr);
+		using multi::dimensionality;
+		static_assert(dimensionality(arr) == 3);
 
-	//      BOOST_TEST( size(std::get<0>(xA)) == 3 );
-	//      BOOST_TEST( size(std::get<1>(xA)) == 4 );
-	//      BOOST_TEST( size(std::get<2>(xA)) == 5 );
+		using multi::extensions;
+		auto xA = extensions(arr);
+
+		using std::get;  // needed for C++17
+		BOOST_TEST( size(get<0>(xA)) == 3 );
+		BOOST_TEST( size(get<1>(xA)) == 4 );
+		BOOST_TEST( size(get<2>(xA)) == 5 );
+	}
 
 	//      static_assert(multi::stride(arr) == 20);
 
