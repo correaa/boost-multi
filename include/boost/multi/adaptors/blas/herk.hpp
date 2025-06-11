@@ -121,20 +121,20 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 	if constexpr(is_conjugated<A2D>{}) {
 	//  auto& ctxt = *blas::default_context_of(underlying(a.base()));
 		// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
-		if     (stride(a)==1 && c.stride()!=1) {herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
+		if     (stride(a)==1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
 		else if(stride(a)==1 && c.stride()==1) {
-			if(size(a)==1)                     {herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
-			else                               {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			if(size(a)==1)                     { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
+			else                               { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}
 		else if(stride(a)!=1 && c.stride()==1) { herk(c_side==filling::upper?'U':'L', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.rotated().stride());}
 		else if(stride(a)!=1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c          .stride());}
-		else                                  { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		else                                   { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	} else {
 	//  auto& ctxt = *blas::default_context_of(           a.base() );
 		if     (stride(a)!=1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.stride());}
 		else if(stride(a)!=1 && c.stride()==1) {
-			if(size(a)==1)                    { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
-			else                              { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			if(size(a)==1)                     { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
+			else                               { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}
 		else if(stride(a)==1 && c.stride()!=1) {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		else if(stride(a)==1 && c.stride()==1) {herk(c_side==filling::upper?'U':'L', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
