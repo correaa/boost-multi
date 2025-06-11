@@ -745,7 +745,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type = typename std::iterator_traits<Pointer>::value_type;
 	using pointer = Pointer;
-	using reference =  typename std::iterator_traits<Pointer>::reference;
+	using reference =  std::remove_const_t<typename std::iterator_traits<Pointer>::reference>;  // TODO(correaa) investigate why top-level const reaches here
 	using iterator_category = std::random_access_iterator_tag;
 
 	using const_pointer = typename std::pointer_traits<pointer>::template rebind<value_type const>;
@@ -833,10 +833,10 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 	#endif
 
-	constexpr auto current() const -> pointer {return base_ + std::apply(l_, ns_);}
+	constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
 
-	BOOST_MULTI_HD constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
-	BOOST_MULTI_HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
+	BOOST_MULTI_HD constexpr auto operator->() const -> pointer   { return base_ + std::apply(l_, ns_) ; }
+	BOOST_MULTI_HD constexpr auto operator*()  const -> reference /*decltype(base_[0])*/ { return base_  [std::apply(l_, ns_)]; }
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
 		auto const nn = std::apply(xs_, ns_);
 		return base_[std::apply(l_, xs_.from_linear(nn + n))];
@@ -1709,7 +1709,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) && {return element_transformed(std::forward<UF>(fun));}
+	constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
 	template<
 		class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2 const>,

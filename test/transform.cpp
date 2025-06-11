@@ -212,6 +212,10 @@ class indirect_real {
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+
+	static_assert( std::is_same_v<std::remove_const_t<int const >, int       > );
+	static_assert( std::is_same_v<std::remove_const_t<int const&>, int const&> );
+
 	BOOST_AUTO_TEST_CASE(transformed_array) {
 		namespace multi = boost::multi;
 		{
