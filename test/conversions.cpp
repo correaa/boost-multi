@@ -45,6 +45,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::static_array<std::complex<float>, 1> const  CEE1(10, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
 		multi::static_array<std::complex<double>, 1> const ZEE1 = CEE1;
+
+		// BOOST_TEST( zee == cee );  types are not comparable
+		// BOOST_TEST( ZEE1 == CEE1 );  then arrays are not comparable either, but a transformation is comparable...
+
+		BOOST_TEST( ZEE1 == CEE1.element_transformed([](auto const& c) noexcept { return std::complex<double>(c); }));
 	}
 
 	BOOST_AUTO_TEST_CASE(complex_conversion_double_to_float) {
