@@ -308,9 +308,8 @@ else()
 	-Wwrite-strings
 	>
 	$<$<CXX_COMPILER_ID:NVHPC>:
-	-fmax-errors=2
-	-Werror -Wall 
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:-Wfatal-errors>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:-Wfatal-errors -fmax-errors=2>
+	-Werror -Wall
 	-Wcast-qual
 	-Wformat=2
 	-Wshadow
