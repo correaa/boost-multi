@@ -43,7 +43,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(convertibles_1D) {
 		using NDArray = multi::array<double, 1>;
 
-		NDArray const nda;
+		NDArray const nda; (void)nda;
 
 		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
@@ -67,7 +67,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(convertibles_2D) {
 		using NDArray = multi::array<double, 2>;
 
-		NDArray const nda;
+		NDArray const nda; (void)nda;
 
 		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
@@ -86,7 +86,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(convertibles_3D) {
 		using NDArray = multi::array<double, 3>;
 
-		NDArray const nda;
+		NDArray const nda; (void)nda;
 
 		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);

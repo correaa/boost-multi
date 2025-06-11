@@ -105,8 +105,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-		multi::array<int, 4> const tmp({14, 14, 7, 4});
-
 		auto const ext5 = multi::extensions_t<5>{2, 14, 14, 7, 2};
 
 		[[maybe_unused]] auto const ext52 = ext5;
