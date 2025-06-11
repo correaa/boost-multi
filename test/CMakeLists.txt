@@ -309,11 +309,15 @@ else()
 	>
 	# $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 	$<$<CXX_COMPILER_ID:NVHPC>:
-	-Werror -Wall
+	-Werror -Wall -Wfatal-errors
 	-Wcast-qual
 	-Wformat=2
 	-Wshadow
+	-Wsign-compare
+	-Wpedantic
+	-Wundef
 	-Wuninitialized
+	-Wunused
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
