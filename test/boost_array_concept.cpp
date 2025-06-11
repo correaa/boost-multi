@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(concepts_boost_array_1D) {
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(backwards) {
-	multi::array<int, 2> const MA({ 2, 2 });
+	multi::array<int, 2> const MA({ 2, 2 }); (void)MA;
 
 #ifdef __GNUC__
 	#pragma GCC diagnostic push
