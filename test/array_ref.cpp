@@ -145,6 +145,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::iterator_traits<multi::array_ref<int, 1>::iterator>::iterator_category
 	>);
 
+	BOOST_TEST( &iarrr[0] == std::data(icarr) );
 	// static_assert( std::is_base_of_v<
 	//  std::contiguous_iterator_tag,
 	//  std::iterator_traits<multi::array_ref<int, 1>::iterator>::iterator_category

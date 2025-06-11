@@ -69,7 +69,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(contiguous_layout) {
 		std::vector<int> vec(10, 99);  // NOLINT(fuchsia-default-arguments-calls)
 		using ArrayRef = multi::array_ref<int, 1, int*, multi::contiguous_layout<>>;
-		// auto arr       = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
+		auto arr       = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
+
+		BOOST_TEST( &arr[1] == &vec[1] );
 
 		static_assert(
 			std::is_base_of_v<
@@ -438,15 +440,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<int, 2> B2copy{B2({0, 2}, {0, 2})};
 
-		auto B2copy2 = B2({0, 2}, {0, 2}).decay();
-
 		BOOST_TEST( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
 
+		auto B2copy2 = B2({0, 2}, {0, 2}).decay();
+
+		BOOST_TEST( B2copy2 == B2({0, 2}, {0, 2}) );
+		BOOST_TEST( B2copy2.base() != B2({0, 2}, {0, 2}).base() );
+
 		// clang-format off
-	std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
-		{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
-		{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
-	}};
+		std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
+			{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
+			{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
+		}};
 		// clang-format on
 
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
