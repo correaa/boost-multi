@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -803,10 +803,6 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
 	}
-	// auto destroy() {
-	//  return adl_alloc_destroy_n(this->alloc(), this->data_elements(), this->num_elements());
-	//  // array_alloc::destroy_n(this->data_elements(), this->num_elements());
-	// }
 
  public:
 	using typename ref::difference_type;
@@ -956,20 +952,23 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		uninitialized_copy(other.data_elements());
 	}
 
-	static_array(static_array&& other) noexcept(false)  // TODO(correaa) detect if allocation is no except
+	static_array(static_array&& other) noexcept
 	: array_alloc{other.get_allocator()}
-	, ref(static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()) {
-		adl_alloc_uninitialized_move_n(
-			this->alloc(),
-			other.data_elements(),
-			other.num_elements(),
-			this->data_elements()
-		);
+	, ref(std::exchange(other.base_, nullptr), other.extensions()) {
+		other.layout_mutable() = {};
+	// other.layout_t<0>::operator=({});
+	// , ref(static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()) {
+	//  adl_alloc_uninitialized_move_n(
+	//      this->alloc(),
+	//      other.data_elements(),
+	//      other.num_elements(),
+	//      this->data_elements()
+	//  );
 	}
 
  protected:
 	void deallocate() {  // TODO(correaa) : move this to detail::array_allocator
-		if(this->num_elements()) {
+		if(this->num_elements() && this->base_) {
 			multi::allocator_traits<allocator_type>::deallocate(this->alloc(), this->base_, static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()));
 		}
 	}

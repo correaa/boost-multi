@@ -694,6 +694,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
+	{
+		multi::array<double, 2> arr = {{1, 2}, {3, 4}};
+		auto const* arr_base = arr.base();
+
+		multi::array<double, 2> brr = std::move(arr);
+		BOOST_TEST( brr.base() == arr_base );
+	}
+
 	// BOOST_AUTO_TEST_CASE(smart_move_subarray_vector_1d) {
 	//  multi::array<std::vector<double>, 1> arrA(10, std::vector<double>(5));
 
