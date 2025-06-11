@@ -69,7 +69,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(contiguous_layout) {
 		std::vector<int> vec(10, 99);  // NOLINT(fuchsia-default-arguments-calls)
 		using ArrayRef = multi::array_ref<int, 1, int*, multi::contiguous_layout<>>;
-		auto arr       = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
+		// auto arr       = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
 
 		static_assert(
 			std::is_base_of_v<
