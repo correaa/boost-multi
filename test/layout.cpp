@@ -71,6 +71,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using ArrayRef = multi::array_ref<int, 1, int*, multi::contiguous_layout<>>;
 		auto arr       = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
 
+		BOOST_TEST( &arr[1] == &vec[1] );
+
 		static_assert(
 			std::is_base_of_v<
 				std::random_access_iterator_tag, ArrayRef::const_iterator::iterator_category>
@@ -424,12 +426,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( size(A2) == 3 );
 
-		multi::array<int, 2> B2(
-#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<2>
-#endif
-			{4, 4}
-		);
+		multi::array<int, 2> B2({4, 4}, 5);
 
 		BOOST_TEST( size(B2) == 4 );
 		B2[3][3] = 99;
@@ -438,34 +435,38 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<int, 2> B2copy{B2({0, 2}, {0, 2})};
 
-		auto B2copy2 = B2({0, 2}, {0, 2}).decay();
-
 		BOOST_TEST( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
 
+		auto B2copy2 = B2({0, 2}, {0, 2}).decay();
+
+		BOOST_TEST( B2copy2 == B2({0, 2}, {0, 2}) );
+		BOOST_TEST( B2copy2.base() != B2({0, 2}, {0, 2}).base() );
+
 		// clang-format off
-	std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
-		{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
-		{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
-	}};
+		std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
+			{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
+			{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
+		}};
 		// clang-format on
 
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
 	}
 
-	////
+	BOOST_AUTO_TEST_CASE(layout_BB) {
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+		double arr[3][4][5] = {};
 
-	// BOOST_AUTO_TEST_CASE(layout_BB) {
-	//  {
-	//      // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	//      double arr[3][4][5] = {};
-	//      using multi::dimensionality;
-	//      static_assert(dimensionality(arr) == 3);
-	//      using multi::extensions;
-	//      auto xA = extensions(arr);
+		using multi::dimensionality;
+		static_assert(dimensionality(arr) == 3);
 
-	//      BOOST_TEST( size(std::get<0>(xA)) == 3 );
-	//      BOOST_TEST( size(std::get<1>(xA)) == 4 );
-	//      BOOST_TEST( size(std::get<2>(xA)) == 5 );
+		using multi::extensions;
+		auto xA = extensions(arr);
+
+		using std::get;  // needed for C++17
+		BOOST_TEST( size(get<0>(xA)) == 3 );
+		BOOST_TEST( size(get<1>(xA)) == 4 );
+		BOOST_TEST( size(get<2>(xA)) == 5 );
+	}
 
 	//      static_assert(multi::stride(arr) == 20);
 

@@ -989,11 +989,13 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 
 	constexpr auto              base() & -> typename static_array::element_ptr { return ref::base(); }
 	constexpr auto              base() const& -> typename static_array::element_const_ptr { return ref::base(); }
+
 	BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array& self) -> typename static_array::element_ptr { return self.base(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
 
 	constexpr auto              origin() & -> typename static_array::element_ptr { return ref::origin(); }
 	constexpr auto              origin() const& -> typename static_array::element_const_ptr { return ref::origin(); }
+
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array& self) -> typename static_array::element_ptr { return self.origin(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr { return self.origin(); }
 
@@ -1214,18 +1216,6 @@ struct array : static_array<T, D, Alloc> {
 	using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_array<T, D, Alloc>::value_type;  // MSVC wants fullname here?
 
-// #if defined(_MSC_VER)
-// #if(__cplusplus >= 202002L)
-//  constexpr
-// #endif
-//  explicit array(typename array::extensions_type exts, typename array::allocator_type const& alloc)
-//  : static_array<T, D, Alloc>(exts, alloc) {assert(this->stride() != 0);}
-
-//  // constexpr 
-//  explicit array(typename array::extensions_type const& exts)
-//  : static_array<T, D, Alloc>(exts) { assert(this->stride() != 0); }
-// #endif
-
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
 	: static_{(ilv.size()==0)?array<T, D>():array<T, D>(ilv.begin(), ilv.end())} {
@@ -1263,19 +1253,6 @@ struct array : static_array<T, D, Alloc> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
-
-	// auto move() & -> subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>> {
-	//  subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>>
-	//      ret = multi::static_array_cast<typename array::element_type, multi::move_ptr<typename array::element_type>>(*this);
-
-	//  layout_t<D>::operator=({});
-
-	//  assert(this->stride() != 0);
-	//  return ret;
-	// }
-	// friend auto move(array& self) -> subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>> {
-	//  return self.move();
-	// }
 
 	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
@@ -1527,19 +1504,6 @@ struct array : static_array<T, D, Alloc> {
 
 		return *this;
 	}
-	// template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {
-	//  this->layout_mutable() = this->layout_mutable().creindex(idxs...);
-	//  return std::move(*this);
-	// }
-	// template<class... Indices> constexpr auto reindex(Indices... idxs) & -> array& {
-	//  this->layout_mutable() = this->layout_mutable().creindex(idxs...);
-	//  // this->layout_mutable().reindex(idxs...);
-	//  return *this;
-	// }
-
-	// ~array() {
-	//  assert(this->stride() != 0);
-	// }
 };
 
 #if defined(__clang__)
