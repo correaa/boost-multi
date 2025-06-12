@@ -31,7 +31,8 @@ using small_array = multi::static_array<T, D, multi::detail::static_allocator<T,
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(static_array_allocator) {
+	// static_array_allocator
+	{
 		multi::array<int, 2> const                             ma({2, 3}, 99);
 		multi::static_array<int, 2, std::allocator<int>> const sma(ma(), std::allocator<int>{});
 		BOOST_TEST( sma == ma );
