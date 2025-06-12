@@ -307,13 +307,20 @@ else()
 	-Wunused -Wunused-but-set-variable -Wunused-function -Wunused-parameter -Wunused-variable
 	-Wwrite-strings
 	>
-	# $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 	$<$<CXX_COMPILER_ID:NVHPC>:
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:
+	#-Wfatal-errors
+	-fmax-errors=2
+	>
 	-Werror -Wall
 	-Wcast-qual
 	-Wformat=2
 	-Wshadow
+	-Wsign-compare
+	#-Wpedantic
+	-Wundef
 	-Wuninitialized
+	-Wunused
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
