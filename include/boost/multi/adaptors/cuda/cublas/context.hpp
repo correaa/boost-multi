@@ -99,17 +99,6 @@ using std::is_assignable;
 using std::is_assignable_v;
 using std::is_convertible_v;
 
-// enum class type {S, D, C, Z};
-
-// template<class T>
-// constexpr auto type_of(T const& = {}) -> cublas::type {
-//  static_assert(is_s<T>{} || is_d<T>{} || is_c<T>{} || is_z<T>{});
-//       if(is_s<T>{}) {return type::S;}
-//  else if(is_d<T>{}) {return type::D;}
-//  else if(is_c<T>{}) {return type::C;}
-//  else if(is_z<T>{}) {return type::Z;}
-// }
-
 #if defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	using Complex = hipFloatComplex;
 	using DoubleComplex = hipDoubleComplex;
