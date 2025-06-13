@@ -1923,12 +1923,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
 	using const_subarray<T, D, ElementPtr, Layout>::begin;
-	constexpr auto begin() && { return this->begin_aux_(); }
-	constexpr auto begin()  & { return this->begin_aux_(); }
+	constexpr auto begin() && noexcept { return this->begin_aux_(); }
+	constexpr auto begin()  & noexcept { return this->begin_aux_(); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::end;
-	constexpr auto end()   && { return this->end_aux_(); }
-	constexpr auto end()    & { return this->end_aux_(); }
+	constexpr auto end()   && noexcept { return this->end_aux_(); }
+	constexpr auto end()    & noexcept { return this->end_aux_(); }
 
 	constexpr auto mbegin() { return move_iterator{this->begin()}; }
 	constexpr auto mend()   { return move_iterator{this->end()  }; }
