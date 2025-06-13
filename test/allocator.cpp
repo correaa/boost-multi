@@ -432,7 +432,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		return ret;
 	};
 
-	// constexpr_allocator 
+	// constexpr_allocator
 	{
 		constexpr auto gg = g();
 		static_assert(gg == 10);
