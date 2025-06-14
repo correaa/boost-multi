@@ -20,6 +20,7 @@
 #if defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #include <hip/hip_complex.h>
 #else  //  __CUDA__  __NVCC__  or clang cuda
+#include <cuComplex.h>
 #endif
 
 #if !defined(MULTI_USE_HIP)
