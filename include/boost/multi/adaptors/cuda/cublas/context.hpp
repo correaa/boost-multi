@@ -17,7 +17,12 @@
 #include <hipblas/hipblas.h>
 #endif
 
-#if not defined(MULTI_USE_HIP)
+#if defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#include <hip/hip_complex.h>
+#else  //  __CUDA__  __NVCC__  or clang cuda
+#endif
+
+#if !defined(MULTI_USE_HIP)
 #define hicup(name) cuda##name
 #define hicu(name) cu##name
 #define HICU(name) CU##name
@@ -111,8 +116,8 @@ using std::is_convertible_v;
 // }
 
 #if defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
-	using Complex = hipblasComplex;
-	using DoubleComplex = hipblasDoubleComplex;
+	using Complex = hipFloatComplex  // hipblasComplex;
+	using DoubleComplex = hipDoubleComplex;  // hipblasDoubleComplex;
 #else  //  __CUDA__  __NVCC__  or clang cuda
 	using Complex = cuComplex;
 	using DoubleComplex = cuDoubleComplex;
