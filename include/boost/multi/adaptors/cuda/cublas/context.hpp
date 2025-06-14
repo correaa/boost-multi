@@ -1,4 +1,4 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -111,8 +111,13 @@ using std::is_convertible_v;
 // }
 
 #if defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
-	using Complex = hipblasComplex;
+#if (hipblasVersionMajor >= 3)
+	using Complex = hipFloatComplex;
+	using DoubleComplex = hipDoubleComplex;
+#else
+    using Complex = hipblasComplex;
 	using DoubleComplex = hipblasDoubleComplex;
+#endif
 #else  //  __CUDA__  __NVCC__  or clang cuda
 	using Complex = cuComplex;
 	using DoubleComplex = cuDoubleComplex;
