@@ -925,7 +925,7 @@ inq rocm:
   stage: test
   # image: rocm/dev-ubuntu-22.04
   image: rocm/dev-ubuntu-24.04
-  allow_failure: true
+  allow_failure: false
   tags:
     - non-shared
     - large-disk-space
