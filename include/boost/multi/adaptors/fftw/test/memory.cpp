@@ -7,19 +7,20 @@
 #include <multi/adaptors/fftw.hpp>
 #include <multi/array.hpp>
 
-#include<chrono>
-#include<iostream>
-#include<random>
+#include <chrono>
+#include <iostream>
+#include <string_view>
+#include <random>
 
 #include<fftw3.h>
 
 class watch : private std::chrono::high_resolution_clock{
 	std::string label;
-	time_point start = now();
+	time_point const start = now();
 
- public:
-	explicit watch(std::string label) : label{std::move(label)} {}
-	~watch(){std::cerr<< label<<": "<< std::chrono::duration<double>(now() - start).count() <<" sec"<<std::endl;}
+//  public:
+//  explicit watch(std::string_view label) : label{label} {}
+	~watch() { std::cerr<< label<<": "<< std::chrono::duration<double>(now() - start).count() <<" sec"<<std::endl; }
 };
 
 template<class T> struct randomizer {
