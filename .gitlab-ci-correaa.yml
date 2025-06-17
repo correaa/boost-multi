@@ -1076,9 +1076,10 @@ pages:
     - non-shared
     - docker
   script:
-  - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor
+  - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc
   - mkdir .public
   - cd doc
+  - pandoc -t asciidoc -f markdown ../README.md > multi.adoc
   - asciidoctor -b xhtml5 multi.adoc
   - cd ..
   - cp -r doc/multi.html .public
