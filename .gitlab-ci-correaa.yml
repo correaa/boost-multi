@@ -1068,3 +1068,23 @@ sonar:
     - cd ..
     - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.python.version=3.12.3 -Dsonar.cfamily.compile-commands=build/compile_commands.json `#-Dsonar.cfamily.build-wrapper-output=bw-output` -Dsonar.cfamily.gcov.reportsPath="build/"
   needs: ["g++"]
+
+pages:
+  stage: build
+  allow_failure: true
+  tags:
+    - non-shared
+    - docker
+  script:
+  - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor
+  - mkdir .public
+  - cd doc
+  - asciidoctor -b xhtml5 multi.adoc
+  - cd ..
+  - cp -r doc/multi.html .public
+  - mv .public public
+  artifacts:
+    paths:
+    - public
+  needs: ["g++"]
+# check for file here: https://correaa.gitlab.io/multi/multi.html
