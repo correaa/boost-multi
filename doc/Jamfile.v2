@@ -1,0 +1,23 @@
+# Copyright 2025 Joaqu�n M L�pez Mu�oz.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
+# See http://www.boost.org/libs/bloom for library home page.
+
+import asciidoctor ;
+
+html multi.html : multi.adoc ;
+
+install html_ : multi.html : <location>html ;
+
+pdf multi.pdf : multi.adoc ;
+explicit multi.pdf ;
+
+install pdf_ : multi.pdf : <location>multi ;
+explicit pdf_ ;
+
+alias boostdoc ;
+explicit boostdoc ;
+alias boostrelease : html_ ;
+explicit boostrelease ;
