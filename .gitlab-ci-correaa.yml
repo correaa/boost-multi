@@ -1076,10 +1076,11 @@ pages:
     - non-shared
     - docker
   script:
-  - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates bjam asciidoctor
+  - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor
   - mkdir .public
   - cd doc
-  - b2
+  - asciidoctor -b xhtml5 multi.adoc
+  - cd ..
   - cp -r doc/multi.html .public
   - mv .public public
   artifacts:
