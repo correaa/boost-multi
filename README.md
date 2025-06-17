@@ -1,6 +1,8 @@
+////
 <!--
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
+////
 
 **[Boost.] Multi**
 
@@ -44,7 +46,7 @@ The library requires C++17 or higher, and it has no external dependencies.
 
 [[_TOC_]]
 
-## Installation and tests
+# Installation and tests
 
 Before using the library, you can try it [online](https://godbolt.org/z/dvacqK8jE).
 
@@ -111,7 +113,7 @@ Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific de
 In the following sections we present basic and advanced uses of the libraries. 
 Feel free to jump to the "Reference of fundamental types" section to explore a more exhaustive description of the classes provided by the library.
 
-## Basic Usage
+# Basic Usage
 
 The following code declares an array by specifying the element type and the dimensions;
 individual elements can be initialized from a nested rectangular list.
@@ -176,7 +178,7 @@ assert( &element_1_1(C3D[0]) == &C3D[0][1][1] );
 
 (Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or, in general, user-defined value-types.)
 
-## Advanced Usage
+# Advanced Usage
 
 In this example, we are going to use memory that is not managed by the library and manipulate the elements.
 We can create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
@@ -269,7 +271,7 @@ In this case, the original array will be transformed by sorting the matrix into:
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
-## Initialization
+# Initialization
 
 `array_ref` is initialized from a preexisting contiguous range, the index extensions should be compatible with the total number of elements.
 
@@ -318,7 +320,7 @@ assert( A3.num_elements() == 3 * 2 * 2 );
 
 In all cases, constness (`const` declaration) is honored in the expected way.
 
-## Copy, and assigment (, and aliasing)
+# Copy, and assigment (, and aliasing)
 
 The library offers value semantics for the `multi::array<T, D>` family of classes.
 Constructing or assigning from an existing array generates a copy of the original object, independent of the original one but equal in value.
@@ -434,7 +436,7 @@ For the same reason, subarrays cannot be assigned from an array or another subar
 
 Changing the size of arrays by `reextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
 
-## Iteration (range-based loops vs iterators)
+# Iteration (range-based loops vs iterators)
 
 Historically, iteration over arrays has been done with index-based `for`-loops, where each nesting level is associated with a subdimension.
 For this type of usage, the valid range of indices in all the dimensions of an array is extracted with `.extensions()`, and in the 2D case, `.extensions()` can be conveniently decomposed into two ranges, one for each dimension.
@@ -544,7 +546,7 @@ recursive_print(A);
 This feature allows to view the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
 For example array element at indices 1,1 is the same as the element 
 
-### "Pointer" to subarray
+## "Pointer" to subarray
 
 The library strongly relies on value-sematics, and it doesn't entertain the concept of "shallow" copy; however, it supports refenece- and pointer-sematics.
 
@@ -564,7 +566,7 @@ The case is an illustration that, in the library, operator `&` is, for subarrays
 
 Comparing these markers/pointers with different provenance, i.e., originating from different arrays, is generally undefined.
 
-## Indexing
+# Indexing
 
 Arrays provide random access to elements or subviews.
 Many algorithms on arrays are oriented to linear algebra,
@@ -575,7 +577,7 @@ For example `*(begin(A) + n)` and `A[n]` are equivalent
 and the range defined by the pair `begin(A), end(A)` is equivalent to `A(extension(A))` and, in turn, to `A()` (even for a multidimensional array, `D > 1`).
 The syntax can be combined in arbitrary ways, for example `*begin(A[n])` is equivalent to `A[n][0]`.
 
-### Element access and partial access
+## Element access and partial access
 
 Index access mimics that of C-fixed sizes arrays. 
 For example, a 2-dimensional array will access to an element by specifying two indices `A[1][2]`,
@@ -634,7 +636,7 @@ std::vector<double> y(3000); std::iota(y.begin(), y.end(), 0.2);  // could be al
 gj_solve(A({1000, 4000}, {0, 3000}), y);
 ```
 
-### Slices and strides
+## Slices and strides
 
 Given an array, a slice in the first dimension can be taken with the `sliced` function. 
 `sliced` takes two arguments, the first index of the slice and the last index (not included) of the slice. For example,
@@ -702,7 +704,7 @@ auto                    block_value_3 = + A({1, 4}, {2, 4})        ;
 Any parenthesis argument can be either a range (with or without stride) or an index. 
 Range argument can be substituted by `multi::all` to obtain the whole range.
 
-## Conversions
+# Conversions
 
 Conversion between arrays of distinct types is possible if the underlying elements allow it.
 The result is as if elements are converted one by one; array sizes (extensions) are preserved.
@@ -752,7 +754,7 @@ For example, to convert an array of integers to an array of text strings:
 	assert( B[1][1] == "4" );
 ```
 
-## Const-correctness
+# Const-correctness
 
 Const-correctness refers to the property of a program to disallow mutation of certain objects when it is undesired or logically incorrect.
 Honoring the const-ness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.
@@ -809,7 +811,7 @@ int main() {
 }
 ```
 
-## Compile-time evaluation (constexpr-all-the-things)
+# Compile-time evaluation (constexpr)
 
 With certain limitations imposed by the language, arrays can be declared in contexts with compile-time evaluation.
 
@@ -824,7 +826,7 @@ static_assert( trace() == 4 + 2 + 10 );
 ```
 https://godbolt.org/z/Porre3z8s
 
-## Broadcast (infinite views)
+# Broadcast (infinite views)
 
 Broadcasting is a technique by which arrays are reinterpreted as having a higher dimension by repeating elements.
 The technique allows the reuse of operations designed for high dimensionality and effectively apply them to arrays of lower dimensionality.
@@ -933,7 +935,7 @@ assert( std::equal(sevens.begin(), sevens.end(), single.broadcasted().begin()) )
 ```
 (https://godbolt.org/z/nnxjsrvM1)
 
-## Uninitialized vs. initialized elements
+# Uninitialized vs. initialized elements
 
 If available, the library can take advantage of trivial initialization for the specific element type.
 These types can be primitive or user-defined and come with "trivial default constructors". In simple terms, these constructors are not specified and do nothing, not even set values.
@@ -977,14 +979,14 @@ bool multi::force_element_trivial_default_construction<std::complex<double>> = t
 With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
 The rule will only apply to this library's containers (`multi::array`, etc), and not to other containers (such as `std::vector`) or individual `std::complex` variables.
 
-## Type Requirements
+# Type Requirements
 
 The library design tries to impose the minimum possible requirements over the types that parameterize the arrays.
 Array operations assume that the contained type (element type) are regular (i.e. different element represent disjoint entities that behave like values).
 Pointer-like random access types can be used as substitutes of built-in pointers.
 (Therefore pointers to special memory and fancy-pointers are supported.)
 
-### Linear Sequences: Pointers
+## Linear Sequences: Pointers
 
 An `array_ref` can reference an arbitrary random access linear sequence (e.g. memory block defined by pointer and size).
 This way, any linear sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be efficiently arranged as a multidimensional array.
@@ -998,13 +1000,13 @@ assert( buffer[11] == 9.0 );  // the target memory is affected
 ```
 Since `array_ref` does not manage the memory associated with it, the reference can be simply dangle if the `buffer` memory is reallocated (e.g. by vector-`resize` in this case).
 
-### Special Memory: Pointers and Views
+## Special Memory: Pointers and Views
 
 `array`s manage their memory behind the scenes through allocators, which can be specified at construction.
 It can handle special memory, as long as the underlying types behave coherently, these include [fancy pointers](https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers) (and fancy references).
 Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
 
-#### Allocators and Fancy Pointers
+### Allocators and Fancy Pointers
 
 Specific uses of fancy memory are file-mapped memory or interprocess shared memory.
 This example illustrates memory persistency by combining with Boost.Interprocess library. 
@@ -1039,7 +1041,7 @@ int main() {
 
 (See also, examples of interactions with the CUDA Thrust library to see more uses of special pointer types to handle special memory.)
 
-#### Transformed views
+### Transformed views
 
 Another kind of use of the internal pointer-like type is to transform underlying values.
 These are useful to create "projections" or "views" of data elements.
@@ -1111,7 +1113,7 @@ As mentioned in other sections using `auto` and/or `+` appropriately can lead to
 | `B = A.elements_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred  |
 | `B = + A.elements_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended. |
 
-## Fundamental types and concepts
+# Fundamental types and concepts
 
 The library interface presents several closely related C++ types (classes) representing arrays.
 The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
@@ -2102,7 +2104,7 @@ Simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libra
 
 # Technical points
 
-### Indexing (square brackets vs. parenthesis?)
+## Indexing (square brackets vs. parenthesis?)
 
 The chained bracket notation (`A[i][j][k]`) allows you to refer to elements and lower-dimensional subarrays consistently and generically, and it is the recommended way to access array objects.
 It is a frequently raised question whether the chained bracket notation is beneficial for performance, as each use of the bracket leads to the creation of temporary objects, which in turn generates a partial copy of the layout.
@@ -2136,7 +2138,7 @@ std::array<int, 3> p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
 
-### Iteration past-end in the abstract machine
+## Iteration past-end in the abstract machine
 
 It's crucial to grasp that pointers are limited to referencing valid memory in the strict C abstract machine, such as allocated memory.
 This understanding is key to avoiding undefined behavior in your code.
