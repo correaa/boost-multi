@@ -1,7 +1,8 @@
 <!--
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
-# [Boost.] Multi
+
+**[Boost.] Multi**
 
 > **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/) and it doesn't depend on Boost libraries.**
 
@@ -21,7 +22,7 @@ Features of this library that aim to facilitate the manipulation of multidimensi
 
 * Value semantics of multidimensional array containers and well-defined referential semantics to avoid unnecessary copies if possible.
 * Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
-A D-dimensional array can be interpreted either as an (STL-compatible) sequence of (D-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
+A _D_-dimensional array can be interpreted either as an (STL-compatible) sequence of (_D_-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
 * Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
 * Memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
 
@@ -43,7 +44,7 @@ The library requires C++17 or higher, and it has no external dependencies.
 
 [[_TOC_]]
 
-## Using the library, installation and tests
+## Installation and tests
 
 Before using the library, you can try it [online](https://godbolt.org/z/dvacqK8jE).
 
@@ -1110,7 +1111,7 @@ As mentioned in other sections using `auto` and/or `+` appropriately can lead to
 | `B = A.elements_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred  |
 | `B = + A.elements_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended. |
 
-## Reference documentation of fundamental types
+## Fundamental types and concepts
 
 The library interface presents several closely related C++ types (classes) representing arrays.
 The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
@@ -1121,8 +1122,7 @@ however, it is convenient for documentation to present the classes in a differen
 For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref`.
 Furthermore, the *is-a* relationship is implemented through C++ public inheritance, so, for example, a reference of type `subarray<T, D>&` can refer to a variable of type `array<T, D>`.
 
-
-### class `multi::subarray<T, D, P = T* >`
+<details><summary>class <code>multi::subarray&lt;T, D, P = T* &gt;</code></summary>
 
 A subarray-reference is part (or a whole) of another larger array.
 It is important to understand that `subarray`s have referential semantics, their elements are not independent of the values of the larger arrays they are part of.
@@ -1138,7 +1138,7 @@ The whole object can be invalidated if the original array is destroyed.
 
 <details><summary>Member types</summary>
 
-| Member types      |                           |
+| `subarray::`      | Description               |
 |---                |---                        |
 | `value_type`      | `multi::array<T, D - 1, P >` or, for `D == 1`, `iterator_traits<P>::value_type` (usually `T`)   
 | `reference`       | `multi::subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::reference` (usually `T&`) 
@@ -1157,7 +1157,7 @@ The whole object can be invalidated if the original array is destroyed.
 
 <details><summary>Special member functions</summary>
 
-| Member fuctions   |    |
+| `subarray::`      | Description |
 |---                |--- |
 | (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements |
 | `operator=`       | assigns the elements from the source; the sizes must match |
@@ -1263,10 +1263,11 @@ A reference `subarray` can be invalidated when its origin array is invalidated o
 For example, if the `array` from which it originates is destroyed or resized.
 
 </details>
+</details>
 
-### class `multi::array_ref<T, D, P = T* >`
+<details><summary>class <code>multi::array_ref&lt;T, D, P = T* &gt;</code></summary>
 
-A D-dimensional view of the contiguous pre-existing memory buffer.
+A _D_-dimensional view of the contiguous pre-existing memory buffer.
 This class doesn't manage the elements it contains, and it has reference semantics (it can't be rebound, assignments are deep, and have the same size restrictions as `subarray`)
 
 Since `array_ref` is-a `subarray`, it inherits all the class methods and types described before and, in addition, it defines these members below.
@@ -1301,9 +1302,11 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 
 An `array_ref` can be invalidated if the original buffer is deallocated.
 
-### class `multi::static_array<T, D, Alloc = std::allocator<T> >`
+</details>
 
-A D-dimensional array that manages an internal memory buffer.
+<details><summary>class <code>multi::static_array&lt;T, D, Alloc = std::allocator<T> &gt;</code></summary>
+
+A _D_-dimensional array that manages an internal memory buffer.
 This class owns the elements it contains; it has restricted value semantics because assignments are restricted to sources with equal sizes.
 Memory is requested by an allocator of type Alloc (standard allocator by default).
 It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::static_array`.
@@ -1345,12 +1348,14 @@ For most uses, a `multi::array` should be preferred instead.
 | Relational fuctions   |  same as for `array_ref`  |
 |---                |--- |
 
-### class `multi::array<T, D, Alloc = std::allocator<T> >`
+</details>
+
+<details><summary>class <code>multi::array&lt;T, D, Alloc = std::allocator<T> &gt;</code></summary>
 
 An array of integer positive dimension D has value semantics if element type T has value semantics.
 It supports stateful and polymorphic allocators, which is implied for the special type `multi::pmr::array<T, D>`.
 
-| Member types      | same as for `static_array` |
+| Member types      | same as for `static_array` (see above) |
 |---                |---                         |
 
 | Member fuctions   |    |
@@ -1385,7 +1390,9 @@ It supports stateful and polymorphic allocators, which is implied for the specia
 | `clear`           | Erases all elements from the container. The array is resized to zero size. |
 | `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`. The first argument is of `extensions_type`, and the second is optional for element types with a default constructor. 
 
-### class `multi::subarray<T, D, P >::(const_)iterator`
+</details>
+
+<details><summary>class <code>multi::[sub]array&lt;T, D, P &gt;::(const_)iterator</code></summary>
 
 A random-access iterator to subarrays of dimension `D - 1`, that is generally used to interact with or implement algorithms.
 They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
@@ -1394,8 +1401,9 @@ Note that this is the same type for all related arrays, for example, `multi::arr
 
 `iterator` can be invalidated when its original array is invalidated, destroyed or resized.
 An `iterator` that stems from `static_array` becomes invalid only if the original array was destroyed or out-of-scope.
+</details>
 
-# Interoperability with other software
+# Interoperability
 
 ## STL (Standard Template Library)
 
@@ -1595,7 +1603,8 @@ The generic protocol is such that variables are (de)serialized using the (`>>`)`
 Serialization can be binary (efficient) or text-based (human-readable).
 
 Here, it is a small implementation of save and load functions for an array to JSON format with the Cereal library.
-The example can be easily adapted to other formats or libraries (an alternative for XML with Boost.Serialization is commented on the right).
+The example can be easily adapted to other formats or libraries.
+(An alternative for XML with Boost.Serialization is commented on the right.)
 
 ```cpp
 #include<multi/array.hpp>  // this library
