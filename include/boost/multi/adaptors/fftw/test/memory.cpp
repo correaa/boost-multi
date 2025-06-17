@@ -14,15 +14,6 @@
 
 #include<fftw3.h>
 
-class watch : private std::chrono::high_resolution_clock{
-	std::string label;
-	time_point const start = now();
-
-//  public:
-//  explicit watch(std::string_view label) : label{label} {}
-	~watch() { std::cerr<< label<<": "<< std::chrono::duration<double>(now() - start).count() <<" sec"<<std::endl; }
-};
-
 template<class T> struct randomizer {
 	template<class M> void operator()(M&& arr) const {
 		std::for_each(arr.begin(), arr.end(), [&self=*this](auto&& elem) {self.operator()(elem);});
