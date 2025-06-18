@@ -1089,6 +1089,7 @@ pages:
   - asciidoctor -a source-highlighter=rouge -b xhtml5 multi.adoc
   - cd ..
   - cp -r doc/multi.html .public
+  - cp -r doc/multi.adoc .public
   - mv .public public
   artifacts:
     paths:
