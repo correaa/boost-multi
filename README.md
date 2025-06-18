@@ -88,7 +88,7 @@ FetchContent_MakeAvailable(multi)
 target_link_libraries(my_target PUBLIC multi)
 ```
 
-The code requires [any C++ compiler](https://godbolt.org/z/hxEYGYEWc) (or [CUDA compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support;
+The code requires any C++ [compiler](https://godbolt.org/z/hxEYGYEWc) (or CUDA [compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support;
 for reference, any of:
 LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
 GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
@@ -105,7 +105,7 @@ Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([
 (Multi code inside CUDA kernel can be compiled with `nvcc` and with [`clang` (in CUDA mode)](https://godbolt.org/z/7dTKdPTxc).
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 
-Optional "adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, , lapack, thurst, or CUDA
+Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, , lapack, thurst, or CUDA
 (all of them can be installed with `sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install -devel fftw-devel ...`.)
 
 In the following sections we present basic and advanced uses of the libraries. 
