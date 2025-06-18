@@ -29,8 +29,8 @@
 </style>
 ++++
 
-include::../README.md[]
-// include::bloom/intro.adoc[]
+// include::../README.md[]
+include::multi/intro.adoc[]
 // include::bloom/primer.adoc[]
 // include::bloom/tutorial.adoc[]
 // include::bloom/configuration.adoc[]
