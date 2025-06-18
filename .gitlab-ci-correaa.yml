@@ -1072,6 +1072,9 @@ sonar:
 pages:
   stage: build
   allow_failure: true
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - docker
@@ -1079,7 +1082,7 @@ pages:
   - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc
   - mkdir .public
   - cd doc
-  - pandoc -t html5 -f markdown ../README.md > multi.html
+  - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
   # - pandoc -t asciidoc -f markdown ../README.md > multi.adoc
   # - asciidoctor -b xhtml5 multi.adoc
   - cd ..
@@ -1088,5 +1091,5 @@ pages:
   artifacts:
     paths:
     - public
-  needs: ["g++"]
+# needs: ["g++"]
 # check for file here: https://correaa.gitlab.io/multi/multi.html
