@@ -2,15 +2,6 @@
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
 
-```{=asciidoc}
----
-title: "Boost.Multi"
-output: 
-  html_document:
-    toc: true
-    toc_float: true
----
-
 **[Boost.] Multi**
 
 > **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/) and it doesn't depend on Boost libraries.**
@@ -18,6 +9,8 @@ output:
 _© Alfredo A. Correa, 2018-2025_
 
 _Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
+
+# [Introduction](doc/multi/intro.adoc)
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
 This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
