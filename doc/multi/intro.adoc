@@ -1,0 +1,41 @@
+
+[#intro]
+
+> **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/) and it doesn't depend on Boost libraries.**
+_© Alfredo A. Correa, 2018-2025_
+
+= Introduction
+
+:idprefix: intro_
+
+_Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
+
+Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
+This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
+featuring logical access recursively across dimensions and to elements through indices and iterators.
+
+The internal data structure layout is stride-based, which makes it compatible with low-level C libraries.
+
+The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
+
+Features of this library that aim to facilitate the manipulation of multidimensional arrays include:
+
+* Value semantics of multidimensional array containers and well-defined referential semantics to avoid unnecessary copies if possible.
+* Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
+A _D_-dimensional array can be interpreted either as an (STL-compatible) sequence of (_D_-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
+* Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
+* Memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
+
+Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
+or with the standard MDSpan proposal `std::mdspan`.
+This library shares some of their goals and is compatible with them, but it is designed at a different level of generality and with other priorities (such as the features listed above).
+The code is entirely independent and has fundamental implementation and semantics differences.
+
+The library's primary concern is with the storage and logic structure of data;
+it doesn't make algebraic or geometric assumptions about the arrays and their elements.
+(It is still a good building block for implementing mathematical algorithms, such as representing algebraic dense matrices in the 2D case.)
+
+The library does not throw exceptions and provides basic guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
+Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
+
+_Multi_ is a header-only library. C++17 or later required.
