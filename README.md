@@ -2,6 +2,14 @@
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
 
+---
+title: "Boost.Multi"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
 **[Boost.] Multi**
 
 > **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/) and it doesn't depend on Boost libraries.**
