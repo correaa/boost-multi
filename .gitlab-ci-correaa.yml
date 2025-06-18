@@ -1080,11 +1080,13 @@ pages:
     - docker
   script:
   - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+  - pandoc --version
+  - asciidoctor --version
   - mkdir .public
   - cd doc
   # - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
   - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
-  - asciidoctor -r asciidoctor-rouge -a source-highlighter=rouge -b xhtml5 multi.adoc
+  - asciidoctor -a source-highlighter=rouge -b xhtml5 multi.adoc
   - cd ..
   - cp -r doc/multi.html .public
   - mv .public public
