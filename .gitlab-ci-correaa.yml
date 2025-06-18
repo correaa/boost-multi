@@ -1085,11 +1085,11 @@ pages:
   - mkdir .public
   - cd doc
   # - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
-  - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
+  # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
   - asciidoctor -a source-highlighter=rouge -b xhtml5 multi.adoc
   - cd ..
   - cp -r doc/multi.html .public
-  - cp -r doc/multi.adoc .public
+  # - cp -r doc/multi.adoc .public
   - mv .public public
   artifacts:
     paths:
