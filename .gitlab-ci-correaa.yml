@@ -1079,7 +1079,7 @@ pages:
     - non-shared
     - docker
   script:
-  - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc
+  - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
   - mkdir .public
   - cd doc
   # - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
