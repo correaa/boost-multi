@@ -1070,7 +1070,7 @@ sonar:
   needs: ["g++"]
 
 pages:
-  stage: build
+  stage: basic
   allow_failure: true
   only:
     refs:
