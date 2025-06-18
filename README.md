@@ -2,6 +2,7 @@
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
 
+```{=asciidoc}
 ---
 title: "Boost.Multi"
 output: 
