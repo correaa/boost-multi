@@ -50,11 +50,11 @@ target_link_libraries(my_target PUBLIC multi)
 The code requires any C++ [compiler](https://godbolt.org/z/hxEYGYEWc) (or CUDA [compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support;
 for reference, any of:
 LLVM's       https://godbolt.org/z/51E1hjfnn[clang (5.0+)] (libc++ and libstdc++),
-GNU's        https://godbolt.org/z/1nGEbKc5a[g++ (7.1+)],
+GNU's        https://godbolt.org/z/1nGEbKc5a[g[++] (7.1+)],
 Nvidia's     https://godbolt.org/z/abdT73PqM[nvcc (11.4+)] 
 and 
-            https://godbolt.org/z/6z39PjT47[nvc++ (22.7+)],
-Intel's     `icpx` (2022.0.0+) and `icc` (2021.1.2+, deprecated),
+            https://godbolt.org/z/6z39PjT47[nvc[++] (22.7+)],
+Intel's     icpx (2022.0.0+) and icc (2021.1.2+, deprecated),
 Baxter's    https://www.circle-lang.org[circle] (https://godbolt.org/z/KeG417fMz[build 202+]),
 https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j[Zig] in https://godbolt.org/z/cKGebsWMG[c++ mode (v0.9.0+)],
 Edison Desing's https://edg.com/c[EDG] https://godbolt.org/z/693fxPedx[(6.5+)]
@@ -67,5 +67,5 @@ Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, , lapack, thurst, or CUDA
 (all of them can be installed with
 `sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev`
-or `sudo dnf install -devel fftw-devel ...`.
+or `sudo dnf install fftw-devel ...`.
 )
