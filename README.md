@@ -12,106 +12,11 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 
 # [Introduction](doc/multi/intro.adoc)
 
-<!-- Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and in combination with GPUs to Artificial Intelligence and Machine Learning.
-This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
-featuring logical access recursively across dimensions and to elements through indices and iterators.
-
-The internal data structure layout is stride-based, which makes it compatible with low-level C libraries.
-
-The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
-
-Features of this library that aim to facilitate the manipulation of multidimensional arrays include:
-
-* Value semantics of multidimensional array containers and well-defined referential semantics to avoid unnecessary copies if possible.
-* Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
-A _D_-dimensional array can be interpreted either as an (STL-compatible) sequence of (_D_-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
-* Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
-* Memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
-
-Do not confuse this library with [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html) 
-or with the standard MDSpan proposal `std::mdspan`.
-This library shares some of their goals and is compatible with them, but it is designed at a different level of generality and with other priorities (such as the features listed above).
-The code is entirely independent and has fundamental implementation and semantics differences.
-
-The library's primary concern is with the storage and logic structure of data;
-it doesn't make algebraic or geometric assumptions about the arrays and their elements.
-(It is still a good building block for implementing mathematical algorithms, such as representing algebraic dense matrices in the 2D case.)
-
-The library does not throw exceptions and provides basic guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
-Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
-
-The library requires C++17 or higher, and it has no external dependencies. -->
-
 **Contents:**
 
 [[_TOC_]]
 
-# Installation and tests
-
-Before using the library, you can try it [online](https://godbolt.org/z/dvacqK8jE).
-
-_Multi_ doesn't require installation; a single header `#include <multi/array.hpp>` is enough to use the entire core library.
-_Multi_ has no dependencies (except for the standard C++ library) and can be used immediately after downloading.
-
-```bash
-git clone https://gitlab.com/correaa/boost-multi.git
-```
-
-Although installation is unnecessary, the library can still be installed with CMake.
-The header (and CMake) files will be installed in the chosen prefix location (by default, `/usr/local/include/multi` and `/usr/local/share/multi`).
-
-```bash
-cd boost-multi
-mkdir -p build && cd build
-cmake ..  # --install-prefix=$HOME/.local
-cmake --install .  # or sudo ...
-```
-
-_Testing_ the library requires the Boost.Test library, installed for example, via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
-A CMake build system is provided to compile and run basic tests.
-
-```bash
-cmake --build .
-ctest
-```
-
-Once installed, other CMake projects (targets) can depend on Multi by adding a simple `add_subdirectory(my_multi_path)` or by `find_package`:
-
-```cmake
-find_package(multi)  # see https://gitlab.com/correaa/boost-multi#using-the-library-installation-and-tests
-```
-
-As an alternatively to using `find_package`, the library can be fetched on demand:
-```cmake
-include(FetchContent)
-FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
-FetchContent_MakeAvailable(multi)
-...
-target_link_libraries(my_target PUBLIC multi)
-```
-
-The code requires any C++ [compiler](https://godbolt.org/z/hxEYGYEWc) (or CUDA [compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support;
-for reference, any of:
-LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
-GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
-Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) 
-and 
-            [`nvc++`](https://godbolt.org/z/6z39PjT47) (22.7+),
-Intel's      `icpx` (2022.0.0+) and `icc` (2021.1.2+, deprecated),
-Baxter's    [`circle`](https://www.circle-lang.org/) ([build 202+](https://godbolt.org/z/KeG417fMz)),
-[Zig](https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j) in [c++ mode (v0.9.0+)](https://godbolt.org/z/cKGebsWMG),
-Edison Desing's [EDG]() [(6.5+)](https://godbolt.org/z/693fxPedx)
-and
-Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.1](https://godbolt.org/z/Kqrva137M)).
-
-(Multi code inside CUDA kernel can be compiled with `nvcc` and with [`clang` (in CUDA mode)](https://godbolt.org/z/7dTKdPTxc).
-Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
-
-Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, , lapack, thurst, or CUDA
-(all of them can be installed with `sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install -devel fftw-devel ...`.)
-
-In the following sections we present basic and advanced uses of the libraries. 
-Feel free to jump to the "Reference of fundamental types" section to explore a more exhaustive description of the classes provided by the library.
+# [Installation and tests](doc/multi/install.adoc)
 
 # Basic Usage
 
