@@ -11,21 +11,26 @@ _Multi_ has no external dependencies and can be used immediately after downloadi
 git clone https://gitlab.com/correaa/boost-multi.git
 ```
 
-_Multi_ doesn't require installation since a single header `#include <multi/array.hpp>` is enough to use the entire core library;
-still, the library can be installed with CMake.
+_Multi_ doesn't require installation since a single header is enough to use the entire core library;
+```cpp
+#include <multi/array.hpp>
+
+int main() { ... }
+```
+
+The library can be also installed with CMake.
 The header (and CMake) files will be installed in the chosen prefix location (by default, `/usr/local/include/multi` and `/usr/local/share/multi`).
 ```bash
 cd boost-multi
 mkdir -p build && cd build
-cmake ..  # --install-prefix=$HOME/.local
-cmake --install .  # or sudo ...
+cmake . -B ./build  # --install-prefix=$HOME/.local
+cmake --install ./build  # or sudo ...
 ```
 
 _Testing_ the library requires Boost.Core (headers), installed for example, via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
 A CMake build system is provided to compile and run basic tests.
 ```bash
-cmake --build .
-ctest
+ctest -C ./build
 ```
 
 Once installed, other CMake projects (targets) can depend on Multi by adding a simple `add_subdirectory(my_multi_path)` or by `find_package`:
@@ -33,7 +38,7 @@ Once installed, other CMake projects (targets) can depend on Multi by adding a s
 find_package(multi)  # see https://gitlab.com/correaa/boost-multi
 ```
 
-As an alternatively to using `find_package`, the library can be fetched on demand:
+Alternatively to the library can be fetched on demand:
 ```cmake
 include(FetchContent)
 FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
@@ -44,19 +49,19 @@ target_link_libraries(my_target PUBLIC multi)
 
 The code requires any C++ [compiler](https://godbolt.org/z/hxEYGYEWc) (or CUDA [compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support;
 for reference, any of:
-LLVM's       https://godbolt.org/z/51E1hjfnn[`clang` (5.0+)] (`libc++` and `libstdc++`),
-GNU's        https://godbolt.org/z/1nGEbKc5a[`g++` (7.1+)],
-Nvidia's     https://godbolt.org/z/abdT73PqM[`nvcc` (11.4+)] 
+LLVM's       https://godbolt.org/z/51E1hjfnn[clang (5.0+)] (`libc++` and `libstdc++`),
+GNU's        https://godbolt.org/z/1nGEbKc5a[g++ (7.1+)],
+Nvidia's     https://godbolt.org/z/abdT73PqM[nvcc (11.4+)] 
 and 
-            https://godbolt.org/z/6z39PjT47[`nvc++` (22.7+)],
+            https://godbolt.org/z/6z39PjT47[nvc++ (22.7+)],
 Intel's     `icpx` (2022.0.0+) and `icc` (2021.1.2+, deprecated),
-Baxter's    https://www.circle-lang.org[`circle`] (https://godbolt.org/z/KeG417fMz[build 202+]),
+Baxter's    https://www.circle-lang.org[circle] (https://godbolt.org/z/KeG417fMz[build 202+]),
 https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j[Zig] in https://godbolt.org/z/cKGebsWMG[c++ mode (v0.9.0+)],
-Edison Desing's [EDG]() https://godbolt.org/z/693fxPedx[(6.5+)]
+Edison Desing's https://edg.com/c[EDG] https://godbolt.org/z/693fxPedx[(6.5+)]
 and
 Microsoft's https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (https://godbolt.org/z/Kqrva137M[+14.1]).
 
-(Multi code inside CUDA kernel can be compiled with `nvcc` and with https://godbolt.org/z/7dTKdPTxc[`clang` (in CUDA mode)].
+(Multi code inside CUDA kernel can be compiled with `nvcc` and with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 
 Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, , lapack, thurst, or CUDA
