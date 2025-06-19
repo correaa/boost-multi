@@ -64,6 +64,3 @@ Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific de
 `sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev`
 or `sudo dnf install -devel fftw-devel ...`.
 )
-
-In the following sections we present basic and advanced uses of the libraries. 
-Feel free to jump to the "Fundamental types" section to explore a more exhaustive description of the classes provided by the library.
