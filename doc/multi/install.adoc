@@ -10,11 +10,10 @@ _Multi_ has no external dependencies and can be used immediately after downloadi
 ```bash
 git clone https://gitlab.com/correaa/boost-multi.git
 ```
-_Multi_ doesn't require installation;
-a single header `#include <multi/array.hpp>` is enough to use the entire core library.
-Still, the library can be installed with CMake.
-The header (and CMake) files will be installed in the chosen prefix location (by default, `/usr/local/include/multi` and `/usr/local/share/multi`).
 
+_Multi_ doesn't require installation since a single header `#include <multi/array.hpp>` is enough to use the entire core library;
+still, the library can be installed with CMake.
+The header (and CMake) files will be installed in the chosen prefix location (by default, `/usr/local/include/multi` and `/usr/local/share/multi`).
 ```bash
 cd boost-multi
 mkdir -p build && cd build
@@ -24,16 +23,14 @@ cmake --install .  # or sudo ...
 
 _Testing_ the library requires Boost.Core (headers), installed for example, via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
 A CMake build system is provided to compile and run basic tests.
-
 ```bash
 cmake --build .
 ctest
 ```
 
 Once installed, other CMake projects (targets) can depend on Multi by adding a simple `add_subdirectory(my_multi_path)` or by `find_package`:
-
 ```cmake
-find_package(multi)  # see https://gitlab.com/correaa/boost-multi#using-the-library-installation-and-tests
+find_package(multi)  # see https://gitlab.com/correaa/boost-multi
 ```
 
 As an alternatively to using `find_package`, the library can be fetched on demand:
