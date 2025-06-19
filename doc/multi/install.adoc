@@ -44,23 +44,26 @@ target_link_libraries(my_target PUBLIC multi)
 
 The code requires any C++ [compiler](https://godbolt.org/z/hxEYGYEWc) (or CUDA [compiler](https://godbolt.org/z/79Tqedhfs)) with standard C++17 support;
 for reference, any of:
-LLVM's       `clang` [(5.0+)](https://godbolt.org/z/51E1hjfnn) (`libc++` and `libstdc++`),
-GNU's        `g++` [(7.1+)](https://godbolt.org/z/1nGEbKc5a),
-Nvidia's    [`nvcc`](https://godbolt.org/z/abdT73PqM) (11.4+) 
+LLVM's       https://godbolt.org/z/51E1hjfnn[`clang` (5.0+)] (`libc++` and `libstdc++`),
+GNU's        https://godbolt.org/z/1nGEbKc5a[`g++` (7.1+)],
+Nvidia's     https://godbolt.org/z/abdT73PqM[`nvcc` (11.4+)] 
 and 
-            [`nvc++`](https://godbolt.org/z/6z39PjT47) (22.7+),
-Intel's      `icpx` (2022.0.0+) and `icc` (2021.1.2+, deprecated),
-Baxter's    [`circle`](https://www.circle-lang.org/) ([build 202+](https://godbolt.org/z/KeG417fMz)),
-[Zig](https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j) in [c++ mode (v0.9.0+)](https://godbolt.org/z/cKGebsWMG),
-Edison Desing's [EDG]() [(6.5+)](https://godbolt.org/z/693fxPedx)
+            https://godbolt.org/z/6z39PjT47[`nvc++` (22.7+)],
+Intel's     `icpx` (2022.0.0+) and `icc` (2021.1.2+, deprecated),
+Baxter's    https://www.circle-lang.org[`circle`] (https://godbolt.org/z/KeG417fMz[build 202+]),
+https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j[Zig] in https://godbolt.org/z/cKGebsWMG[c++ mode (v0.9.0+)],
+Edison Desing's [EDG]() https://godbolt.org/z/693fxPedx[(6.5+)]
 and
-Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) ([+14.1](https://godbolt.org/z/Kqrva137M)).
+Microsoft's https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (https://godbolt.org/z/Kqrva137M[+14.1]).
 
-(Multi code inside CUDA kernel can be compiled with `nvcc` and with [`clang` (in CUDA mode)](https://godbolt.org/z/7dTKdPTxc).
+(Multi code inside CUDA kernel can be compiled with `nvcc` and with https://godbolt.org/z/7dTKdPTxc[`clang` (in CUDA mode)].
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 
 Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, , lapack, thurst, or CUDA
-(all of them can be installed with `sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev` or `sudo dnf install -devel fftw-devel ...`.)
+(all of them can be installed with
+`sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev`
+or `sudo dnf install -devel fftw-devel ...`.
+)
 
 In the following sections we present basic and advanced uses of the libraries. 
-Feel free to jump to the "Reference of fundamental types" section to explore a more exhaustive description of the classes provided by the library.
+Feel free to jump to the "Fundamental types" section to explore a more exhaustive description of the classes provided by the library.
