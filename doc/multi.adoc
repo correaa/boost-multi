@@ -1,4 +1,4 @@
-= Boost.Multi
+= https://gitlab.com/correaa/boost-multi[Boost.Multi]
 :toc: left
 :toclevels: 3
 :idprefix:
