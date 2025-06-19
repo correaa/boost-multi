@@ -12,7 +12,7 @@ git clone https://gitlab.com/correaa/boost-multi.git
 ```
 
 _Multi_ doesn't require installation since a single header is enough to use the entire core library;
-```cpp
+```c++
 #include <multi/array.hpp>
 
 int main() { ... }
