@@ -35,4 +35,4 @@ it doesn't make algebraic or geometric assumptions about the arrays and their el
 The library does not throw exceptions and provides basic guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
 Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
-_Multi_ is a header-only library. C++17 or later required.
+_Multi_ is a header-only library and C++17 or later is required.
