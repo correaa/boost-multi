@@ -8,7 +8,7 @@
 
 #include <boost/multi/adaptors/thrust/omp.hpp>
 
-#if !defined(__has_feature) && !__has_feature(address_sanitizer)
+#if !defined(__has_feature) || !__has_feature(address_sanitizer)
 # include <boost/multi/array.hpp>
 #endif
 
@@ -18,7 +18,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#if !defined(__has_feature) && !__has_feature(address_sanitizer)
+#if !defined(__has_feature) || !__has_feature(address_sanitizer)
 # include <chrono>
 # include <cstdio>
 # include <iostream>
@@ -43,7 +43,7 @@ auto parallel_array_sum(Array1D const& arr) {
 	auto const* const            aptr  = raw_pointer_cast(arr.data_elements());
 	typename Array1D::value_type total = 0.0;
 #pragma omp parallel for reduction(+ : total)                 // NOLINT(openmp-use-default-none)
-	for(typename Array1D::size_type i = 0; i != size; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+	for(typename Array1D::size_type i = 0; i < size; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		total += aptr[i];                                     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	return total;
@@ -53,10 +53,17 @@ template<class Array1D>
 auto parallel_idiom_array_sum(Array1D const& arr) {
 	typename Array1D::value_type total = 0.0;
 #pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
+#ifndef __NVCOMPILER
 	for(auto const i : arr.extension()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
+#else
+	for(auto const it = arr.extension().begin(); it < arr.extension().end(); ++it) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
+		total += arr[*it];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
+#endif
 	return total;
 }
 
@@ -112,14 +119,14 @@ auto main() -> int {
 		printf("\"Hello world!\" from thread %d, we are %d threads.\n", my_id, thread_number);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 	}
 
-#if !defined(__has_feature) && !__has_feature(address_sanitizer)
+#if !defined(__has_feature) || !__has_feature(address_sanitizer)
 	namespace multi = boost::multi;
 
 	multi::thrust::omp::array<double, 1> arr(1U << 30U);
 
 	{
 # pragma omp parallel for default(none) shared(arr)
-		for(int i = 0; i != arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
+		for(int i = 0; i < arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
 			arr[i] = static_cast<double>(i) * static_cast<double>(i);
 		}
 	}
