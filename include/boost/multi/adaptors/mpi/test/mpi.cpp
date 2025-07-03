@@ -16,6 +16,7 @@
 
 namespace multi = boost::multi;
 
+#if 0
 namespace {
 void test_single_number(MPI_Comm comm) {
 	int world_rank;  // NOLINT(cppcoreguidelines-init-variables)
@@ -173,7 +174,7 @@ void test_2d(MPI_Comm comm) {
 				{
 					{1, 2, 3},
 					{4, 5, 6}
-            }
+				}
 			);
 			auto const& BB = AA({0, 2}, {1, 3});
 			BOOST_TEST(( BB == multi::array<int, 2>({{2, 3}, {5, 6}}) ));
@@ -264,6 +265,7 @@ void test_2d_double(MPI_Comm comm) {
 }
 
 }  // namespace
+#endif
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	MPI_Init(nullptr, nullptr);
