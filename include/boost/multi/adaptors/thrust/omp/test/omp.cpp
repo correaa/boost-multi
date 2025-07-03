@@ -149,7 +149,7 @@ auto main() -> int {
 
     tick = std::chrono::high_resolution_clock::now();
     auto const thrust_omp = thrust_omp_array_sum(arr);
-    DoNotOptimize(thrust);
+    DoNotOptimize(thrust_omp);
     std::cout << "thrust omp " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
     // BOOST_TEST( thrust_omp == parallel );
 
@@ -158,7 +158,7 @@ auto main() -> int {
 
     tick = std::chrono::high_resolution_clock::now();
     auto const thrust_omp_normal = thrust_omp_array_sum(arr_normal);
-    DoNotOptimize(thrust);
+    DoNotOptimize(thrust_omp_normal);
     std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
     // BOOST_TEST( thrust_omp_normal == parallel );
 
