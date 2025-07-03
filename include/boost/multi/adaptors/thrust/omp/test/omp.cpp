@@ -7,7 +7,10 @@
 #endif
 
 #include <boost/multi/adaptors/thrust/omp.hpp>
-#include <boost/multi/array.hpp>
+
+#if !defined(__has_feature) && !__has_feature(address_sanitizer)
+# include <boost/multi/array.hpp>
+#endif
 
 #include <omp.h>
 #include <thrust/reduce.h>
@@ -15,9 +18,11 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <chrono>
-#include <cstdio>
-#include <iostream>
+#if !defined(__has_feature) && !__has_feature(address_sanitizer)
+# include <chrono>
+# include <cstdio>
+# include <iostream>
+#endif
 
 namespace {
 
@@ -107,12 +112,13 @@ auto main() -> int {
 		printf("\"Hello world!\" from thread %d, we are %d threads.\n", my_id, thread_number);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 	}
 
+#if !defined(__has_feature) && !__has_feature(address_sanitizer)
 	namespace multi = boost::multi;
 
 	multi::thrust::omp::array<double, 1> arr(1U << 30U);
 
 	{
-#pragma omp parallel for default(none) shared(arr)
+# pragma omp parallel for default(none) shared(arr)
 		for(int i = 0; i != arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
 			arr[i] = static_cast<double>(i) * static_cast<double>(i);
 		}
@@ -168,6 +174,7 @@ auto main() -> int {
 	DoNotOptimize(thrust_omp_normal);
 	std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 	BOOST_TEST( std::abs((thrust_omp_normal / parallel) - 1.0) < 1.0e-12 );
+#endif
 
 	return boost::report_errors();
 }
