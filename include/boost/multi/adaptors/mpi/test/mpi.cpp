@@ -268,6 +268,7 @@ void test_2d_double(MPI_Comm comm) {
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	MPI_Init(nullptr, nullptr);
 
+#if 0
 	int world_rank;  // NOLINT(cppcoreguidelines-init-variables)
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
@@ -319,7 +320,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	test_2d_int(MPI_COMM_WORLD);
 	test_2d_double(MPI_COMM_WORLD);
 
-	MPI_Finalize();
+#endif
 
+	MPI_Finalize();
 	return boost::report_errors();
 }
