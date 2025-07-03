@@ -11,18 +11,23 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(Boost REQUIRED)  # tests require Boost.Core LightweightTest
 
 find_package(OpenMP)
+find_package(Thrust)
 
 if(OpenMP_FOUND)
-    include(CTest)
-    enable_testing()
+    if(Thrust_FOUND)
+        include(CTest)
+        enable_testing()
 
-    add_executable(omp.cpp.x omp.cpp)
+        add_executable(omp.cpp.x omp.cpp)
 
-    target_compile_options(omp.cpp.x PUBLIC -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP)
-    target_include_directories(omp.cpp.x SYSTEM PUBLIC /Users/correatedesco1/thrust /Users/correatedesco1/thrust/dependencies/libcudacxx/include)  # /Users/correatedesco1/thrust/dependencies/cub)
-    target_link_libraries(omp.cpp.x PRIVATE multi Boost::boost OpenMP::OpenMP_CXX)
+        target_compile_options(omp.cpp.x PUBLIC -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP)
+        target_include_directories(omp.cpp.x SYSTEM PUBLIC /Users/correatedesco1/thrust /Users/correatedesco1/thrust/dependencies/libcudacxx/include)  # /Users/correatedesco1/thrust/dependencies/cub)
+        target_link_libraries(omp.cpp.x PRIVATE multi Boost::boost OpenMP::OpenMP_CXX)
 
-    add_test(NAME omp.cpp.x COMMAND $<TARGET_FILE:omp.cpp.x>)
+        add_test(NAME omp.cpp.x COMMAND $<TARGET_FILE:omp.cpp.x>)
+    else()
+        message(WARNING "Cannot find Thurst, will not be tested")
+    endif()
 else()
     message(WARNING "Cannot find OpenMP, will not be tested")
 endif()
