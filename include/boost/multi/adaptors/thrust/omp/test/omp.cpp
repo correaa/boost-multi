@@ -3,16 +3,15 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef _VSTD
-#define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+# define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 #endif
 
 #include <boost/multi/adaptors/thrust/omp.hpp>
-#include <thrust/reduce.h>
-#include <thrust/system/omp/detail/par.h>
-
 #include <boost/multi/array.hpp>
 
 #include <omp.h>
+#include <thrust/reduce.h>
+#include <thrust/system/omp/detail/par.h>
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -24,59 +23,59 @@ namespace {
 
 template<class Array1D>
 auto serial_array_sum(Array1D const& arr) {
-    auto const size = arr.size();
-    auto const * const aptr = raw_pointer_cast(arr.data_elements());
-    typename Array1D::value_type total = 0.0;
-    for (typename Array1D::size_type i = 0; i != size; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-        total += aptr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    }
-    return total;
+	auto const                   size  = arr.size();
+	auto const* const            aptr  = raw_pointer_cast(arr.data_elements());
+	typename Array1D::value_type total = 0.0;
+	for(typename Array1D::size_type i = 0; i != size; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+		total += aptr[i];                                     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
+	return total;
 }
 
 template<class Array1D>
 auto parallel_array_sum(Array1D const& arr) {
-    auto const size = arr.size();
-    auto const * const aptr = raw_pointer_cast(arr.data_elements());
-    typename Array1D::value_type total = 0.0;
-    #pragma omp parallel for reduction(+:total)  // NOLINT(openmp-use-default-none)
-    for (typename Array1D::size_type i = 0; i != size; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-        total += aptr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    }
-    return total;
+	auto const                   size  = arr.size();
+	auto const* const            aptr  = raw_pointer_cast(arr.data_elements());
+	typename Array1D::value_type total = 0.0;
+#pragma omp parallel for reduction(+ : total)                 // NOLINT(openmp-use-default-none)
+	for(typename Array1D::size_type i = 0; i != size; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+		total += aptr[i];                                     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
+	return total;
 }
 
 template<class Array1D>
 auto parallel_idiom_array_sum(Array1D const& arr) {
-    typename Array1D::value_type total = 0.0;
-    #pragma omp parallel for reduction(+:total)  // NOLINT(openmp-use-default-none)
-    for (auto const i : arr.extension()) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-        // NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
-        total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    }
-    return total;
+	typename Array1D::value_type total = 0.0;
+#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
+	for(auto const i : arr.extension()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
+		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
+	return total;
 }
 
 template<class Array1D>
 auto thrust_array_sum(Array1D const& arr) {
-    return thrust::reduce(arr.begin(), arr.end(), typename Array1D::value_type{});
+	return thrust::reduce(arr.begin(), arr.end(), typename Array1D::value_type{});
 }
 
 template<class Array1D>
 auto thrust_omp_array_sum(Array1D const& arr) {
-    return thrust::reduce(thrust::omp::par, arr.begin(), arr.end(), typename Array1D::value_type{});
+	return thrust::reduce(thrust::omp::par, arr.begin(), arr.end(), typename Array1D::value_type{});
 }
 
-template <class Tp>
+template<class Tp>
 inline __attribute__((always_inline)) void DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
-  asm volatile("" : : "r,m"(value) : "memory");  // NOLINT(hicpp-no-assembler)
+	asm volatile("" : : "r,m"(value) : "memory");                            // NOLINT(hicpp-no-assembler)
 }
 
-template <class Tp>
+template<class Tp>
 inline __attribute__((always_inline)) void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
 #if defined(__clang__)
-  asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
+	asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
 #else
-  asm volatile("" : "+m,r"(value) : : "memory");
+	asm volatile("" : "+m,r"(value) : : "memory");
 #endif
 }
 
@@ -108,12 +107,12 @@ auto main() -> int {
 		printf("\"Hello world!\" from thread %d, we are %d threads.\n", my_id, thread_number);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 	}
 
-    namespace multi = boost::multi;
+	namespace multi = boost::multi;
 
-    multi::thrust::omp::array<double, 1> arr(1U << 30U);
+	multi::thrust::omp::array<double, 1> arr(1U << 30U);
 
 	{
-        #pragma omp parallel for default(none) shared(arr)
+#pragma omp parallel for default(none) shared(arr)
 		for(int i = 0; i != arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
 			arr[i] = static_cast<double>(i) * static_cast<double>(i);
 		}
@@ -121,46 +120,54 @@ auto main() -> int {
 
 	BOOST_TEST( arr[arr.size() - 1] == static_cast<double>(arr.size() - 1)*static_cast<double>(arr.size() - 1) );
 
-    auto tick = std::chrono::high_resolution_clock::now();
-    auto const serial = serial_array_sum(arr);
-    DoNotOptimize(serial);
-    std::cout << "serial " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+	auto tick = std::chrono::high_resolution_clock::now();
 
-    tick = std::chrono::high_resolution_clock::now();
-    auto const parallel = parallel_array_sum(arr);
-    DoNotOptimize(parallel);
-    std::cout << "parallel " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+	auto const serial = serial_array_sum(arr);
+	DoNotOptimize(serial);
+	std::cout << "serial " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 
-    std::cout << serial << ' ' << parallel << '\n';
-    // BOOST_TEST( std::to_string(serial) == std::to_string(parallel) );
+	tick = std::chrono::high_resolution_clock::now();
 
-    tick = std::chrono::high_resolution_clock::now();
-    auto const parallel_idiom = parallel_idiom_array_sum(arr);
-    DoNotOptimize(parallel_idiom);
-    std::cout << "parallel idiom " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+	auto const parallel = parallel_array_sum(arr);
+	DoNotOptimize(parallel);
+	std::cout << "parallel " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 
-    // BOOST_TEST( parallel_idiom == parallel );
+	std::cout << serial << ' ' << parallel << ' ' << serial - parallel << '\n';
+	BOOST_TEST( std::abs((serial / parallel) - 1.0) < 1.0e-12 );
 
-    tick = std::chrono::high_resolution_clock::now();
-    auto const thrust = thrust_array_sum(arr);
-    DoNotOptimize(thrust);
-    std::cout << "thrust " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-    // BOOST_TEST( thrust == parallel );
+	tick = std::chrono::high_resolution_clock::now();
 
-    tick = std::chrono::high_resolution_clock::now();
-    auto const thrust_omp = thrust_omp_array_sum(arr);
-    DoNotOptimize(thrust_omp);
-    std::cout << "thrust omp " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-    // BOOST_TEST( thrust_omp == parallel );
+	auto const parallel_idiom = parallel_idiom_array_sum(arr);
+	DoNotOptimize(parallel_idiom);
+	std::cout << "parallel idiom " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 
-    multi::array<double, 1> const arr_normal{arr};
-    DoNotOptimize(arr_normal);
+	BOOST_TEST( std::abs((parallel_idiom / parallel) - 1.0) < 1.0e-12 );
 
-    tick = std::chrono::high_resolution_clock::now();
-    auto const thrust_omp_normal = thrust_omp_array_sum(arr_normal);
-    DoNotOptimize(thrust_omp_normal);
-    std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-    // BOOST_TEST( thrust_omp_normal == parallel );
+	tick = std::chrono::high_resolution_clock::now();
+
+	auto const thrust = thrust_array_sum(arr);
+	DoNotOptimize(thrust);
+	std::cout << "thrust " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+
+	BOOST_TEST( std::abs((thrust / parallel) - 1.0) < 1.0e-12 );
+
+	tick = std::chrono::high_resolution_clock::now();
+
+	auto const thrust_omp = thrust_omp_array_sum(arr);
+	DoNotOptimize(thrust_omp);
+	std::cout << "thrust omp " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+
+	BOOST_TEST( std::abs((thrust_omp / parallel) - 1.0) < 1.0e-12 );
+
+	multi::array<double, 1> const arr_normal{arr};
+	DoNotOptimize(arr_normal);
+
+	tick = std::chrono::high_resolution_clock::now();
+
+	auto const thrust_omp_normal = thrust_omp_array_sum(arr_normal);
+	DoNotOptimize(thrust_omp_normal);
+	std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+	BOOST_TEST( std::abs((thrust_omp_normal / parallel) - 1.0) < 1.0e-12 );
 
 	return boost::report_errors();
 }
