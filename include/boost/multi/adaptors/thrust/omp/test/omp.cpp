@@ -8,7 +8,7 @@
 
 #include <boost/multi/adaptors/thrust/omp.hpp>
 
-#if !defined(__has_feature) || !(__has_feature(address_sanitizer))
+#if !defined(__clang__) || !defined(__has_feature) || !(__has_feature(address_sanitizer))
 # include <boost/multi/array.hpp>
 #endif
 
@@ -18,7 +18,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#if !defined(__has_feature) || !(__has_feature(address_sanitizer))
+#if !defined(__clang__) || !defined(__has_feature) || !(__has_feature(address_sanitizer))
 # include <chrono>
 # include <cstdio>
 # include <iostream>
@@ -119,7 +119,7 @@ auto main() -> int {
 		printf("\"Hello world!\" from thread %d, we are %d threads.\n", my_id, thread_number);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 	}
 
-#if !defined(__has_feature) || !(__has_feature(address_sanitizer))
+#if !defined(__clang__) || !defined(__has_feature) || !(__has_feature(address_sanitizer))
 	namespace multi = boost::multi;
 
 	multi::thrust::omp::array<double, 1> arr(1U << 30U);
