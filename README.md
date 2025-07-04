@@ -1758,27 +1758,32 @@ The OMP backend can be enabled by the compiler flags `-DTHRUST_DEVICE_SYSTEM=THR
 
 ```cpp
 #include <multi/array.hpp>
-#include <thrust/system/omp/memory.h>
+#include <multi/adaptors/thrust/omp.hpp>
+
+#include <thrust/copy.h>
 
 namespace multi = boost::multi;
 
 int main() {
-	multi::array<double, 2, thrust::omp::allocator<double>> A({10,10});
-	multi::array<double, 2, thrust::omp::allocator<double>> B({10,10});
+    auto A = multi::thurstr::omp::array<double, 2>({10,10}, 0.0);  // or multi::array<double, 2, thrust::omp::allocator<double>>;
+    auto B = multi::thurstr::omp::array<double, 2>({10,10});  // or multi::array<double, 2, thrust::omp::allocator<double>>;
 
 	A[5][0] = 50.0;
 
     // copy row 0
-	thrust::copy(A.rotated()[0].begin(), A.rotated()[0].end(), B.rotated()[0].begin());
-
+	thrust::copy(
+        A.rotated()[0].begin(), A.rotated()[0].end(),
+        B.rotated()[0].begin()
+    );
 	assert( B[5][0] == 50.0 );
-
 	auto C = B;  // uses omp automatically for copying behind the scenes
 }
 ```
-https://godbolt.org/z/e3cGbY87r
+https://godbolt.org/z/saG1Efbje
 
 Compilation might need to link to an omp library, `-fopenmp -lgomp`.
+
+Without Thrust, OpenMP pragmas would also work with this library, however OpenMP memory allocation, would need to be manually managed.
 
 ### Thrust memory resources
 
