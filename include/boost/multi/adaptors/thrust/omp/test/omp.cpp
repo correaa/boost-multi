@@ -122,7 +122,7 @@ auto main() -> int {
 #if !defined(__clang__)
 	namespace multi = boost::multi;
 
-	multi::thrust::omp::array<double, 1> arr(1U << 30U);
+	multi::thrust::omp::array<double, 1> arr(1U << 20U);
 
 	{
 # pragma omp parallel for default(none) shared(arr)
