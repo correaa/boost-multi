@@ -12,23 +12,23 @@ find_package(Boost REQUIRED)  # tests require Boost.Core LightweightTest
 
 find_package(OpenMP)
 
-find_package(Thrust CONFIG)
-if(NOT Thrust_FOUND)
-    message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
-    include(FetchContent)
-    FetchContent_Declare(
-        cccl-cmake
-        GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
-        GIT_TAG main
-        GIT_SHALLOW ON
-    )
-    FetchContent_MakeAvailable(cccl-cmake)
-endif()
-
 if(OpenMP_FOUND)
+
+    find_package(Thrust CONFIG)
+    if(NOT Thrust_FOUND)
+        message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
+        include(FetchContent)
+        FetchContent_Declare(
+            cccl-cmake
+            GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
+            GIT_TAG main
+            GIT_SHALLOW ON
+        )
+        FetchContent_MakeAvailable(cccl-cmake)
+    endif()
+
     include(CTest)
     enable_testing()
-
 
     thrust_create_target(ThrustOMP DEVICE OMP)
 
