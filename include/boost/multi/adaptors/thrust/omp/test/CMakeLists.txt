@@ -12,7 +12,6 @@ find_package(Boost REQUIRED)  # tests require Boost.Core LightweightTest
 
 find_package(OpenMP)
 find_package(Thrust REQUIRED CONFIG)
-thrust_create_target(Thrust)
 
 #if(NOT Thrust_FOUND)
 #    message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
@@ -27,17 +26,23 @@ thrust_create_target(Thrust)
 #endif()
 
 if(OpenMP_FOUND)
-    include(CTest)
-    enable_testing()
+    if(Thrust_FOUND)
+        include(CTest)
+        enable_testing()
 
-    thrust_create_target(ThrustOMP DEVICE OMP)
+        thrust_create_target(Thrust)
 
-    add_executable(omp.cpp.x omp.cpp)
+        thrust_create_target(ThrustOMP DEVICE OMP)
 
-    target_include_directories(omp.cpp.x SYSTEM PRIVATE ${_THRUST_INCLUDE_DIR})
-    target_link_libraries(omp.cpp.x PRIVATE multi Boost::boost OpenMP::OpenMP_CXX ThrustOMP)
+        add_executable(omp.cpp.x omp.cpp)
 
-    add_test(NAME omp.cpp.x COMMAND $<TARGET_FILE:omp.cpp.x>)
+        target_include_directories(omp.cpp.x SYSTEM PRIVATE ${_THRUST_INCLUDE_DIR})
+        target_link_libraries(omp.cpp.x PRIVATE multi Boost::boost OpenMP::OpenMP_CXX ThrustOMP)
+
+        add_test(NAME omp.cpp.x COMMAND $<TARGET_FILE:omp.cpp.x>)
+    else()
+        message(WARNING "Cannot find Thrust, will not be tested")
+    endif()
 else()
     message(WARNING "Cannot find OpenMP, will not be tested")
 endif()
