@@ -11,7 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(Boost REQUIRED)  # tests require Boost.Core LightweightTest
 
 find_package(OpenMP)
-find_package(Thrust REQUIRED CONFIG)
+find_package(Thrust CONFIG)
 
 #if(NOT Thrust_FOUND)
 #    message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
