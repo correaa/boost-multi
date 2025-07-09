@@ -17,6 +17,16 @@ if(OpenMP_FOUND)
     find_package(Thrust CONFIG)
     if(NOT Thrust_FOUND)
         message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
+
+        find_package(Git QUIET)
+
+        if(GIT_FOUND)
+            message(STATUS "Git command found: ${GIT_EXECUTABLE}")
+        else()
+            message(WARNING "Git command not found. Some features might be unavailable.")
+            return()
+        endif()
+
         include(FetchContent)
         FetchContent_Declare(
             cccl-cmake
@@ -25,6 +35,7 @@ if(OpenMP_FOUND)
             GIT_SHALLOW ON
         )
         FetchContent_MakeAvailable(cccl-cmake)
+        
     endif()
 
     include(CTest)
