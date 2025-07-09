@@ -16,6 +16,7 @@ namespace multi = boost::multi;
 // https://godbolt.org/z/7MqxhWvz3
 
 #if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 #   include <generator>
 
 template<class Arr2D>
