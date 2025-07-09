@@ -23,7 +23,7 @@ if(OpenMP_FOUND)
         if(GIT_FOUND)
             message(STATUS "Git command found: ${GIT_EXECUTABLE}")
         else()
-            message(WARNING "Git command not found. Some features might be unavailable.")
+            message(WARNING "Git command not found, won't fetch content.")
             return()
         endif()
 
