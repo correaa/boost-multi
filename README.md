@@ -1765,8 +1765,8 @@ The OMP backend can be enabled by the compiler flags `-DTHRUST_DEVICE_SYSTEM=THR
 namespace multi = boost::multi;
 
 int main() {
-    auto A = multi::thurstr::omp::array<double, 2>({10,10}, 0.0);  // or multi::array<double, 2, thrust::omp::allocator<double>>;
-    auto B = multi::thurstr::omp::array<double, 2>({10,10});  // or multi::array<double, 2, thrust::omp::allocator<double>>;
+    auto A = multi::thrust::omp::array<double, 2>({10,10}, 0.0);  // or multi::array<double, 2, thrust::omp::allocator<double>>;
+    auto B = multi::thrust::omp::array<double, 2>({10,10});  // or multi::array<double, 2, thrust::omp::allocator<double>>;
 
 	A[5][0] = 50.0;
 
@@ -1779,7 +1779,7 @@ int main() {
 	auto C = B;  // uses omp automatically for copying behind the scenes
 }
 ```
-https://godbolt.org/z/saG1Efbje
+https://godbolt.org/z/KW19zMYnE
 
 Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
