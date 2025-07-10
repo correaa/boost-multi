@@ -567,16 +567,16 @@ oneapi-latest c++20:
 
 nvhpc:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  image: nvcr.io/nvidia/nvhpc:23.11-devel-cuda12.3-ubuntu22.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
     - non-shared
     - large-disk-space
     - x86_64
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-serialization-dev
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
