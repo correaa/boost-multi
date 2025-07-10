@@ -519,7 +519,7 @@ oneapi:
     - x86_64
   interruptible: true
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - apt-get update --allow-unauthenticated=false && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
