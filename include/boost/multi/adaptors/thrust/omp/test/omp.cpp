@@ -85,7 +85,11 @@ __forceinline
 __attribute__((always_inline))
 #endif
 void DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
+#if defined(_MSC_VER)
+	_ReadWriteBarrier();
+#else
 	asm volatile("" : : "r,m"(value) : "memory");                            // NOLINT(hicpp-no-assembler)
+#endif
 }
 
 template<class Tp>
@@ -96,10 +100,14 @@ __forceinline
 __attribute__((always_inline))
 #endif
 void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
-#if defined(__clang__)
-	asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
+#if defined(_MSC_VER)
+	_ReadWriteBarrier();
 #else
-	asm volatile("" : "+m,r"(value) : : "memory");
+	#if defined(__clang__)
+		asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
+	#else
+		asm volatile("" : "+m,r"(value) : : "memory");
+	#endif
 #endif
 }
 
