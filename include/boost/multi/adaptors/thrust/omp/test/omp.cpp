@@ -60,7 +60,7 @@ auto parallel_idiom_array_sum(Array1D const& arr) {
 	}
 #elif defined(_MSC_VER)
 	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-	for(int i = arr.extension().front(); i < arr.extension().back() + 1; ++i) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+	for(auto i = arr.extension().front(); i < arr.extension().back() + 1; ++i) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
