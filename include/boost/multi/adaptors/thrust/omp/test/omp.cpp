@@ -52,13 +52,14 @@ auto parallel_array_sum(Array1D const& arr) {
 template<class Array1D>
 auto parallel_idiom_array_sum(Array1D const& arr) {
 	typename Array1D::value_type total = 0.0;
-#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-#ifndef __NVCOMPILER
+#if !defined(__NVCOMPILER) && !defined(_MSC_VER)
+	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
 	for(auto const i : arr.extension()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #else
+	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
 	for(auto it = arr.extension().begin(); it < arr.extension().end(); ++it) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[*it];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
