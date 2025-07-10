@@ -78,12 +78,24 @@ auto thrust_omp_array_sum(Array1D const& arr) {
 }
 
 template<class Tp>
-inline __attribute__((always_inline)) void DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
+inline
+#if defined(_MSC_VER)
+__forceinline
+#else
+__attribute__((always_inline))
+#endif
+void DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
 	asm volatile("" : : "r,m"(value) : "memory");                            // NOLINT(hicpp-no-assembler)
 }
 
 template<class Tp>
-inline __attribute__((always_inline)) void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
+inline
+#if defined(_MSC_VER)
+__forceinline
+#else
+__attribute__((always_inline))
+#endif
+void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
 #if defined(__clang__)
 	asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
 #else
