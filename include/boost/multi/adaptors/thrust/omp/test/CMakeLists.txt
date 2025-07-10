@@ -12,8 +12,8 @@ find_package(Boost REQUIRED)  # tests require Boost.Core LightweightTest
 
 find_package(OpenMP)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "NVHPC")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQ "22.11")
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "NVHPC")
+    if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS_EQ "22.11")
         message(WARNING "NVHPC 22.11 produces an internal error when compiling OMP code")
         return()
     endif()
