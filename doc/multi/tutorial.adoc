@@ -96,7 +96,7 @@ https://godbolt.org/z/4zWTPcoK6[(live code)]
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
-## Initialization
+== Initialization
 
 `array_ref` is initialized from a preexisting contiguous range, the index extensions should be compatible with the total number of elements.
 
