@@ -33,7 +33,7 @@
 include::multi/intro.adoc[]
 include::multi/install.adoc[]
 include::multi/primer.adoc[]
-// include::bloom/tutorial.adoc[]
+include::bloom/tutorial.adoc[]
 // include::bloom/configuration.adoc[]
 // include::bloom/benchmarks.adoc[]
 // include::bloom/reference.adoc[]
