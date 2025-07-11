@@ -18,6 +18,8 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 
 # [Installation and tests](doc/multi/install.adoc)
 
+# [Primer (basic usage)](doc/multi/primer.adoc)
+
 # Basic Usage
 
 The following code declares an array by specifying the element type and the dimensions;
