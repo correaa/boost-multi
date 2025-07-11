@@ -105,7 +105,8 @@ coverage:
   allow_failure: true
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - cmake --build . --parallel 2 || cmake --build . --verbose
