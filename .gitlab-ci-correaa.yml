@@ -761,7 +761,8 @@ culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
   interruptible: true
   script:
     - nvidia-smi
-    - apt-get -qq update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
