@@ -95,3 +95,52 @@ In this case, the original array will be transformed by sorting the matrix into:
 https://godbolt.org/z/4zWTPcoK6[(live code)]
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
+
+## Initialization
+
+`array_ref` is initialized from a preexisting contiguous range, the index extensions should be compatible with the total number of elements.
+
+```cpp
+double* dp = new double[12];
+multi::array_ref<double, 2> A({3, 4}, dp);
+multi::array_ref<double, 2> B({2, 6}, dp);
+...
+delete[] dp;
+```
+
+Array references do not own memory and, just as language references, can not be rebinded (i.e. resized or "reseated") to refer to a different memory location.
+Since `array_ref` is an array reference, it can "dangle" if the original memory is deallocated.
+
+Array objects (`multi::array`), in contrast, own the elements they contain and can be resized later.
+An `array` is initialized by specifying the index extensions and, optionally, a default value).
+
+```cpp
+multi::array<double, 1> A1({3}      , 11.0);  // {11.0, 11.0, 11.0}
+
+multi::array<double, 2> A2({2, 3}   , 22.0);  // { {22.0, 22.0, 22.}, {22.0, 22.0, 22.0} }
+
+multi::array<double, 3> A3({3, 2, 2}, 33.0);  // { { { 33., ...}, { ... }, ... } }
+```
+... or alternatively from a rectangular list.
+
+```cpp
+multi::array<double, 1> A1 = {1.0, 2.0, 3.0};
+assert( num_elements(A1)==3 );
+
+multi::array<double, 2> A2 {
+	{ 1.0, 2.0, 3.0},
+	{ 4.0, 5.0, 6.0}
+};
+
+assert( num_elements(A2) == 2*3);
+
+multi::array<double, 3> const A3 = {
+	{{ 1.2,  0.0}, { 2.4, 1.0}},
+	{{11.2,  3.0}, {34.4, 4.0}},
+	{{15.2, 99.0}, {32.4, 2.0}}
+};
+
+assert( A3.num_elements() == 3 * 2 * 2 );
+```
+
+In all cases, constness (`const` declaration) is honored in the expected way.
