@@ -1721,7 +1721,7 @@ int main() {
 	assert( B[5][0] == 50.0 );
 }
 ```
-[(live)](https://godbolt.org/z/e7bjKqh69)
+[(live)](https://godbolt.org/z/oM4YbPYz8)
 
 which uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a HIP/ROCm compiler, or OpenMP or TBB in other cases).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` (from `<thrust/universal_allocator.h>`) instead.
