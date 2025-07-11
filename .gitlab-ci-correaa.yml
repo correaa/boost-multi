@@ -69,7 +69,7 @@ g++-m32 sanitize:
   interruptible: true
   script:
     - dpkg --add-architecture i386
-    # - apt-get -qq update
+    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
