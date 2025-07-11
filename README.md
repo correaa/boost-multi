@@ -22,123 +22,6 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 
 # [Tutorial (advanced usage)](doc/multi/tutorial.adoc)
 
-
-# Copy, and assigment (, and aliasing)
-
-The library offers value semantics for the `multi::array<T, D>` family of classes.
-Constructing or assigning from an existing array generates a copy of the original object, independent of the original one but equal in value.
-
-```cpp
-auto B2 = A2;  // same as multi::array<double, 2> B2 = A2; (A2 is defined above)
-
-assert(  B2       ==  A2       );  // copies have the same element values (and also the same shape)
-assert(  B2[0][0] ==  A2[0][0] )
-assert( &B2[0][0] != &A2[0][0] );  // but they are independent
-```
-
-A (mutable) array can be assigned at any moment, independently of the previous state or shape (extensions).
-The dimensionalities must match.
-```cpp
-B2 = A2;  // both have dimensionality 2
-```
-
-Sometimes it is necessary to generate copies from views or subblocks.
-```cpp
-multi::array<double, 3> C2 = A2( {0, 2}, {0, 2} );
-```
-or equivalently,
-```cpp
-auto C2 = + A2( {0, 2}, {0, 2} );
-```
-Note the use of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
-Due to a language limitation, omitting the `+` will create another non-independent reference view of the left-hand side, which is generally undesired.
-
-Subarray-references can also assigned, but only if the shapes of the left-hand side (LHS) and right-hand side (RHS) match.
-Otherwise, the behavior is undefined (in debug mode, the program will fail an assertion).
-
-```cpp
-C2( {0, 2}, {0, 2} ) = A2( {0, 2}, {0, 2} );  // both are 2x2 views of arrays, *elements* are copied
-```
-
-Using the same or overlapping arrays in the RHS and LHS of assignment produces undefined behavior in general (and the library doesn't check).
-Notably, this instruction does not transpose the array but produces an undefined result:
-
-```cpp
-A2 = A2.transposed();  // undefined result, this is an error
-```
-
-This is an instance of the problem of _data aliasing_, which describes a common situation in which a data location in memory can be accessed through different parts of an expression or function call.
-
-This below statement below, instead, does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
-
-```cpp
-A2 = + A2.transposed();  // ok, (might allocate)
-```
-
-Within the confines of the library interface, this pitfall can only occur on assignment.
-A generic workaround is to use the prefix `operator+`, to break "aliasing" as above.
-
-In general, the problem of aliasing can persist when taking mutable array-references in function arguments.
-The most general solution to this problem is to make copies or directly work with completely disjoint objects.
-Other case-by-case solutions might be possible.
-(For example, in-place transposition (as attempted above) is an active subject of research;
-_optimal_ speed and memory transpositions might require specially designed libraries.)
-
-Finally, arrays can be efficiently moved by transferring ownership of the internal data.
-
-```cpp
-auto B2 = std::move(A2);  // A2 is empty after this
-```
-
-Subarrays do not own the data; therefore they cannot directly take advantage of this feature.
-However, individual elements of a view can still be moved; this is particularly useful if the elements are expensive to copy (elements that are containers themselves for exampe).
-A "moved" subview is simply another kind of view of the elements.
-
-```cpp
-multi::array<std::vector<double>, 2> A({10, 10}, std::vector<double>(1000));
-multi::array<std::vector<double>, 2> B({10, 10});
-...
-B[1] = A[2].element_moved();
-```
-
-Each of the 10 *elements* of the third row of `A` is moved into the second row of `B`.
-`A[2]` still has 10 (moved-from) empty vectors.
-
-
-## Change sizes (extents)
-
-Arrays can change their size while _preserving elements_ with the `reextent` method.
-
-```cpp
-multi::array<int, 2> A = {
- {1, 2, 3},
- {4, 5, 6}
-};
-
-A.reextent({4, 4});
-
-assert( A[0][0] == 1 );
-```
-
-An alternative syntax with an additional parameter, `.reextent({...}, value)`, sets _new_ (not preexisting) elements to a specific value.
-
-The primary purpose of `reextent` is element preservation.
-All calls to `reextent` allocate and deallocate memory; therefore, they are not amortized.
-If element preservation is not desired, a simple assignment (move) from a new array better expresses the intention and is more efficient since it doesn't need to copy preexisting elements.
-
-```cpp
-A = multi::array<int, 2>({4, 4});  // extensions like A.reextent({4, 4}) but elements are not preserved
-
-A = multi::array<int, 2>({4, 4}, 99)  // for initialization with specific value 99
-
-A = {};  // empties the array, equivalent to `A.reextent({0, 0});`.
-```
-
-Subarrays or views cannot change their size or be emptied (e.g., `A[1].rextent({4})` or `A[1].clear()` will not compile).
-For the same reason, subarrays cannot be assigned from an array or another subarray of different size.
-
-Changing the size of arrays by `reextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
-
 # Iteration (range-based loops vs iterators)
 
 Historically, iteration over arrays has been done with index-based `for`-loops, where each nesting level is associated with a subdimension.
@@ -249,7 +132,7 @@ recursive_print(A);
 This feature allows to view the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
 For example array element at indices 1,1 is the same as the element 
 
-## "Pointer" to subarray
+== "Pointer" to subarray
 
 The library strongly relies on value-sematics, and it doesn't entertain the concept of "shallow" copy; however, it supports refenece- and pointer-sematics.
 
