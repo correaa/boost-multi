@@ -62,5 +62,6 @@ else()
     else()
         message(WARNING "Cannot find OpenMP, will not be tested")
     endif()
-
+else()
+    message(WARNING "Cannot find OpenMP, will not be tested.\n Install with `sudo apt install libomp-dev`")
 endif()
