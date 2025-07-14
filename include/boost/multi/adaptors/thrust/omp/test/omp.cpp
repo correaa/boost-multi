@@ -6,7 +6,7 @@
 # define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 #endif
 
-#include <boost/multi/adaptors/thrust/omp.hpp>
+#include <boost/multi/adaptors/thrust/omp.hpp>  // NOLINT(misc-include-cleaner)
 
 #if !defined(__clang__)
 # include <boost/multi/array.hpp>
