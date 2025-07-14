@@ -183,17 +183,18 @@ g++ cppcheck cpplint memcheck:
 
 g++-7:
   stage: build
-  image: debian:oldoldstable  # default is gcc 8 as of Dec 2023
+  image: debian:oldstable  # default is gcc 8 as of Dec 2023
   tags:
     - non-shared
     - docker
   interruptible: true
   script:
     - arch
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
-    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
-    - sh ./cmake-*.sh --skip-license --prefix=/usr
-    - cmake --version
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++-7 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
+    # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
+    # - sh ./cmake-*.sh --skip-license --prefix=/usr
+    # - cmake --version
     - g++-7 --version
     - mkdir build && cd build
     - CXX=g++-7 cmake .. -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
@@ -492,18 +493,19 @@ clang++-19-unstable libc++ c++26 boost_1_87:
     - ctest --output-on-failure
   needs: ["clang++-latest libc++", "g++-testing c++20"]
 
-clang++-oldoldstable:
+clang++-oldstable:
   stage: build
-  image: debian:oldoldstable  # clang 7.0.1 as of Jan 2025
+  image: debian:oldstable  # clang 7.0.1 as of Jan 2025
   tags:
     - non-shared
     - docker
   interruptible: true
   script:
     - arch
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
-    - sh cmake-install.sh --skip-license --prefix=/usr
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
+    # - sh cmake-install.sh --skip-license --prefix=/usr
     - mkdir build && cd build 
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release
