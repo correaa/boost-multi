@@ -38,6 +38,7 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   # tags:
   #   - non-shared
   script:
+    - apt clean
     - apt-get -qq update --allow-unauthenticated
     - apt-get -qq install --allow-unauthenticated --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
