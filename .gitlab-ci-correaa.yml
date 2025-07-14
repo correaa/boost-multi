@@ -53,6 +53,7 @@ g++-omp-thrust:
   tags:
     - non-shared
   script:
+    - apt-get clean
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
