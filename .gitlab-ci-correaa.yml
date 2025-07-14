@@ -31,13 +31,15 @@ stages:
   - basic
   - build
   - test
+
 g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   stage: basic
   interruptible: false
   # tags:
   #   - non-shared
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
+    - apt-get -qq update --allow-unauthenticated --allow-insecure-repositories
+    - apt-get -qq install --allow-unauthenticated --allow-insecure-repositories --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1"
