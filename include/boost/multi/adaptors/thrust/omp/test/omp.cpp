@@ -52,13 +52,20 @@ auto parallel_array_sum(Array1D const& arr) {
 template<class Array1D>
 auto parallel_idiom_array_sum(Array1D const& arr) {
 	typename Array1D::value_type total = 0.0;
-#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-#ifndef __NVCOMPILER
+#if !defined(__NVCOMPILER) && !defined(_MSC_VER)
+	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
 	for(auto const i : arr.extension()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
+#elif defined(_MSC_VER)
+	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
+	for(auto i = arr.extension().front(); i < arr.extension().back() + 1; ++i) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
+		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
 #else
+	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
 	for(auto it = arr.extension().begin(); it < arr.extension().end(); ++it) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[*it];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -78,16 +85,36 @@ auto thrust_omp_array_sum(Array1D const& arr) {
 }
 
 template<class Tp>
-inline __attribute__((always_inline)) void DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
+inline
+#if defined(_MSC_VER)
+__forceinline
+#else
+__attribute__((always_inline))
+#endif
+void DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
+#if defined(_MSC_VER)
+	_ReadWriteBarrier();
+#else
 	asm volatile("" : : "r,m"(value) : "memory");                            // NOLINT(hicpp-no-assembler)
+#endif
 }
 
 template<class Tp>
-inline __attribute__((always_inline)) void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
-#if defined(__clang__)
-	asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
+inline
+#if defined(_MSC_VER)
+__forceinline
 #else
-	asm volatile("" : "+m,r"(value) : : "memory");
+__attribute__((always_inline))
+#endif
+void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
+#if defined(_MSC_VER)
+	_ReadWriteBarrier();
+#else
+	#if defined(__clang__)
+		asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
+	#else
+		asm volatile("" : "+m,r"(value) : : "memory");
+	#endif
 #endif
 }
 
