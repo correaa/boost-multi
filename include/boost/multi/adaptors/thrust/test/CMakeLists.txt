@@ -30,6 +30,7 @@ endif()
 
 set(TEST_SRCS
 	array.cu
+	by_key.cu
 	memory_resource.cu
 	run_reduce.cu
 	set_identity_kernel.cu
