@@ -252,7 +252,7 @@ class intersecting_range {
 		(std::numeric_limits<IndexType>::max)()
 	};
 
-	constexpr intersecting_range() = default;  // MSVC 19.07 needs constexpr to initialize ALL later
+	constexpr intersecting_range() noexcept = default;  // MSVC 19.07 needs constexpr to initialize ALL later
 	static constexpr auto make_(IndexType first, IndexType last) -> intersecting_range {
 		intersecting_range ret;
 		ret.impl_ = range<IndexType>{first, last};
