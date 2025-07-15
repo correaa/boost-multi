@@ -54,6 +54,7 @@ namespace symbols {
 
 namespace {
 
+#if !defined(__GNUC__) || __GNUC__ > 9
 #if !defined(__NVCOMPILER)
 [[maybe_unused]] constexpr auto const& Ɵ = Zilde;  // NOLINT(misc-confusable-identifiers)
 #   if !defined(_MSC_VER)
@@ -61,12 +62,15 @@ namespace {
 [[maybe_unused]] constexpr auto const& Ө = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& ϑ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ø = Zilde;
+#endif
 
+#if !defined(__GNUC__) || __GNUC__ > 9
 #       if defined(__clang__)
 #           pragma clang diagnostic ignored "-Wc99-compat"
 #       endif
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
 #   endif
+#endif
 #endif
 
 struct underscore_t {
