@@ -187,7 +187,7 @@ g++ cppcheck cpplint memcheck:
 #     - ctest -j 2 --output-on-failure -T Test
 #   needs: ["g++"]
 
-g++-7:
+g++-9:
   stage: build
   image: debian:oldstable  # default is gcc 8 as of Dec 2023
   tags:
