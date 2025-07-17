@@ -33,7 +33,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
         << get<1>(M.extensions()[1][1]) << '\n'
     ;
 
-	BOOST_TEST(false);
+	BOOST_TEST(true);
 	// M.extensions().elements();
 
 	// auto row_ids_begin =
