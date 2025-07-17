@@ -345,50 +345,51 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
-	auto elements() const {
-		class elements_t {
-			multi::index_range rng_;
+	class elements_t {
+		multi::index_range rng_;
 
-		 public:
-			class iterator : multi::index_range::iterator {
-				friend class elements_t;
-				explicit iterator(multi::index_range::iterator it) : multi::index_range::iterator{it} {}
+		public:
+		class iterator : multi::index_range::iterator {
+			friend class extensions_t<1>::elements_t;  // enclosing class is friend automatically?
+			explicit iterator(multi::index_range::iterator it) : multi::index_range::iterator{it} {}
 
-				auto base_() const -> multi::index_range::iterator const& { return *this; }
-				auto base_()       -> multi::index_range::iterator      & { return *this; }
+			auto base_() const -> multi::index_range::iterator const& { return *this; }
+			auto base_()       -> multi::index_range::iterator      & { return *this; }
 
-			 public:
-				using value_type = std::tuple<multi::index_range::iterator::value_type>;
-				using difference_type = multi::index_range::iterator::difference_type;
-				// using pointer = void;
-				// using reference = value_type;
+			public:
+			using value_type = std::tuple<multi::index_range::iterator::value_type>;
+			using difference_type = multi::index_range::iterator::difference_type;
+			// using pointer = void;
+			// using reference = value_type;
 
-				auto operator*() const { return value_type(*base_()); }
+			auto operator*() const { return value_type(*base_()); }
 
-				auto operator++() -> iterator& { ++base_(); return *this; }
-				auto operator--() -> iterator& { --base_(); return *this; }
+			auto operator++() -> iterator& { ++base_(); return *this; }
+			auto operator--() -> iterator& { --base_(); return *this; }
 
-				auto operator+=(difference_type n) -> iterator& { base_() += n; return *this; }
-				auto operator-=(difference_type n) -> iterator& { base_() -= n; return *this; }
+			auto operator+=(difference_type n) -> iterator& { base_() += n; return *this; }
+			auto operator-=(difference_type n) -> iterator& { base_() -= n; return *this; }
 
-				auto operator+(difference_type n) const { return iterator{*this}+=n; }
-				auto operator-(difference_type n) const { return iterator{*this}-=n; }
+			auto operator+(difference_type n) const { return iterator{*this}+=n; }
+			auto operator-(difference_type n) const { return iterator{*this}-=n; }
 
-				auto operator==(iterator const& other) const { return base_() == other.base_(); }
-				auto operator!=(iterator const& other) const { return base_() != other.base_(); }
+			auto operator==(iterator const& other) const { return base_() == other.base_(); }
+			auto operator!=(iterator const& other) const { return base_() != other.base_(); }
 
-				auto operator[](difference_type n) const { return *((*this) + n); }
-			};
-			// using const_iterator = iterator;
-
-			auto begin() const { return iterator{rng_.begin()}; }
-			auto end()   const { return iterator{rng_.end()  }; }
-
-			explicit elements_t(multi::index_range rng) : rng_{rng} {}
+			auto operator[](difference_type n) const { return *((*this) + n); }
 		};
+		// using const_iterator = iterator;
+
+		auto begin() const { return iterator{rng_.begin()}; }
+		auto end()   const { return iterator{rng_.end()  }; }
+
+		explicit elements_t(multi::index_range rng) : rng_{rng} {}
+	};
+
+	auto elements() const {
 		using std::get;
-		auto rng = get<0>(static_cast<tuple<multi::index_extension> const&>(*this));
-		return elements_t{rng};
+		// auto rng = get<0>(static_cast<tuple<multi::index_extension> const&>(*this));
+		return elements_t{get<0>(static_cast<tuple<multi::index_extension> const&>(*this))};
 	}
 
 	using nelems_type = index;
