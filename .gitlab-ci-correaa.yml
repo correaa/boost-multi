@@ -113,14 +113,11 @@ coverage:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DDISABLE_THRUST_OMP=1 -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 1 --output-on-failure -T Test
     - ctest -j 1 --output-on-failure -T Coverage
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-    # - lcov --directory . --capture --output-file coverage.info
-    # - lcov --remove coverage.info '/usr/*' --output-file coverage.info
-    # - lcov --list coverage.info && genhtml coverage.info
     - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
   coverage: /^\s*Percentage\s+Coverage:\s*\d+.\d+\%/
   # coverage: /^\s*lines:\s*\d+.\d+\%/
