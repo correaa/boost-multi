@@ -348,9 +348,9 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	class elements_t {
 		multi::index_range rng_;
 
-		public:
+	 public:
 		class iterator : multi::index_range::iterator {
-			friend class extensions_t<1>::elements_t;  // enclosing class is friend automatically?
+			friend class elements_t;  // enclosing class is friend automatically?
 			explicit iterator(multi::index_range::iterator it) : multi::index_range::iterator{it} {}
 
 			auto base_() const -> multi::index_range::iterator const& { return *this; }
