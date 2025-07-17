@@ -496,7 +496,7 @@ clang++-19-unstable libc++ c++26 boost_1_87:
     - tar -xf boost_1_87_0.tar.gz 
     - cd boost_1_87_0
     - ./bootstrap.sh --with-toolset=clang
-    - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-test --with-timer install -j4  # libc++ only works with boost test compiled with libc++
+    - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-timer install -j4
     - cd ..
     - mkdir build && cd build
     - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=26 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"  # -DBoost_NO_SYSTEM_PATHS=ON
