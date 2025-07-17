@@ -504,7 +504,7 @@ clang++-19-unstable libc++ c++26 boost_1_87:
     - ctest --output-on-failure
   needs: ["clang++-latest libc++", "g++-testing c++20"]
 
-clang++-oldstable:
+clang++-oldstable-cmake4:
   stage: build
   image: debian:oldstable  # clang 7.0.1 as of Jan 2025
   tags:
@@ -515,8 +515,10 @@ clang++-oldstable:
     - arch
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
-    # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
-    # - sh cmake-install.sh --skip-license --prefix=/usr
+    - cmake --version
+    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
+    - sh cmake-install.sh --skip-license --prefix=/usr
+    - cmake --version
     - mkdir build && cd build 
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release
