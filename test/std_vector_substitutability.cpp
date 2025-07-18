@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for equal
+#include <memory>       // for __alloc_traits<>::value_type
 #include <type_traits>  // for decay_t
 #include <vector>       // for vector
 
