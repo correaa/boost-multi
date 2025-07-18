@@ -173,7 +173,7 @@ void test_2d(MPI_Comm comm) {
 				{
 					{1, 2, 3},
 					{4, 5, 6}
-            }
+				}
 			);
 			auto const& BB = AA({0, 2}, {1, 3});
 			BOOST_TEST(( BB == multi::array<int, 2>({{2, 3}, {5, 6}}) ));
@@ -320,6 +320,5 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	test_2d_double(MPI_COMM_WORLD);
 
 	MPI_Finalize();
-
 	return boost::report_errors();
 }

@@ -1,5 +1,4 @@
 // Copyright 2018-2025 Alfredo A. Correa
-// Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -25,7 +24,8 @@ namespace {
 
 template<multi::dimensionality_type D, class Extensions = multi::extensions_t<D>>
 constexpr auto iota(Extensions const& exts) {
-	auto beg = multi::extension_t(std::ptrdiff_t{0}, exts.num_elements()).begin();  // std::views::iota(0, exts.num_elements()).begin();
+	auto ext = multi::extension_t{std::ptrdiff_t{0}, exts.num_elements()};
+	auto beg = ext.begin();  // std::views::iota(0, exts.num_elements()).begin();
 	return multi::array_ref<typename decltype(beg)::value_type, Extensions::dimensionality, std::remove_const_t<decltype(beg)>>(exts, beg);
 }
 
@@ -39,7 +39,7 @@ constexpr auto iota([[maybe_unused]] Es... es) {  // for nvcc 14
 namespace symbols {
 
 namespace {
-#if !defined(__NVCOMPILER)
+#if !defined(__NVCOMPILER) && (!defined(__GNUC__) || __GNUC__ > 9)
 // cppcheck-suppress [syntaxError] -begin
 template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
 #endif
@@ -54,6 +54,7 @@ namespace symbols {
 
 namespace {
 
+#if !defined(__GNUC__) || __GNUC__ > 9
 #if !defined(__NVCOMPILER)
 [[maybe_unused]] constexpr auto const& Ɵ = Zilde;  // NOLINT(misc-confusable-identifiers)
 #   if !defined(_MSC_VER)
@@ -61,6 +62,7 @@ namespace {
 [[maybe_unused]] constexpr auto const& Ө = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& ϑ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ø = Zilde;
+#endif
 
 #       if defined(__clang__)
 #           pragma clang diagnostic ignored "-Wc99-compat"
@@ -110,7 +112,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #   if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	// NOLINTNEXTLINE(google-build-using-namespace)
 	using namespace apl::symbols;  // NOLINT(build/namespaces)
-#       if !defined(__NVCOMPILER) && !defined(_MSC_VER)
+#       if !defined(__NVCOMPILER) && !defined(_MSC_VER) && (!defined(__GNUC__) || __GNUC__ > 9)
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
 	BOOST_TEST(( Ɵ == ι(0) ));
