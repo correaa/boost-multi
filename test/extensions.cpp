@@ -21,10 +21,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 	using std::get;
 
+	BOOST_TEST( get<0>(A2Dxs[1][2]) == 1 );
+	BOOST_TEST( get<1>(A2Dxs[1][2]) == 2 );
+
 	BOOST_TEST( get<0>(A2Dxs) == A2Dx );
 	BOOST_TEST( get<1>(A2Dxs) == A2D[0].extension() );
-
-	using std::get;
 
 	BOOST_TEST( &A2D() == &A2D(get<0>(A2D.extensions()), get<1>(A2D.extensions())) );
 	BOOST_TEST( &A2D() == &std::apply(A2D, A2Dxs) );

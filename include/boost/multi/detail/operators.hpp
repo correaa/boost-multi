@@ -285,6 +285,7 @@ class random_iterable {
 	friend constexpr auto cback(T const& self) -> decltype(auto) { return self.cback(); }
 };
 
+namespace detail {
 template<class Self, class Value, class Reference = Value&, class Pointer = Value*, class Difference = std::ptrdiff_t>
 struct random_access_iterator : equality_comparable2<Self, Self> {
  protected:
@@ -299,6 +300,7 @@ struct random_access_iterator : equality_comparable2<Self, Self> {
 	using iterator_category = std::random_access_iterator_tag;
 	auto operator*() const -> Reference { return *static_cast<Self const&>(*this); }
 };
+}  // end namespace detail
 
 }  // end namespace boost::multi
 
