@@ -1,5 +1,6 @@
 # https://clang-format-configurator.site
 # Copyright 2020-2024 Alfredo A. Correa
+# this format specification requires clang-format version 15
 ---
 Language: Cpp
 AccessModifierOffset: -3
