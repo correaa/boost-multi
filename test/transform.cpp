@@ -288,9 +288,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::abs( zee[1][1] - 66.0) < 1E-6 );
 
-#   if defined(__clang__)
-#       pragma clang diagnostic pop
-#   endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #endif
 			{
