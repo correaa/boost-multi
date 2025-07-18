@@ -43,7 +43,7 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1 -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -ftrivial-auto-var-init=zero -fPIE  -pie  -Wl,-z,relro,-z,now -fstack-protector-strong -fstack-clash-protection -fcf-protection=full"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
 
@@ -477,7 +477,7 @@ g++-testing c++20:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS=-fimplicit-constexpr
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++"]

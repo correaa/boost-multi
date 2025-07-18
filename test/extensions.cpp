@@ -11,28 +11,7 @@
 
 namespace multi = boost::multi;
 
-namespace {
-void extensions_1d() {
-	multi::array<int, 2> A2D({5, 7}, 1);
-	auto const A2Dxs = A2D.extensions();
-
-	using std::get;
-	BOOST_TEST( get<0>(A2Dxs[1][2]) == 1 );
-	BOOST_TEST( get<1>(A2Dxs[1][2]) == 2 );
-
-	A2D[0].extensions().elements();
-
-	BOOST_TEST( A2D[0].extensions().elements().begin()     != A2D[0].extensions().elements().end() );
-	BOOST_TEST( A2D[0].extensions().elements().begin() + 7 == A2D[0].extensions().elements().end() );
-
-	BOOST_TEST( get<0>( *(A2D[0].extensions().elements().begin() + 1 ) ) == 1 );
-	BOOST_TEST( get<0>(   A2D[0].extensions().elements().begin()  [1]  ) == 1 );
-}
-}  // end namespace
-
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
-	extensions_1d();
-
 	multi::array<int, 2> A2D({5, 7}, 1);
 	auto const A2Dx = A2D.extension();
 
@@ -71,6 +50,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			BOOST_TEST( second == j );
 		}
 	}
+
+	BOOST_TEST( get<0>(A2Dxs).size() == 5 );
+
+	multi::array<int, 1> const A1D({37}, 1);
+	BOOST_TEST( A1D.size() == 37 );
+	BOOST_TEST( A1D.num_elements() == 37 );
+	BOOST_TEST( A1D.extensions().num_elements() == 37 );
 
 	return boost::report_errors();
 }
