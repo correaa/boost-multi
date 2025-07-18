@@ -456,7 +456,7 @@ clang++-latest tidy iwyu:
   interruptible: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake iwyu make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet clang clang-format clang-tidy cmake iwyu make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
     - clang-tidy --version
