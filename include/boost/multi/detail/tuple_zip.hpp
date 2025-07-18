@@ -408,7 +408,7 @@ constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>&& tp) -> decltyp
 }  // end namespace std
 
 #ifdef __clang__
-#  pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
