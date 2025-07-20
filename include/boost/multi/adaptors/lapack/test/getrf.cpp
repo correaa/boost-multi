@@ -1,11 +1,9 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#$CXX` $0 -o $0x -Wno-deprecated-declarations -lcudart -lcublas -lcusolver `pkg-config --libs blas lapack` -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework -DBOOST_LOG_DYN_LINK -lboost_log -lpthread -lboost_system &&$0x&&rm $0x $0.cpp; exit
-#endif
-// © Alfredo A. Correa 2019-2020
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi getrf"
-// #include<boost/test/unit_test.hpp>
+// Copyright 2019-2025 Alfredo A. Correa
+
+#include <boost/core/lightweight_test.hpp>
 
 #include<multi/array.hpp>
+
 #include<multi/adaptors/lapack/getrf.hpp>
 #include<multi/adaptors/blas/gemm.hpp>
 #include<multi/adaptors/blas/gemv.hpp>
@@ -73,8 +71,10 @@ namespace multi = boost::multi;
 
 //}
 
-BOOST_AUTO_TEST_CASE(lapack_getrf){
+auto main() -> int {
 
+// BOOST_AUTO_TEST_CASE(lapack_getrf)
+{
 	multi::array<double, 2> const Aconst = {
 		{ 6.80, -6.05, -0.45, 8.32, -9.67},
 		{-2.11, -3.30,  2.58, 2.71, -5.14},
@@ -114,11 +114,10 @@ BOOST_AUTO_TEST_CASE(lapack_getrf){
 
 	// using multi::blas::operators::operator*;
 	// BOOST_REQUIRE_CLOSE( (Aconst*(~BT))[1][2] , Bconst[1][2] , 1e-10);
-
 }
 
-BOOST_AUTO_TEST_CASE(lapack_getrf_two_column){
-
+// BOOST_AUTO_TEST_CASE(lapack_getrf_two_column)
+{
 	multi::array<double, 2> const Aconst = {
 		{ 6.80, -6.05, -0.45, 8.32, -9.67},
 		{-2.11, -3.30,  2.58, 2.71, -5.14},
@@ -159,11 +158,10 @@ BOOST_AUTO_TEST_CASE(lapack_getrf_two_column){
 	// using multi::blas::operators::operator*;
 	// BOOST_REQUIRE_CLOSE( (Aconst*(~BT))[2][1] , Bconst[2][1] , 1e-10);
 	// BOOST_REQUIRE_CLOSE( (Aconst*(~BT))[2][0] , Bconst[2][0] , 1e-10);
-
 }
 
-BOOST_AUTO_TEST_CASE(lapack_getrf_one_column){
-
+// BOOST_AUTO_TEST_CASE(lapack_getrf_one_column)
+{
 	multi::array<double, 2> const Aconst = {
 		{ 6.80, -6.05, -0.45, 8.32, -9.67},
 		{-2.11, -3.30,  2.58, 2.71, -5.14},
@@ -203,8 +201,8 @@ BOOST_AUTO_TEST_CASE(lapack_getrf_one_column){
 	// BOOST_REQUIRE_CLOSE( (Aconst*B)[1][0] , Bconst[1][0] , 1e-10);
 }
 
-BOOST_AUTO_TEST_CASE(lapack_getrf_one_vector){
-
+// BOOST_AUTO_TEST_CASE(lapack_getrf_one_vector)
+{
 	multi::array<double, 2> const Aconst = {
 		{ 6.80, -6.05, -0.45, 8.32, -9.67},
 		{-2.11, -3.30,  2.58, 2.71, -5.14},
@@ -234,12 +232,11 @@ BOOST_AUTO_TEST_CASE(lapack_getrf_one_vector){
 	lu_solve_one(A, P, V);
 
 	using multi::blas::operators::operator%;
-	BOOST_REQUIRE_CLOSE( (Aconst%V)[2] , Vconst[2] , 1e-10);
-
+	BOOST_TEST( std::abs((Aconst%V)[2] - Vconst[2]) < 1e-10 );
 }
 
-BOOST_AUTO_TEST_CASE(lapack_getrs){
-
+// BOOST_AUTO_TEST_CASE(lapack_getrs)
+{
 // https://www.ibm.com/support/knowledgecenter/SSFHY8_6.2/reference/am5gr_hsgetrf.html
 	multi::array<double, 2> A = {
 		{ 1.0,  1.2,  1.4,  1.6,  1.8,  2.0,  2.2,  2.4,  2.6 },
@@ -297,7 +294,9 @@ BOOST_AUTO_TEST_CASE(lapack_getrs){
 //      }
 //      std::cout<<std::endl;
 //  }
+}
 
 }
+
 
 

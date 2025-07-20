@@ -6,11 +6,9 @@
 #include <boost/multi/adaptors/lapack/core.hpp>
 #include <boost/multi/adaptors/blas/filling.hpp>
 
-#include <boost/multi/detail/config/NODISCARD.hpp"
+#include <boost/multi/detail/config/NODISCARD.hpp>
 
 #include<cassert>
-
-//#include<lapacke.h>
 
 namespace boost{namespace multi{namespace lapack{
 
@@ -23,7 +21,7 @@ auto getrf(Context&& ctxt, A&& a, IPIV&& ipiv){
 	assert( ipiv.size() == std::min(size(a), size(~a)) );
 	assert( stride(a) == 1 );
 //  assert( stride(ipiv) == 1 );
-	multi::index i = std::forward<Context>(ctxt).getrf(size(~a), size(a), base(a), stride(~a), ipiv.data() );
+	multi::index i = std::forward<Context>(ctxt).getrf(size(~a), size(a), a.base(), stride(~a), ipiv.data() );
 	if(i == 0) return a();
 	else       return a({0, i - 1}, {0, i - 1});
 }
@@ -35,7 +33,7 @@ void getrs(Context&& ctxt, LU const& lu, IPIV const& ipiv, B&& b){
 	assert( size(ipiv) >= size(lu) );
 //  assert( stride(ipiv) == 1 );
 	assert( stride(b) == 1 );
-	std::forward<Context>(ctxt).getrs('N', size(lu), size(~b), base(lu), stride(~lu), ipiv.data(), base(b), stride(~b));
+	std::forward<Context>(ctxt).getrs('N', size(lu), size(~b), lu.base(), stride(~lu), ipiv.data(), b.base(), stride(~b));
 }
 
 template<class Context, class LU, class IPIV, class V>
@@ -44,7 +42,7 @@ void getrs_one(Context&& ctxt, LU const& lu, IPIV const& ipiv, V&& b){
 	assert( stride(lu) == 1 );
 //  assert( stride(ipiv) == 1 );
 	assert( stride(b) == 1 );
-	std::forward<Context>(ctxt).getrs('N', size(lu), 1, base(lu), stride(~lu), ipiv.data(), base(b), size(lu));
+	std::forward<Context>(ctxt).getrs('N', size(lu), 1, lu.base(), stride(~lu), ipiv.data(), b.base(), size(lu));
 }
 
 
