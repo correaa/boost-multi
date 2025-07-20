@@ -90,5 +90,7 @@ export CMAKE_PREFIX_PATH=$HOME/lib/cmake/thrust
 #(find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression:{} --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 --suppress=unmatchedSuppression {} \;) || exit
 fi
 
-clang-format-15 --dry-run -Werror --output-replacements-xml include/**/*.hpp test/*.cpp
+# diff -u --side-by-side <(cat include/**/*.hpp test/*.cpp) <(clang-format-15 include/**/*.hpp test/*.cpp)
+clang-format-15 --dry-run -Werror include/**/*.hpp test/*.cpp
+
 #fuser --kill /dev/nvidia-uvm; while fuser --silent /dev/nvidia-uvm; do sleep 1; done; modprobe -r nvidia_uvm && modprobe nvidia_uvm
