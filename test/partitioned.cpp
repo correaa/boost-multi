@@ -5,6 +5,8 @@
 
 #include <boost/multi/array.hpp>  // for array, apply, subarray, operator==
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <algorithm>  // for is_sorted
 #include <array>      // for array
 #include <cstddef>    // for ptrdiff_t
@@ -51,11 +53,9 @@ template<class T> class propagate_const<T const&> {
 	explicit operator T const&() const noexcept { return r_; }
 };
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(halved_1d) {
+	// BOOST_AUTO_TEST_CASE(halved_1d)
+	{
 		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
 		auto&& A2_ref = A1.halved();
@@ -71,7 +71,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( A2_ref == multi::array<double, 2>{ {0, 10, 20}, {30, 40, 50} } ));
 	}
 
-	BOOST_AUTO_TEST_CASE(halved_2d) {
+	// BOOST_AUTO_TEST_CASE(halved_2d)
+	{
 		multi::array<int, 2> const A2 = {
 			{ 00,  10,  20,  30,  40,  50},
 			{ 60,  70,  80,  90, 100, 110},
@@ -94,9 +95,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		));
 	}
 
-	BOOST_AUTO_TEST_CASE(halved_ref_2d) {
+	// BOOST_AUTO_TEST_CASE(halved_ref_2d)
+	{
 		std::vector<int> buff({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, {});
-		auto const& arr = multi::array_ref<int, 2>({4, 4}, buff.data());
+		auto const&      arr = multi::array_ref<int, 2>({4, 4}, buff.data());
 
 		BOOST_TEST(( arr == multi::array<int, 2>{
 			{ 1,  2,  3,  4},
@@ -318,7 +320,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// }));
 	}
 
-	BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
+	// BOOST_AUTO_TEST_CASE(array_partitioned_1d)
+	{
 		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
 		auto&& A2_ref = A1.partitioned(2);
@@ -334,7 +337,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( A2_ref == multi::array<double, 2>{ {0, 10, 20}, {30, 40, 50} } ));
 	}
 
-	BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
+	// BOOST_AUTO_TEST_CASE(array_partitioned_2d)
+	{
 		multi::array<int, 2> A2 = {
 			{ 00,  10,  20,  30,  40,  50},
 			{ 60,  70,  80,  90, 100, 110},
@@ -344,17 +348,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		BOOST_TEST((
-		A2.partitioned(2) == multi::array<int, 3>{
-			{
-				{ 00,  10,  20,  30,  40,  50},
-				{ 60,  70,  80,  90, 100, 110},
-			},
-			{
-				{120, 130, 140, 150, 160, 170},
-				{180, 190, 200, 210, 220, 230},
-			},
-		}
-	));
+			A2.partitioned(2) == multi::array<int, 3>{
+				{
+					{ 00,  10,  20,  30,  40,  50},
+					{ 60,  70,  80,  90, 100, 110},
+				},
+				{
+					{120, 130, 140, 150, 160, 170},
+					{180, 190, 200, 210, 220, 230},
+				},
+			}
+		));
 
 		auto&& A3_ref = A2.partitioned(2);
 
@@ -371,7 +375,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A3_ref[0][0][0] == 99 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_partitioned) {
+	// BOOST_AUTO_TEST_CASE(array_partitioned)
+	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 		using std::get;                        // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
@@ -417,7 +422,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &A2.partitioned(1).rotated()[3][1][0] == &A2[3][1] );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
+	// BOOST_AUTO_TEST_CASE(array_encoded_subarray)
+	{
 		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
 		// arr[walker][encoded_property]  // 7 walkers
@@ -451,12 +457,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrRPU[4][1][0] == 410 );
 
 		BOOST_TEST((
-		arrRPU[4] == multi::array<double, 2>{
-			{400, 401},
-			{410, 411},
-			{420, 421},
-		}
-	));
+			arrRPU[4] == multi::array<double, 2>{
+				{400, 401},
+				{410, 411},
+				{420, 421},
+			}
+		));
 
 		arrRPU[4][1][0] = 11110;
 		BOOST_TEST( arr[4][4] == 11110 );
@@ -485,27 +491,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( wr.slater_array[2][1] == 99990 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
+	// BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last)
+	{
 		multi::array<double, 3> arr = {
 			{
-				{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
-				{6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
-				{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-				{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-			},
+             {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+             {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+             {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+             {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+			 },
 			{
-				{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
-				{6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
-				{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-				{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
-			},
+             {0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+             {6.0, 7.0, 8.0, 9.0, 10.0, 11.0},
+             {12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+             {18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+			 },
 		};
 
 		auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());
 
 		BOOST_TEST( std::is_sorted(strides.rbegin(), strides.rend()) && arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 
-// #ifndef _MSC_VER  // problem with MSVC 14.3 c++17
+		// #ifndef _MSC_VER  // problem with MSVC 14.3 c++17
 		auto&& A4 = arr.reinterpret_array_cast<double>(1);
 
 		BOOST_TEST(( arr.extensions() == decltype(arr.extensions()){2, 4, 6} ));
@@ -515,10 +522,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  BOOST_TEST( A4.flatted().is_flattable() );
 
 		BOOST_TEST( &A4[1][2][3][0] == &arr[1][2][3] );
-// #endif
+		// #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
+	// BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D)
+	{
 		multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0};
 		BOOST_TEST( size(arr.partitioned(3)) == 3 );
 		BOOST_TEST(( arr.partitioned(3)[1] == multi::array<double, 1>{4.0, 5.0, 6.0, 7.0} ));
@@ -529,7 +537,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &arr.chunked(3)[1][2] == &arr[5] );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_2D) {
+	// BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_2D)
+	{
 		multi::array<double, 2> arr({100, 53});
 		BOOST_TEST( arr.partitioned(20).size() == 20 );
 		BOOST_TEST( &arr.partitioned(20)[1][2] == &arr[7] );
@@ -538,22 +547,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &arr.chunked(5)[1][2] == &arr[7] );
 	}
 
-	BOOST_AUTO_TEST_CASE(chunked_subarrays) {
+	// BOOST_AUTO_TEST_CASE(chunked_subarrays)
+	{
 		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
 		multi::array<int, 2> const arr = {
 			{ 0,  1,  /**/ 2,  3,  /**/ 4,  5},
 			{ 6,  7,  /**/ 8,  9, /**/ 10, 11},
-			/*********************************/
+ /*********************************/
 			{12, 13, /**/ 14, 15, /**/ 16, 17},
 			{18, 19, /**/ 20, 21, /**/ 22, 23},
-			/*********************************/
+ /*********************************/
 			{24, 25, /**/ 26, 27, /**/ 28, 29},
 			{30, 31, /**/ 32, 33, /**/ 34, 35},
-			/*********************************/
+ /*********************************/
 			{36, 37, /**/ 38, 39, /**/ 40, 41},
 			{42, 43, /**/ 44, 45, /**/ 46, 47}
-		};
+        };
 
 		BOOST_TEST( arr.dimensionality == 2 );
 		BOOST_TEST( arr.size() == 8 );
@@ -582,22 +592,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		));
 	}
 
-	BOOST_AUTO_TEST_CASE(partitined_subarrays) {
+	// BOOST_AUTO_TEST_CASE(partitined_subarrays)
+	{
 		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
 		multi::array<int, 2> const arr = {
 			{ 0,  1,  /**/ 2,  3,  /**/ 4,  5},
 			{ 6,  7,  /**/ 8,  9, /**/ 10, 11},
-			/******************************************/
+ /******************************************/
 			{12, 13, /**/ 14, 15, /**/ 16, 17},
 			{18, 19, /**/ 20, 21, /**/ 22, 23},
-			/******************************************/
+ /******************************************/
 			{24, 25, /**/ 26, 27, /**/ 28, 29},
 			{30, 31, /**/ 32, 33, /**/ 34, 35},
-			/******************************************/
+ /******************************************/
 			{36, 37, /**/ 38, 39, /**/ 40, 41},
 			{42, 43, /**/ 44, 45, /**/ 46, 47}
-		};
+        };
 
 		BOOST_TEST( arr.dimensionality == 2 );
 		BOOST_TEST( arr.partitioned(4).dimensionality == 3 );
@@ -683,12 +694,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// auto&& arr2 = std::array{{ arr({0, 3}), arr({3, 5}) }};
 
 #ifdef __GNUC__
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wmissing-braces"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
 #endif
 		auto&& arr2 = std::array{arr({0, 3}), arr({3, 5})};
 #ifdef __GNUC__
-	#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
 		// arr2 is not copyable, good
@@ -750,10 +761,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10},
-			/*******************/
+ /*******************/
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10}
-		};
+        };
 
 		BOOST_TEST( arr.elements().size() == 20 );
 
@@ -771,7 +782,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& tup2d = std::tuple{
 			std::tuple{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
 			std::tuple{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
-		};
+        };
 
 		BOOST_TEST( &get<0>(get<0>(tup2d))[1][1] == &arr[1][1] );
 		BOOST_TEST( &get<0>(get<1>(tup2d))[0][2] == &arr[2][2] );
@@ -782,16 +793,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10},
-			/*******************/
+ /*******************/
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10}
-		};
+        };
 
 		BOOST_TEST( arr.elements().size() == 20 );
 
 #ifdef __GNUC__
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wmissing-braces"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
 #endif
 		auto&& tup = std::array{
 			arr({0, 2}, {0, 3}),
@@ -808,12 +819,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& tup2d = std::array{
 			std::array{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
 			std::array{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
-		};
+        };
 		BOOST_TEST( &tup2d[0][0] [1][1] == &arr[1][1] );
 		BOOST_TEST( &tup2d[1][0] [0][2] == &arr[2][2] );
 #endif
 #ifdef __GNUC__
-	#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 	}
 
