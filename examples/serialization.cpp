@@ -36,7 +36,7 @@ struct watch : private std::chrono::high_resolution_clock {
 	time_point   start_  = std::chrono::high_resolution_clock::now();
 	mutable bool engaged = true;
 	watch()              = default;
-	watch(std::string name) : name_{std::move(name)} {}
+	watch(std::string_view name) : name_{name} {}
 	auto operator*() const {
 		engaged = false;
 		return std::chrono::duration<double>(now() - start_).count();
