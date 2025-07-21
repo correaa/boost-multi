@@ -102,7 +102,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[0][2] == 3.0 + 5.0*I );
 	}
 
-#if defined(NDEBUG)
+#if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND)
 	/* transform copy */ {
 		multi::array<double, 2> A2D({10000, 10000}, 55.5);
 		auto&&                  A2D_block = A2D({1000, 9000}, {1000, 5000});
