@@ -15,7 +15,7 @@
 #include <vector>    // for vector
 // IWYU pragma: no_include <version>  // for __cpp_lib_ranges
 #if defined(__cpp_lib_ranges)
-	#include <concepts>  // IWYU pragma: keep
+#include <concepts>  // IWYU pragma: keep
 #endif
 
 namespace multi = boost::multi;
@@ -103,7 +103,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 	BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
-		std::vector<double> vec = {1.0, 2.0, 3.0};        // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> vec = {1.0, 2.0, 3.0};           // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::array<double, 2> d2D = {
@@ -214,7 +214,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<char, 2> const name1 = {
 			{'a', 'b'},
 			{'b', 'c'},
-			{'c', 'd'}
+			{'c', 'd'},
 		};
 
 		// clang-format off

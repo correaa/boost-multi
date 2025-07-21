@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <type_traits>  // for std::is_swappable_v
-#include <utility>  // for as_const
+#include <utility>      // for as_const
 
 namespace multi = boost::multi;
 
@@ -49,18 +49,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	/* subarray_assignment */
 	{
 		multi::array<int, 3> A1 = {
-			{
-				{1, 2},
-				{3, 4}
-			},
-			{
-				{5, 6},
-				{7, 8}
-			},
+			{{1, 2},
+			 {3, 4}},
+			{{5, 6},
+			 {7, 8}},
 		};
 
 		auto const& R0 = std::as_const(A1)[0];
-		auto&& R1 = A1[1];
+		auto&&      R1 = A1[1];
 
 		R1 = R0;
 
@@ -70,18 +66,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	/* subarray_assignment */
 	{
 		multi::array<int, 3> A1 = {
-			{
-				{1, 2},
-				{3, 4}
-			},
-			{
-				{5, 6},
-				{7, 8}
-			},
+			{{1, 2},
+			 {3, 4}},
+			{{5, 6},
+			 {7, 8}},
 		};
 
 		auto const& R0 = A1[0];
-		auto&& R1 = A1[1];
+		auto&&      R1 = A1[1];
 
 		R1 = R0;
 
@@ -108,7 +100,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 2> A2D = {
 			{1, 2},
-			{3, 4}
+			{3, 4},
 		};
 		BOOST_TEST( A2D[0][0] == 1 );
 
@@ -130,8 +122,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// equality 2D
 	{
-		multi::array<int, 2> const AA = {{1, 2}, {3, 4}};
-		multi::array<int, 2> const BB = {{2, 3}, {4, 5}};
+		multi::array<int, 2> const AA = {
+			{1, 2},
+			{3, 4},
+		};
+		multi::array<int, 2> const BB = {
+			{2, 3},
+			{4, 5},
+		};
 
 		BOOST_TEST(   AA   != BB    );
 		BOOST_TEST( !(AA   == BB  ) );
@@ -142,7 +140,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// equality 1D
 	{
-		multi::array<int, 1> const AA = {1, 2, 3};
+		multi::array<int, 1> const      AA = {1, 2, 3};
 		multi::array<unsigned, 1> const BB = {2, 3, 4};
 
 		BOOST_TEST(   AA   != BB    );
@@ -154,8 +152,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// equality 2D
 	{
-		multi::array<int, 2> const AA = {{1, 2}, {3, 4}};
-		multi::array<unsigned, 2> const BB = {{2, 3}, {4, 5}};
+		multi::array<int, 2> const AA = {
+			{1, 2},
+			{3, 4},
+		};
+		multi::array<unsigned, 2> const BB = {
+			{2, 3},
+			{4, 5},
+		};
 
 		BOOST_TEST(   AA   != BB    );
 		BOOST_TEST( !(AA   == BB  ) );
@@ -165,22 +169,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	/* test ref(begin, end)*/
-	// {
-	//  multi::array<int, 2> A2D = {
-	//      {1, 2},
-	//         {3, 4}
-	//  };
-	//  BOOST_TEST( A2D[0][0] == 1 );
-
-	//  multi::const_subarray<int, 2> R2D(A2D.home(), A2D.sizes());
-	//  BOOST_TEST( R2D.addressof()== A2D.addressof() );
-	// }
-
-	/* test ref(begin, end)*/
 	{
 		multi::array<int, 2> A2D = {
 			{1, 2},
-			{3, 4}
+			{3, 4},
 		};
 		BOOST_TEST( A2D[0][0] == 1 );
 
@@ -190,15 +182,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		R2D[0][0] = 77;
 		BOOST_TEST( R2D[0][0] == 77 );
 	}
-	// {
-	//  multi::array<double, 2> A2D({10000, 10000}, 55.5);
-	//  auto const&             A2D_block = A2D({1000, 9000}, {1000, 9000});
-
-	//  multi::array<double, 2> B2D({10000, 10000}, 66.6);
-	//  auto const&             B2D_block = B2D({1000, 9000}, {1000, 9000});
-
-	//  *B2D_block.begin() = *A2D_block.begin();  // doesn't compile, CORRECT
-	// }
 
 	{  // https://godbolt.org/z/a5dr7YvMz
 		namespace multi = boost::multi;
@@ -212,43 +195,43 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// template<class T, ::boost::multi::dimensionality_t D>
 		// struct std::is_trivially_relocatable<::boost::multi::subarray<T, D>> : std::true_type{};
 
-		static_assert( std::is_nothrow_move_constructible_v<multi::array<int, 4>>);
-		static_assert(!std::is_trivially_copyable_v        <multi::array<int, 4>>);
-		static_assert( std::is_swappable_v                 <multi::array<int, 4>>);
-		static_assert( std::is_nothrow_swappable_v         <multi::array<int, 4>>);
+		static_assert(std::is_nothrow_move_constructible_v<multi::array<int, 4>>);
+		static_assert(!std::is_trivially_copyable_v<multi::array<int, 4>>);
+		static_assert(std::is_swappable_v<multi::array<int, 4>>);
+		static_assert(std::is_nothrow_swappable_v<multi::array<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>>);  // <==========
 
-		static_assert(!std::is_move_constructible_v        <multi::array_ref<int, 4>>);
+		static_assert(!std::is_move_constructible_v<multi::array_ref<int, 4>>);
 		static_assert(!std::is_nothrow_move_constructible_v<multi::array_ref<int, 4>>);
-		#if (!defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ >= 24)) && !defined(__NVCC__)
-		static_assert(!std::is_copy_constructible_v        <multi::array_ref<int, 4>>);
-		#endif
-		static_assert(!std::is_trivially_copyable_v        <multi::array_ref<int, 4>>);
-		static_assert( std::is_copy_assignable_v           <multi::array_ref<int, 4>>);
-		static_assert(!std::is_trivially_copy_assignable_v <multi::array_ref<int, 4>>);
-		static_assert(!std::is_swappable_v                 <multi::array_ref<int, 4>>);  // TODO(correaa) fix? swap can be called on it, and it is O(N)
+#if(!defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ >= 24)) && !defined(__NVCC__)
+		static_assert(!std::is_copy_constructible_v<multi::array_ref<int, 4>>);
+#endif
+		static_assert(!std::is_trivially_copyable_v<multi::array_ref<int, 4>>);
+		static_assert(std::is_copy_assignable_v<multi::array_ref<int, 4>>);
+		static_assert(!std::is_trivially_copy_assignable_v<multi::array_ref<int, 4>>);
+		static_assert(!std::is_swappable_v<multi::array_ref<int, 4>>);  // TODO(correaa) fix? swap can be called on it, and it is O(N)
 		// static_assert(    std::is_nothrow_swappable_v      <multi::array_ref<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v     <multi::array_ref<int, 4>>);  // <==========
 
-		static_assert( std::is_move_constructible_v        <multi::subarray<int, 4>>);  // mmm, something strange here
-		static_assert( std::is_nothrow_move_constructible_v<multi::subarray<int, 4>>);  // mmm, something strange here
-		static_assert(!std::is_copy_constructible_v        <multi::subarray<int, 4>>);
+		static_assert(std::is_move_constructible_v<multi::subarray<int, 4>>);          // mmm, something strange here
+		static_assert(std::is_nothrow_move_constructible_v<multi::subarray<int, 4>>);  // mmm, something strange here
+		static_assert(!std::is_copy_constructible_v<multi::subarray<int, 4>>);
 
-		#if !defined(__circle_build__)
-		static_assert(!std::is_trivially_copyable_v        <multi::subarray<int, 4>>);
-		#endif
+#if !defined(__circle_build__)
+		static_assert(!std::is_trivially_copyable_v<multi::subarray<int, 4>>);
+#endif
 
-		static_assert( std::is_copy_assignable_v           <multi::subarray<int, 4>>);
-		static_assert(!std::is_trivially_copy_assignable_v <multi::subarray<int, 4>>);
-		static_assert( std::is_swappable_v                 <multi::subarray<int, 4>>);  // TODO(correaa) fix?
+		static_assert(std::is_copy_assignable_v<multi::subarray<int, 4>>);
+		static_assert(!std::is_trivially_copy_assignable_v<multi::subarray<int, 4>>);
+		static_assert(std::is_swappable_v<multi::subarray<int, 4>>);  // TODO(correaa) fix?
 
 		// static_assert(    std::is_nothrow_swappable_v      <multi::subarray<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v     <multi::subarray<int, 4>>);  // <==========
 
-		static_assert( std::is_move_constructible_v        <multi::array<int, 4>::iterator>);
-		static_assert( std::is_nothrow_move_constructible_v<multi::array<int, 4>::iterator>);
-		static_assert( std::is_trivially_copyable_v        <multi::array<int, 4>::iterator>);
-		static_assert( std::is_swappable_v                 <multi::array<int, 4>::iterator>);
+		static_assert(std::is_move_constructible_v<multi::array<int, 4>::iterator>);
+		static_assert(std::is_nothrow_move_constructible_v<multi::array<int, 4>::iterator>);
+		static_assert(std::is_trivially_copyable_v<multi::array<int, 4>::iterator>);
+		static_assert(std::is_swappable_v<multi::array<int, 4>::iterator>);
 		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>::iterator>);  // <==========
 	}
 
