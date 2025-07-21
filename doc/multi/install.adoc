@@ -48,7 +48,7 @@ target_link_libraries(my_target PUBLIC multi)
 ```
 
 The code requires any modern https://godbolt.org/z/hxEYGYEWc[C\++ compiler] (or CUDA [compiler](https://godbolt.org/z/79Tqedhfs)) with standard C\++17 support;
-for reference, any of:
+for reference, (at least) any of:
 LLVM's          https://godbolt.org/z/51E1hjfnn[clang (5.0+)] (libc\++ and libstdc\++),
 GNU's           https://godbolt.org/z/1nGEbKc5a[g\++ (7.1+)],
 Nvidia's        https://godbolt.org/z/abdT73PqM[nvcc (11.4+)] 
