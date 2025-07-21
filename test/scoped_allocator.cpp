@@ -165,27 +165,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	// vvv this cases confuse gcc (and MSVC?)
-	// BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector_auto) {
-	//  std::int32_t heap1 = 0;
-	//  std::int64_t heap2 = 0;
+	// BOOST_AUTO_TEST_CASE(scoped_allocator_array_vector_auto)
+	{
+		std::int32_t heap1 = 0;
+		std::int64_t heap2 = 0;
 
-	//  using InnerCont = std::vector<int, allocator2<int>>;
-	//  using OuterCont = multi::array<InnerCont, 2, std::scoped_allocator_adaptor<allocator1<>, allocator2<>>>;
+		using InnerCont = std::vector<int, allocator2<int>>;
+		using OuterCont = multi::array<InnerCont, 2, std::scoped_allocator_adaptor<allocator1<>, allocator2<>>>;
 
-	//  {
-	//    OuterCont cont({3, 4}, {&heap1, allocator2<>{&heap2}});  // without allocator2<>{...} gives ambiguous construction in libc++
+		{
+			OuterCont cont({3, 4}, {&heap1, allocator2<>{&heap2}});  // without allocator2<>{...} gives ambiguous construction in libc++
 
-	//    cont[1][2].resize( 10);
-	//    cont[1][2].resize(100);
-	//    cont[1][2].resize(200);
+			cont[1][2].resize( 10);
+			cont[1][2].resize(100);
+			cont[1][2].resize(200);
 
-	//    BOOST_TEST( heap1 == 1  );
-	//  // these values are depdenent on the implementation of std::vector
-	//  #if !defined(_MSC_VER)
-	//    BOOST_TEST( heap2 ==  1L );
-	//  #endif
-	//  }
-	// }
+			BOOST_TEST( heap1 == 1  );
+			// these values are depdenent on the implementation of std::vector
+			#if !defined(_MSC_VER)
+			BOOST_TEST( heap2 ==  1L );
+			#endif
+		}
+	}
 
 	// BOOST_AUTO_TEST_CASE(scoped_allocator_array_array_auto) {
 	//  std::int32_t heap1 = 0;
