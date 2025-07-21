@@ -5,6 +5,8 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>  // TODO(correaa) remove in c++20
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <algorithm>    // for equal
 #include <cassert>      // for assert
 #include <functional>   // for negate  // IWYU pragma: keep
@@ -36,7 +38,7 @@ class involuted {
 	involuted(involuted&&) noexcept = default;
 
 	constexpr auto operator=(involuted const&) = delete;
-	constexpr auto operator=(involuted&&) = delete;
+	constexpr auto operator=(involuted&&)      = delete;
 
 	~involuted() = default;
 
@@ -88,35 +90,35 @@ class involuter {
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
 	constexpr auto operator<(involuter const& other) const { return it_ < other.it_; }
 
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 
 	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto) {
 		it_ += n;
 		return *this;
 	}
 
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-	#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 
 	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }
 	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }
 
 	constexpr auto operator[](typename involuter::difference_type n) const { return reference{*(it_ + n), f_}; }
 
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 	constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 };
@@ -132,89 +134,92 @@ template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;  // NOLIN
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class Ptr> using negater = involuter<Ptr, std::negate<>>;
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-BOOST_AUTO_TEST_CASE(multi_array_involution) {
-	int doub = 50;
-
-	auto&& cee = involuted<int&, std::negate<>>{doub};
-	BOOST_TEST( cee == -50 );
-
-	cee = 100;
-	BOOST_TEST( doub == -100 );
-
-	auto m5 = involuted<int, std::negate<>>(50);
-	BOOST_TEST( m5 == -50 );
-}
-
-BOOST_AUTO_TEST_CASE(static_array_cast) {
-	multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
-
-	auto&& ref = arr.static_array_cast<double, double const*>();
-
-	BOOST_TEST( &ref[2] == &arr[2] );
-	BOOST_TEST( &arr[2] == &ref[2] );
-
-	BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
-
-	BOOST_TEST( ref == arr() );
-	BOOST_TEST( arr() == ref );
-
-	BOOST_TEST( ref == arr );
-	BOOST_TEST( arr == ref );
-}
-
-BOOST_AUTO_TEST_CASE(static_array_cast_2) {
-	multi::array<int, 2> arr({2, 5});
-	std::iota(arr.elements().begin(), arr.elements().end(), 0);
-
-	auto&& ref = arr.static_array_cast<int, int const*>();
-
-	BOOST_TEST( ref[1][1] == arr[1][1] );
-	BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
-	BOOST_TEST( ref[1] == arr[1] );
-
-	BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
-
-	BOOST_TEST( ref == arr );
-	BOOST_TEST( arr == ref );
-}
-
-BOOST_AUTO_TEST_CASE(static_array_cast_3) {
+	// BOOST_AUTO_TEST_CASE(multi_array_involution)
 	{
-		multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
-		multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
+		int doub = 50;
 
-		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
+		auto&& cee = involuted<int&, std::negate<>>{doub};
+		BOOST_TEST( cee == -50 );
 
-		BOOST_TEST( neg_arr[2] == arr2[2] );
-		BOOST_TEST( arr2[2] == neg_arr[2] );
-		BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );
-		BOOST_TEST( neg_arr == arr2 );
-		BOOST_TEST( arr2 == neg_arr );
+		cee = 100;
+		BOOST_TEST( doub == -100 );
+
+		auto m5 = involuted<int, std::negate<>>(50);
+		BOOST_TEST( m5 == -50 );
 	}
+
+	// BOOST_AUTO_TEST_CASE(static_array_cast)
 	{
-		multi::static_array<int, 2> arr({4, 5}, 0);
-		std::iota(elements(arr).begin(), elements(arr).end(), 0);
+		multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
 
-		multi::array<int, 2> arr2({4, 5});
-		std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
+		auto&& ref = arr.static_array_cast<double, double const*>();
 
-		auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
+		BOOST_TEST( &ref[2] == &arr[2] );
+		BOOST_TEST( &arr[2] == &ref[2] );
 
-		BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
-		BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
+		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
-		BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
+		BOOST_TEST( ref == arr() );
+		BOOST_TEST( arr() == ref );
 
-		BOOST_TEST( arr2[1] == neg_arr[1] );
-		BOOST_TEST( neg_arr[1] == arr2[1] );
-
-		BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );
-		BOOST_TEST( neg_arr == arr2 );
-		BOOST_TEST( arr2 == neg_arr );
+		BOOST_TEST( ref == arr );
+		BOOST_TEST( arr == ref );
 	}
+
+	// BOOST_AUTO_TEST_CASE(static_array_cast_2)
+	{
+		multi::array<int, 2> arr({2, 5});
+		std::iota(arr.elements().begin(), arr.elements().end(), 0);
+
+		auto&& ref = arr.static_array_cast<int, int const*>();
+
+		BOOST_TEST( ref[1][1] == arr[1][1] );
+		BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
+		BOOST_TEST( ref[1] == arr[1] );
+
+		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+
+		BOOST_TEST( ref == arr );
+		BOOST_TEST( arr == ref );
+	}
+
+	// BOOST_AUTO_TEST_CASE(static_array_cast_3)
+	{
+		{
+			multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
+			multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
+
+			auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
+
+			BOOST_TEST( neg_arr[2] == arr2[2] );
+			BOOST_TEST( arr2[2] == neg_arr[2] );
+			BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );
+			BOOST_TEST( neg_arr == arr2 );
+			BOOST_TEST( arr2 == neg_arr );
+		}
+		{
+			multi::static_array<int, 2> arr({4, 5}, 0);
+			std::iota(elements(arr).begin(), elements(arr).end(), 0);
+
+			multi::array<int, 2> arr2({4, 5});
+			std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
+
+			auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
+
+			BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
+			BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
+
+			BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
+
+			BOOST_TEST( arr2[1] == neg_arr[1] );
+			BOOST_TEST( neg_arr[1] == arr2[1] );
+
+			BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );
+			BOOST_TEST( neg_arr == arr2 );
+			BOOST_TEST( arr2 == neg_arr );
+		}
+	}
+
+	return boost::report_errors();
 }
-return boost::report_errors();}
