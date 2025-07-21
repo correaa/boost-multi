@@ -2,14 +2,17 @@ name: Build and Deploy Docs
 
 on:
   push:
-    branches:
-      - '**'  # master Trigger on push to the main branch
+    branches: ["master"]  # main Trigger on push to the main branch
   workflow_dispatch:  # Allow manual runs
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-docs:
@@ -41,6 +44,7 @@ jobs:
           asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
           cd ..
           cp -r doc/multi.html .public
+          cp -r doc/multi.html .public/index.html
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
