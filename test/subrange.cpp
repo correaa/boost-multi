@@ -3,9 +3,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>
-
 #include <boost/core/lightweight_test.hpp>
+
+#include <boost/multi/array.hpp>
 
 #include <numeric>  // for std::iota
 
@@ -244,7 +244,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		int start_;
 		int finish_;
 
-	 public:  // NOLINT(whitespace/indent) bug in cpplint
+	 public:                                                               // NOLINT(whitespace/indent) bug in cpplint
 		rng3_t(int start, int finish) : start_{start}, finish_{finish} {}  // NOLINT(bugprone-easily-swappable-parameters)
 		auto first() const { return start_; }
 		auto last() const { return finish_; }
