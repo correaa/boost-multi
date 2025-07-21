@@ -3,16 +3,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for array, static_array, num_elements
 
+#include <boost/core/lightweight_test.hpp>
+
 // IWYU pragma: no_include <algorithm>                        // for fill_n  // bug in iwyu 14.0.6? with GNU stdlib
-#include <initializer_list>                 // for initializer_list
-#include <iterator>     // for size
-#include <type_traits>  // for make_unsigned_t
-#include <utility>      // for move
-#include <vector>       // for vector
+#include <initializer_list>  // for initializer_list
+#include <iterator>          // for size
+#include <type_traits>       // for make_unsigned_t
+#include <utility>           // for move
+#include <vector>            // for vector
 
 namespace multi = boost::multi;
 
@@ -34,10 +34,9 @@ constexpr auto comp_equal(T left, U right) noexcept -> bool {
 }
 }  // end unnamed namespace
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(array_reextent) {
+	// BOOST_AUTO_TEST_CASE(array_reextent)
+	{
 		multi::array<int, 2> arr({2, 3});
 		BOOST_TEST( num_elements(arr) == 6 );
 
@@ -63,7 +62,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 0 );
 	}
 
-	#if !defined(__circle_build__)
+#if !defined(__circle_build__)
 	{
 		multi::array<int, 2> const arr({2, 3});
 
@@ -102,9 +101,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// BOOST_TEST( arr.size() == 0 );
 	}
-	#endif
+#endif
 
-	BOOST_AUTO_TEST_CASE(array_reextent_noop) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_noop)
+	{
 		multi::array<int, 2> arr({2, 3});
 		BOOST_TEST( num_elements(arr) == 6 );
 
@@ -123,7 +123,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A_base == arr.base() );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_noop_with_init) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_noop_with_init)
+	{
 		multi::array<int, 2> arr({2, 3});
 		BOOST_TEST( num_elements(arr) == 6 );
 
@@ -142,7 +143,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A_base == arr.base() );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_moved) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_moved)
+	{
 		multi::array<int, 2> arr({2, 3});
 		BOOST_TEST( num_elements(arr) == 6 );
 
@@ -161,7 +163,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A_base == arr.base() );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial)
+	{
 		multi::array<int, 2> arr({2, 3});
 		BOOST_TEST( num_elements(arr) == 6 );
 
@@ -178,7 +181,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A_base == arr.base() );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents)
+	{
 		multi::array<int, 2> arr({2, 3});
 		BOOST_TEST( num_elements(arr) == 6 );
 
@@ -195,7 +199,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A_base != arr.base() );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_move_clear) {
+	// BOOST_AUTO_TEST_CASE(array_move_clear)
+	{
 		multi::array<int, 2> arr({2, 3});
 
 		arr = multi::array<int, 2>(extensions(arr), 1230);
@@ -209,7 +214,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[4][3] == 660 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_1d) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_1d)
+	{
 		multi::array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 40);
 		BOOST_TEST( size(arr) == 10 );
 		BOOST_TEST( arr[9] == 40 );
@@ -227,20 +233,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size(arr) == 23 );
 	}
 
-	BOOST_AUTO_TEST_CASE(tuple_decomposition) {
+	// BOOST_AUTO_TEST_CASE(tuple_decomposition)
+	{
 		boost::multi::tuple<int, int> const tup{1, 2};
 		auto [t0, t1] = tup;
 		BOOST_TEST( t0 == 1 );
 		BOOST_TEST( t1 == 2 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_0D) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_0D)
+	{
 		multi::array<int, 0> arr({}, 40);
 		arr.reextent(arr.extensions());
 		BOOST_TEST( *arr.data_elements() == 40 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_1d_with_initialization) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_1d_with_initialization)
+	{
 		multi::array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 40);
 		BOOST_TEST( size(arr) == 10 );
 		BOOST_TEST( arr[9] == 40 );
@@ -251,7 +260,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[19] == 80 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_2d) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_2d)
+	{
 		multi::array<int, 2> arr({10, 20}, 40);
 		BOOST_TEST( arr[1][2] == 40 );
 
@@ -264,7 +274,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[11][22] == 90 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_2d_with_move) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_2d_with_move)
+	{
 		multi::array<int, 2> arr = {
 			{1, 2, 3},
 			{4, 5, 6},
@@ -276,7 +287,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 3 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
+	// BOOST_AUTO_TEST_CASE(array_reextent_2d_array)
+	{
 		multi::array<int, 2> arr({10, 20}, 40);
 		BOOST_TEST( arr[1][2] == 40 );
 
@@ -285,7 +297,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size(arr) == 0 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_vector_size) {
+	// BOOST_AUTO_TEST_CASE(array_vector_size)
+	{
 		std::vector<double> const vec(100);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		{
 			multi::array<double, 1> const arr(static_cast<multi::size_t>(vec.size()));
@@ -298,8 +311,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(array_iota) {
-		multi::array<double, 1> const                              Aarr(10);
+	// BOOST_AUTO_TEST_CASE(array_iota)
+	{
+		multi::array<double, 1> const Aarr(10);
+
 		multi::array<multi::array<double, 2>::index, 1> const Barr(Aarr.extension().begin(), Aarr.extension().end());
 
 		BOOST_TEST( Barr[0] == 0 );
@@ -315,8 +330,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( Darr.extensions() == Aarr.extensions() );
 	}
 
-#ifndef __INTEL_COMPILER
-	BOOST_AUTO_TEST_CASE(extension_index_op) {
+#if !defined(__INTEL_COMPILER)
+	// BOOST_AUTO_TEST_CASE(extension_index_op)
+	{
 		multi::array<double, 2> const Aarr({11, 13});
 
 		auto const Aext = Aarr.extensions();
@@ -335,5 +351,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 #endif
+
 	return boost::report_errors();
 }
