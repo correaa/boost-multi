@@ -2,15 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFT adaptor"
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/adaptors/fft.hpp>
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
 #include <fftw3.h>  // external fftw3 library
-
-#include <boost/core/lightweight_test.hpp>
 
 // IWYU pragma: no_include <array>
 #include <complex>
