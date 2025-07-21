@@ -25,12 +25,13 @@ jobs:
           ruby-version: '3.2'
 
       - name: Install Asciidoctor
-        run: apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
 
       - name: Install Boost Build (b2)
         run: |
           pandoc --version
-          ./b2 headers    # optional: install headers
           asciidoctor --version
 
       - name: Build Docs with b2
