@@ -794,7 +794,7 @@ culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
 
 rocm:
   stage: build
-  image: rocm/7.0-preview:rocm7.0_preview_ubuntu_22.04_vllm_0.8.5_mi35X_prealpha
+  image: rocm/7.0-preview  # :rocm7.0_preview_ubuntu_22.04_vllm_0.8.5_mi35X_prealpha
   #image: rocm/dev-ubuntu-24.04  # rocm/dev-ubuntu-22.04
   allow_failure: false
   tags:
