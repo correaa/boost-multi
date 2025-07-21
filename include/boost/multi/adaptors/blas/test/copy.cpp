@@ -7,7 +7,7 @@
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
-#if defined(NDEBUG)  //  && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
+#if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) //  && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
 	#include <algorithm>  // for transform
 	#include <chrono>     // NOLINT(build/c++11) for duration, high_resolution...
 	#if __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
@@ -132,7 +132,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-	#if defined(NDEBUG) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+	#if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
 	#if !((defined(__clang__) ) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 		#if(__cplusplus >= 202002L)
 		#if !defined(__apple_build_version__)
