@@ -24,7 +24,15 @@ else()
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
 	find_package(Boost CONFIG)
-	find_package(Boost COMPONENTS headers)  # should be last
+# find_package(Boost COMPONENTS headers)  # should be last
+
+
+#libomp is keg-only, which means it was not symlinked into /opt/homebrew,
+#because it can override GCC headers and result in broken builds.
+#
+#For compilers to find libomp you may need to set:
+#  export LDFLAGS="-L/opt/homebrew/opt/libomp/lib"
+#  export CPPFLAGS="-I/opt/homebrew/opt/libomp/include"
 
 	if(NOT Boost_FOUND)
 		message(WARNING "preliminary: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
@@ -307,13 +315,20 @@ else()
 	-Wunused -Wunused-but-set-variable -Wunused-function -Wunused-parameter -Wunused-variable
 	-Wwrite-strings
 	>
-	# $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 	$<$<CXX_COMPILER_ID:NVHPC>:
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:
+	#-Wfatal-errors
+	-fmax-errors=2
+	>
 	-Werror -Wall
 	-Wcast-qual
 	-Wformat=2
 	-Wshadow
+	-Wsign-compare
+	#-Wpedantic
+	-Wundef
 	-Wuninitialized
+	-Wunused
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:

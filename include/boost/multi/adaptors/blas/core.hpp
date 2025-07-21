@@ -228,6 +228,7 @@ using v = void;
 
 using std::enable_if_t;
 using std::is_assignable;
+using std::is_assignable_v;
 
 using ::core::ssize_t;
 
@@ -476,7 +477,7 @@ using std::max;
 #define xsyrk(T) \
 template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
 enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                    \
-	is_##T<AA>{} && is_##T<CC>{} && is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} &&                                                                                                       \
+	is_##T<AA>{} && is_##T<CC>{} && is_assignable_v<CC&, decltype(ALPHA{}*AA{}*AA{})> &&                                                                                                       \
 	is_convertible_v<AAP, AA*> && is_convertible_v<CCP, CC*>                                                                                                                                     \
 , int> =0>                                                                                                                                                                                        \
 v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/      \
@@ -489,20 +490,21 @@ v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 }                                                                                                                                                                                                 \
 
 #define xherk(T) \
-template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, class Real = typename T::value_type, \
-enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                                                         \
-	is_##T<AA>{} && is_##T<CC>{} && is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} &&                                                                                                                                            \
-	is_convertible_v<AAP, AA*> && is_convertible_v<CCP, CC*>                                                                                                                                                                          \
-, int> =0>                                                                                                                                                                                                                             \
-v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/                \
-/*=delete;*/                                                                                                                                                                                                                           \
-{                                                                                                                                                                                                                                      \
-	if(transA == 'N' ||  transA == 'n') {BOOST_MULTI_ASSERT1( lda >= max(S{1}, n) );}  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                   \
-	if(transA != 'N' && transA != 'n') {BOOST_MULTI_ASSERT1( lda >= max(S{1}, k) );}                                                                                                                                                          \
-	BOOST_MULTI_ASSERT1( ldc >= max(S{1}, n) );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                                                         \
+template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, class Real = typename T::value_type \
+ , enable_if_t< /* NOLINT(modernize-use-constraints) for C++20  */                                                                                                                                                                \
+  is_##T<AA>{} && is_##T<CC>{} && is_assignable_v<CC&, decltype(ALPHA{}*AA{}*AA{})> &&                                                                                                                                             \
+  is_convertible_v<AAP, AA*> && is_convertible_v<CCP, CC*>                                                                                                                                                                         \
+ , int> =0                                                                                                                                                                                                                           \
+>                                                                                                                                                                                                                                     \
+v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/               \
+/*=delete;*/                                                                                                                                                                                                                          \
+{                                                                                                                                                                                                                                     \
+	if(transA == 'N' || transA == 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, n) ); }  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                         \
+	if(transA != 'N' && transA != 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, k) ); }                                                                                                                                                \
+	BOOST_MULTI_ASSERT1( ldc >= max(S{1}, n) );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                                                \
 	/*BOOST_MULTI_MARK_SCOPE("cpu_herk");*/                                                                                                                                                                                                      \
-	BLAS(T##herk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<Real const*>(alpha), aa, BC(lda),        *reinterpret_cast<Real const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                                                            \
-}                                                                                                                                                                                                                                      \
+	BLAS(T##herk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<Real const*>(alpha), reinterpret_cast<T const*>(aa), BC(lda),        *reinterpret_cast<Real const*>(beta), reinterpret_cast<T*>(cc), BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                                            \
+}                                                                                                                                                                                                                                          \
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -526,8 +528,8 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 	BOOST_MULTI_ASSERT1( aa != cc );                                                                                                                                                                                                          \
 	BOOST_MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
 \
-	if(!( ldc >= max(ssize_t{1}, m) )) {throw std::logic_error("failed 'ldc >= max(1, m)' with ldc = "+ std::to_string(ldc) +" and m = "+ std::to_string(m));}                                                                               \
-	if(*beta != 0.0) {BOOST_MULTI_ASSERT1((is_assignable<CC&, decltype((std::declval<ALPHA>()*std::declval<AA>()*std::declval<BB>()) + (std::declval<BETA>()*std::declval<CC>()))> {}));}                                                          \
+	if(!( ldc >= max(ssize_t{1}, m) )) { throw std::logic_error("failed 'ldc >= max(1, m)' with ldc = "+ std::to_string(ldc) +" and m = "+ std::to_string(m)); }                                                                               \
+	if(*beta != 0.0) { BOOST_MULTI_ASSERT1((is_assignable<CC&, decltype((std::declval<ALPHA>()*std::declval<AA>()*std::declval<BB>()) + (std::declval<BETA>()*std::declval<CC>()))> {})); }                                                          \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *reinterpret_cast<T const*>(alpha), reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T const*>(static_cast<BB*>(bb)), BC(ldb), *reinterpret_cast<T const*>(beta), reinterpret_cast<T*>(static_cast<CC*>(cc)) /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/ /*TODO(correaa) check constness*/, BC(ldc)); \
 }                                                                                                                                                                                                                        \
 

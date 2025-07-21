@@ -11,7 +11,7 @@
 
 namespace multi = boost::multi;
 
-auto main() -> int {  // NOLINT(bugprone-exception-escape)
+auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	multi::array<int, 2> A2D({5, 7}, 1);
 	auto const A2Dx = A2D.extension();
 
@@ -21,10 +21,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	using std::get;
 
+	BOOST_TEST( get<0>(A2Dxs[1][2]) == 1 );
+	BOOST_TEST( get<1>(A2Dxs[1][2]) == 2 );
+
 	BOOST_TEST( get<0>(A2Dxs) == A2Dx );
 	BOOST_TEST( get<1>(A2Dxs) == A2D[0].extension() );
-
-	using std::get;
 
 	BOOST_TEST( &A2D() == &A2D(get<0>(A2D.extensions()), get<1>(A2D.extensions())) );
 	BOOST_TEST( &A2D() == &std::apply(A2D, A2Dxs) );
@@ -49,6 +50,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			BOOST_TEST( second == j );
 		}
 	}
+
+	BOOST_TEST( get<0>(A2Dxs).size() == 5 );
+
+	multi::array<int, 1> const A1D({37}, 1);
+	BOOST_TEST( A1D.size() == 37 );
+	BOOST_TEST( A1D.num_elements() == 37 );
+	BOOST_TEST( A1D.extensions().num_elements() == 37 );
 
 	return boost::report_errors();
 }

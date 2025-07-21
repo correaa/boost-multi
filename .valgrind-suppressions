@@ -72,6 +72,14 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*
+   obj:*libgomp.so.*
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc
    ...
@@ -644,4 +652,9 @@
 ...
    fun:dl_open_worker_begin
 ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:main
 }

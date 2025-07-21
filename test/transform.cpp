@@ -66,18 +66,18 @@ class involuted {
 	auto operator!=(involuted const& other) const { return r_ == other.r_; }
 
 #if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
 	auto operator==(decay_type const& other) const { return Involution{}(r_) == other; }
 	auto operator!=(decay_type const& other) const { return Involution{}(r_) != other; }
 #if defined(__clang__)
-#   pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#   pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 	~involuted() = default;
 };
@@ -118,16 +118,16 @@ class involuter {
 	}
 
 #if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wunknown-warning-option"
-#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 	constexpr auto operator+(difference_type n) const { return involuter{it_ + n}; }
 	constexpr auto operator-(difference_type n) const { return involuter{it_ - n}; }
 
 #if defined(__clang__)
-#   pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 };
 
@@ -161,8 +161,8 @@ struct conjugate<> : private basic_conjugate_t {
 };
 
 #if defined(__NVCC__)
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wsubobject-linkage"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsubobject-linkage"
 #endif
 
 template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRef> {
@@ -181,7 +181,7 @@ template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRe
 	}
 };
 #if defined(__NVCC__)
-#   pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
 #if defined(__cpp_deduction_guides)
@@ -212,6 +212,9 @@ class indirect_real {
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	static_assert(std::is_same_v<std::remove_const_t<int const>, int>);
+	static_assert(std::is_same_v<std::remove_const_t<int const&>, int const&>);
+
 	BOOST_AUTO_TEST_CASE(transformed_array) {
 		namespace multi = boost::multi;
 		{
@@ -266,11 +269,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 #if defined(__cpp_deduction_guides)
-#   if defined(__clang__)
-#       pragma clang diagnostic push
-#       pragma clang diagnostic ignored "-Wunknown-warning-option"
-#       pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#   endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 
 			// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
 			double zee[4][5]{
@@ -285,9 +288,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::abs( zee[1][1] - 66.0) < 1E-6 );
 
-#   if defined(__clang__)
-#       pragma clang diagnostic pop
-#   endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #endif
 			{
