@@ -3,27 +3,25 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for array, subarray, static_array  // IWYU pragma: keep
 
-#include <algorithm>  // for std::ran  // IWYU pragma: keep  //  NOLINT(misc-include-cleaner)
+#include <boost/core/lightweight_test.hpp>
+
+#include <algorithm>   // for std::ran  // IWYU pragma: keep  //  NOLINT(misc-include-cleaner)
 #include <functional>  // for plus<>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
-#include <memory>  // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <memory>      // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
-	#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #endif
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
-	#include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
-	#include <iterator>     // for size, begin, end  // IWYU pragma: keep
-	#include <numeric>      // for iota  // IWYU pragma: keep
-	#include <type_traits>  // for is_same_v  // IWYU pragma: keep
-	#include <utility>      // for pair  // IWYU pragma: keep
+#include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
+#include <iterator>     // for size, begin, end  // IWYU pragma: keep
+#include <numeric>      // for iota  // IWYU pragma: keep
+#include <type_traits>  // for is_same_v  // IWYU pragma: keep
+#include <utility>      // for pair  // IWYU pragma: keep
 #endif
-
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 namespace multi = boost::multi;
 
@@ -34,6 +32,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( elem == 99 );
 		}
 	}
+
 	// range accumulate
 	{
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -64,7 +63,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(range_find) {
+	// BOOST_AUTO_TEST_CASE(range_find)
+	{
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 		using Array2D = multi::array<int, 2>;
 
@@ -156,7 +156,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( R[2] == 15 );
 	}
 	{
-		static_assert( std::ranges::viewable_range<boost::multi::const_subarray<int, 1, int*> > );
+		static_assert(std::ranges::viewable_range<boost::multi::const_subarray<int, 1, int*>>);
 		multi::array<int, 2> const A = {
 			{1, 2, 3},
 			{4, 5, 6},
