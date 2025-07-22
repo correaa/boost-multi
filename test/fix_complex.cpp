@@ -33,16 +33,17 @@ inline constexpr bool multi::force_element_trivial_default_construction<std::com
 #endif
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(pmr_double) {
+	// BOOST_AUTO_TEST_CASE(pmr_double)
+	{
 		multi::array<std::complex<double>, 2> Aarr({2, 2}, std::complex<double>(4.0, 5.0));
 		BOOST_TEST(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
 	}
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
-	BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
+	// BOOST_AUTO_TEST_CASE(pmr_double_uninitialized)
+	{
 		{
 			std::array<double, 12> buffer = {
 				{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
@@ -89,7 +90,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(pmr_complex_initialized_2) {
+	// BOOST_AUTO_TEST_CASE(pmr_complex_initialized_2)
+	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
 		};
@@ -118,7 +120,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #   endif
 	}
 
-	BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4) {
+	// BOOST_AUTO_TEST_CASE(pmr_complex_initialized_4)
+	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 999.9, 999.9, 999.9, 999.9}
 		};

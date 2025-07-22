@@ -15,10 +15,9 @@
 
 namespace multi = boost::multi;
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
+	// BOOST_AUTO_TEST_CASE(multi_range_in_constexpr)
+	{
 		BOOST_TEST(( multi::extension_t<int>{5, 12}.contains(10) ));
 
 		multi::range<int> const irng{5, 12};
@@ -52,13 +51,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::range<int> const irng{5, 12};
-		auto beg = irng.begin();
+		auto                    beg = irng.begin();
 		++beg;
 		--beg;
 		BOOST_TEST( irng.begin() == beg );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_range2) {
+	// BOOST_AUTO_TEST_CASE(multi_range2)
+	{
 		multi::index_extension const iex(10);
 
 		BOOST_TEST( *begin(iex) == 0 );
@@ -105,7 +105,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// test prev canonical 2D
 	{
-		multi::extensions_t<2> const ies({{0, 3}, {0, 4}});
+		multi::extensions_t<2> const  ies({
+            {0, 3},
+            {0, 4}
+        });
 		multi::extensions_t<2>::index i = 1;
 		multi::extensions_t<2>::index j = 0;
 
@@ -128,7 +131,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// test prev canonical 2D
 	{
-		multi::extensions_t<3> const ies({{0, 3}, {0, 4}, {0, 5}});
+		multi::extensions_t<3> const  ies({
+            {0, 3},
+            {0, 4},
+            {0, 5}
+        });
 		multi::extensions_t<3>::index i = 1;
 		multi::extensions_t<3>::index j = 1;
 		multi::extensions_t<3>::index k = 1;
@@ -168,15 +175,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( j == 3 );
 		BOOST_TEST( k == 4 );
 	}
-	BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
+
+	// BOOST_AUTO_TEST_CASE(multi_range_in_constexpr)
+	{
 		// BOOST_TEST(( multi::extension_t<int>{5, 12}.contains(10) ));
 
 		multi::range<std::integral_constant<int, 0>, int> const irng({}, 12);
 
-		// && !defined(__PGI) && (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
-		#if (__cplusplus >= 202002L) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)
-			static_assert( sizeof(irng) == sizeof(int) );
-		#endif
+// && !defined(__PGI) && (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
+#if(__cplusplus >= 202002L) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+		static_assert(sizeof(irng) == sizeof(int));
+#endif
 
 		BOOST_TEST( irng.first() == 0 );
 		BOOST_TEST( irng.last() == 12 );
@@ -201,7 +210,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( sum == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
+	// BOOST_AUTO_TEST_CASE(multi_range_in_constexpr)
+	{
 		multi::range<std::integral_constant<int, 5>, int> const irng{{}, 12};
 
 		BOOST_TEST( !irng.contains( 4) );
