@@ -22,56 +22,6 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 
 # [Tutorial (advanced usage)](doc/multi/tutorial.adoc)
 
-# Conversions
-
-Conversion between arrays of distinct types is possible if the underlying elements allow it.
-The result is as if elements are converted one by one; array sizes (extensions) are preserved.
-Allowed conversions can be implicit or explicit and reflect the behavior of the element types.
-
-```cpp
-// implicit conversions from real to complex is allowed ...
-double                  d = 5.0;     std::complex<double>                  z = d;
-// ... therefore it is also allowed from array of reals to arrays of complex
-multi::array<double, 2> D({10, 10}); multi::array<std::complex<double>, 2> Z = D;
-// (implicit or explicit) conversions from real to complex are disallowed (compilation error)
-// multi::array<double, 2> D = Z;  // or D{Z};
-```
-
-Another case is illustrated by `std::complex<float>` and `std::complex<double>`; 
-in one direction, the conversion can be implicit, while in the other, it can only be explicit.
-This behavior is reflected in the corresponding arrays:
-```cpp
-multi::array<std::complex<float>>  C;
-multi::array<std::complex<double>> Z = C;  // implicit conversion ok
-multi::array<std::complex<float>>  C2{Z};  // explicit conversion is allowed
-// multi::array<std::complex<float>>  C3 = Z;  // implicit conversion is disallowed (compilation error)
-```
-
-Implicit conversions are generally considered harmful, but inconsistent conversions are worst; therefore, the library allows them when appropriate.
-The main drawback of implicit conversions in this context is that they might incur unexpected (e.g. costly) data conversions when passing arguments to functions.
-
-```cpp
-void fun(multi::array<std::complex<double>> Z) { ... };
-...
-multi::array<double, 2> D({10, 10});
-fun(D);  // real elements are converted to complex silently here
-```
-In many instances, specially in generic code, it might still be a desirable behavoir.
-
-To prevent implicit conversions, use element types with no implicit conversions when possible.
-
-Finally, arrays of unrelated element types are prevented from producing direct conversions, resulting in compilation errors.
-Element-wise transformations can be used instead.
-For example, to convert an array of integers to an array of text strings:
-
-```cpp
-	multi::array<int, 2> const A = {{1, 2}, {3, 4}};
-
-	auto to_string = [](int e) {return std::to_string(e);};
-	multi::array<std::string, 2> B = A.element_transformed(to_string);
-	assert( B[1][1] == "4" );
-```
-
 # Const-correctness
 
 Const-correctness refers to the property of a program to disallow mutation of certain objects when it is undesired or logically incorrect.
@@ -252,50 +202,6 @@ single.broadcasted().front() == 7;
 assert( std::equal(sevens.begin(), sevens.end(), single.broadcasted().begin()) );
 ```
 (https://godbolt.org/z/nnxjsrvM1)
-
-# Uninitialized vs. initialized elements
-
-If available, the library can take advantage of trivial initialization for the specific element type.
-These types can be primitive or user-defined and come with "trivial default constructors". In simple terms, these constructors are not specified and do nothing, not even set values.
-
-When used in the stack, these types can be declared with no initialization (e.g., `double x;`, the initial value is not well defined or partially-formed) or with initialization (e.g., `double x{};`, same as `double x = 0.0;`).
-Analogously, `multi::array` does not initialize individual elements of this kind of type unless specified.
-
-For example, after this construction of the array, the values of the six elements of this array are unspecified (partially-formed).
-```cpp
-multi::array<int, 2> A2({2, 3});  // A2 elements have unspecified value
-```
-
-No behavior of the program should depend on these values. 
-(Address sanitizers and memory checkers can detect use of uninitialized values.)
-This design is a slight departure from the STL's design, which [eagerly initializes elements in containers](https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/).
-
-If trivial construction is unavailable, the library uses the default initialization.
-```cpp
-multi::array<std::string, 2> A2({2, 3});  // A2 elements have specified value, the empty value std::string{}
-```
-
-For types that afford this partially formed states, elements can be later specified via assignment or assigning algorithms (e.g., copy or transform destination).
-
-Initialization can be enforced by passing a single value argument after the extensions.
-```cpp
-multi::array<int, 2> A2({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
-```
-
-This design is particularly advantageous for *numeric* types for which external low-level libraries can fill values.
-(or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization).
-
-Unfortunately, regarding the numeric types, STL's `std::complex<double>` was standardized as not-trivially constructible.
-A workaround built-in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
-```cpp
-#include<multi/array.hpp>
-
-template<> inline constexpr
-bool multi::force_element_trivial_default_construction<std::complex<double>> = true;  // should be defined as early as possible
-```
-
-With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
-The rule will only apply to this library's containers (`multi::array`, etc), and not to other containers (such as `std::vector`) or individual `std::complex` variables.
 
 # Type Requirements
 

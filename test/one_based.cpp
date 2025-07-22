@@ -5,20 +5,20 @@
 
 #include <boost/multi/array.hpp>
 
-#include <algorithm>    // for equal
-#include <array>        // for array
-#include <iterator>     // for size, begin, end
+#include <boost/core/lightweight_test.hpp>
+
+#include <algorithm>  // for equal
+#include <array>      // for array
+#include <iterator>   // for size, begin, end
 // #include <type_traits>  // for is_assignable_v
 
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(one_based_1D) {
+					  //  BOOST_AUTO_TEST_CASE(one_based_1D)
+	{
 		// clang-format off
-	multi::array<double, 1> const Ac({{0, 10}}, 0.0);
+		multi::array<double, 1> const Ac({{0, 10}}, 0.0);
 		// clang-format on
 
 		BOOST_TEST( Ac.size() == 10 );
@@ -50,8 +50,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		//  BOOST_TEST( Af.reindexed(0) == B );
 	}
-	BOOST_AUTO_TEST_CASE(reindex_from_0_to_indexed_from_1) {
-		multi::array<int, 2> A1({{1, 1 + 10}, {1, 1 + 20}}, 0);
+
+	// BOOST_AUTO_TEST_CASE(reindex_from_0_to_indexed_from_1)
+	{
+		multi::array<int, 2> A1({
+									{1, 1 + 10},
+									{1, 1 + 20}
+        },
+								0);
 
 		BOOST_TEST( A1.extension().front() ==  1);
 		BOOST_TEST( A1.extension().back()  == 10);
@@ -72,11 +78,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A0[9][19]  == 990);
 	}
 
-	BOOST_AUTO_TEST_CASE(one_based_2D) {
-		multi::array<int, 2> const Ac({{0, 10}, {0, 20}}, 0);
+	// BOOST_AUTO_TEST_CASE(one_based_2D)
+	{
+		multi::array<int, 2> const Ac({
+										  {0, 10},
+										  {0, 20}
+        },
+									  0);
 		BOOST_TEST( Ac.size() == 10 );
 
-		multi::array<int, 2> Af({{1, 1 + 10}, {1, 1 + 20}}, 0);
+		multi::array<int, 2> Af({
+									{1, 1 + 10},
+									{1, 1 + 20}
+        },
+								0);
 
 		Af[1][1]   = 10;
 		Af[2][2]   = 20;
@@ -92,7 +107,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( extension(Af).first()  ==  1 );
 		BOOST_TEST( extension(Af).last() == 11 );
 
-		multi::array<int, 2> BB({{0, 10}, {0, 20}}, 0);
+		multi::array<int, 2> BB({
+									{0, 10},
+									{0, 20}
+        },
+								0);
 		BB[0][0]  = 10;
 		BB[1][1]  = 20;
 		BB[2][2]  = 30;
@@ -116,7 +135,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  BOOST_TEST( B == Af );
 	}
 
-	BOOST_AUTO_TEST_CASE(one_base_2D_ref) {
+	// BOOST_AUTO_TEST_CASE(one_base_2D_ref)
+	{
 		// clang-format off
 	std::array<std::array<int, 5>, 3> arr = {{
 		{{  10,  20,  30,  40,  50 }},
@@ -132,7 +152,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array_ref<int, 2> const& Ar2 = *multi::array_ptr<int, 2>(
 			arr[0].data(),
-			{{1, 1 + 3}, {1, 1 + 5}, }
+			{
+				{1, 1 + 3},
+				{1, 1 + 5},
+        }
 		);
 
 		BOOST_TEST( sizes(Ar) == sizes(Ar2) );
@@ -147,7 +170,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 2> AA = {
 			{'a', 'b'},
-			{'c', 'd'}
+			{'c', 'd'},
 		};
 
 		BOOST_TEST(AA[0][0] == 'a' );
@@ -163,7 +186,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 2> AA = {
 			{'a', 'b'},
-			{'c', 'd'}
+			{'c', 'd'},
 		};
 
 		BOOST_TEST(AA[0][0] == 'a' );
@@ -176,7 +199,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// static_assert(!std::is_assignable_v<decltype(Ar2.reindexed(0, 0)[0][0]), double>);
 	}
-
 
 	return boost::report_errors();
 }
