@@ -3,9 +3,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for array, apply, operator==
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for fill, all_of, transform
 #include <cstddef>      // for ptrdiff_t
@@ -53,8 +53,6 @@ class fnv1a_t {
 	//  explicit operator result_type() && noexcept {return h;}
 	explicit operator result_type() const& noexcept { return h_; }
 };
-
-// #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(fill_1d_a)
@@ -174,20 +172,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 500,  60,  70,  80,  90},
 		};
 		using std::all_of;
-		BOOST_TEST( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 50;}) );
+		BOOST_TEST( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {
+			return elem == 50;}) );
 
 		using std::fill;
 		fill(d2D[1].begin(), d2D[1].end(), 80);
 
-		BOOST_TEST( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 80;}) );
+		BOOST_TEST( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {
+			return elem == 80;}) );
 
 		fill(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), 80);
-		BOOST_TEST( all_of(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), [](auto&& elem) { return elem == 80;}) );
+		BOOST_TEST( all_of(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), [](auto&& elem) {
+			return elem == 80;}) );
 
 		fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 80);
-		BOOST_TEST( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) { return elem == 80;}) );
+		BOOST_TEST( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) {
+			return elem == 80;}) );
 
-		auto rand = [gauss = std::uniform_int_distribution<>(0, 10), gen = std::mt19937_64(randdev())]() mutable { return gauss(gen); };  // NOSONAR
+		auto rand = [gauss = std::uniform_int_distribution<>(0, 10), gen = std::mt19937_64(randdev())]() mutable {
+			return gauss(gen);
+		};  // NOSONAR
 
 		multi::array<int, 2> r2D({5, 5});
 		std::for_each(begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); });
