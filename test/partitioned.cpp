@@ -554,16 +554,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> const arr = {
 			{ 0,  1,  /**/ 2,  3,  /**/ 4,  5},
 			{ 6,  7,  /**/ 8,  9, /**/ 10, 11},
- /*********************************/
+			/*********************************/
 			{12, 13, /**/ 14, 15, /**/ 16, 17},
 			{18, 19, /**/ 20, 21, /**/ 22, 23},
- /*********************************/
+			/*********************************/
 			{24, 25, /**/ 26, 27, /**/ 28, 29},
 			{30, 31, /**/ 32, 33, /**/ 34, 35},
- /*********************************/
+			/*********************************/
 			{36, 37, /**/ 38, 39, /**/ 40, 41},
 			{42, 43, /**/ 44, 45, /**/ 46, 47}
-        };
+		};
 
 		BOOST_TEST( arr.dimensionality == 2 );
 		BOOST_TEST( arr.size() == 8 );
@@ -599,16 +599,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> const arr = {
 			{ 0,  1,  /**/ 2,  3,  /**/ 4,  5},
 			{ 6,  7,  /**/ 8,  9, /**/ 10, 11},
- /******************************************/
+			/******************************************/
 			{12, 13, /**/ 14, 15, /**/ 16, 17},
 			{18, 19, /**/ 20, 21, /**/ 22, 23},
- /******************************************/
+			/******************************************/
 			{24, 25, /**/ 26, 27, /**/ 28, 29},
 			{30, 31, /**/ 32, 33, /**/ 34, 35},
- /******************************************/
+			/******************************************/
 			{36, 37, /**/ 38, 39, /**/ 40, 41},
 			{42, 43, /**/ 44, 45, /**/ 46, 47}
-        };
+		};
 
 		BOOST_TEST( arr.dimensionality == 2 );
 		BOOST_TEST( arr.partitioned(4).dimensionality == 3 );
@@ -761,10 +761,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10},
- /*******************/
+			/*******************/
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10}
-        };
+		};
 
 		BOOST_TEST( arr.elements().size() == 20 );
 
@@ -782,7 +782,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& tup2d = std::tuple{
 			std::tuple{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
 			std::tuple{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
-        };
+		};
 
 		BOOST_TEST( &get<0>(get<0>(tup2d))[1][1] == &arr[1][1] );
 		BOOST_TEST( &get<0>(get<1>(tup2d))[0][2] == &arr[2][2] );
@@ -793,10 +793,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10},
- /*******************/
+			/*******************/
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10}
-        };
+		};
 
 		BOOST_TEST( arr.elements().size() == 20 );
 
@@ -819,7 +819,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& tup2d = std::array{
 			std::array{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
 			std::array{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
-        };
+		};
 		BOOST_TEST( &tup2d[0][0] [1][1] == &arr[1][1] );
 		BOOST_TEST( &tup2d[1][0] [0][2] == &arr[2][2] );
 #endif

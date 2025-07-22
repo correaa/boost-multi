@@ -139,7 +139,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ {12, 11},  {24, 10}},
 			{{112, 30}, {344, 40}},
 			{ {12, 11},  {24, 10}}
-        };
+		};
 
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( size(arr[0]) == 2 );
@@ -169,16 +169,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &(  arr.begin()->operator[](1)[0]) == &arr[0][1][0] );
 
 		BOOST_TEST( &((*arr.begin()).operator[](1).begin()[0]) == &arr[0][1][0] );  // NOLINT(readability-container-data-pointer) test access
-		BOOST_TEST( &(  arr.begin()->operator[](1).begin()[0]) == &arr[0][1][0] );   // NOLINT(readability-container-data-pointer) test access
+		BOOST_TEST( &(  arr.begin()->operator[](1).begin()[0]) == &arr[0][1][0] );    // NOLINT(readability-container-data-pointer) test access
 
 		BOOST_TEST( &((*(arr.begin()+1)).operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
-		BOOST_TEST( &(  (arr.begin()+1)->operator[](1).begin()[0]) == &arr[1][1][0] );   // NOLINT(readability-container-data-pointer) test access
+		BOOST_TEST( &(  (arr.begin()+1)->operator[](1).begin()[0]) == &arr[1][1][0] );    // NOLINT(readability-container-data-pointer) test access
 
 		BOOST_TEST( &((*(begin(arr)+1)).operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
-		BOOST_TEST( &((  begin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );   // NOLINT(readability-container-data-pointer) test access
+		BOOST_TEST( &((  begin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );    // NOLINT(readability-container-data-pointer) test access
 
 		BOOST_TEST( &((*(cbegin(arr)+1)).operator[](1).begin()[0]) == &arr[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
-		BOOST_TEST( &((  cbegin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );   // NOLINT(readability-container-data-pointer) test access
+		BOOST_TEST( &((  cbegin(arr)+1)->operator[](1).begin()[0]) == &arr[1][1][0] );    // NOLINT(readability-container-data-pointer) test access
 	}
 
 	// iterator_semantics
@@ -187,7 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ {1.2, 1.1},  {2.4, 1.0}},
 			{{11.2, 3.0}, {34.4, 4.0}},
 			{ {1.2, 1.1},  {2.4, 1.0}}
-        };
+		};
 
 		multi::array<double, 3>::iterator it;
 		// BOOST_TEST(( multi::array<double, 3>::iterator{} == it ));  // `it` is uninitialized
@@ -257,7 +257,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{"00", "01"},
 			{"10", "11"},
 			{"20", "21"}
-        };
+		};
 		// NOLINTEND(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( arr[1][0] == "10" );
