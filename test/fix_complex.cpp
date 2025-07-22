@@ -147,7 +147,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #   endif
 	}
 
-	BOOST_AUTO_TEST_CASE(pmr_complex_initialized_3) {
+	// BOOST_AUTO_TEST_CASE(pmr_complex_initialized_3)
+	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
 		};
@@ -167,7 +168,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #   endif
 	}
 
-	BOOST_AUTO_TEST_CASE(pmr_complex_initialized) {
+	// BOOST_AUTO_TEST_CASE(pmr_complex_initialized)
+	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
 		};
