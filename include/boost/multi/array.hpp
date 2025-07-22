@@ -12,7 +12,6 @@
 #include <boost/multi/detail/adl.hpp>
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
-// #include "detail/adl.hpp"
 
 #include <memory>  // for std::allocator_traits
 #include <stdexcept>
