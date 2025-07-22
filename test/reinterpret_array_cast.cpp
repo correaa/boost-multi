@@ -25,7 +25,6 @@ template<class T> struct complex_dummy {
 };
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	// simple class reinterpret
 	{
 		struct int_class {
@@ -250,7 +249,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast)
 	{
-
 		std::complex<double> cee{1.0, 2.0};
 		auto*                ptr = reinterpret_cast<complex_dummy<double>*>(&cee);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		ptr->real                = 11.0;

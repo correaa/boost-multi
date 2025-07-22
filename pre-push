@@ -63,15 +63,13 @@ fi
 
  (mkdir -p .build.g++.plus       && cd .build.g++.plus       && CXX=g++                                                       cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23 -DDISABLE_MPI=1 -DBLA_VENDOR=OpenBLAS `#-DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--checkers-report=cppcheck.report;--error-exitcode=1"` -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1" -DCMAKE_CXX_FLAGS="-DRUNNING_ON_VALGRIND -fconcepts-diagnostics-depth=4 -fimplicit-constexpr -fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free" && cmake --build . $CMT && (PMIX_MCA_gds=hash ctest --parallel 8 --output-on-failure --rerun-failed --overwrite MemoryCheckCommandOptions=" --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/../.valgrind-suppressions -T memcheck $CTR) ) || exit 666
  (mkdir -p .build.clang++.plus   && cd .build.clang++.plus   && CXX=clang++                                                   cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DBLA_VENDOR=Generic -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DCMAKE_CXX_FLAGS="-g -fsanitize=undefined -fno-sanitize-recover=undefined -DUBSAN=1" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined" `#-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=/home/correaa/boost-multi/.iwyu-test.imp;-Xiwyu;--no_fwd_decls"` && cmake --build . $CMT && (ctest --parallel $CTR || ctest --parallel 1 --output-on-failure $CTR)) || exit 666
+
+ clang-format-15 --dry-run -Werror include/**/*.hpp test/*.cpp
 # find ./detail/ -name "*.hpp" \( -exec iwyu -std=c++17 -Xiwyu --mapping_file=/usr/share/include-what-you-use/stl.c.headers.imp -Xiwyu --mapping_file=$HOME/boost-multi/.iwyu-test.imp  -Xiwyu --error=0 -Xiwyu --max_line_length=200 -Xiwyu --quoted_includes_first -Xiwyu --cxx17ns {} -I$HOME/boost-multi/include/ \; -o -quit \)
 
 ## sudo setfacl --modify user:correaa:rw /var/run/docker.sock
 # gitlab-runner exec docker rocm
 
-# to recover from GPU error (e.g. after hibernating)
-# fuser --kill /dev/nvidia-uvm
-# sudo modprobe -r nvidia_uvm 
-# sudo modprobe    nvidia_uvm
 else
 # brew install boost ccache clang-tidy cmake cppcheck cpplint ninja
 # ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
@@ -85,12 +83,11 @@ export CMAKE_PREFIX_PATH=$HOME/lib/cmake/thrust
  (mkdir -p .build.c++.tidy  && cd .build.c++.tidy  && CXX=c++                                   cmake .. -DCMAKE_BUILD_TYPE=Release -DOpenMP_ROOT=/opt/homebrew/opt/libomp -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--checkers-report=cppcheck.report;--suppress=checkersReport;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--error-exitcode=1" -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="include-what-you-use;-Xiwyu;--mapping_file=/Users/correatedesco1/boost-multi/.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;-Werror" && cmake --build . $CMT --verbose --parallel && (ctest -j 12 $CTR || ctest --rerun-failed --output-on-failure $CTR)) || exit 666
  (mkdir -p .build.g++-15    && cd .build.g++-15    && CXX=g++-15                                cmake .. -DCMAKE_BUILD_TYPE=Release -DOpenMP_ROOT=/opt/homebrew/opt/libomp -DCMAKE_CXX_STANDARD=23                                                        && cmake --build . $CMT &&                                           (ctest --parallel $CTR || ctest --rerun-failed --output-on-failure $CTR) ) || exit 666
 
+ clang-format --dry-run -Werror include/**/*.hpp test/*.cpp
+
 #(mkdir -p .build.clang++.iwyu && cd .build.clang++.iwyu && CXX=clang++                     cmake .. -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu" && make -j 10 && ctest -j 12 --output-on-failure) || exit
 # TODO(correaa) make cppcheck work for all the code
 #(find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression:{} --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 --suppress=unmatchedSuppression {} \;) || exit
 fi
-
-# diff -u --side-by-side <(cat include/**/*.hpp test/*.cpp) <(clang-format-15 include/**/*.hpp test/*.cpp)
-clang-format-15 --dry-run -Werror include/**/*.hpp test/*.cpp
 
 #fuser --kill /dev/nvidia-uvm; while fuser --silent /dev/nvidia-uvm; do sleep 1; done; modprobe -r nvidia_uvm && modprobe nvidia_uvm
