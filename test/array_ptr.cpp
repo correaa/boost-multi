@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -104,11 +104,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			static_assert(std::is_trivially_copy_assignable_v<multi::array_ptr<double, 2>>);
 			static_assert(std::is_trivially_copyable_v<multi::array_ptr<double, 2>>);
 
-// #ifndef _MSC_VER
+			// #ifndef _MSC_VER
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<0>>);
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<1>>);
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<2>>);
-// #endif
+			// #endif
 
 			static_assert(std::is_trivially_copyable_v<multi::layout_t<0>>);
 			static_assert(std::is_trivially_copyable_v<multi::layout_t<1>>);
@@ -195,15 +195,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using my_span = multi::array_ref<int, 1>;
 
 #if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wunknown-warning-option"
-#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		auto aP = &my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__)
-#   pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 		BOOST_TEST( (*aP).size() == 5 );

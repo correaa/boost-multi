@@ -79,9 +79,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-		// auto ib = MA.index_bases(); (void)ib;
-		// BOOST_REQUIRE(ib[0] == 0);  // dangles?
-		// BOOST_REQUIRE(ib[1] == 0);
+			// auto ib = MA.index_bases(); (void)ib;
+			// BOOST_REQUIRE(ib[0] == 0);  // dangles?
+			// BOOST_REQUIRE(ib[1] == 0);
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -104,36 +104,39 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-		// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(MA.index_bases())[0] == 0);  // dangles
-		// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(MA.index_bases())[1] == 0);
+			// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(MA.index_bases())[0] == 0);  // dangles
+			// BOOST_REQUIRE(static_cast<std::ptrdiff_t const*>(MA.index_bases())[1] == 0);
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-		} {
+		}
+		{
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-		// BOOST_REQUIRE(MA.index_bases()[0] == 0);  // dangles
-		// BOOST_REQUIRE(MA.index_bases()[1] == 0);
+			// BOOST_REQUIRE(MA.index_bases()[0] == 0);  // dangles
+			// BOOST_REQUIRE(MA.index_bases()[1] == 0);
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-		} {
+		}
+		{
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-		// std::ptrdiff_t const* ib = MA.index_bases();
-		// BOOST_REQUIRE(ib);
-		// BOOST_REQUIRE(ib[0] == 0);  // dangles
-		// BOOST_REQUIRE(ib[1] == 0);
+			// std::ptrdiff_t const* ib = MA.index_bases();
+			// BOOST_REQUIRE(ib);
+			// BOOST_REQUIRE(ib[0] == 0);  // dangles
+			// BOOST_REQUIRE(ib[1] == 0);
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-		} {
+		}
+		{
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
