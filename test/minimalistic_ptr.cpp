@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -36,9 +36,9 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	constexpr auto operator*() const -> reference { return *impl_; }
 
 #if defined(__clang__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wunknown-warning-option"
-#	pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
@@ -47,7 +47,7 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	constexpr auto operator-(difference_type n) const { return ptr{impl_ - n}; }
 
 #if defined(__clang__)
-#	pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 	//  T& operator[](difference_type n) const{return impl_[n];} // optional
@@ -75,9 +75,9 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 	constexpr auto operator*() const -> reference { return *impl_; }
 
 #if defined(__clang__)
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wunknown-warning-option"
-#	pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
@@ -86,7 +86,7 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 	constexpr auto operator-(difference_type n) const { return ptr2{impl_ - n}; }
 
 #if defined(__clang__)
-#	pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 	//  T& operator[](std::ptrdiff_t n) const{return impl_[n];}  // optional
@@ -95,10 +95,9 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 
 }  // end namespace minimalistic
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
+	// BOOST_AUTO_TEST_CASE(test_minimalistic_ptr)
+	{
 		std::array<int, 400> buffer{};
 		BOOST_TEST( buffer.size() == 400 );
 

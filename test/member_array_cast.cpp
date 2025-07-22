@@ -1,42 +1,42 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>  // for array, transform_ptr, static_array
 
+#include <boost/core/lightweight_test.hpp>
+
 // IWYU pragma: no_include <algorithm>                        // for equal  // bug in iwyu 14.0.6? with GNU stdlib
 // IWYU pragma: no_include <utility>                          // for addressof  // bug in iwyu 14.0.6? with GNU stdlib
-#include <array>     // for array, operator==
-#include <cstddef>   // for offsetof, size_t
+#include <array>       // for array, operator==
+#include <cstddef>     // for offsetof, size_t
 #include <functional>  // for mem_fn  // IWYU pragma: keep
-#include <iterator>  // for size
-#include <memory>    // for addressof  // IWYU pragma: keep
-#include <string>    // for operator""s, allocator, char_traits
-#include <tuple>     // for tie, operator==, tuple
+#include <iterator>    // for size
+#include <memory>      // for addressof  // IWYU pragma: keep
+#include <string>      // for operator""s, allocator, char_traits
+#include <tuple>       // for tie, operator==, tuple
 
 #if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Winvalid-offsetof"  // Explicit padding, for particle example
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Winvalid-offsetof"  // Explicit padding, for particle example
 #elif defined(_MSC_VER)
-	#pragma warning(push)
-	#pragma warning(disable : 4324)  // Explicit padding, for particle example
+#pragma warning(push)
+#pragma warning(disable : 4324)  // Explicit padding, for particle example
 #endif
 
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
+	// BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos)
+	{
 		using v3d = std::array<double, 3>;
 
-		#if defined(__clang__)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wpadded"
-		#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 		// some members might need explicit padding to work well with member_cast
 		struct particle {
@@ -44,9 +44,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
 		};
 
-		#if defined(__clang__)
-		#pragma clang diagnostic pop
-		#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 		class particles_soa {
 			multi::array<int, 2> masses_;
@@ -63,7 +63,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
 				// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
-				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment
+					 operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment
 				auto operator+() const { return operator particle(); }
 
 				reference(int& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
@@ -120,36 +120,36 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	struct employee_dummy {
 		std::string name;
 		// NOLINTNEXTLINE(runtime/int)
-		short       salary;  // NOLINT(google-runtime-int)
+		short salary;  // NOLINT(google-runtime-int)
 
-		#if defined(__clang__)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wpadded"
-		#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 		std::size_t age;
 
-		#if defined(__clang__)
-		#pragma clang diagnostic pop
-		#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 	};
 
 	struct employee {
 		std::string name;
 
 		// NOLINTNEXTLINE(runtime/int)
-		short       salary;  // NOLINT(google-runtime-int)
+		short salary;  // NOLINT(google-runtime-int)
 
-		#if defined(__clang__)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wpadded"
-		#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 		std::size_t age;
 
-		#if defined(__clang__)
-		#pragma clang diagnostic pop
-		#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 		// clang-format off
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
@@ -162,7 +162,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
 #if !(defined(__NVCC__) || defined(__HIPCC__))
-	BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
+	// BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee)
+	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 		// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
@@ -189,7 +190,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(size(d2D_names) == size(d2D));
 		BOOST_TEST(d2D_names[1][1] == "David");
 
-	#if !(defined(__clang__) && defined(__CUDACC__))
+#if !(defined(__clang__) && defined(__CUDACC__))
 		multi::array<std::string, 2> d2D_names_copy_members{d2D.element_transformed(&employee::name)};
 		BOOST_TEST(d2D_names_copy_members[1][1] == "David");
 		BOOST_TEST(d2D_names_copy_members       == d2D_names);
@@ -197,24 +198,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::string, 2> d2D_names_copy{d2D_names};
 		BOOST_TEST( d2D_names == d2D_names_copy);
 		BOOST_TEST( d2D_names.base() != d2D_names_copy.base() );
-	#endif
+#endif
 	}
 #endif
 
-	BOOST_AUTO_TEST_CASE(element_transformed_from_member) {
+	// BOOST_AUTO_TEST_CASE(element_transformed_from_member)
+	{
 		struct record {
-			int    id;
+			int id;
 
-			#if defined(__clang__)
-			#pragma clang diagnostic push
-			#pragma clang diagnostic ignored "-Wpadded"
-			#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 
 			double data;
 
-			#if defined(__clang__)
-			#pragma clang diagnostic pop
-			#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 		};
 
 		multi::array<record, 2> const recs = {
@@ -234,7 +236,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
 #if !(defined(__NVCC__) || defined(__HIPCC__))
-	BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp) {
+	// BOOST_AUTO_TEST_CASE(element_transformed_from_member_no_amp)
+	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 		multi::array<employee, 2> d2D = {
@@ -252,7 +255,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 }
 
 #if defined(__clang__)
-	#pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(_MSC_VER)
-	#pragma warning(pop)
+#pragma warning(pop)
 #endif
