@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -35,14 +35,22 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 
 	// vvv it is important that these two functions are device or device host functions
 	constexpr auto operator*() const noexcept -> reference { return reference{}; }
+
 	constexpr auto operator+(difference_type /*unused*/) const noexcept -> ptr { return *this; }
+
 	constexpr auto operator[](difference_type dist) const noexcept -> reference { return *(*this + dist); }
+
 	auto operator+=(difference_type /*difference*/) noexcept -> ptr& { return *this; }
+
 	auto operator++() noexcept -> ptr& { return operator+=(1); }
+
 	friend auto operator-(ptr const& /*a*/, ptr const& /*b*/) noexcept -> difference_type { return 0; }
+
 	auto operator==(ptr const& /*other*/) const noexcept -> bool { return true; }
 	auto operator!=(ptr const& /*other*/) const noexcept -> bool { return false; }
+
 	explicit operator bool() const noexcept { return false; }
+
 	friend auto get_allocator(ptr const& /*self*/) noexcept { return std::allocator<value_type>{}; }
 };
 
@@ -146,10 +154,10 @@ namespace boost::multi {
 }  // end namespace boost::multi
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(multi_fancy) {
+	// BOOST_AUTO_TEST_CASE(multi_fancy)
+	{
 		namespace multi = boost::multi;
 
 		multi::array<double, 2, fancy::allocator<double>> arr({5, 5});
@@ -159,5 +167,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2, fancy::allocator<double>> const arr2({0, 0});
 		BOOST_TEST( arr2.size() == 0 );
 	}
+
 	return boost::report_errors();
 }
