@@ -624,3 +624,184 @@ bool multi::force_element_trivial_default_construction<std::complex<double>> = t
 
 With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
 The rule will only apply to this library's containers (`multi::array`, etc), and not to other containers (such as `std::vector`) or individual `std::complex` variables.
+
+== Const-correctness
+
+Const-correctness refers to the property of a program to disallow mutation of certain objects when it is undesired or logically incorrect.
+Honoring the const-ness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.
+The library goes to great lengths to ensure const-correctness for the whole or parts of any object.
+
+Arrays are resizable, and their elements can be mutated unless declared constant (using the keyword `const`).
+
+A reference array or subarray is never resizable, but its elements are mutable if not declared `const`.
+The design ensures that the const-ness of references and values propagates to subarrays (views) and, ultimately, their elements.
+
+```cpp
+template<class Array1D>
+void print(Array1D const& coll) {
+//  *coll.begin() = 99;  // doesn't compile, "assignment of read-only location"
+
+	for(auto const& e : coll) {std::cout<< e <<", ";}
+	std::cout << std::endl;
+}
+
+int main() {
+	multi::array<int, 1> const coll1 = {0, 8, 15, 47, 11, 42};
+
+	print( coll1 );  // prints "0, 8, 15, 47, 11, 42"
+	print( coll1({0, 3}) );  // prints "0, 8, 15"
+}
+```
+
+As a general rule for passing generic arrays as arguments, pass them as `Array const&` (in the context of `template<class Array>`);
+unless mutation is expected, in which case take arguments as `Array&&` (note the double ampersand, i.e., universal/forwarding reference).
+Analogously, subarrays can be locally *named* into "constant language references" using `auto const&` and, if mutation is desired, `auto&&` should be used.
+Regular references `Array&` or `auto&` in general do not have the expected behavior for views.
+
+```cpp
+template<class Array1D>
+void fill_99(Array1D&& coll) {
+	for(auto& e : coll) { e = 99; }
+}
+
+int main() {
+	multi::array<int, 1> coll1 = {0, 8, 15, 47, 11, 42};
+
+	fill_99( coll1 );
+	fill_99( coll1({0, 3}) );
+
+	auto&& coll1_take3 = coll1({0, 3});
+	fill_99( coll1_take3 );
+
+	auto const& coll2 = coll1;
+//  fill_99( coll2 );  // doesn't compile because coll2 is const
+//  fill_99( coll2({0, 3}) );  // similar to coll2 | take(3) doesn't compile
+
+	auto const& coll1_take3_const = coll1({0, 3});
+//  fill_99( coll1_take3_const );  // doesn't compile because coll1_take3_const is const
+}
+```
+
+== Compile-time evaluation (constexpr)
+
+With certain limitations imposed by the language, arrays can be declared in contexts with compile-time evaluation.
+
+```cpp
+constexpr auto trace() {
+	multi::array<int, 2> arr = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+	arr[2][2] = 10;
+	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end());
+}
+
+static_assert( trace() == 4 + 2 + 10 );
+```
+https://godbolt.org/z/Porre3z8s
+
+// == Broadcast (infinite views)
+
+// Broadcasting is a technique by which arrays are reinterpreted as having a higher dimension by repeating elements.
+// The technique allows the reuse of operations designed for high dimensionality and effectively apply them to arrays of lower dimensionality.
+// The result is generally an economy in the number of distinct operations that need to be provided in exchange for understanding how and where to exploit the broadcast operations.
+
+// Broadcasting is popular in array-based languages, such as Julia and NumPy, and the broadcast operation is generally applied automatically to match the dimension expected by the operation and other operation inputs.
+// The library provides a basic form of broadcasting with certain limitations.
+
+// Here is an example of an algorithm designed for two 2D arrays to obtain the row-by-row inner product.
+
+// ```cpp
+// auto row_by_row_dot = [](auto const& A2D, auto const& B2D, auto& results) {
+//  std::transform(A2D.begin(), A2D.end(), B2D.begin(), results.begin(),
+//      [](auto const& Arow, auto const& Brow) {return std::inner_product(Arow.begin(), Arow.end(), Brow.begin(), 0);}
+//  );
+// };
+
+// auto A = multi::array<int, 2>{{ 0,  1}, { 2,  3}, { 4,  5}};
+// auto B = multi::array<int, 2>{{10, 11}, {12, 13}, {14, 15}};
+
+// auto dots = multi::array<int, 1>({A.size()});
+
+// row_by_row_dot(A, B, dots);
+// ```
+
+// If, for some reason, we want to obtain the inner product against a _single_ right-hand vector instead of several (a single 1D array of two elements), we would need to (re)write the function (or copy the repeated vector into the 2D `B` array, which is not ideal.)
+// Broadcasting can help reuse the same function without changes.
+
+// ```cpp
+// multi::array<int, 1> b = {10, 11};
+
+// row_by_row_dot(A, b.broadcasted(), dots);
+// ```
+
+// The alternative, not using broadcast, is to write a very similar function,
+
+// ```cpp
+// auto row_fixed_dot = [](auto const& A2D, auto const& b1D, auto& results) {
+//  std::transform(A2D.begin(), A2D.end(), results.begin(),
+//      [&b1D](auto const& Arow) {return std::inner_product(Arow.begin(), Arow.end(), b1D.begin(), 0);}
+//  );
+// };
+
+// row_fixed_dot(A, b, dots3);
+// ```
+// (https://godbolt.org/z/9ndvfKqhc)
+
+// Broadcasted arrays do not behave like normal array views in several aspects:
+// First, broadcasted arrays are infinite in the broadcasted dimension; iteration will never reach the end position, and calling `.size()` is undefined behavior.
+// Explicit loops or algorithms that depend on reaching `.end()` from `.begin()` will effectively be non-terminating.
+// Second, these array views are strictly read-only and alias their element addresses, e.g. `&b.broadcasted()[1][0] == &b.broadcasted()[2][0]` (since internal layouts' strides can be zero).
+
+// <!-- For illustration purposes only, `fill` here is replaced by `copy`; problematic uses are highlighted:
+
+// ```cpp
+// multi::array<double, 2> B({10, 2});
+// std::fill  (B.begin(), B.end(), b);                                       // canonical way
+// std::fill_n(B.begin(), B.size(), b);                                      // canonical way
+
+// std::copy_n(b.broadcasted().begin(), B.size(), B.begin());                // equivalent, using broadcast
+
+// std::copy_n(b.broadcasted().begin(), b.broadcasted().size(), B.begin());  // incorrect, undefined behavior, no useful size()
+// std::copy  (b.broadcasted().begin(), b.broadcasted().end(), B.begin());   // incorrect, undefined behavior, non-terminating loop (end is not reacheable)
+// B = b.broadcasted();                                                      // incorrect, undefined behavior, B would be of infinite allocated size
+// ``` -->
+
+// Unlike in popular languages, broadcasting is not automatic in the library and is applied to the leading dimension only, one dimension at a time.
+// Broadcasting in non-leading dimensions can be achieved by transpositions and index rotation.
+
+// Abuse of broadcast can make it harder to reason about operations;
+// its primary use is to reuse existing efficient implementations of algorithms when implementations for a specific lower dimensions are not available.
+// These algorithms need to be compatible with broadcasted views (e.g., no explicit use of `.size()` or infinite loops stemming from problematic use of `.begin()/end()`.)
+
+// (In STL, algorithms ending with `_n` should be friendly to broadcast arrays, unfortunately `std::copy_n` is sometimes internally implemented in terms of `std::copy` causing a problematic iterator arithmetic on infinite arrays.
+// NB: `thrust::copy_n` can be used instead.)
+
+// As a final example, consider a function that computes the elements-by-element product of two 2D arrays,
+
+// ```cpp
+// auto hadamard = [](auto const& A, auto const& B, auto&& C) {
+//  auto const [is, js] = C.extensions();
+//  for(auto i : is) for(auto j : js) C[i][j] = A[i][j]*B[i][j];
+// };
+// ```
+
+// As it is, this function can be reused to calculate the outer product of two 1D arrays:
+
+// ```cpp
+// auto outer = [&]<typename T>(auto const& a, auto const& b, T&& C) {
+//  return hadamard(~(a.broadcasted()), b.broadcasted(), std::forward<T>(C));
+// };
+// ```
+// (https://godbolt.org/z/5o95qGdKz)
+
+// Note that the function `hadamard`, acting on 2D arrays, doesn't use the undefined (infinite) sizes (second dimension of `A` and first dimension of `B`).
+
+// NB: A zero-dimensional broadcasts into a one-dimensional.
+// Zero-dimensional arrays can contain, at most, one element; and after a broadcast, it can represent an infinite sequence of such element.
+
+// ```cpp
+// multi::array<int, 0> const single{7};
+// multi::array<int, 1> const sevens = {7, 7, 7};
+
+// single.broadcasted().front() == 7;
+// assert( std::equal(sevens.begin(), sevens.end(), single.broadcasted().begin()) );
+// ```
+// (https://godbolt.org/z/nnxjsrvM1)
