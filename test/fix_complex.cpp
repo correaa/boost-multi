@@ -1,9 +1,11 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <array>    // for array
 #include <cmath>    // for abs  // IWYU pragma: keep
@@ -32,8 +34,6 @@ template<class T>
 inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
 #endif
 
-#include <boost/core/lightweight_test.hpp>
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(pmr_double)
 	{
@@ -46,7 +46,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
-        };
+		};
 		std::pmr::monotonic_buffer_resource pool(static_cast<void*>(std::data(buffer)), 12 * sizeof(double));
 
 		multi::pmr::array<double, 2> Aarr({2, 2}, &pool);
@@ -65,7 +65,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
-        };
+		};
 		std::pmr::monotonic_buffer_resource pool(static_cast<void*>(std::data(buffer)), 12 * sizeof(double));
 
 		multi::pmr::array<double, 2> Aarr({2, 2}, double{}, &pool);
@@ -92,7 +92,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
-        };
+		};
 		std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(double)};
 
 		multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
@@ -122,7 +122,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 999.9, 999.9, 999.9, 999.9}
-        };
+		};
 		std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(double)};
 
 		multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
@@ -149,7 +149,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
-        };
+		};
 		std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(double)};
 
 		multi::pmr::array<std::complex<double>, 2> const Aarr({2, 2}, std::complex<double>{40.0, 50.0}, &pool);
@@ -170,7 +170,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<double, 12> buffer = {
 			{4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.00, 11.0, 996.0, 997.0, 998.0, 999.0}
-        };
+		};
 		std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(double)};
 
 		multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);

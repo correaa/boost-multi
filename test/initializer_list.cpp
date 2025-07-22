@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -162,13 +162,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<double, 3> stdarr = {
 			{1.1, 2.2, 3.3}
-        };
+		};
 		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
 		BOOST_TEST(( arr == decltype(arr){1.1, 2.2, 3.3} ));
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d)
-
 	{
 		multi::static_array<double, 2> const arr = {
 			{ 1.2,  2.4, 3.6, 8.9},
@@ -221,7 +220,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<std::array<int, 2>, 3> const nested = {
 			{{{12, 24}}, {{112, 344}}, {{152, 324}}}
-        };
+		};
 
 		using std::begin;
 		using std::end;
@@ -235,7 +234,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<std::array<int, 2>, 3> const nested = {
 			{{{12, 24}}, {{112, 344}}, {{152, 324}}}
-        };
+		};
 		multi::static_array<int, 2> const arr(std::begin(nested), std::end(nested));
 
 		BOOST_TEST((
@@ -267,7 +266,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
              {{20, 40}},
              {{30, 60}},
 			 }
-        };
+		};
 		multi::array<int, 2> arr(begin(nested), end(nested));
 		BOOST_TEST( num_elements(arr) == 6 );
 		BOOST_TEST( arr[2][1] == 60 );

@@ -1,10 +1,10 @@
-// Copyright 2024 Alfredo A. Correa
+// Copyright 2024-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for array, apply, array_types<>::ele...
+
+#include <boost/core/lightweight_test.hpp>
 
 // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
 // IWYU pragma: no_include <map>
@@ -69,8 +69,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//      BOOST_TEST( arrB[2].size() == 5 );
 	//  }
 	// }
-
-
 
 	return boost::report_errors();
 }

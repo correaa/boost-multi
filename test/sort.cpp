@@ -3,9 +3,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for apply, operator!=, operator==
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for is_sorted, stable_sort
 #include <array>      // for array
@@ -106,7 +106,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_array_stable_sort)
 	{
-		std::vector<double> vec = {1.0, 2.0, 3.0};           // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-arguments-calls)
 

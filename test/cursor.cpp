@@ -1,11 +1,11 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for array, implicit_cast, explicit_cast
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <type_traits>  // for is_same_v, is_same
 
@@ -14,21 +14,21 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
 		static_assert(std::is_trivially_default_constructible_v<multi::array<double, 0>::cursor>);
-		static_assert(std::is_trivially_copy_constructible_v   <multi::array<double, 0>::cursor>);
-		static_assert(std::is_trivially_copy_assignable_v      <multi::array<double, 0>::cursor>);
+		static_assert(std::is_trivially_copy_constructible_v<multi::array<double, 0>::cursor>);
+		static_assert(std::is_trivially_copy_assignable_v<multi::array<double, 0>::cursor>);
 	}
 
 	// BOOST_AUTO_TEST_CASE(iterator_1d)
 	{
 		static_assert(std::is_trivially_default_constructible_v<multi::array<double, 1>::cursor>);
-		static_assert(std::is_trivially_copy_constructible_v   <multi::array<double, 1>::cursor>);
-		static_assert(std::is_trivially_copy_assignable_v      <multi::array<double, 1>::cursor>);
+		static_assert(std::is_trivially_copy_constructible_v<multi::array<double, 1>::cursor>);
+		static_assert(std::is_trivially_copy_assignable_v<multi::array<double, 1>::cursor>);
 	}
 	// BOOST_AUTO_TEST_CASE(iterator_2d)
 	{
 		static_assert(std::is_trivially_default_constructible_v<multi::array<double, 2>::cursor>);
-		static_assert(std::is_trivially_copy_constructible_v   <multi::array<double, 2>::cursor>);
-		static_assert(std::is_trivially_copy_assignable_v      <multi::array<double, 2>::cursor>);
+		static_assert(std::is_trivially_copy_constructible_v<multi::array<double, 2>::cursor>);
+		static_assert(std::is_trivially_copy_assignable_v<multi::array<double, 2>::cursor>);
 
 		// {
 		//  multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
