@@ -1,7 +1,9 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/array.hpp>  // for apply, operator!=, operator==
 
@@ -20,11 +22,9 @@
 
 namespace multi = boost::multi;
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax) {
+	// BOOST_AUTO_TEST_CASE(array_1D_partial_order_syntax)
+	{
 		multi::array<int, 1> const tt = {1, 1, 1};
 		multi::array<int, 1> const uu = {2, 2, 2};
 
@@ -41,7 +41,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 #if defined(__cpp_lib_ranges)
-	BOOST_AUTO_TEST_CASE(sort_2D) {
+	// BOOST_AUTO_TEST_CASE(sort_2D)
+	{
 		multi::array<int, 2> A2D = {
 			{3, 3, 3},
 			{2, 2, 2},
@@ -76,7 +77,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 	}
 
-	BOOST_AUTO_TEST_CASE(sort_strings) {
+	// BOOST_AUTO_TEST_CASE(sort_strings)
+	{
 		auto A2D = multi::array<char, 2>{
 			{'S', 'e', 'a', 'n', ' ', ' '},
 			{'A', 'l', 'e', 'x', ' ', ' '},
@@ -102,8 +104,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 
-	BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
+	// BOOST_AUTO_TEST_CASE(multi_array_stable_sort)
+	{
 		std::vector<double> vec = {1.0, 2.0, 3.0};           // NOLINT(fuchsia-default-arguments-calls)
+
 		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::array<double, 2> d2D = {
@@ -142,7 +146,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	));
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort) {
+	// BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort)
+	{
 		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );
 
@@ -166,7 +171,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
 	}
 
-	BOOST_AUTO_TEST_CASE(lexicographical_compare) {
+	// BOOST_AUTO_TEST_CASE(lexicographical_compare)
+	{
 		multi::array<char, 1> const name1 = {'a', 'b', 'c'};
 		multi::array<char, 1> const name2 = {'a', 'c', 'c'};
 
@@ -177,7 +183,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(!(name1 >  name2));
 	}
 
-	BOOST_AUTO_TEST_CASE(lexicographical_compare_offset) {
+	// BOOST_AUTO_TEST_CASE(lexicographical_compare_offset)
+	{
 		multi::array<char, 1> const name1 = {'a', 'b', 'c'};
 		// clang-format off
 	multi::array<char, 1>       name2({{ 1, 4 }}, '\0');
@@ -210,7 +217,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( name2[3] == 'c' );
 	}
 
-	BOOST_AUTO_TEST_CASE(lexicographical_compare_offset_2d) {
+	// BOOST_AUTO_TEST_CASE(lexicographical_compare_offset_2d)
+	{
 		multi::array<char, 2> const name1 = {
 			{'a', 'b'},
 			{'b', 'c'},
@@ -250,7 +258,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( name2[3][1] == 'a' );
 	}
 
-	BOOST_AUTO_TEST_CASE(accumulate_1d) {
+	// BOOST_AUTO_TEST_CASE(accumulate_1d)
+	{
 		{
 			std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 

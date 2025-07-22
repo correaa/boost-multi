@@ -203,9 +203,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(!std::is_move_constructible_v<multi::array_ref<int, 4>>);
 		static_assert(!std::is_nothrow_move_constructible_v<multi::array_ref<int, 4>>);
-#if(!defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ >= 24)) && !defined(__NVCC__)
+
+#if (!defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ >= 24)) && !defined(__NVCC__)
 		static_assert(!std::is_copy_constructible_v<multi::array_ref<int, 4>>);
 #endif
+
 		static_assert(!std::is_trivially_copyable_v<multi::array_ref<int, 4>>);
 		static_assert(std::is_copy_assignable_v<multi::array_ref<int, 4>>);
 		static_assert(!std::is_trivially_copy_assignable_v<multi::array_ref<int, 4>>);
