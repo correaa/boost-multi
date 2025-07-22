@@ -4,14 +4,16 @@
 
 #include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iterator>   // for size
 #if __cplusplus > 201703L
-#   if __has_include(<ranges>)
-#       include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
-#   endif
+#if __has_include(<ranges>)
+#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#endif
 #endif
 #include <tuple>   // for make_tuple, tuple_element<>::type
 #include <vector>  // for vector
@@ -26,8 +28,6 @@ auto second_finish(multi::extensions_t<3> exts) {
 	return get<1>(exts).last();
 }
 }  // namespace
-
-#include <boost/core/lightweight_test.hpp>
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(extensions_3D)
@@ -197,9 +197,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
 #if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wunknown-warning-option"
-#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
 		for(int i = 0; i != 10; ++i) {
@@ -212,7 +212,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 #if defined(__clang__)
-#   pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 	}
 
@@ -232,9 +232,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const [is, js, ks] = rot.extensions();
 
 #if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wunknown-warning-option"
-#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		for(auto const i : is) {
@@ -247,7 +247,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 #if defined(__clang__)
-#   pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 	}
 
@@ -289,7 +289,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::extensions_t<2> const x5 = std::tuple{
 			multi::iextension{0, 51},
 			multi::iextension{0, 52}
-		};
+        };
 		BOOST_TEST( x1 == x5 );
 
 		multi::extensions_t<2> const x6 = std::tuple{51, 52};
@@ -315,7 +315,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
 			multi::iextension{0, 53}
-		});
+        });
 		BOOST_TEST( x1 == x2 );
 
 		multi::extensions_t<3> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}));
@@ -328,7 +328,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
 			multi::iextension{0, 53}
-		};
+        };
 		BOOST_TEST( x1 == x5 );
 
 		multi::extensions_t<3> const x6 = std::tuple{51, 52, 53};
@@ -419,9 +419,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
-#   if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
-#       if !defined(__NVCC__)
-#           if !defined(_MSC_VER)
+#if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
+#if !defined(__NVCC__)
+#if !defined(_MSC_VER)
 		static_assert(std::ranges::random_access_range<decltype(A2.extension())>);
 
 		auto tiA2 = std::views::transform(
@@ -431,9 +431,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 		BOOST_TEST( *tiA2.begin() == 0 );
 		BOOST_TEST( tiA2[0] == 0 );
-#           endif
-#       endif
-#   endif
+#endif
+#endif
+#endif
 #endif
 
 		BOOST_TEST( size(A2) == 3 );
