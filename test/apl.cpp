@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -57,7 +57,7 @@ namespace {
 #if !defined(__GNUC__) || __GNUC__ > 9
 #if !defined(__NVCOMPILER)
 [[maybe_unused]] constexpr auto const& Ɵ = Zilde;  // NOLINT(misc-confusable-identifiers)
-#   if !defined(_MSC_VER)
+#if !defined(_MSC_VER)
 [[maybe_unused]] constexpr auto const& θ = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& Ө = Zilde;  // NOLINT(misc-confusable-identifiers)
 [[maybe_unused]] constexpr auto const& ϑ = Zilde;  // NOLINT(misc-confusable-identifiers)
@@ -65,11 +65,11 @@ namespace {
 #endif
 
 #if !defined(__GNUC__) || __GNUC__ > 9
-#       if defined(__clang__)
-#           pragma clang diagnostic ignored "-Wc99-compat"
-#       endif
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wc99-compat"
+#endif
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
-#   endif
+#endif
 #endif
 #endif
 
@@ -77,13 +77,13 @@ struct underscore_t {
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class U, class... Us>
 	[[maybe_unused]]
-#   if (__cpp_multidimensional_subscript >= 202211L)
+#if (__cpp_multidimensional_subscript >= 202211L)
 	static
-#   endif
+#endif
 		constexpr auto operator[](U u, Us... us)
-#   if !(__cpp_multidimensional_subscript >= 202211L)
+#if !(__cpp_multidimensional_subscript >= 202211L)
 			const
-#   endif
+#endif
 	{
 		if constexpr(std::is_same_v<U, int>) {
 			return multi::array<U, 1>{u, us...};
@@ -107,20 +107,20 @@ struct underscore_t {
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	BOOST_TEST(( apl::iota<2>({2, 3}) == multi::array({{0, 1, 2}, {3, 4, 5}}) ));
 
-// #if !defined(_MSC_VER)
+	// #if !defined(_MSC_VER)
 	BOOST_TEST(( apl::iota(2, 3) == multi::array({{0, 1, 2}, {3, 4, 5}}) ));
 	BOOST_TEST(( apl::iota(4) == multi::array({0, 1, 2, 3}) ));
 
-#   if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	// NOLINTNEXTLINE(google-build-using-namespace)
 	using namespace apl::symbols;  // NOLINT(build/namespaces)
-#       if !defined(__NVCOMPILER) && !defined(_MSC_VER) && (!defined(__GNUC__) || __GNUC__ > 9)
+#if !defined(__NVCOMPILER) && !defined(_MSC_VER) && (!defined(__GNUC__) || __GNUC__ > 9)
 	BOOST_TEST(( ι(4)    == _[0, 1, 2, 3] ));
 	BOOST_TEST(( ι(2, 3) == _[ _[0, 1, 2], _[3, 4, 5] ] ));
 	BOOST_TEST(( Ɵ == ι(0) ));
-#       endif
-#   endif
-// #endif
+#endif
+#endif
+	// #endif
 
 	return boost::report_errors();
 }
