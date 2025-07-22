@@ -4,16 +4,16 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wconversion"
-	#pragma clang diagnostic ignored "-Wold-style-cast"
-	#pragma clang diagnostic ignored "-Wshadow"
-	#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wshadow"
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #elif defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wconversion"
-	#pragma GCC diagnostic ignored "-Wold-style-cast"
-	#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 // NOLINTBEGIN(misc-include-cleaner)
@@ -25,9 +25,9 @@
 // NOLINTEND(misc-include-cleaner)
 
 #if defined(__clang__)
-	#pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-	#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
 #include <boost/multi/array.hpp>  // for operator!=, implicit...
@@ -37,13 +37,14 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(convertibles_1D) {
+	// BOOST_AUTO_TEST_CASE(convertibles_1D)
+	{
 		using NDArray = multi::array<double, 1>;
 
-		NDArray const nda; (void)nda;
+		NDArray const nda;
+		(void)nda;
 
 		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
@@ -64,10 +65,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference>);
 	}
 
-	BOOST_AUTO_TEST_CASE(convertibles_2D) {
+	// BOOST_AUTO_TEST_CASE(convertibles_2D)
+	{
 		using NDArray = multi::array<double, 2>;
 
-		NDArray const nda; (void)nda;
+		NDArray const nda;
+		(void)nda;
 
 		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);
@@ -83,10 +86,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_same_v<typename NDRef::element_ref, typename multi::array<double, 1>::reference>);
 	}
 
-	BOOST_AUTO_TEST_CASE(convertibles_3D) {
+	// BOOST_AUTO_TEST_CASE(convertibles_3D)
+	{
 		using NDArray = multi::array<double, 3>;
 
-		NDArray const nda; (void)nda;
+		NDArray const nda;
+		(void)nda;
 
 		static_assert(std::is_same_v<typename NDArray::element_type, typename multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<typename NDArray::element_ref, typename multi::array<double, 1>::reference>);

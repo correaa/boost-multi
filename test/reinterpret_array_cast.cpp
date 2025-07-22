@@ -277,7 +277,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			complex cee{1.0, 2.0};
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test purposes
-			auto* ceePC = reinterpret_cast<double(*)[2]>(&cee);
+			auto* ceePC = reinterpret_cast<double (*)[2]>(&cee);
 			(*ceePC)[0] = 11.0;
 			BOOST_TEST( ceePC );
 			BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );
@@ -344,10 +344,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		arr_4pc[0][0] = packed_type{
 			{1.0, 2.0, 3.0, 4.0}
-        };
+		};
 		arr_4pc[0][1] = packed_type{
 			{5.0, 6.0, 7.0, 8.0}
-        };
+		};
 
 		auto&& arr = arr_4pc.reinterpret_array_cast<double>(4).rotated().flatted().unrotated();
 
