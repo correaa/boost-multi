@@ -63,7 +63,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
 				// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
-					 operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment
+				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment
 				auto operator+() const { return operator particle(); }
 
 				reference(int& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)

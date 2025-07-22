@@ -289,7 +289,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::extensions_t<2> const x5 = std::tuple{
 			multi::iextension{0, 51},
 			multi::iextension{0, 52}
-        };
+		};
 		BOOST_TEST( x1 == x5 );
 
 		multi::extensions_t<2> const x6 = std::tuple{51, 52};
@@ -315,7 +315,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
 			multi::iextension{0, 53}
-        });
+		});
 		BOOST_TEST( x1 == x2 );
 
 		multi::extensions_t<3> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}));
@@ -328,7 +328,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
 			multi::iextension{0, 53}
-        };
+		};
 		BOOST_TEST( x1 == x5 );
 
 		multi::extensions_t<3> const x6 = std::tuple{51, 52, 53};
