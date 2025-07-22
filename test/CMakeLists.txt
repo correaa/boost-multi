@@ -20,7 +20,7 @@ else()
 	enable_testing()
 
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
-	set(CMAKE_CXX_EXTENSIONS OFF)
+
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
 	find_package(Boost CONFIG)
@@ -398,6 +398,9 @@ else()
 			else()
 				target_compile_options(${TEST_EXE} PRIVATE -Werror -Wall)
 			endif()
+
+			set_target_properties(${TEST_EXE} PROPERTIES CXX_EXTENSIONS OFF)
+
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
 	endif()
