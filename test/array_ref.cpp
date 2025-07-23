@@ -28,15 +28,16 @@ namespace multi = boost::multi;
 
 namespace boost::multi {
 
+// NOLINTBEGIN(whitespace/indent_namespace) bug in cpplint
 template<class T, boost::multi::dimensionality_type D, class Alloc = std::allocator<std::decay_t<T>>>
-using Array =
+using Array = std::conditional_t<
+	std::is_reference_v<T>,
 	std::conditional_t<
-		std::is_reference_v<T>,
-		std::conditional_t<
-			std::is_const_v<std::remove_reference_t<T>>,
-			boost::multi::array_ref<std::remove_const_t<std::remove_reference_t<T>>, D> const&,
-			boost::multi::array_ref<std::remove_reference_t<T>, D>&>,
-		multi::array<T, D, Alloc>>;
+		std::is_const_v<std::remove_reference_t<T>>,
+		boost::multi::array_ref<std::remove_const_t<std::remove_reference_t<T>>, D> const&,
+		boost::multi::array_ref<std::remove_reference_t<T>, D>&>,
+	multi::array<T, D, Alloc>>;
+// NOLINTEND(whitespace/indent_namespace)
 
 }  // end namespace boost::multi
 
