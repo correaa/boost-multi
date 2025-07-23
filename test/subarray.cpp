@@ -118,6 +118,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(   AA() != BB()  );
 		BOOST_TEST( !(AA() == BB()) );
+
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+		BOOST_TEST(   AA[] != BB[]  );
+#endif
 	}
 
 	// equality 2D

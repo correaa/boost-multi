@@ -18,7 +18,6 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 	// BOOST_AUTO_TEST_CASE(pmr_partially_formed)
 	{

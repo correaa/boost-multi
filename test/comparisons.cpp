@@ -15,7 +15,6 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	// BOOST_AUTO_TEST_CASE(comparison_complex)
 	{
 		using complex = std::complex<double>;
