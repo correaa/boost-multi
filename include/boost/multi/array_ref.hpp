@@ -3694,27 +3694,31 @@ template<class Ptr> array_ref(Ptr, index_extensions<3>) -> array_ref<typename st
 template<class Ptr> array_ref(Ptr, index_extensions<4>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
 template<class Ptr> array_ref(Ptr, index_extensions<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
 
-template<class It, class Tuple> array_ref(It, Tuple)->array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size<Tuple>::value, It>;
+template<class It, class Tuple> array_ref(It, Tuple) -> array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size<Tuple>::value, It>;
 #endif
 
 // TODO(correaa) move to utility
 template<class T, std::size_t N>
-constexpr auto rotated(const T(&array)[N]) noexcept {                                                  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+constexpr auto rotated(T const (&array)[N]) noexcept {                                                 // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(array))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-		base(array), extensions(array)
-	).rotated();
+			   base(array), extensions(array)
+	)
+		.rotated();
 }
+
 template<class T, std::size_t N>
-constexpr auto rotated(T(&array)[N]) noexcept {                                                        // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+constexpr auto rotated(T (&array)[N]) noexcept {                                                       // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(array))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-		base(array), extensions(array)
-	).rotated();
+			   base(array), extensions(array)
+	)
+		.rotated();
 }
 
 template<class RandomAccessIterator, dimensionality_type D>
 constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> extensions)
--> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
-{return {data, extensions};}
+	-> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
+	return {data, extensions};
+}
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -3724,8 +3728,8 @@ constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> exten
 
 template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy
-// require N>1 (this is important because it forces calling placement new on the pointer
-(In first, In last, multi::array_iterator<T, N, TP> dest) {
+	// require N>1 (this is important because it forces calling placement new on the pointer
+	(In first, In last, multi::array_iterator<T, N, TP> dest) {
 	while(first != last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;
@@ -3742,11 +3746,11 @@ constexpr auto uninitialized_copy
 // to overwrite the behavior of std::begin and std::end
 // which take rvalue-references as const-references.
 
-template<class T> auto begin(T&& rng) -> decltype(std::forward<T>(rng).begin()) {return std::forward<T>(rng).begin();}
-template<class T> auto end  (T&& rng) -> decltype(std::forward<T>(rng).end()  ) {return std::forward<T>(rng).end()  ;}
+template<class T> auto begin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }
+template<class T> auto end(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }
 
 template<class T, std::size_t N, std::size_t M>
-auto transposed(T(&array)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(array);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 template<class T, dimensionality_type D, class TPtr = T const*>
 using array_const_view = array_ref<T, D, TPtr> const&;
@@ -3755,7 +3759,6 @@ template<class T, dimensionality_type D, class TPtr = T*>
 using array_view = array_ref<T, D, TPtr>&;
 
 }  // end namespace boost::multi
-
 
 #ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
 #define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
