@@ -79,7 +79,6 @@ namespace multi = boost::multi;
 //}
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
-
 	// BOOST_AUTO_TEST_CASE(lapack_getrf)
 	{
 		multi::array<double, 2> const Aconst = {

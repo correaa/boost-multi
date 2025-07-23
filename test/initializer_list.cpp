@@ -19,7 +19,6 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d)
 	{
 		std::vector<int> const vec = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)

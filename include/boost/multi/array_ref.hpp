@@ -1492,6 +1492,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray {return paren_aux_();}  // NOLINT(readability-redundant-access-specifiers,readability-const-return-type)
 
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
+	#endif
+
 	template <template<class...> class Container = std::vector, template<class...> class ContainerSub = std::vector, class... As>
 	constexpr auto to(As&&... as) const& {
 		using inner_value_type = typename const_subarray::value_type::value_type;
@@ -2938,7 +2942,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	BOOST_MULTI_HD constexpr auto range(index_range const& rng) const& { return sliced(rng.front(), rng.last()); }
 
-	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return *this; }  // const_subarray(this->base(), this->layout());}
+	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return *this; }
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
+	#endif
 
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return operator[](idx); }
 

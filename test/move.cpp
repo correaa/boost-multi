@@ -188,7 +188,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(move_unique_ptr_1D)
 	{
-
 		// {
 		//  multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>{10});
 		//  arr[1] = std::make_unique<int>(42);
