@@ -555,22 +555,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 			multi::allocator_traits<allocator_type>::deallocate(this->alloc(), this->base_, static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()));
 		}
 	}
+
 	void clear() noexcept {
 		this->destroy();
 		deallocate();
 		this->layout_mutable() = typename static_array::layout_type(typename static_array::extensions_type{});
 		assert(this->stride() != 0);
 	}
-	// template<class... Indices>
-	// constexpr auto reindex(Indices... idxs) & -> static_array& {
-	//  static_array::layout_t::reindex(idxs...);
-	//  return *this;
-	// }
-	// template<class... Indices>
-	// constexpr auto reindex(Indices... idxs) && -> static_array&& {
-	//  reindex(idxs...);
-	//  return std::move(*this);
-	// }
 
  public:
 	constexpr static_array() noexcept
@@ -582,7 +573,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 	constexpr
 #endif
-	~static_array() /*noexcept*/ {
+
+		~static_array() /*noexcept*/ {
 		assert(this->stride() != 0);
 		destroy();
 		assert(this->stride() != 0);
@@ -598,27 +590,24 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		std::conditional_t<
 			D == 1,
 			typename std::iterator_traits<typename static_array::element_ptr>::reference,
-			void
-		>
-	>;
+			void>>;
+
 	using const_reference = std::conditional_t<
 		(D > 1),
 		const_subarray<typename static_array::element_type, D - 1, typename static_array::element_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
 		std::conditional_t<
 			D == 1,
 			decltype(*std::declval<typename static_array::element_const_ptr>()),
-			void
-		>
-	>;
+			void>>;
 
 	using iterator       = multi::array_iterator<T, D, typename static_array::element_ptr>;
 	using const_iterator = multi::array_iterator<T, D, typename static_array::element_ptr, true>;
 
 	friend auto get_allocator(static_array const& self) -> allocator_type { return self.get_allocator(); }
 
-	BOOST_MULTI_HD constexpr auto           data_elements() const& -> element_const_ptr { return this->base_; }
-	BOOST_MULTI_HD constexpr auto           data_elements() & -> typename static_array::element_ptr { return this->base_; }
-	BOOST_MULTI_HD constexpr auto           data_elements() && -> typename static_array::element_move_ptr { return std::make_move_iterator(this->base_); }
+	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() & -> typename static_array::element_ptr { return this->base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() && -> typename static_array::element_move_ptr { return std::make_move_iterator(this->base_); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(static_array const& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(static_array& self) { return self.data_elements(); }
@@ -627,42 +616,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto base() & -> typename static_array::element_ptr { return ref::base(); }
 	constexpr auto base() const& -> typename static_array::element_const_ptr { return typename static_array::element_const_ptr{ref::base()}; }
 
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array& self) -> typename static_array::element_ptr { return self.base(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
-
-	constexpr auto              origin() & -> typename static_array::element_ptr { return ref::origin(); }
-	constexpr auto              origin() const& -> typename static_array::element_const_ptr { return ref::origin(); }
+	constexpr auto origin() & -> typename static_array::element_ptr { return ref::origin(); }
+	constexpr auto origin() const& -> typename static_array::element_const_ptr { return ref::origin(); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array& self) -> typename static_array::element_ptr { return self.origin(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr { return self.origin(); }
-
-	//  private:
-	//  constexpr auto rotated_aux() const {
-	//      typename static_array::layout_t new_layout = this->layout();
-	//      new_layout.rotate();
-	//      return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-	//  }
-
-	// constexpr auto rotated() const& {return std::move(*this).rotated_aux();}
-	// constexpr auto rotated()      & {return std::move(*this).rotated_aux();}
-	// constexpr auto rotated()     && {return std::move(*this).rotated_aux();}
-
-	// friend constexpr auto rotated(static_array&       self) -> decltype(auto) {return self.rotated();}
-	// friend constexpr auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
-
-	// constexpr auto unrotated() const& -> subarray<T, D, typename static_array::element_ptr> const {
-	//  typename static_array::layout_t new_layout = this->layout();
-	//  new_layout.unrotate();
-	//  return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-	// }
-	// constexpr auto unrotated()      & {
-	//  typename static_array::layout_t new_layout = this->layout();
-	//  new_layout.unrotate();
-	//  return subarray<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-	// }
-
-	// friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
-	// friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
 	template<class TT, typename EElementPtr, class LLayout>
 	auto operator=(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other) -> static_array& {
@@ -680,22 +638,22 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return *this;
 	}
 
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-	#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
 
-	constexpr auto operator=(static_array&& other) noexcept -> static_array& {  // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-		assert(extensions(other) == static_array::extensions());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+	constexpr auto operator=(static_array&& other) noexcept -> static_array& {                                 // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		assert(extensions(other) == static_array::extensions());                                               // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
 		assert(this->stride() != 0);
 		return *this;
 	}
 
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 	template<class TT, class... As>
 	auto operator=(static_array<TT, D, As...> const& other) & -> static_array& {
