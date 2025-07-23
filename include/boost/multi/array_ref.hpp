@@ -3475,10 +3475,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	#pragma clang diagnostic pop
 	#endif
 
-
-	    BOOST_MULTI_HD constexpr auto data_elements() &      -> typename array_ref::element_ptr       { return array_ref::base_; }
-	    BOOST_MULTI_HD constexpr auto data_elements() &&     -> typename array_ref::element_ptr       { return array_ref::base_; }
-	//  BOOST_MULTI_HD constexpr auto data_elements() const& -> typename array_ref::element_const_ptr { return array_ref::base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() &      -> typename array_ref::element_ptr       { return array_ref::base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() &&     -> typename array_ref::element_ptr       { return array_ref::base_; }
 
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
@@ -3494,8 +3492,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 
 	using decay_type = typename array_ref::decay_type;
 
-	       constexpr auto decay()         const&       -> decay_type const& {return static_cast<decay_type const&>(*this);}
-	friend constexpr auto decay(array_ref const& self) -> decay_type const& {return self.decay();}
+	constexpr auto        decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }
 
  private:
 	template<class TTN, std::size_t DD = 0>
@@ -3510,17 +3507,17 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	}
 
 	template<class TT> static auto launder_(TT* pointer) -> TT* {
-	#if(defined(__cpp_lib_launder) && ( __cpp_lib_launder >= 201606L)) 
+#if (defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L))
 		return std::launder(pointer);
-	#else
-		return              pointer ;
-	#endif
+#else
+		return pointer;
+#endif
 	}
 
 	template<class, ::boost::multi::dimensionality_type, class> friend struct array;
 
 	template<class TTN>
-	constexpr auto to_carray_()& -> TTN& {
+	constexpr auto to_carray_() & -> TTN& {
 		check_sizes_<TTN>();
 		return *launder_(reinterpret_cast<TTN*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
@@ -3532,43 +3529,45 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	}
 
  public:
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator TTN const&() const& { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20 
-	constexpr explicit operator TTN&() && { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr explicit operator TTN&() & { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	constexpr explicit operator TTN&() && { return to_carray_<TTN>(); }            // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(modernize-use-constraints) for C++20
+	constexpr explicit operator TTN&() & { return to_carray_<TTN>(); }             // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
  private:
 	template<class Ar>
 	auto serialize_structured_(Ar& arxiv, unsigned int const version) {
 		subarray_base::serialize(arxiv, version);
 	}
+
 	template<class Archive>
 	auto serialize_flat_(Archive& arxiv, unsigned int const /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		arxiv & AT::make_nvp("elements", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
+		arxiv& AT::make_nvp("elements", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
 	}
-//  template<class Ar, class AT = multi::archive_traits<Ar>>
-//  auto serialize_binary_if(std::true_type, Ar& ar) {
-//      ar & AT::make_nvp("binary_data", AT::make_binary_object(this->data_elements(), static_cast<std::size_t>(this->num_elements())*sizeof(typename array_ref::element)));
-//  }
-//  template<class Ar>
-//  auto serialize_binary_if(std::false_type, Ar& ar) {return serialize_flat(ar);}
+
+	//  template<class Ar, class AT = multi::archive_traits<Ar>>
+	//  auto serialize_binary_if(std::true_type, Ar& ar) {
+	//      ar & AT::make_nvp("binary_data", AT::make_binary_object(this->data_elements(), static_cast<std::size_t>(this->num_elements())*sizeof(typename array_ref::element)));
+	//  }
+	//  template<class Ar>
+	//  auto serialize_binary_if(std::false_type, Ar& ar) {return serialize_flat(ar);}
 
  public:
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int const version) {
 		serialize_flat_(arxiv, version);
-//      serialize_structured_(ar, version);
-//      switch(version) {
-//          case static_cast<unsigned int>( 0): return serialize_flat_(arxiv);
-//          case static_cast<unsigned int>(-1): return serialize_structured_(arxiv, version);
-//      //  case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, arxiv);
-//          default:
-//              if( this->num_elements() <= version ){serialize_structured_(arxiv, version);}
-//              else                                 {serialize_flat_       (arxiv         );}
-//      }
+		//      serialize_structured_(ar, version);
+		//      switch(version) {
+		//          case static_cast<unsigned int>( 0): return serialize_flat_(arxiv);
+		//          case static_cast<unsigned int>(-1): return serialize_structured_(arxiv, version);
+		//      //  case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, arxiv);
+		//          default:
+		//              if( this->num_elements() <= version ){serialize_structured_(arxiv, version);}
+		//              else                                 {serialize_flat_       (arxiv         );}
+		//      }
 	}
 };
 
@@ -3576,18 +3575,17 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 #pragma clang diagnostic pop
 #endif
 
-template<class T, dimensionality_type D, class Ptr = typename std::pointer_traits<T*>::template rebind<T const> >
+template<class T, dimensionality_type D, class Ptr = typename std::pointer_traits<T*>::template rebind<T const>>
 using array_cref = array_ref<std::decay_t<T>, D, Ptr>;
 
 template<class T, dimensionality_type D, class Ptr = T*>
 using array_mref = array_ref<
 	std::decay_t<T>, D,
-	std::move_iterator<Ptr>
->;
+	std::move_iterator<Ptr>>;
 
 template<class TT, std::size_t N>
 constexpr auto ref(
-	TT(&arr)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
+	TT (&arr)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
 ) {
 	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
 }
@@ -3608,10 +3606,10 @@ struct array_ptr
 
 	template<
 		class TT, std::size_t N,
-		std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), Ptr>,int> =0  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays TODO(correaa) for C++20
-	>
+		std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT (&)[N]>())), Ptr>, int> = 0  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays TODO(correaa) for C++20
+		>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr array_ptr(TT(*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(modernize-use-constraints,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  TODO(correaa) for C++20  // NOSONAR
+	constexpr array_ptr(TT (*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(modernize-use-constraints,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  TODO(correaa) for C++20  // NOSONAR
 
 	constexpr auto operator*() const -> array_ref<T, D, Ptr> {
 		return array_ref<T, D, Ptr>((*static_cast<subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> const&>(*this)).extensions(), this->base());
@@ -3620,72 +3618,71 @@ struct array_ptr
 
 template<class T, typename Ptr>
 class [[deprecated("no good uses found")]] array_ptr<T, 0, Ptr> {  // TODO(correaa) make it private mutable member
-	mutable multi::array_ref<T, 0, Ptr> ref_;  // TODO(correaa) implement array_ptr like other cases
+	mutable multi::array_ref<T, 0, Ptr> ref_;                      // TODO(correaa) implement array_ptr like other cases
 
  public:
-	~array_ptr()                              = default;
+	~array_ptr() = default;
+
 	constexpr array_ptr(array_ptr const&)     = default;
 	constexpr array_ptr(array_ptr&&) noexcept = default;  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor) TODO(correaa) change the implementation like the other cases
 
 	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : ref_(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
 
-	constexpr explicit operator bool() const {return ref_.base();}
-	constexpr explicit operator Ptr () const {return ref_.base();}
+	constexpr explicit operator bool() const { return ref_.base(); }
+	constexpr explicit operator Ptr() const { return ref_.base(); }
 
-	auto operator=(array_ptr const&) -> array_ptr& = default;
-	auto operator=(array_ptr     &&) noexcept -> array_ptr& = default;
+	auto operator=(array_ptr const&) -> array_ptr&     = default;
+	auto operator=(array_ptr&&) noexcept -> array_ptr& = default;
 
-	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() == other.ref_.base();}
-	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool {return self.ref_.base() != other.ref_.base();}
+	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() == other.ref_.base(); }
+	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() != other.ref_.base(); }
 
-	constexpr auto operator* () const -> multi::array_ref<T, 0, Ptr>& { return  ref_; }  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
-	constexpr auto operator->() const -> multi::array_ref<T, 0, Ptr>* { return &ref_; }  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
+	constexpr auto operator*() const -> multi::array_ref<T, 0, Ptr>& { return ref_; }    // moLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
+	constexpr auto operator->() const -> multi::array_ref<T, 0, Ptr>* { return &ref_; }  // moLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
 };
 
 template<class TT, std::size_t N>
-constexpr auto addressof(TT(&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+constexpr auto addressof(TT (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	return array_ptr<
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-		std::decay_t<std::remove_all_extents_t<TT[N]>>, static_cast<dimensionality_type>(std::rank<TT[N]>{}), std::remove_all_extents_t<TT[N]>*
-	>{&array};
+		std::decay_t<std::remove_all_extents_t<TT[N]>>, static_cast<dimensionality_type>(std::rank<TT[N]>{}), std::remove_all_extents_t<TT[N]>*>{&array};
 }
 
 template<class T, dimensionality_type D, typename Ptr = T*>
-using array_cptr = array_ptr<T, D,  typename std::pointer_traits<Ptr>::template rebind<T const>>;
+using array_cptr = array_ptr<T, D, typename std::pointer_traits<Ptr>::template rebind<T const>>;
 
 template<dimensionality_type D, class P>
 constexpr auto make_array_ref(P data, multi::extensions_t<D> extensions) {
 	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(data, extensions);
 }
 
-template<class P> auto make_array_ref(P data, extensions_t<0> exts) {return make_array_ref<0>(data, exts);}
-template<class P> auto make_array_ref(P data, extensions_t<1> exts) {return make_array_ref<1>(data, exts);}
-template<class P> auto make_array_ref(P data, extensions_t<2> exts) {return make_array_ref<2>(data, exts);}
-template<class P> auto make_array_ref(P data, extensions_t<3> exts) {return make_array_ref<3>(data, exts);}
-template<class P> auto make_array_ref(P data, extensions_t<4> exts) {return make_array_ref<4>(data, exts);}
-template<class P> auto make_array_ref(P data, extensions_t<5> exts) {return make_array_ref<5>(data, exts);}
+template<class P> auto make_array_ref(P data, extensions_t<0> exts) { return make_array_ref<0>(data, exts); }
+template<class P> auto make_array_ref(P data, extensions_t<1> exts) { return make_array_ref<1>(data, exts); }
+template<class P> auto make_array_ref(P data, extensions_t<2> exts) { return make_array_ref<2>(data, exts); }
+template<class P> auto make_array_ref(P data, extensions_t<3> exts) { return make_array_ref<3>(data, exts); }
+template<class P> auto make_array_ref(P data, extensions_t<4> exts) { return make_array_ref<4>(data, exts); }
+template<class P> auto make_array_ref(P data, extensions_t<5> exts) { return make_array_ref<5>(data, exts); }
 
 #if defined(__cpp_deduction_guides)
 
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
-array_ptr(It)->array_ptr<V, 0, It>;
-
+array_ptr(It) -> array_ptr<V, 0, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
-array_ptr(It, index_extensions<0>)->array_ptr<V, 0, It>;
-
+array_ptr(It, index_extensions<0>) -> array_ptr<V, 0, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
-array_ptr(It, index_extensions<1>)->array_ptr<V, 1, It>;
+array_ptr(It, index_extensions<1>) -> array_ptr<V, 1, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
-array_ptr(It, index_extensions<2>)->array_ptr<V, 2, It>;
+array_ptr(It, index_extensions<2>) -> array_ptr<V, 2, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
-array_ptr(It, index_extensions<3>)->array_ptr<V, 3, It>;
+array_ptr(It, index_extensions<3>) -> array_ptr<V, 3, It>;
 
 template<
-	class T, std::size_t N,
+	class T,
+	std::size_t N,
 	typename V = std::remove_all_extents_t<T[N]>, std::size_t D = std::rank_v<T[N]>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
->
-array_ptr(T(*)[N])->array_ptr<V, static_cast<multi::dimensionality_type>(D)>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	>
+array_ptr(T (*)[N]) -> array_ptr<V, static_cast<multi::dimensionality_type>(D)>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 
 template<class Ptr> array_ref(Ptr, index_extensions<0>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 0, Ptr>;
 template<class Ptr> array_ref(Ptr, index_extensions<1>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
@@ -3767,7 +3764,7 @@ using array_view = array_ref<T, D, TPtr>&;
 // #define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
 
 namespace boost::multi {
-	constexpr inline int serialization_array_version = BOOST_MULTI_SERIALIZATION_ARRAY_VERSION;
+constexpr inline int serialization_array_version = BOOST_MULTI_SERIALIZATION_ARRAY_VERSION;
 }  // end namespace boost::multi
 #endif
 
