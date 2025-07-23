@@ -704,22 +704,14 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return *this;
 	}
 
-	// constexpr explicit operator subarray<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
-	// return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
-	// }
-
 	template<class Archive>
-	void serialize(Archive& arxiv, unsigned int const version) {
-		ref::serialize(arxiv, version);
-	}
+	void serialize(Archive& arxiv, unsigned int const version) { ref::serialize(arxiv, version); }
 
  private:
-	void swap_(static_array& other) noexcept { operator()().swap(other()); assert(this->stride() != 0);}
+	void swap_(static_array& other) noexcept { operator()().swap(other()); }
 
  public:
-	friend void swap(static_array& lhs, static_array& rhs) noexcept {
-		lhs.swap_(rhs);
-	}
+	friend void swap(static_array& lhs, static_array& rhs) noexcept { lhs.swap_(rhs); }
 };
 
 #if defined(__clang__)
@@ -730,8 +722,7 @@ template<typename T, class Alloc>
 struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
 : protected detail::array_allocator<Alloc>
 , public array_ref<T, 0, typename multi::allocator_traits<typename detail::array_allocator<Alloc>::allocator_type>::pointer> {
-	static_assert(std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, typename static_array::element_type>,
-	              "allocator value type must match array value type");
+	static_assert(std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, typename static_array::element_type>, "allocator value type must match array value type");
 
  private:
 	using array_alloc = detail::array_allocator<Alloc>;
