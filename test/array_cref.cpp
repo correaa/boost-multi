@@ -20,7 +20,6 @@ namespace multi = boost::multi;
 #include <boost/core/lightweight_test.hpp>
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	// BOOST_AUTO_TEST_CASE(array_cref) {
 	{
 		using complex = std::complex<double>;
