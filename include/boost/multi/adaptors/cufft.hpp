@@ -95,7 +95,7 @@ class plan {
 	std::array<std::pair<bool, fftw_iodim64>, DD + 1> which_iodims_{};
 	int first_howmany_{};
 
-	mutable bool used_ = false;
+	// mutable bool used_ = false;
 	
 	using complex_type = cufftDoubleComplex;
 
@@ -296,7 +296,7 @@ class plan {
 
 	template<typename = void>
 	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const {
-		used_ = true;
+		// used_ = true;
 		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
 		// cudaDeviceSynchronize();
 	}
@@ -309,7 +309,7 @@ class plan {
 		reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata))
 	))
 	{  // TODO(correaa) make const
-		used_ = true;
+		// used_ = true;
 		if(first_howmany_ == DD) {
 			ExecZ2Z_(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)), reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata)), direction);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) wrap a legacy interface
 			return;
@@ -356,12 +356,12 @@ class plan {
 
 	template<class IPtr, class OPtr>
 	void operator()(IPtr idata, OPtr odata, int direction) const {
-		used_ = true;
+		// used_ = true;
 		ExecZ2Z_(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)), reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata)), direction);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 	}
 	template<class I, class O>
 	auto execute_dft(I&& in, O&& out, int direction) const -> O&& {
-		used_ = true;
+		// used_ = true;
 		ExecZ2Z_(
 			const_cast<complex_type*>(reinterpret_cast<complex_type const*>(base(in ))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) legay interface
 			const_cast<complex_type*>(reinterpret_cast<complex_type const*>(base(out))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) legay interface
@@ -375,10 +375,10 @@ class plan {
 			if(workSize_ > 0) {alloc_.deallocate(typename std::allocator_traits<Alloc>::pointer(reinterpret_cast<char*>(workArea_)), workSize_);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 		}
 		if(h_ != 0) {cufftSafeCall(cufftDestroy(h_));}
-		if(!used_) {
-			std::cerr <<"Warning: cufft plan was never used\n";
-			std::terminate();
-		}
+		// if(!used_) {
+		//  std::cerr <<"Warning: cufft plan was never used\n";
+		//  std::terminate();
+		// }
 	}
 	using size_type = int;
 	using ssize_type = int;
