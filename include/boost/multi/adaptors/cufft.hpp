@@ -132,7 +132,7 @@ class plan {
 		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>
 	>
 	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out, allocator_type const& alloc) : alloc_{alloc} {
-		used_ = false;
+		// used_ = false;
 		assert(in.sizes() == out.sizes());
 
 		auto const sizes_tuple   = in.sizes();
