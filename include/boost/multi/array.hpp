@@ -756,9 +756,9 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		}
 	}
 
-	template<class Singleton,
-	         std::enable_if_t<!std::is_base_of_v<static_array, Singleton> && !std::is_same_v<Singleton, typename static_array::element_type>, int> = 0,
-	         class                                                                                                                                 = decltype(adl_copy_n(&std::declval<Singleton>(), 1, typename static_array::element_ptr{}))>
+	template<
+		class Singleton, std::enable_if_t<!std::is_base_of_v<static_array, Singleton> && !std::is_same_v<Singleton, typename static_array::element_type>, int> = 0,
+		class = decltype(adl_copy_n(&std::declval<Singleton>(), 1, typename static_array::element_ptr{}))>
 	auto operator=(Singleton const& single) -> static_array& {
 		assign(&single);
 		return *this;
@@ -769,21 +769,22 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	using ref          = array_ref<T, 0, typename multi::allocator_traits<typename multi::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
 	auto uninitialized_value_construct() {
-		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 			return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 		}
 	}
 
 	template<typename It> auto uninitialized_copy(It first) {
-	#if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+#if defined(__clang__) && defined(__CUDACC__)
+		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(this->alloc(), this->data_elements(), this->num_elements());
 		}
-		return adl_copy                      (               first, this->num_elements(), this->data_elements());
-	#else
+		return adl_copy(first, this->num_elements(), this->data_elements());
+#else
 		return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());
-	#endif
+#endif
 	}
+
 	template<typename It>
 	auto uninitialized_move(It first) {
 		return adl_alloc_uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data_elements());
@@ -813,15 +814,13 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		typename static_array::extensions_type const& extensions,
 		typename static_array::element const& elem, allocator_type const& alloc
 	)
-	: array_alloc{ alloc },
-	  ref(
-		  static_array::allocate(
+	: array_alloc{alloc},
+	  ref(static_array::allocate(
 			  static_cast<typename multi::allocator_traits<allocator_type>::size_type>(
-				typename static_array::layout_t{ extensions }.num_elements()
-			)
+				  typename static_array::layout_t{extensions}.num_elements()
+			  )
 		  ),
-		  extensions
-	  ) {
+		  extensions) {
 		uninitialized_fill(elem);
 	}
 
@@ -833,28 +832,28 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	: array_alloc{alloc}, ref(static_array::allocate(other.num_elements()), extensions(other)) {
 		assert(other.num_elements() <= 1);
 		if(other.num_elements()) {
-			#if defined(__clang__) && defined(__CUDACC__)
-			if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+#if defined(__clang__) && defined(__CUDACC__)
+			if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 				adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
 			}
-			adl_copy                    (                       other.base(), other.base() + other.num_elements(), this->base());
-			#else
+			adl_copy(other.base(), other.base() + other.num_elements(), this->base());
+#else
 			adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + other.num_elements(), this->base());
-			#endif
+#endif
 		}
 	}
 
 	template<class TT, class... Args>
 	explicit static_array(multi::static_array<TT, 0, Args...> const& other, allocator_type const& alloc)  // TODO(correaa) : call other constructor (above)
 	: array_alloc{alloc}, ref(static_array::allocate(other.num_elements()), extensions(other)) {
-		#if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(! std::is_trivially_default_constructible_v<typename static_array::element_type> && ! multi::force_element_trivial_default_construction<typename static_array::element_type> ) {
+#if defined(__clang__) && defined(__CUDACC__)
+		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
 		}
-		adl_copy_n                    (                       other.data_elements(), other.num_elements(), this->data_elements());
-		#else
+		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+#else
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
-		#endif
+#endif
 	}
 
 	template<class TT, class... Args>
@@ -877,7 +876,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 
 	static_array(
 		typename static_array::extensions_type const& extensions,
-		typename static_array::element_type const&         elem
+		typename static_array::element_type const&    elem
 	)  // 2
 	: array_alloc{}, ref(static_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions) {
 		uninitialized_fill(elem);
