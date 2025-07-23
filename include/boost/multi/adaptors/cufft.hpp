@@ -13,7 +13,9 @@
 #include <array>
 #include <cstddef>
 #include <map>
+#include <stdexcept>
 #include <tuple>
+#include <type_traits>
 
 #include<thrust/memory.h>  // for raw_pointer_cast
 
@@ -92,27 +94,45 @@ class plan {
 	cufftHandle h_{};  // TODO(correaa) put this in a unique_ptr
 	std::array<std::pair<bool, fftw_iodim64>, DD + 1> which_iodims_{};
 	int first_howmany_{};
+
+	mutable bool used_ = false;
 	
 	using complex_type = cufftDoubleComplex;
 
-	public:
+ public:
 	using allocator_type = Alloc;
 
-	plan(plan&& other) noexcept :
-		alloc_{std::move(other.alloc_)},
-		workSize_{std::exchange(other.workSize_, {})},
-		workArea_{std::exchange(other.workArea_, {})},
-		h_{std::exchange(other.h_, {})},
-		which_iodims_{std::exchange(other.which_iodims_, {})},
-		first_howmany_{std::exchange(other.first_howmany_, {})}
-	{}
+	template<
+		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
+		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>
+	>
+	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out) : plan(which, in, out, allocator_type{}) {}
+
+	plan() = delete;
+	plan(plan const&) = delete;
+
+	plan(plan&&) noexcept = delete;
+	// plan(plan&& other) noexcept :
+	//  alloc_{std::move(other.alloc_)},
+	//  workSize_{std::exchange(other.workSize_, {})},
+	//  workArea_{std::exchange(other.workArea_, {})},
+	//  h_{std::exchange(other.h_, {})},
+	//  which_iodims_{std::exchange(other.which_iodims_, {})},
+	//  first_howmany_{std::exchange(other.first_howmany_, {})}
+	// {
+	//  other.used_ = true; // moved-from object cannot be used
+	//  used_ = false;
+	// }
+
+	auto operator=(plan const&) = delete;
+	auto operator=(plan&&) = delete;
 
 	template<
 		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
 		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>
 	>
 	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out, allocator_type const& alloc) : alloc_{alloc} {
-
+		used_ = false;
 		assert(in.sizes() == out.sizes());
 
 		auto const sizes_tuple   = in.sizes();
@@ -272,34 +292,24 @@ class plan {
 		// throw std::runtime_error{"cufft not implemented yet"};
 	}
 
-	template<
-		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
-		class=std::enable_if_t<D == std::decay_t<OLayout>::rank::value>
-	>
-	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out) : plan(which, in, out, allocator_type{}) {}
-
-	plan() = default;
-	plan(plan const&) = delete;
-
-	auto operator=(plan const&) = delete;
-	auto operator=(plan&&) = delete;
-
  private:
 
 	template<typename = void>
-	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const{
+	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const {
+		used_ = true;
 		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
 		// cudaDeviceSynchronize();
 	}
 
  public:
 	template<class IPtr, class OPtr>
-	auto execute(IPtr idata, OPtr odata, int direction)
+	auto execute(IPtr idata, OPtr odata, int direction) const
 	-> decltype((void)(
 		reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)),
 		reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata))
 	))
 	{  // TODO(correaa) make const
+		used_ = true;
 		if(first_howmany_ == DD) {
 			ExecZ2Z_(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)), reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata)), direction);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) wrap a legacy interface
 			return;
@@ -346,10 +356,12 @@ class plan {
 
 	template<class IPtr, class OPtr>
 	void operator()(IPtr idata, OPtr odata, int direction) const {
+		used_ = true;
 		ExecZ2Z_(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata)), reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata)), direction);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 	}
 	template<class I, class O>
 	auto execute_dft(I&& in, O&& out, int direction) const -> O&& {
+		used_ = true;
 		ExecZ2Z_(
 			const_cast<complex_type*>(reinterpret_cast<complex_type const*>(base(in ))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) legay interface
 			const_cast<complex_type*>(reinterpret_cast<complex_type const*>(base(out))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) legay interface
@@ -363,6 +375,10 @@ class plan {
 			if(workSize_ > 0) {alloc_.deallocate(typename std::allocator_traits<Alloc>::pointer(reinterpret_cast<char*>(workArea_)), workSize_);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 		}
 		if(h_ != 0) {cufftSafeCall(cufftDestroy(h_));}
+		if(!used_) {
+			std::cerr <<"Warning: cufft plan was never used\n";
+			std::terminate();
+		}
 	}
 	using size_type = int;
 	using ssize_type = int;
@@ -382,7 +398,7 @@ class cached_plan {
 	~cached_plan() = default;
 
 	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::size_type> in, boost::multi::layout_t<D, boost::multi::size_type> out, Alloc const& alloc = {}) {  // NOLINT(fuchsia-default-arguments-declarations)
-		static thread_local std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >;
+		thread_local std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc> >;
 		it_ = LEAKY_cache.find(std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>{which, in, out});
 		if(it_ == LEAKY_cache.end()) {it_ = LEAKY_cache.insert(std::make_pair(std::make_tuple(which, in, out), plan<D, Alloc>(which, in, out, alloc))).first;}
 	}
