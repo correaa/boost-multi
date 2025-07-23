@@ -3219,23 +3219,23 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		};
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const> >
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
 	constexpr auto reinterpret_array_cast(size_type n) const& -> subarray<std::decay_t<T2>, 2, P2> {  // TODO(correaa) : use rebind for return type
-		static_assert( sizeof(T)%sizeof(T2)== 0,
-			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
+		static_assert(sizeof(T) % sizeof(T2) == 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
 		return subarray<std::decay_t<T2>, 2, P2>{
 			layout_t<2>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n},
 			reinterpret_pointer_cast<P2>(this->base())
-		}.rotated();
+		}
+			.rotated();
 	}
 
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](reference& item) {arxiv & AT    ::make_nvp("item", item);});
-	//  std::for_each(this->begin(), this->end(), [&](auto&&     item) {arxiv & cereal::make_nvp("item", item);});
-	//  std::for_each(this->begin(), this->end(), [&](auto&&     item) {arxiv &                          item ;});
+		std::for_each(this->begin(), this->end(), [&](reference& item) { arxiv& AT ::make_nvp("item", item); });
+		//  std::for_each(this->begin(), this->end(), [&](auto&&     item) {arxiv & cereal::make_nvp("item", item);});
+		//  std::for_each(this->begin(), this->end(), [&](auto&&     item) {arxiv &                          item ;});
 	}
 };
 
@@ -3253,16 +3253,15 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = 
-	std::conditional_t<
-		(D == 1),
-		// contiguous_layout<>,  // 1, typename std::pointer_traits<ElementPtr>::difference_type>,
-		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
-		multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
-	>
->
-class array_ref : public subarray<T, D, ElementPtr, Layout>
-{
+template<
+	typename T, dimensionality_type D, typename ElementPtr = T*,
+	class Layout =
+		std::conditional_t<
+			(D == 1),
+			// contiguous_layout<>,  // 1, typename std::pointer_traits<ElementPtr>::difference_type>,
+			multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+			multi::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>>
+class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	using subarray_layout = Layout;
 
 	using subarray_base = subarray<T, D, ElementPtr, Layout>;
@@ -3271,39 +3270,32 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
 	using layout_type = typename subarray_base::layout_t;
-	using iterator = typename subarray_base::iterator;
+	using iterator    = typename subarray_base::iterator;
 
 	constexpr array_ref() = delete;  // because reference cannot be unbound
+
+	// [[deprecated("references are not copyable, use auto&&")]]
+	array_ref(array_ref const&) = delete;  // don't try to use `auto` for references, use `auto&&` or explicit value type
+	array_ref(array_ref&&) = delete;
 
 	array_ref(iterator, iterator) = delete;
 
 	// return type removed for MSVC
-	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ {return self.sizes();}  // needed by nvcc
-	friend constexpr auto size (array_ref const& self) noexcept /*-> typename array_ref::size_type*/  {return self.size ();}  // needed by nvcc
+	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
+	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
-	// [[deprecated("references are not copyable, use auto&&")]]
-	array_ref(array_ref const&) = delete;  // default;  // don't try to use `auto` for references, use `auto&&` or explicit value type
+#if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
+	template<class Tconst = const typename array_ref::element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	constexpr explicit operator std::span<Tconst>() const& { return std::span<Tconst>(this->data_elements(), this->size()); }
+#endif
 
-	// #if defined(__NVCC__)
-	// array_ref(array_ref&&) noexcept = default;  // this needs to be public in nvcc c++17
-	// #else
-	array_ref(array_ref&&) = delete;
-	// #endif
-
-	#if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
-	template<class Tconst = const typename array_ref::element_type,
-		std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> && (D == 1), int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa)
-	>
-	constexpr explicit operator std::span<Tconst>() const& {return std::span<Tconst>(this->data_elements(), this->size());}
-	#endif
-
-	template<class OtherPtr, class=std::enable_if_t<! std::is_same_v<OtherPtr, ElementPtr> >, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
+	template<class OtherPtr, class = std::enable_if_t<!std::is_same_v<OtherPtr, ElementPtr>>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // cppcheck-suppress internalAstError ; bug in cppcheck 2.13.0
 
-	template<class OtherPtr, class=std::enable_if_t<! std::is_same_v<OtherPtr, ElementPtr> >, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
+	template<class OtherPtr, class = std::enable_if_t<!std::is_same_v<OtherPtr, ElementPtr>>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	constexpr /*mplct*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,bugprone-use-after-move,hicpp-invalid-access-moved)
+	constexpr /*mplct*/ array_ref(array_ref<T, D, OtherPtr>&& other)         // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,bugprone-use-after-move,hicpp-invalid-access-moved)
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
@@ -3316,40 +3308,39 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	template<
 		class Array,
 		std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
-			   ! std::is_array_v<Array>
-			&& ! std::is_base_of_v<array_ref, std::decay_t<Array> >
-			&&   std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> =0>
+			!std::is_array_v<Array> && !std::is_base_of_v<array_ref, std::decay_t<Array>> && std::is_convertible_v<decltype(multi::data_elements(std::declval<Array&>())), ElementPtr>, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
 	constexpr array_ref(Array& array)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
 	: array_ref(multi::data_elements(array), extensions(array)) {}
 	// NOLINTEND(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-	template<class TT = void, std::enable_if_t<sizeof(TT*) && D == 0, int> =0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	template<class TT = void, std::enable_if_t<sizeof(TT*) && D == 0, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
 	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
-		T& elem // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+		T& elem           // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	)
 	: array_ref(&elem, {}) {}
 
 	template<class TT, std::size_t N>
 	constexpr array_ref(TT (&arr)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-explicit-constructor,hicpp-explicit-conversions) : for backward compatibility // NOSONAR
 	: array_ref(
-		::boost::multi::extensions(arr),
-		::boost::multi::data_elements(arr)
-	)
-	{}
+		  ::boost::multi::extensions(arr),
+		  ::boost::multi::data_elements(arr)
+	  ) {}
 
-	template<
-		class TT, std::size_t N//,
-		//std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT(&)[N]>())), ElementPtr>, int> =0  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays
-	>
+	template<class TT, std::size_t N>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	constexpr array_ref(std::array<TT, N>& arr) : array_ref(::boost::multi::extensions(arr), ::boost::multi::data_elements(arr)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  // NOSONAR
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
-	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
-	array_ref(std::initializer_list<TT> il) : array_ref((il.size()==0)?nullptr:il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
+	array_ref(std::initializer_list<TT> il)
+	: array_ref(
+		  (il.size() == 0) ? nullptr
+						   : il.begin(),  // TODO(correaa) simplify conditional by still using a il pointer in empty case?
+		  typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}
+	  ) {}
 
 	using subarray_base::operator=;
 
@@ -3361,7 +3352,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
  public:
 	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(array_ref::base_); }
 
-	template<class TT, class... As, std::enable_if_t<! std::is_base_of_v<array_ref, array_ref<TT, D, As...>> ,int> =0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	template<class TT, class... As, std::enable_if_t<!std::is_base_of_v<array_ref, array_ref<TT, D, As...>>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {
 		BOOST_MULTI_ASSERT(this->extensions() == other.extensions());
 		array_ref::copy_elements_(other.data_elements());
@@ -3369,7 +3360,9 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	}
 
 	constexpr auto operator=(array_ref const& other) & -> array_ref& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {
+			return *this;
+		}  // lints(cert-oop54-cpp)
 		// TODO(correaa) assert on extensions, not on num elements
 		BOOST_MULTI_ASSERT(this->num_elements() == other.num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		array_ref::copy_elements_(other.data_elements());
@@ -3377,27 +3370,34 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	}
 
 	constexpr auto operator=(array_ref const& other) && -> array_ref& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {
+			return *this;
+		}  // lints(cert-oop54-cpp)
 		operator=(other);
 		return *this;
 	}
 
-	constexpr auto operator=(array_ref&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations)  //NOSONAR(cppS5018)
-	-> array_ref& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+	constexpr auto operator=(array_ref&& other) & noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations)  //NOSONAR(cppS5018)
+		-> array_ref& {
+		if(this == std::addressof(other)) {
+			return *this;
+		}  // lints(cert-oop54-cpp)
 		operator=(std::as_const(other));
 		return *this;
 	}
-	constexpr auto operator=(array_ref&& other) && noexcept(std::is_nothrow_copy_assignable_v<T>) // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations)
-	-> array_ref& {
-		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+
+	constexpr auto operator=(array_ref&& other) && noexcept(std::is_nothrow_copy_assignable_v<T>)  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor,cppcoreguidelines-noexcept-move-operations)
+		-> array_ref& {
+		if(this == std::addressof(other)) {
+			return *this;
+		}  // lints(cert-oop54-cpp)
 		operator=(std::as_const(other));
 		return *this;
 	}
 
 	template<typename TT, dimensionality_type DD = D, class... As>
-	auto operator=(array_ref<TT, DD, As...> const& other)& -> array_ref& {
-		BOOST_MULTI_ASSERT( this->extensions() == other.extensions() );
+	auto operator=(array_ref<TT, DD, As...> const& other) & -> array_ref& {
+		BOOST_MULTI_ASSERT(this->extensions() == other.extensions());
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
@@ -3408,7 +3408,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 		return *this;  // lints (cppcoreguidelines-c-copy-assignment-signature)
 	}
 
-	using  elements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr      >;
+	using elements_type  = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>;
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
  private:
@@ -3420,79 +3420,71 @@ class array_ref : public subarray<T, D, ElementPtr, Layout>
 	}
 
  public:
-	       constexpr auto  elements()        const&       -> celements_type {return elements_aux_();}
-	       constexpr auto  elements()             &       ->  elements_type {return elements_aux_();}
-	       constexpr auto  elements()            &&       ->  elements_type {return elements_aux_();}
+	constexpr auto elements() const& -> celements_type { return elements_aux_(); }
+	constexpr auto elements() & -> elements_type { return elements_aux_(); }
+	constexpr auto elements() && -> elements_type { return elements_aux_(); }
 
-	friend constexpr auto elements(array_ref      & self) ->  elements_type {return           self . elements();}
-	friend constexpr auto elements(array_ref     && self) ->  elements_type {return std::move(self). elements();}
-	friend constexpr auto elements(array_ref const& self) -> celements_type {return           self . elements();}
+	friend constexpr auto elements(array_ref& self) -> elements_type { return self.elements(); }
+	friend constexpr auto elements(array_ref&& self) -> elements_type { return std::move(self).elements(); }
+	friend constexpr auto elements(array_ref const& self) -> celements_type { return self.elements(); }
 
-	       constexpr auto celements()         const&       {return celements_type{array_ref::data_elements(), array_ref::num_elements()};}
-	friend constexpr auto celements(array_ref const& self) {return self.celements();}
+	constexpr auto celements() const& { return celements_type{array_ref::data_elements(), array_ref::num_elements()}; }
+	// friend constexpr auto celements(array_ref const& self) { return self.celements(); }
 
-	constexpr auto element_moved()  & { return array_ref<T, D, typename array_ref::element_move_ptr, Layout>(this->extensions(), typename array_ref::element_move_ptr{this->base_}); }
+	constexpr auto element_moved() & { return array_ref<T, D, typename array_ref::element_move_ptr, Layout>(this->extensions(), typename array_ref::element_move_ptr{this->base_}); }
 	constexpr auto element_moved() && { return element_moved(); }
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"  // TODO(correaa) pull this option
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"     // TODO(correaa) use checked span
+#endif
 
 	template<typename TT, class... As>
 	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
-		if(self.extensions() != other.extensions()) { return false; }
-
-		#if defined(__clang__)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wunknown-warning-option"
-		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-		#endif
-
+		if(self.extensions() != other.extensions()) {
+			return false;
+		}
 		return adl_equal(
 			other.data_elements(), other.data_elements() + other.num_elements(),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) use span?
-			self .data_elements()
+			self.data_elements()
 		);
-
-		#if defined(__clang__)
-		#pragma clang diagnostic pop
-		#endif
-
 	}
-
-	#if defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wunknown-warning-option"
-	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-	#endif
 
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
-		if(self.extensions() != other.extensions()) { return true; }
+		if(self.extensions() != other.extensions()) {
+			return true;
+		}
 		return !adl_equal(
 			other.data_elements(), other.data_elements() + other.num_elements(),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) use span?
-			self .data_elements()
+			self.data_elements()
 		);
 		// return ! operator==(self, other);  // commented due to bug in nvcc 22.11
 	}
 
-	#if defined(__clang__)
-	#pragma clang diagnostic pop
-	#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
-	BOOST_MULTI_HD constexpr auto data_elements() &      -> typename array_ref::element_ptr       { return array_ref::base_; }
-	BOOST_MULTI_HD constexpr auto data_elements() &&     -> typename array_ref::element_ptr       { return array_ref::base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() & -> typename array_ref::element_ptr { return array_ref::base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() && -> typename array_ref::element_ptr { return array_ref::base_; }
 
-	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
+	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
 
 	// data() is here for compatibility with std::vector
 	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() const& { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data()     && { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data()      & { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) TODO(correaa)
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
-	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr { return           self .data_elements(); }
-	friend constexpr auto data(array_ref      & self) -> typename array_ref::element_ptr { return           self .data_elements(); }
-	friend constexpr auto data(array_ref     && self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
+	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr { return self.data_elements(); }
+	friend constexpr auto data(array_ref& self) -> typename array_ref::element_ptr { return self.data_elements(); }
+	friend constexpr auto data(array_ref&& self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
 
 	using decay_type = typename array_ref::decay_type;
 
-	constexpr auto        decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }
+	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }
 
  private:
 	template<class TTN, std::size_t DD = 0>
