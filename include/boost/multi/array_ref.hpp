@@ -2702,10 +2702,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	// void operator delete(void* ptr, void* place ) noexcept = delete;  // NOLINT(bugprone-easily-swappable-parameters)
 
 	static constexpr dimensionality_type rank_v = 1;
-	using rank                                  = std::integral_constant<dimensionality_type, rank_v>;
 
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
+
+	using rank        = std::integral_constant<dimensionality_type, rank_v>;
 	using layout_type = Layout;
 	using ref_        = const_subarray;
 
