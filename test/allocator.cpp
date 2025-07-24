@@ -354,7 +354,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto* pp = sa.allocate(10);
 
-		new (std::next(pp, 8)) T{42};
+		new(std::next(pp, 8)) T{42};
 
 		BOOST_TEST( *std::next(pp, 8) == 42 );
 		// (pp + 8)->~double();
