@@ -718,8 +718,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 2> arr = {
 			{1, 2},
-			{3, 4}
-        };
+			{3, 4},
+		};
 		auto const* arr_base = arr.base();
 
 		multi::array<double, 2> brr = std::move(arr);
