@@ -16,7 +16,7 @@
 
 namespace multi = boost::multi;
 
-#if(__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L)
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 
 template<class X1D, class Y1D>
@@ -28,7 +28,8 @@ template<class X1D, class Y1D>
 auto meshgrid_copy(X1D const& x, Y1D const& y) {
 	auto ret = std::pair{
 		multi::array<typename X1D::element_type, 2>({x.size(), y.size()}),
-		multi::array<typename Y1D::element_type, 2>(std::views::repeat(y, x.size()))};
+		multi::array<typename Y1D::element_type, 2>(std::views::repeat(y, x.size()))
+	};
 
 	std::fill(ret.first.rotated().begin(), ret.first.rotated().end(), x);
 	// std::ranges::fill(ret.first.rotated(), x);
@@ -326,7 +327,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &G3D[0][0][0] == &G2D[0][0] );
 	}
 
-#if(__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L)
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 #if !defined(__GNUC__) || (__GNUC__ < 14)
 	// BOOST_AUTO_TEST_CASE(matlab_meshgrid)
