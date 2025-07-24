@@ -1,0 +1,65 @@
+name: Build and Deploy Docs
+
+on:
+  push:
+    branches: ["master"]  # main Trigger on push to the main branch
+  workflow_dispatch:  # Allow manual runs
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby (for Asciidoctor)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Install Asciidoctor
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+
+      - name: Install Boost Build (b2)
+        run: |
+          pandoc --version
+          asciidoctor --version
+
+      - name: Build Docs with b2
+        run: |
+          mkdir .public
+          cd doc
+          asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
+          cd ..
+          cp -r doc/multi.html .public
+          cp -r doc/multi.html .public/index.html
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .public  # e.g. bin.v2/libs/foo/doc/html or similar
+
+  deploy-docs:
+    needs: build-docs
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

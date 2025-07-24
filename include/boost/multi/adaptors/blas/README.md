@@ -3,7 +3,7 @@
 -->
 # Multi BLAS Adaptor
 
-_© Alfredo A. Correa, 2018-2024_
+_© Alfredo A. Correa, 2018-2025_
 
 (documentation in progress)
 
@@ -80,6 +80,12 @@ The main difference with other BLAS adaptors is that this library aims to offer 
 
 Just as with BLAS, the library supports element of real (`double` and `float`) and complex (`std::complex<double>` and `std::complex<float>`) types.
 Other types that are semantically equivalent and binary-compatible (such as `thrust::complex`) also work directly.
+
+## GPU (cublas/hipblas)
+
+The library can be used with both CPU and GPU arrays, the interface is the same.
+Calls to BLAS function on array with GPU pointer types or allocated with `cuda::allocator` or `cuda::universal_allocator` will use cuBLAS automatically. 
+(https://godbolt.org/z/xeTM3ncnc)
 
 ## View manipulators
 
@@ -268,7 +274,7 @@ Again, we use `multi::array<T, 1>` as representative of a vector, but a one-dime
 `multi::array<T, 2>` as representative of a matrices, but a two-dimensional subarray or larger of higher dimensional arrays can be used as long as one of the two interternal strides in 1.
 This is limitation of BLAS, that only acts on certain layouts of 2D arrays.
 
-### `auto multi::blas::gemv(`_complex/real scalar_ `,` _complex/real matrix_`) -> `_convertible to complex/real vector_
+### `auto multi::blas::gemv(`_complex/real scalar_`,` _complex/real matrix_`) -> `_convertible to complex/real vector_`
 
 ```cpp
 multi::array<double, 2> const A({4, 3});
@@ -277,6 +283,7 @@ multi::array<double, 1> const x = {1.0, 2.0, 3.0, 4.0};
 
 y = blas::gemv(5.0, A, x);  // y <-  5.0 A * x
 ```
+[(live)](https://godbolt.org/z/jcrEzba8v)
 
 The gemv expression can be used for addition and subtraction,
 
@@ -285,7 +292,9 @@ y += blas::gemv(1.0, A, x);  // y <-  + A * x + y
 y -= blas::gemv(1.0, A, x);  // y <-  - A * x + y
 ```
 
-### GEMM
+## BLAS level 3
+
+### `auto multi::blas::gemm(`_complex/real scalar_`, `_complex/real_ matrix`, `_complex/real_ matrix`) -> `_convertible to complex/real matrix_`
 
 ```cpp
 #include<multi/array.hpp>
@@ -294,16 +303,40 @@ y -= blas::gemv(1.0, A, x);  // y <-  - A * x + y
 namespace multi = boost::multi;
 
 int main() {
- multi::array<double, 2> const A({2, 2});
- multi::array<double, 2> const B({2, 2});
+  multi::array<double, 2> const A({2, 2});
+  multi::array<double, 2> const B({2, 2});
 
- multi::array<double, 2> const C1 = multi::blas::gemm(1.0, A, B);
-    auto const C2 = + multi::blas::gemm(1.0, A, B);
+  multi::array<double, 2> const C1 = multi::blas::gemm(1.0, A, B);
+   auto const C2 = + multi::blas::gemm(1.0, A, B);
 }
 ```
-https://godbolt.org/z/d1E7donWM
+[(live)](https://godbolt.org/z/P9qWrW1br)
 
-(need linking to BLAS to work, e.g. `-lblas` or `-lopenblas` or `-lmkl`)
+(needs linking to BLAS to work, e.g. `-lblas` or `-lopenblas` or `-lmkl`, or throught [CMake](https://godbolt.org/z/jdbEe59ej))
+
+### `auto multi::blas::herk(`_complex/real scalar_`, `_complex/real_ matrix`) -> `_convertible to complex/real matrix_`
+
+```cpp
+#include <boost/multi/adaptors/blas/herk.hpp>
+
+namespace multi = boost::multi;
+namespace blas = multi::blas;
+
+int main() {
+    using complex  = std::complex<double>;
+    auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
+    multi::array<complex, 2> const A = {
+        {1.0 + 3.0 * I, 3.0 - 2.0 * I, 4.0 + 1.0 * I},
+        {9.0 + 1.0 * I, 7.0 - 8.0 * I, 1.0 - 3.0 * I},
+    };
+
+    multi::array<complex, 2> const C = blas::herk(1.0, A);
+
+    assert( +blas::gemm(1.0, A, blas::H(A)) == C );
+}
+```
+[(live)](https://godbolt.org/z/71P5xT6qx)
 
 ## Table of features
 
@@ -317,44 +350,44 @@ vector operations: `C` (`*`) conjugation (element-wise) \
 matrix operations: `J` (`*`) conjugation (element-wise) (use `C` for vectors), `T` transpose, `H` transpose conjugate (also `C`, discouraged), `U`/`L` upper or lower triangular part (logical zeroing other side)
 
 
-| BLAS   | mutable form           | effect                        | operator form [³]        | functional form | thrust/STL [¹] |
-|---     |---                     | ---                           | ---                  | ---             | --- |
-| SWAP   |`blas::swap(x, y)`      | $x_i \leftrightarrow y_i$ | `(x^y)` |    | `swap_ranges(begin(x), end(x), begin(y))` |
-| COPY   |`blas::copy(x, y)`      | $`y_i \leftarrow x_i`$ | `y << x` |  `y = blas::copy(x)` | `copy(begin(x), end(x), begin(y))` |
-| ASUM   |`blas::asum(x, res)`    | $`r \leftarrow \sum_i \|\Re x_i\| + \|\Im x_i\|`$ | `x==0`/`x!=0` `isinf(x)` `is an(x)`[²] | `res = blas::asum(x)` | `transform_reduce(begin(x), end(x), 0.0, plus<>{}, [](auto const& e){return abs(e.real()) + abs(e.imag());})` |
-| NRM2   |`blas::nrm2(x, res)`     | $`r \leftarrow \sqrt{\sum_i \|x_i\|^2}`$ | `abs(x)` | `res = blas::nrm2(x);` | `sqrt(trasnform_reduce(begin(x), end(x), 0.0, plus<>{}, [](auto const& e){return norm(e);}));` |
-| SCAL   |`blas::scal(aa, x);`    | $`x_i \leftarrow \alpha x_i`$ | `x*=aa;`           |                 | `for_each(begin(x), end(x), [aa](auto& e){return e*=aa;})` |
-| AXPY   |`blas::axpy(aa, x, y)`  | $`y_i \leftarrow \alpha x_i + y_i`$ | `y+=x` `y-=x` `y+=aa*x` `y-=aa*x` |     | `transform(x.begin(), x.end(), y.begin(), y.begin(), [aa](auto ex, auto ey) {return aa*ex + ey;}` |
-| DOT    | `blas::dot(x, y, res)` | $`r = \sum_i x_i y_i`$        | `res = (x, y);`       | `res = blas::dot(x, y)`                | `inner_product(begin(x), end(x), begin(y), T{});` |
-|        | `blas::dot(blas::C(x), y, res)` | $`r = \sum_i \bar x_i y_i`$ | `res = (*x, y);`  | `res = blas::dot(blas::C(x), y)`             | `inner_product(begin(x), end(x), begin(y), T{}, plus<>{}, [](T const& t1, T const& t2) {return conj(t1)*t2;});` |
-|        | `blas::dot(x, blas::C(y), res)` | $`r = \sum_i x_i \bar y_i`$ | `res = (x, *y);`  | `res = blas::dot(x, blas::C(y));`             | `inner_product(x.begin(), x.end(), y.begin(), T{}, plus<>{}, [](T const& t1, T const& t2) {return t1*conj(t2);});` |
-|        | ~~`blas::dot(blas::C(x), blas::C(y), res)`~~ | $`r = \sum_i \bar x_i \bar y_i`$ not implemented in BLAS, conjugate result |  | | `auto res = conj(inner_product(x.begin(), x.end(), y.begin(), T{});` |
-| GEMV   | `blas::gemv(aa, A, x, bb, y)` | $`y_i \leftarrow \alpha\sum_j A_{ij}x_j + \beta y_i`$ | `y=A%x` `y=aa*A%x` `y+=A%x` `y+=aa*A%x`[¤] | `y=blas::gemv(aa, A, x)` `y+=blas::gemv(aa, A, x)`  | `transform(begin(A), end(A), begin(y), [&x, aa] (auto const& Ac) {return aa*blas::dot(Ac, x);})` |
-|        | `blas::gemv(aa, blas::T(A), x, bb, y)` | $`y_i \leftarrow \alpha\sum_j A_{ji}x_j + \beta y_i`$ | `y= ~A % x` `y=aa*(~A)%x` `y+=(~A)%x` `y+=aa*(~A)%x` | `y=blas::gemv(aa, blas::T(A), x)` `y+=blas::gemv(aa, blas::T(A), x)`  | `transform(begin(transposed(A)), end(transposed(A)), begin(y), [&x, aa] (auto const& Ac) {return aa*blas::dot(Ac, x);})` |
-|        | `blas::gemv(aa, blas::J(A), x, bb, y)` | $`y_i \leftarrow \alpha\sum_j A_{ij}^*x_j + \beta y_i`$ | `y= *A % x` `y=aa*(*A)%x` `y+=(*A)%x` `y+=aa*(*A)%x` | `y=blas::gemv(aa, blas::J(A), x)` `y+=blas::gemv(aa, blas::J(A), x)`  | `transform(begin(A), end(A), begin(y), [&x, aa] (auto const& Ac) {return aa*blas::dot(*Ac, x);})` |
-|        | ~~`blas::gemv(aa, blas::H(A), x, bb, y)`~~ | $`y_i \leftarrow \alpha\sum_j A_{ji}^*x_j + \beta y_i`$ (not BLAS-implemented)|    |   | `transform(begin(transposed(A)), end(transposed(A)), begin(y), [&x, aa] (auto const& Ac) {return aa*blas::dot(*Ac, x);})` |
-| GEMM | `blas::gemm(aa, A, B, bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k A_{ik} B_{kj} + \beta C_{ij}`$ | `C = aa*(A*B)` | `C = blas::gemm(aa, A, B)` `C += blas::gemm(aa, A, B)` | `transform(begin(A), end(A), begin(C), begin(C), [&B, aa, bb] (auto const& Ar, auto&& Cr) {return blas::gemv(aa, blas::T(B), Ar, bb, move(Cr));})` |
-|      | `blas::gemm(aa, A, blas::T(B), bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k A_{ik} B_{jk} + \beta C_{ij}`$ | `C = aa*(A* ~B)` | `C = blas::gemm(aa, A, blas::T(B))` `C += blas::gemm(aa, A, blas::T(B))` | `transform(begin(A), end(A), begin(C), begin(C), [&B, aa, bb] (auto const& Ar, auto&& Cr) {return blas::gemv(aa, B, Ar, bb, move(Cr));})` |
-|        | `blas::gemm(aa, blas::T(A), B, bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k A_{ki} B_{kj} + \beta C_{ij}`$ | `C =~A * B` `C = aa*(~A * B)` `C+=~A * B` `C+=aa*(~A * B)` | `C = blas::gemm(aa, blas::T(A), B, bb, C)` (or `+=`) | `transform(begin(transposed(A)), end(transposed(A)), begin(C), begin(C), [&B, aa, bb] (auto const& Ar, auto&& Cr) {return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));})` |
+| BLAS   | mutable form                                    | effect                        | operator form [³]        | functional form | thrust/STL [¹] |
+|---     |---                                              | ---                           | ---                  | ---             | --- |
+| SWAP   |`blas::swap(x, y)`                               | $x_i \leftrightarrow y_i$     | `(x^y)` |    | `swap_ranges(begin(x), end(x), begin(y))` |
+| COPY   |`blas::copy(x, y)`                               | $`y_i \leftarrow x_i`$ | `y << x` |  `y = blas::copy(x)` | `copy(begin(x), end(x), begin(y))` |
+| ASUM   |`blas::asum(x, res)`                             | $`r \leftarrow \sum_i \|\Re x_i\| + \|\Im x_i\|`$ | `x==0`/`x!=0` `isinf(x)` `is an(x)`[²] | `res = blas::asum(x)` | `transform_reduce(begin(x), end(x), 0.0, plus<>{}, [](auto const& e){return abs(e.real()) + abs(e.imag());})` |
+| NRM2   |`blas::nrm2(x, res)`                             | $`r \leftarrow \sqrt{\sum_i \|x_i\|^2}`$ | `abs(x)` | `res = blas::nrm2(x);` | `sqrt(trasnform_reduce(begin(x), end(x), 0.0, plus<>{}, [](auto const& e){return norm(e);}));` |
+| SCAL   |`blas::scal(aa, x);`                             | $`x_i \leftarrow \alpha x_i`$ | `x*=aa;`           |                 | `for_each(begin(x), end(x), [aa](auto& e){return e*=aa;})` |
+| AXPY   |`blas::axpy(aa, x, y)`                           | $`y_i \leftarrow \alpha x_i + y_i`$ | `y+=x` `y-=x` `y+=aa*x` `y-=aa*x` |     | `transform(x.begin(), x.end(), y.begin(), y.begin(), [aa](auto ex, auto ey) {return aa*ex + ey;}` |
+| DOT    | `blas::dot(x, y, res)`                          | $`r = \sum_i x_i y_i`$        | `res = (x, y);`       | `res = blas::dot(x, y)`                | `inner_product(begin(x), end(x), begin(y), T{});` |
+|        | `blas::dot(blas::C(x), y, res)`                 | $`r = \sum_i \bar x_i y_i`$ | `res = (*x, y);`  | `res = blas::dot(blas::C(x), y)`             | `inner_product(begin(x), end(x), begin(y), T{}, plus<>{}, [](T const& t1, T const& t2) {return conj(t1)*t2;});` |
+|        | `blas::dot(x, blas::C(y), res)`                 | $`r = \sum_i x_i \bar y_i`$ | `res = (x, *y);`  | `res = blas::dot(x, blas::C(y));`             | `inner_product(x.begin(), x.end(), y.begin(), T{}, plus<>{}, [](T const& t1, T const& t2) {return t1*conj(t2);});` |
+|        | ~~`blas::dot(blas::C(x), blas::C(y), res)`~~    | $`r = \sum_i \bar x_i \bar y_i`$ not implemented in BLAS, conjugate result |  | | `auto res = conj(inner_product(x.begin(), x.end(), y.begin(), T{});` |
+| GEMV   | `blas::gemv(aa, A, x, bb, y)`                   | $`y_i \leftarrow \alpha\sum_j A_{ij}x_j + \beta y_i`$ | `y=A%x` `y=aa*A%x` `y+=A%x` `y+=aa*A%x`[¤] | `y=blas::gemv(aa, A, x)` `y+=blas::gemv(aa, A, x)`  | `transform(begin(A), end(A), begin(y), [&x, aa] (auto const& Ac) {return aa*blas::dot(Ac, x);})` |
+|        | `blas::gemv(aa, blas::T(A), x, bb, y)`          | $`y_i \leftarrow \alpha\sum_j A_{ji}x_j + \beta y_i`$ | `y= ~A % x` `y=aa*(~A)%x` `y+=(~A)%x` `y+=aa*(~A)%x` | `y=blas::gemv(aa, blas::T(A), x)` `y+=blas::gemv(aa, blas::T(A), x)`  | `transform(begin(transposed(A)), end(transposed(A)), begin(y), [&x, aa] (auto const& Ac) {return aa*blas::dot(Ac, x);})` |
+|        | `blas::gemv(aa, blas::J(A), x, bb, y)`          | $`y_i \leftarrow \alpha\sum_j A_{ij}^*x_j + \beta y_i`$ | `y= *A % x` `y=aa*(*A)%x` `y+=(*A)%x` `y+=aa*(*A)%x` | `y=blas::gemv(aa, blas::J(A), x)` `y+=blas::gemv(aa, blas::J(A), x)`  | `transform(begin(A), end(A), begin(y), [&x, aa] (auto const& Ac) {return aa*blas::dot(*Ac, x);})` |
+|        | ~~`blas::gemv(aa, blas::H(A), x, bb, y)`~~      | $`y_i \leftarrow \alpha\sum_j A_{ji}^*x_j + \beta y_i`$ (not BLAS-implemented)|    |   | `transform(begin(transposed(A)), end(transposed(A)), begin(y), [&x, aa] (auto const& Ac) {return aa*blas::dot(*Ac, x);})` |
+| GEMM   | `blas::gemm(aa, A, B, bb, C)`                   | $`C_{ij} \leftarrow \alpha \sum_k A_{ik} B_{kj} + \beta C_{ij}`$ | `C = aa*(A*B)` | `C = blas::gemm(aa, A, B)` `C += blas::gemm(aa, A, B)` | `transform(begin(A), end(A), begin(C), begin(C), [&B, aa, bb] (auto const& Ar, auto&& Cr) {return blas::gemv(aa, blas::T(B), Ar, bb, move(Cr));})` |
+|        | `blas::gemm(aa, A, blas::T(B), bb, C)`          | $`C_{ij} \leftarrow \alpha \sum_k A_{ik} B_{jk} + \beta C_{ij}`$ | `C = aa*(A* ~B)` | `C = blas::gemm(aa, A, blas::T(B))` `C += blas::gemm(aa, A, blas::T(B))` | `transform(begin(A), end(A), begin(C), begin(C), [&B, aa, bb] (auto const& Ar, auto&& Cr) {return blas::gemv(aa, B, Ar, bb, move(Cr));})` |
+|        | `blas::gemm(aa, blas::T(A), B, bb, C)`          | $`C_{ij} \leftarrow \alpha \sum_k A_{ki} B_{kj} + \beta C_{ij}`$ | `C =~A * B` `C = aa*(~A * B)` `C+=~A * B` `C+=aa*(~A * B)` | `C = blas::gemm(aa, blas::T(A), B, bb, C)` (or `+=`) | `transform(begin(transposed(A)), end(transposed(A)), begin(C), begin(C), [&B, aa, bb] (auto const& Ar, auto&& Cr) {return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));})` |
 |        | `blas::gemm(aa, blas::T(A), blas::T(B), bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k A_{ki} B_{jk} + \beta C_{ij}`$ | `C =~A * ~B` `C = aa*(~A * ~B)` `C+=~A * ~B` `C+=aa*(~A * ~B)` | `C = blas::gemm(aa, blas::T(A), blas::T(B), bb, C)` (or `+=`) | `transform(begin(transposed(A)), end(transposed(A)), begin(C), begin(C), [&B, aa, bb] (auto const& Ar, auto&& Cr) {return blas::gemv(aa, B, Ar, bb, std::move(Cr));})` |
-|      | <s>`blas::gemm(aa, A, blas::J(B), bb, C)`</s> (use `blas::gemm(..., blas::T(B), blas::H(A), ..., HC)` and conjtranspose result) | $`C_{ij} \leftarrow \alpha \sum_k A_{ik} B_{kj}^* + \beta C_{ij}`$ (not BLAS-implemented) |    |   | `transform(begin(A), end(A), begin(C), begin(C), [BT=transposed(B)](auto const& Ar, auto&& Cr) {transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& c) {return aa*blas::dot(Ar, blas::C(Bc)) + bb*c;}); return std::move(Cr);});` |
-|      | ~~`blas::gemm(aa, blas::J(A), B, bb, C)`~~ | $`C_{ij} \leftarrow \alpha \sum_k A_{ik}^* B_{kj} + \beta C_{ij}`$ (not BLAS-implemented) |    |   | `transform(begin(A), end(A), begin(C), begin(C), [BT=transposed(B)](auto const& Ar, auto&& Cr) {transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& c) {return aa*blas::dot(blas::C(Ar), Bc) + bb*c;}); return std::move(Cr);});` |
-|      | <s>`blas::gemm(aa, blas::J(A), blas::J(B), bb, C)`</s> | $`C_{ij} \leftarrow \alpha \sum_k \bar{A_{ik}} \bar{B_{kj}} + \beta C_{ij}`$ (not BLAS-implemented) |    |   | `transform(begin(A), end(A), begin(C), begin(C), [BT=transposed(B)](auto const& Ar, auto&& Cr) {transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& c) {return aa*blas::dot(blas::C(Ar), blas::C(Bc)) + bb*c;}); return std::move(Cr);});` |
-|      | `blas::gemm(aa, A, blas::H(B), bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k A_{ik} \bar B_{jk} + \beta C_{ij}`$ | `C = aa*(A* ~*B)` (or `+=`) | `C = blas::gemm(aa, A, blas::H(B))` `C += blas::gemm(aa, A, blas::H(B))` | `transform(begin(A), end(A), begin(CC), begin(CC), [&](auto const& Ar, auto&& Cr){return blas::gemv(aa, blas::J(B), Ar, bb, move(Cr));})` |
-|      | `blas::gemm(aa, blas::H(A), B, bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ki} B_{kj} + \beta C_{ij}`$ | `CC=~*A *B` | `C=blas::gemm(aa, blas::H(A), B)` | `transform(begin(transposed(A)), end(transposed(A)), begin(CC), begin(CC), [BT=transposed(B)](auto const& Ac, auto&& Cr) {transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ac](auto const& Bc, auto&& c){return aa*blas::dot(blas::C(Ac), Bc) + bb*c;}); return move(Cr);})` |
-|      | `blas::gemm(aa, blas::H(A), blas::H(B), bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ki} \bar B_{jk} + \beta C_{ij}`$ | `CC=~*A * ~*B` | `C=blas::gemm(aa, blas::H(A), blas::H(B))` | `transform(begin(transposed(A)), end(transposed(A)), begin(CC), begin(CC), [&B](auto const& Ac, auto&& Cr) {transform(begin(B), end(B), begin(Cr), begin(Cr), [&Ac](auto const& Bc, auto&& c) {return conj(std::transform_reduce(begin(Ac), end(Ac), begin(Bc), 0.0*c, std::plus<>{}, [](auto const& a, auto const& b) {return a*b;}));}); return move(Cr);})` |
-|      | `blas::gemm(aa, blas::T(A), blas::H(B), bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k A_{ki} \bar B_{jk} + \beta C_{ij}`$ | `CC=~A * ~*B` | `C=blas::gemm(aa, blas::T(A), blas::H(B))` | `transform(begin(transposed(A)), end(transposed(A)), begin(CC), begin(CC), [&B](auto const& Ac, auto&& Cr) {transform(begin(B), end(B), begin(Cr), begin(Cr), [&Ac](auto const& Bc, auto&& c) {return std::transform_reduce(begin(Ac), end(Ac), begin(Bc), 0.0*c, std::plus<>{}, [](auto const& a, auto const& b) {return a*conj(b);});}); return move(Cr);})` |
-|      | ~~`blas::gemm(aa, blas::H(A), blas::T(B), bb, C)`~~ | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ki} B_{jk} + \beta C_{ij}`$ (not BLAS-implemented) |  |  | `transform(begin(transposed(A)), end(transposed(A)), begin(CC), begin(CC), [&B](auto const& Ac, auto&& Cr) {transform(begin(B), end(B), begin(Cr), begin(Cr), [&Ac](auto const& Bc, auto&& c) {return std::transform_reduce(begin(Ac), end(Ac), begin(Bc), 0.0*c, std::plus<>{}, [](auto const& a, auto const& b) {return conj(a)*b;});}); return move(Cr);})` |
-|      | ~~`blas::gemm(aa, blas::J(A), blas::H(B), bb, C)`~~ | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ik} \bar B_{jk} + \beta C_{ij}`$ (not BLAS-implemented) |  |  |  |
-|      | ~~`blas::gemm(aa, blas::H(A), blas::J(B), bb, C)`~~ | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ki} \bar B_{kj} + \beta C_{ij}`$ (not BLAS-implemented) |  |  |  |
-| TRSM | `blas::trsm(blas::side::right, aa, blas::U(A), B)` | $`B\leftarrow B.U^{-1}`$  | `B /= U(A)` | | TODO |  
-|      | `blas::trsm(blas::side::right, aa, blas::L(A), B)` | $`B\leftarrow B.L^{-1}`$  | `B /= L(A)` | | TODO |
-|      | `blas::trsm(blas::side::left, aa, blas::U(A), B)` | $`B\leftarrow U^{-1}.B`$  | `B \|= U(A)` | | TODO |  
-|      | `blas::trsm(blas::side::left, aa, blas::L(A), B)` | $`B\leftarrow L^{-1}.B`$  | `B \|= L(A)` | | TODO |
-|      | ~~`blas::trsm(blas::side::right, aa, blas::U(A), blas::J(B))`~~ | $`B*\leftarrow B*.U^{-1}`$ $`B\leftarrow B.U*^{-1}`$ | | | TODO |
-|      | ~~`blas::trsm(blas::side::right, aa, blas::L(A), blas::J(B))`~~ | $`B*\leftarrow B*.L^{-1}`$ $`B\leftarrow B.L*^{-1}`$ | | | TODO |
-|      | `blas::trsm(blas::side::right, aa, blas::U(A), blas::H(B))` | $`B^\dagger\leftarrow B^\dagger.U^{-1}`$ $`B\leftarrow U^\dagger^{-1}.B`$ | | | TODO |
-|      | `blas::trsm(blas::side::right, aa, blas::L(A), blas::H(B))` | $`B^\dagger\leftarrow B^\dagger.L^{-1}`$ $`B\leftarrow L^\dagger^{-1}.B`$ | | | TODO |
+|        | <s>`blas::gemm(aa, A, blas::J(B), bb, C)`</s> (use `blas::gemm(..., blas::T(B), blas::H(A), ..., HC)` and conjtranspose result) | $`C_{ij} \leftarrow \alpha \sum_k A_{ik} B_{kj}^* + \beta C_{ij}`$ (not BLAS-implemented) |    |   | `transform(begin(A), end(A), begin(C), begin(C), [BT=transposed(B)](auto const& Ar, auto&& Cr) {transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& c) {return aa*blas::dot(Ar, blas::C(Bc)) + bb*c;}); return std::move(Cr);});` |
+|        | ~~`blas::gemm(aa, blas::J(A), B, bb, C)`~~      | $`C_{ij} \leftarrow \alpha \sum_k A_{ik}^* B_{kj} + \beta C_{ij}`$ (not BLAS-implemented) |    |   | `transform(begin(A), end(A), begin(C), begin(C), [BT=transposed(B)](auto const& Ar, auto&& Cr) {transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& c) {return aa*blas::dot(blas::C(Ar), Bc) + bb*c;}); return std::move(Cr);});` |
+|        | <s>`blas::gemm(aa, blas::J(A), blas::J(B), bb, C)`</s> | $`C_{ij} \leftarrow \alpha \sum_k \bar{A_{ik}} \bar{B_{kj}} + \beta C_{ij}`$ (not BLAS-implemented) |    |   | `transform(begin(A), end(A), begin(C), begin(C), [BT=transposed(B)](auto const& Ar, auto&& Cr) {transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& c) {return aa*blas::dot(blas::C(Ar), blas::C(Bc)) + bb*c;}); return std::move(Cr);});` |
+|        | `blas::gemm(aa, A, blas::H(B), bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k A_{ik} \bar B_{jk} + \beta C_{ij}`$ | `C = aa*(A* ~*B)` (or `+=`) | `C = blas::gemm(aa, A, blas::H(B))` `C += blas::gemm(aa, A, blas::H(B))` | `transform(begin(A), end(A), begin(CC), begin(CC), [&](auto const& Ar, auto&& Cr){return blas::gemv(aa, blas::J(B), Ar, bb, move(Cr));})` |
+|        | `blas::gemm(aa, blas::H(A), B, bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ki} B_{kj} + \beta C_{ij}`$ | `CC=~*A *B` | `C=blas::gemm(aa, blas::H(A), B)` | `transform(begin(transposed(A)), end(transposed(A)), begin(CC), begin(CC), [BT=transposed(B)](auto const& Ac, auto&& Cr) {transform(begin(BT), end(BT), begin(Cr), begin(Cr), [&Ac](auto const& Bc, auto&& c){return aa*blas::dot(blas::C(Ac), Bc) + bb*c;}); return move(Cr);})` |
+|        | `blas::gemm(aa, blas::H(A), blas::H(B), bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ki} \bar B_{jk} + \beta C_{ij}`$ | `CC=~*A * ~*B` | `C=blas::gemm(aa, blas::H(A), blas::H(B))` | `transform(begin(transposed(A)), end(transposed(A)), begin(CC), begin(CC), [&B](auto const& Ac, auto&& Cr) {transform(begin(B), end(B), begin(Cr), begin(Cr), [&Ac](auto const& Bc, auto&& c) {return conj(std::transform_reduce(begin(Ac), end(Ac), begin(Bc), 0.0*c, std::plus<>{}, [](auto const& a, auto const& b) {return a*b;}));}); return move(Cr);})` |
+|        | `blas::gemm(aa, blas::T(A), blas::H(B), bb, C)` | $`C_{ij} \leftarrow \alpha \sum_k A_{ki} \bar B_{jk} + \beta C_{ij}`$ | `CC=~A * ~*B` | `C=blas::gemm(aa, blas::T(A), blas::H(B))` | `transform(begin(transposed(A)), end(transposed(A)), begin(CC), begin(CC), [&B](auto const& Ac, auto&& Cr) {transform(begin(B), end(B), begin(Cr), begin(Cr), [&Ac](auto const& Bc, auto&& c) {return std::transform_reduce(begin(Ac), end(Ac), begin(Bc), 0.0*c, std::plus<>{}, [](auto const& a, auto const& b) {return a*conj(b);});}); return move(Cr);})` |
+|        | ~~`blas::gemm(aa, blas::H(A), blas::T(B), bb, C)`~~ | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ki} B_{jk} + \beta C_{ij}`$ (not BLAS-implemented) |  |  | `transform(begin(transposed(A)), end(transposed(A)), begin(CC), begin(CC), [&B](auto const& Ac, auto&& Cr) {transform(begin(B), end(B), begin(Cr), begin(Cr), [&Ac](auto const& Bc, auto&& c) {return std::transform_reduce(begin(Ac), end(Ac), begin(Bc), 0.0*c, std::plus<>{}, [](auto const& a, auto const& b) {return conj(a)*b;});}); return move(Cr);})` |
+|        | ~~`blas::gemm(aa, blas::J(A), blas::H(B), bb, C)`~~ | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ik} \bar B_{jk} + \beta C_{ij}`$ (not BLAS-implemented) |  |  |  |
+|        | ~~`blas::gemm(aa, blas::H(A), blas::J(B), bb, C)`~~ | $`C_{ij} \leftarrow \alpha \sum_k \bar A_{ki} \bar B_{kj} + \beta C_{ij}`$ (not BLAS-implemented) |  |  |  |
+| TRSM   | `blas::trsm(blas::side::right, aa, blas::U(A), B)` | $`B\leftarrow B.U^{-1}`$  | `B /= U(A)` | | TODO |  
+|        | `blas::trsm(blas::side::right, aa, blas::L(A), B)` | $`B\leftarrow B.L^{-1}`$  | `B /= L(A)` | | TODO |
+|        | `blas::trsm(blas::side::left, aa, blas::U(A), B)` | $`B\leftarrow U^{-1}.B`$  | `B \|= U(A)` | | TODO |  
+|        | `blas::trsm(blas::side::left, aa, blas::L(A), B)` | $`B\leftarrow L^{-1}.B`$  | `B \|= L(A)` | | TODO |
+|        | ~~`blas::trsm(blas::side::right, aa, blas::U(A), blas::J(B))`~~ | $`B*\leftarrow B*.U^{-1}`$ $`B\leftarrow B.U*^{-1}`$ | | | TODO |
+|        | ~~`blas::trsm(blas::side::right, aa, blas::L(A), blas::J(B))`~~ | $`B*\leftarrow B*.L^{-1}`$ $`B\leftarrow B.L*^{-1}`$ | | | TODO |
+|        | `blas::trsm(blas::side::right, aa, blas::U(A), blas::H(B))` | $`B^\dagger\leftarrow B^\dagger.U^{-1}`$ $`B\leftarrow U^\dagger^{-1}.B`$ | | | TODO |
+|        | `blas::trsm(blas::side::right, aa, blas::L(A), blas::H(B))` | $`B^\dagger\leftarrow B^\dagger.L^{-1}`$ $`B\leftarrow L^\dagger^{-1}.B`$ | | | TODO |
 
 [¹]: for reference, not optimal. \
 [²]: `asum` is interpreted as a mechanism to detect null vectors or vectors containing NaN or infinities. \

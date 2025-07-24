@@ -1,11 +1,8 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2025 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS dot"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
-
-#include "../../tblis.hpp"
+sass
 
 namespace multi = boost::multi;
 
@@ -69,7 +66,7 @@ BOOST_AUTO_TEST_CASE(blis_matrix){
 		multi::array<double, 2> C({5, 7}, 0.);
 		using namespace tblis::indices;
 		tblis::mult(A(a, c), B(c, b), C(a, b));
-	//	BOOST_REQUIRE( C_gold == C );
+	//  BOOST_REQUIRE( C_gold == C );
 	}
 }
 

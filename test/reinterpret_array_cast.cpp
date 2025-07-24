@@ -199,16 +199,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		vector3 v3d;
 
 #if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wunknown-warning-option"
-#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
 		BOOST_TEST( &reinterpret_cast<double(&)[3]>(v3d)[1] == &std::get<1>(v3d) );
 
 #if defined(__clang__)
-#   pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 		{
@@ -220,7 +220,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &arr.reinterpret_array_cast<double>(3)[5][7][2] == &std::get<2>(arr[5][7]) );
 		}
 		{
-			multi::array<vector3, 2> const arr({4, 5}, vector3{{1.0, 2.0, 3.0}});
+			multi::array<vector3, 2> const arr({
+												   4, 5
+            },
+											   vector3{{1.0, 2.0, 3.0}});
 
 			BOOST_TEST( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
 			BOOST_TEST( decltype(arr.reinterpret_array_cast<double>(3))::dimensionality == 3 );
@@ -246,13 +249,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast)
 	{
-		{
-			std::complex<double> cee{1.0, 2.0};
+		std::complex<double> cee{1.0, 2.0};
+		auto*                ptr = reinterpret_cast<complex_dummy<double>*>(&cee);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		ptr->real                = 11.0;
+		BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );
 
-			auto* ptr = reinterpret_cast<complex_dummy<double>*>(&cee);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-			ptr->real = 11.0;
-			BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );
-		}
 		{
 			multi::array<std::complex<double>, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
 			std::iota(begin(arr), end(arr), 1.0);
@@ -333,7 +334,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs( carr[1][1] - 6.0 ) < 1E-6 );
 	}
 
-	// test packing 4 doubles
+// test packing 4 doubles
 #ifndef _MSC_VER
 	{
 		using packed_type = std::array<double, 4>;
@@ -342,10 +343,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr_4pc[0].size() == 25 );
 
 		arr_4pc[0][0] = packed_type{
-			{1.0, 2.0, 3.0, 4.0}
+			{1.0, 2.0, 3.0, 4.0},
 		};
 		arr_4pc[0][1] = packed_type{
-			{5.0, 6.0, 7.0, 8.0}
+			{5.0, 6.0, 7.0, 8.0},
 		};
 
 		auto&& arr = arr_4pc.reinterpret_array_cast<double>(4).rotated().flatted().unrotated();

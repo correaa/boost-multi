@@ -1,5 +1,6 @@
 # https://clang-format-configurator.site
 # Copyright 2020-2024 Alfredo A. Correa
+# this format specification requires clang-format version 15
 ---
 Language: Cpp
 AccessModifierOffset: -3
@@ -29,19 +30,17 @@ Cpp11BracedListStyle: true
 FixNamespaceComments: true
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: <boost/test/unit_test\.hpp>
-    Priority: 1
   - Regex: <(boost\/multi)\/
-    Priority: 2
+    Priority: 1
   - Regex: <([A-Za-z0-9\Q/-_\E])+>
-    Priority: 6
-  - Regex: <(catch2|boost)\/
     Priority: 5
-  - Regex: <([A-Za-z0-9.\Q/-_\E])+>
+  - Regex: <(catch2|boost)\/
     Priority: 4
-  - Regex: '"([A-Za-z0-9.\Q/-_\E])+"'
+  - Regex: <([A-Za-z0-9.\Q/-_\E])+>
     Priority: 3
-IndentPPDirectives: AfterHash
+  - Regex: '"([A-Za-z0-9.\Q/-_\E])+"'
+    Priority: 2
+IndentPPDirectives: None
 IndentWidth: 4
 # LambdaBodyIndentation: Signature
 PenaltyBreakTemplateDeclaration: 10
@@ -58,7 +57,4 @@ Standard: c++17
 TabWidth: 4
 UseTab: ForContinuationAndIndentation
 WhitespaceSensitiveMacros:
-  - BOOST_REQUIRE
   - BOOST_TEST
-  - BOOST_TEST_REQUIRE
-  - BOOST_AUTO_TEST_CASE

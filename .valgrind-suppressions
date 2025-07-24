@@ -72,6 +72,14 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*
+   obj:*libgomp.so.*
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc
    ...
@@ -488,6 +496,20 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
+   ...
+   fun:*tbb*delegate_base*
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:pthread_create*
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
    fun:malloc
@@ -541,4 +563,98 @@
    fun:blas_thread_init
    fun:gotoblas_init
    ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:pmix_server_init
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:orte_submit_init
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:orte_rml_base_process_msg
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:orte_quit
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:orte_show_help
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:orte_debugger_init_after_spawn
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:__tls_get_addr
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:opal_hwloc_base_get_topology
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:orte_plm_base_post_launch
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:hwloc_topology_load
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:orte_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:orte_rmaps_base_setup_proc
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+...
+   fun:dl_open_worker_begin
+...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:main
 }

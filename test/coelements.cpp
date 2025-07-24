@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -16,7 +16,11 @@ namespace multi = boost::multi;
 // https://godbolt.org/z/7MqxhWvz3
 
 #if defined(__cpp_lib_generator) && (__cpp_lib_generator >= 202207L)
-#   include <generator>
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+#endif
+
+#include <generator>
 
 template<class Arr2D>
 std::generator<typename Arr2D::indexes>

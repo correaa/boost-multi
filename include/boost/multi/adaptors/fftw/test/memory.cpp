@@ -2,25 +2,17 @@
 // Copyright 2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW memory"
-#include<boost/test/unit_test.hpp>
+// #include<boost/test/unit_test.hpp>
 
 #include <multi/adaptors/fftw.hpp>
 #include <multi/array.hpp>
 
-#include<chrono>
-#include<iostream>
-#include<random>
+#include <chrono>
+#include <iostream>
+#include <string_view>
+#include <random>
 
 #include<fftw3.h>
-
-class watch : private std::chrono::high_resolution_clock{
-	std::string label;
-	time_point start = now();
-
- public:
-	explicit watch(std::string label) : label{std::move(label)} {}
-	~watch(){std::cerr<< label<<": "<< std::chrono::duration<double>(now() - start).count() <<" sec"<<std::endl;}
-};
 
 template<class T> struct randomizer {
 	template<class M> void operator()(M&& arr) const {

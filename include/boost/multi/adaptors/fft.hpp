@@ -86,7 +86,7 @@ namespace boost::multi::fft{
 			
 			using typename std::decay_t<In>::const_iterator::difference_type;
 			using typename std::decay_t<In>::const_iterator::value_type;
-			using pointer = void*;
+			using pointer = void;  // void*;
 			using reference = dft_range<typename std::decay_t<In>::const_iterator::reference, Direction>;
 			using iterator_category = std::random_access_iterator_tag;
 			
@@ -121,7 +121,7 @@ namespace boost::multi::fft{
 					multi::subarray<typename std::decay_t<In>::element, dimensionality, typename It::element_ptr>(
 						first_d, first_d + count
 					),
-					dir_
+					fftw::sign{dir_}
 				);
 				return first_d + count;
 			}

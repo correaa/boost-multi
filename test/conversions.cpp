@@ -4,8 +4,8 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(_MSC_VER)
-#   pragma warning(push)
-#   pragma warning(disable : 4244)  // allow conversion from double to float in uninitialized_construct algorithms
+#pragma warning(push)
+#pragma warning(disable : 4244)  // allow conversion from double to float in uninitialized_construct algorithms
 #endif
 
 #include <boost/multi/array.hpp>
@@ -13,7 +13,7 @@
 #include <complex>
 // #include <cmath>  // for abs  // IWYU pragma: keep
 #include <cstdlib>  // for abs
-#include <memory>  // IWYU pragma: keep
+#include <memory>   // IWYU pragma: keep
 #include <vector>
 
 namespace multi = boost::multi;
@@ -29,11 +29,11 @@ void gun(multi::array<std::complex<float>, 2> const& /*unused*/) {
 }  // end unnamed namespace
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// NOLINTBEGIN(fuchsia-default-arguments-calls)  // std::complex has a constructor with a default argument, not in the library
-	BOOST_AUTO_TEST_CASE(complex_conversion_float_to_double) {
+	// BOOST_AUTO_TEST_CASE(complex_conversion_float_to_double)
+	{
 		std::complex<float> const cee{1.0, 2.0};
 
 		std::complex<double> const zee = cee;
@@ -45,9 +45,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::static_array<std::complex<float>, 1> const  CEE1(10, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
 		multi::static_array<std::complex<double>, 1> const ZEE1 = CEE1;
+
+		// BOOST_TEST( zee == cee );  // fails to compile, ok. since types are not comparable ...
+		// BOOST_TEST( ZEE1 == CEE1 );  // fails to compile, ok. ...then arrays are not comparable either, but a transformation is comparable...
+
+		BOOST_TEST( ZEE1 == CEE1.element_transformed([](auto const& ce) noexcept {
+			return std::complex<double>(ce); }));
 	}
 
-	BOOST_AUTO_TEST_CASE(complex_conversion_double_to_float) {
+	// BOOST_AUTO_TEST_CASE(complex_conversion_double_to_float)
+	{
 		std::complex<double> const zee{1.0, 2.0};
 
 		static_assert(multi::detail::is_explicitly_convertible_v<std::complex<double>, std::complex<float>>);
@@ -59,9 +66,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::static_array<std::complex<double>, 1> const ZEE1(10, std::complex<float>{});
 		multi::static_array<std::complex<float>, 1> const  CEE1{ZEE1};
+
+		BOOST_TEST( ZEE1 == CEE1.element_transformed([](auto const& ce) noexcept {
+			return std::complex<double>(ce); }));
 	}
 
-	BOOST_AUTO_TEST_CASE(double_to_complex_conversion_documentation) {
+	// BOOST_AUTO_TEST_CASE(double_to_complex_conversion_documentation)
+	{
 		// conversions from real to complex is implicit ...
 		double const               dee = 5.0;
 		std::complex<double> const zee = dee;
@@ -84,13 +95,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array<double, 2> DEE2{ZEE};  // compilation error, good
 	}
 
-	BOOST_AUTO_TEST_CASE(conversion_in_function_call) {
+	// BOOST_AUTO_TEST_CASE(conversion_in_function_call)
+	{
 		multi::array<std::complex<double>, 2> ZEE({10, 10});
 		fun(multi::array<std::complex<float>, 2>{ZEE});
 		gun(multi::array<std::complex<float>, 2>{ZEE});
 	}
 
-	BOOST_AUTO_TEST_CASE(float_to_double) {
+	// BOOST_AUTO_TEST_CASE(float_to_double)
+	{
 		float const dee = 5.0F;
 		// float const eff{dee};  // -Wc++11-narrowing  // NOLINT(bugprone-narrowing-conversions)
 		// float const eff = dee;  // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
@@ -108,7 +121,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array<float, 2> const EFF = DEE;
 	}
 
-	BOOST_AUTO_TEST_CASE(double_to_float) {
+	// BOOST_AUTO_TEST_CASE(double_to_float)
+	{
 		double const dee = 5.0;
 		// float const eff{dee};  // -Wc++11-narrowing  // NOLINT(bugprone-narrowing-conversions)
 		// float const eff = dee;  // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
@@ -127,7 +141,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array<float, 2> const EFF = DEE;
 	}
 
-	BOOST_AUTO_TEST_CASE(complex_to_complex_conversion) {
+	// BOOST_AUTO_TEST_CASE(complex_to_complex_conversion)
+	{
 		std::complex<float> const  cee{1.0, 2.0};
 		std::complex<double> const zee = cee;
 
@@ -156,10 +171,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::array<int, 1> const arr1D = {1, 2, 3};
-		auto const vec1D = arr1D.to<std::vector>();
+		auto const                 vec1D = arr1D.to<std::vector>();
 		BOOST_TEST( vec1D.size() == 3 );
 
-		multi::array<int, 2> const arr2D = { {1, 2}, {3, 4} };
+		multi::array<int, 2> const arr2D = {
+			{1, 2},
+			{3, 4}
+		};
 		auto const vec2D = arr2D.to<std::vector, std::vector>();
 		BOOST_TEST( vec2D.size() == 2 );
 		BOOST_TEST( vec2D[0].size() == 2 );
@@ -173,5 +191,5 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 }
 
 #if defined(_MSC_VER)
-#   pragma warning(pop)
+#pragma warning(pop)
 #endif

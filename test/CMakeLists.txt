@@ -20,11 +20,19 @@ else()
 	enable_testing()
 
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
-	set(CMAKE_CXX_EXTENSIONS OFF)
+
 	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
 	find_package(Boost CONFIG)
-	find_package(Boost COMPONENTS headers)  # should be last
+# find_package(Boost COMPONENTS headers)  # should be last
+
+
+#libomp is keg-only, which means it was not symlinked into /opt/homebrew,
+#because it can override GCC headers and result in broken builds.
+#
+#For compilers to find libomp you may need to set:
+#  export LDFLAGS="-L/opt/homebrew/opt/libomp/lib"
+#  export CPPFLAGS="-I/opt/homebrew/opt/libomp/include"
 
 	if(NOT Boost_FOUND)
 		message(WARNING "preliminary: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
@@ -252,15 +260,14 @@ else()
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 	-Wno-poison-system-directories
-	#-Wlarge-by-value-copy  # subarray references can be large
+	-Wno-large-by-value-copy  # subarray references can be large
 	-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
-	# -Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4
-	-Wstrict-overflow=5
-	-Wundefined-reinterpret-cast  # needed to cast to c-array
+	-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5
+	-Wno-undefined-reinterpret-cast  # needed to cast to c-array
 	-Wunknown-pragmas  # other compilers need their own pragmas
 	# -Rpass -Rpass-analysis -Rpass-missed
-	-Rsanitize-address # -Rsearch-path-usage
+	# -Rsanitize-address # -Rsearch-path-usage
 	>
 	$<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra # also IntelLLVM, XL (ibm), XLClang (ibm)
 	-diag-disable=remark
@@ -308,13 +315,20 @@ else()
 	-Wunused -Wunused-but-set-variable -Wunused-function -Wunused-parameter -Wunused-variable
 	-Wwrite-strings
 	>
-	# $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 	$<$<CXX_COMPILER_ID:NVHPC>:
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:
+	#-Wfatal-errors
+	-fmax-errors=2
+	>
 	-Werror -Wall
 	-Wcast-qual
 	-Wformat=2
 	-Wshadow
+	-Wsign-compare
+	#-Wpedantic
+	-Wundef
 	-Wuninitialized
+	-Wunused
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
@@ -384,6 +398,9 @@ else()
 			else()
 				target_compile_options(${TEST_EXE} PRIVATE -Werror -Wall)
 			endif()
+
+			set_target_properties(${TEST_EXE} PROPERTIES CXX_EXTENSIONS OFF)
+
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
 	endif()

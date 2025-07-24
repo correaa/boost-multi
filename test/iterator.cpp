@@ -3,9 +3,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for array, implicit_cast, explicit_cast
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for is_sorted, copy
 #include <iterator>     // for begin, end, size, cbegin, make_r...
@@ -17,7 +17,6 @@
 #include <vector>       // for allocator, vector
 
 namespace multi = boost::multi;
-
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// iterator_1d
@@ -284,7 +283,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::index_range irng(0, 5);  // semiopen interval
 		std::ostringstream out;
 		std::copy(irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>{out, ","});  // NOLINT(boost-use-ranges)
-		BOOST_TEST_EQ(out.str(), std::string{"0,1,2,3,4,"});  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST_EQ(out.str(), std::string{"0,1,2,3,4,"});                                                   // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)) == irng.size()*(irng.size()-1)/2 );
 
@@ -310,7 +309,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{  10,   20},
 			{ 100,  200},
-			{1000, 2000}
+			{1000, 2000},
 		};
 		BOOST_TEST( (*arr.begin())[1] == 20 );
 		BOOST_TEST( arr.begin()->operator[](1) == 20 );

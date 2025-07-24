@@ -1,9 +1,11 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>  // for array, layout_t, subarray, range
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for copy
 #include <array>        // for array, get
@@ -26,11 +28,9 @@ void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& des
 }
 }  // end namespace
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(empty_intersection) {
+	// BOOST_AUTO_TEST_CASE(empty_intersection)
+	{
 		multi::array<double, 1> arr({10});
 		multi::array<double, 1> arr2;
 
@@ -41,7 +41,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2(is) == arr(is) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
+	// BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple)
+	{
 		multi::array<char, 2> arr({3, 3}, 'k');
 
 		std::array<int, 2> point = {
@@ -58,7 +59,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &arr[point[0]][point[1]] == &     apply(arr, point) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
+	// BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple)
+	{
 		{
 			multi::array<double, 2>::extensions_type const ext = {3, 4};
 
@@ -82,7 +84,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
+	// BOOST_AUTO_TEST_CASE(multi_test_constness_reference)
+	{
 		multi::array<char, 2> const carr({10, 10}, '9');
 
 		BOOST_TEST( size( carr(1, {0, 3}) ) == 3 );
@@ -101,14 +104,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// comparison for elements iterator
 	{
 		multi::array<int, 2> const arr({3, 3}, 99);
-		auto const& subarr = arr({0, 3}, {0, 3});
+		auto const&                subarr = arr({0, 3}, {0, 3});
 
 		BOOST_TEST(   subarr.elements().begin() == subarr.elements().begin()  );
 		BOOST_TEST( !(subarr.elements().begin() != subarr.elements().begin()) );
 		BOOST_TEST( !(subarr.elements().begin() < subarr.elements().begin())  );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_test_stencil) {
+	// BOOST_AUTO_TEST_CASE(multi_test_stencil)
+	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) ""s
 
 		// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
@@ -168,7 +172,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.elements().size() - 2 == (arr.elements().end() - 1) - (arr.elements().begin() + 1) );
 	}
 
-	BOOST_AUTO_TEST_CASE(empty_elements) {
+	// BOOST_AUTO_TEST_CASE(empty_elements)
+	{
 		multi::array<int, 2> arr1;
 		multi::array<int, 2> arr2;
 
@@ -178,7 +183,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !(arr1.elements() != arr2.elements()) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
+	// BOOST_AUTO_TEST_CASE(multi_test_elements_1D)
+	{
 		multi::array<int, 1> arr = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 		BOOST_TEST( arr.size() == 10 );
 
@@ -216,7 +222,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &(*beg) == &(*arr.elements().end()) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range) {
+	// BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range)
+	{
 		multi::array<int, 1> arr = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 		BOOST_TEST( arr.size() == 10 );
 
@@ -228,7 +235,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[2] == 9 );
 	}
 
-	BOOST_AUTO_TEST_CASE(elements_from_init_list_2D) {
+	// BOOST_AUTO_TEST_CASE(elements_from_init_list_2D)
+	{
 		multi::array<int, 2> arr({3, 2});
 		arr().elements() = {1, 2, 3, 4, 5, 6};
 		BOOST_TEST(arr[1][0] == 3);
@@ -237,7 +245,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(arr[1][0] == 30);
 	}
 
-	BOOST_AUTO_TEST_CASE(front_back_2D) {
+	// BOOST_AUTO_TEST_CASE(front_back_2D)
+	{
 		multi::array<int, 2> arr({3, 4});
 		std::iota(arr.elements().begin(), arr.elements().end(), int{});
 
@@ -263,7 +272,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &arr.back ()[2] == &arr[2][2] );
 	}
 
-	BOOST_AUTO_TEST_CASE(front_back_1D) {
+	// BOOST_AUTO_TEST_CASE(front_back_1D)
+	{
 		multi::array<int, 1> arr({30}, int{});
 		std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
@@ -274,7 +284,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &arr.back () == &arr[29] );
 	}
 
-	BOOST_AUTO_TEST_CASE(elements_rvalues) {
+	// BOOST_AUTO_TEST_CASE(elements_rvalues)
+	{
 		using movable_type = std::vector<int>;
 		movable_type const movable_value(5, 99);  // NOLINT(fuchsia-default-arguments-calls)
 
@@ -290,7 +301,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::move(arr)[1] = movable_value;
 	}
 
-	BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
+	// BOOST_AUTO_TEST_CASE(elements_rvalues_nomove)
+	{
 		using movable_type = std::vector<double>;
 		movable_type const movable_value(5, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 
@@ -312,7 +324,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( q1 == q2 );
 	}
 
-	BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
+	// BOOST_AUTO_TEST_CASE(elements_rvalues_assignment)
+	{
 		std::vector<int> vec = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
 
 		std::move(vec) = std::vector<int>{30, 40, 50};  // NOLINT(fuchsia-default-arguments-calls)
@@ -327,7 +340,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::move(arr1) = arr2;  // this compiles TODO(correaa) should it?
 	}
 
-	BOOST_AUTO_TEST_CASE(range_2) {
+	// BOOST_AUTO_TEST_CASE(range_2)
+	{
 		multi::array<int, 3>       arr3({3, 4, 5}, 99);
 		multi::array<int, 3> const brr3({2, 2, 5}, 88);
 
