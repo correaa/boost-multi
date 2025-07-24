@@ -755,11 +755,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<double, 2> ref(&darr[0][0], {2, 2});
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-		auto&& other_darr = static_cast<double (&)[2][2]>(ref);
+		auto&& other_darr = static_cast<double(&)[2][2]>(ref);
 
 		// NOLINTNEXTLINE(hicpp-use-auto,modernize-use-auto,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-		double (&other_darr2)[2][2] = static_cast<double (&)[2][2]>(ref);
-		double (&other_darr3)[2][2](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+		double(&other_darr2)[2][2] = static_cast<double(&)[2][2]>(ref);
+		double(&other_darr3)[2][2](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 
 		BOOST_TEST( &ref        [1][0] == &darr[1][0] );
 		BOOST_TEST( &other_darr [1][0] == &darr[1][0] );
@@ -1003,13 +1003,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 		{
-			auto& carr = static_cast<int (&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			auto& carr = static_cast<int(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 			BOOST_TEST( &carr[3] == &arr[3] );
 
 			BOOST_TEST(f1d5(static_cast<int(&)[5]>(arr)) == 1 );  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		}
 		{
-			int (&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			int(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 			BOOST_TEST( &carr[3] == &arr[3] );
 		}
 
@@ -1030,13 +1030,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 		{
-			auto& carr = static_cast<int (&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			auto& carr = static_cast<int(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 			BOOST_TEST( &carr[3][2] == &arr[3][2] );
 
-			f2d54(static_cast<int (&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			f2d54(static_cast<int(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		}
 		{
-			int (&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			int(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 			BOOST_TEST( &carr[3][2] == &arr[3][2] );
 		}
 

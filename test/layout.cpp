@@ -288,7 +288,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::extensions_t<2> const x5 = std::tuple{
 			multi::iextension{0, 51},
-			multi::iextension{0, 52}
+			multi::iextension{0, 52},
 		};
 		BOOST_TEST( x1 == x5 );
 
@@ -314,7 +314,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::extensions_t<3> const x2({
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
-			multi::iextension{0, 53}
+			multi::iextension{0, 53},
 		});
 		BOOST_TEST( x1 == x2 );
 
@@ -327,7 +327,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::extensions_t<3> const x5 = std::tuple{
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
-			multi::iextension{0, 53}
+			multi::iextension{0, 53},
 		};
 		BOOST_TEST( x1 == x5 );
 
@@ -385,8 +385,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( extension(arr) == multi::index_extension{0, 25} ));
 		BOOST_TEST(( extension(arr) == multi::iextension     {0, 25} ));
 	}
-
-	////
 
 	// BOOST_AUTO_TEST_CASE(layout_3)
 	{
