@@ -1,6 +1,6 @@
 # https://clang-format-configurator.site
 # Copyright 2020-2024 Alfredo A. Correa
-# this format specification requires clang-format version 15
+# this format specification requires clang-format version 15, it is optimized for clang-format version 19
 ---
 Language: Cpp
 AccessModifierOffset: -3
@@ -34,7 +34,7 @@ IncludeCategories:
     Priority: 1
   - Regex: <([A-Za-z0-9\Q/-_\E])+>
     Priority: 5
-  - Regex: <(catch2|boost)\/
+  - Regex: <(boost)\/
     Priority: 4
   - Regex: <([A-Za-z0-9.\Q/-_\E])+>
     Priority: 3
