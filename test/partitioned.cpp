@@ -554,16 +554,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> const arr = {
 			{ 0,  1,  /**/ 2,  3,  /**/ 4,  5},
 			{ 6,  7,  /**/ 8,  9, /**/ 10, 11},
-			/*********************************/
+ /*********************************/
 			{12, 13, /**/ 14, 15, /**/ 16, 17},
 			{18, 19, /**/ 20, 21, /**/ 22, 23},
-			/*********************************/
+ /*********************************/
 			{24, 25, /**/ 26, 27, /**/ 28, 29},
 			{30, 31, /**/ 32, 33, /**/ 34, 35},
-			/*********************************/
+ /*********************************/
 			{36, 37, /**/ 38, 39, /**/ 40, 41},
 			{42, 43, /**/ 44, 45, /**/ 46, 47}
-		};
+        };
 
 		BOOST_TEST( arr.dimensionality == 2 );
 		BOOST_TEST( arr.size() == 8 );
@@ -594,26 +594,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(partitined_subarrays)
 	{
-		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
-
 		multi::array<int, 2> const arr = {
 			{ 0,  1,  /**/ 2,  3,  /**/ 4,  5},
 			{ 6,  7,  /**/ 8,  9, /**/ 10, 11},
-			/******************************************/
+ /******************************************/
 			{12, 13, /**/ 14, 15, /**/ 16, 17},
 			{18, 19, /**/ 20, 21, /**/ 22, 23},
-			/******************************************/
+ /******************************************/
 			{24, 25, /**/ 26, 27, /**/ 28, 29},
 			{30, 31, /**/ 32, 33, /**/ 34, 35},
-			/******************************************/
+ /******************************************/
 			{36, 37, /**/ 38, 39, /**/ 40, 41},
-			{42, 43, /**/ 44, 45, /**/ 46, 47}
+			{42, 43, /**/ 44, 45, /**/ 46, 47},
 		};
 
 		BOOST_TEST( arr.dimensionality == 2 );
 		BOOST_TEST( arr.partitioned(4).dimensionality == 3 );
 
 		BOOST_TEST( arr.partitioned(4).size() == 4 );
+
+		using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
+
 		BOOST_TEST( get<1>(arr.partitioned(4).sizes()) == 2 );
 		BOOST_TEST( get<2>(arr.partitioned(4).sizes()) == 6 );
 
@@ -761,9 +762,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10},
-			/*******************/
+ /*******************/
 			{1, 2, 3, /**/ 4,  5},
-			{6, 7, 8, /**/ 9, 10}
+			{6, 7, 8, /**/ 9, 10},
 		};
 
 		BOOST_TEST( arr.elements().size() == 20 );
@@ -781,7 +782,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& tup2d = std::tuple{
 			std::tuple{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
-			std::tuple{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
+			std::tuple{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})},
 		};
 
 		BOOST_TEST( &get<0>(get<0>(tup2d))[1][1] == &arr[1][1] );
@@ -793,9 +794,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{1, 2, 3, /**/ 4,  5},
 			{6, 7, 8, /**/ 9, 10},
-			/*******************/
+ /*******************/
 			{1, 2, 3, /**/ 4,  5},
-			{6, 7, 8, /**/ 9, 10}
+			{6, 7, 8, /**/ 9, 10},
 		};
 
 		BOOST_TEST( arr.elements().size() == 20 );
@@ -818,7 +819,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if defined(__clang__) || (!defined(__GNUC__) || (__GNUC__ > 9))  // gcc 9 gets confused with CTAD
 		auto&& tup2d = std::array{
 			std::array{arr({0, 2}, {0, 3}), arr({0, 2}, {3, 5})},
-			std::array{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})}
+			std::array{arr({2, 4}, {0, 3}), arr({2, 4}, {3, 5})},
 		};
 		BOOST_TEST( &tup2d[0][0] [1][1] == &arr[1][1] );
 		BOOST_TEST( &tup2d[1][0] [0][2] == &arr[2][2] );

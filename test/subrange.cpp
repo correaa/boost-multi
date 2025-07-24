@@ -14,72 +14,70 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// multi_array_range_section)
 	{
-		{
 #ifndef _MSC_VER
-			multi::array<double, 4> arr({10, 20, 30, 40}, 99.0);
+		multi::array<double, 4> arr({10, 20, 30, 40}, 99.0);
 #else
-			multi::array<double, 4> arr(multi::extensions_t<4>{10, 20, 30, 40}, 99.0);
+		multi::array<double, 4> arr(multi::extensions_t<4>{10, 20, 30, 40}, 99.0);
 #endif
-			std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+		std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
-			{
-				static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, {0, 40}))::rank::value == 4);
-				static_assert(decltype(arr(5, {0, 20}, {0, 30}, {0, 40}))::rank::value == 3);
-				static_assert(decltype(arr({0, 10}, 10, {0, 30}, {0, 40}))::rank::value == 3);
-				static_assert(decltype(arr({0, 10}, {0, 20}, 15, {0, 40}))::rank::value == 3);
-				static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, 20))::rank::value == 3);
+		{
+			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, {0, 40}))::rank::value == 4);
+			static_assert(decltype(arr(5, {0, 20}, {0, 30}, {0, 40}))::rank::value == 3);
+			static_assert(decltype(arr({0, 10}, 10, {0, 30}, {0, 40}))::rank::value == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, 15, {0, 40}))::rank::value == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, 20))::rank::value == 3);
 
-				static_assert(decltype(arr(5, 6, {0, 30}, {0, 40}))::rank::value == 2);
-				static_assert(decltype(arr({0, 10}, 6, 15, {0, 40}))::rank::value == 2);
-				static_assert(decltype(arr({0, 10}, {0, 20}, 15, 20))::rank::value == 2);
+			static_assert(decltype(arr(5, 6, {0, 30}, {0, 40}))::rank::value == 2);
+			static_assert(decltype(arr({0, 10}, 6, 15, {0, 40}))::rank::value == 2);
+			static_assert(decltype(arr({0, 10}, {0, 20}, 15, 20))::rank::value == 2);
 
-				static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, {0, 40}))::rank_v == 4);
-				static_assert(decltype(arr(5, {0, 20}, {0, 30}, {0, 40}))::rank_v == 3);
-				static_assert(decltype(arr({0, 10}, 10, {0, 30}, {0, 40}))::rank_v == 3);
-				static_assert(decltype(arr({0, 10}, {0, 20}, 15, {0, 40}))::rank_v == 3);
-				static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, 20))::rank_v == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, {0, 40}))::rank_v == 4);
+			static_assert(decltype(arr(5, {0, 20}, {0, 30}, {0, 40}))::rank_v == 3);
+			static_assert(decltype(arr({0, 10}, 10, {0, 30}, {0, 40}))::rank_v == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, 15, {0, 40}))::rank_v == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, 20))::rank_v == 3);
 
-				static_assert(decltype(arr(5, 6, {0, 30}, {0, 40}))::rank_v == 2);
-				static_assert(decltype(arr({0, 10}, 6, 15, {0, 40}))::rank_v == 2);
-				static_assert(decltype(arr({0, 10}, {0, 20}, 15, 20))::rank_v == 2);
-			}
-			{
-				auto&& all = arr({0, 10}, {0, 20}, {0, 30}, {0, 40});
-				BOOST_TEST( &arr[1][2][3][4] == &all[1][2][3][4] );
-				BOOST_TEST( &arr[1][2][3][4] == &arr({0, 10}, {0, 20}, {0, 30}, {0, 40})[1][2][3][4] );
-			}
-			{
-				using multi::_;
-				auto&& all = arr({0, 10}, {0, 20});
-				BOOST_TEST( &arr[1][2][3][4] == &all[1][2][3][4] );
-			}
-			{
-				BOOST_TEST( &arr(0, 0, 0, 0) == &arr[0][0][0][0] );
-			}
-			{
-				auto&& sub = arr({0, 5}, {0, 10}, {0, 15}, {0, 20});
-				BOOST_TEST( &sub[1][2][3][4] == &arr[1][2][3][4] );
-			}
+			static_assert(decltype(arr(5, 6, {0, 30}, {0, 40}))::rank_v == 2);
+			static_assert(decltype(arr({0, 10}, 6, 15, {0, 40}))::rank_v == 2);
+			static_assert(decltype(arr({0, 10}, {0, 20}, 15, 20))::rank_v == 2);
 		}
 		{
-			multi::array<int, 2> arr = {
-				{10, 20, 30, 40},
-				{50, 60, 70, 80},
-				{90, 00, 10, 20},
-				{30, 40, 50, 60},
-			};
-			multi::array<int, 2> arr2 = {
-				{910, 920, 930, 940},
-				{950, 960, 970, 980},
-				{990, 900, 910, 920},
-				{930, 940, 950, 960},
-			};
-
-			arr({0, 2}, {0, 2}) = arr2({0, 2}, {0, 2});
-			BOOST_TEST( arr != arr2 );
-			BOOST_TEST( arr({0, 2}, {0, 2}) == arr2({0, 2}, {0, 2}) );
-			BOOST_TEST( arr[1][1] == 960 );
+			auto&& all = arr({0, 10}, {0, 20}, {0, 30}, {0, 40});
+			BOOST_TEST( &arr[1][2][3][4] == &all[1][2][3][4] );
+			BOOST_TEST( &arr[1][2][3][4] == &arr({0, 10}, {0, 20}, {0, 30}, {0, 40})[1][2][3][4] );
 		}
+		{
+			using multi::_;
+			auto&& all = arr({0, 10}, {0, 20});
+			BOOST_TEST( &arr[1][2][3][4] == &all[1][2][3][4] );
+		}
+		{
+			BOOST_TEST( &arr(0, 0, 0, 0) == &arr[0][0][0][0] );
+		}
+		{
+			auto&& sub = arr({0, 5}, {0, 10}, {0, 15}, {0, 20});
+			BOOST_TEST( &sub[1][2][3][4] == &arr[1][2][3][4] );
+		}
+	}
+	{
+		multi::array<int, 2> arr = {
+			{10, 20, 30, 40},
+			{50, 60, 70, 80},
+			{90, 00, 10, 20},
+			{30, 40, 50, 60},
+		};
+		multi::array<int, 2> arr2 = {
+			{910, 920, 930, 940},
+			{950, 960, 970, 980},
+			{990, 900, 910, 920},
+			{930, 940, 950, 960},
+		};
+
+		arr({0, 2}, {0, 2}) = arr2({0, 2}, {0, 2});
+		BOOST_TEST( arr != arr2 );
+		BOOST_TEST( arr({0, 2}, {0, 2}) == arr2({0, 2}, {0, 2}) );
+		BOOST_TEST( arr[1][1] == 960 );
 	}
 
 	// subrange_assignment
