@@ -2,8 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuFFT adaptor"
-
 #include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/array.hpp>
@@ -65,7 +63,7 @@ class watch : std::chrono::high_resolution_clock {
 	}
 };
 
-auto main() -> int {
+auto main() -> int try {
 	complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
 	// BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001))
@@ -109,6 +107,9 @@ auto main() -> int {
 	}
 
 	return boost::report_errors();
+} catch(...) {
+	throw;
+	return 1;
 }
 
 	// #if 0

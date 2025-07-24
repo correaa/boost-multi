@@ -211,30 +211,5 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// std::vector<decltype(AA[0])> vv(3, AA[0]);
 	}
 
-	// vvv this test gives an error with Windows' GCC
-	// BOOST_AUTO_TEST_CASE(submultis_are_allocable) {
-	//  multi::array<double, 2> const AA = {
-	//    {1.0, 2.0},
-	//    {3.0, 4.0},
-	//  };
-	// [[maybe_unused]] auto pp = std::unique_ptr<multi::array<double, 1>>(new multi::array<double, 1>{AA[0]});  // NOLINT(modernize-make-unique) testing new
-	// BOOST_TEST(pp);
-	// }
-
-	//  vvv this test gives an error with Windows' GCC
-	// BOOST_AUTO_TEST_CASE(submultis_are_placeable) {
-	//  multi::array<double, 2> const AA = {
-	//    {1.0, 2.0},
-	//    {3.0, 4.0},
-	//  };
-
-	//  using D1 = multi::array<double, 1>;
-
-	//  void* buf = ::operator new(sizeof(D1));
-	//  D1*   pd1 = new (buf) D1{AA[0]};
-	//  pd1->~D1();  // NOSONAR(cpp:S3432) testing placement new
-	//  ::operator delete(buf);
-	// }
-
 	return boost::report_errors();
 }
