@@ -1,17 +1,17 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for array, apply, operator==, layout_t
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for fill
 // #include <complex>    // for complex
-#include <cstddef>    // for size_t
-#include <iterator>   // for size
-#include <memory>     // for std::allocator  // IWYU pragma: keep
+#include <cstddef>   // for size_t
+#include <iterator>  // for size
+#include <memory>    // for std::allocator  // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>  // for decay_t
 #include <utility>  // for move
 #include <vector>   // for vector, allocator
@@ -36,10 +36,9 @@ auto eye(multi::extensions_t<2> exts) { return eye<T>(exts, std::allocator<T>{})
 
 }  // end unnamed namespace
 
-#define BOOST_AUTO_TEST_CASE(CasenamE)
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(equality_1D) {
+	// BOOST_AUTO_TEST_CASE(equality_1D)
+	{
 		multi::array<int, 1> arr  = {10, 20, 30};
 		multi::array<int, 1> arr2 = {10, 20, 30};
 
@@ -50,7 +49,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !(arr() != arr2()) );
 	}
 
-	BOOST_AUTO_TEST_CASE(equality_2D) {
+	// BOOST_AUTO_TEST_CASE(equality_2D)
+	{
 		multi::array<int, 2> arr = {
 			{10, 20, 30},
 			{40, 50, 60},
@@ -70,7 +70,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !(arr[0] != arr2[0]) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_copy_move) {
+	// BOOST_AUTO_TEST_CASE(multi_copy_move)
+	{
 		multi::array<double, 2> arr({3, 3}, 0.0);
 		multi::array<double, 2> arr2 = arr;
 		BOOST_TEST( arr == arr2 );
@@ -85,7 +86,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size(arr4) == 3 );
 	}
 
-	BOOST_AUTO_TEST_CASE(range_assignment) {
+	// BOOST_AUTO_TEST_CASE(range_assignment)
+	{
 		{
 			auto const ext = multi::make_extension_t(10L);
 
@@ -104,9 +106,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-		multi::array<int, 4> const tmp({14, 14, 7, 4});
-
+	// BOOST_AUTO_TEST_CASE(rearranged_assignment)
+	{
 		auto const ext5 = multi::extensions_t<5>{2, 14, 14, 7, 2};
 
 		[[maybe_unused]] auto const ext52 = ext5;
@@ -123,7 +124,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
 	}
 
-	BOOST_AUTO_TEST_CASE(rearranged_assignment_resize) {
+	// BOOST_AUTO_TEST_CASE(rearranged_assignment_resize)
+	{
 		multi::array<double, 2> const arrA({4, 5});
 		multi::array<double, 2>       arrB({2, 3});
 
@@ -132,11 +134,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 #ifndef _MSVER  // TODO(correaa) fix
-	// seems to produce a deterministic divide by zero
-	// Assertion failed: stride_ != 0, file D:\a\boost-multi\boost-root\boost/multi/detail/layout.hpp, line 767
-	// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : error C2220: the following warning is treated as an error
-	// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
-	// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
+				// seems to produce a deterministic divide by zero
+				// Assertion failed: stride_ != 0, file D:\a\boost-multi\boost-root\boost/multi/detail/layout.hpp, line 767
+				// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : error C2220: the following warning is treated as an error
+				// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
+				// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
 
 	// BOOST_AUTO_TEST_CASE(rvalue_assignments) {
 	//  using complex = std::complex<double>;
@@ -155,7 +157,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 #endif
 
-	BOOST_AUTO_TEST_CASE(assignments) {
+	// BOOST_AUTO_TEST_CASE(assignments)
+	{
 		{
 			std::vector<int> vec(static_cast<std::size_t>(5 * 7), 99);  // NOLINT(fuchsia-default-arguments-calls)
 
@@ -194,33 +197,42 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(assigment_temporary) {
+	// BOOST_AUTO_TEST_CASE(assigment_temporary)
+	{
 		multi::array<int, 2> Id = eye<int>(multi::extensions_t<2>({3, 3}));
 		BOOST_TEST( Id == eye<double>({3, 3}) );
 		BOOST_TEST( Id[1][1] == 1 );
 		BOOST_TEST( Id[1][0] == 0 );
 	}
 
-	BOOST_AUTO_TEST_CASE(self_assignment) {
+	// BOOST_AUTO_TEST_CASE(self_assignment)
+	{
+		// NOLINTBEGIN(fuchsia-default-arguments-calls)
 		multi::static_array<std::vector<int>, 2> arr = {
-			{std::vector<int>(10, 1), std::vector<int>(20, 2)},  // NOLINT(fuchsia-default-arguments-calls)
-			{std::vector<int>(30, 3), std::vector<int>(40, 4)},  // NOLINT(fuchsia-default-arguments-calls)
+			{std::vector<int>(10, 1), std::vector<int>(20, 2)},
+			{std::vector<int>(30, 3), std::vector<int>(40, 4)},
 		};
+		// NOLINTEND(fuchsia-default-arguments-calls)
+
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 		auto* loc = &arr[1][1][5];
 
 		auto* arr_ptr = std::addressof(arr);
-		arr = *arr_ptr;
+		arr           = *arr_ptr;
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( &arr[1][1][5] == loc );
 	}
 
-	BOOST_AUTO_TEST_CASE(static_array_move) {
+	// BOOST_AUTO_TEST_CASE(static_array_move)
+	{
+		// NOLINTBEGIN(fuchsia-default-arguments-calls)
 		multi::static_array<std::vector<int>, 2> arr = {
-			{std::vector<int>(10, 1), std::vector<int>(20, 2)},  // NOLINT(fuchsia-default-arguments-calls)
-			{std::vector<int>(30, 3), std::vector<int>(40, 4)},  // NOLINT(fuchsia-default-arguments-calls)
+			{std::vector<int>(10, 1), std::vector<int>(20, 2)},
+			{std::vector<int>(30, 3), std::vector<int>(40, 4)},
 		};
+		// NOLINTEND(fuchsia-default-arguments-calls)
+
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::static_array<std::vector<int>, 2> arr2(std::move(arr));

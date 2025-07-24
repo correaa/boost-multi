@@ -1,11 +1,11 @@
-// Copyright 2022-2024 Alfredo A. Correa
+// Copyright 2022-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>  // for subarray, array, range, operator!=
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for fill, copy, for_each
 #include <iostream>     // for operator<<, basic_ostream::opera...
@@ -54,10 +54,9 @@ auto fill_2d_99(Array1D&& coll) -> Array1D&& {
 }
 }  // end unnamed namespace
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(const_views) {
+	// BOOST_AUTO_TEST_CASE(const_views)
+	{
 		multi::array<int, 1> coll1 = {0, 8, 15, 47, 11, 42};
 		print(coll1);  // prints "0, 8, 15, 47, 11, 42"
 
@@ -67,7 +66,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		print(coll1_take3);  // prints "0, 8, 15"
 	}
 
-	BOOST_AUTO_TEST_CASE(mutating_views) {
+	// BOOST_AUTO_TEST_CASE(mutating_views)
+	{
 		multi::array<int, 1> coll1 = {0, 8, 15, 47, 11, 42};
 
 		fill_99(coll1);
@@ -86,7 +86,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		(void)coll2, (void)coll1_take3_const, (void)coll1_take3;
 	}
 
-	BOOST_AUTO_TEST_CASE(const_views_2d) {
+	// BOOST_AUTO_TEST_CASE(const_views_2d)
+	{
 		multi::array<int, 2> coll1 = {
 			{0, 8, 15, 47, 11, 42},
 			{0, 8, 15, 47, 11, 42},
@@ -100,7 +101,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		print_2d(coll1_take3);  // prints "0, 8, 15"
 	}
 
-	BOOST_AUTO_TEST_CASE(mutating_views_2d) {
+	// BOOST_AUTO_TEST_CASE(mutating_views_2d)
+	{
 		multi::array<int, 2> coll1 = {
 			{0, 8, 15, 47, 11, 42},
 			{0, 8, 15, 47, 11, 42},

@@ -15,7 +15,7 @@
 #include <iterator>   // for size, back_insert...
 #include <memory>     // for make_unique, uniq...
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
-#   include <memory_resource>  // for monotonic_buffer_...
+#include <memory_resource>  // for monotonic_buffer_...
 #endif
 #include <new>      // for operator new  // NOLINT(misc-include-cleaner)
 #include <string>   // for basic_string, string
@@ -28,16 +28,16 @@ template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL * 4UL
 using small_array = multi::static_array<T, D, multi::detail::static_allocator<T, Capacity>>;
 // https://godbolt.org/z/d8ozWahna
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(static_array_allocator) {
+	// static_array_allocator
+	{
 		multi::array<int, 2> const                             ma({2, 3}, 99);
 		multi::static_array<int, 2, std::allocator<int>> const sma(ma(), std::allocator<int>{});
 		BOOST_TEST( sma == ma );
 	}
 
-	BOOST_AUTO_TEST_CASE(empty_stride) {
+	// BOOST_AUTO_TEST_CASE(empty_stride)
+	{
 		multi::array<double, 2> ma;
 		BOOST_TEST(ma.size() == 0);
 		BOOST_TEST(ma.stride() != 0);
@@ -60,7 +60,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( ma[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
 	}
 
-	BOOST_AUTO_TEST_CASE(std_vector_of_arrays_check_size) {
+	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_check_size)
+	{
 		multi::array<int, 2> const ma;
 		BOOST_TEST( ma.size() == 0 );
 		BOOST_TEST( ma.num_elements() == 0 );
@@ -70,7 +71,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( va[0].size() == 0 );
 	}
 
-	BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_emplaceback_ctor) {
+	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_emplaceback_ctor)
+	{
 		std::vector<multi::array<int, 2>> va;
 
 		va.emplace_back(multi::extensions_t<2>{3, 3}, 3);
@@ -79,7 +81,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		va.emplace_back(multi::extensions_t<2>{0, 0}, 0);
 	}
 
-	BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_emplaceback) {
+	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_emplaceback)
+	{
 		std::vector<multi::array<int, 2>> va;
 
 		va.emplace_back(multi::array<int, 2>({2, 2}, 2));
@@ -87,7 +90,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		va.emplace_back(multi::array<int, 2>({0, 0}, 0));
 	}
 
-	BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_pushback) {
+	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_pushback)
+	{
 		std::vector<multi::array<int, 2>> va;
 
 		va.push_back(multi::array<int, 2>({2, 2}, 2));
@@ -95,7 +99,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		va.push_back(multi::array<int, 2>({0, 0}, 0));
 	}
 
-	BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
+	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays)
+	{
 		std::vector<multi::array<int, 2>> va;
 
 		std::transform(
@@ -104,32 +109,32 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			[](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
 		);
 
-// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+		// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va[0]) == 0 );
 		BOOST_TEST( size(va[1]) == 1 );
 		BOOST_TEST( size(va[2]) == 2 );
-// #endif
+		// #endif
 
 		BOOST_TEST( va[1] [0][0] == 1 );
 		BOOST_TEST( va[2] [0][0] == 2 );
 
 		using namespace std::string_literals;  // NOLINT(build/namespaces)
 
-// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+		// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 		std::vector<multi::array<int, 2>> const wa = {
 			multi::array<int, 2>({0, 0}, 0),
 			multi::array<int, 2>({1, 1}, 1),
 			multi::array<int, 2>({2, 2}, 2),
 		};
-// #else
-//      // NOLINTNEXTLINE(fuchsia-default-arguments-calls)
-//      std::vector<multi::array<int, 2>> const wa = {
-//          multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
-//          multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
-//          multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
-//      };
-// #endif
+		// #else
+		//      // NOLINTNEXTLINE(fuchsia-default-arguments-calls)
+		//      std::vector<multi::array<int, 2>> const wa = {
+		//          multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
+		//          multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
+		//          multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
+		//      };
+		// #endif
 
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );
@@ -146,7 +151,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( ua == va );
 	}
 
-	BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int) {
+	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int)
+	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls)  // string uses default parameter
 		std::vector<multi::array<std::string, 2>> va;
 		std::transform(
@@ -155,29 +161,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			[](auto idx) { return multi::array<std::string, 2>({idx, idx}, std::to_string(idx)); }
 		);
 
-// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+		// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va[0]) == 0 );
 		BOOST_TEST( size(va[1]) == 1 );
 		BOOST_TEST( size(va[2]) == 2 );
-// #endif
+		// #endif
 		using namespace std::string_literals;  // NOLINT(build/namespaces)
 
 		BOOST_TEST( va[1] [0][0] == "1"s );  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 		BOOST_TEST( va[2] [0][0] == "2"s );
 
-// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
+		// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		std::vector<multi::array<std::string, 2>> const wa = {
 			multi::array<std::string, 2>({0, 0}, "0"s),
 			multi::array<std::string, 2>({1, 1}, "1"s),
 			multi::array<std::string, 2>({2, 2}, "2"s),
 		};
-// #else
-//      std::vector<multi::array<std::string, 2>> const wa = {
-//          multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
-//          multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
-//          multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
-//      };
-// #endif
+		// #else
+		//      std::vector<multi::array<std::string, 2>> const wa = {
+		//          multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
+		//          multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
+		//          multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
+		//      };
+		// #endif
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va) == size(wa) );
@@ -201,7 +207,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 // TODO(correaa) make this code work with nvcc compiler (non device function called from device host through adl uninitialized_fill)
 #if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
-	BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
+	// BOOST_AUTO_TEST_CASE(array1d_of_arrays2d)
+	{
 		multi::array<multi::array<std::string, 2>, 1> arr(multi::extensions_t<1>(multi::iextension{10}), multi::array<std::string, 2>{});
 		BOOST_TEST( size(arr) == 10 );
 
@@ -218,7 +225,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[8][4][4] == "8"s );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_3d_of_array_2d) {
+	// BOOST_AUTO_TEST_CASE(array_3d_of_array_2d)
+	{
 		multi::array<multi::array<int, 3>, 2> AA({10, 20}, multi::array<int, 3>{});
 		std::transform(AA.extension().begin(), AA.extension().end(), AA.begin(), AA.begin(), [](auto idx, auto&& row) -> decltype(row) {
 			std::transform(row.extension().begin(), row.extension().end(), row.begin(), [idx](auto jdx) {
@@ -235,7 +243,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( AA[9][19][1][1][1] == 99 );
 	}
 
-	BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init) {
+	// BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init)
+	{
 		multi::array<multi::array<int, 3>, 2> AA({10, 20});
 		std::transform(extension(AA).begin(), extension(AA).end(), AA.begin(), AA.begin(), [](auto idx, auto&& row) -> decltype(row) {
 			std::transform(extension(row).begin(), extension(row).end(), row.begin(), [idx](auto jdx) {
@@ -252,14 +261,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 
-	BOOST_AUTO_TEST_CASE(const_elements) {
+	// BOOST_AUTO_TEST_CASE(const_elements)
+	{
 		auto ptr = std::make_unique<int const>(2);
 		// ok, can't assign  //  *ptr = 3.0;
 		BOOST_TEST( *ptr == 2 );
 	}
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
-	BOOST_AUTO_TEST_CASE(pmr) {
+	// BOOST_AUTO_TEST_CASE(pmr)
+	{
 		std::array<char, 13> buffer = {
 			{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}
 		};
@@ -276,44 +287,46 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(( buffer != std::array<char, 13>{{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}} ));
 
-#   if defined(__GLIBCXX__)
+#if defined(__GLIBCXX__)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'x', 'y', 'z', '&', 'o', 'o', 'o', 'o', 'o', 'o', 'A', 'B', 'C'}} ));
-#   endif
-#   if defined(_LIBCPP_VERSION)
+#endif
+#if defined(_LIBCPP_VERSION)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'0', '1', '2', 'o', 'o', 'o', 'o', 'o', 'o', 'x', 'y', 'z', '&'}} ));
-#   endif
+#endif
 
 		BOOST_TEST(Aarr[0][0] == 'x');
 		BOOST_TEST(Barr[0][0] == 'o');
 	}
 
-	BOOST_AUTO_TEST_CASE(pmr2) {
+	// BOOST_AUTO_TEST_CASE(pmr2)
+	{
 		// clang-format off
 	std::array<char, 13> buffer = {{'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'}};
 		// clang-format on
 
 		std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
-#   ifndef _MSC_VER
+#ifndef _MSC_VER
 		multi::pmr::array<char, 2> Aarr({2, 2}, 'a', &pool);
 		multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
-#   else
+#else
 		multi::pmr::array<char, 2> Aarr(multi::extensions_t<2>{2, 2}, 'a', &pool);
 		multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
-#   endif
+#endif
 
-#   if defined(__GLIBCXX__)
+#if defined(__GLIBCXX__)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
-#   endif
-#   if defined(_LIBCPP_VERSION)
+#endif
+#if defined(_LIBCPP_VERSION)
 		BOOST_TEST(( buffer == std::array<char, 13>{{'X', 'X', 'X', 'b', 'b', 'b', 'b', 'b', 'b', 'a', 'a', 'a', 'a'}} ));
-#   endif
+#endif
 
 		BOOST_TEST(Aarr[0][0] == 'a');
 		BOOST_TEST(Barr[0][0] == 'b');
 	}
 
-	BOOST_AUTO_TEST_CASE(pmr_double_uninitialized) {
+	// BOOST_AUTO_TEST_CASE(pmr_double_uninitialized)
+	{
 		std::array<int, 12> buffer{
 			{4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999}
 		};
@@ -325,16 +338,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( buffer[0] == 4 );
 		BOOST_TEST( buffer[1] == 5 );
 
-#   if defined(__GLIBCXX__)
+#if defined(__GLIBCXX__)
 		BOOST_TEST(Aarr[0][0] == 4);
-#   endif
-#   if defined(_LIBCPP_VERSION)
+#endif
+#if defined(_LIBCPP_VERSION)
 		BOOST_TEST(Aarr[0][0] == 996);
-#   endif
+#endif
 	}
 #endif
 
-	BOOST_AUTO_TEST_CASE(static_allocator) {
+	// BOOST_AUTO_TEST_CASE(static_allocator)
+	{
 		using T = int;
 		multi::detail::static_allocator<T, 32> sa{};
 
@@ -347,18 +361,77 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		sa.deallocate(pp, 10);
 	}
 
-#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L)
-	constexpr auto f() {
+// Clang-20 likely has incompatibility with GCC-14 here since the error points to the STL:
+/*
+ *libs/boost-multi/test/allocator.cpp:378:18: error: constexpr variable 'gg' must be initialized by a constant expression
+  378 |                 constexpr auto gg = g();
+	  |                                ^    ~~~
+/usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_algobase.h:403:18: note: assignment to object outside its lifetime is not allowed in a constant expression
+  403 |               *__result = *__first;
+	  |               ~~~~~~~~~~^~~~~~~~~~
+/usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_algobase.h:517:9: note: in call to '__copy_m<const int *, boost::multi::array_iterator<int, 1, int *, false, false, long>>(&{4, 5, 6}[0], &{4, 5, 6}[3], {{}, {{}, {}}, {{}}, {{{{}}}}, {}, &{*new int[3]#0}[0], 1})'
+  517 |         return std::__copy_move<_IsMove, false, _Category>::
+	  |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  518 |           __copy_m(__first, __last, __result);
+	  |           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_algobase.h:548:14: note: in call to '__copy_move_a2<false, const int *, boost::multi::array_iterator<int, 1, int *, false, false, long>>(&{4, 5, 6}[0], &{4, 5, 6}[3], {{}, {{}, {}}, {{}}, {{{{}}}}, {}, &{*new int[3]#0}[0], 1})'
+  548 |     { return std::__copy_move_a2<_IsMove>(__first, __last, __result); }
+	  |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_algobase.h:556:3: note: in call to '__copy_move_a1<false, const int *, boost::multi::array_iterator<int, 1, int *, false, false, long>>(&{4, 5, 6}[0], &{4, 5, 6}[3], {{}, {{}, {}}, {{}}, {{{{}}}}, {}, &{*new int[3]#0}[0], 1})'
+  556 |                 std::__copy_move_a1<_IsMove>(std::__niter_base(__first),
+	  |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  557 |                                              std::__niter_base(__last),
+	  |                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~
+  558 |                                              std::__niter_base(__result)));
+	  |                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_algobase.h:650:14: note: in call to '__copy_move_a<false, const int *, boost::multi::array_iterator<int, 1, int *, false, false, long>>(&{4, 5, 6}[0], &{4, 5, 6}[3], {{}, {{}, {}}, {{}}, {{{{}}}}, {}, &{*new int[3]#0}[0], 1})'
+  650 |       return std::__copy_move_a<__is_move_iterator<_II>::__value>
+	  |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  651 |              (std::__miter_base(__first), std::__miter_base(__last), __result);
+	  |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+./boost/multi/detail/adl.hpp:306:11: note: in call to 'copy<const int *, boost::multi::array_iterator<int, 1, int *, false, false, long>>(&{4, 5, 6}[0], &{4, 5, 6}[3], {{}, {{}, {}}, {{}}, {{{{}}}}, {}, &{*new int[3]#0}[0], 1})'
+  306 |                         return std::              copy(first, last, d_first);
+	  |                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+./boost/multi/detail/adl.hpp:327:93: note: (skipping 5 calls in backtrace; use -fconstexpr-backtrace-limit=0 to see all)
+  327 |         template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
+	  |                                                                                                    ^
+./boost/multi/array.hpp:271:55: note: in call to 'static_array<const int *, long>(&{4, 5, 6}[0], &{4, 5, 6}[3], allocator_type{})'
+  271 |         constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
+	  |                                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+./boost/multi/array.hpp:1215:35: note: in call to 'static_array<const int *, long>(&{4, 5, 6}[0], &{4, 5, 6}[3])'
+ 1215 |         using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
+	  |                                          ^~~~~~~~~~~~
+./boost/multi/array.hpp:1232:42: note: in implicit initialization for inherited constructor of 'array<int, 1>'
+ 1232 |         : static_{(ilv.size()==0)?array<T, D>():array<T, D>(ilv.begin(), ilv.end())} {
+	  |                                                 ^
+libs/boost-multi/test/allocator.cpp:364:4: note: in call to 'array({&{4, 5, 6}[0], 3})'
+  364 |                         {4, 5, 6},
+	  |                         ^~~~~~~~~
+libs/boost-multi/test/allocator.cpp:378:23: note: in call to 'g.operator()()'
+  378 |                 constexpr auto gg = g();
+	  |                                     ^~~
+libs/boost-multi/test/allocator.cpp:379:17: error: static assertion expression is not an integral constant expression
+  379 |                 static_assert(gg == 10);
+	  |                               ^~~~~~~~
+libs/boost-multi/test/allocator.cpp:379:17: note: initializer of 'gg' is not a constant expression
+libs/boost-multi/test/allocator.cpp:378:18: note: declared here
+  378 |                 constexpr auto gg = g();
+	  |                                ^
+2 errors generated.
+*/
+#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ != 20)
+	auto f = []() {
 		std::vector<int> v = {1, 2, 3};
 		return v.size();
-	}
+	};
 
-	BOOST_AUTO_TEST_CASE(constexpr_allocator_vector) {
+	// constexpr_allocator_vector
+	{
 		static_assert(f() == 3);
 		BOOST_TEST( f() == 3 );
 	}
 
-	constexpr auto g() {
+	auto g = []() {
 		multi::array<int, 2> arr = {
 			{4, 5, 6},
 			{1, 2, 3},
@@ -370,9 +443,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		auto ret = arr[1][1];
 		return ret;
-	}
+	};
 
-	BOOST_AUTO_TEST_CASE(constexpr_allocator) {
+	// constexpr_allocator
+	{
 		constexpr auto gg = g();
 		static_assert(gg == 10);
 		BOOST_TEST( gg == 10 );
@@ -380,7 +454,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 #if !defined(_MSC_VER)  // static allocator does not work with MSVC implementation pf vector
-	BOOST_AUTO_TEST_CASE(static_allocator_on_vector_int) {
+	// BOOST_AUTO_TEST_CASE(static_allocator_on_vector_int)
+	{
 		std::vector<int, multi::detail::static_allocator<int, 32>> vv(10, 42);  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( vv[3] == 42 );
 
@@ -402,7 +477,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// }
 	}
 
-	BOOST_AUTO_TEST_CASE(static_allocator_on_vector_string) {
+	// BOOST_AUTO_TEST_CASE(static_allocator_on_vector_string)
+	{
 		std::string const cat = "catcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcatcat";  // NOLINT(fuchsia-default-arguments-calls)
 		std::string const dog = "dogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdog";  // NOLINT(fuchsia-default-arguments-calls)
 
@@ -450,7 +526,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  //BOOST_TEST( ww[0][0].empty() );
 	// }
 
-	BOOST_AUTO_TEST_CASE(small_array_int) {
+	// BOOST_AUTO_TEST_CASE(small_array_int)
+	{
 		small_array<int, 2, 4UL * 4UL> vv({4, 4}, 42);
 
 		BOOST_TEST( vv[3][3] == 42 );
@@ -510,7 +587,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 
-	BOOST_AUTO_TEST_CASE(props_of_static_allocator) {
+	// BOOST_AUTO_TEST_CASE(props_of_static_allocator)
+	{
 		{
 			std::vector<int> vv(20, 11);  // NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int> ww = vv;
@@ -545,7 +623,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(assignment_2D_mutant) {
+	// BOOST_AUTO_TEST_CASE(assignment_2D_mutant)
+	{
 		multi::array<int, 2> arr = {
 			{10, 20, 30},
 			{40, 50, 60},

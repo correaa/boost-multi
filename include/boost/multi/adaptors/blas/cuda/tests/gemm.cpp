@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/test/unit_test.hpp>  // TODO(correaa) convert into lightweight test
+// #include <boost/test/unit_test.hpp>  // TODO(correaa) convert into lightweight test
 #include <boost/timer/timer.hpp>
 
 #include <boost/multi/adaptors/cuda/cublas.hpp>

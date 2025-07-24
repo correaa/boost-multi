@@ -357,18 +357,18 @@ class sign {
 	decltype(FFTW_FORWARD) value_;
 
  public:
-	constexpr sign(decltype(FFTW_FORWARD) value) noexcept : value_{value} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr explicit sign(decltype(FFTW_FORWARD) value) noexcept : value_{value} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	static sign const backward;
 	static sign const none    ;
 	static sign const forward ;
 
-	constexpr operator decltype(FFTW_FORWARD)() const noexcept { return value_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr explicit operator decltype(FFTW_FORWARD)() const noexcept { return value_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 };
 
-inline sign const sign::backward = FFTW_BACKWARD;
-inline sign const sign::none     = 0;
-inline sign const sign::forward  = FFTW_FORWARD;
+inline sign const sign::backward{FFTW_BACKWARD};
+inline sign const sign::none    {0};
+inline sign const sign::forward {FFTW_FORWARD};
 
 inline auto const backward = sign::backward;
 inline auto const none     = sign::none;

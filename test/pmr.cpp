@@ -7,30 +7,26 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <cmath>      // for abs  // IWYU pragma: keep
+#include <cmath>  // for abs  // IWYU pragma: keep
 // IWYU pragma: no_include <cstdlib>                          // for abs
-#include <iterator>    // for size, data
+#include <iterator>  // for size, data
 
 #if __has_include(<memory_resource>)
-#   include <memory_resource>  // for polymorphic_allocator, monotonic...
+#include <memory_resource>  // for polymorphic_allocator, monotonic...
 #endif
 
 namespace multi = boost::multi;
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(dummy_test) {
-	}
-
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
-	BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
+	// BOOST_AUTO_TEST_CASE(pmr_partially_formed)
+	{
 		{
-#   if defined(__clang__)
-#       pragma clang diagnostic push
-#       pragma clang diagnostic ignored "-Wunknown-warning-option"
-#       pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#   endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 
 			// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 			char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";
@@ -42,9 +38,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( buffer[ 0] == '0' );  // buffer is intact when initializing without value
 			BOOST_TEST( buffer[13] == '3' );
 
-#   if defined(__clang__)
-#       pragma clang diagnostic pop
-#   endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 			BOOST_TEST( arr.num_elements() == 2*3L );
 			//  BOOST_TEST( arr[0][0] != 0.0 );

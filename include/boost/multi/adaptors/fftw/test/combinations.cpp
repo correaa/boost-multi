@@ -1,9 +1,6 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
-
-// #include <boost/test/tools/fpc_tolerance.hpp>  // TODO(correaa) use lightweight
-// #include <boost/test/included/unit_test.hpp>
 
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
@@ -45,8 +42,8 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	constexpr auto exts = multi::extensions_t<4>({6, 12, 24, 12});
 
 	multi::fftw::environment const env;

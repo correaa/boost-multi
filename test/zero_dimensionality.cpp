@@ -7,10 +7,10 @@
 
 // IWYU pragma: no_include <algorithm>  // for copy
 #include <complex>  // for complex
-#include <memory>  // for allocator  // IWYU pragma: keep
+#include <memory>   // for allocator  // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
-// #include <utility>  // for move
-#include <vector>  // for vector, allocator
+#include <utility>  // for move
+#include <vector>   // for vector, allocator
 
 namespace multi = boost::multi;
 
@@ -79,25 +79,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array_ptr<int, 1> const ap1(&doub, multi::extensions_t<1>({0, 1}));
 			BOOST_TEST( (*ap1).base() == &doub );
 			BOOST_TEST( ap1->base() == &doub );
-
-			// multi::array_ptr<int, 0> const ap0(&doub, {});
-
-			// BOOST_TEST(( ap0 == multi::array_ptr<int, 0>(&doub, {}) ));
-			// BOOST_TEST(( ap0 != multi::array_ptr<int, 0>(&dd, {}) ));
-			// // BOOST_TEST( ap0->base() == &doub );
-			// // BOOST_TEST( (*ap0).base() == &doub );
-
-			// multi::array_ptr<int, 0> const ap0dd{&dd};
-			// BOOST_TEST( ap0dd != ap0 );
-			// BOOST_TEST( *ap0 == *ap0dd );
-			// int d3 = 3141592;
-			// BOOST_TEST(( *multi::array_ptr<int, 0>(&d3, {}) == 3141592 ));
 		}
 		{
-			multi::array<int, 0> const arr( {}, 5 );
+			multi::array<int, 0> const arr({}, 5);
 			BOOST_TEST( arr.num_elements() == 1 );
 			auto arr_val = int{arr};
 			BOOST_TEST( arr_val == 5 );
+		}
+		{
+			multi::array<int, 0> arr1(5);
+			BOOST_TEST( arr1.num_elements() == 1 );
+
+			auto const* arr1_base = arr1.base();
+
+			auto const arr2 = std::move(arr1);
+			BOOST_TEST( arr2.num_elements() == 1 );
+			BOOST_TEST( int{arr2} == 5 );
+			BOOST_TEST( arr2.base() == arr1_base );
 		}
 	}
 

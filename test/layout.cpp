@@ -4,14 +4,16 @@
 
 #include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iterator>   // for size
 #if __cplusplus > 201703L
-#   if __has_include(<ranges>)
-#       include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
-#   endif
+#if __has_include(<ranges>)
+#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#endif
 #endif
 #include <tuple>   // for make_tuple, tuple_element<>::type
 #include <vector>  // for vector
@@ -27,11 +29,9 @@ auto second_finish(multi::extensions_t<3> exts) {
 }
 }  // namespace
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(extensions_3D) {
+	// BOOST_AUTO_TEST_CASE(extensions_3D)
+	{
 		BOOST_TEST( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
 		BOOST_TEST( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
 		BOOST_TEST( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
@@ -40,7 +40,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( 20 == second_finish(exts) );
 	}
 
-	BOOST_AUTO_TEST_CASE(extensions_to_linear) {
+	// BOOST_AUTO_TEST_CASE(extensions_to_linear)
+	{
 		multi::extensions_t<3> exts{4, 5, 3};
 		BOOST_TEST( exts.to_linear(0, 0, 0) ==  0 );
 		BOOST_TEST( exts.to_linear(0, 0, 1) ==  1 );
@@ -66,10 +67,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(contiguous_layout) {
+	// BOOST_AUTO_TEST_CASE(contiguous_layout)
+	{
 		std::vector<int> vec(10, 99);  // NOLINT(fuchsia-default-arguments-calls)
 		using ArrayRef = multi::array_ref<int, 1, int*, multi::contiguous_layout<>>;
 		auto arr       = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
+
+		BOOST_TEST( &arr[1] == &vec[1] );
 
 		static_assert(
 			std::is_base_of_v<
@@ -103,7 +107,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				decltype(arr.cbegin())::iterator_category>
 		);
 
-#if (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && defined(__cpp_lib_ranges) && (!defined(__clang__) || __clang_major__ != 10)
 		static_assert(
 			std::is_base_of_v<
 				std::contiguous_iterator_tag,
@@ -186,15 +190,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !d2D.rotated()[2].is_compact() );
 	}
 
-	BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
+	// BOOST_AUTO_TEST_CASE(extensions_layout_to_linear)
+	{
 		multi::array<double, 3> arr({40, 50, 80});
 
 		auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
 #if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wunknown-warning-option"
-#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
 		for(int i = 0; i != 10; ++i) {
@@ -207,11 +212,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 #if defined(__clang__)
-#   pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
+	// BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2)
+	{
 		multi::array<double, 3> arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
 			multi::extensions_t<3>
@@ -226,9 +232,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const [is, js, ks] = rot.extensions();
 
 #if defined(__clang__)
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wunknown-warning-option"
-#   pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		for(auto const i : is) {
@@ -241,11 +247,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 #if defined(__clang__)
-#   pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(linearize) {
+	// BOOST_AUTO_TEST_CASE(linearize)
+	{
 		multi::array<double, 3> const arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
 			multi::extensions_t<3>
@@ -266,7 +273,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<2>(point) == 25 );
 	}
 
-	BOOST_AUTO_TEST_CASE(layout_tuple_2d) {
+	// BOOST_AUTO_TEST_CASE(layout_tuple_2d)
+	{
 		multi::extensions_t<2> const x1({51, 52});
 		multi::extensions_t<2> const x2({multi::iextension(0, 51), multi::iextension(0, 52)});
 
@@ -300,7 +308,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( x1 == x10 );
 	}
 
-	BOOST_AUTO_TEST_CASE(layout_tuple_3d) {
+	// BOOST_AUTO_TEST_CASE(layout_tuple_3d)
+	{
 		multi::extensions_t<3> const x1({51, 52, 53});
 		multi::extensions_t<3> const x2({
 			multi::iextension{0, 51},
@@ -332,7 +341,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( x1 == x8 );
 	}
 
-	BOOST_AUTO_TEST_CASE(layout_0) {
+	// BOOST_AUTO_TEST_CASE(layout_0)
+	{
 		multi::array<double, 3> arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
 			multi::extensions_t<3>
@@ -350,7 +360,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[0][0].size() == 53 );
 	}
 
-	BOOST_AUTO_TEST_CASE(layout_1) {
+	// BOOST_AUTO_TEST_CASE(layout_1)
+	{
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): testing feature
 		double arr[25][25][25];  // this can overflow the stack: double arr[50][50][50];  50*50*50*8bytes = 1MB
 
@@ -364,7 +375,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST(( extension(arr) == multi::irange{0, 25} ));
 	}
 
-	BOOST_AUTO_TEST_CASE(layout_2) {
+	// BOOST_AUTO_TEST_CASE(layout_2)
+	{
 		std::array<std::array<std::array<double, 25>, 25>, 25> const arr{};
 		using multi::size;
 		BOOST_TEST( size(arr) == 25 );
@@ -376,7 +388,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	////
 
-	BOOST_AUTO_TEST_CASE(layout_3) {
+	// BOOST_AUTO_TEST_CASE(layout_3)
+	{
 		multi::array<double, 2> arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
 			multi::extensions_t<2>
@@ -397,7 +410,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !(arr.layout() <  arr.layout()) );
 	}
 
-	BOOST_AUTO_TEST_CASE(layout_AA) {
+	// BOOST_AUTO_TEST_CASE(layout_AA)
+	{
 		multi::array<int, 2> const A2 = {
 			{1, 2, 3},
 			{4, 5, 6},
@@ -405,9 +419,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
-#   if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
-#       if !defined(__NVCC__)
-#           if !defined(_MSC_VER)
+#if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
+#if !defined(__NVCC__)
+#if !defined(_MSC_VER)
 		static_assert(std::ranges::random_access_range<decltype(A2.extension())>);
 
 		auto tiA2 = std::views::transform(
@@ -417,19 +431,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 		BOOST_TEST( *tiA2.begin() == 0 );
 		BOOST_TEST( tiA2[0] == 0 );
-#           endif
-#       endif
-#   endif
+#endif
+#endif
+#endif
 #endif
 
 		BOOST_TEST( size(A2) == 3 );
 
-		multi::array<int, 2> B2(
-#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<2>
-#endif
-			{4, 4}
-		);
+		multi::array<int, 2> B2({4, 4}, 5);
 
 		BOOST_TEST( size(B2) == 4 );
 		B2[3][3] = 99;
@@ -438,34 +447,39 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<int, 2> B2copy{B2({0, 2}, {0, 2})};
 
-		auto B2copy2 = B2({0, 2}, {0, 2}).decay();
-
 		BOOST_TEST( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
 
+		auto B2copy2 = B2({0, 2}, {0, 2}).decay();
+
+		BOOST_TEST( B2copy2 == B2({0, 2}, {0, 2}) );
+		BOOST_TEST( B2copy2.base() != B2({0, 2}, {0, 2}).base() );
+
 		// clang-format off
-	std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
-		{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
-		{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
-	}};
+		std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
+			{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
+			{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
+		}};
 		// clang-format on
 
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
 	}
 
-	////
+	// BOOST_AUTO_TEST_CASE(layout_BB)
+	{
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+		double arr[3][4][5] = {};
 
-	// BOOST_AUTO_TEST_CASE(layout_BB) {
-	//  {
-	//      // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	//      double arr[3][4][5] = {};
-	//      using multi::dimensionality;
-	//      static_assert(dimensionality(arr) == 3);
-	//      using multi::extensions;
-	//      auto xA = extensions(arr);
+		using multi::dimensionality;
+		static_assert(dimensionality(arr) == 3);
 
-	//      BOOST_TEST( size(std::get<0>(xA)) == 3 );
-	//      BOOST_TEST( size(std::get<1>(xA)) == 4 );
-	//      BOOST_TEST( size(std::get<2>(xA)) == 5 );
+		using multi::extensions;
+		auto xA = extensions(arr);
+
+		using std::get;  // needed for C++17
+		BOOST_TEST( size(get<0>(xA)) == 3 );
+		BOOST_TEST( size(get<1>(xA)) == 4 );
+		BOOST_TEST( size(get<2>(xA)) == 5 );
+	}
 
 	//      static_assert(multi::stride(arr) == 20);
 
