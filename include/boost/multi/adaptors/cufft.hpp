@@ -112,17 +112,16 @@ class plan {
 	plan(plan const&) = delete;
 
 	plan(plan&&) noexcept = delete;
-	// plan(plan&& other) noexcept :
-	//  alloc_{std::move(other.alloc_)},
-	//  workSize_{std::exchange(other.workSize_, {})},
-	//  workArea_{std::exchange(other.workArea_, {})},
-	//  h_{std::exchange(other.h_, {})},
-	//  which_iodims_{std::exchange(other.which_iodims_, {})},
-	//  first_howmany_{std::exchange(other.first_howmany_, {})}
-	// {
-	//  other.used_ = true; // moved-from object cannot be used
-	//  used_ = false;
-	// }
+	plan(plan&& other) noexcept
+	: alloc_{std::move(other.alloc_)},
+	  workSize_{std::exchange(other.workSize_, {})},
+	  workArea_{std::exchange(other.workArea_, {})},
+	  h_{std::exchange(other.h_, {})},
+	  which_iodims_{std::exchange(other.which_iodims_, {})},
+	  first_howmany_{std::exchange(other.first_howmany_, {})} {
+		// other.used_ = true;  // moved-from object cannot be used
+		// used_       = false;
+	}
 
 	auto operator=(plan const&) = delete;
 	auto operator=(plan&&) = delete;
