@@ -247,7 +247,7 @@ class plan {
 
 		std::sort(which_iodims_.begin() + first_howmany_, which_iodims_.begin() + D, [](auto const& alpha, auto const& omega){ return get<1>(alpha).n > get<1>(omega).n; });
 
-		if(first_howmany_ <= D - 1) {
+		if(first_howmany_ == D - 1) {
 			if constexpr(std::is_same_v<Alloc, void*>) {  // NOLINT(bugprone-branch-clone) workaround bug in DeepSource
 				cufftSafeCall(::cufftPlanMany(
 					/*cufftHandle *plan*/ &h_,
@@ -287,6 +287,48 @@ class plan {
 			++first_howmany_;
 			return;
 		}
+
+		if(first_howmany_ <= D - 2) {
+			if constexpr(std::is_same_v<Alloc, void*>) {  // NOLINT(bugprone-branch-clone) workaround bug in DeepSource
+				cufftSafeCall(::cufftPlanMany(
+					/*cufftHandle *plan*/ &h_,
+					/*int rank*/          dims_end - dims.begin(),
+					/*int *n*/            ion.data(),
+					/*int *inembed*/      inembed.data(),
+					/*int istride*/       istride,
+					/*int idist*/         which_iodims_[first_howmany_].second.is,
+					/*int *onembed*/      onembed.data(),
+					/*int ostride*/       ostride,
+					/*int odist*/         which_iodims_[first_howmany_].second.os,
+					/*cufftType type*/    CUFFT_Z2Z,
+					/*int batch*/         which_iodims_[first_howmany_].second.n
+				));
+			} else {
+				cufftSafeCall(cufftCreate(&h_));
+				cufftSafeCall(cufftSetAutoAllocation(h_, false));
+				cufftSafeCall(cufftMakePlanMany(
+					/*cufftHandle *plan*/ h_,
+					/*int rank*/          dims_end - dims.begin(),
+					/*int *n*/            ion.data(),
+					/*int *inembed*/      inembed.data(),
+					/*int istride*/       istride,
+					/*int idist*/         which_iodims_[first_howmany_].second.is,
+					/*int *onembed*/      onembed.data(),
+					/*int ostride*/       ostride,
+					/*int odist*/         which_iodims_[first_howmany_].second.os,
+					/*cufftType type*/    CUFFT_Z2Z,
+					/*int batch*/         which_iodims_[first_howmany_].second.n,
+					/*size_t **/          &workSize_
+				));
+				cufftSafeCall(cufftGetSize(h_, &workSize_));
+				workArea_ = ::thrust::raw_pointer_cast(alloc_.allocate(workSize_));
+				cufftSafeCall(cufftSetWorkArea(h_, workArea_));
+			}
+			if(!h_) { throw std::runtime_error{"cufftPlanMany null"}; }
+			++first_howmany_;
+			return;
+		}
+
 		// throw std::runtime_error{"cufft not implemented yet"};
 	}
 
