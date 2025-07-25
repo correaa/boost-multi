@@ -111,7 +111,6 @@ class plan {
 	plan() = delete;
 	plan(plan const&) = delete;
 
-	plan(plan&&) noexcept = delete;
 	plan(plan&& other) noexcept
 	: alloc_{std::move(other.alloc_)},
 	  workSize_{std::exchange(other.workSize_, {})},
