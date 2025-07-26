@@ -496,7 +496,7 @@ struct static_array                                                             
 	constexpr
 #endif
 
-		~static_array() /*noexcept*/ {
+	~static_array() /*noexcept*/ {
 		assert(this->stride() != 0);
 		destroy();
 		assert(this->stride() != 0);
