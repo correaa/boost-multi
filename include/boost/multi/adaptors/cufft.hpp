@@ -63,7 +63,6 @@ inline void implcufftSafeCall(cufftResult err, const char */*file*/, const int /
 		//fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", __FILE__, __LINE__, err, 
         //                        _cudaGetErrorEnum(err));
 		cudaDeviceReset()==cudaSuccess?void():assert(0);
-		assert(0);
 	}
 }
 
@@ -378,6 +377,7 @@ class plan {
 		//  std::terminate();
 		// }
 	}
+
 	using size_type = int;
 	using ssize_type = int;
 };
