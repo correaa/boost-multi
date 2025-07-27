@@ -493,10 +493,11 @@ struct static_array                                                             
 	}
 
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
-	constexpr
+	constexpr ~static_array()
+#else
+	~static_array()
 #endif
-
-	~static_array() /*noexcept*/ {
+	{
 		assert(this->stride() != 0);
 		destroy();
 		assert(this->stride() != 0);
@@ -1441,7 +1442,7 @@ auto operator+(Reference&& ref) -> decltype(array(std::forward<Reference>(ref)))
 
 template<class T, std::size_t N>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-auto decay(const T (&arr)[N]) noexcept -> multi::array<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>> {
+auto decay(T const (&arr)[N]) noexcept -> multi::array<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>> {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	return multi::array_cref<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>>(data_elements(arr), extensions(arr));
 }
