@@ -427,21 +427,20 @@ class cached_plan {
 	}
 };
 
-template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0, typename = decltype(::thrust::raw_pointer_cast(std::declval<In const&>().base()))>
-auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
-->decltype(cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
-	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); 
-}
+// template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0, typename = decltype(::thrust::raw_pointer_cast(std::declval<In const&>().base()))>
+// auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
+// ->decltype(cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
+// 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); 
+// }
 
-template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
+template<typename In, class Out, dimensionality_type D = In::rank::value>  // , std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 ->decltype(cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/ >{which, in.layout(), out.layout()/*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
 	if constexpr(D == 4) {
 		if(which == std::array<bool, D>{true, true, true, true}) {
 			auto const [is, js, ks, ls] = in.extensions();
-			auto tmp = +out;
-			for(auto i : is) for(auto j : js) { cufft::dft({true, true}, in                    [i][j], tmp                    [i][j], sgn); }
-			for(auto k : ks) for(auto l : ls) { cufft::dft({true, true}, tmp.rotated().rotated()[k][l], out.rotated().rotated()[k][l], sgn); }
+			for(auto i : is) for(auto j : js) { cufft::dft({true, true}, in                     [i][j], out                    [i][j], sgn); }
+			for(auto k : ks) for(auto l : ls) { cufft::dft({true, true}, out.rotated().rotated()[k][l], out.rotated().rotated()[k][l], sgn); }
 			return std::forward<Out>(out);
 		}
 	}
