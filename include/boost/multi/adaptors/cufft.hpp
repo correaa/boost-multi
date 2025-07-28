@@ -1,4 +1,4 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -57,9 +57,9 @@ static auto cuda_get_error_enum(cufftResult error) -> char const* {
 }
 
 #define cufftSafeCall(err) implcufftSafeCall(err, __FILE__, __LINE__)
-inline void implcufftSafeCall(cufftResult err, const char */*file*/, const int /*line*/) {
+inline void implcufftSafeCall(cufftResult err, const char * file, const int line) {
 	if( CUFFT_SUCCESS != err) {
-		std::cerr <<"CUFFT error in file "<< __FILE__ <<", line "<< __LINE__ <<"\nerror "<< err <<": "<< cuda_get_error_enum(err)<<"\n";
+		std::cerr <<"CUFFT error in file "<< file <<", line "<< line <<"\nerror "<< err <<": "<< cuda_get_error_enum(err)<<"\n";
 		//fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", __FILE__, __LINE__, err, 
         //                        _cudaGetErrorEnum(err));
 		cudaDeviceReset()==cudaSuccess?void():assert(0);
@@ -85,13 +85,19 @@ constexpr sign backward{CUFFT_INVERSE};
 
 static_assert(forward != none && none != backward && backward != forward);
 
+struct cufft_iodim64 {
+    std::ptrdiff_t n;
+    std::ptrdiff_t is;
+    std::ptrdiff_t os;
+};  // based on fftw_iodim64
+
 template<dimensionality_type DD, class Alloc = void*>
 class plan {
 	Alloc alloc_;
 	::size_t workSize_ = 0;
 	void* workArea_{};
 	cufftHandle h_{};  // TODO(correaa) put this in a unique_ptr
-	std::array<std::pair<bool, fftw_iodim64>, DD + 1> which_iodims_{};
+	std::array<std::pair<bool, cufft_iodim64>, DD + 1> which_iodims_{};
 	int first_howmany_{};
 
 	// mutable bool used_ = false;
@@ -138,12 +144,12 @@ class plan {
 
 		using boost::multi::detail::get;
 		auto which_iodims = std::apply([](auto... elems) {
-			return std::array<std::pair<bool, fftw_iodim64>, sizeof...(elems) + 1>{  // TODO(correaa) added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
-				std::pair<bool, fftw_iodim64>{
+			return std::array<std::pair<bool, cufft_iodim64>, sizeof...(elems) + 1>{  // TODO(correaa) added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
+				std::pair<bool, cufft_iodim64>{
 					get<0>(elems),
-					fftw_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}
+					cufft_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}
 				}...,
-				std::pair<bool, fftw_iodim64>{}
+				std::pair<bool, cufft_iodim64>{}
 			};
 		}, boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple));
 
@@ -151,10 +157,10 @@ class plan {
 
 		auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) {return std::get<0>(elem);});
 
-		std::array<fftw_iodim64, D> dims{};
+		std::array<cufft_iodim64, D> dims{};
 		auto const dims_end         = std::transform(which_iodims.begin(), part,         dims.begin(), [](auto elem) {return elem.second;});
 
-		// std::array<fftw_iodim64, D> howmany_dims{};
+		// std::array<cufftw_iodim64, D> howmany_dims{};
 		// auto const howmany_dims_end = std::transform(part, which_iodims.end() -1, howmany_dims.begin(), [](auto elem) {return elem.second;});
 
 		which_iodims_ = which_iodims;
@@ -204,6 +210,7 @@ class plan {
 
 		if(first_howmany_ == D) {
 			if constexpr(std::is_same_v<Alloc, void*>) {
+				assert( dims_end - dims.begin() < 4 );  // cufft cannot do 4D FFT
 				cufftSafeCall(::cufftPlanMany(
 					/*cufftHandle *plan*/ &h_,
 					/*int rank*/          dims_end - dims.begin(),
@@ -313,6 +320,9 @@ class plan {
 		}
 		if(first_howmany_ == DD - 1) {
 			if( which_iodims_[first_howmany_].first) {throw std::runtime_error{"logic error"};}
+
+			// std::cout << "doing an inefficient loop of " << which_iodims_[first_howmany_].second.n << std::endl;
+
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				cufftExecZ2Z(
 					h_,
@@ -326,7 +336,9 @@ class plan {
 		if(first_howmany_ == DD - 2) {
 			if( which_iodims_[first_howmany_ + 0].first) {throw std::runtime_error{"logic error0"};}
 			if( which_iodims_[first_howmany_ + 1].first) {throw std::runtime_error{"logic error1"};}
-			if(idata == odata) {throw std::runtime_error{"complicated inplace 2"};}
+
+			// std::cout << "doing an inefficient 2D loop of " << which_iodims_[first_howmany_].second.n << " " <<  which_iodims_[first_howmany_ + 1].second.n << std::endl;
+
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
 				for(int jdx = 0; jdx != which_iodims_[first_howmany_ + 1].second.n; ++jdx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
 					cufftExecZ2Z(
@@ -418,11 +430,21 @@ class cached_plan {
 template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0, typename = decltype(::thrust::raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 ->decltype(cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
-	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); }
+	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); 
+}
 
 template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 ->decltype(cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/ >{which, in.layout(), out.layout()/*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
+	if constexpr(D == 4) {
+		if(which == std::array<bool, D>{true, true, true, true}) {
+			auto const [is, js, ks, ls] = in.extensions();
+			auto tmp = +out;
+			for(auto i : is) for(auto j : js) { cufft::dft({true, true}, in                    [i][j], tmp                    [i][j], sgn); }
+			for(auto k : ks) for(auto l : ls) { cufft::dft({true, true}, tmp.rotated().rotated()[k][l], out.rotated().rotated()[k][l], sgn); }
+			return std::forward<Out>(out);
+		}
+	}
 	return cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/ >{which, in.layout(), out.layout()/*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out); }
 
 template<typename In, class Out, dimensionality_type D = In::rank::value>//, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
