@@ -493,10 +493,11 @@ struct static_array                                                             
 	}
 
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
-	constexpr
+	constexpr ~static_array() /*noexcept*/
+#else
+	~static_array() /*noexcept*/
 #endif
-
-	~static_array() /*noexcept*/ {
+	{
 		assert(this->stride() != 0);
 		destroy();
 		assert(this->stride() != 0);
