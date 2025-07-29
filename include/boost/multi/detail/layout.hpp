@@ -14,6 +14,8 @@
 #include <boost/multi/detail/tuple_zip.hpp>      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
 #include <boost/multi/detail/types.hpp>          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
 
+// #include "types.hpp"
+
 #include <algorithm>                             // for max
 #include <array>                                 // for array
 #include <cassert>                               // for assert
@@ -723,12 +725,74 @@ class contiguous_layout {
 	}
 };
 
+template<dimensionality_type D>
+struct bilayout {
+	using size_type       = multi::size_t;  // SSize;
+	using difference_type = std::make_signed_t<size_type>;
+	using index           = difference_type;
 
+	using bistride_type = std::pair<index, index>;
+	using sub_type = layout_t<D - 1>;
+
+	using dimensionality_type = typename sub_type::dimensionality_type;
+	using rank = std::integral_constant<dimensionality_type, sub_type::rank::value + 1>;
+	constexpr static auto rank_v = rank::value;
+
+	constexpr static auto dimensionality() { return rank_v; }
+
+ private:
+	bistride_type bistride_;
+	sub_type sub_;
+
+ public:
+	bilayout(bistride_type bistride, sub_type sub) : bistride_{std::move(bistride)}, sub_{std::move(sub)} {}
+
+	using offset_type = std::ptrdiff_t;
+	using stride_type = bistride_type;
+	using index_range = void;
+	using strides_type = void;
+	using extension_type = void;
+	using extensions_type = void;
+	using sizes_type = void;
+	using indexes = void;
+
+	// auto stride() const = delete;
+	auto stride() const {
+		class stride_t {
+			std::ptrdiff_t vv_ = 1;
+
+		 public:
+			explicit stride_t(std::ptrdiff_t vv) : vv_{vv} {}
+			auto operator*(std::ptrdiff_t nn) const { return stride_t{nn*vv_}; }
+			auto operator-(offset_type /*unused*/) {return *this;}
+			auto operator+(double* ptr) { return vv_ + ptr; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
+		};
+		return stride_t{1};
+	}
+	auto num_elements() const = delete;
+	auto offset() const { return offset_type{}; }
+	auto size() const = delete;
+	auto nelems() const = delete;
+	void extension() const = delete;
+	auto extensions() const = delete;
+	auto is_empty() const = delete;
+	auto empty() const = delete;
+	auto sub() const = delete;
+	auto sizes() const = delete;
+
+	auto is_compact() const = delete;
+
+	using index_extension = multi::index_extension;
+};
 
 template<dimensionality_type D, typename SSize>
 struct layout_t
 : multi::equality_comparable<layout_t<D, SSize>>
 {
+	auto flatten() const {
+		return bilayout<D - 1>{ {stride(), sub().stride()}, sub().sub() };
+	}
+
 	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, D>;
 

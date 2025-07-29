@@ -1384,7 +1384,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return const_subarray<T, D - 1, ElementPtr>{new_layout, types::base_};
 	}
 
-	void flattened() const = delete;
+	auto flattened() const {
+		auto new_layout = this->layout().flatten();
+		return boost::multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>{
+			new_layout, types::base_
+		};
+	}
+
+	// void flattened() const = delete;
 	// {
 	//  multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
 	//  return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
@@ -2833,7 +2840,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-		return *(this->base_ + (idx * this->stride() - this->offset()));
+		return *((this->stride() * idx - this->offset()) + this->base_);
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
