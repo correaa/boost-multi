@@ -1159,7 +1159,7 @@ headers:
   #- cp -r doc/multi.html .public
   # - cp -r doc/multi.adoc .public
   #- mv .public public
-  - cp boost/multi/include/array.hpp public/boost-multi.hpp
+  - cp include/boost/multi/array.hpp public/boost-multi.hpp
   - pip install --user quom
   artifacts:
     paths:
