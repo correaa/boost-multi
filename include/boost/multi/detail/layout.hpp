@@ -416,9 +416,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using nelems_type = index;
 
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
-	constexpr extensions_t(multi::size_t size) : base_{
-													 multi::index_extension{0, size}
-    } {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr extensions_t(multi::size_t size)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: base_(multi::index_extension{0, size}) {}
 
 	template<class T1>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int>  // NOLINTNEXTLINE(runtime/explicit)
@@ -1376,8 +1375,8 @@ struct convertible_tuple : Tuple {
 #pragma clang diagnostic ignored "-Wreturn-stack-address"
 #endif
 	[[deprecated("This is here for nominal compatiblity with Boost.MultiArray, this would be a dangling conversion")]]
-	operator std::ptrdiff_t const*() const&&;
-		/*{ return to_array().data(); }*/  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	operator std::ptrdiff_t const*() const&&;  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		/*{ return to_array().data(); }*/
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
