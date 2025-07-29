@@ -406,6 +406,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(      arr.layout() == arr.layout()  );
 		BOOST_TEST( !(arr.layout() <  arr.layout()) );
+
+		// auto bl = arr.layout().flatten();
+		auto const& barr = arr.flattened();
+		BOOST_TEST( &barr[10] == &arr[0][10] );
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_AA)
