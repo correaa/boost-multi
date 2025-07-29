@@ -1136,3 +1136,31 @@ pages:
     paths:
     - public
   # check for file here: https://correaa.gitlab.io/multi/multi.html
+
+headers:
+  stage: basic
+  allow_failure: true
+  #only:
+  #  refs:
+  #    - master
+  tags:
+    - non-shared
+    - docker
+  script:
+  #- apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+  #- pandoc --version
+  #- asciidoctor --version
+  #- mkdir .public
+  #- cd doc
+  # - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
+  # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
+  #- asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
+  #- cd ..
+  #- cp -r doc/multi.html .public
+  # - cp -r doc/multi.adoc .public
+  #- mv .public public
+  - cp boost/multi/include/array.hpp public/boost-multi.hpp
+  - pip install --user quom
+  artifacts:
+    paths:
+    - public
