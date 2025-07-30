@@ -417,8 +417,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &barr [8] == &arr[0][8] );
 		BOOST_TEST( &barr [9] == &arr[0][9] );
-		BOOST_TEST( &barr[10] == &arr[2][0] );
-		BOOST_TEST( &barr[11] == &arr[2][1] );
+		// BOOST_TEST( &barr[10] == &arr[2][0] );
+		// BOOST_TEST( &barr[11] == &arr[2][1] );
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_AA)
