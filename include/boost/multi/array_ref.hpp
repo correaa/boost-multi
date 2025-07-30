@@ -1385,9 +1385,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
 	auto flattened() const {
-		auto new_layout = this->layout().flatten();
+		auto new_layout = this->layout().flatten(this->base_);
 		return boost::multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>{
-			new_layout, types::base_
+			new_layout, this->base_
 		};
 	}
 

@@ -747,7 +747,7 @@ class contiguous_layout {
 	}
 };
 
-template<dimensionality_type D>
+template<dimensionality_type D, class Ptr>
 struct bilayout {
 	using size_type       = multi::size_t;  // SSize;
 	using difference_type = std::make_signed_t<size_type>;
@@ -765,9 +765,10 @@ struct bilayout {
  private:
 	bistride_type bistride_;
 	sub_type      sub_;
+	Ptr origin_;
 
  public:
-	bilayout(bistride_type bistride, sub_type sub) : bistride_{std::move(bistride)}, sub_{std::move(sub)} {}
+	bilayout(bistride_type bistride, sub_type sub, Ptr origin) : bistride_{std::move(bistride)}, sub_{std::move(sub)}, origin_{std::move(origin)} {}
 
 	using offset_type     = std::ptrdiff_t;
 	using stride_type     = bistride_type;
@@ -781,12 +782,12 @@ struct bilayout {
 	// auto stride() const = delete;
 	auto stride() const {
 		class stride_t {
-			std::ptrdiff_t vv_ = 1;
+			std::ptrdiff_t vv_;
 
 		 public:
 			explicit stride_t(std::ptrdiff_t vv) : vv_{vv} {}
 			auto operator*(std::ptrdiff_t nn) const { return stride_t{nn * vv_}; }
-			auto operator-(offset_type /*unused*/) { return *this; }
+			auto operator-(offset_type /*unused*/) const { return *this; }
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -818,10 +819,12 @@ struct bilayout {
 template<dimensionality_type D, typename SSize>
 struct layout_t
 : multi::equality_comparable<layout_t<D, SSize>> {
-	auto flatten() const {
-		return bilayout<D - 1>{
+	template<class Ptr>
+	auto flatten(Ptr origin) const {
+		return bilayout<D - 1, Ptr>{
 			{stride(), sub().stride()},
-			sub().sub()
+			sub().sub(),
+			origin
 		};
 	}
 
@@ -876,27 +879,20 @@ struct layout_t
 		class = decltype(stride_type{std::declval<OtherLayout const&>().stride()}),
 		class = decltype(offset_type{std::declval<OtherLayout const&>().offset()}),
 		class = decltype(nelems_type{std::declval<OtherLayout const&>().nelems()})>
-	BOOST_MULTI_HD constexpr explicit layout_t(OtherLayout const& other) : sub_{other.sub()},
-																		   stride_{other.stride()},
-																		   offset_{other.offset()},
-																		   nelems_{other.nelems()} {}
+	BOOST_MULTI_HD constexpr explicit layout_t(OtherLayout const& other)
+	: sub_{other.sub()}, stride_{other.stride()}, offset_{other.offset()}, nelems_{other.nelems()} {}
 
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions) : sub_{
-																						std::apply(
-																							[](auto const&... subextensions) { return multi::extensions_t<D - 1>{subextensions...}; },
-																							detail::tail(extensions.base())
-																						)
-																					},
-																					stride_{sub_.num_elements() ? sub_.num_elements() : 1}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions)
+	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}
+	, stride_{sub_.num_elements() ? sub_.num_elements() : 1}
+	, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}
+	, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides) : sub_{
-																													 std::apply(
-																														 [](auto const&... subextensions) { return multi::extensions_t<D - 1>{subextensions...}; },
-																														 detail::tail(extensions.base())
-																													 ),
-																													 detail::tail(strides)
-																												 },
-																												 stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
+	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}
+	, stride_{boost::multi::detail::get<0>(strides)}
+	, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}
+	, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}

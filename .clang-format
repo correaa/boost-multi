@@ -19,6 +19,7 @@ AllowAllArgumentsOnNextLine: false
 AllowShortLambdasOnASingleLine: Inline
 AllowShortCaseLabelsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: No
+BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
 BraceWrapping:
   BeforeLambdaBody: false
