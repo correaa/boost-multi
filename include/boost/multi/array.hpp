@@ -803,6 +803,12 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		// assert(this->stride() != 0);
 	}
 
+	explicit static_array(typename static_array::sizes_type const& sizes)  // this is a workaround for cling/cppyy
+	: static_array([&] {
+		  using std::apply;
+		  apply([](auto... sz) { return typename static_array::extensions_type{sz...}; }, sizes);
+	  }()) {}
+
 	static_array(static_array const& other, allocator_type const& alloc)  // 5b
 	: array_alloc{alloc}, ref(static_array::allocate(other.num_elements()), extensions(other)) {
 		assert(this->stride() != 0);
