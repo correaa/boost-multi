@@ -9,8 +9,7 @@
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
-#include <iostream>
-#include <iterator>  // for size
+#include <iterator>   // for size
 #if __cplusplus > 201703L
 #if __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
