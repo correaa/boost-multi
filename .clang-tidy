@@ -33,13 +33,8 @@ Checks: '*,
   -fuchsia-trailing-return,
   -llvmlibc-*,
   -modernize-use-nodiscard,
-  -readability-magic-numbers'
-
-#  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-#  -hicpp-no-array-decay,                                 // for Boost Lightweight Test
-#  -llvm-header-guard,                                    // allow PCH
-#  -misc-include-cleaner                                  // allow PCH
-#  readability-simplify-boolean-expr,                     // for Boost Lightweight Test BOOST_TEST
+  -readability-magic-numbers,
+  -readability-simplify-boolean-expr'
 
 ## explanation of the suppressed rules above:
 #  -altera-struct-pack-align,                             // this asks to use non-standard pragmas such as __attribute__((aligned(0))) and _attribute__((packed)), may interfeere with gcc/nvcc compatibility?
@@ -52,3 +47,4 @@ Checks: '*,
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // many tests use magic numbers
+#  -readability-simplify-boolean-expr.                    // not friendly to BOOST_TEST macro
