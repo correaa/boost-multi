@@ -297,7 +297,7 @@ clang++-18 mull-18:  # mull-18 crashes
 #       - build/multi_all.deb
 #   needs: ["g++", "clang++"]
 
-clang++-15 libc++:
+clang++-15 libc++ format:
   stage: build
   image: debian:stable
   tags:
