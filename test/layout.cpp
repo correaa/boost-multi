@@ -433,6 +433,34 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// ...
 		BOOST_TEST( &barr[29] == &arr[4][9] );
 
+		BOOST_TEST( arr.num_elements() == 60 );
+		BOOST_TEST( barr.size() == 30 );
+	}
+	{
+		multi::array<double, 2> arr({6, 10});
+
+		auto const& barr = arr.strided(2).transposed().strided(2).transposed().flattened();
+
+		BOOST_TEST( &barr [0] == &arr[0][0] );
+		BOOST_TEST( &barr [1] == &arr[0][2] );
+		BOOST_TEST( &barr [2] == &arr[0][4] );
+		BOOST_TEST( &barr [3] == &arr[0][6] );
+		BOOST_TEST( &barr [4] == &arr[0][8] );
+
+		BOOST_TEST( &barr [5] == &arr[2][0] );
+		BOOST_TEST( &barr [6] == &arr[2][2] );
+		BOOST_TEST( &barr [7] == &arr[2][4] );
+		BOOST_TEST( &barr [8] == &arr[2][6] );
+		BOOST_TEST( &barr [9] == &arr[2][8] );
+
+		BOOST_TEST( &barr [10] == &arr[4][0] );
+		BOOST_TEST( &barr [11] == &arr[4][2] );
+		BOOST_TEST( &barr [12] == &arr[4][4] );
+		BOOST_TEST( &barr [13] == &arr[4][6] );
+		BOOST_TEST( &barr [14] == &arr[4][8] );
+
+		BOOST_TEST( arr.num_elements() == 60 );
+		BOOST_TEST( barr.size() == 15 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_AA)
