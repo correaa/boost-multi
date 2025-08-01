@@ -830,4 +830,4 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	return boost::report_errors();
-}
+}  // NOLINT(readability/fn_size)
