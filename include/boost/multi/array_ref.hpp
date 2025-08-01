@@ -1588,10 +1588,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using const_pointer = const_ptr;
 
  private:
-#if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#endif
+// #if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
+// #pragma clang diagnostic push
+// #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+// #endif
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
  public:
@@ -1600,6 +1600,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }
 
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
+
 	// operator& is not defined for r-values anyway
 	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 	// [[deprecated("controversial")]]
@@ -1607,35 +1608,26 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// [[deprecated("controversial")]]
 	constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 
-#if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
-#pragma clang diagnostic pop
-#endif
+	// NOLINTEND(google-runtime-operator)
+
+// #if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
+// #pragma clang diagnostic pop
+// #endif
 
  private:
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
 	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->sub(), this->stride()); }
 	constexpr auto                end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }
 
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
 #pragma clang diagnostic pop
 #endif
 
  public:
-	//        BOOST_MULTI_HD constexpr     auto begin()       &       {return begin_aux_();}
-	//                       constexpr     auto end  ()       &       {return end_aux_()  ;}
-	// friend BOOST_MULTI_HD /*constexpr*/ auto begin(const_subarray& self) {return self.begin();}
-	// friend constexpr                    auto end  (const_subarray& self) {return self.end  ();}
-
-	//        constexpr     auto begin()       &&       {return begin();}
-	//        constexpr     auto end  ()       &&       {return end()  ;}
-	// friend /*constexpr*/ auto begin(const_subarray&& self) {return std::move(self).begin();}
-	// friend /*constexpr*/ auto end  (const_subarray&& self) {return std::move(self).end()  ;}
-
 	constexpr auto            begin() const& -> const_iterator { return begin_aux_(); }
 	constexpr auto            end() const& -> const_iterator { return end_aux_(); }
 	friend /*constexpr*/ auto begin(const_subarray const& self) -> const_iterator { return self.begin(); }  // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
