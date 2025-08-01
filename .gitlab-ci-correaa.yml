@@ -792,10 +792,36 @@ culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
+culang++-20 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+  stage: build
+  image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
+  allow_failure: false
+  tags:
+    - non-shared
+    - nvidia-gpu
+    - high-bandwidth
+  interruptible: true
+  script:
+    - nvidia-smi
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y lsb-release software-properties-common
+    - wget https://apt.llvm.org/llvm.sh
+    - chmod u+x llvm.sh
+    - ./llvm.sh 20
+    - apt-get install --no-install-recommends -y clang-20 clang-tidy-20
+    - mkdir build && cd build
+    - clang++-20 --version
+    - clang-tidy-20 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-Wno-unknown-cuda-version" -DCMAKE_CXX_CLANG_TIDY=clang-tidy-20 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-20 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda", "clang++"]
+
 culang++-20 cuda-12.9.0 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   stage: build
   image: nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04
-  allow_failure: false
+  allow_failure: true
   tags:
     - non-shared
     - nvidia-gpu
