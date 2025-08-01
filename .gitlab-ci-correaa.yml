@@ -1164,7 +1164,7 @@ headers:
   - cp include/boost/multi/array.hpp public/boost-multi.hpp
   - python3 -m venv .venv
   - source .venv/bin/activate
-  - pip install --user quom
+  - pip install quom
   artifacts:
     paths:
     - public
