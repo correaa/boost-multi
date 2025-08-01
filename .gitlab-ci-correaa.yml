@@ -1159,7 +1159,7 @@ headers:
   #- cp -r doc/multi.html .public
   # - cp -r doc/multi.adoc .public
   #- mv .public public
-  - apt-get -qq update && apt-get -qq install pip
+  - apt-get -qq update && apt-get -qq install pip python3-venv
   - mkdir public
   - cp include/boost/multi/array.hpp public/boost-multi.hpp
   - python3 -m venv path/to/venv
