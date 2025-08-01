@@ -1588,10 +1588,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using const_pointer = const_ptr;
 
  private:
-// #if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
-// #pragma clang diagnostic push
-// #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-// #endif
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
  public:
@@ -1610,12 +1606,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	// NOLINTEND(google-runtime-operator)
 
-// #if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
-// #pragma clang diagnostic pop
-// #endif
-
  private:
-#if (defined(__clang__) && (__clang_major__ >= 16)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 202300))
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
@@ -1623,7 +1615,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->sub(), this->stride()); }
 	constexpr auto                end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }
 
-#if (defined(__clang__) && (__clang_major__ >= 16)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 202300))
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
