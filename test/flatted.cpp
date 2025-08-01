@@ -67,5 +67,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.flatted().size() == 0 );
 	}
 
+	// flatted strided
+	{
+		multi::array<int, 2> arr({4, 10}, 99);
+		BOOST_TEST( &arr.strided(2).flatted()[5] != &arr[0][4] );
+		BOOST_TEST( &arr.strided(2).flatted()[5] == &arr[0][5] );
+	}
+
 	return boost::report_errors();
 }

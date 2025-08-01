@@ -9,7 +9,8 @@
 #include <algorithm>  // for copy
 #include <array>      // for array, array<>::value_type
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
-#include <iterator>   // for size
+#include <iostream>
+#include <iterator>  // for size
 #if __cplusplus > 201703L
 #if __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
@@ -413,11 +414,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		multi::array<double, 2> arr({4, 10});
+
 		auto const& barr = arr.strided(2).flattened();
 
 		BOOST_TEST( &barr [8] == &arr[0][8] );
 		BOOST_TEST( &barr [9] == &arr[0][9] );
-		// BOOST_TEST( &barr[10] == &arr[2][0] );
+		std::cout << &barr[10] - &arr[2][0] << '\n';
+		BOOST_TEST( &barr[10] == &arr[2][0] );
 		// BOOST_TEST( &barr[11] == &arr[2][1] );
 	}
 
