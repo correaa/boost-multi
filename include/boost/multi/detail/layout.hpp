@@ -829,12 +829,12 @@ struct bilayout {
 				: stride1_{stride1}, stride2_{stride2}, nelems2_{size} {}
 			auto operator*(std::ptrdiff_t nn) const { return stride_t{stride1_, nn * stride2_, nelems2_}; }
 			auto operator-(offset_type /*unused*/) const { return *this; }
-#if (defined(__clang__) && (__clang_major__ >= 16)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 202300))
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 			auto operator+(double* ptr) { return ptr + (stride2_ % nelems2_) + ((stride2_/nelems2_)*stride1_); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
-#if (defined(__clang__) && (__clang_major__ >= 16)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 202300))
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 		};
