@@ -43,7 +43,12 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 endif()
 
 # FFTW has to go before blas to avoid unscrupulous (i.e. MKL) blas implementations that include FFTW and don't implement it properly
-find_package(PkgConfig REQUIRED)
+find_package(PkgConfig)
+
+if(NOT PKG_CONFIG_FOUND)
+	message(WARNING "pkgconfig  not found (for FFTW). cuFFT tests needs FFTW.")
+endif()
+
 pkg_search_module(
 	FFTW
 	REQUIRED
