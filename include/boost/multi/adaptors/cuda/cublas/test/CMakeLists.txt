@@ -23,9 +23,15 @@ if((NOT
 		"icpc"
 	   )
 )
-	# find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-	# link_libraries("-lboost_unit_test_framework")
-	find_package(BLAS REQUIRED)
+	find_package(BLAS)
+
+	if(BLAS_FOUND)
+    	message(STATUS "BLAS library found.")
+	else()
+		message(WARNING "BLAS library not found. cuBLAS tests need BLAS.")
+		return()
+	endif()
+
 	find_path(
 		BLAS_INCLUDE_DIRS
 		cblas.h
