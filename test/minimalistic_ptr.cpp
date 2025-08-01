@@ -46,6 +46,8 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator-(difference_type n) const { return ptr{impl_ - n}; }
 
+	friend constexpr auto operator+(difference_type n, ptr const& self) { return self + n; }
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -84,6 +86,8 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 	constexpr auto operator+(difference_type n) const { return ptr2{impl_ + n}; }
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator-(difference_type n) const { return ptr2{impl_ - n}; }
+
+	friend constexpr auto operator+(difference_type n, ptr2 const& self) { return self + n; }
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
