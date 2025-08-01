@@ -3014,17 +3014,28 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	BOOST_MULTI_HD constexpr auto range(index_range const& rng) const& { return sliced(rng.front(), rng.last()); }
 
-	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return *this; }
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
+	// [[deprecated("use [] in place of () in C++20")]]  TODO(correaa)
 #endif
+	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return *this; }
 
-	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return operator[](idx); }
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	[[deprecated("use [i] in place of (i) in C++20")]]
+#endif
+	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) {
+		return operator[](idx);
+	}
 
-	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& { return range(rng); }
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	// [[deprecated("use [irng] in place of (irng) in C++20")]]. // TODO(correaa)
+#endif
+	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& {
+		return range(rng);
+	}
 
  private:
-	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return operator()(); }
+	BOOST_MULTI_HD constexpr auto paren_aux_() const& -> const_subarray { return *this; }
 
 	BOOST_MULTI_HD constexpr auto paren_aux_(index idx) const& -> decltype(auto) { return operator[](idx); }
 
@@ -3100,13 +3111,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	friend constexpr auto reversed(const_subarray& self) -> const_subarray { return self.reversed(); }
 	friend constexpr auto reversed(const_subarray&& self) -> const_subarray { return std::move(self).reversed(); }
 
-	// friend constexpr auto   rotated(const_subarray const& self) -> decltype(auto) {return self.  rotated();}
-	// friend constexpr auto unrotated(const_subarray const& self) -> decltype(auto) {return self.unrotated();}
-
-	// constexpr auto   rotated()      & -> decltype(auto) {return operator()();}
-	// constexpr auto   rotated()     && -> decltype(auto) {return operator()();}
-	BOOST_MULTI_HD constexpr auto rotated() const& { return operator()(); }
-	BOOST_MULTI_HD constexpr auto unrotated() const& { return operator()(); }
+	BOOST_MULTI_HD constexpr auto rotated() const& { return paren_aux_(); }    // operator()(); }
+	BOOST_MULTI_HD constexpr auto unrotated() const& { return paren_aux_(); }  // operator()(); }
 
 	auto transposed() const& = delete;
 	auto flatted() const&    = delete;
