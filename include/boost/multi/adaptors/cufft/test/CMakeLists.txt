@@ -47,6 +47,7 @@ find_package(PkgConfig)
 
 if(NOT PKG_CONFIG_FOUND)
 	message(WARNING "pkgconfig  not found (for FFTW). cuFFT tests needs FFTW.")
+	return()
 endif()
 
 pkg_search_module(
