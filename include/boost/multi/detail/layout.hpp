@@ -791,18 +791,22 @@ struct bilayout {
 
  private:
 	stride1_type stride1_;
+	size_type nelems1_;
 	stride2_type stride2_;
 	size_type nelems2_;
 	sub_type  sub_;
 
  public:
 	bilayout(
-		stride1_type stride1,
+		stride1_type stride1,  // NOLINT(bugprone-easily-swappable-parameters)
+		size_type    nelems1,
 		stride2_type stride2,  // NOLINT(bugprone-easily-swappable-parameters)
-		size_type    size,
+		size_type    nelems2,
 		sub_type     sub
 	)
-	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, sub_{std::move(sub)} {}
+	: stride1_{stride1}, nelems1_{nelems1}
+	, stride2_{stride2}, nelems2_{nelems2}
+	, sub_{std::move(sub)} {}
 
 	using offset_type     = std::ptrdiff_t;
 	using stride_type     = std::pair<stride1_type, stride2_type>;
@@ -838,7 +842,7 @@ struct bilayout {
 	}
 	auto num_elements() const = delete;
 	auto offset() const { return offset_type{}; }
-	auto size() const       = delete;
+	auto size() const       { return (nelems2_ / stride2_) * (nelems1_ / stride1_); }
 	auto nelems() const     = delete;
 	void extension() const  = delete;
 	auto extensions() const = delete;
@@ -858,6 +862,7 @@ struct layout_t
 	auto flatten() const {
 		return bilayout<D - 1>{
 			stride(),
+			nelems(),
 			sub().stride(),
 			sub().nelems(),
 			sub().sub()
