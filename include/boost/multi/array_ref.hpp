@@ -1391,12 +1391,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		};
 	}
 
-	// void flattened() const = delete;
-	// {
-	//  multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
-	//  return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
-	// }
-
 	constexpr auto broadcasted() const& {
 		// TODO(correaa) introduce a broadcasted_layout?
 		multi::layout_t<D + 1> const new_layout(layout(), 0, 0);  //, (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
@@ -1594,12 +1588,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using const_pointer = const_ptr;
 
  private:
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
-
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
  public:
@@ -1615,9 +1607,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// [[deprecated("controversial")]]
 	constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 
-	// NOLINTEND(google-runtime-operator)
-
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) || defined(__INTEL_LLVM_COMPILER) && (__INTEL_LLVM_COMPILER > 202300)
 #pragma clang diagnostic pop
 #endif
 
