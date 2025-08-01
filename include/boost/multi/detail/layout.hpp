@@ -778,7 +778,9 @@ struct bilayout {
 	using difference_type = std::make_signed_t<size_type>;
 	using index           = difference_type;
 
-	using bistride_type = std::pair<index, index>;
+	using stride1_type    = difference_type;
+	using stride2_type    = difference_type;
+	// using bistride_type = std::pair<index, index>;
 	using sub_type      = layout_t<D - 1>;
 
 	using dimensionality_type    = typename sub_type::dimensionality_type;
@@ -788,18 +790,22 @@ struct bilayout {
 	constexpr static auto dimensionality() { return rank_v; }
 
  private:
-	bistride_type bistride_;
-	sub_type      sub_;
-	size_type size_;
+	stride1_type stride1_;
+	stride2_type stride2_;
+	size_type nelems2_;
+	sub_type  sub_;
 
  public:
-	bilayout(bistride_type bistride, sub_type sub, size_type size)
-		: bistride_{std::move(bistride)}
-		, sub_{std::move(sub)}
-		, size_{size} {}
+	bilayout(
+		stride1_type stride1,
+		stride2_type stride2,  // NOLINT(bugprone-easily-swappable-parameters)
+		size_type    size,
+		sub_type     sub
+	)
+	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, sub_{std::move(sub)} {}
 
 	using offset_type     = std::ptrdiff_t;
-	using stride_type     = bistride_type;
+	using stride_type     = std::pair<stride1_type, stride2_type>;
 	using index_range     = void;
 	using strides_type    = void;
 	using extension_type  = void;
@@ -810,26 +816,25 @@ struct bilayout {
 	// auto stride() const = delete;
 	auto stride() const {
 		class stride_t {
-			std::ptrdiff_t vv_;
-			size_type    size_;
-			std::ptrdiff_t  stride_;
+			stride1_type stride1_;
+			stride2_type stride2_;
+			size_type nelems2_;
 
 		 public:
-			explicit stride_t(std::ptrdiff_t vv, size_type size, std::ptrdiff_t stride)  // NOLINT(bugprone-easily-swappable-parameters)
-				: vv_{vv}, size_{size}, stride_{stride} {}
-			auto operator*(std::ptrdiff_t nn) const { return stride_t{nn * vv_, size_, stride_}; }
+			explicit stride_t(stride1_type stride1, stride2_type stride2, size_type size)  // NOLINT(bugprone-easily-swappable-parameters)
+				: stride1_{stride1}, stride2_{stride2}, nelems2_{size} {}
+			auto operator*(std::ptrdiff_t nn) const { return stride_t{stride1_, nn * stride2_, nelems2_}; }
 			auto operator-(offset_type /*unused*/) const { return *this; }
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
-			auto operator+(double* ptr) { return ptr + (vv_ % size_) + ((vv_/size_)*stride_); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
-#if defined(__clang__)
+			auto operator+(double* ptr) { return ptr + (stride2_ % nelems2_) + ((stride2_/nelems2_)*stride1_); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
+#if defined(__clang__) && (__clang_major__ >= 16)
 #pragma clang diagnostic pop
 #endif
 		};
-		return stride_t{bistride_.second, size_, bistride_.first};
+		return stride_t{stride1_, stride2_, nelems2_};
 	}
 	auto num_elements() const = delete;
 	auto offset() const { return offset_type{}; }
@@ -852,9 +857,10 @@ struct layout_t
 	: multi::equality_comparable<layout_t<D, SSize>> {
 	auto flatten() const {
 		return bilayout<D - 1>{
-			{stride(), sub().stride()},
-			sub().sub(),
-			sub().nelems()
+			stride(),
+			sub().stride(),
+			sub().nelems(),
+			sub().sub()
 		};
 	}
 

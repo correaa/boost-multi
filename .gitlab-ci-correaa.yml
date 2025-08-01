@@ -1162,6 +1162,7 @@ headers:
   - apt-get -qq update && apt-get -qq install pip
   - mkdir public
   - cp include/boost/multi/array.hpp public/boost-multi.hpp
+  - python3 -m venv path/to/venv
   - pip install --user quom
   artifacts:
     paths:
