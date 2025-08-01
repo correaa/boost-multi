@@ -582,7 +582,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 
 	template<class... As>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, As... args) const -> decltype(auto) { return this->operator[](idx)(args...); }
-	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return this->operator[](idx); }
+	// 	[[deprecated("use [i] in place of (i) in C++20")]]
+	//	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return this->operator[](idx); }
 
  private:
 	template<class Self, typename Tuple, std::size_t... I>
@@ -3020,12 +3021,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #endif
 	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return *this; }
 
-#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
-	[[deprecated("use [i] in place of (i) in C++20")]]
-#endif
-	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) {
-		return operator[](idx);
-	}
+	// #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	// 	[[deprecated("use [i] in place of (i) in C++20")]]
+	// #endif
+	// 	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) {
+	// 		return operator[](idx);
+	// 	}
 
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	// [[deprecated("use [irng] in place of (irng) in C++20")]]. // TODO(correaa)
@@ -3080,8 +3081,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
 	BOOST_MULTI_HD constexpr auto chunked(size_type size) const& -> const_subarray<T, 2, element_ptr> { return chunked_aux_(size); }
-	// BOOST_MULTI_HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux_(size);}
-	// BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux_(size);}
 
 	constexpr auto tiled(size_type count) const& {
 		BOOST_MULTI_ASSERT(count != 0);
