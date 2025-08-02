@@ -533,6 +533,7 @@ struct static_array                                                             
 
 	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }
 	BOOST_MULTI_HD constexpr auto data_elements() & -> typename static_array::element_ptr { return this->base_; }
+	// cppcheck-suppress duplInheritedMember ; to override
 	BOOST_MULTI_HD constexpr auto data_elements() && -> typename static_array::element_move_ptr { return std::make_move_iterator(this->base_); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(static_array const& self) { return self.data_elements(); }
@@ -589,6 +590,7 @@ struct static_array                                                             
 	}
 
 	template<class Archive>
+	// cppcheck-suppress duplInheritedMember ; to override
 	void serialize(Archive& arxiv, unsigned int const version) { ref::serialize(arxiv, version); }
 
  private:
@@ -1039,8 +1041,8 @@ struct array : static_array<T, D, Alloc> {
 	// NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() const& -> array const* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 
-	template<class Archive, class ArTraits = multi::archive_traits<Archive>>
-	void serialize(Archive& arxiv, unsigned int const version) {
+	template<class Archive, class ArTraits = multi::archive_traits<Archive> >
+	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to override
 		auto extensions_ = this->extensions();
 
 		arxiv& ArTraits::make_nvp("extensions", extensions_);  // don't try `using ArTraits::make_nvp`, make_nvp is a static member
@@ -1114,7 +1116,7 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	auto clear() noexcept -> array& {
+	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
 		static_::clear();
 		assert(this->stride() != 0);
 		return *this;
