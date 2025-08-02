@@ -489,7 +489,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( ww[3] == cat );
 
 		ww[3] = dog;
-		BOOST_TEST( ww[3] == dog );
+		BOOST_TEST( ww[3] == dog );  // cppcheck-suppress knownConditionTrueFalse ;
 		BOOST_TEST( vv[3] == cat );
 
 		auto xx = std::move(ww);
@@ -542,7 +542,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 
 		ww[3][3] = 51;
 
-		BOOST_TEST( ww[3][3] == 51 );
+		BOOST_TEST( ww[3][3] == 51 );  // cppcheck-suppress knownConditionTrueFalse ;
 		BOOST_TEST( vv[3][3] == 42 );
 
 		swap(ww, vv);
@@ -564,7 +564,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		small_array<int, 2, 4UL * 4UL> yy({4, 4});
 		yy = vv;
 
-		BOOST_TEST( yy == vv );
+		BOOST_TEST( yy == vv );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		yy = std::move(vv);
 		BOOST_TEST( vv.size() == 4 );  // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move,hicpp-invalid-access-moved)
@@ -592,7 +592,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		{
 			std::vector<int> vv(20, 11);  // NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int> ww = vv;
-			BOOST_TEST( ww == vv );
+			BOOST_TEST( ww == vv );  // cppcheck-suppress knownConditionTrueFalse ;
 
 			ww = vv;
 			BOOST_TEST( ww == vv );

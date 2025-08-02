@@ -51,10 +51,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::range<int> const irng{5, 12};
-		auto                    beg = irng.begin();
+
+		auto beg = irng.begin();
+
 		++beg;
 		--beg;
-		BOOST_TEST( irng.begin() == beg );
+
+		BOOST_TEST( irng.begin() == beg );  // cppcheck-suppress knownConditionTrueFalse ; for test
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_range2)

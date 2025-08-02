@@ -167,7 +167,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 2> const arr({5, 7}, val);
 			multi::array_ref<int, 2>(vec.data(), {5, 7}) = arr();  // arr() is a subarray
 
-			BOOST_TEST( vec[9] == val );
+			BOOST_TEST( vec[9] == val );  // cppcheck-suppress containerOutOfBounds ;
 			BOOST_TEST( !vec.empty() );
 			BOOST_TEST( !is_empty(arr) );
 		}
@@ -238,6 +238,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::static_array<std::vector<int>, 2> arr2(std::move(arr));
 		BOOST_TEST( arr2[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
+		// cppcheck-suppress accessMoved ;
 		BOOST_TEST( arr[0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 		BOOST_TEST( arr[1][1].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
