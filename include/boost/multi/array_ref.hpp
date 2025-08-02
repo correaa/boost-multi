@@ -223,6 +223,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		const_subarray<element, D - 1, element_ptr>,
 		typename std::iterator_traits<element_const_ptr>::reference>;
 
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }
 
 	BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr { return base_; }
@@ -238,6 +239,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }
 #if defined(__clang__)
 #pragma clang diagnostic pop
@@ -254,7 +256,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
 
  public:
-	array_types() = default;
+	array_types() = default;  // cppcheck-suppress uninitMemberVar ; base_ not initialized
 
 	BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
 	: Layout{lyt}, base_{data} {}
@@ -336,7 +338,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	// cppcheck-suppress noExplicitConstructor
 	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
 
-	subarray_ptr() = default;
+	subarray_ptr() = default;  // cppcheck-suppress uninitMemberVar ; base_ is not initialized
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
@@ -361,14 +363,9 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		>
 	BOOST_MULTI_HD constexpr explicit subarray_ptr(ElementPtr2 const& other) : layout_{}, base_{other} {}
 
-	//  subarray_ptr(subarray_ptr const&) = default;
-	//  subarray_ptr(subarray_ptr     &&) = default;
-
-	//  auto operator=(subarray_ptr const&) -> subarray_ptr& = default;
-	//  auto operator=(subarray_ptr     &&) -> subarray_ptr& = default;
-
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return reference(layout_, base_); }
 
 	BOOST_MULTI_HD constexpr auto operator->() const {
@@ -3708,6 +3705,7 @@ struct array_ptr
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	constexpr array_ptr(TT (*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(modernize-use-constraints,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  TODO(correaa) for C++20  // NOSONAR
 
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator*() const -> array_ref<T, D, Ptr> {
 		return array_ref<T, D, Ptr>((*static_cast<subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> const&>(*this)).extensions(), this->base());
 	}
@@ -3735,7 +3733,8 @@ class [[deprecated("no good uses found")]] array_ptr<T, 0, Ptr> {  // TODO(corre
 	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() == other.ref_.base(); }
 	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() != other.ref_.base(); }
 
-	constexpr auto operator*() const -> multi::array_ref<T, 0, Ptr>& { return ref_; }    // moLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
+	constexpr auto operator*() const -> multi::array_ref<T, 0, Ptr>& { return ref_; }  // moLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator->() const -> multi::array_ref<T, 0, Ptr>* { return &ref_; }  // moLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
 };
 

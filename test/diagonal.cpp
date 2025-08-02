@@ -14,11 +14,12 @@
 namespace multi = boost::multi;
 
 namespace {
-template<class Array2D>
+
+	template<class Array2D>
 auto trace_with_indices(Array2D const& arr) {
 	typename Array2D::element_type sum{0};
 	for(auto i : extension(arr)) {  // NOLINT(altera-unroll-loops) testing loops
-		sum += arr[i][i];
+		sum += arr[i][i];           // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
 }
@@ -27,7 +28,7 @@ template<class Array2D>
 auto trace_with_diagonal(Array2D const& arr) {
 	typename Array2D::element_type sum{0};
 	for(auto aii : arr.diagonal()) {  // NOLINT(altera-unroll-loops) testing loops
-		sum += aii;
+		sum += aii;                   // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
 }
