@@ -163,7 +163,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			for(; end1 != end2; ++end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 			}
-			BOOST_TEST( end1 == end2 );
+			BOOST_TEST( end1 == end2 );	// cppcheck-suppress knownConditionTrueFalse ;
 		}
 
 		BOOST_TEST( arr.elements().size() == arr.elements().end() - arr.elements().begin() );

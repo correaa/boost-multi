@@ -1878,6 +1878,7 @@ BOOST_MULTI_HD constexpr auto move(T&& val) noexcept -> decltype(auto) {
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
 class move_subarray : public subarray<T, D, ElementPtr, Layout> {
+	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr move_subarray(subarray<T, D, ElementPtr, Layout>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correa) check if this is necessary
 	: subarray<T, D, ElementPtr, Layout>(other.layout(), other.mutable_base()) {}
 
@@ -1903,6 +1904,7 @@ class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
 class subarray : public const_subarray<T, D, ElementPtr, Layout> {
+	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr subarray(const_subarray<T, D, ElementPtr, Layout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  TODO(correa) check if this is necessary
 	: subarray(other.layout(), other.mutable_base()) {}
 
@@ -3377,6 +3379,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: array_ref(&elem, {}) {}
 
 	template<class TT, std::size_t N>
+	// cppcheck-suppress noExplicitConstructor ; see below
 	constexpr array_ref(TT (&arr)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-explicit-constructor,hicpp-explicit-conversions) : for backward compatibility // NOSONAR
 	: array_ref(
 		  ::boost::multi::extensions(arr),

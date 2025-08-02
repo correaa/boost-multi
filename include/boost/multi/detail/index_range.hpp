@@ -140,6 +140,7 @@ class range {
 		const_iterator() = default;
 
 		template<class OtherConstIterator, class = decltype(std::declval<typename const_iterator::value_type&>() = *OtherConstIterator{})>
+		// cppcheck-suppress noExplicitConstructor ; see below
 		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 		constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
