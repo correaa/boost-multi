@@ -41,7 +41,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		multi::array<double, 2> arr3({2, 3});
 		BOOST_TEST(size(arr3) == 2);
@@ -187,7 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		auto* const A_base = arr.base();
 
