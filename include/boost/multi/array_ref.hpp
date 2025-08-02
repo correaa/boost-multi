@@ -1983,6 +1983,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
+
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto strided(difference_type diff) && -> subarray { return this->strided_aux_(diff); }
 	constexpr auto strided(difference_type diff) & -> subarray { return this->strided_aux_(diff); }
 
@@ -1991,6 +1993,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto taked(difference_type count) & -> subarray { return this->taked_aux_(count); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::dropped;
+
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto dropped(difference_type count) && -> subarray { return this->dropped_aux_(count); }
 	constexpr auto dropped(difference_type count) & -> subarray { return this->dropped_aux_(count); }
 
@@ -2173,12 +2177,17 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const&    { return static_cast<typename subarray::const_reference>(this->at_aux_(idx)); }  // TODO(correaa) use return type to cast
 	using const_subarray<T, D, ElementPtr, Layout>::operator[];
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_subarray<T, D, ElementPtr, Layout>::operator[](idx); }
+ 
+	// cppcheck-suppress duplInheritedMember ; to override
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> typename subarray::reference { return this->at_aux_(idx); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> typename subarray::reference { return this->at_aux_(idx); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::diagonal;
+
 	// template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto diagonal() & { return this->diagonal_aux_(); }
+
 	constexpr auto diagonal() && { return this->diagonal_aux_(); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::sliced;
@@ -2219,6 +2228,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto operator()() & -> subarray { return this->paren_aux_(); }
 	BOOST_MULTI_HD constexpr auto operator()() && -> subarray { return this->paren_aux_(); }
 
+	// cppcheck-suppress duplInheritedMember ; to override
 	template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                       operator()(A1 arg1) & -> decltype(auto) { return this->paren_aux_(arg1); }  // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator()(A1 arg1, A2 arg2) & -> decltype(auto) { return this->paren_aux_(arg1, arg2); }
 	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator()(A1 arg1, A2 arg2, A3 arg3) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3); }                                      // NOLINT(whitespace/line_length) pattern line
@@ -2238,11 +2248,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
  public:
 	using const_subarray<T, D, ElementPtr, Layout>::apply;
+	// cppcheck-suppress-start duplInheritedMember ; to override
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) & -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+	// cppcheck-suppress-end duplInheritedMember ; to override
 
 	using const_subarray<T, D, ElementPtr, Layout>::partitioned;
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) & -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
+
+	// cppcheck-suppress duplInheritedMember ; to override
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) && -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::flatted;
@@ -2252,12 +2266,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
 	}
-	constexpr auto flatted() && { return this->flatted(); }
+	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 	using const_subarray<T, D, ElementPtr, Layout>::reinterpret_array_cast;
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
-	constexpr auto reinterpret_array_cast() & {
+	constexpr auto reinterpret_array_cast() & {  // cppcheck-suppress duplInheritedMember ; to override
 		// static_assert( sizeof(T)%sizeof(T2) == 0,
 		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
@@ -2321,7 +2335,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto element_moved() && { return element_moved(); }
 
 	template<class Archive>
-	auto serialize(Archive& arxiv, unsigned int /*version*/) {
+	auto serialize(Archive& arxiv, unsigned int /*version*/) { 	// cppcheck-suppress duplInheritedMember ; to override
 		using AT = multi::archive_traits<Archive>;
 		// if(version == 0) {
 		//  std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
@@ -3478,8 +3492,13 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
  public:
+ 	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto elements() const& -> celements_type { return elements_aux_(); }
+
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto elements() & -> elements_type { return elements_aux_(); }
+
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto elements() && -> elements_type { return elements_aux_(); }
 
 	friend constexpr auto elements(array_ref& self) -> elements_type { return self.elements(); }
@@ -3489,7 +3508,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto celements() const& { return celements_type{array_ref::data_elements(), array_ref::num_elements()}; }
 	// friend constexpr auto celements(array_ref const& self) { return self.celements(); }
 
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto element_moved() & { return array_ref<T, D, typename array_ref::element_move_ptr, Layout>(this->extensions(), typename array_ref::element_move_ptr{this->base_}); }
+
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto element_moved() && { return element_moved(); }
 
 #if defined(__clang__)
@@ -3542,6 +3564,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	using decay_type = typename array_ref::decay_type;
 
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }
 
  private:

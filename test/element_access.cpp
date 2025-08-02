@@ -298,6 +298,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// cppcheck-suppress accessMoved ; for testing purposes
 		BOOST_TEST( arr[0].empty()           );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+
 		BOOST_TEST( arr[1] == movable_value  );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 		std::move(arr)[1] = movable_value;
