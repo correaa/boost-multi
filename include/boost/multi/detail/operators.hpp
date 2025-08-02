@@ -163,6 +163,7 @@ struct affine_with_unit : steppable<Self> {
  public:
 	using self_type = Self;
 	constexpr auto cself() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
 
