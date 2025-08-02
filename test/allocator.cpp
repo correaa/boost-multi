@@ -611,7 +611,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 			BOOST_TEST( ww == vv );  // cppcheck-suppress knownConditionTrueFalse ; for testing purposes
 
 			ww = vv;
-			BOOST_TEST( ww == vv );
+			BOOST_TEST( ww == vv );  // cppcheck-suppress knownConditionTrueFalse ; for testing purposes
 
 			ww = std::move(vv);
 			BOOST_TEST( vv.size() == 0 );  // NOLINT(readability-container-size-empty,bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)

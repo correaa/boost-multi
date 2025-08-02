@@ -108,7 +108,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(   subarr.elements().begin() == subarr.elements().begin()  );
 		BOOST_TEST( !(subarr.elements().begin() != subarr.elements().begin()) );
-		BOOST_TEST( !(subarr.elements().begin() < subarr.elements().begin())  );
+		BOOST_TEST( !(subarr.elements().begin() < subarr.elements().begin())  );  // cppcheck-suppress duplicateExpression ; for testing purposes
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_test_stencil)
@@ -159,7 +159,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			for(; end1 != beg1; --end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 			}
-			BOOST_TEST( end1 == beg1 );
+			BOOST_TEST( end1 == beg1 );  // cppcheck-suppress knownConditionTrueFalse ; for testing purposes
 
 			for(; end1 != end2; ++end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 			}
@@ -292,10 +292,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<movable_type, 1> arr = {movable_value, movable_value, movable_value};
 		BOOST_TEST( arr.size() == 3 );
 
-		movable_type const front = std::move(arr)[0];
+		movable_type const front = std::move(arr)[0];  // cppcheck-suppress accessMoved ; for testing purposes
 
 		BOOST_TEST( front == movable_value );
-		BOOST_TEST( arr[0].empty()           );         // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+
+		// cppcheck-suppress accessMoved ; for testing purposes
+		BOOST_TEST( arr[0].empty()           );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 		BOOST_TEST( arr[1] == movable_value  );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 		std::move(arr)[1] = movable_value;
@@ -330,6 +332,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::move(vec) = std::vector<int>{30, 40, 50};  // NOLINT(fuchsia-default-arguments-calls)
 
+		// cppcheck-suppress accessMoved ; for testing purposes
 		std::move(vec)[1] = 990;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 		// cppcheck-suppress accessMoved ; for testing purposes
