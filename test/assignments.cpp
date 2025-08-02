@@ -74,7 +74,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 2> arr({3, 3}, 0.0);
 		multi::array<double, 2> arr2 = arr;
-		BOOST_TEST( arr == arr2 );
+		BOOST_TEST( arr == arr2 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		auto* arr_data = arr.data_elements();
 
