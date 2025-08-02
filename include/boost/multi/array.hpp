@@ -981,7 +981,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
 	template<class Archive>
-	void serialize(Archive& arxiv, unsigned int const version) {
+	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		ref::serialize(arxiv, version);
 	}
 };
@@ -1020,7 +1020,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 		return *this;
 	}
 
-	// NOLINTNEXTLINE(runtime/operator)
+	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 };
 

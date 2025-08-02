@@ -333,6 +333,7 @@ template<> struct extensions_t<0> : tuple<> {
 	}
 
 	template<std::size_t Index>  // TODO(correaa) = detele ?
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
 		using boost::multi::detail::get;
 		return get<Index>(this->base());

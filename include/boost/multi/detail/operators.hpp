@@ -166,6 +166,7 @@ struct affine_with_unit : steppable<Self> {
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using difference_type = Difference;
 	friend constexpr auto operator++(affine_with_unit& self) -> Self& { return self.self() += difference_type{1}; }
