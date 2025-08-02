@@ -63,7 +63,7 @@ target_compile_options(multi INTERFACE
 else()
 target_compile_options(multi INTERFACE
   $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
-#  $<$<CXX_COMPILER_ID:MSVC>:/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:/permissive- > >  # this is needed for MSVC in C++17 mode
+#  $<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive- > >  # this is needed for MSVC in C++17 mode
 )
 endif()
 
