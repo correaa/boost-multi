@@ -3603,7 +3603,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
  public:
 	template<class Archive>
-	auto serialize(Archive& arxiv, unsigned int const version) {
+	auto serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ;
 		serialize_flat_(arxiv, version);
 		//      serialize_structured_(ar, version);
 		//      switch(version) {

@@ -608,7 +608,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		{
 			std::vector<int, multi::detail::static_allocator<int, 32>> vv(20, 11);  // NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int, multi::detail::static_allocator<int, 32>> ww = vv;
-			BOOST_TEST( ww == vv );
+			BOOST_TEST( ww == vv );  // cppcheck-suppress knownConditionTrueFalse ; for testing purposes
 
 			ww = vv;
 			BOOST_TEST( ww == vv );
