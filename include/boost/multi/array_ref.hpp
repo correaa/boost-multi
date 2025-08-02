@@ -342,7 +342,8 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<typename reference::rank{} - 1> lyt) : layout_{lyt}, base_{base}, offset_{0} {}
 
-	template<bool OtherIsConst, std::enable_if_t<!OtherIsConst, int> = 0>                                               // NOLINT(modernize-use-constraints) for C++20
+	template<bool OtherIsConst, std::enable_if_t<!OtherIsConst, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr /*mplct*/ subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
 	: layout_{other.layout_}, base_{other.base_}, offset_{other.offset_} {}
 
@@ -3576,9 +3577,13 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
  public:
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(modernize-use-constraints) for C++20
+	// cppcheck-suppress duplInheritedMember ; for testing purposes
 	constexpr explicit operator TTN const&() const& { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	// cppcheck-suppress duplInheritedMember ; for testing purposes
 	constexpr explicit operator TTN&() && { return to_carray_<TTN>(); }            // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator TTN&() & { return to_carray_<TTN>(); }             // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
