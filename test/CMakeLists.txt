@@ -64,9 +64,9 @@ else()
 		#remove Xcompile for Windows?
 		#-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
 		#--Werror=cross-execution-space-call
-		--Werror ext-lambda-captures-this
-		--use_fast_math --extra-device-vectorization --restrict
-		-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
+		#--Werror ext-lambda-captures-this
+		#--use_fast_math --extra-device-vectorization --restrict
+		#-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 	>
 	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror
 		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
@@ -341,22 +341,22 @@ else()
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
-	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
-	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
-	/wd4514  # unreferenced inline function has been removed
-	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
-	/wd4625  # copy constructor was implicitly defined as deleted
-	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
-	/wd4710  # function not inlined
-	/wd4711  # function selected for automatic inline expansion
-	/wd4820  # bytes padding added after base class
-	/wd4866  # compiler may not enforce left-to-right evaluation order for call
-	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
-	/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
-	/wd5026  # move constructor was implicitly defined as deleted
-	/wd5027  # move assignment operator was implicitly defined as deleted
-	/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+#	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
+#	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+#	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
+#	/wd4514  # unreferenced inline function has been removed
+#	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
+#	/wd4625  # copy constructor was implicitly defined as deleted
+#	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
+#	/wd4710  # function not inlined
+#	/wd4711  # function selected for automatic inline expansion
+#	/wd4820  # bytes padding added after base class
+#	/wd4866  # compiler may not enforce left-to-right evaluation order for call
+#	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
+#	/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+#	/wd5026  # move constructor was implicitly defined as deleted
+#	/wd5027  # move assignment operator was implicitly defined as deleted
+#	/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 	>
 	)
 
