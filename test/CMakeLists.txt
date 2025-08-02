@@ -51,6 +51,14 @@ else()
 	enable_testing()
 	include(CTest)
 
+	if (CMAKE_CUDA_HOST_COMPILER_ID STREQUAL "MSVC")
+		message(STATUS "NVCC's host compiler is MSVC.")
+		# Add specific actions or configurations for MSVC host compiler
+	else()
+		message(STATUS "NVCC's host compiler is not MSVC (ID: ${CMAKE_CUDA_HOST_COMPILER_ID}).")
+		# Add specific actions or configurations for other host compilers
+	endif()
+
 	set(WARNS
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 		#remove Xcompile for Windows?
