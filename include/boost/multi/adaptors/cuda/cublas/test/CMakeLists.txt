@@ -98,8 +98,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 		set(TEST_EXE "${TEST_FILE}.x")
 		add_executable(${TEST_EXE} ${TEST_FILE})
 
-		# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
-		target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
+		# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 		target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 
 		# target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)

@@ -426,7 +426,7 @@ vs2022-shell c++17 cuda:
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_FLAGS="-Wno-deprecated-gpu-targets" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-    - cmake --build build --config Debug --parallel 2 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+    - cmake --build build --config Debug --parallel 1 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
     - windows, shell
