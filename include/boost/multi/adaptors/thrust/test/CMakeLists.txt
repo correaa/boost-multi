@@ -59,6 +59,15 @@ foreach(TEST_FILE ${TEST_SRCS})
     if(ENABLE_CUDA)
 	    add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
     endif()
+
+	target_compile_options(${TEST_EXE} PRIVATE
+		$<$<CXX_COMPILER_ID:MSVC>:
+		#	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
+		#	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=>
+		/wd1394  # field of class type without a DLL interface used in a class with a DLL interface
+		>
+	)
 endforeach()
 
 set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
