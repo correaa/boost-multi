@@ -375,8 +375,6 @@ else()
 		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-		# target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
-
 		if(NOT DEFINED ENABLE_CIRCLE)
 			target_compile_options(main PRIVATE ${WARNS})
 		else()
