@@ -236,9 +236,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_REQUIRE_CLOSE(Y[2], +blas::dot(a[2], x), 0.00001);
 		}
 		{
-			multi::array<T, 1> const x   = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
+			// multi::array<T, 1> const x   = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
 			multi::array<T, 1> const y   = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
-			multi::array<T, 1> const dot = blas::gemv(1., multi::array<T, 2>({x}), y);
+			multi::array<T, 1> const dot = blas::gemv(1.0, multi::array<T, 2>({x}), y);
 			if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
 				BOOST_TEST( dot[0] == blas::dot(x, y) );
 			}

@@ -137,6 +137,8 @@ void move_element_1d_total_array() {
 
 		auto vec = std::move(arr)[2];  // cppcheck-suppress accessMoved ;
 		BOOST_TEST( vec.size() == 5 );
+
+		// cppcheck-suppress accessMoved ;
 		BOOST_TEST( arr[2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 	{
@@ -145,7 +147,8 @@ void move_element_1d_total_array() {
 		using std::move;
 		auto vec = move(arr)[2];
 		BOOST_TEST( vec.size() == 5 );
-		BOOST_TEST( arr[2].empty() );
+
+		BOOST_TEST( arr[2].empty() );  // cppcheck-suppress accessMoved ;
 	}
 }
 }  // namespace
@@ -522,6 +525,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> const v1 = std::move(arr)[1];
 		BOOST_TEST( v1.size() == 7 );
+
+		// cppcheck-suppress accessMoved ;
 		BOOST_TEST( arr[1].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) for test
 
 		auto arr2 = multi::array<std::vector<int>, 1>({1}, std::vector<int>{});
@@ -564,7 +569,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& mAp = std::move(arr)();
 
-		arr2()     = mAp;
+		arr2() = mAp;
 
 		BOOST_TEST( arr2[0].size() == 7 );
 		// cppcheck-suppress accessMoved ;
