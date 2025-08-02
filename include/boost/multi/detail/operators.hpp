@@ -221,6 +221,7 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 
 	using self_type = Self;
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
+
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type idx) const -> reference { return *(self() + idx); }

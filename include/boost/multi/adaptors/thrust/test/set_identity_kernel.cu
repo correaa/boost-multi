@@ -1,8 +1,14 @@
+// Copyright 2020-2025 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
 #include <boost/multi/array.hpp>
 #include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/complex.h>
 #include <thrust/system/cuda/memory.h>
+
+#include <chrono>
 
 namespace multi = boost::multi;
 
