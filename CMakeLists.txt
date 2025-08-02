@@ -70,7 +70,11 @@ endif()
 # https://youtrack.jetbrains.com/issue/CPP-25608
 target_compile_features(multi INTERFACE cxx_std_17)
 if(ENABLE_CUDA)
-  target_compile_features(multi INTERFACE cuda_std_17)
+  if(WIN32)
+    target_compile_features(multi INTERFACE cuda_std_20)
+  else()
+    target_compile_features(multi INTERFACE cuda_std_17)
+  endif()
 endif()
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)

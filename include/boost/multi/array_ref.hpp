@@ -3584,10 +3584,11 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr explicit operator TTN const&() const& { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
-	// cppcheck-suppress duplInheritedMember ; for testing purposes
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr explicit operator TTN&() && { return to_carray_<TTN>(); }            // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(modernize-use-constraints) for C++20
+	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr explicit operator TTN&() & { return to_carray_<TTN>(); }             // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
  private:
