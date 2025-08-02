@@ -64,11 +64,13 @@ namespace {
 [[maybe_unused]] constexpr auto const& Ø = Zilde;
 #endif
 
+#if !defined(_MSC_VER)
 #if !defined(__GNUC__) || __GNUC__ > 9
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wc99-compat"
 #endif
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
+#endif
 #endif
 #endif
 #endif

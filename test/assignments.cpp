@@ -133,7 +133,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrB.size() == 4 );
 	}
 
-#ifndef _MSVER  // TODO(correaa) fix
+#ifndef _MSC_VER  // TODO(correaa) fix
 				// seems to produce a deterministic divide by zero
 				// Assertion failed: stride_ != 0, file D:\a\boost-multi\boost-root\boost/multi/detail/layout.hpp, line 767
 				// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : error C2220: the following warning is treated as an error
