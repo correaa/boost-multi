@@ -332,6 +332,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::move(vec)[1] = 990;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
+		// cppcheck-suppress accessMoved ; for testing purposes
 		BOOST_TEST( vec[1] == 990 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 		multi::array<int, 1>       arr1 = {10, 20, 30};
