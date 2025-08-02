@@ -431,7 +431,7 @@ vs2022-shell c++20 cuda:
   tags:
     - windows, shell
   needs: ["clang++", "g++"]
-  timeout: 20 minutes
+  timeout: 30 minutes
 
 vs2022-shell c++23:
   stage: build
