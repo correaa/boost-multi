@@ -1063,6 +1063,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using layout_type = Layout;
 
+	// cppcheck-suppress-begin duplInheritedMember ; TODO(correaa) eliminate array_types base
 	BOOST_MULTI_HD constexpr auto layout() const -> decltype(auto) { return array_types<T, D, ElementPtr, Layout>::layout(); }
 
 	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
@@ -2201,8 +2202,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress-end duplInheritedMember ; to override
 
 	using const_subarray<T, D, ElementPtr, Layout>::sliced;
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::sliced(first, last); }
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::sliced(first, last); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::range;
 	BOOST_MULTI_HD constexpr auto range(index_range irng) && -> decltype(auto) { return std::move(*this).sliced(irng.front(), irng.front() + irng.size()); }
