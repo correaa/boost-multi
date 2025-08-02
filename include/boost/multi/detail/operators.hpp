@@ -220,6 +220,7 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 	using iterator_category = std::random_access_iterator_tag;
 
 	using self_type = Self;
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }

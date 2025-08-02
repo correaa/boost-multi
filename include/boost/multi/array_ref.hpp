@@ -844,6 +844,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 	constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference /*decltype(base_[0])*/ { return base_[std::apply(l_, ns_)]; }
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
 		auto const nn = std::apply(xs_, ns_);
@@ -1993,14 +1994,16 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto taked(difference_type count) & -> subarray { return this->taked_aux_(count); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::dropped;
-
-	// cppcheck-suppress duplInheritedMember ; to override
+	// cppcheck-suppress-start duplInheritedMember ; to ovewrite
 	constexpr auto dropped(difference_type count) && -> subarray { return this->dropped_aux_(count); }
 	constexpr auto dropped(difference_type count) & -> subarray { return this->dropped_aux_(count); }
+	// cppcheck-suppress-end duplInheritedMember ; to ovewrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::rotated;
+	// cppcheck-suppress-start duplInheritedMember ; to ovewrite
 	BOOST_MULTI_HD constexpr auto rotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
 	BOOST_MULTI_HD constexpr auto rotated() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
+	// cppcheck-suppress-end duplInheritedMember ; to ovewrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::unrotated;
 	BOOST_MULTI_HD constexpr auto unrotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }
@@ -2028,8 +2031,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		// return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 
+	// cppcheck-suppress-start duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto base() const& -> typename subarray::element_const_ptr { return this->base_; }
 	BOOST_MULTI_HD constexpr auto base() & -> ElementPtr { return this->base_; }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
+
 	BOOST_MULTI_HD constexpr auto base() && -> ElementPtr { return this->base_; }
 	// BOOST_MULTI_HD constexpr auto base() const& -> element_const_ptr {return base_;}
 
@@ -2178,9 +2184,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::operator[];
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_subarray<T, D, ElementPtr, Layout>::operator[](idx); }
  
-	// cppcheck-suppress duplInheritedMember ; to override
+	// cppcheck-suppress-start duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> typename subarray::reference { return this->at_aux_(idx); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> typename subarray::reference { return this->at_aux_(idx); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::diagonal;
 
@@ -2228,7 +2235,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto operator()() & -> subarray { return this->paren_aux_(); }
 	BOOST_MULTI_HD constexpr auto operator()() && -> subarray { return this->paren_aux_(); }
 
-	// cppcheck-suppress duplInheritedMember ; to override
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                       operator()(A1 arg1) & -> decltype(auto) { return this->paren_aux_(arg1); }  // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator()(A1 arg1, A2 arg2) & -> decltype(auto) { return this->paren_aux_(arg1, arg2); }
 	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator()(A1 arg1, A2 arg2, A3 arg3) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3); }                                      // NOLINT(whitespace/line_length) pattern line
