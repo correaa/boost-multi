@@ -63,6 +63,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		std::enable_if_t<!std::is_same_v<TT0, tuple>, int> =0,  // NOLINT(modernize-use-constraints) for C++20
 		std::enable_if_t<sizeof(TT0*) && (sizeof...(Ts) == 0), int> =0  // NOLINT(modernize-use-constraints) for C++20
 	>
+	// cppcheck-suppress noExplicitConstructor ; see below
 	constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)

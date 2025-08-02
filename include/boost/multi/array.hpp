@@ -361,12 +361,15 @@ struct static_array                                                             
 	constexpr /*implicit*/ static_array(multi::subarray<TT, D, EElementPtr, LLayout>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: static_array(std::move(other), allocator_type{}) {}
 
+	// cppcheck-suppress noExplicitConstructor ; see below
 	constexpr static_array(multi::subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: static_array(other, allocator_type{}) {}
 
+	// cppcheck-suppress noExplicitConstructor ; see below
 	constexpr static_array(multi::const_subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: static_array(other, allocator_type{}) {}
 
+	// cppcheck-suppress noExplicitConstructor ; see below
 	constexpr static_array(multi::subarray<T, D, typename static_array::element_ptr, typename static_array::layout_type>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: static_array(std::move(other), allocator_type{}) {}
 
