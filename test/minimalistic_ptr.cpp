@@ -99,7 +99,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(test_minimalistic_ptr)
 	{
 		std::array<int, 400> buffer{};
-		BOOST_TEST( buffer.size() == 400 );  // cppcheck-suppress knownConditionTrueFalse ;
+		BOOST_TEST( buffer.size() == 400 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		using pointer_type = minimalistic::ptr<int>;
 		multi::array_ptr<int, 2, pointer_type> const CCP(pointer_type{buffer.data()}, {20, 20});
@@ -107,7 +107,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		(*CCP)[1][1];
 		(*CCP)[1][1] = 9;
 
-		BOOST_TEST(  (*CCP)[1][1] == 9 );
+		BOOST_TEST(  (*CCP)[1][1] == 9 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 		BOOST_TEST( &(*CCP)[1][1] == &buffer[21] );
 
 		// auto&& CC2 = (*CCP).static_array_cast<double, minimalistic::ptr2<double>>();

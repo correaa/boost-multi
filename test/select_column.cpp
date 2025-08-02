@@ -42,7 +42,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size( arr(      multi::ALL     , 2) ) == 4 );
 		BOOST_TEST( size( arr(      multi::ALL < 2 , 2) ) == 2 );
 		BOOST_TEST( size( arr( 1 <= multi::ALL     , 2) ) == 3 );
-		// cppcheck-suppress compareBoolExpressionWithInt ;
+		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse] ;
 		BOOST_TEST( size( arr( 1 <= multi::ALL < 3 , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 
 		BOOST_TEST( size( arr(      multi::_       , 2) ) == 4 );

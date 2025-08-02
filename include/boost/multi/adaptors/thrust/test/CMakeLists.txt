@@ -64,7 +64,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 		$<$<CXX_COMPILER_ID:MSVC>:
 		#	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
 		#	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd1394>  # field of class type without a DLL interface used in a class with a DLL interface
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--diag-suppress=1394>  # field of class type without a DLL interface used in a class with a DLL interface
 		>
 	)
 endforeach()

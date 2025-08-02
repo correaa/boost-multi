@@ -215,7 +215,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			arr[0][0] = 990;
 
-			BOOST_TEST( arr[0][0] == 990 );
+			BOOST_TEST( arr[0][0] == 990 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 			BOOST_TEST( corigin(arr) == &arr[0][0] );
 			BOOST_TEST( size(arr) == 2 );
 
