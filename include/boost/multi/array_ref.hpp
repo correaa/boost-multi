@@ -2040,6 +2040,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto base() && -> ElementPtr { return this->base_; }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) & -> subarray& {
 		if(this == std::addressof(other)) {
 			return *this;
@@ -2184,7 +2185,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const&    { return static_cast<typename subarray::const_reference>(this->at_aux_(idx)); }  // TODO(correaa) use return type to cast
 	using const_subarray<T, D, ElementPtr, Layout>::operator[];
 	// BOOST_MULTI_HD constexpr auto operator[](index idx) const& { return const_subarray<T, D, ElementPtr, Layout>::operator[](idx); }
- 
+
 	// cppcheck-suppress-start duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> typename subarray::reference { return this->at_aux_(idx); }
 	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> typename subarray::reference { return this->at_aux_(idx); }
@@ -2234,18 +2235,23 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::operator();
 
 	BOOST_MULTI_HD constexpr auto operator()() & -> subarray { return this->paren_aux_(); }
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator()() && -> subarray { return this->paren_aux_(); }
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                       operator()(A1 arg1) & -> decltype(auto) { return this->paren_aux_(arg1); }  // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator()(A1 arg1, A2 arg2) & -> decltype(auto) { return this->paren_aux_(arg1, arg2); }
-	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator()(A1 arg1, A2 arg2, A3 arg3) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3); }                                      // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                       operator()(A1 arg1) & -> decltype(auto) { return this->paren_aux_(arg1); }  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                    operator()(A1 arg1, A2 arg2) & -> decltype(auto) { return this->paren_aux_(arg1, arg2); }
+	// cppcheck-suppress duplInheritedMember ; to overwrite
+	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3); }  // NOLINT(whitespace/line_length) pattern line
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3, arg4, args...); }  // NOLINT(whitespace/line_length) pattern line
 
-	template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                       operator()(A1 arg1) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1); }                                                                    // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator()(A1 arg1, A2 arg2) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2); }                                                     // NOLINT(whitespace/line_length) pattern line
-	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator()(A1 arg1, A2 arg2, A3 arg3) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3); }                                      // NOLINT(whitespace/line_length) pattern line
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	template<class A1 = irange> BOOST_MULTI_HD constexpr auto                    operator()(A1 arg1) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1); }                 // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2); }  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3); }  // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...); }  // NOLINT(whitespace/line_length) pattern line
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
  private:
 	template<class Self, typename Tuple, std::size_t... I>
@@ -2256,15 +2262,16 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
  public:
 	using const_subarray<T, D, ElementPtr, Layout>::apply;
-	// cppcheck-suppress-start duplInheritedMember ; to override
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) & -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
-	// cppcheck-suppress-end duplInheritedMember ; to override
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::partitioned;
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) & -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
 
-	// cppcheck-suppress duplInheritedMember ; to override
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) && -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::flatted;
@@ -2342,13 +2349,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 
 	using element_move_ptr = multi::move_ptr<typename subarray::element, typename subarray::element_ptr>;
-
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto element_moved() & { return subarray<T, D, typename subarray::element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_}); }
-	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto element_moved() && { return element_moved(); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	template<class Archive>
-	auto serialize(Archive& arxiv, unsigned int /*version*/) { 	// cppcheck-suppress duplInheritedMember ; to override
+	auto serialize(Archive& arxiv, unsigned int /*version*/) {  // cppcheck-suppress duplInheritedMember ; to override
 		using AT = multi::archive_traits<Archive>;
 		// if(version == 0) {
 		//  std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
