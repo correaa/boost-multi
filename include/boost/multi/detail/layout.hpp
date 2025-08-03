@@ -1088,7 +1088,7 @@ struct layout_t
 	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
 	#endif
 
-	auto take(size_type n) const {
+	BOOST_MULTI_HD constexpr auto take(size_type n) const {
 		return layout_t(
 			this->sub(),
 			this->stride(),
