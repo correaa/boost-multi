@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__NVCC__)
+#if defined(__NVCC__) && !defined(_MSC_VER)
 #pragma diag_suppress 177  // Suppress warning number 177 variable "apl::symbols::<unnamed>::\u019f" was declared but never referenced
 #endif
 
