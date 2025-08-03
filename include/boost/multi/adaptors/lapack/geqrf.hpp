@@ -48,7 +48,7 @@ auto geqrf(Array2D&& aa, TAU& tau, Allocator alloc) -> Array2D&& {
 		&dwork, -1,
 		info
 	);
-	if(info != 0) {
+	if(info != 0) {  // cppcheck-suppress identicalConditionAfterEarlyExit ; TODO(correaa) investigate
 		throw std::runtime_error("Error in DGEQRF work estimation, info: " + std::to_string(info));
 	}
 
@@ -63,7 +63,7 @@ auto geqrf(Array2D&& aa, TAU& tau, Allocator alloc) -> Array2D&& {
 	);
 	alloc.deallocate(work, lwork);
 
-	if(info != 0) {
+	if(info != 0) {  // cppcheck-suppress identicalConditionAfterEarlyExit ; TODO(correaa) investigate
 		throw std::runtime_error("Error in DGESVD computation, info: " + std::to_string(info));
 	}
 

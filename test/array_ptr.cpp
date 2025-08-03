@@ -194,14 +194,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using my_span = multi::array_ref<int, 1>;
 
-#if defined(__clang__) && (__clang_major__ >= 16)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		auto aP = &my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-#if defined(__clang__) && (__clang_major__ >= 16)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
