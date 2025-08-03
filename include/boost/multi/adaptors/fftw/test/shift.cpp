@@ -34,6 +34,7 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 
 		iterator(n_random_complex<T> const* ptr, std::size_t n) : ptr_{ptr}, n_{n} {}
 
+		// cppcheck-suppress duplInheritedMember ; to ovewrite
 		auto operator*() const { return std::complex<T>{ptr_->dist_(ptr_->gen_), ptr_->dist_(ptr_->gen_)}; }
 		auto operator++() -> iterator& {
 			++n_;
@@ -80,7 +81,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		[&, unnamed = watch{}] {
 			auto const repeat = 40;
-			std::for_each(
+			std::for_each(  // cppcheck-suppress mismatchingContainerExpression
 				multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto /*idx*/) {
 					fdft.execute(arr.base(), res.base());
 					std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());
