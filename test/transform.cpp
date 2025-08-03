@@ -103,7 +103,8 @@ class involuter {
 	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{Involution{}, *it_}; }
-	constexpr auto operator->() const { return &*it_; }  // pointer{&*it_}; }  // cppcheck-suppress redundantPointerOp ; lib idiom
+	// cppcheck-suppress redundantPointerOp ; lib idiom
+	constexpr auto operator->() const { return &*it_; }  // pointer{&*it_}; }
 
 	constexpr auto operator==(involuter const& other) const { return it_ == other.it_; }
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
