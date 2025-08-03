@@ -13,7 +13,11 @@ using complex = thrust::complex<double>;
 
 template <typename T>
 void doNotOptimize(T const& val) {
-  asm volatile("" : : "g"(val) : "memory");
+#if defined(_MSC_VER)
+	_ReadWriteBarrier();
+#else
+	asm volatile("" : : "g"(val) : "memory");
+#endif
 }
 
 #include <boost/core/lightweight_test.hpp>
