@@ -1112,7 +1112,8 @@ Here it is a complete Python session:
 import cppyy
 cppyy.add_include_path('path-to/boost-multi/include')
 cppyy.include("boost/multi/array.hpp")
-from cppyy.gbl.boost import multi
+
+multi = cppyy.gbl.boost.multi
 
 # We can created a one-dimensional array with 4 initialized to 0.0, or from a list of numbers.
 # We can print the array and change the element values:
@@ -1154,7 +1155,6 @@ print(a2d[0])
 > { 66.600000, 2.0000000 }
 > ```
 ```python
-r
 arow_copy = + a2d[0]
 arow_copy = 11111.1
 print(a2d[0])

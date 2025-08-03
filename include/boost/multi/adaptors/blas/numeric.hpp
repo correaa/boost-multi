@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -210,6 +210,9 @@ class involuter {
 	constexpr friend auto operator+(involuter lhs, difference_type n) { return lhs += n; }
 	template<class = void>  // workaround for nvcc
 	constexpr friend auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
+
+	template<class = void>  // workaround for nvcc
+	constexpr friend auto operator+(difference_type n, involuter lhs) { return lhs + n; }
 
 	auto operator-(involuter const& other) const { return it_ - other.it_; }
 

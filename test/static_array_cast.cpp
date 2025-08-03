@@ -115,6 +115,8 @@ class involuter {
 	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }
 	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }
 
+	friend constexpr auto operator+(typename involuter::difference_type n, involuter const& self) { return self + n; }
+
 	constexpr auto operator[](typename involuter::difference_type n) const { return reference{*(it_ + n), f_}; }
 
 #if defined(__clang__)

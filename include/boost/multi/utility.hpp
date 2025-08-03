@@ -155,6 +155,8 @@ struct transform_ptr {
 	constexpr auto operator+(difference_type n) const -> transform_ptr { return transform_ptr{*this} += n; }
 	constexpr auto operator-(difference_type n) const -> transform_ptr { return transform_ptr{*this} -= n; }
 
+	constexpr auto friend operator+(difference_type n, transform_ptr const& self) { return self + n; }
+
 	constexpr auto operator-(transform_ptr const& other) const -> difference_type { return p_ - other.p_; }
 
 	constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }  // NOLINT(readability-const-return-type) transformed_view might return by const value.

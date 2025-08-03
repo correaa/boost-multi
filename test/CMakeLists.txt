@@ -89,8 +89,8 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Warith-conversion>
 	-Warray-bounds # -Warray-bounds=<0,2>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Warray-compare>
-	# -Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
-	# -Wattribute-alias #=<0,2> # (gcc 12, not in 11, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Warray-parameter>  #=<0,2> # (gcc 11, not in gcc 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wattribute-alias>  #=<0,2> # (gcc 12, not in 11, not in 7)
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wattribute-warning>
 	-Wattributes
 	-Wbool-compare -Wbool-operation
@@ -106,12 +106,12 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wcannot-profile>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type>  # (gcc 8, not in gcc 7)
 	-Wcast-qual
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcatch-value>  #=<0, 3>  # (gcc 8, not in gcc 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcatch-value>  #=<0, 3>
 	-Wchar-subscripts
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wclass-conversion>  # (gcc 11, not in 8)
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wclass-memaccess>   # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wclass-conversion>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wclass-memaccess>
 	-Wclobbered
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wcomma-subscript>  # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wcomma-subscript>
 	-Wcomment  # (same as -Wcomments)
 	-Wconditionally-supported
 	-Wconversion -Wconversion-null
@@ -119,14 +119,14 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wctad-maybe-unsupported>
 	-Wctor-dtor-privacy
 	-Wdangling-else
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdangling-pointer>  # (gcc 12, not in 11)
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,13>:-Wdangling-reference>  # (gcc 13, not in 12)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdangling-pointer>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,13>:-Wdangling-reference>
 	-Wdate-time
 	-Wdelete-incomplete -Wdelete-non-virtual-dtor
 	-Wdeprecated
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdeprecated-copy -Wdeprecated-copy-dtor>  # (gcc 11, not in gcc 8)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wdeprecated-copy -Wdeprecated-copy-dtor>  # (gcc 11, not in gcc 8)
 	-Wdeprecated-declarations
-	# -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion # (gcc 11, not in gcc 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion>
 	-Wdisabled-optimization
 	-Wdiv-by-zero -Wdouble-promotion
 	-Wduplicated-branches -Wduplicated-cond
@@ -135,12 +135,12 @@ else()
 	-Wenum-compare
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wenum-conversion>  # (gcc 11, not in 10)
 	-Wexpansion-to-defined
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wexceptions>  # (gcc 11, not in 10)
-	# -Wextra-semi # (gcc 8, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wexceptions>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wextra-semi>
 	-Wfloat-conversion -Wfloat-equal
 	-Wformat=2
 	-Wformat-contains-nul # (gcc 12, not in 11)
-	# -Wformat-diag # (gcc 10, not in 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wformat-diag>
 	-Wformat-extra-args -Wformat-nonliteral
 	-Wformat-overflow=1
 	-Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length

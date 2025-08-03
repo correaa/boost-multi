@@ -38,6 +38,8 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 
 	constexpr auto operator+(difference_type /*unused*/) const noexcept -> ptr { return *this; }
 
+	constexpr friend auto operator+(difference_type n, ptr self) { return self + n; }
+
 	constexpr auto operator[](difference_type dist) const noexcept -> reference { return *(*this + dist); }
 
 	auto operator+=(difference_type /*difference*/) noexcept -> ptr& { return *this; }
