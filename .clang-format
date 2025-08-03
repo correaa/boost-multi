@@ -19,6 +19,7 @@ AllowAllArgumentsOnNextLine: false
 AllowShortLambdasOnASingleLine: Inline
 AllowShortCaseLabelsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: No
+# BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
 BraceWrapping:
   BeforeLambdaBody: false
@@ -43,6 +44,7 @@ IncludeCategories:
 IndentPPDirectives: None
 IndentWidth: 4
 # LambdaBodyIndentation: Signature
+# PackConstructorInitializers: CurrentLine
 PenaltyBreakTemplateDeclaration: 10
 PointerAlignment: Left
 SpaceAfterTemplateKeyword: false

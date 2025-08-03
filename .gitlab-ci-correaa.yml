@@ -297,7 +297,7 @@ clang++-18 mull-18:  # mull-18 crashes
 #       - build/multi_all.deb
 #   needs: ["g++", "clang++"]
 
-clang++-15 libc++:
+clang++-15 libc++ format:
   stage: build
   image: debian:stable
   tags:
@@ -1082,7 +1082,8 @@ qmcpack:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
-    - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git  # https://github.com/correaa/qmcpack.git --branch correaa-patch-use-adl-get
+    # - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git
+    - git clone           https://github.com/correaa/qmcpack.git --branch complete-pointer-concept-for-shm_ptr
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
@@ -1128,7 +1129,8 @@ qmcpack cuda-12.3.1:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
     - nvidia-smi
-    - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git  # https://github.com/correaa/qmcpack.git --branch correaa-patch-use-adl-get
+  # - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
+    - git clone           https://github.com/correaa/qmcpack.git --branch complete-pointer-concept-for-shm_ptr
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
@@ -1205,3 +1207,35 @@ pages:
     paths:
     - public
   # check for file here: https://correaa.gitlab.io/multi/multi.html
+
+headers:
+  stage: basic
+  allow_failure: true
+  #only:
+  #  refs:
+  #    - master
+  tags:
+    - non-shared
+    - docker
+  script:
+  #- apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+  #- pandoc --version
+  #- asciidoctor --version
+  #- mkdir .public
+  #- cd doc
+  # - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
+  # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
+  #- asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
+  #- cd ..
+  #- cp -r doc/multi.html .public
+  # - cp -r doc/multi.adoc .public
+  #- mv .public public
+  - apt-get -qq update && apt-get -qq install pip python3-venv
+  - mkdir public
+  - cp include/boost/multi/array.hpp public/boost-multi.hpp
+  - python3 -m venv .venv
+  - source .venv/bin/activate
+  - pip install quom
+  artifacts:
+    paths:
+    - public

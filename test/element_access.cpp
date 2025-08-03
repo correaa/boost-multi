@@ -150,7 +150,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto beg = arr({1, 3}, {2, 5}).elements().begin();
 		beg += (arr({1, 3}, {2, 5}).elements().size() - 1);
-		BOOST_TEST( &*beg  == &arr(2, 4) );
+		BOOST_TEST( &*beg  == &arr(2, 4) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay) bug in clang-tidy 14?
 
 		{
 			auto beg1 = arr({1, 3}, {2, 5}).elements().begin();

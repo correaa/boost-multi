@@ -127,6 +127,7 @@ class involuter {
 	constexpr auto operator+(difference_type n) const { return involuter{it_ + n}; }
 	constexpr auto operator-(difference_type n) const { return involuter{it_ - n}; }
 
+	friend constexpr auto operator+(difference_type n, involuter const& self) { return self + n; }
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif

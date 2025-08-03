@@ -1384,11 +1384,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return const_subarray<T, D - 1, ElementPtr>{new_layout, types::base_};
 	}
 
-	void flattened() const = delete;
-	// {
-	//  multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
-	//  return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
-	// }
+	auto flattened() const {
+		auto new_layout = this->layout().flatten();
+		return boost::multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>{
+			new_layout, this->base_
+		};
+	}
 
 	constexpr auto broadcasted() const& {
 		// TODO(correaa) introduce a broadcasted_layout?
@@ -1587,12 +1588,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using const_pointer = const_ptr;
 
  private:
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
-#endif
-
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
  public:
@@ -1601,6 +1596,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }
 
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
+
 	// operator& is not defined for r-values anyway
 	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 	// [[deprecated("controversial")]]
@@ -1610,35 +1606,20 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	// NOLINTEND(google-runtime-operator)
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
  private:
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
 	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->sub(), this->stride()); }
 	constexpr auto                end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }
 
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
  public:
-	//        BOOST_MULTI_HD constexpr     auto begin()       &       {return begin_aux_();}
-	//                       constexpr     auto end  ()       &       {return end_aux_()  ;}
-	// friend BOOST_MULTI_HD /*constexpr*/ auto begin(const_subarray& self) {return self.begin();}
-	// friend constexpr                    auto end  (const_subarray& self) {return self.end  ();}
-
-	//        constexpr     auto begin()       &&       {return begin();}
-	//        constexpr     auto end  ()       &&       {return end()  ;}
-	// friend /*constexpr*/ auto begin(const_subarray&& self) {return std::move(self).begin();}
-	// friend /*constexpr*/ auto end  (const_subarray&& self) {return std::move(self).end()  ;}
-
 	constexpr auto            begin() const& -> const_iterator { return begin_aux_(); }
 	constexpr auto            end() const& -> const_iterator { return end_aux_(); }
 	friend /*constexpr*/ auto begin(const_subarray const& self) -> const_iterator { return self.begin(); }  // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
@@ -2863,14 +2844,16 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  private:
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
-	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename const_subarray::reference {            // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename const_subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+		if constexpr(std::is_integral_v<decltype(this->stride())>) {
+			BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		}
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-		return *(this->base_ + (idx * this->stride() - this->offset()));
+		return *((this->stride() * idx - this->offset()) + this->base_);
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
