@@ -94,7 +94,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
 
-			n = multi::blas::nrm2(X);
+			n = multi::blas::nrm2(X);  // cppcheck-suppress redundantAssignment ; test assignment from conversion
 			BOOST_TEST( n == multi::blas::nrm2(X) );
 		}
 		{

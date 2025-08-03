@@ -35,7 +35,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using multi::data_elements;
 		BOOST_TEST( data_elements(arr) == &arr[0][0][0] );  // NOLINT(readability-container-data-pointer)
-		BOOST_TEST( data_elements(arr) ==  arr[0][0].data() );
+		BOOST_TEST( data_elements(arr) ==  arr[0][0].data() );  // cppcheck-suppress redundantContainerDataPointer ; lib idiom
 
 		using multi::num_elements;
 		BOOST_TEST( num_elements(arr) == 60 );
@@ -59,9 +59,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( extensions(arr) == decltype(extensions(arr)){3, 4} ));
 
 		using multi::data_elements;
-		BOOST_TEST( data_elements(arr) == &arr[0][0] );  // NOLINT(readability-container-data-pointer) test access
-		BOOST_TEST( data_elements(arr) ==  arr[0].data() );
-		BOOST_TEST( data_elements(arr) ==  arr.front().data() );
+		BOOST_TEST( data_elements(arr) == &arr[0][0] );          // NOLINT(readability-container-data-pointer) test access
+		BOOST_TEST( data_elements(arr) ==  arr[0].data() );       // cppcheck-suppress redundantContainerDataPointer ; lib idiom
+		BOOST_TEST( data_elements(arr) ==  arr.front().data() );  // cppcheck-suppress redundantContainerDataPointer ; lib idiom
 
 		using multi::num_elements;
 		BOOST_TEST( num_elements(arr) == 12 );
