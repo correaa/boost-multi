@@ -186,7 +186,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		multi::array<complex, 1> const y = x;  // NOLINT(readability-identifier-length) BLAS naming
 
-		using blas::operators::operator-;
+		using blas::operators::operator-;  // cppcheck-suppress unusedFunction ; bug in cppcheck 2.18
 
 		BOOST_TEST( (x - y)[0] == complex(0.0, 0.0) );
 		BOOST_TEST( (y - x)[0] == complex(0.0, 0.0) );

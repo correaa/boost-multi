@@ -23,11 +23,12 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	template<class> friend class ptr;
 
  public:
-	ptr() = default;
+	ptr() = default;  // cppcheck-suppress uninitMemberVar ;
+
 	constexpr explicit ptr(T* impl) : impl_{impl} {}
-	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-			 >
-	// cppcheck-suppress [noExplicitConstructor,unmatchedSuppression]
+
+	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// cppcheck-suppress noExplicitConstructor ;
 	ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;

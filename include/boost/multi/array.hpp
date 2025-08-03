@@ -815,7 +815,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	explicit static_array(typename static_array::sizes_type const& sizes)  // this is a workaround for cling/cppyy
 	: static_array([&] {
 		  using std::apply;
-		  apply([](auto... sz) { return typename static_array::extensions_type{sz...}; }, sizes);
+		  return apply([](auto... sz) { return typename static_array::extensions_type{sz...}; }, sizes);
 	  }()) {}
 
 	static_array(static_array const& other, allocator_type const& alloc)  // 5b
@@ -1066,7 +1066,7 @@ struct array : static_array<T, D, Alloc> {
 	template<
 		class Range, std::enable_if_t<!has_extensions<std::decay_t<Range>>::value, int> = 0,
 		class = decltype(Range{std::declval<typename array::const_iterator>(), std::declval<typename array::const_iterator>()})>
-	constexpr explicit operator Range() const {
+	constexpr explicit operator Range() const {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		// vvv Range{...} needed by Windows GCC?
 		return Range{this->begin(), this->end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
 	}
@@ -1097,6 +1097,20 @@ struct array : static_array<T, D, Alloc> {
 							: array<T, D>(ilv.begin(), ilv.end())
 	  } {
 	}
+
+	// template<class T1, class T2>
+	explicit array(std::tuple<multi::size_t, multi::size_t> const& sizes)  // this is a workaround for cling/cppyy
+	: array([&] {
+		  using std::apply;
+		  return apply([](auto... sz) { return typename array::extensions_type{sz...}; }, sizes);
+	  }()) {}
+
+	// explicit array(typename array::sizes_type const& sizes)  // this is a workaround for cling/cppyy
+	// : array([&] {
+	//  	  using std::apply;
+	//  	  return apply([](auto... sz) { return typename array::extensions_type{sz...}; }, sizes);
+	// }())
+	// {}
 
 	template<
 		class OtherT,
@@ -1280,7 +1294,7 @@ struct array : static_array<T, D, Alloc> {
 	}
 
 	template<class It>
-	auto assign(It first, It last) -> array& {
+	auto assign(It first, It last) -> array& {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		using std::all_of;
 		using std::next;
 		if(adl_distance(first, last) == this->size()) {
@@ -1353,8 +1367,8 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	[[nodiscard]] constexpr auto operator+() const& { return array{*this}; }
-	[[nodiscard]] constexpr auto operator+() && { return array{*this}; }
+	[[nodiscard]] constexpr auto operator+() const& { return array{*this}; }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	[[nodiscard]] constexpr auto operator+() && { return array{*this}; }      // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	auto reextent(typename array::extensions_type const& exs, typename array::element_type const& elem) & -> array& {
 		if(exs == this->extensions()) {
