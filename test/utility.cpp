@@ -34,7 +34,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( multi::extensions(arr) ==  decltype(multi::extensions(arr)) {3, 4, 5}   ));
 
 		using multi::data_elements;
-		BOOST_TEST( data_elements(arr) == &arr[0][0][0] );  // NOLINT(readability-container-data-pointer)
+		BOOST_TEST( data_elements(arr) == &arr[0][0][0] );     // NOLINT(readability-container-data-pointer)
 		BOOST_TEST( data_elements(arr) ==  arr[0][0].data() );  // cppcheck-suppress redundantContainerDataPointer ; lib idiom
 
 		using multi::num_elements;
