@@ -196,7 +196,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
@@ -216,7 +215,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(  aCRef.size() == 5 );  // cppcheck-suppress danglingTempReference ; library idiom
 
 		BOOST_TEST( &aCRef[0] == &vec[2] );  // cppcheck-suppress danglingTempReference ; library idiom
-		BOOST_TEST(  aCRef[0] == 20     );
+		BOOST_TEST(  aCRef[0] == 20      );        // cppcheck-suppress danglingTempReference ; library idiom
 
 		auto&& aRef = *aP;  // cppcheck-suppress danglingTempReference ;  library idiom
 		// what(aP, aRef);

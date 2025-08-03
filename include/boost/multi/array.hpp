@@ -812,7 +812,8 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		// assert(this->stride() != 0);
 	}
 
-	explicit static_array(typename static_array::sizes_type const& sizes)  // this is a workaround for cling/cppyy
+	template<class Tutu = std::tuple<int, int>, std::enable_if_t<std::is_same_v<Tutu, std::tuple<int, int>>, int> = 0>
+	explicit static_array(Tutu sizes)  // this is a workaround for cling/cppyy
 	: static_array([&] {
 		  using std::apply;
 		  return apply([](auto... sz) { return typename static_array::extensions_type{sz...}; }, sizes);
@@ -902,13 +903,13 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		return static_cast<OtherElement>(*(this->base_));
 	}
 
-	constexpr auto rotated() const& {
+	constexpr auto rotated() const& {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return subarray<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
-	constexpr auto rotated() & {
+	constexpr auto rotated() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return subarray<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
@@ -931,8 +932,10 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
  public:
+ 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto unrotated() & { return unrotated_aux_(); }
 	constexpr auto unrotated() const& { return unrotated_aux_().as_const(); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	friend constexpr auto unrotated(static_array& self) -> decltype(auto) { return self.unrotated(); }
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) { return self.unrotated(); }

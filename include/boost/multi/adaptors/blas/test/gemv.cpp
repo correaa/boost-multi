@@ -244,9 +244,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 		{
-			using blas::operators::operator%;
-			using blas::operators::operator-;
-			using blas::operators::operator^;  // cppcheck-suppress ; bug in cppcheck
+			using blas::operators::operator%;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
+			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
+			using blas::operators::operator^;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			BOOST_REQUIRE_SMALL(((~+~a) % x - a % x) ^ 2, 1e-9);
 		}
 	}
@@ -287,9 +287,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 		{
-			using blas::operators::operator%;
-			using blas::operators::operator-;
-			using blas::operators::operator^;
+			using blas::operators::operator%;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
+			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
+			using blas::operators::operator^;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			BOOST_REQUIRE_SMALL(((~+~a) % x - a % x) ^ 2, 1e-9);
 		}
 	}
@@ -333,7 +333,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{188.37, 0.0},
 			};
 
-			using blas::operators::operator-;
+			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			T const n2{blas::nrm2(Y - Y3)};
 			BOOST_REQUIRE_SMALL(n2, T{1.0e-4});
 		}
@@ -402,7 +402,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{188.37, 0.0},
 			};
 
-			using blas::operators::operator-;
+			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			T const n2{blas::nrm2(Y - Y3)};
 			BOOST_REQUIRE_SMALL(n2, T{1.0e-4});
 		}
