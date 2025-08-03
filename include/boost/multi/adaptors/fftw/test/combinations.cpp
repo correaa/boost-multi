@@ -160,7 +160,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			marray<complex, 4> out2(exts);
 			fftw::dft(which, in, out2, fftw::forward);
 		}();
-		BOOST_TEST(in0000 == in[0][0][0][0]);
+		BOOST_TEST(in0000 == in[0][0][0][0]);  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
