@@ -46,7 +46,7 @@ void zip_iterator_test(multi::array<complex, 2> const& in_cpu) {
 	zit.execute();
 	zit+=1;
 	auto zit2 = zit;
-	BOOST_TEST(zit2 == zit);
+	BOOST_TEST(zit2 == zit);  // cppcheck-suppress knownConditionTrueFalse ; for testing
 
 	for(int i = 1; i != in_cpu.size(); ++i) {  // NOLINT(altera-unroll-loops)
 		zit.execute();

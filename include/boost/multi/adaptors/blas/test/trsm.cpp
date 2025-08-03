@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 			};
 			auto const              B_cpy = +B;
 			multi::array<double, 2> BT    = +~B;
-			BOOST_TEST( BT == ~B );
+			BOOST_TEST( BT == ~B );  // cppcheck-suppress knownConditionTrueFalse ; for testing
 
 			blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 			BOOST_REQUIRE_CLOSE(B[1][2], 0.107143, 0.001);

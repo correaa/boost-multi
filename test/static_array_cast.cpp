@@ -79,12 +79,13 @@ class involuter {
 	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{} {}  // NOLINT(readability-identifier-length) clang-tidy 14 bug
 	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
-	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
+	// vvv this is needed to make involuter<T> implicitly convertible to involuter<T const>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
 	template<class Other> constexpr involuter(involuter<Other, F> const& other)  // NOSONAR(cpp:S1709)
 	: it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
-	constexpr auto operator->() const { return pointer{&*it_, f_}; }
+	constexpr auto operator->() const { return pointer{&*it_, f_}; }  // cppcheck-suppress redundantPointerOp ; lib idiom
 
 	constexpr auto operator==(involuter const& other) const { return it_ == other.it_; }
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }

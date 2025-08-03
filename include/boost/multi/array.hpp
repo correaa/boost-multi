@@ -985,10 +985,10 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		return *this;
 	}
 
-	constexpr explicit operator subarray<value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_t>() & {
+	constexpr explicit operator subarray<value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_t>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		// cppcheck-suppress duplInheritedMember ; to overwrite
-		return this->template static_array_cast<value_type, typename static_array::element_const_ptr>();
-		// return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
+		return this->template static_array_cast<value_type, typename static_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
+																										  // return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
 
 	template<class Archive>
