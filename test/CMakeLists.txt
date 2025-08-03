@@ -356,6 +356,8 @@ else()
 #	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
 #	/wd4625  # copy constructor was implicitly defined as deleted
 #	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
+	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd4626>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd4626>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4	
 #	/wd4710  # function not inlined
 #	/wd4711  # function selected for automatic inline expansion
 	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd4820>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
