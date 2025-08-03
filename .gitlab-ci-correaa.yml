@@ -453,7 +453,7 @@ vs2022-shell cuda:
   tags:
     - windows, shell
   needs: ["vs2022-shell", "cuda"]
-  timeout: 40 minutes
+  timeout: 120 minutes
 
 vs2022-shell c++23:
   stage: build
