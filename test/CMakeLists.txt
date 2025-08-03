@@ -358,6 +358,8 @@ else()
 #	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
 #	/wd4710  # function not inlined
 #	/wd4711  # function selected for automatic inline expansion
+	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd4820>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd4820>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4	
 #	/wd4820  # bytes padding added after base class
 #	/wd4866  # compiler may not enforce left-to-right evaluation order for call
 #	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
