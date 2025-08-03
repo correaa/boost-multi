@@ -162,7 +162,7 @@ struct conjugate<> : private basic_conjugate_t {
 	constexpr auto operator()(T const& arg) const BOOST_MULTI_DECLRETURN(_(arg))
 };
 
-#if defined(__NVCC__)
+#if defined(__NVCC__) && !defined(_MSC_VER)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsubobject-linkage"
 #endif
