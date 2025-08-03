@@ -81,8 +81,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		[&, unnamed = watch{}] {
 			auto const repeat = 40;
-			std::for_each(  // cppcheck-suppress mismatchingContainerExpression
-				multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto /*idx*/) {
+			std::for_each(
+				multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(),  // cppcheck-suppress mismatchingContainerExpression ;
+				[&fdft, &arr, &res](auto /*idx*/) {
 					fdft.execute(arr.base(), res.base());
 					std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());
 				}
