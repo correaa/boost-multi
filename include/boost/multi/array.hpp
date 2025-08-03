@@ -618,7 +618,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	using array_alloc = detail::array_allocator<Alloc>;
 
  public:
-	// NOLINTNEXTLINE(runtime/operator)
+	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() && -> static_array* = delete;  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() & -> static_array* { return this; }  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
@@ -865,14 +865,18 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(static_array const& self) -> allocator_type { return self.get_allocator(); }
 
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto base() & -> typename static_array::element_ptr { return ref::base(); }
 	constexpr auto base() const& -> typename static_array::element_const_ptr { return ref::base(); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array& self) -> typename static_array::element_ptr { return self.base(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
 
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto origin() & -> typename static_array::element_ptr { return ref::origin(); }
 	constexpr auto origin() const& -> typename static_array::element_const_ptr { return ref::origin(); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array& self) -> typename static_array::element_ptr { return self.origin(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr { return self.origin(); }
@@ -893,6 +897,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
 	template<class OtherElement, std::enable_if_t<std::is_convertible_v<typename static_array::element_type, OtherElement>, int> = 0>  // NOLINT(modernize-use-constraints)
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr explicit operator OtherElement() const {
 		return static_cast<OtherElement>(*(this->base_));
 	}
@@ -1097,20 +1102,6 @@ struct array : static_array<T, D, Alloc> {
 							: array<T, D>(ilv.begin(), ilv.end())
 	  } {
 	}
-
-	// template<class T1, class T2>
-	explicit array(std::tuple<multi::size_t, multi::size_t> const& sizes)  // this is a workaround for cling/cppyy
-	: array([&] {
-		  using std::apply;
-		  return apply([](auto... sz) { return typename array::extensions_type{sz...}; }, sizes);
-	  }()) {}
-
-	// explicit array(typename array::sizes_type const& sizes)  // this is a workaround for cling/cppyy
-	// : array([&] {
-	//  	  using std::apply;
-	//  	  return apply([](auto... sz) { return typename array::extensions_type{sz...}; }, sizes);
-	// }())
-	// {}
 
 	template<
 		class OtherT,
