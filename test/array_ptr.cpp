@@ -206,7 +206,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic pop
 #endif
 
-		BOOST_TEST( (*aP).size() == 5 );
+		BOOST_TEST( (*aP).size() == 5 );  // cppcheck-suppress danglingTemporaryLifetime ; library idiom
 		BOOST_TEST( aP->size() == 5 );
 
 		BOOST_TEST( (*aP)[0] == 20 );
