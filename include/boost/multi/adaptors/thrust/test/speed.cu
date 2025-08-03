@@ -1,8 +1,6 @@
-// Copyright 2023-2024 Alfredo A. Correa
+// Copyright 2023-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust universal copy and assignment"
 
 #include <boost/multi/array.hpp>
 
@@ -11,6 +9,8 @@
 #include <thrust/complex.h>
 
 #include <boost/mpl/list.hpp>
+
+#include <chrono>
 
 namespace multi = boost::multi;
 
