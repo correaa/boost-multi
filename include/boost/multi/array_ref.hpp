@@ -3522,14 +3522,13 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	friend constexpr auto elements(array_ref&& self) -> elements_type { return std::move(self).elements(); }
 	friend constexpr auto elements(array_ref const& self) -> celements_type { return self.elements(); }
 
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto celements() const& { return celements_type{array_ref::data_elements(), array_ref::num_elements()}; }
-	// friend constexpr auto celements(array_ref const& self) { return self.celements(); }
 
-	// cppcheck-suppress duplInheritedMember ; to override
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto element_moved() & { return array_ref<T, D, typename array_ref::element_move_ptr, Layout>(this->extensions(), typename array_ref::element_move_ptr{this->base_}); }
-
-	// cppcheck-suppress duplInheritedMember ; to override
 	constexpr auto element_moved() && { return element_moved(); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -3724,7 +3723,7 @@ class [[deprecated("no good uses found")]] array_ptr<T, 0, Ptr> {  // TODO(corre
 	constexpr explicit array_ptr(Ptr dat, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : ref_(dat, extensions) {}
 	constexpr explicit array_ptr(Ptr dat) : array_ptr(dat, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
 
-	constexpr explicit operator bool() const { return ref_.base(); }
+	constexpr explicit operator bool() const { return ref_.base(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr explicit operator Ptr() const { return ref_.base(); }
 
 	auto operator=(array_ptr const&) -> array_ptr&     = default;
@@ -3733,7 +3732,9 @@ class [[deprecated("no good uses found")]] array_ptr<T, 0, Ptr> {  // TODO(corre
 	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() == other.ref_.base(); }
 	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() != other.ref_.base(); }
 
+	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator*() const -> multi::array_ref<T, 0, Ptr>& { return ref_; }  // moLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
+
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator->() const -> multi::array_ref<T, 0, Ptr>* { return &ref_; }  // moLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
 };

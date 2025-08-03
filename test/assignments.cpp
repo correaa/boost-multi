@@ -217,8 +217,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 		auto* loc = &arr[1][1][5];
 
-		auto* arr_ptr = std::addressof(arr);
-		arr           = *arr_ptr;
+		auto const* arr_ptr = std::addressof(arr);
+
+		arr = *arr_ptr;
+
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( &arr[1][1][5] == loc );

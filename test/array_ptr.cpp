@@ -215,10 +215,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(  aCRef.size() == 5 );  // cppcheck-suppress danglingTempReference ; library idiom
 
-		BOOST_TEST( &aCRef[0] == &vec[2] );
+		BOOST_TEST( &aCRef[0] == &vec[2] );  // cppcheck-suppress danglingTempReference ; library idiom
 		BOOST_TEST(  aCRef[0] == 20     );
 
-		auto&& aRef = *aP;
+		auto&& aRef = *aP;  // cppcheck-suppress danglingTempReference ;  library idiom
 		// what(aP, aRef);
 		// (*aP)[0] = 990;
 		aRef[0] = 990;  // cppcheck-suppress danglingTempReference ;  library idiom
