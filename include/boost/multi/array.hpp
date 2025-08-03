@@ -618,12 +618,14 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	using array_alloc = detail::array_allocator<Alloc>;
 
  public:
-	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() && -> static_array* = delete;  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() & -> static_array* { return this; }  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() const& -> static_array const* { return this; }  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : override from base
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
@@ -915,7 +917,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		return subarray<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
-	constexpr auto rotated() && {
+	constexpr auto rotated() && {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return subarray<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
@@ -932,7 +934,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
  public:
- 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto unrotated() & { return unrotated_aux_(); }
 	constexpr auto unrotated() const& { return unrotated_aux_().as_const(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
@@ -984,6 +986,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
 	constexpr explicit operator subarray<value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_t>() & {
+		// cppcheck-suppress duplInheritedMember ; to overwrite
 		return this->template static_array_cast<value_type, typename static_array::element_const_ptr>();
 		// return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
