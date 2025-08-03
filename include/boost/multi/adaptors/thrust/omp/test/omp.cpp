@@ -55,7 +55,7 @@ auto parallel_idiom_array_sum(Array1D const& arr) {
 #if !defined(__NVCOMPILER) && !defined(_MSC_VER)
 	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
 	for(auto const i : arr.extension()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
+		// cppcheck-suppress useStlAlgorithm ;  // NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #elif defined(_MSC_VER)

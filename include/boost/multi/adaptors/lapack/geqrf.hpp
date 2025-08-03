@@ -46,7 +46,7 @@ auto geqrf(Array2D&& aa, TAU& tau, Allocator alloc) -> Array2D&& {
 		size(~aa), size(aa), aa.base(), aa.stride(),
 		tau.base(),
 		&dwork, -1,
-		info
+		info  // cppcheck-suppress uninitvar ;
 	);
 	if(info != 0) {  // cppcheck-suppress identicalConditionAfterEarlyExit ; TODO(correaa) investigate
 		throw std::runtime_error("Error in DGEQRF work estimation, info: " + std::to_string(info));

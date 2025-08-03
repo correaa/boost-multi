@@ -907,7 +907,7 @@ struct layout_t
 	//  return reindex(idx).rotate().ceindex(rest...).unrotate();
 	// }
 
-		   constexpr auto num_elements()        const        noexcept -> size_type { return size()*sub_.num_elements(); }
+		   constexpr auto num_elements()        const        noexcept -> size_type { return size()*sub_.num_elements(); }  // TODO(correaa) investigate mutation * -> /
 	friend constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
 
 	       constexpr auto is_empty()        const        noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
