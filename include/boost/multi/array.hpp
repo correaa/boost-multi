@@ -32,14 +32,14 @@
 #define BOOST_MULTI_HD
 #endif
 
-namespace boost::multi {
-
-namespace detail {
-
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #endif
+
+namespace boost::multi {
+
+namespace detail {
 
 template<class Allocator>
 struct array_allocator {
@@ -105,9 +105,6 @@ struct array_allocator {
  public:
 	constexpr auto get_allocator() const -> allocator_type { return alloc_; }
 };
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif
 
 }  // end namespace detail
 
@@ -1533,6 +1530,10 @@ struct version<boost::multi::array<T, D, A>> {
 };
 
 }  // end namespace boost::serialization
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #undef BOOST_MULTI_HD
 
