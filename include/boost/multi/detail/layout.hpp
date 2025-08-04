@@ -1203,7 +1203,6 @@ struct layout_t
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
 #endif
 
@@ -1270,6 +1269,11 @@ struct layout_t<0, SSize>
 	friend constexpr auto dimensionality(layout_t const& /*self*/) { return rank_v; }
 
  private:
+
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '6' bytes padding added after data member
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
@@ -1281,6 +1285,9 @@ struct layout_t<0, SSize>
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
+#if defined(_MSC_VER)
+#pragma warning( pop )
 #endif
 
 	nelems_type nelems_;
