@@ -74,6 +74,10 @@ struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self
 
 template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
 
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '3' bytes padding added after data member
+#endif
 template<class T>
 struct totally_ordered2<T, void> {
 	// template<class U>
@@ -83,6 +87,9 @@ struct totally_ordered2<T, void> {
 	// template<class U>
 	// friend constexpr auto operator>(T const& self, U const& other) { return other < self; }
 };
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
 
 template<class T>
 struct copy_constructible {};
@@ -276,6 +283,10 @@ struct affine : addable2<T, Difference>
 	using difference_type = Difference;
 };
 
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '3' bytes padding added after data member
+#endif
 template<class T>
 class random_iterable {
  protected:
@@ -288,6 +299,9 @@ class random_iterable {
 	friend constexpr auto cfront(T const& self) -> decltype(auto) { return self.cfront(); }
 	friend constexpr auto cback(T const& self) -> decltype(auto) { return self.cback(); }
 };
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
 
 namespace detail {
 template<class Self, class Value, class Reference = Value&, class Pointer = Value*, class Difference = std::ptrdiff_t>
