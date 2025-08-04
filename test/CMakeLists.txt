@@ -352,12 +352,13 @@ else()
 		# /Wall  
 		# /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 		/wd4514  # unreferenced inline function has been removed
+		/wd4866  # compiler may not enforce left-to-right evaluation order for call to 'boost::multi::subarray<int,1,int *,boost::multi::layout_t<1,__int64> >::operator[]' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_ref.cpp.x.vcxproj]
 		/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 	>
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 		# -Xcompiler=/Wall  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 		-Xcompiler=/wd4514  # unreferenced inline function has been removed
-		#-Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
+		-Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
 		-Xcompiler=/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 	>
 	# $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd1394>	  # field of class type without a DLL interface used in a class with a DLL interface
