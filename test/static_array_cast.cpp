@@ -18,14 +18,17 @@
 
 namespace multi = boost::multi;
 
-#if defined(__clang__)
-#pragma clang diagnostic ignored "-Wpadded"
-#endif
-
 template<class Ref, class Involution>
 class involuted {
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 	Ref                                      r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;

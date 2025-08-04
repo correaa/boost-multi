@@ -18,10 +18,8 @@
 #include <tuple>       // for tie, operator==, tuple
 
 #if defined(__clang__)
-#pragma clang diagnostic ignored "-Winvalid-offsetof"  // Explicit padding, for particle example
 #pragma clang diagnostic ignored "-Wpadded"
 #elif defined(_MSC_VER)
-#pragma warning(disable : 4324)  // Explicit padding, for particle example
 #pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
 
@@ -38,6 +36,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if defined(__clang__)
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
 #endif
 
 		// some members might need explicit padding to work well with member_cast
