@@ -236,7 +236,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 	// cppcheck-suppress duplInheritedMember ; to overwrite
