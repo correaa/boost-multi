@@ -20,6 +20,11 @@
 #define BOOST_MULTI_HD
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4626)  // 'boost::multi::transform_ptr<main::complex,const main::<lambda_3>,main::complex *,std::complex<double>>': assignment operator was implicitly defined as deleted [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\element_transformed.cpp.x.vcxproj]
+#endif
+
 namespace boost::multi {
 
 template<class T, class Ptr = T*>
@@ -634,6 +639,10 @@ inline auto valid_mull(int age) -> bool {
 }  // end namespace detail
 
 }  // end namespace boost::multi
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #undef BOOST_MULTI_HD
 
