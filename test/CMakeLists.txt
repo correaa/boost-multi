@@ -348,11 +348,16 @@ else()
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
 #	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
-	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/Wall>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/Wall>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4	
+	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+		/Wall  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+		/wd4514  # unreferenced inline function has been removed
+	>
+	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+		-Xcompiler=/Wall  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+		-Xcompiler=/wd4514  # unreferenced inline function has been removed
+	>
 	# $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd1394>	  # field of class type without a DLL interface used in a class with a DLL interface
 #	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
-#	/wd4514  # unreferenced inline function has been removed
 #	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
 #	/wd4625  # copy constructor was implicitly defined as deleted
 #	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
