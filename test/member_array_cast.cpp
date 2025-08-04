@@ -28,6 +28,7 @@
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
+#pragma warning(disable : 4371)  // 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
 #endif
 
 namespace multi = boost::multi;

@@ -25,14 +25,19 @@ namespace multi = boost::multi;
 
 template<class Ref, class Involution>
 class involuted {
-	Ref                                      r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
+	Ref                                      r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr involuted(Ref ref, Involution fun) : r_{ref}, f_{fun} {}
-	constexpr explicit involuted(Ref ref) : r_{ref}, f_{} {}
+	constexpr involuted(Ref ref, Involution fun)
+	// : r_{ref}, f_{fun} {}
+	: f_{fun}, r_{ref} {}
+
+	constexpr explicit involuted(Ref ref)
+	// : r_{ref}, f_{} {}
+	: f_{}, r_{ref} {}
 
 	involuted(involuted const&)     = default;
 	involuted(involuted&&) noexcept = default;

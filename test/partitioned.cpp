@@ -18,6 +18,12 @@
 #include <utility>      // for move
 #include <vector>
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4625)  // copy constructor was implicitly defined as deleted
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#pragma warning(disable : 5026)  // move constructor was implicitly defined as deleted
+#endif
+
 namespace multi = boost::multi;
 
 template<class Ref> class propagate_const;
