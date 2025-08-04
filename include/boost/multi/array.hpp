@@ -99,6 +99,10 @@ struct array_allocator {
 
  public:
 	constexpr auto get_allocator() const -> allocator_type { return alloc_; }
+
+	#if defined(_MSC_VER)
+	auto operator=(array_allocator const&) -> array_allocator& = default;
+	#endif
 };
 
 }  // end namespace detail
