@@ -372,7 +372,6 @@ else()
 #	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
 #	/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 #	/wd5026  # move constructor was implicitly defined as deleted
-#	/wd5027  # move assignment operator was implicitly defined as deleted
 #	/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 	>
 	)
