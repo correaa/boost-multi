@@ -99,7 +99,11 @@ struct array_allocator {
 
  public:
 	constexpr auto get_allocator() const -> allocator_type { return alloc_; }
+
+	auto operator=(array_allocator const&) -> array_allocator& = default;
+	auto operator=(array_allocator&&) -> array_allocator& = default;
 };
+
 }  // end namespace detail
 
 #if defined(__clang__)
