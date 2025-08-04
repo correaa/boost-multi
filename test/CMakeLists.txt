@@ -351,6 +351,7 @@ else()
 	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
 		/Wall  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 		/wd4514  # unreferenced inline function has been removed
+		/wd4866  # compiler may not enforce left-to-right evaluation order for call
 		/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 	>
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:

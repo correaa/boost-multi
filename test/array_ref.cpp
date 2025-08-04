@@ -860,7 +860,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
 			multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
 			multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
-			multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
+			std::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 			BOOST_TEST( sizes1 == 4 );
 			BOOST_TEST( sizes2 == 2 );
@@ -894,6 +894,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			long long sizes2;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
 			// NOLINTNEXTLINE(runtime/int)
 			long long sizes3;  // NOLINT(google-runtime-int,cppcoreguidelines-init-variables) test bad idiom
+			// std::tie(sizes1, sizes2, sizes3) = cref.sizes();
 			multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 			BOOST_TEST( sizes1 == 4 );
@@ -904,6 +905,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			int64_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
 			int64_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
 			int64_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
+			// std::tie(sizes1, sizes2, sizes3) = cref.sizes();
 			multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 			BOOST_TEST( sizes1 == 4 );
