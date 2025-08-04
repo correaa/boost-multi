@@ -18,16 +18,14 @@
 #include <tuple>       // for tie, operator==, tuple
 
 #if defined(__clang__)
-#pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"  // Explicit padding, for particle example
+#pragma clang diagnostic ignored "-Wpadded"
 #elif defined(_MSC_VER)
-#pragma warning(push)
 #pragma warning(disable : 4324)  // Explicit padding, for particle example
+#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
 
 #if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #pragma warning(disable : 4371)  // 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
 #endif
 
@@ -40,7 +38,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpadded"
 #endif
 
 		// some members might need explicit padding to work well with member_cast
@@ -258,13 +255,3 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	return boost::report_errors();
 }
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#endif
