@@ -19,7 +19,6 @@
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4371)  // 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
-#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
 
 namespace multi = boost::multi;
@@ -30,6 +29,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using v3d = std::array<double, 3>;
 
 		// some members might need explicit padding to work well with member_cast
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
@@ -55,6 +58,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 #if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
 
 		class particles_soa {
