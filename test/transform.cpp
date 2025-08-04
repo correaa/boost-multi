@@ -18,6 +18,10 @@
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for move, declval
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#endif
+
 #define BOOST_MULTI_DECLRETURN(ExpR) \
 	->decltype(ExpR) { return ExpR; }  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
