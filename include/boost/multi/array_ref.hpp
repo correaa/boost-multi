@@ -9,7 +9,7 @@
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
-// #include <boost/multi/detail/layout.hpp>
+#include "detail/layout.hpp"
 
 #include <stdexcept>
 #include <string>  // for to_string
@@ -17,8 +17,9 @@
 
 #if defined(_MSC_VER)
 #pragma warning(push)
-#pragma warning(disable : 4623)  // default constructor was implicitly defined as deleted
+#pragma warning(disable : 4623)  // assignment operator was implicitly defined as deleted
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#pragma warning(disable : 4625)  // copy constructor was implicitly defined as deleted
 #endif
 
 namespace boost::multi {
@@ -2503,7 +2504,15 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	friend struct const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
 
 	element_ptr ptr_;
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
+#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	stride_type stride_;
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
  public:
 	BOOST_MULTI_HD constexpr auto operator+(difference_type n) const { return array_iterator{*this} += n; }
