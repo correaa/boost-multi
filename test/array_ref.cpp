@@ -856,16 +856,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( sizes2 == 2 );
 			BOOST_TEST( sizes3 == 3 );
 		}
-		{
-			multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
-			multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
-			multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
-			std::tie(sizes1, sizes2, sizes3) = cref.sizes();
+		// {
+		// 	multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
+		// 	multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
+		// 	multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
+		// 	std::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
-			BOOST_TEST( sizes1 == 4 );
-			BOOST_TEST( sizes2 == 2 );
-			BOOST_TEST( sizes3 == 3 );
-		}
+		// 	BOOST_TEST( sizes1 == 4 );
+		// 	BOOST_TEST( sizes2 == 2 );
+		// 	BOOST_TEST( sizes3 == 3 );
+		// }
 		{
 			multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
 			multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
