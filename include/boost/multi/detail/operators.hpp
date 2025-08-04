@@ -215,6 +215,11 @@ struct dereferenceable {
 	constexpr auto operator*() const -> reference { return *(self().operator->()); }
 };
 
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '7' bytes padding added after base class
+#endif
+
 template<class Self, typename Difference, typename Reference>
 struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 : affine_with_unit<Self, Difference>
@@ -236,6 +241,11 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type idx) const -> reference { return *(self() + idx); }
 };
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
+
 
 // template<class T, class Reference>
 // struct dereferenceable {

@@ -36,6 +36,11 @@ namespace boost::multi {
 
 namespace detail {
 
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4626 )  // assignment operator was implicitly defined as deleted
+#endif
+
 template<class Allocator>
 struct array_allocator {
 	using allocator_type = Allocator;
@@ -99,11 +104,10 @@ struct array_allocator {
 
  public:
 	constexpr auto get_allocator() const -> allocator_type { return alloc_; }
-
-#if defined(_MSC_VER)
-	auto operator=(array_allocator const&) -> array_allocator& = default;
-#endif
 };
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
 
 }  // end namespace detail
 
