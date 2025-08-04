@@ -36,6 +36,10 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 	}
 };
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4623)  // default constructor was implicitly defined as deleted
+#endif
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference
 	using head_type = T0;
@@ -52,6 +56,21 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
 	constexpr tuple()             = default;
 	constexpr tuple(tuple const&) = default;
+
+	operator std::tuple<T0&, Ts&...>() {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		using std::apply;
+		return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	}
+	operator std::tuple<T0&, Ts&...>() const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		using std::apply;
+		return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	}
+
+	// template<class TT0, class... TTs>
+	// operator std::tuple<TT0&, TTs&...>() const {
+	// 	using std::apply;
+	// 	return apply([](auto&... ts) {return std::tuple<TT0&, TTs&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	// }
 
 	// TODO(correaa) make conditional explicit constructor depending on the conversions for T0, Ts...
 	constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)}, head_{std::move(head)} {}
@@ -196,6 +215,10 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		}
 	}
 };
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 
 #if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
 //  TODO(correaa) : this class can be collapsed with the general case with [[no_unique_address]] in C++20
