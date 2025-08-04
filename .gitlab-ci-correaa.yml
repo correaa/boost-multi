@@ -402,7 +402,7 @@ vs2022-shell:
     # - .\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel 2 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
