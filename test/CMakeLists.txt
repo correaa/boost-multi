@@ -360,9 +360,8 @@ else()
 #	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
 #	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
 #	/wd4625  # copy constructor was implicitly defined as deleted
-#	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
-	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd4626>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd4626>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4	
+#	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd4626>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+#	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd4626>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4	
 #	/wd4710  # function not inlined
 #	/wd4711  # function selected for automatic inline expansion
 	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd4820>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
@@ -371,7 +370,6 @@ else()
 #	/wd4866  # compiler may not enforce left-to-right evaluation order for call
 #	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
 #	/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
-#	/wd5026  # move constructor was implicitly defined as deleted
 #	/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 	>
 	)
