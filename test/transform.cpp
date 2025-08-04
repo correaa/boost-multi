@@ -186,7 +186,8 @@ template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRe
 		return imag(static_cast<typename conjd::decay_type>(self));
 	}
 };
-#if defined(__NVCC__)
+
+#if defined(__NVCC__) && !defined(_MSC_VER)
 #pragma GCC diagnostic pop
 #endif
 

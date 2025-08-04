@@ -60,19 +60,18 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr tuple()             = default;
 	constexpr tuple(tuple const&) = default;
 
-	operator std::tuple<T0&, Ts&...>() {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-		using std::apply;
-		return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
-	}
-	operator std::tuple<T0&, Ts&...>() const {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-		using std::apply;
-		return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
-	}
-
-	// template<class TT0, class... TTs>
-	// operator std::tuple<TT0&, TTs&...>() const {
+	// this is horrible hack and can produce ODR reported by Circle
+	// operator std::tuple<T0&, Ts&...>() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	// 	using std::apply;
-	// 	return apply([](auto&... ts) {return std::tuple<TT0&, TTs&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	// }
+	// operator std::tuple<T0&, Ts&...>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// 	using std::apply;
+	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	// }
+	// operator std::tuple<T0&, Ts&...>() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// 	using std::apply;
+	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
 	// }
 
 	// TODO(correaa) make conditional explicit constructor depending on the conversions for T0, Ts...
