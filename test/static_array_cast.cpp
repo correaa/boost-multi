@@ -110,7 +110,7 @@ class involuter {
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
 	constexpr auto operator<(involuter const& other) const { return it_ < other.it_; }
 
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
@@ -127,7 +127,7 @@ class involuter {
 
 	constexpr auto operator[](typename involuter::difference_type n) const { return reference{*(it_ + n), f_}; }
 
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
