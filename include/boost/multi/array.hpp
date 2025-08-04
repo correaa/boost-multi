@@ -100,8 +100,13 @@ struct array_allocator {
  public:
 	constexpr auto get_allocator() const -> allocator_type { return alloc_; }
 
+	array_allocator(array_allocator const&) = default;
+	array_allocator(array_allocator&&) = default;
+
 	auto operator=(array_allocator const&) -> array_allocator& = default;
-	auto operator=(array_allocator&&) -> array_allocator& = default;
+	auto operator=(array_allocator&&) -> array_allocator&      = default;
+
+	~array_allocator() = default;
 };
 
 }  // end namespace detail
