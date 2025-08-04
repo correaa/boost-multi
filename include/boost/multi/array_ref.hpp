@@ -87,6 +87,20 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 #define BOOST_MULTI_HD
 #endif
 
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#define BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH() \
+	_Pragma("clang diagnostic push")  \
+	_Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
+#else
+#define BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
+#endif
+
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#define BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_POP() _Pragma("clang diagnostic pop")
+#else
+#define BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_POP()
+#endif
+
 namespace boost::multi {
 
 template<typename T, dimensionality_type D, typename ElementPtr = T const*, class Layout = layout_t<D>>
@@ -234,15 +248,19 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_HD constexpr auto layout() const -> layout_t const& { return *this; }
 	friend constexpr auto         layout(array_types const& self) -> layout_t const& { return self.layout(); }
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-#endif
+	// #if defined(__clang__)
+	// #pragma clang diagnostic push
+	// #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	// #endif
+	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
+	// [[clang::unsafe_buffer_usage]]
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_POP()
+	// #if defined(__clang__)
+	// #pragma clang diagnostic pop
+	// #endif
+
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) { return self.origin(); }
 
  protected:
@@ -2847,13 +2865,14 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		if constexpr(std::is_integral_v<decltype(this->stride())>) {
 			BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		}
-#if defined(__clang__)
+
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 		return *((this->stride() * idx - this->offset()) + this->base_);
-#if defined(__clang__)
+
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 	}
