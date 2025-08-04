@@ -19,11 +19,15 @@
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Winvalid-offsetof"  // Explicit padding, for particle example
 #elif defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4324)  // Explicit padding, for particle example
+#endif
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
 
 namespace multi = boost::multi;
@@ -253,6 +257,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	return boost::report_errors();
 }
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
