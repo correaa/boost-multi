@@ -89,8 +89,8 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #define BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH() \
-	_Pragma("clang diagnostic push")  \
-	_Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
+	_Pragma("clang diagnostic push")                   \
+		_Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
 #else
 #define BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
 #endif
@@ -264,8 +264,15 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) { return self.origin(); }
 
  protected:
+ #ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
+#endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif
 
 	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename> friend struct array_iterator;
 
