@@ -59,6 +59,7 @@ if(NOT ENABLE_CUDA)
 target_compile_options(multi INTERFACE
   $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
   $<$<CXX_COMPILER_ID:MSVC>:
+    /EHsc
     $<$<COMPILE_FEATURES:cxx_std_17>:/permissive- >
     /wd5027  # move assignment operator was implicitly defined as deleted, for detail::array_allocator
   >  # this is needed for MSVC in C++17 mode
