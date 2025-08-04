@@ -9,7 +9,7 @@
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
-#include "detail/layout.hpp"
+// #include <boost/multi/detail/layout.hpp>
 
 #include <stdexcept>
 #include <string>  // for to_string
@@ -17,6 +17,7 @@
 
 #if defined(_MSC_VER)
 #pragma warning(push)
+#pragma warning(disable : 4623)  // default constructor was implicitly defined as deleted
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #endif
 
