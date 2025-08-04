@@ -39,6 +39,7 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4623)  // default constructor was implicitly defined as deleted
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #endif
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference
