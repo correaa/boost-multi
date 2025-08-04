@@ -354,12 +354,14 @@ else()
 		/wd4514  # unreferenced inline function has been removed
 		/wd4866  # compiler may not enforce left-to-right evaluation order for call to 'boost::multi::subarray<int,1,int *,boost::multi::layout_t<1,__int64> >::operator[]' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_ref.cpp.x.vcxproj]
 		/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+		/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
 	>
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 		# -Xcompiler=/Wall  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 		-Xcompiler=/wd4514  # unreferenced inline function has been removed
 		-Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
 		-Xcompiler=/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+		-Xcompiler=/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
 	>
 	# $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd1394>	  # field of class type without a DLL interface used in a class with a DLL interface
 #	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
