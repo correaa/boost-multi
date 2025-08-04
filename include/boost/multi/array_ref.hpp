@@ -15,6 +15,11 @@
 #include <string>  // for to_string
 #include <type_traits>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#endif
+
 namespace boost::multi {
 
 template<class Element>
@@ -407,10 +412,6 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		};
 		return proxy{operator*()};
 	}
-
-	// BOOST_MULTI_HD constexpr auto operator->() -> reference* {
-	//  return std::addressof(reinterpret_cast<reference&>(*this));
-	// }
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
 
@@ -3876,6 +3877,10 @@ using array_view = array_ref<T, D, TPtr>&;
 namespace boost::multi {
 constexpr inline int serialization_array_version = BOOST_MULTI_SERIALIZATION_ARRAY_VERSION;
 }  // end namespace boost::multi
+#endif
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 
 #undef BOOST_MULTI_HD

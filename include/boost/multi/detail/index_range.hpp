@@ -74,8 +74,15 @@ class iterator_facade {
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<>>
 class range {
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)	// 'boost::multi::range<IndexType,IndexTypeLast,std::plus<void>,std::minus<void>>': '3' bytes padding added after data member 'boost::multi::range<IndexType,IndexTypeLast,std::plus<void>,std::minus<void>>::first_'
+#endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	IndexType     first_ = {};
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
 
  public:
