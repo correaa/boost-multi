@@ -276,7 +276,7 @@ else()
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 	-Wno-poison-system-directories
 	-Wno-large-by-value-copy  # subarray references can be large
-	-Wno-padded  # most classes, e.g. layouts, need padding
+	#-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
 	-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5
 	-Wno-undefined-reinterpret-cast  # needed to cast to c-array
@@ -347,35 +347,20 @@ else()
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
-#	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
-	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
-		# /Wall  
-		# /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-		/wd4514  # unreferenced inline function has been removed
-		/wd4866  # compiler may not enforce left-to-right evaluation order for call to 'boost::multi::subarray<int,1,int *,boost::multi::layout_t<1,__int64> >::operator[]' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_ref.cpp.x.vcxproj]
-		/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
-		/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
-	>
-	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
-		# -Xcompiler=/Wall  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-		-Xcompiler=/wd4514  # unreferenced inline function has been removed
-		-Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
-		-Xcompiler=/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
-		-Xcompiler=/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
-	>
-	# $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd1394>	  # field of class type without a DLL interface used in a class with a DLL interface
-#	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
-#	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
-#	/wd4625  # copy constructor was implicitly defined as deleted
-#	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd4626>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-#	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd4626>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4	
-#	/wd4710  # function not inlined
-#	/wd4711  # function selected for automatic inline expansion
-#	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd4820>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-#	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd4820>  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4	
-#	/wd4820  # bytes padding added after base class
-#	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
-#	/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+		$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+			/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+			/wd4514  # unreferenced inline function has been removed
+			/wd4866  # compiler may not enforce left-to-right evaluation order for call to 'boost::multi::subarray<int,1,int *,boost::multi::layout_t<1,__int64> >::operator[]' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_ref.cpp.x.vcxproj]
+			/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+			/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
+		>
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+			-Xcompiler=/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+			-Xcompiler=/wd4514  # unreferenced inline function has been removed
+			-Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
+			-Xcompiler=/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+			-Xcompiler=/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
+		>
 	>
 	)
 
@@ -418,6 +403,8 @@ else()
 				target_link_libraries    (${TEST_EXE} PRIVATE TBB::tbb)
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
 			endif()
+
+			set_property(TARGET ${TEST_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})

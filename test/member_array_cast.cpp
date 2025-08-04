@@ -30,12 +30,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using v3d = std::array<double, 3>;
 
 		// some members might need explicit padding to work well with member_cast
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 		struct particle {
 			int mass;
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
-#pragma clang diagnostic ignored "-Wpadded"
 #endif
 #if defined(_MSC_VER)
 #pragma warning(push)
@@ -50,6 +53,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic pop
 #endif
 		};
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 		class particles_soa {
 			multi::array<int, 2> masses_;

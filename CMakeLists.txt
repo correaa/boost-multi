@@ -55,21 +55,21 @@ add_library(multi INTERFACE)
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
-if(NOT ENABLE_CUDA)
-target_compile_options(multi INTERFACE
-  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
-  $<$<CXX_COMPILER_ID:MSVC>:
-    /EHsc
-    $<$<COMPILE_FEATURES:cxx_std_17>:/permissive- >
-    /wd5027  # move assignment operator was implicitly defined as deleted, for detail::array_allocator
-  >  # this is needed for MSVC in C++17 mode
-)
-else()
-target_compile_options(multi INTERFACE
-  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
-  $<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive- > >  # this is needed for MSVC in C++17 mode
-)
-endif()
+#if(NOT ENABLE_CUDA)
+#target_compile_options(multi INTERFACE
+#  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
+#  $<$<CXX_COMPILER_ID:MSVC>:
+#    /EHsc
+#    $<$<COMPILE_FEATURES:cxx_std_17>:/permissive- >
+#    /wd5027  # move assignment operator was implicitly defined as deleted, for detail::array_allocator
+#  >  # this is needed for MSVC in C++17 mode
+#)
+#else()
+#target_compile_options(multi INTERFACE
+#  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
+#  $<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive- > >  # this is needed for MSVC in C++17 mode
+#)
+#endif()
 
 # https://youtrack.jetbrains.com/issue/CPP-25608
 target_compile_features(multi INTERFACE cxx_std_17)

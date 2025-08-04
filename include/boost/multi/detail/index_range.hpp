@@ -83,7 +83,14 @@ class range {
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>

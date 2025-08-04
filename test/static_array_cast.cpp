@@ -22,7 +22,7 @@ template<class Ref, class Involution>
 class involuted {
 #if defined(_MSC_VER)
 #pragma warning(push)
-#pragma warning(disable : 4820)  // 'involuted<int,std::negate<void>>': '3' bytes padding added after data member 'involuted<int,std::negate<void>>::f_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\static_array_cast.cpp.x.vcxproj]
+#pragma warning(disable : 4820)  // '3' bytes padding added after data member 'involuted<int,std::negate<void>>::f_'
 #endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
 #if defined(_MSC_VER)
@@ -75,10 +75,15 @@ class involuted {
 	}
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 template<class It, class F>
 class involuter {
 	It                              it_;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
+
 	template<class, class> friend class involuter;
 
  public:
@@ -107,7 +112,6 @@ class involuter {
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
@@ -115,11 +119,6 @@ class involuter {
 		it_ += n;
 		return *this;
 	}
-
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#endif
 
 	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }
 	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }
@@ -134,6 +133,9 @@ class involuter {
 
 	constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 };
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #if defined(__cpp_deduction_guides)
 template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19

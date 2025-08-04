@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Alfredo A. Correa
+// Copyright 2021-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -44,18 +44,19 @@ template<class T> using test_allocator =
 	thrust::cuda::allocator<T>;
 }
 
-// using types_list = boost::mpl::list<
-//  // char,
-//  double,
-//  // std::complex<double>,
-//  thrust::complex<double>
-// >;
-
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
+auto universal_memory_supported() -> bool {
+	int d;
+	cudaGetDevice(&d);
+	int is_cma = 0;
+	cudaDeviceGetAttribute(&is_cma, cudaDevAttrConcurrentManagedAccess, d);
+	return (is_cma == 1)?true:false;
+}
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
-	BOOST_AUTO_TEST_CASE(cuda_universal_empty) {
+	
+	// BOOST_AUTO_TEST_CASE(cuda_universal_empty)
+	if(universal_memory_supported())
+	{
 		using complex = thrust::complex<double>;
 		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A;
 		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> B = A;
@@ -64,7 +65,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A == B );
 	}
 
-	BOOST_AUTO_TEST_CASE(cuda_allocators) {
+	// BOOST_AUTO_TEST_CASE(cuda_allocators)
+	{
 
 		multi::array<double, 1, thrust::cuda::allocator<double>> A1(200, 0.0);
 
@@ -78,8 +80,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A1[10] == 2.0 );
 	}
 
-	BOOST_AUTO_TEST_CASE(cuda_1d_initlist) {
-
+	// BOOST_AUTO_TEST_CASE(cuda_1d_initlist)
+	{
 		multi::array<double, 1, thrust::device_allocator<double>> A1 = {1.0, 2.0, 3.0};
 		BOOST_TEST( A1.size() == 3 );
 
@@ -126,17 +128,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(test_univ_alloc) {
+	// BOOST_AUTO_TEST_CASE(test_univ_alloc)
+	if(universal_memory_supported())
+	{
 		multi::array<double, 2, thrust::cuda::universal_allocator<double>> Dev({128, 128});
 		*raw_pointer_cast(Dev.base()) = 99.0;
 	}
 
-	BOOST_AUTO_TEST_CASE(mtc_universal_array) {
+	// BOOST_AUTO_TEST_CASE(mtc_universal_array)
+	if(universal_memory_supported())
+	{
 		multi::thrust::cuda::universal_array<double, 2> Dev({128, 128});
 		*raw_pointer_cast(Dev.base()) = 99.0;
 	}
 
-	BOOST_AUTO_TEST_CASE(mtc_universal_coloncolon_array) {
+	// BOOST_AUTO_TEST_CASE(mtc_universal_coloncolon_array)
+	if(universal_memory_supported())
+	{
 		multi::thrust::cuda::universal::array<double, 2> Dev({128, 128});
 		*raw_pointer_cast(Dev.base()) = 99.0;
 	}
@@ -149,7 +157,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #ifdef NDEBUG
 	auto const n = 1024;
 
-	BOOST_AUTO_TEST_CASE(thrust_copy_1D_issue123_double) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
+	// BOOST_AUTO_TEST_CASE(thrust_copy_1D_issue123_double)
+	{  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
 		using T = double;
 
 		static_assert(multi::is_trivially_default_constructible<T>{});
@@ -268,7 +277,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "   " << std::endl;
 	}
 
-	BOOST_AUTO_TEST_CASE(thrust_copy_1D_issue123_complex) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
+	// BOOST_AUTO_TEST_CASE(thrust_copy_1D_issue123_complex)
+	{
 		using T = thrust::complex<double>;
 
 		static_assert(multi::is_trivially_default_constructible<T>{});
@@ -387,7 +397,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "   " << std::endl;
 	}
 
-	BOOST_AUTO_TEST_CASE(thrust_cpugpu_2D_issue123_double) {
+	// BOOST_AUTO_TEST_CASE(thrust_cpugpu_2D_issue123_double)
+	{
 		using T = double;
 
 		auto const exts = multi::extensions_t<2>({n, n});
@@ -504,7 +515,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "  " << std::endl;
 	}
 
-	BOOST_AUTO_TEST_CASE(thrust_cpugpu_2D_issue123_complex) {
+	// BOOST_AUTO_TEST_CASE(thrust_cpugpu_2D_issue123_complex)
+	{
 		using T = thrust::complex<double>;
 
 		auto const exts = multi::extensions_t<2>({n, n});
@@ -621,7 +633,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "  " << std::endl;
 	}
 
-	BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D_double) {
+	// BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D_double)
+	{
 		using T         = double;
 		auto const exts = multi::extensions_t<3>({1024, 1024, 100});
 
@@ -729,7 +742,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "   " << std::endl;
 	}
 
-	BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D_complex) {
+	// BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D_complex)
+	{
 		using T         = thrust::complex<double>;
 		auto const exts = multi::extensions_t<3>({1024, 1024, 100});
 
