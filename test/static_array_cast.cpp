@@ -25,7 +25,7 @@ class involuted {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
-	Ref                                      r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+	Ref r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif

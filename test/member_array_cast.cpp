@@ -34,20 +34,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using v3d = std::array<double, 3>;
 
+		// some members might need explicit padding to work well with member_cast
+		struct particle {
+			int mass;
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #endif
-
-		// some members might need explicit padding to work well with member_cast
-		struct particle {
-			int mass;
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4371)  // 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
+#endif
 			v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
-		};
-
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
+		};
 
 		class particles_soa {
 			multi::array<int, 2> masses_;
