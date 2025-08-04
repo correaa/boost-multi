@@ -702,17 +702,24 @@ struct cursor_t {
 	cursor_t() = default;
 
  private:
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
-
 	strides_type strides_;
-	element_ptr  base_;
-
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+	element_ptr  base_;
+
 
 	template<class, dimensionality_type, class, class> friend struct const_subarray;
 	template<class, dimensionality_type, class> friend struct cursor_t;
