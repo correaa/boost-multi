@@ -212,6 +212,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		auto const sub_extensions = extensions_t<D - 1>{this->base().tail()};
 		return (idx * sub_extensions.num_elements()) + sub_extensions.to_linear(rest...);
 	}
+
 	template<class... Indices>
 	constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 

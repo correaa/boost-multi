@@ -17,8 +17,8 @@
 #ifdef BOOST_MULTI_HAS_SPAN
 #include <span>  // for span
 #endif
-#include <string>  // for basic_string, operator""s, string
-// IWYU pragma: no_include <tuple>        // for tuple_element<>::type, __tuple_e...
+#include <string>       // for basic_string, operator""s, string
+#include <tuple>        // for std::tie
 #include <type_traits>  // for remove_reference, remove_const
 // #include <typeinfo>     // for bad_cast
 #include <utility>  // for as_const, move
@@ -861,6 +861,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
 			multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
 			std::tie(sizes1, sizes2, sizes3) = cref.sizes();
+
+			BOOST_TEST( sizes1 == 4 );
+			BOOST_TEST( sizes2 == 2 );
+			BOOST_TEST( sizes3 == 3 );
+		}
+		{
+			multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
+			multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
+			multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
+			multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 			BOOST_TEST( sizes1 == 4 );
 			BOOST_TEST( sizes2 == 2 );
