@@ -717,9 +717,7 @@ struct cursor_t {
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
-
-	element_ptr  base_;
-
+	element_ptr base_;
 
 	template<class, dimensionality_type, class, class> friend struct const_subarray;
 	template<class, dimensionality_type, class> friend struct cursor_t;
