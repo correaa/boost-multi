@@ -24,6 +24,10 @@
 # include <iostream>
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 5045)  // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+#endif
+
 namespace {
 
 template<class Array1D>

@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -20,7 +20,14 @@ namespace multi = boost::multi;
 
 template<class Ref, class Involution>
 class involuted {
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 'involuted<int,std::negate<void>>': '3' bytes padding added after data member 'involuted<int,std::negate<void>>::f_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\static_array_cast.cpp.x.vcxproj]
+#endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
