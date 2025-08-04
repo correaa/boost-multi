@@ -264,14 +264,14 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) { return self.origin(); }
 
  protected:
- #ifdef _MSC_VER
-	#pragma warning(push)
-	#pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
 #endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
-#ifdef _MSC_VER
-	#pragma warning(pop)
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 
 	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename> friend struct array_iterator;
@@ -327,18 +327,23 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	  subarray_ptr<T, D, ElementPtr, Layout, IsConst>, void, std::random_access_iterator_tag,
 	  subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type> {
  private:
+	Layout layout_;
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
-
-	Layout                                                     layout_;
-	ElementPtr                                                 base_;
-	typename std::iterator_traits<ElementPtr>::difference_type offset_;
-
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  //'boost::multi::subarray_ptr<double,1,fancy::ptr<double>,boost::multi::layout_t<1,boost::multi::size_type>,true>': '7' bytes padding added after data member 'boost::multi::subarray_ptr<double,1,fancy::ptr<double>,boost::multi::layout_t<1,boost::multi::size_type>,true>::base_'
+#endif
+	ElementPtr base_;
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
+	typename std::iterator_traits<ElementPtr>::difference_type offset_;
 
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;

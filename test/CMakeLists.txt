@@ -351,10 +351,12 @@ else()
 	$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
 		/Wall  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 		/wd4514  # unreferenced inline function has been removed
+		/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 	>
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 		-Xcompiler=/Wall  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
 		-Xcompiler=/wd4514  # unreferenced inline function has been removed
+		-Xcompiler=/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 	>
 	# $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:/wd1394>	  # field of class type without a DLL interface used in a class with a DLL interface
 #	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
@@ -369,7 +371,6 @@ else()
 #	/wd4820  # bytes padding added after base class
 #	/wd4866  # compiler may not enforce left-to-right evaluation order for call
 #	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
-#	/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 #	/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 	>
 	)

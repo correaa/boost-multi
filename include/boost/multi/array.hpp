@@ -37,8 +37,8 @@ namespace boost::multi {
 namespace detail {
 
 #if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 4626 )  // assignment operator was implicitly defined as deleted
+#pragma warning(push)
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #endif
 
 template<class Allocator>
