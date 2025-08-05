@@ -80,8 +80,8 @@ class involuted {
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr explicit involuted(Ref& ref, Involution fun) : r_{ref}, f_{fun} {}  // r_{std::forward<Ref>(ref)}, f_{fun} {}
-	constexpr explicit involuted(Ref& ref) : r_{ref}, f_{} {}
+	constexpr explicit involuted(Ref& ref, Involution fun) : f_{fun}, r_{ref} {}  // r_{std::forward<Ref>(ref)}, f_{fun} {}
+	constexpr explicit involuted(Ref& ref) : f_{}, r_{ref} {}
 
 	~involuted() = default;
 
@@ -194,9 +194,9 @@ class involuter {
 
 	template<class Other, decltype(detail::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	BOOST_MULTI_HD constexpr /*implct*/ involuter(Other const& other) : it_{other.it_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR inherit implicit conversion of underlying type
+	BOOST_MULTI_HD constexpr /*implct*/ involuter(Other const& other) : f_{other.f_}, it_{other.it_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR inherit implicit conversion of underlying type
 	template<class Other, decltype(detail::explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
-	BOOST_MULTI_HD constexpr explicit involuter(Other const& other) : it_{other.it_}, f_{other.f_} {}
+	BOOST_MULTI_HD constexpr explicit involuter(Other const& other) : f_{other.f_}, it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
 	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }

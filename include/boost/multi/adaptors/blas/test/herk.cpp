@@ -259,15 +259,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			blas::herk(blas::filling::lower, 1.0, arr, 0.0, blas::H(c));  // c^dagger = c = a a^dagger = (aa^dagger)^daggerr, `c` in upper triangular
 
-			BOOST_TEST( std::abs( blas::H(c)[1][0] - complex{50.0, -49.0} ) < 1e-10 );
-			BOOST_TEST( std::abs( blas::H(c)[0][1] - complex{9999.0, 0.0} ) < 1e-10 );
+			BOOST_TEST( std::abs( static_cast<complex>(blas::H(c)[1][0]) - complex{50.0, -49.0} ) < 1e-10 );
+			BOOST_TEST( std::abs( static_cast<complex>(blas::H(c)[0][1]) - complex{9999.0, 0.0} ) < 1e-10 );
 		}
 		{
 			// NOLINTNEXTLINE(readability-identifier-length) : conventional one-letter operation BLASs
 			multi::array<complex, 2> c({3, 3}, {9999.0, 0.0});
 			herk(blas::filling::lower, 1.0, blas::T(arr), 0.0, blas::T(c));  // c†=c=aT(aT)† not supported
-			BOOST_TEST(( std::abs( c.transposed()[1][0] - complex{52.0, -90.0} ) < 1e-10 );
-			BOOST_TEST(  std::abs( c.transposed()[0][1] - 9999.0               ) < 1e-10 );
+			BOOST_TEST( std::abs( c.transposed()[1][0] - complex{52.0, -90.0} ) < 1e-10 );
+			BOOST_TEST( std::abs( c.transposed()[0][1] - 9999.0               ) < 1e-10 );
 		}
 		{
 			// NOLINTNEXTLINE(readability-identifier-length) : conventional one-letter operation BLASs
