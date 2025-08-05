@@ -416,5 +416,7 @@ else()
 
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
+
+		target_compile_options(minimalistic_ptr.cpp.x PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
 	endif()
 endif()

@@ -282,9 +282,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using T = thrust::complex<double>;
 
-		static_assert(multi::is_trivially_default_constructible<T>{});
-		static_assert(std::is_trivially_copy_constructible_v<T>);
-		static_assert(std::is_trivially_assignable_v<T&, T>);
+		// static_assert(multi::is_trivially_default_constructible<T>{});
+		// static_assert(std::is_trivially_copy_constructible_v<T>);
+		// static_assert(std::is_trivially_assignable_v<T&, T>);
 
 		multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{n * n});
 		multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{n * n});

@@ -127,6 +127,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 	endif()
 endforeach()
 
-target_compile_options(all.cu.x PRIVATE --extended-lambda)
+target_compile_options(all.cu.x PRIVATE  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda>)
 
 endif()
