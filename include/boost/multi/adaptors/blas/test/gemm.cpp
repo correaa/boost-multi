@@ -268,7 +268,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			blas::context const ctxt;
 			blas::gemm_n(&ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(c));
-			BOOST_TEST( std::abs( c[1][1] - 169.0 ) < 1e-10 )
+			BOOST_TEST( std::abs( c[1][1] - 169.0 ) < 1e-10 );
 			BOOST_TEST( std::abs( c[1][0] -  82.0 ) < 1e-10 );
 		}
 		{
