@@ -249,7 +249,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return false;
 	}
 
-	auto size() const { return this->get<0>().size(); }
+	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	auto sizes() const {
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
 	}
@@ -332,8 +332,8 @@ template<> struct extensions_t<0> : tuple<> {
 
 	extensions_t() = default;
 
-	constexpr auto base() const& -> base_ const& { return *this; }
-	constexpr auto base() & -> base_& { return *this; }
+	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
+	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
 
 	template<class Archive> static void serialize(Archive& /*ar*/, unsigned /*version*/) { /*noop*/ }
 
