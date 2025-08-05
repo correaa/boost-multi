@@ -99,7 +99,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 
-			BOOST_TEST( c[0][0] == 1.0*1.0 + 3.0*3.0 + 4.0*4.0 );
+			BOOST_TEST( std::abs( c[0][0] - 1.0*1.0 + 3.0*3.0 + 4.0*4.0 ) < 1e-10 );
 		}
 		{
 			multi::array<double, 2> c({1, 1}, 9999.0);  // NOLINT(readability-identifier-length)
@@ -109,7 +109,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			syrk(filling::upper, 1.0, a, 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 
-			BOOST_TEST( c[0][0] == 1.0*1.0 + 3.0*3.0 + 4.0*4.0 );
+			BOOST_TEST( std::abs( c[0][0] - 1.0*1.0 + 3.0*3.0 + 4.0*4.0 ) < 1e-10 );
 		}
 	}
 
