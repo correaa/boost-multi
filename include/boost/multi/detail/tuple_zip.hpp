@@ -328,12 +328,12 @@ BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { 
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
-#if ! defined(_MSC_VER)
+#if !defined(_MSC_VER)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
+BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
 	if constexpr(N == 0) {
 		return t.head();
 	} else {
@@ -343,7 +343,7 @@ constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readab
 }
 
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
+BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
 	if constexpr(N == 0) {
 		return tup.head();
 	} else {
@@ -352,7 +352,7 @@ constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
 }
 
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
+BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 	if constexpr(N == 0) {
 		return std::move(std::move(tup)).head();
 	} else {
