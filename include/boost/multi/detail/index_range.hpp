@@ -23,6 +23,12 @@
 #include <type_traits>  // for declval, true_type, decay_t, enable_if_t
 #include <utility>      // for forward
 
+#if defined(__NVCC__)
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
 namespace boost::multi {
 
 using boost::multi::detail::tuple;
@@ -216,8 +222,8 @@ class range {
 	constexpr auto        is_empty() const& noexcept { return first_ == last_; }
 	friend constexpr auto is_empty(range const& self) noexcept { return self.is_empty(); }
 
-	[[nodiscard]] constexpr auto empty() const& noexcept { return is_empty(); }
-	friend constexpr auto        empty(range const& self) noexcept { return self.empty(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto empty() const& noexcept { return is_empty(); }
+	friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
 
 	constexpr auto        size() const& noexcept -> size_type { return last_ - first_; }
 	friend constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }
@@ -225,10 +231,10 @@ class range {
 	friend constexpr auto begin(range const& self) { return self.begin(); }
 	friend constexpr auto end(range const& self) { return self.end(); }
 
-	friend constexpr auto operator==(range const& self, range const& other) {
+	friend BOOST_MULTI_HD constexpr auto operator==(range const& self, range const& other) {
 		return (self.empty() && other.empty()) || (self.first_ == other.first_ && self.last_ == other.last_);
 	}
-	friend constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }
+	friend BOOST_MULTI_HD constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }
 
 	[[nodiscard]]  // ("find returns an iterator to the sequence, that is the only effect")]] for C++20
 	constexpr auto find(value_type const& value) const -> const_iterator {
@@ -394,4 +400,7 @@ constexpr auto contains(index_extensions<D> const& iex, Tuple const& tup) {
 }
 
 }  // end namespace boost::multi
+
+#undef BOOST_MULTI_HD
+
 #endif  // BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
