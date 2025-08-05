@@ -68,10 +68,14 @@ template<class Ref, class Involution> class involuted;
 
 template<class It, class F, class Reference = involuted<typename std::iterator_traits<It>::reference, F>> class involuter;  // IWYU pragma: keep  // bug in iwyu 0.22/18.1.8?
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 template<class Ref, class Involution>
 class involuted {
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;
 	Ref        r_;  // [[no_unique_address]]  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-	Involution f_;
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
@@ -150,6 +154,9 @@ class involuted {
 		return self.operator decay_type().imag();
 	}
 };
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #if defined(__cpp_deduction_guides)
 template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;
@@ -160,10 +167,15 @@ auto default_allocator_of(involuter<It, F> const& iv) {
 	return default_allocator_of(iv.it_);
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 template<class It, class F, class Reference>
 class involuter {
+	BOOST_MULTI_NO_UNIQUE_ADDRESS F  f_;
 	It it_;
-	F  f_;  // [[no_unique_address]]
+
 	template<class, class, class> friend class involuter;
 
  public:
@@ -177,8 +189,8 @@ class involuter {
 
 	involuter() = default;
 
-	BOOST_MULTI_HD constexpr explicit involuter(It it) : it_{std::move(it)}, f_{} {}
-	BOOST_MULTI_HD constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
+	BOOST_MULTI_HD constexpr explicit involuter(It it) : f_{}, it_{std::move(it)} {}
+	BOOST_MULTI_HD constexpr explicit involuter(It it, F fun) : f_{std::move(fun)}, it_{std::move(it)} {}
 
 	template<class Other, decltype(detail::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
@@ -233,6 +245,9 @@ class involuter {
 		return get_allocator(inv.it_);
 	}
 };
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class It> using negater  = involuter<It, std::negate<>>;

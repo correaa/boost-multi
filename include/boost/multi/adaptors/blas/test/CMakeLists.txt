@@ -155,6 +155,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmove
 					-Wno-pass-failed
 					-Wno-error=\#warnings
+					-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
 					> # -Wno-c++98-compat  # use of constexpr
 					$<$<CXX_COMPILER_ID:IntelLLVM>:
 					-Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
