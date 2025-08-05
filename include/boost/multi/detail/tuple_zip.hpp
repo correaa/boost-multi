@@ -11,6 +11,12 @@
 #include <type_traits>  // for declval, decay_t, conditional_t, true_type
 #include <utility>      // for forward, move
 
+#if defined(__NVCC__)
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
 
@@ -24,11 +30,11 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 
 	auto operator=(tuple const&) -> tuple& = default;
 
-	constexpr auto operator==(tuple const& /*other*/) const -> bool { return true; }
-	constexpr auto operator!=(tuple const& /*other*/) const -> bool { return false; }
+	BOOST_MULTI_HD constexpr auto operator==(tuple const& /*other*/) const { return true; }
+	BOOST_MULTI_HD constexpr auto operator!=(tuple const& /*other*/) const  { return false; }
 
-	constexpr auto operator<(tuple const& /*other*/) const { return false; }
-	constexpr auto operator>(tuple const& /*other*/) const { return false; }
+	BOOST_MULTI_HD constexpr auto operator<(tuple const& /*other*/) const { return false; }
+	BOOST_MULTI_HD constexpr auto operator>(tuple const& /*other*/) const { return false; }
 
 	template<class F>
 	constexpr friend auto apply(F&& fn, tuple<> const& /*self*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
@@ -49,13 +55,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	using tail_type = tuple<Ts...>;
 
  public:
-	constexpr auto head() const& -> T0 const& { return head_; }
-	constexpr auto head() && -> T0&& { return std::move(head_); }
-	constexpr auto head() & -> T0& { return head_; }
+	BOOST_MULTI_HD constexpr auto head() const& -> T0 const& { return head_; }
+	BOOST_MULTI_HD constexpr auto head() && -> T0&& { return std::move(head_); }
+	BOOST_MULTI_HD constexpr auto head() & -> T0& { return head_; }
 
-	constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
-	constexpr auto tail() && -> decltype(auto) { return static_cast<tail_type&&>(*this); }
-	constexpr auto tail() & -> tail_type& { return static_cast<tail_type&>(*this); }
+	BOOST_MULTI_HD constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
+	BOOST_MULTI_HD constexpr auto tail() && -> decltype(auto) { return static_cast<tail_type&&>(*this); }
+	BOOST_MULTI_HD constexpr auto tail() & -> tail_type& { return static_cast<tail_type&>(*this); }
 
 	constexpr tuple()             = default;
 	constexpr tuple(tuple const&) = default;
@@ -99,10 +105,10 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		return *this;
 	}
 
-	constexpr auto operator==(tuple const& other) const -> bool { return head_ == other.head_ && tail() == other.tail(); }
-	constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ || tail() != other.tail(); }
+	BOOST_MULTI_HD constexpr auto operator==(tuple const& other) const -> bool { return head_ == other.head_ && tail() == other.tail(); }
+	BOOST_MULTI_HD constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ || tail() != other.tail(); }
 
-	constexpr auto operator<(tuple const& other) const {
+	BOOST_MULTI_HD constexpr auto operator<(tuple const& other) const {
 		if(head_ < other.head_) {
 			return true;
 		}
@@ -111,7 +117,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		}
 		return tail() < other.tail();
 	}
-	constexpr auto operator>(tuple const& other) const {
+	BOOST_MULTI_HD constexpr auto operator>(tuple const& other) const {
 		if(head_ > other.head_) {
 			return true;
 		}
@@ -220,7 +226,6 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
-
 
 #if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
 //  TODO(correaa) : this class can be collapsed with the general case with [[no_unique_address]] in C++20
@@ -527,4 +532,7 @@ constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4, T5&& tup5) 
 using detail::tie;
 
 }  // end namespace boost::multi
+
+#undef BOOST_MULTI_HD
+
 #endif

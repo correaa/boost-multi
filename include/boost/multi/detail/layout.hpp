@@ -464,8 +464,16 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
 
-	BOOST_MULTI_HD constexpr auto operator==(extensions_t const& other) const -> bool { return base() == other.base(); }  // when compiling as cuda code, this needs --expt-relaxed-constexpr
-	BOOST_MULTI_HD constexpr auto operator!=(extensions_t const& other) const -> bool { return base() != other.base(); }
+// #if defined(__NVCC__)
+// #pragma push
+// #pragma nv_diag_suppress = 20013  // calling a constexpr __host__ function("operator==") from a __host__ __device__ function("operator==") is not allowed. The experimental flag '--expt-relaxed-constexpr' can be used to allow this.
+// #pragma nv_diag_suppress = 20014  // TODO(correa) op== can be external to the library
+// #endif
+	BOOST_MULTI_HD constexpr auto operator==(extensions_t const& other) const { return base() == other.base(); }
+	BOOST_MULTI_HD constexpr auto operator!=(extensions_t const& other) const { return base() != other.base(); }
+// #if defined(__NVCC__)
+// #pragma pop
+// #endif
 
 	constexpr auto num_elements() const -> size_type { return this->base().head().size(); }
 
