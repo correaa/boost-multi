@@ -277,7 +277,7 @@ template<class T0, class... Ts> constexpr auto tie(T0& head, Ts&... tail) {
 	return tuple<T0&, Ts&...>(head, tail...);
 }
 
-template<class T0, class... Ts> constexpr auto ht_tuple(T0 head, tuple<Ts...> tail)
+template<class T0, class... Ts> BOOST_MULTI_HD constexpr auto ht_tuple(T0 head, tuple<Ts...> tail)
 -> tuple<T0, Ts...> {
 	return tuple<T0, Ts...>(std::move(head), std::move(tail));
 }
