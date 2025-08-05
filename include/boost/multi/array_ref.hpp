@@ -902,12 +902,12 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 		auto ret{*this};
 		ret += n;
 		return ret;
-	}  // explicitly necessary for nvcc/thrust
+	}
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {
 		auto ret{*this};
 		ret -= n;
 		return ret;
-	}  // explicitly necessary for nvcc/thrust
+	}
 
 	BOOST_MULTI_HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);  // TODO(correaa) calling host function from host device
