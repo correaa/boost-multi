@@ -69,6 +69,20 @@ target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 #  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
 #  $<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive- > >  # this is needed for MSVC in C++17 mode
 #)
+
+target_compile_options(multi INTERFACE
+  $<$<CXX_COMPILER_ID:MSVC>:
+		$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+      /EHsc
+      $<$<COMPILE_FEATURES:cxx_std_17>:/permissive-
+    >
+    $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+      -Xcompiler=/EHsc 
+      $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive-
+    >
+  >
+)
+
 #endif()
 
 # https://youtrack.jetbrains.com/issue/CPP-25608
