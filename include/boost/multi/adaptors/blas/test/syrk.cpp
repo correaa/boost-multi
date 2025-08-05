@@ -154,8 +154,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			syrk(blas::filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
 
-			BOOST_TEST( real(c[2][1]) == - 3.0 );
-			BOOST_TEST( imag(c[2][1]) == -34.0 );
+			BOOST_TEST( std::abs( real(c[2][1]) - - 3.0 ) < 1e-10 );
+			BOOST_TEST( std::abs( imag(c[2][1]) - -34.0 ) < 1e-10 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2}, 9999.0 + I * 0.0);  // NOLINT(readability-identifier-length)

@@ -199,7 +199,6 @@ class involuter {
 	BOOST_MULTI_HD constexpr explicit involuter(Other const& other) : f_{other.f_}, it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
-	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }
 
 	// auto operator==(involuter const& other) const -> bool { return it_ == other.it_; }
 	// auto operator!=(involuter const& other) const -> bool { return it_ != other.it_; }
@@ -209,6 +208,10 @@ class involuter {
 	friend auto operator==(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ == nil; }
 	friend auto operator!=(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ != nil; }
 
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 	constexpr auto operator+=(difference_type n) -> involuter& {
 		it_ += n;
 		return *this;
@@ -217,6 +220,10 @@ class involuter {
 		it_ -= n;
 		return *this;
 	}
+	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic pop
+#endif
 
 	template<class = void>  // workaround for nvcc
 	constexpr friend auto operator+(involuter lhs, difference_type n) { return lhs += n; }
