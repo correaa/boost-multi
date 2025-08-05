@@ -219,8 +219,8 @@ class range {
 	[[nodiscard]] constexpr auto begin() const -> const_iterator { return cbegin(); }
 	[[nodiscard]] constexpr auto end() const -> const_iterator { return cend(); }
 
-	constexpr auto        is_empty() const& noexcept { return first_ == last_; }
-	friend constexpr auto is_empty(range const& self) noexcept { return self.is_empty(); }
+	BOOST_MULTI_HD constexpr auto        is_empty() const& noexcept { return first_ == last_; }
+	friend BOOST_MULTI_HD constexpr auto is_empty(range const& self) noexcept { return self.is_empty(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto empty() const& noexcept { return is_empty(); }
 	friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
