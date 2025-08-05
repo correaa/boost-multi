@@ -447,7 +447,7 @@ vs2022-shell cuda:
     # - .\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall /wd5045" -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CXX_STANDARD=20 -DENABLE_CUDA=1 -DCMAKE_CUDA_FLAGS="-Xcompiler=/Wall -Xcompiler=/wd5045 -Wno-deprecated-gpu-targets" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall /wd2220 /wd5045" -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CXX_STANDARD=20 -DENABLE_CUDA=1 -DCMAKE_CUDA_FLAGS="-Xcompiler=/Wall -Xcompiler=/wd5045 -Wno-deprecated-gpu-targets" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
