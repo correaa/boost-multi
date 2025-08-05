@@ -202,17 +202,17 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<std::size_t N, std::enable_if_t<(N==0), int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr auto get() const& -> T0 const& {  // NOLINT(readability-identifier-length) std naming
+	BOOST_MULTI_HD constexpr auto get() const& -> T0 const& {  // NOLINT(readability-identifier-length) std naming
 		return head();
 	}
 
 	template<std::size_t N, std::enable_if_t<(N!=0), int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr auto get() const& -> auto const& {  // NOLINT(readability-identifier-length) std naming
+	BOOST_MULTI_HD constexpr auto get() const& -> auto const& {  // NOLINT(readability-identifier-length) std naming
 		return this->tail().template get<N - 1>();  // this-> for msvc 19.14 compilation
 	}
 
 	template<std::size_t N>
-	constexpr auto get() & -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+	BOOST_MULTI_HD constexpr auto get() & -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 		if constexpr(N == 0) {
 			return head();
 		} else {
@@ -221,7 +221,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<std::size_t N>
-	constexpr auto get() && -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+	BOOST_MULTI_HD constexpr auto get() && -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 		if constexpr(N == 0) {
 			return std::move(*this).head();
 		} else {
