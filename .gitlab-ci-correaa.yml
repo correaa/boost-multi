@@ -791,7 +791,7 @@ culang++-16 cuda-11.4.3:
 #   needs: ["cuda"]
 
 cuda-12.9.0:
-  stage: build
+  stage: basic  # build
   allow_failure: true
   image: nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   tags:
