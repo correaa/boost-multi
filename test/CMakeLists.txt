@@ -418,5 +418,6 @@ else()
 		endforeach()
 
 		target_compile_options(minimalistic_ptr.cpp.x PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
+		target_compile_options(transform.cpp.x        PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
 	endif()
 endif()
