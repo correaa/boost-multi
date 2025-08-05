@@ -162,7 +162,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
 		using T = double;
 
-		static_assert(multi::is_trivially_default_constructible_v<T>);
+		static_assert(std::is_trivially_default_constructible_v<T>);
 		static_assert(std::is_trivially_copy_constructible_v<T>);
 		static_assert(std::is_trivially_assignable_v<T&, T>);
 
