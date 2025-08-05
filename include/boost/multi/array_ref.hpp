@@ -870,7 +870,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 		return n_ < other.n_;
 	}
 
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
@@ -894,7 +894,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 		return base_[std::apply(l_, xs_.from_linear(nn + n))];
 	}  // explicit here is necessary for nvcc/thrust
 
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
