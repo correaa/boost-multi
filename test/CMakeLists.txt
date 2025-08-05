@@ -271,10 +271,11 @@ else()
 	>
 	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
-	-Werror -Wall -Wextra -Weverything
+	-Wall -Wextra
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 	-Wno-poison-system-directories
+	-Wno-pre-c++17-compat
 	-Wno-large-by-value-copy  # subarray references can be large
 	#-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2

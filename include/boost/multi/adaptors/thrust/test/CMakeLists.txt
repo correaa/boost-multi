@@ -71,6 +71,7 @@ endforeach()
 
 set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
 
-target_compile_options(array.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
-target_compile_options(run_reduce.cu.x PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
-target_compile_options(speed.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
+target_compile_options(array.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
+target_compile_options(by_key.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd4668 >)
+target_compile_options(run_reduce.cu.x PRIVATE  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
+target_compile_options(speed.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)

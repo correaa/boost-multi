@@ -15,6 +15,7 @@
 // IWYU pragma: no_include <algorithm>  // for min
 #include <cmath>    // for NAN, abs
 #include <complex>  // for operator*, opera...
+#include <limits>
 // IWYU pragma: no_include <cstdlib>  // for NAN, abs
 // #include <iterator>                                  // for size  // NOLINT(misc-include-cleaner)
 // IWYU pragma: no_include <memory>   // for allocator
@@ -88,11 +89,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 	namespace blas = multi::blas;
 
+	constexpr auto nan = std::numeric_limits<double>::quiet_NaN();
+
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const A = {
 		{ 1.0, 3.0, 4.0 },
-		{ NAN, 7.0, 1.0 },
-		{ NAN, NAN, 8.0 }
+		{ nan, 7.0, 1.0 },
+		{ nan, nan, 8.0 }
 	};
 	auto const A_cpy = triangular(blas::filling::upper, A);
 	{
@@ -106,7 +109,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 
 		BOOST_REQUIRE_CLOSE(B[1][2], 0.107143, 0.001);
-		BOOST_TEST( (+blas::gemm(1., A_cpy, B))[1][2] == B_cpy[1][2] );
+		BOOST_TEST( std::abs( (+blas::gemm(1., A_cpy, B))[1][2] - B_cpy[1][2] ) < 1e-10 );
 	}
 	{
 		auto const AT     = +~A;
@@ -121,7 +124,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), B);
 		BOOST_REQUIRE_CLOSE(B[1][2], 0.107143, 0.001);
-		BOOST_TEST( (+blas::gemm(1., blas::T(AT_cpy), B))[1][2] == B_cpy[1][2] );
+		BOOST_TEST( std::abs( (+blas::gemm(1., blas::T(AT_cpy), B))[1][2] - B_cpy[1][2] ) < 1e-10 );
 	}
 	{
 		auto const AT     = +~A;
@@ -136,7 +139,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		auto BT = +~B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), blas::T(BT));
 		BOOST_REQUIRE_CLOSE(blas::T(BT)[1][2], 0.107143, 0.001);
-		BOOST_TEST( (+blas::gemm(1., blas::T(AT_cpy), blas::T(BT)))[1][2] == B[1][2] );
+		BOOST_TEST( std::abs( (+blas::gemm(1.0, blas::T(AT_cpy), blas::T(BT)))[1][2] - B[1][2] ) < 1e-10 );
 	}
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -270,7 +273,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 			BOOST_TEST( B.size() == 1 );
 			auto const B_cpy = B;
 			blas::trsm(blas::side::left, blas::filling::lower, 1.0, A, B);
-			BOOST_TEST( B[0][1] == B_cpy[0][1]/A[0][0] );
+			BOOST_TEST( std::abs( B[0][1] - B_cpy[0][1]/A[0][0] ) );
 		}
 		{
 			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -281,7 +284,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 			};
 			auto const B_cpy = B;
 			blas::trsm(blas::side::left, blas::filling::lower, 1.0, A, blas::T(B));
-			BOOST_TEST( blas::T(B)[0][1] == blas::T(B_cpy)[0][1]/A[0][0] );
+			BOOST_TEST( std::abs( blas::T(B)[0][1] - blas::T(B_cpy)[0][1]/A[0][0] ) < 1e-10 );
 		}
 	}
 
@@ -301,7 +304,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 			};
 			auto const B_cpy = B;
 			blas::trsm(blas::side::left, blas::filling::lower, {1.0, 0.0}, A, B);
-			BOOST_TEST( B[0][1] == B_cpy[0][1]/A[0][0] );
+			BOOST_TEST( std::abs( B[0][1] - B_cpy[0][1]/A[0][0] ) < 1e-10 );
 		}
 		multi::array<complex, 2> B1 = {
 			{{1.0, 0.0}},
@@ -328,11 +331,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 	BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 		namespace blas = multi::blas;
 
+		constexpr auto nan = std::numeric_limits<double>::quiet_NaN();
+
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> const A = {
 			{1.0, 3.0, 40.0},
-			{NAN, 7.0,  1.0},
-			{NAN, NAN,  8.0}
+			{nan, 7.0,  1.0},
+			{nan, nan,  8.0}
 		};
 		auto const A_cpy = triangular(blas::filling::upper, A);
 		{

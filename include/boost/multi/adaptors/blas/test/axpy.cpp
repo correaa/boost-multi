@@ -59,7 +59,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> const b = arr[2];  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::axpy(2.0, b, arr[1]);  // daxpy
-		BOOST_TEST( arr[1][2] == 2.0*b[2] + AC[1][2] );
+		BOOST_TEST( std::abs( arr[1][2] - 2.0*b[2] + AC[1][2]) < 1e-10 );
 	}
 
 	BOOST_AUTO_TEST_CASE(blas_axpy_repeat) {

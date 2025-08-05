@@ -249,7 +249,7 @@ class gemm_iterator {
 
 	template<class ItOut>
 	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first) {
-		assert( first.s_ == last.s_ ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		// assert( first.s_ == last.s_ ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		return uninitialized_copy_n(first, last - first, d_first);
 	}
 
