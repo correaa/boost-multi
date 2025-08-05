@@ -283,7 +283,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	}
 
  public:
-	constexpr auto num_elements() const -> size_type {
+	BOOST_MULTI_HD constexpr auto num_elements() const -> size_type {
 		return static_cast<size_type>(num_elements_impl_(std::make_index_sequence<static_cast<std::size_t>(D)>()));
 	}
 	friend constexpr auto intersection(extensions_t const& self, extensions_t const& other) -> extensions_t {
@@ -337,7 +337,7 @@ template<> struct extensions_t<0> : tuple<> {
 
 	template<class Archive> static void serialize(Archive& /*ar*/, unsigned /*version*/) { /*noop*/ }
 
-	static constexpr auto num_elements() /*const*/ -> size_type { return 1; }
+	static BOOST_MULTI_HD constexpr auto num_elements() /*const*/ -> size_type { return 1; }
 
 	using indices_type = tuple<>;
 
@@ -475,7 +475,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 // #pragma pop
 // #endif
 
-	constexpr auto num_elements() const -> size_type { return this->base().head().size(); }
+	BOOST_MULTI_HD constexpr auto num_elements() const -> size_type { return this->base().head().size(); }
 
 	using indices_type = multi::detail::tuple<multi::index>;
 
@@ -749,9 +749,9 @@ class contiguous_layout {
 	constexpr auto offset() const { return std::integral_constant<int, 0>{}; }
 	constexpr auto extension() const { return extension_type{0, nelems_}; }
 
-	constexpr auto num_elements() const { return nelems_; }
+	BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 
-	constexpr auto size() const { return nelems_; }
+	BOOST_MULTI_HD constexpr auto size() const { return nelems_; }
 	constexpr auto sizes() const { return sizes_type{size()}; }
 
 	constexpr auto nelems() const { return nelems_; }
@@ -1034,8 +1034,8 @@ struct layout_t
 	//  return reindex(idx).rotate().ceindex(rest...).unrotate();
 	// }
 
-	constexpr auto        num_elements() const noexcept -> size_type { return size() * sub_.num_elements(); }  // TODO(correaa) investigate mutation * -> /
-	friend constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
+	BOOST_MULTI_HD constexpr auto        num_elements() const noexcept -> size_type { return size() * sub_.num_elements(); }  // TODO(correaa) investigate mutation * -> /
+	friend BOOST_MULTI_HD constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
 
 	constexpr auto        is_empty() const noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
 	friend constexpr auto is_empty(layout_t const& self) noexcept { return self.is_empty(); }
@@ -1327,8 +1327,8 @@ struct layout_t<0, SSize>
 	[[nodiscard]] constexpr auto extensions() const { return extensions_type{}; }
 	friend constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
 
-	[[nodiscard]] constexpr auto num_elements() const { return nelems_; }
-	friend constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
+	friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
 
 	[[nodiscard]] constexpr auto sizes() const { return tuple<>{}; }
 	friend constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
