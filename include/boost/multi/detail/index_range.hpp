@@ -202,8 +202,8 @@ class range {
 	using reverse_iterator       = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-	[[nodiscard]] constexpr auto first() const { return first_; }
-	[[nodiscard]] constexpr auto last() const { return last_; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto first() const { return first_; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto last() const { return last_; }
 
 	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
 
