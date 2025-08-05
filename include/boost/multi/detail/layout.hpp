@@ -186,8 +186,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr extensions_t(index_extension const& extension, typename layout_t<D - 1>::extensions_type const& other)
 	: extensions_t(multi::detail::ht_tuple(extension, other.base())) {}
 
-	constexpr auto base() const& -> base_ const& { return *this; }  // impl_;}
-	constexpr auto base() & -> base_& { return *this; }             // impl_;}
+	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }  // impl_;}
+	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }             // impl_;}
 
 	friend constexpr auto operator*(index_extension const& extension, extensions_t const& self) -> extensions_t<D + 1> {
 		// return extensions_t<D + 1>(tuple(extension, self.base()));
