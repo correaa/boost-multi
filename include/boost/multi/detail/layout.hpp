@@ -466,14 +466,14 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
 
 // #if defined(__NVCC__)
-// #pragma push
+// #pragma nv_diagnostic push
 // #pragma nv_diag_suppress = 20013  // calling a constexpr __host__ function("operator==") from a __host__ __device__ function("operator==") is not allowed. The experimental flag '--expt-relaxed-constexpr' can be used to allow this.
 // #pragma nv_diag_suppress = 20014  // TODO(correa) op== can be external to the library
 // #endif
 	BOOST_MULTI_HD constexpr auto operator==(extensions_t const& other) const { return base() == other.base(); }
 	BOOST_MULTI_HD constexpr auto operator!=(extensions_t const& other) const { return base() != other.base(); }
 // #if defined(__NVCC__)
-// #pragma pop
+// #pragma nv_diagnostic pop
 // #endif
 
 	BOOST_MULTI_HD constexpr auto num_elements() const -> size_type { return this->base().head().size(); }
@@ -941,7 +941,7 @@ struct layout_t
 	: sub_{other.sub()}, stride_{other.stride()}, offset_{other.offset()}, nelems_{other.nelems()} {}
 
 #if defined(__NVCC__)
-#pragma push
+#pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
 #endif
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions)
@@ -952,7 +952,7 @@ struct layout_t
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
 	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 #if defined(__NVCC__)
-#pragma pop
+#pragma nv_diagnostic pop
 #endif
 
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
