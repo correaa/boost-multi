@@ -71,16 +71,12 @@ target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 #)
 
 target_compile_options(multi INTERFACE
-  $<$<CXX_COMPILER_ID:MSVC>:
-		$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+	$<$<CXX_COMPILER_ID:MSVC>:
       /EHsc
-      $<$<COMPILE_FEATURES:cxx_std_17>:/permissive-
-    >
-    $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
-      -Xcompiler=/EHsc 
-      $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive-
-    >
-  >
+      $<$<COMPILE_FEATURES:cxx_std_17>:/permissive- >>
+#      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+#        -Xcompiler=/EHsc 
+#        $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive- >>
 )
 
 #endif()
