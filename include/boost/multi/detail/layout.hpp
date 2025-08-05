@@ -250,7 +250,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	}
 
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
-	auto sizes() const {
+	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
 	}
 
@@ -753,7 +753,7 @@ class contiguous_layout {
 	BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 
 	BOOST_MULTI_HD constexpr auto size() const { return nelems_; }
-	constexpr auto sizes() const { return sizes_type{size()}; }
+	BOOST_MULTI_HD constexpr auto sizes() const { return sizes_type{size()}; }
 
 	constexpr auto nelems() const { return nelems_; }
 
@@ -1082,7 +1082,7 @@ struct layout_t
 	constexpr auto        shape() const& -> decltype(auto) { return sizes(); }
 	friend constexpr auto shape(layout_t const& self) -> decltype(auto) { return self.shape(); }
 
-	constexpr BOOST_MULTI_HD auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
+	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
 	friend constexpr auto        extension(layout_t const& self) { return self.extension(); }
 	[[nodiscard]] constexpr auto extension() const -> extension_type {
@@ -1333,8 +1333,8 @@ struct layout_t<0, SSize>
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 	friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
 
-	[[nodiscard]] constexpr auto sizes() const { return tuple<>{}; }
-	friend constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto sizes() const { return tuple<>{}; }
+	friend BOOST_MULTI_HD constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
 
 	[[nodiscard]] constexpr auto strides() const { return strides_type{}; }
 	[[nodiscard]] constexpr auto offsets() const { return offsets_type{}; }
