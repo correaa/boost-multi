@@ -71,13 +71,14 @@ target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 #)
 
 target_compile_options(multi INTERFACE
-	$<$<CXX_COMPILER_ID:MSVC>:
-		$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
+  $<$<CXX_COMPILER_ID:MSVC>:
+    $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
       /EHsc /permissive-
-		>
-		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+    >
+    $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
       -Xcompiler=/EHsc -Xcompiler=/permissive-
-		>
+    >
 	>
 )
 
