@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 			BOOST_TEST( B.size() == 1 );
 			auto const B_cpy = B;
 			blas::trsm(blas::side::left, blas::filling::lower, 1.0, A, B);
-			BOOST_TEST( std::abs( B[0][1] - B_cpy[0][1]/A[0][0] ) );
+			BOOST_TEST( std::abs( B[0][1] - (B_cpy[0][1]/A[0][0]) ) < 1e-10 );
 		}
 		{
 			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 			};
 			auto const B_cpy = B;
 			blas::trsm(blas::side::left, blas::filling::lower, 1.0, A, blas::T(B));
-			BOOST_TEST( std::abs( blas::T(B)[0][1] - blas::T(B_cpy)[0][1]/A[0][0] ) < 1e-10 );
+			BOOST_TEST( std::abs( blas::T(B)[0][1] - (blas::T(B_cpy)[0][1]/A[0][0]) ) < 1e-10 );
 		}
 	}
 
