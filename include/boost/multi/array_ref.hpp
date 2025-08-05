@@ -872,7 +872,6 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 

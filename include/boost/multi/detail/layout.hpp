@@ -939,11 +939,18 @@ struct layout_t
 	BOOST_MULTI_HD constexpr explicit layout_t(OtherLayout const& other)
 	: sub_{other.sub()}, stride_{other.stride()}, offset_{other.offset()}, nelems_{other.nelems()} {}
 
+#if defined(__NVCC__)
+#pragma push
+#pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
+#endif
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions)
 	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}, stride_{sub_.num_elements() ? sub_.num_elements() : 1}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
 	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
+#if defined(__NVCC__)
+#pragma pop
+#endif
 
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}

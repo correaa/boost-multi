@@ -105,7 +105,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		return *this;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator==(tuple const& other) const -> bool { return head_ == other.head_ && tail() == other.tail(); }
+	BOOST_MULTI_HD constexpr auto operator==(tuple const& other) const -> bool {
+		return
+			head_ == other.head_
+			&& 
+			tail() == other.tail()
+		;
+	}
 	BOOST_MULTI_HD constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ || tail() != other.tail(); }
 
 	BOOST_MULTI_HD constexpr auto operator<(tuple const& other) const {
@@ -302,13 +308,13 @@ constexpr auto head(tuple<T0, Ts...>& t) -> decltype(auto) {  // NOLINT(readabil
 }
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
+BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...>&& t) -> decltype(std::move(t).tail()) { return std::move(t).tail(); }  // NOLINT(readability-identifier-length) std naming
+BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>&& t) -> decltype(std::move(t).tail()) { return std::move(t).tail(); }  // NOLINT(readability-identifier-length) std naming
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
+BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
 #if defined __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
