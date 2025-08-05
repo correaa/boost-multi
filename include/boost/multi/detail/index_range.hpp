@@ -225,8 +225,8 @@ class range {
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto empty() const& noexcept { return is_empty(); }
 	friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
 
-	constexpr auto        size() const& noexcept -> size_type { return last_ - first_; }
-	friend constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }
+	BOOST_MULTI_HD constexpr auto        size() const& noexcept -> size_type { return last_ - first_; }
+	friend BOOST_MULTI_HD constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }
 
 	friend constexpr auto begin(range const& self) { return self.begin(); }
 	friend constexpr auto end(range const& self) { return self.end(); }
