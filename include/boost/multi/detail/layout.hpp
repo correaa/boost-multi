@@ -277,7 +277,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class... As>
 	static constexpr auto multiply_fold_(size_type const& size, As const&... rest) -> size_type { return size * static_cast<size_type>(multiply_fold_(rest...)); }
 
-	template<std::size_t... I> constexpr auto num_elements_impl_(std::index_sequence<I...> /*unused012*/) const -> size_type {
+	template<std::size_t... I>
+	BOOST_MULTI_HD constexpr auto num_elements_impl_(std::index_sequence<I...> /*unused012*/) const -> size_type {
 		using boost::multi::detail::get;
 		return static_cast<size_type>(multiply_fold_(static_cast<size_type>(get<I>(this->base()).size())...));
 	}
