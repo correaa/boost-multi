@@ -882,12 +882,12 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference /*decltype(base_[0])*/ {
 #if defined(__NVCC__)
-#pragma nv_diag_suppress push
-#pragma nv_diag_suppress 20014
+#pragma push
+#pragma nv_diag_suppress = 20014  // TODO(correa) use multi::apply
 #endif
 		return base_[std::apply(l_, ns_)];
 #if defined(__NVCC__)
-#pragma nv_diag_suppress pop
+#pragma pop
 #endif
 	}
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
@@ -982,7 +982,7 @@ struct elements_range_t {
 
 	using extension_type = multi::extension_t<index>;
 
-	constexpr auto extension() const { return extension_type{0, size()}; }
+	BOOST_MULTI_HD constexpr auto extension() const { return extension_type{0, size()}; }
 
 	[[nodiscard]]
 	constexpr auto empty() const -> bool { return l_.empty(); }
