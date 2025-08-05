@@ -126,4 +126,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 		add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 	endif()
 endforeach()
+
+target_compile_options(all.cu.x PRIVATE --extended-lambda)
+
 endif()

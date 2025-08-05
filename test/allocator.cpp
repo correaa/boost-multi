@@ -151,7 +151,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( ua == va );
 	}
 
-	#if !defined(__NVCC__)
 	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int)
 	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls)  // string uses default parameter
@@ -243,7 +242,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// BOOST_TEST( AA[9][19][1][1][1] == 99 );
 	}
-	#endif
+#endif
 
 	// BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init)
 	{
@@ -261,7 +260,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( AA[9][19][1][1][1] == 99 );
 	}
-#endif
 
 	// BOOST_AUTO_TEST_CASE(const_elements)
 	{

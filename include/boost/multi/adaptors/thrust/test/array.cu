@@ -149,7 +149,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		*raw_pointer_cast(Dev.base()) = 99.0;
 	}
 
-	BOOST_AUTO_TEST_CASE(test_alloc) {
+	// BOOST_AUTO_TEST_CASE(test_alloc)
+	{
 		multi::array<double, 2, thrust::cuda::allocator<double>> Dev({128, 128});
 		// *raw_pointer_cast(Dev.base()) = 99.0;  // segmentation fault (correct behavior)
 	}
@@ -161,9 +162,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
 		using T = double;
 
-		static_assert(multi::is_trivially_default_constructible<T>{});
-		static_assert(std::is_trivially_copy_constructible<T>{});
-		static_assert(std::is_trivially_assignable<T&, T>{});
+		static_assert(multi::is_trivially_default_constructible_v<T>);
+		static_assert(std::is_trivially_copy_constructible_v<T>);
+		static_assert(std::is_trivially_assignable_v<T&, T>);
 
 		multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{n * n});
 		multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{n * n});

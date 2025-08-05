@@ -71,8 +71,8 @@ else()
 		$<$<VERSION_LESS:$<CUDA_COMPILER_VERSION>,12>:
 			-Xcudafe=--diag_suppress=20011 # for std::string in test/allocator.cpp, more?
 		>
-		-Xcudafe=--diag_suppress=20014
-		-Xcudafe=--diag_suppress=1427  # for member_array_cast.cpp in msvc
+		#-Xcudafe=--diag_suppress=20014
+		#-Xcudafe=--diag_suppress=1427  # for member_array_cast.cpp in msvc
 	>
 	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror
 		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
