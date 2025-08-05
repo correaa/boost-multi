@@ -7,11 +7,18 @@
 #pragma once
 
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__)
+#pragma push
+#pragma nv_diag_suppress = 20015  // deep inside Thrust: calling a constexpr __host__ function from a __host__ __device__ function is not allowed
+#endif
 #include <thrust/copy.h>
 #include <thrust/detail/allocator/destroy_range.h>
 #include <thrust/detail/memory_algorithms.h>
 #include <thrust/equal.h>
 #include <thrust/uninitialized_copy.h>
+#if defined(__NVCC__)
+#pragma pop  // nv_diagnostics pop
+#endif
 #endif
 
 #include <algorithm>    // for for_each, copy_n, fill, fill_n, lexicographical_compare, swap_ranges  // IWYU pragma: keep  // bug in iwyu 0.18
