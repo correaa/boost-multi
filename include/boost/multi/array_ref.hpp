@@ -880,7 +880,16 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference /*decltype(base_[0])*/ { return base_[std::apply(l_, ns_)]; }
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference /*decltype(base_[0])*/ {
+#if defined(__NVCC__)
+#pragma nv_diag_suppress push
+#pragma nv_diag_suppress 20014
+#endif
+		return base_[std::apply(l_, ns_)];
+#if defined(__NVCC__)
+#pragma nv_diag_suppress pop
+#endif
+	}
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
 		auto const nn = std::apply(xs_, ns_);
 		return base_[std::apply(l_, xs_.from_linear(nn + n))];
