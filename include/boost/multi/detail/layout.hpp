@@ -461,8 +461,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	extensions_t() = default;
 
-	constexpr auto base() const& -> base_ const& { return *this; }
-	constexpr auto base() & -> base_& { return *this; }
+	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
+	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
 
 	BOOST_MULTI_HD constexpr auto operator==(extensions_t const& other) const -> bool { return base() == other.base(); }  // when compiling as cuda code, this needs --expt-relaxed-constexpr
 	BOOST_MULTI_HD constexpr auto operator!=(extensions_t const& other) const -> bool { return base() != other.base(); }
