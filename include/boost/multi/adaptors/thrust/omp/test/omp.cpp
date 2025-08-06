@@ -13,8 +13,8 @@
 #endif
 
 #include <omp.h>
-#include <thrust/reduce.h>
-#include <thrust/system/omp/detail/par.h>
+#include <thrust/reduce.h>  // IWYU pragma: keep
+#include <thrust/system/omp/execution_policy.h>  // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>
 

@@ -8,6 +8,7 @@
 
 #include <boost/multi/array.hpp>
 
+#include <cmath>
 #include <complex>
 
 namespace multi = boost::multi;

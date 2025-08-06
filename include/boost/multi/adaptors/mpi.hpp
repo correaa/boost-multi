@@ -32,28 +32,16 @@ template<class T> static const_MPI_Datatype const datatype = std::conditional_t<
 // MPI3_DECLARE_DATATYPE(short                  , MPI_SHORT);
 // MPI3_DECLARE_DATATYPE(unsigned short         , MPI_UNSIGNED_SHORT);
 
-template<> 
-#if defined(__clang__)
-static
-#endif
-const_MPI_Datatype const datatype<int> = MPI_INT;  // NOLINT(misc-misplaced-const,misc-definitions-in-headers)
+template<> const_MPI_Datatype const datatype<int> = MPI_INT;  // NOLINT(misc-misplaced-const,misc-definitions-in-headers)
 
 // MPI3_DECLARE_DATATYPE(unsigned int           , MPI_UNSIGNED);
 // MPI3_DECLARE_DATATYPE(long                   , MPI_LONG);
 // MPI3_DECLARE_DATATYPE(unsigned long          , MPI_UNSIGNED_LONG);
 // MPI3_DECLARE_DATATYPE(float                  , MPI_FLOAT);
 
-template<>
-#if defined(__clang__)
-static
-#endif
-const_MPI_Datatype const datatype<float>  = MPI_FLOAT;   // NOLINT(misc-definitions-in-headers)
+template<> const_MPI_Datatype const datatype<float>  = MPI_FLOAT;   // NOLINT(misc-definitions-in-headers)
 
-template<>
-#if defined(__clang__)
-static
-#endif
-const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(misc-definitions-in-headers)
+template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(misc-definitions-in-headers)
 
 // MPI3_DECLARE_DATATYPE(long double            , MPI_LONG_DOUBLE);
 // MPI3_DECLARE_DATATYPE(long long int          , MPI_LONG_LONG_INT);

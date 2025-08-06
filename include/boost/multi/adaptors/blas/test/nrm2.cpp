@@ -97,11 +97,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto n = std::numeric_limits<double>::quiet_NaN();  // NOLINT(readability-identifier-length) BLAS naming
 
 			n = multi::blas::nrm2(X);  // cppcheck-suppress redundantAssignment ; test assignment from conversion
-			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );  // cppcheck-suppress knownConditionTrueFalse ;
 		}
 		{
 			double const n = multi::blas::nrm2(X);  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );  // cppcheck-suppress knownConditionTrueFalse ;
 		}
 		{
 			multi::array<double, 0> res{0.0};
