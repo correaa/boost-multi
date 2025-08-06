@@ -15,19 +15,18 @@
 
 namespace multi = boost::multi;
 
-namespace {
-template<class M> auto power(M const& array) {
-	return std::accumulate(array.elements().begin(), array.elements().end(), 0.0, [](auto e1, auto e2) { return std::move(e1) + std::norm(e2); });
-	//  return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
-}
-}  // end unnamed namespace
-
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
+// namespace {
+// template<class M> auto power(M const& array) {
+// 	return std::accumulate(array.elements().begin(), array.elements().end(), 0.0, [](auto e1, auto e2) { return std::move(e1) + std::norm(e2); });
+// 	//  return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
+// }
+// }  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	multi::fftw::environment const env;
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
@@ -50,7 +49,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( in_base == in.base() );  // prove no allocation
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
@@ -75,7 +75,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  BOOST_TEST( in_base == in.base() );        // prove no allocation
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
@@ -100,7 +101,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( in_base == in.base() );  // prove no allocation
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 

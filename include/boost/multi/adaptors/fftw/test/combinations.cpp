@@ -178,7 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const in = [&] {
 			marray<complex, 4> ret(exts);
 			std::generate(
-				ret.data_elements(), ret.data_elements() + ret.num_elements(),
+				ret.elements().begin(), ret.elements().end(),
 				[eng        = std::default_random_engine{std::random_device{}()},
 				 uniform_01 = std::uniform_real_distribution<>{}]() mutable {
 					return complex{uniform_01(eng), uniform_01(eng)};
