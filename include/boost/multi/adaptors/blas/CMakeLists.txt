@@ -38,11 +38,6 @@ if(BLAS_FOUND)
 	endforeach()
 endif()
 
-# this makes CM FetchContent friendly https://www.foonathan.net/2022/06/cmake-fetchcontent/
-# if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-#   return()
-# endif()
-
 if(BLAS_FOUND)
 	find_package(Boost NO_MODULE)  # COMPONENTS boost)  # headers unit_test_framework)
 	if(Boost_FOUND)

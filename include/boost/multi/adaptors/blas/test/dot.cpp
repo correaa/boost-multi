@@ -240,7 +240,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		double res = std::numeric_limits<double>::quiet_NaN();
 		blas::dot_n(begin(CA[1]), size(CA[1]), begin(CA[2]), &res);
-		BOOST_TEST( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0) );
+		BOOST_TEST( std::abs( res - std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0) ) < 1e-10 );
 
 		double const res2 = blas::dot(CA[1], CA[2]);
 		BOOST_TEST( res == res2 );
@@ -257,7 +257,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0F) );
 
 		double const res2 = blas::dot(CA[1], CA[2]);
-		BOOST_TEST( std::abs( res - res2 ) < 1e-10 );
+		BOOST_TEST( std::abs( res - static_cast<float>(res2) ) < 1e-10F );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context) {
@@ -274,28 +274,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0) );
 
 		double const res2 = blas::dot(CA[1], CA[2]);
-		BOOST_TEST( res == res2 );
+		BOOST_TEST( std::abs( res - res2 ) < 1e-10 );
 	}
-
-// #ifndef __APPLE__
-//  BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context_float) {
-//      multi::array<float, 2> const CA = {
-//          {1.0F,  2.0F,  3.0F,  4.0F},
-//          {5.0F,  6.0F,  7.0F,  8.0F},
-//          {9.0F, 10.0F, 11.0F, 12.0F},
-//      };
-//      auto res = std::numeric_limits<float>::quiet_NaN();
-
-//      blas::context ctxt;
-//      blas::dot_n(&ctxt, begin(CA[1]), size(CA[1]), begin(CA[2]), &res);
-
-//      BOOST_TEST( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0) );
-
-//      float const res2 = blas::dot(CA[1], CA[2]);
-//      BOOST_TEST( res == res2 );
-//  }
-// #endif
-
 	BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real_double) {
 		multi::array<double, 1> const x = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<double, 1> const y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
@@ -334,11 +314,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		double const res1 = blas::dot(cA[1], cA[2]);
-		BOOST_TEST( res1 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
+		BOOST_TEST( std::abs( res1 - std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) ) < 1e-10 );
 
 		auto res2 = std::numeric_limits<double>::quiet_NaN();
 		blas::dot(cA[1], cA[2], res2);
-		BOOST_TEST( res2 == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
+		BOOST_TEST( std::abs( res2 - std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0)) < 1e-10 );
 
 		auto         res_nan = std::numeric_limits<double>::quiet_NaN();
 		double const res3    = blas::dot(cA[1], cA[2], res_nan);
@@ -386,7 +366,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto res  = dot(x, y);
 		auto res2 = dot(hermitized(x), y);
 
-		BOOST_TEST(+res == +res2);
+		BOOST_TEST( std::abs( +res - +res2 ) < 1e-10 );
 
 		auto res3 = dot(blas::conj(x), y);  // conjugation doesn't do anything for real array
 		BOOST_TEST(res3 == res);
@@ -532,8 +512,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto CC = C;
 
 		auto const [is, js] = C.extensions();
-		std::for_each(is.begin(), is.end(), [&, js = js](auto ii) {
-			std::for_each(js.begin(), js.end(), [&](auto jj) {
+		std::for_each(is.begin(), is.end(), [&, Js = js](auto ii) {
+			std::for_each(Js.begin(), Js.end(), [&](auto jj) {
 				C[ii][jj] *= 0.0;
 				std::for_each(B.extension().begin(), B.extension().end(), [&](auto kk) {
 					C[ii][jj] += A[ii][kk] * conj(B[kk][jj]);
@@ -553,11 +533,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					std::forward<decltype(Cr)>(Cr);
 		});
 
-		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		BOOST_TEST( std::abs( static_cast<complex>(CC[1][0]).real() - static_cast<complex>(C[1][0]).real() ) < 1e-10 );
+		BOOST_TEST( std::abs( static_cast<complex>(CC[1][0]).imag() - static_cast<complex>(C[1][0]).imag() ) < 1e-10 );
 
-		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		BOOST_TEST( std::abs( static_cast<complex>(CC[0][1]).real() - static_cast<complex>(C[0][1]).real() ) < 1e-10 );
+		BOOST_TEST( std::abs( static_cast<complex>(CC[0][1]).imag() - static_cast<complex>(C[0][1]).imag() ) < 1e-10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_second_float) {

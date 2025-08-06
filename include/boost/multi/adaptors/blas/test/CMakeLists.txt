@@ -83,6 +83,10 @@ set(TEST_SRCS
 
 find_package(TBB)
 
+add_library(multi-blas INTERFACE)
+target_link_libraries(multi-blas INTERFACE multi)
+target_link_libraries(multi-blas INTERFACE BLAS::BLAS)
+
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
@@ -100,14 +104,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 	if(TBB_FOUND)
 		target_link_libraries(${TEST_EXE} PRIVATE TBB::tbb)
 	endif()
-
-	# target_compile_options(
-	#   ${TEST_EXE} PRIVATE
-	#   $<$<CXX_COMPILER_ID:IntelLLVM>:
-	#   -Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
-	#   -Wno-enum-constexpr-conversion  # for Boost.Test
-	#   >
-	# )
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
 
@@ -153,6 +149,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra
 					-Wpedantic
 					-Wmove
+					-Wno-padded
 					-Wno-pass-failed
 					-Wno-error=\#warnings
 					-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy

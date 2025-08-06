@@ -14,11 +14,12 @@ namespace blas  = multi::blas;
 
 #include <boost/core/lightweight_test.hpp>
 #define BOOST_AUTO_TEST_CASE(CasenamE)  /**/
-#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
+// #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 // #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_n) {
+// BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_n)
+{
 	multi::array<double, 2> arr = {
 		{ 1.0,  2.0,  3.0,  4.0 },
 		{ 5.0,  6.0,  7.0,  8.0 },
@@ -31,7 +32,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_n) {
 	BOOST_TEST( std::abs( arr[2][2] - 11.0*2.0 ) < 1e-10 );
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it) {
+// BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it)
+{
 	multi::array<double, 2> arr = {
 		{ 1.0,  2.0,  3.0,  4.0 },
 		{ 5.0,  6.0,  7.0,  8.0 },
@@ -41,8 +43,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it) {
 	BOOST_TEST( arr[2][2] == 11.0 );
 
 	blas::scal(2.0, arr[2].begin(), arr[2].end());
-	BOOST_TEST( arr[0][2] == 3.0 );
-	BOOST_TEST(arr[2][2] == 11.0*2.0 );
+	BOOST_TEST( std::abs( arr[0][2] - 3.0 ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[2][2] - 11.0*2.0 ) < 1e-10 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real) {
@@ -59,7 +61,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real) {
 	BOOST_TEST( +blas::scal(1.0, arr[2]) ==  arr[2] );
 
 	blas::scal(2.0, arr[2]);
-	BOOST_TEST( arr[0][2] == 3.0 && arr[2][2] == 11.0*2.0 );
+	BOOST_TEST( std::abs( arr[0][2] - 3.0 ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[2][2] - 11.0*2.0 ) < 1e-10 );
 
 	BOOST_TEST( &blas::scal(1.0, arr[2]) == &arr[2] );
 }

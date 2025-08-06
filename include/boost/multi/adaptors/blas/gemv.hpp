@@ -114,11 +114,14 @@ class gemv_iterator {
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>
 class gemv_range {
-	Scalar alpha_{1.0};
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Context ctxt_;
+
 	It2D m_begin_;
 	It2D m_end_;
+
 	It1D v_first_;
-	Context ctxt_;
+
+	Scalar alpha_{1.0};
 
  public:
 	gemv_range(gemv_range&&) noexcept = default;
@@ -132,10 +135,11 @@ class gemv_range {
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	gemv_range(Context ctxt, Scalar alpha, It2D m_first, It2D m_last, It1D v_first)  // NOLINT(bugprone-easily-swappable-parameters)
-	: alpha_{alpha}
+	: ctxt_{std::move(ctxt)}
 	, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}
 	, v_first_{std::move(v_first)}
-	, ctxt_{std::move(ctxt)} {
+	, alpha_{alpha}
+	{
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	using iterator = gemv_iterator<Scalar, It2D, It1D, Context>;
