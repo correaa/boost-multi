@@ -53,6 +53,17 @@ message(STATUS "Boost.Multi: standalone mode ON")
 
 add_library(multi INTERFACE)
 
+add_library(boost.multi ALIAS multi)
+add_library(boost::multi ALIAS multi)
+
+# target_sources(
+#  multi
+#  PUBLIC
+#    FILE_SET HEADERS
+#    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+#    FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/boost/multi/array.hpp
+#)
+
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
 #if(NOT ENABLE_CUDA)
@@ -71,6 +82,12 @@ target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 #)
 
 target_compile_options(multi INTERFACE
+	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
+    -Wno-c++98-compat
+    -Wno-c++98-compat-bind-to-temporary-copy
+    -Wno-padded
+    -Wno-pre-c++17-compat
+  >
   $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
   $<$<CXX_COMPILER_ID:MSVC>:
     $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
@@ -103,6 +120,7 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   return()
 endif()
 ################################################################################
+
 
 include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)

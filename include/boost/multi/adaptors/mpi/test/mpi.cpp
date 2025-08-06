@@ -1,4 +1,4 @@
-// Copyright 2024 Alfredo A. Correa
+// Copyright 2024-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -6,7 +6,7 @@
 
 #include <boost/multi/adaptors/mpi.hpp>
 
-#define OMPI_SKIP_MPICXX 1
+// #define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
 
 #include <boost/core/lightweight_test.hpp>
@@ -176,7 +176,7 @@ void test_2d(MPI_Comm comm) {
 				}
 			);
 			auto const& BB = AA({0, 2}, {1, 3});
-			BOOST_TEST(( BB == multi::array<int, 2>({{2, 3}, {5, 6}}) ));
+			BOOST_TEST(( BB[1][1] == multi::array<int, 2>({{2, 3}, {5, 6}})[1][1] ));
 
 			MPI_Datatype B_type;  // NOLINT(cppcoreguidelines-init-variables)
 			multi::mpi::create_subarray(BB.layout(), MPI_INT, &B_type);

@@ -83,11 +83,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( blas::nrm2(rotated(cA)[1]) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
+	// BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators)
+	{
 		multi::array<double, 1> const X = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
 
 		{
-			double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
+			auto n = std::numeric_limits<double>::quiet_NaN();  // NOLINT(readability-identifier-length) BLAS naming
 
 			multi::blas::nrm2(X, n);
 			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );

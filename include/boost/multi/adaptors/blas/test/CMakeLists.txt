@@ -107,7 +107,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
 
-    target_link_libraries(${TEST_EXE} PRIVATE multi)
+    target_link_libraries(${TEST_EXE} INTERFACE multi)
 	target_link_libraries(${TEST_EXE} PRIVATE BLAS::BLAS)
 
 	if(NOT ENABLE_CIRCLE)
