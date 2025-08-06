@@ -198,7 +198,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
-			y += blas::gemv(1.0, a, x);
+			y += blas::gemv(1.F, a, x);
 			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001 );
 		}
 		{
@@ -404,7 +404,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			T const n2{blas::nrm2(Y - Y3)};
-			BOOST_REQUIRE_SMALL(n2, T{1.0e-4});
+			BOOST_TEST( std::abs(n2) < 1e-4 );
 		}
 	}
 
