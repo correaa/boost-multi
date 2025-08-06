@@ -2,9 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef _VSTD
-# define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
-#endif
+// #ifndef _VSTD
+// # define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+// #endif
 
 #include <boost/multi/adaptors/thrust/omp.hpp>  // NOLINT(misc-include-cleaner)
 
@@ -28,6 +28,7 @@
 #pragma warning(disable : 5045)  // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 #endif
 
+#if !defined(__clang__)
 namespace {
 
 template<class Array1D>
@@ -123,6 +124,7 @@ void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
 }
 
 }  // end namespace
+#endif
 
 // auto parallel_array_sum(int n, float const *a) {
 //     float total = 0.0;
