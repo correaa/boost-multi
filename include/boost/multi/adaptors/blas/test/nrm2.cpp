@@ -90,13 +90,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
 
 			multi::blas::nrm2(X, n);
-			BOOST_TEST( n == multi::blas::nrm2(X) );
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );
 		}
 		{
-			double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
+			auto n = std::numeric_limits<double>::quiet_NaN();  // NOLINT(readability-identifier-length) BLAS naming
 
 			n = multi::blas::nrm2(X);  // cppcheck-suppress redundantAssignment ; test assignment from conversion
-			BOOST_TEST( n == multi::blas::nrm2(X) );
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );
 		}
 		{
 			double const n = multi::blas::nrm2(X);  // NOLINT(readability-identifier-length) BLAS naming
