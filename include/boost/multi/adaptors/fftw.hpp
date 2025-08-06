@@ -379,7 +379,7 @@ inline auto const forward  = sign::forward;
 enum class direction : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size)
 	backward = FFTW_BACKWARD,
 	none     = 0,
-	forward  = FFTW_FORWARD,
+	forward  = FFTW_FORWARD
 };
 
 class plan;

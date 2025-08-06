@@ -83,6 +83,8 @@ target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 
 target_compile_options(multi INTERFACE
 	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
+  #$<$<CXX_COMPILER_ID:Clang>:
+    -Wno-c++17-extensions
     -Wno-c++98-compat
     -Wno-c++98-compat-bind-to-temporary-copy
     -Wno-padded
