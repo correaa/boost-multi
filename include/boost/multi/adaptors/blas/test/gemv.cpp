@@ -190,11 +190,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			y = blas::gemv(1.0, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<T, 1> y = blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001);
 		}
 		{
 			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
@@ -240,7 +240,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<T, 1> const y   = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
 			multi::array<T, 1> const dot = blas::gemv(1.0, multi::array<T, 2>({x_shadow}), y);
 			if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
-				BOOST_TEST( dot[0] == blas::dot(x_shadow, y) );
+				BOOST_TEST( std::abs( dot[0] - blas::dot(x_shadow, y) ) < 1e-10 );
 			}
 		}
 		{
@@ -391,15 +391,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{6.0, 0.0},
 			};
 
-			auto const alpha = T{1.1};
-			auto const beta  = T{1.2};
+			auto const alpha = 1.1F;
+			auto const beta  = 1.2F;
 
 			blas::gemv(alpha, M, X, beta, Y);  // y = a*M*x + b*y
 
 			multi::array<complex, 1> const Y3 = {
-				{214.02, 0.0},
-				{106.43, 0.0},
-				{188.37, 0.0},
+				{214.02F, 0.0F},
+				{106.43F, 0.0F},
+				{188.37F, 0.0F},
 			};
 
 			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
