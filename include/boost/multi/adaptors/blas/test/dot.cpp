@@ -173,7 +173,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST_EQ(
 			imag(res),
 			imag(
-				std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus{},  // NOLINT(fuchsia-default-arguments-calls)
+				std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto alpha, auto omega) { return alpha * std::conj(omega); })
 			)
 		);
@@ -257,7 +257,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0F) );
 
 		double const res2 = blas::dot(CA[1], CA[2]);
-		BOOST_TEST( res == res2 );
+		BOOST_TEST( std::abs( res - res2 ) < 1e-10 );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context) {

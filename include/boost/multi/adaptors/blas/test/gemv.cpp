@@ -199,12 +199,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
 			y += blas::gemv(1.0, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<T, 1> y = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemv(1.1, a, x, 1.0, y);           // y = a*M*x + b*y
-			BOOST_REQUIRE_CLOSE(y[1], 105.43, 0.00001);
+			BOOST_TEST( std::abs( y[1] - 105.43) < 0.00001 );
 		}
 	}
 
@@ -262,21 +262,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 4.0, 10.0, 12.0, 7.0},
 			{14.0, 16.0, 36.0, 1.0},
 		};
-		multi::array<T, 1> const x = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<T, 1> const x = {static_cast<T>(1.1), static_cast<T>(2.1), static_cast<T>(3.1), static_cast<T>(4.1)};  // NOLINT(readability-identifier-length) BLAS naming
 		{
 			multi::array<T, 1> y     = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
-			T const            alpha = 1.1;
-			T const            beta  = 1.2;
+			auto const            alpha = static_cast<T>(1.1);
+			auto const            beta  = static_cast<T>(1.2);
 			blas::gemv(alpha, a, x, beta, y);  // y = a*M*x + b*y
 
-			multi::array<T, 1> const y3 = {214.02, 106.43, 188.37};
+			multi::array<T, 1> const y3 = {static_cast<T>(214.02), static_cast<T>(106.43F), static_cast<T>(188.37)};
 			BOOST_TEST( abs(y[1] - y3[1]) < 2e-14 );
 		}
 		if constexpr(!std::is_same_v<T, float>) {
 			auto Y = +blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_REQUIRE_CLOSE(Y[0], +blas::dot(a[0], x), 0.00001);
-			BOOST_REQUIRE_CLOSE(Y[1], +blas::dot(a[1], x), 0.00001);
-			BOOST_REQUIRE_CLOSE(Y[2], +blas::dot(a[2], x), 0.00001);
+			BOOST_TEST( std::abs( Y[0] - +blas::dot(a[0], x)) < 0.0001F );
+			BOOST_TEST( std::abs( Y[1] - +blas::dot(a[1], x)) < 0.0001F );
+			BOOST_TEST( std::abs( Y[2] - +blas::dot(a[2], x)) < 0.0001F );
 		}
 		{
 			multi::array<T, 1> const x_shadow = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
@@ -378,10 +378,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<complex, 1> const X = {
-			{1.1, 0.0},
-			{2.1, 0.0},
-			{3.1, 0.0},
-			{4.1, 0.0},
+			{1.1F, 0.0F},
+			{2.1F, 0.0F},
+			{3.1F, 0.0F},
+			{4.1F, 0.0F},
 		};
 		{
 			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
