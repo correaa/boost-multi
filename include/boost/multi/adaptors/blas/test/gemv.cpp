@@ -404,7 +404,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			T const n2{blas::nrm2(Y - Y3)};
-			BOOST_TEST( std::abs(n2) < 1e-4 );
+			BOOST_TEST( std::abs(n2) < 1e-4F );
 		}
 	}
 
