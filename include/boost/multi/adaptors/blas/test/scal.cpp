@@ -7,6 +7,7 @@
 
 #include <boost/multi/array.hpp>
 
+#include <cmath>
 #include <complex>  // for complex, operator*
 
 namespace multi = boost::multi;
@@ -28,8 +29,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST( (arr[0][2] == 3.0) && (arr[2][2] == 11.0) );
 
 	blas::scal_n(2.0, arr[2].begin(), arr[2].size());
-	BOOST_TEST( std::abs( arr[0][2] - 3.0      ) < 1e-10 );
-	BOOST_TEST( std::abs( arr[2][2] - 11.0*2.0 ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[0][2] - 3.0        ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[2][2] - (11.0*2.0) ) < 1e-10 );
 }
 
 // BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it)
@@ -43,8 +44,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST( arr[2][2] == 11.0 );
 
 	blas::scal(2.0, arr[2].begin(), arr[2].end());
-	BOOST_TEST( std::abs( arr[0][2] - 3.0 ) < 1e-10 );
-	BOOST_TEST( std::abs( arr[2][2] - 11.0*2.0 ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[0][2] - 3.0        ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[2][2] - (11.0*2.0) ) < 1e-10 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real) {
@@ -61,8 +62,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real) {
 	BOOST_TEST( +blas::scal(1.0, arr[2]) ==  arr[2] );
 
 	blas::scal(2.0, arr[2]);
-	BOOST_TEST( std::abs( arr[0][2] - 3.0 ) < 1e-10 );
-	BOOST_TEST( std::abs( arr[2][2] - 11.0*2.0 ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[0][2] - 3.0        ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[2][2] - (11.0*2.0) ) < 1e-10 );
 
 	BOOST_TEST( &blas::scal(1.0, arr[2]) == &arr[2] );
 }

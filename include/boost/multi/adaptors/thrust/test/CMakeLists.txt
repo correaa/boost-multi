@@ -63,13 +63,22 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_options(${TEST_EXE} PRIVATE
 		$<$<CXX_COMPILER_ID:MSVC>:
 		#	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
-		#	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+		/W4    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline
 		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--diag-suppress=1394>  # field of class type without a DLL interface used in a class with a DLL interface
+			$<$<CXX_COMPILER_ID:MSVC>:
+				-Xcompiler=/wd4668
+				-Xcompiler=/wd4664
+				-Xcompiler=/wd4464
+				-Xcompiler=/wd4061  # enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label
+			>
+			--extended-lambda
 		>
 	)
 endforeach()
 
 set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
+
+ C4061: enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\test\by_key.cu.x.vcxproj]
 
 target_compile_options(array.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > --extended-lambda >)
 target_compile_options(by_key.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > >)

@@ -21,6 +21,7 @@
 	#include <iostream>    // for basic_ostream, endl, cout
 #endif
 
+#include <cmath>
 #include <complex>   // for operator*, operator+
 #include <iterator>  // for size
 #include <utility>  // for forward  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)

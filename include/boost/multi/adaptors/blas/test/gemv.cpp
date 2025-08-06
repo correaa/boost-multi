@@ -262,7 +262,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 4.0, 10.0, 12.0, 7.0},
 			{14.0, 16.0, 36.0, 1.0},
 		};
-		multi::array<T, 1> const x = {static_cast<T>(1.1), static_cast<T>(2.1), static_cast<T>(3.1), static_cast<T>(4.1)};  // NOLINT(readability-identifier-length) BLAS naming
+
+		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+		multi::array<T, 1> const x = {static_cast<T>(1.1), static_cast<T>(2.1), static_cast<T>(3.1), static_cast<T>(4.1)};
 		{
 			multi::array<T, 1> y     = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
 			auto const            alpha = static_cast<T>(1.1);
