@@ -19,7 +19,7 @@ namespace multi = boost::multi;
 using complex   = std::complex<double>;
 
 template<>
-constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+constexpr static bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 
 namespace {
 #if !defined(_MSC_VER)
