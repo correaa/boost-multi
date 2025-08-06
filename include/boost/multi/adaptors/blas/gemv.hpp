@@ -57,8 +57,8 @@ auto gemv(Ctxt ctxt, typename M::element const& a, M const& m, V const& v, typen
 	return std::forward<W>(w);
 }
 
-template<class A, class M, class V, class B, class W>
-auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
+template<class M, class V, class W>
+auto gemv(typename M::element a, M const& m, V const& v, typename M::element b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
 
 	if constexpr(is_conjugated<M>{}) {
