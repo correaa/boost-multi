@@ -102,7 +102,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> const b{const_arr[2]};  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 		blas::axpy(2.0, b, arr[1]);  // A[1] = 2*b + A[1], A[1]+= a*A[1]
-		BOOST_TEST( arr[1][2] == 2.0*b[2] + const_arr[1][2] );
+		BOOST_TEST( std::abs( arr[1][2] - (2.0*b[2] + const_arr[1][2])) < 1e-10 );
 
 		auto const I = complex{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 

@@ -357,6 +357,7 @@ else()
 		>
 		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 			-Xcompiler=/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+			-Xcompiler=/wd4464  # relative include path contains '..'
 			-Xcompiler=/wd4514  # unreferenced inline function has been removed
 			-Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
 			-Xcompiler=/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
