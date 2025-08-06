@@ -81,26 +81,26 @@ target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 #  $<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive- > >  # this is needed for MSVC in C++17 mode
 #)
 
-target_compile_options(multi INTERFACE
-	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
-  #$<$<CXX_COMPILER_ID:Clang>:
-    -Wno-c++17-extensions
-    -Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
-    -Wno-padded
-    -Wno-pre-c++17-compat
-  >
-  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
-  $<$<CXX_COMPILER_ID:MSVC>:
-    $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
-      /EHsc /permissive-
+if(NOT ENABLE_CIRCLE)
+  target_compile_options(multi INTERFACE
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
+    #$<$<CXX_COMPILER_ID:Clang>:
+      -Wno-c++17-extensions
+      -Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
+      -Wno-padded
+      -Wno-pre-c++17-compat
     >
-    $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
-      -Xcompiler=/EHsc -Xcompiler=/permissive-
+    $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
+    $<$<CXX_COMPILER_ID:MSVC>:
+      $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+        /EHsc /permissive-
+      >
+      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+        -Xcompiler=/EHsc -Xcompiler=/permissive-
+      >
     >
-	>
-)
-
-#endif()
+  )
+endif()
 
 # https://youtrack.jetbrains.com/issue/CPP-25608
 target_compile_features(multi INTERFACE cxx_std_17)
