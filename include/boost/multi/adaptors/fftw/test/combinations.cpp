@@ -65,7 +65,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// marray<complex, 4> ret(exts);
 			multi::array<complex, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
 			std::generate(
-				ret.data_elements(), ret.data_elements() + ret.num_elements(),
+				ret.elements().begin(), ret.elements().end(),
 				[eng        = std::default_random_engine{std::random_device{}()},
 				 uniform_01 = std::uniform_real_distribution<>{}]() mutable {
 					return complex{uniform_01(eng), uniform_01(eng)};
@@ -129,7 +129,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		namespace fftw = multi::fftw;
 
 		marray<complex, 4> in(exts);
-		std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
+		std::iota(in.elements().begin(), in.elements().end(), 1.2);
 
 		BOOST_TEST(in[0][0][0][0] == 1.2);
 		std::array<bool, 4> which = {false, true, true, true};
