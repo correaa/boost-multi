@@ -18,8 +18,15 @@
 namespace multi = boost::multi;
 using complex   = std::complex<double>;
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-variable-declarations"
+#endif
 template<>
 constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 namespace {
 // #if !defined(_MSC_VER)
