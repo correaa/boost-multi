@@ -26,9 +26,9 @@ auto power(M const& array) {
 	return accumulate(begin(array), end(array), 0.0, [](auto const& alpha, auto const& omega) { return alpha + power(omega); });
 }
 
-struct sum_power {
-	template<class A, class B> auto operator()(A const& alpha, B const& omega) const { return alpha + power(omega); }
-};
+// struct sum_power {
+// 	template<class A, class B> auto operator()(A const& alpha, B const& omega) const { return alpha + power(omega); }
+// };
 
 }  // end anonymous namespace
 

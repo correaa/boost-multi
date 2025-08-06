@@ -34,8 +34,6 @@ class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-
 	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }  // NOLINT(cpp:S4963)
 };
 
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	multi::fftw::environment const env;
 
@@ -46,7 +44,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	auto const in = std::invoke([] {
 		multi::array<complex, 2> ret({101, 99});  // ({1013, 997});  // ({10137, 9973});
 		std::generate(
-			ret.data_elements(), ret.data_elements() + ret.num_elements(),
+			ret.elements().begin(), ret.elements().end(),
 			[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable {
 				return complex{uniform_01(eng), uniform_01(eng)};
 			}

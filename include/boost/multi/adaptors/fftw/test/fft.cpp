@@ -22,15 +22,15 @@ template<>
 constexpr static bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 
 namespace {
-#if !defined(_MSC_VER)
-template<class T>
-__attribute__((always_inline)) inline void DoNotOptimize(T const& value) {  // NOLINT(readability-identifier-naming) consistency with Google benchmark
-	asm volatile("" : "+m"(const_cast<T&>(value)));                         // NOLINT(hicpp-no-assembler,cppcoreguidelines-pro-type-const-cast) hack
-}
-#else
-template<class T>
-inline void DoNotOptimize(T const& value) { /*nothihg*/ }
-#endif
+// #if !defined(_MSC_VER)
+// template<class T>
+// __attribute__((always_inline)) inline void DoNotOptimize(T const& value) {  // NOLINT(readability-identifier-naming) consistency with Google benchmark
+// 	asm volatile("" : "+m"(const_cast<T&>(value)));                         // NOLINT(hicpp-no-assembler,cppcoreguidelines-pro-type-const-cast) hack
+// }
+// #else
+// template<class T>
+// inline void DoNotOptimize(T const& value) { /*nothihg*/ }
+// #endif
 }  // end namespace
 
 namespace {
