@@ -211,7 +211,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 		multi::array<complex, 3> io({4, 4, 4});
-		std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+		std::iota(io.elements().begin(), io.elements().end(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		auto const powerin = power(io);
 
 		//  fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
