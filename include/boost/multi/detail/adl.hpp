@@ -325,8 +325,9 @@ class adl_uninitialized_copy_t {
 	{
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return ::thrust::copy(first, last, d_first);
+		} else {
+			return ::thrust::uninitialized_copy(first, last, d_first);
 		}
-		return ::thrust::uninitialized_copy(first, last, d_first);
 	}
 #endif
 	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRETURN(                        uninitialized_copy(                 std::forward<TB>(first) , std::forward<As>(args)...))
