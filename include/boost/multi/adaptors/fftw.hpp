@@ -292,13 +292,13 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 		},
 		boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple)
 	);
-	auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) { return std::get<0>(elem); });
+	auto const part = std::stable_partition(which_iodims.begin(), std::prev(which_iodims.end()), [](auto elem) { return std::get<0>(elem); });
 
 	std::array<fftw_iodim64, D> dims{};
 	std::array<fftw_iodim64, D> howmany_dims{};
 
 	auto const dims_end         = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
-	auto const howmany_dims_end = std::transform(part, which_iodims.end() - 1, howmany_dims.begin(), [](auto elem) { return elem.second; });
+	auto const howmany_dims_end = std::transform(part, std::prev(which_iodims.end()), howmany_dims.begin(), [](auto elem) { return elem.second; });
 
 	assert(in_base);
 	assert(out_base);
@@ -546,6 +546,10 @@ class io_zip_iterator {
 	auto operator=(io_zip_iterator const&) -> io_zip_iterator& = default;
 	auto operator=(io_zip_iterator&&) noexcept -> io_zip_iterator& = default;
 };
+
+template<class InIt, class OutIt>
+io_zip_iterator(std::array<bool, InIt::reference::rank_v>, InIt, OutIt, sign)
+-> io_zip_iterator<InIt, OutIt>;
 
 template<class In, class Out>
 auto environment::make_plan_forward(std::array<bool, +In::rank_v> which, In const& in, Out&& out) {

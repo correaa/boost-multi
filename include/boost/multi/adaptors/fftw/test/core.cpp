@@ -159,7 +159,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 		multi::array<complex, 2> in({16, 16});
-		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+		std::iota(in.elements().begin(), in.elements().end(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
 
 		auto const pln = multi::fftw::plan::forward({{true, true}}, in.base(), in.layout(), out.base(), out.layout());
@@ -174,7 +174,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 		multi::array<complex, 2> in({16, 16});
-		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+		std::iota(in.elements().begin(), in.elements().end(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
 		auto const               pln = multi::fftw::plan::forward({{true, true}}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
@@ -187,7 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 		multi::array<complex, 2> in({16, 16});
-		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+		std::iota(in.elements().begin(), in.elements().end(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
 		auto const               pln = multi::fftw::plan::forward({{true, true}}, in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
@@ -199,7 +199,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 		multi::array<complex, 2> in({16, 16});
-		std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+		std::iota(in.elements().begin(), in.elements().end(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
 		multi::fftw::dft_forward({{true, true}}, in, out);
 		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
