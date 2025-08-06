@@ -66,10 +66,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 		/W4    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline
 		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--diag-suppress=1394>  # field of class type without a DLL interface used in a class with a DLL interface
 			$<$<CXX_COMPILER_ID:MSVC>:
-				-Xcompiler=/wd4668
-				-Xcompiler=/wd4664
-				-Xcompiler=/wd4464
 				-Xcompiler=/wd4061  # enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label
+				-Xcompiler=/wd4464 -Xcompiler=/wd4664 -Xcompiler=/wd4668
 			>
 			--extended-lambda
 		>
@@ -78,9 +76,7 @@ endforeach()
 
 set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
 
- C4061: enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\test\by_key.cu.x.vcxproj]
-
-target_compile_options(array.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > --extended-lambda >)
-target_compile_options(by_key.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > >)
-target_compile_options(run_reduce.cu.x PRIVATE  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
-target_compile_options(speed.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
+# target_compile_options(array.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > --extended-lambda >)
+# target_compile_options(by_key.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > >)
+# target_compile_options(run_reduce.cu.x PRIVATE  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
+# target_compile_options(speed.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)

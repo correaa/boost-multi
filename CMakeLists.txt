@@ -84,11 +84,10 @@ target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 if(NOT ENABLE_CIRCLE)
   target_compile_options(multi INTERFACE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
-    #$<$<CXX_COMPILER_ID:Clang>:
       -Wno-c++17-extensions
       -Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
       -Wno-padded
-      -Wno-pre-c++17-compat
+      $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
     >
     $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
     $<$<CXX_COMPILER_ID:MSVC>:
