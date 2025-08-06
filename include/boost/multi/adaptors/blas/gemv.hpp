@@ -47,12 +47,12 @@ auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {  // N
 	return gemv_n(&ctxt, static_cast<typename MIt::element>(a), m_first, count, x_first, static_cast<typename MIt::element>(b), y_first);
 }
 
-template<class Ctxt, class A, class M, class V, class B, class W>
-auto gemv(Ctxt ctxt, A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
+template<class Ctxt, class M, class V, class W>
+auto gemv(Ctxt ctxt, typename M::element const& a, M const& m, V const& v, typename M::element const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
 	assert(size(~m) == size(v) );
 
-	gemv_n(ctxt, static_cast<typename M::element>(a), begin(m), size(m), begin(v), static_cast<typename M::element>(b), begin(w));  // NOLINT(fuchsia-default-arguments-calls)
+	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));  // NOLINT(fuchsia-default-arguments-calls)
 
 	return std::forward<W>(w);
 }

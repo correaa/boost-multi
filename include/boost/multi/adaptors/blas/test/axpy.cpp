@@ -6,7 +6,7 @@
 #include <boost/multi/adaptors/blas/core.hpp>     // for context
 #include <boost/multi/adaptors/blas/numeric.hpp>  // for imag, real
 // #include <boost/multi/adaptors/complex.hpp>       // for complex, operator*
-#include <boost/multi/array.hpp>                  // for array, implicit_cast
+#include <boost/multi/array.hpp>  // for array, implicit_cast
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -130,16 +130,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_plus_equal) {
-		using complex = std::complex<double>;
-
 		multi::array<complex, 2> arr = {
 			{{1.0, 0.0},  {2.0, 0.0},  {3.0, 0.0},  {4.0, 0.0}},
 			{{5.0, 0.0},  {6.0, 0.0},  {7.0, 0.0},  {8.0, 0.0}},
 			{{9.0, 0.0}, {10.0, 0.0}, {11.0, 0.0}, {12.0, 0.0}},
 		};
-		auto const                     carr = arr;
-		multi::array<complex, 1> const y    = arr[2];  // NOLINT(readability-identifier-length) BLAS naming
-		arr[1] += blas::axpy(2.0, y);                  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+
+		auto const carr = arr;
+
+		multi::array<complex, 1> const y = arr[2];  // NOLINT(readability-identifier-length) BLAS naming
+
+		arr[1] += blas::axpy(2.0, y);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 		BOOST_TEST( arr[1][2] == 2.0*y[2] + carr[1][2] );
 	}
 

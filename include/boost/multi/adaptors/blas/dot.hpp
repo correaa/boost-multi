@@ -84,7 +84,14 @@ class dot_ptr {
 	friend constexpr auto copy_n(dot_ptr first, Size2 count, ItOut d_first)
 	->decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count) {
 		assert(count == 1); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 		return blas::dot_n(first.ctxt_               , first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic pop
+#endif
 	}
 
 	template<class ItOut, class Size2>

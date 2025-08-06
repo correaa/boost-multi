@@ -27,7 +27,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_n) {
 	BOOST_TEST( (arr[0][2] == 3.0) && (arr[2][2] == 11.0) );
 
 	blas::scal_n(2.0, arr[2].begin(), arr[2].size());
-	BOOST_TEST( arr[0][2] == 3. && arr[2][2] == 11.0*2.0 );
+	BOOST_TEST( std::abs( arr[0][2] - 3.0      ) < 1e-10 );
+	BOOST_TEST( std::abs( arr[2][2] - 11.0*2.0 ) < 1e-10 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it) {
