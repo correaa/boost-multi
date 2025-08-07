@@ -322,7 +322,7 @@ template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::d
 struct extension_t : public range<IndexType, IndexTypeLast> {
 	using range<IndexType, IndexTypeLast>::range;
 
-	constexpr extension_t(IndexType first, IndexTypeLast last) noexcept
+	BOOST_MULTI_HD constexpr extension_t(IndexType first, IndexTypeLast last) noexcept
 	: range<IndexType, IndexTypeLast>{first, last} {}
 
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
