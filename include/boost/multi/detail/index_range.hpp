@@ -207,8 +207,8 @@ class range {
 
 	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
 
-	[[nodiscard]] constexpr auto front() const -> const_reference { return first(); }
-	[[nodiscard]] constexpr auto back() const -> const_reference { return last() - 1; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> const_reference { return first(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> const_reference { return last() - 1; }
 
 	[[nodiscard]] constexpr auto cbegin() const { return const_iterator{first_}; }
 	[[nodiscard]] constexpr auto cend() const { return const_iterator{last_}; }
