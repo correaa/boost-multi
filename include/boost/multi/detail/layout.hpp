@@ -214,7 +214,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr explicit operator bool() const { return !layout_t<D>{*this}.empty(); }
 
 	template<class... Indices>
-	constexpr auto to_linear(index const& idx, Indices const&... rest) const {
+	BOOST_MULTI_HD constexpr auto to_linear(index const& idx, Indices const&... rest) const {
 		auto const sub_extensions = extensions_t<D - 1>{this->base().tail()};
 		return (idx * sub_extensions.num_elements()) + sub_extensions.to_linear(rest...);
 	}
@@ -350,7 +350,7 @@ template<> struct extensions_t<0> : tuple<> {
 	}
 	friend constexpr auto operator%(nelems_type const& n, extensions_t const& /*s*/) -> tuple<> { return /*s.*/ from_linear(n); }
 
-	static constexpr auto to_linear() /*const*/ -> difference_type { return 0; }
+	static BOOST_MULTI_HD constexpr auto to_linear() /*const*/ -> difference_type { return 0; }
 	BOOST_MULTI_HD constexpr auto        operator()() const { return to_linear(); }
 
 	constexpr void operator[](index) const = delete;
@@ -490,7 +490,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return extensions.from_linear(idx);
 	}
 
-	static constexpr auto to_linear(index const& idx) -> difference_type { return idx; }
+	static BOOST_MULTI_HD constexpr auto to_linear(index const& idx) -> difference_type { return idx; }
 
 	constexpr auto operator[](index idx) const {
 		using std::get;
@@ -662,10 +662,10 @@ class contiguous_stride_t {
  public:
 	// using difference_type = SSize;
 
-	constexpr auto operator()() const -> SSize { return 1; }
+	BOOST_MULTI_HD constexpr auto operator()() const -> SSize { return 1; }
 
 	template<class Ptr>
-	constexpr auto operator()(Ptr const& ptr) const -> Ptr { return ptr + 1; }
+	BOOST_MULTI_HD constexpr auto operator()(Ptr const& ptr) const -> Ptr { return ptr + 1; }
 
 #if (__cplusplus >= 202002L)
 	using category = std::random_access_iterator_tag;  // std::contiguous_iterator_tag;
@@ -740,20 +740,20 @@ class contiguous_layout {
 	constexpr auto operator[](index idx) const { return at_aux_(idx); }
 
 	template<typename... Indices>
-	constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
-	constexpr auto operator()(index idx) const { return at_aux_(idx); }
-	constexpr auto operator()() const { return *this; }
+	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
+	BOOST_MULTI_HD constexpr auto operator()(index idx) const { return at_aux_(idx); }
+	BOOST_MULTI_HD constexpr auto operator()() const { return *this; }
 
-	constexpr auto stride() const { return std::integral_constant<int, 1>{}; }
-	constexpr auto offset() const { return std::integral_constant<int, 0>{}; }
-	constexpr auto extension() const { return extension_type{0, nelems_}; }
+	BOOST_MULTI_HD constexpr auto stride() const { return std::integral_constant<int, 1>{}; }
+	BOOST_MULTI_HD constexpr auto offset() const { return std::integral_constant<int, 0>{}; }
+	BOOST_MULTI_HD constexpr auto extension() const { return extension_type{0, nelems_}; }
 
 	BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 
 	BOOST_MULTI_HD constexpr auto size() const { return nelems_; }
 	BOOST_MULTI_HD constexpr auto sizes() const { return sizes_type{size()}; }
 
-	constexpr auto nelems() const { return nelems_; }
+	BOOST_MULTI_HD constexpr auto nelems() const { return nelems_; }
 
 	constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
 
@@ -967,7 +967,7 @@ struct layout_t
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"
 #endif
 
-	constexpr auto at_aux_(index idx) const {
+	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
 		return sub_type{sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx * stride_), sub_.nelems_}();
 	}
 
