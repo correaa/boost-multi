@@ -329,15 +329,9 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	constexpr extension_t(IndexType last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) allow terse syntax
 	: range<IndexType, IndexTypeLast>(0, last) {}
 
-	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
+	BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
 	friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
-
-	// constexpr auto operator==(extension_t const& other) const {return static_cast<range<IndexType> const&>(*this) == static_cast<range<IndexType> const&>(other);}
-	// constexpr auto operator!=(extension_t const& other) const {return static_cast<range<IndexType> const&>(*this) != static_cast<range<IndexType> const&>(other);}
-
-	// constexpr friend auto operator==(extension_t const& self, extension_t const& other) { return static_cast<range<IndexType> const&>(self) == static_cast<range<IndexType> const&>(other); }
-	// constexpr friend auto operator!=(extension_t const& self, extension_t const& other) { return static_cast<range<IndexType> const&>(self) != static_cast<range<IndexType> const&>(other); }
 
 	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
 		using std::max;

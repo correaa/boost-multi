@@ -755,7 +755,7 @@ class contiguous_layout {
 
 	BOOST_MULTI_HD constexpr auto nelems() const { return nelems_; }
 
-	constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
+	BOOST_MULTI_HD constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
 
 	BOOST_MULTI_HD constexpr auto is_empty() const -> bool { return nelems_ == 0; }
 
@@ -1079,8 +1079,8 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
-	friend constexpr auto        extension(layout_t const& self) { return self.extension(); }
-	[[nodiscard]] constexpr auto extension() const -> extension_type {
+	friend BOOST_MULTI_HD constexpr auto        extension(layout_t const& self) { return self.extension(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extension() const -> extension_type {
 		if(nelems_ == 0) {
 			return index_extension{};
 		}
@@ -1090,8 +1090,8 @@ struct layout_t
 		return index_extension{offset_ / stride_, (offset_ + nelems_) / stride_};
 	}
 
-	constexpr auto        extensions() const { return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())}; }  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
-	friend constexpr auto extensions(layout_t const& self) -> extensions_type { return self.extensions(); }
+	BOOST_MULTI_HD constexpr auto        extensions() const { return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())}; }  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
+	friend BOOST_MULTI_HD constexpr auto extensions(layout_t const& self) -> extensions_type { return self.extensions(); }
 
 	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto
@@ -1306,8 +1306,8 @@ struct layout_t<0, SSize>
 	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
-	[[nodiscard]] constexpr auto extensions() const { return extensions_type{}; }
-	friend constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const { return extensions_type{}; }
+	friend BOOST_MULTI_HD constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 	friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
