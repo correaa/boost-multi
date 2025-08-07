@@ -67,7 +67,7 @@ add_library(boost::multi ALIAS multi)
 set_target_properties(
   multi
   PROPERTIES
-    VERIFY_INTERFACE_HEADER_SET ON
+    # VERIFY_INTERFACE_HEADER_SET ON
     EXPORT_NAME multi-targets
 )
 

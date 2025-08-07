@@ -250,8 +250,8 @@ class range {
 		}
 		return begin() + (value - front());
 	}
-	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const -> bool { return (first_ <= value) && (value < last_); }
-	template<class Value> [[nodiscard]] constexpr auto count(Value const& value) const -> size_type { return contains(value); }
+	template<class Value> [[nodiscard]] BOOST_MULTI_HD constexpr auto contains(Value const& value) const -> bool { return (first_ <= value) && (value < last_); }
+	template<class Value> [[nodiscard]] BOOST_MULTI_HD constexpr auto count(Value const& value) const -> size_type { return contains(value); }
 
 	friend constexpr auto intersection(range const& self, range const& other) {
 		using std::max;
