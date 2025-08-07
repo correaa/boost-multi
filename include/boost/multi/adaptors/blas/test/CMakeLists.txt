@@ -189,7 +189,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 						--display_error_number --diag_error=incompatible_assignment_operands,returning_ptr_to_local_variable,subscript_out_of_range,used_before_set,undefined_preproc_id,implicit_func_decl,implicit_return_from_non_void_function,missing_type_specifier
 					>
 					$<$<CXX_COMPILER_ID:MSVC>:
-					/W4>
+					#/W4
+					>
 		)
 		endif()
 	endif()
