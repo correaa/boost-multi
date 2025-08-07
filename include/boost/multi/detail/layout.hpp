@@ -759,10 +759,10 @@ class contiguous_layout {
 
 	constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
 
-	constexpr auto is_empty() const -> bool { return nelems_ == 0; }
+	BOOST_MULTI_HD constexpr auto is_empty() const -> bool { return nelems_ == 0; }
 
 	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
-	constexpr auto empty() const { return is_empty(); }
+	BOOST_MULTI_HD constexpr auto empty() const { return is_empty(); }
 
 	constexpr auto sub() const { return layout_t<0, SSize>{}; }
 
@@ -1040,10 +1040,10 @@ struct layout_t
 	BOOST_MULTI_HD constexpr auto        num_elements() const noexcept -> size_type { return size() * sub_.num_elements(); }  // TODO(correaa) investigate mutation * -> /
 	friend BOOST_MULTI_HD constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
 
-	constexpr auto        is_empty() const noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
-	friend constexpr auto is_empty(layout_t const& self) noexcept { return self.is_empty(); }
+	BOOST_MULTI_HD constexpr auto        is_empty() const noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
+	friend BOOST_MULTI_HD constexpr auto is_empty(layout_t const& self) noexcept { return self.is_empty(); }
 
-	constexpr auto empty() const noexcept { return is_empty(); }
+	BOOST_MULTI_HD constexpr auto empty() const noexcept { return is_empty(); }
 
 	friend BOOST_MULTI_HD constexpr auto         size(layout_t const& self) noexcept -> size_type { return self.size(); }
 	BOOST_MULTI_HD constexpr  auto size() const noexcept -> size_type {
@@ -1145,7 +1145,7 @@ struct layout_t
 		t2     = tmp;
 	}
 
-	constexpr auto transpose() const {
+	BOOST_MULTI_HD constexpr auto transpose() const {
 		return layout_t(
 			sub_type(
 				sub().sub(),
@@ -1351,7 +1351,7 @@ struct layout_t<0, SSize>
 	constexpr auto size() const -> size_type           = delete;
 	constexpr auto extension() const -> extension_type = delete;
 
-	constexpr auto is_empty() const noexcept { return nelems_ == 0; }
+	BOOST_MULTI_HD constexpr auto is_empty() const noexcept { return nelems_ == 0; }
 
 	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
 	constexpr auto empty() const noexcept { return nelems_ == 0; }
