@@ -69,12 +69,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 			$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
 				/W4    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline
 			>
-			$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--diag-suppress=1394>  # field of class type without a DLL interface used in a class with a DLL interface
+			$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+				--diag-suppress=1394  # field of class type without a DLL interface used in a class with a DLL interface
 				-Xcompiler=/W4
 				-Xcompiler=/wd4061  # enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label
 				-Xcompiler=/wd4464 -Xcompiler=/wd4664 -Xcompiler=/wd4668
 			>
 		>
+	>
 	)
 endforeach()
 
