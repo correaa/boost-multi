@@ -106,7 +106,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-diag-error:3846
 					>
 					$<$<CXX_COMPILER_ID:MSVC>:
-					/W4>
+					#/W4
+					>
 		)
 	endif()
 	add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
