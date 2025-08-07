@@ -61,9 +61,11 @@ foreach(TEST_FILE ${TEST_SRCS})
     endif()
 
 	target_compile_options(${TEST_EXE} PRIVATE
-		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--diag-suppress=1394>  # field of class type without a DLL interface used in a class with a DLL interface
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+			--diag-suppress=1394  # field of class type without a DLL interface used in a class with a DLL interface
 			--extended-lambda
 		>
+		#>
 		$<$<CXX_COMPILER_ID:MSVC>:
 		#	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
 			$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
