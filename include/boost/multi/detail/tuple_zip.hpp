@@ -152,15 +152,15 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
  public:
 	template<class F>
-	constexpr auto apply(F&& fn) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply(F&& fn) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
 	}
 	template<class F>
-	constexpr auto apply(F&& fn) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply(F&& fn) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
 	}
 	template<class F>
-	constexpr auto apply(F&& fn) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply(F&& fn) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::move(*this).apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
 	}
 
