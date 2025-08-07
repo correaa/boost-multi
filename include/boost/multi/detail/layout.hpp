@@ -200,7 +200,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	using index        = multi::index;
 	using indices_type = multi::detail::tuple_prepend_t<index, typename extensions_t<D - 1>::indices_type>;
 
-	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {
+	[[nodiscard]]
+	BOOST_MULTI_HD constexpr auto from_linear(nelems_type const& n) const -> indices_type {
 		auto const sub_num_elements = extensions_t<D - 1>{static_cast<base_ const&>(*this).tail()}.num_elements();
 #if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
 		assert(sub_num_elements != 0);  // clang hip doesn't allow assert in host device functions
@@ -272,10 +273,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr extensions_t(Array const& tup, std::index_sequence<I...> /*unused012*/)
 	: base_{boost::multi::detail::get<I>(tup)...} {}
 
-	static constexpr auto multiply_fold_() -> size_type { return static_cast<size_type>(1U); }
-	static constexpr auto multiply_fold_(size_type const& size) -> size_type { return size; }
+	static BOOST_MULTI_HD constexpr auto multiply_fold_() -> size_type { return static_cast<size_type>(1U); }
+	static BOOST_MULTI_HD constexpr auto multiply_fold_(size_type const& size) -> size_type { return size; }
 	template<class... As>
-	static constexpr auto multiply_fold_(size_type const& size, As const&... rest) -> size_type { return size * static_cast<size_type>(multiply_fold_(rest...)); }
+	static BOOST_MULTI_HD constexpr auto multiply_fold_(size_type const& size, As const&... rest) -> size_type { return size * static_cast<size_type>(multiply_fold_(rest...)); }
 
 	template<std::size_t... I>
 	BOOST_MULTI_HD constexpr auto num_elements_impl_(std::index_sequence<I...> /*unused012*/) const -> size_type {
