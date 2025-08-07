@@ -481,7 +481,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	using indices_type = multi::detail::tuple<multi::index>;
 
-	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {  // NOLINT(readability-convert-member-functions-to-static) TODO(correaa)
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto from_linear(nelems_type const& n) const -> indices_type {  // NOLINT(readability-convert-member-functions-to-static) TODO(correaa)
 		return indices_type{n};
 	}
 
@@ -1008,11 +1008,13 @@ struct layout_t
 	constexpr BOOST_MULTI_HD auto nelems(dimensionality_type dim) const { return (dim != 0) ? sub_.nelems(dim - 1) : nelems_; }
 
 	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) -> bool {
-		return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) == std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
+		return self.sub_ == other.sub_ && self.stride_ == other.stride_ && self.offset_ == other.offset_ && self.nelems_ == other.nelems_;
+		// return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) == std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
 	}
 
 	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) -> bool {
-		return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) != std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
+		return !(self == other);
+		// return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) != std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
 	}
 
 	constexpr BOOST_MULTI_HD auto operator<(layout_t const& other) const -> bool {
@@ -1381,11 +1383,17 @@ struct layout_t<0, SSize>
 
 	//  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
 	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
-		return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) == std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
+		return 
+			self.sub_ == other.sub_ &&
+			self.stride_ == other.stride_ &&
+			self.nelems_ == other.nelems_
+		;
+		// return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) == std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
 	}
 
 	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) {
-		return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) != std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
+		return !(self==other);
+		// return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) != std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
 	}
 
 	constexpr auto operator<(layout_t const& other) const -> bool {
