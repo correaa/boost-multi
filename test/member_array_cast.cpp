@@ -18,7 +18,9 @@
 #include <tuple>       // for tie, operator==, tuple
 
 #if defined(_MSC_VER)
-#pragma warning(disable : 4371)  // 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
+#pragma warning(disable : 4371)
+// 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed
+// from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
 #endif
 
 namespace multi = boost::multi;
@@ -45,8 +47,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 #if defined(_MSC_VER)
 #pragma warning(push)
-#pragma warning(disable : 4324)  // 'main::particle': structure was padded due to alignment specifier [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\member_array_cast.cpp.x.vcxproj]
-#pragma warning(disable : 4371)  // 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
+#pragma warning(disable : 4324)  // 'main::particle': structure was padded due to alignment specifier
+#pragma warning(disable : 4371)
+// ^^^ 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed
+// from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm	'
 #endif
 			v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
 #if defined(_MSC_VER)
