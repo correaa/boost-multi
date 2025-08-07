@@ -1091,13 +1091,14 @@ struct layout_t
 	}
 
 	BOOST_MULTI_HD constexpr auto        extensions() const {
-		auto fa = extension();
-		auto sa = sub_.extensions().base();
-		auto ht_tuple = multi::detail::ht_tuple(fa, sa);
-		auto ret = extensions_type{ht_tuple};
-		return ret;
-		// return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())};
-	}  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
+		// auto fa = extension();
+		// auto sa = sub_.extensions().base();
+		// auto ht_tuple = multi::detail::ht_tuple(fa, sa);
+		// auto ret = extensions_type{ht_tuple};
+		// return ret;
+		return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())};
+	}
+
 	friend BOOST_MULTI_HD constexpr auto extensions(layout_t const& self) -> extensions_type { return self.extensions(); }
 
 	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output

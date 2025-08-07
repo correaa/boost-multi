@@ -1268,7 +1268,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrp2.size() == 2 );
 	}
 	{
-		multi::layout_t<2> lyt(multi::extensions_t<2>{
+		multi::layout_t<2> const lyt(multi::extensions_t<2>{
 			{3,  9},
 			{0, 15}
 		});

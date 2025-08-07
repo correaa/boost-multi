@@ -149,15 +149,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( AA[0] != static_cast<int>(BB[0]) );
 
-		BOOST_TEST(   AA   != BB.element_transformed([](auto e) noexcept { return static_cast<int>(e); }) );
+		auto const to_int = [](auto elem) noexcept {
+			return static_cast<int>(elem);
+		};
 
-	#if !defined(_MSC_VER)  // MSVC would warn deeply in the standard library here
+		BOOST_TEST(   AA   != BB.element_transformed(to_int) );
+
+#if !defined(_MSC_VER)  // MSVC would warn deeply in the standard library here
 		BOOST_TEST(   AA   != BB    );
 		BOOST_TEST( !(AA   == BB  ) );
 
 		BOOST_TEST(   AA() != BB()  );
 		BOOST_TEST( !(AA() == BB()) );
-	#endif
+#endif
 	}
 
 	// equality 2D
