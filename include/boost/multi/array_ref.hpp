@@ -879,20 +879,22 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 	constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
+
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference /*decltype(base_[0])*/ {
-#if defined(__NVCC__)
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = 20014  // TODO(correa) use multi::apply
-#endif
-		return base_[std::apply(l_, ns_)];
-#if defined(__NVCC__)
-#pragma nv_diagnostic pop
-#endif
+		// #if defined(__NVCC__)
+		// #pragma nv_diagnostic push
+		// #pragma nv_diag_suppress = 20014  // TODO(correa) use multi::apply
+		// #endif
+		return base_[apply(l_, ns_)];
+		// #if defined(__NVCC__)
+		// #pragma nv_diagnostic pop
+		// #endif
 	}
+
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
-		auto const nn = std::apply(xs_, ns_);
-		return base_[std::apply(l_, xs_.from_linear(nn + n))];
+		auto const nn = apply(xs_, ns_);
+		return base_[apply(l_, xs_.from_linear(nn + n))];
 	}  // explicit here is necessary for nvcc/thrust
 
 #if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
@@ -2559,11 +2561,11 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		return *this;
 	}
 
-	constexpr auto operator+=(difference_type n) -> array_iterator& {
+	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> array_iterator& {
 		ptr_ += stride_ * n;
 		return *this;
 	}
-	constexpr auto operator-=(difference_type n) -> array_iterator& {
+	BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> array_iterator& {
 		ptr_ -= stride_ * n;
 		return *this;
 	}

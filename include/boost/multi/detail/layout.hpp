@@ -228,7 +228,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	}
 
 	template<class... Indices>
-	constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
+	BOOST_MULTI_HD constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		if(extensions_t<D - 1>{this->base().tail()}.next_canonical(rest...)) {
 			++idx;
 		}
@@ -500,7 +500,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	// constexpr auto operator()(index const& /*idx*/) const -> difference_type { return to_linear(42); }
 
 	template<class... Indices>
-	constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
+	BOOST_MULTI_HD constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		// using boost::multi::detail::get;
 		if(idx == ::boost::multi::detail::get<0>(this->base()).back()) {
 			idx = ::boost::multi::detail::get<0>(this->base()).first();

@@ -149,16 +149,21 @@ write_basic_package_version_file("${PROJECT_BINARY_DIR}/multi-config-version.cma
 message("current install prefix directory: ${CMAKE_INSTALL_PREFIX}")
 
 install(
-  TARGETS multi
-  EXPORT multi-targets
-  INCLUDES
-  DESTINATION "${CMAKE_INSTALL_DATADIR}")
+  TARGETS multi COMPONENT multi
+  EXPORT multi
+  # EXPORT multi-targets
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}$<$<CONFIG:Debug>:/debug>
+  # "${CMAKE_INSTALL_DATADIR}"
+  # RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}$<$<CONFIG:Debug>:/debug>
+  # INCLUDES
+  FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
-install(
-  EXPORT ${PROJECT_NAME}-targets
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
-  NAMESPACE multi::
-  FILE "${PROJECT_NAME}-targets.cmake")
+#install(
+#  EXPORT ${PROJECT_NAME}-targets
+#  DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
+#  NAMESPACE multi::
+#  FILE "${PROJECT_NAME}-targets.cmake")
 
 install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake" DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}")
 
