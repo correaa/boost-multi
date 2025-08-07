@@ -352,8 +352,9 @@ class adl_uninitialized_copy_n_t {
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return ::thrust::copy_n(first, count, d_first);
+		} else {
+			return ::thrust::uninitialized_copy_n(first, count, d_first);
 		}
-		return ::thrust::uninitialized_copy_n(first, count, d_first);
 	}
 #endif
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::decay_t<T>::    uninitialized_copy_n(std::forward<T>(arg), std::forward<As>(args)...))
