@@ -151,7 +151,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	template<class T1, class T2, class T3, class T = void, class = decltype(base_{tuple<T1, T2, T3>{}}), std::enable_if_t<sizeof(T*) && D == 3, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1, T2, T3> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
+	BOOST_MULTI_HD constexpr extensions_t(tuple<T1, T2, T3> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
 	: base_{std::move(extensions)} {}
 
 	template<class T1, class T2, class T3, class T = void, class = decltype(base_{::std::tuple<T1, T2, T3>{}}), std::enable_if_t<sizeof(T*) && D == 3, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
@@ -180,7 +180,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	: base_{std::move(extensions)} {}
 
 	template<class... Ts>
-	constexpr explicit extensions_t(tuple<Ts...> const& tup)
+	BOOST_MULTI_HD constexpr explicit extensions_t(tuple<Ts...> const& tup)
 	: extensions_t(tup, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
 
 	constexpr extensions_t(index_extension const& extension, typename layout_t<D - 1>::extensions_type const& other)
@@ -451,7 +451,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	template<class T1>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int>  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD constexpr extensions_t(tuple<T1> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: base_{static_cast<multi::index_extension>(extensions.head())} {}
 
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -1090,7 +1090,12 @@ struct layout_t
 		return index_extension{offset_ / stride_, (offset_ + nelems_) / stride_};
 	}
 
-	BOOST_MULTI_HD constexpr auto        extensions() const { return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())}; }  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
+	BOOST_MULTI_HD constexpr auto        extensions() const {
+		auto fa = extension();
+		auto sa = sub_.extensions().base();
+		auto ht_tuple = multi::detail::ht_tuple(fa, sa);
+		return extensions_type{ht_tuple};
+	}  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
 	friend BOOST_MULTI_HD constexpr auto extensions(layout_t const& self) -> extensions_type { return self.extensions(); }
 
 	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
