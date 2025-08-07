@@ -972,7 +972,7 @@ struct layout_t
 	}
 
  public:
-	constexpr auto operator[](index idx) const { return at_aux_(idx); }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const { return at_aux_(idx); }
 
 	template<typename... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
