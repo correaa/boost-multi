@@ -220,7 +220,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	}
 
 	template<class... Indices>
-	constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
+	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
 	constexpr auto operator[](index idx) const
 		-> decltype(std::declval<base_ const&>()[idx]) {
@@ -351,7 +351,7 @@ template<> struct extensions_t<0> : tuple<> {
 	friend constexpr auto operator%(nelems_type const& n, extensions_t const& /*s*/) -> tuple<> { return /*s.*/ from_linear(n); }
 
 	static constexpr auto to_linear() /*const*/ -> difference_type { return 0; }
-	constexpr auto        operator()() const { return to_linear(); }
+	BOOST_MULTI_HD constexpr auto        operator()() const { return to_linear(); }
 
 	constexpr void operator[](index) const = delete;
 
@@ -496,8 +496,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		using std::get;
 		return multi::detail::tuple<multi::index>{get<0>(this->base())[idx]};
 	}
-	constexpr auto operator()(index idx) const { return idx; }
-	// constexpr auto operator()(index const& /*idx*/) const -> difference_type { return to_linear(42); }
+	BOOST_MULTI_HD constexpr auto operator()(index idx) const { return idx; }
 
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
@@ -650,12 +649,10 @@ class stride_t {
 	difference_type stride_;
 
  public:
-	// using difference_type = SSize;
-
-	constexpr auto operator()() const -> difference_type { return stride_; }
+	BOOST_MULTI_HD constexpr auto operator()() const -> difference_type { return stride_; }
 
 	template<class Ptr>
-	constexpr auto operator()(Ptr ptr) const -> Ptr { return ptr + stride_; }
+	BOOST_MULTI_HD constexpr auto operator()(Ptr ptr) const -> Ptr { return ptr + stride_; }
 
 	using category = std::random_access_iterator_tag;
 };
@@ -978,8 +975,8 @@ struct layout_t
 	constexpr auto operator[](index idx) const { return at_aux_(idx); }
 
 	template<typename... Indices>
-	constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
-	constexpr auto operator()(index idx) const { return at_aux_(idx); }
+	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
+	BOOST_MULTI_HD constexpr auto operator()(index idx) const { return at_aux_(idx); }
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
@@ -991,7 +988,7 @@ struct layout_t
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
 #endif
 
-	constexpr auto operator()() const { return *this; }
+	BOOST_MULTI_HD constexpr auto operator()() const { return *this; }
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
@@ -1055,8 +1052,8 @@ struct layout_t
 		return nelems_ / stride_;
 	}
 
-	constexpr BOOST_MULTI_HD auto stride() -> stride_type& { return stride_; }
-	constexpr BOOST_MULTI_HD auto stride() const -> stride_type const& { return stride_; }
+	BOOST_MULTI_HD constexpr auto stride() -> stride_type& { return stride_; }
+	BOOST_MULTI_HD constexpr auto stride() const -> stride_type const& { return stride_; }
 
 	friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index { return self.stride(); }
 
@@ -1318,11 +1315,11 @@ struct layout_t<0, SSize>
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto sizes() const { return tuple<>{}; }
 	friend BOOST_MULTI_HD constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
 
-	[[nodiscard]] constexpr auto strides() const { return strides_type{}; }
-	[[nodiscard]] constexpr auto offsets() const { return offsets_type{}; }
-	[[nodiscard]] constexpr auto nelemss() const { return nelemss_type{}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto strides() const { return strides_type{}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto offsets() const { return offsets_type{}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto nelemss() const { return nelemss_type{}; }
 
-	constexpr auto operator()() const { return offset_; }
+	BOOST_MULTI_HD constexpr auto operator()() const { return offset_; }
 	// constexpr explicit operator offset_type() const {return offset_;}
 
 	constexpr auto stride() const -> stride_type = delete;

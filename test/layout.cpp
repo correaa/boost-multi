@@ -1268,7 +1268,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrp2.size() == 2 );
 	}
 	{
-		multi::layout_t<2> lyt(multi::extensions_t<2>{ {3, 9}, {0, 15}});
+		multi::layout_t<2> lyt(multi::extensions_t<2>{
+			{3,  9},
+			{0, 15}
+		});
 		BOOST_TEST( lyt.size() == 6 );
 		BOOST_TEST( lyt.extension().front() == 3 );
 		BOOST_TEST( lyt.extension().back() == 8 );
