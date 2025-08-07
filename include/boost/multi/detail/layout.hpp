@@ -355,8 +355,8 @@ template<> struct extensions_t<0> : tuple<> {
 
 	constexpr void operator[](index) const = delete;
 
-	static constexpr auto next_canonical() /*const*/ -> bool { return true; }
-	static constexpr auto prev_canonical() /*const*/ -> bool { return true; }
+	static BOOST_MULTI_HD constexpr auto next_canonical() /*const*/ -> bool { return true; }
+	static BOOST_MULTI_HD constexpr auto prev_canonical() /*const*/ -> bool { return true; }
 
 	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t { return {}; }
 
