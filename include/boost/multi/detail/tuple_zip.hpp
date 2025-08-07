@@ -37,7 +37,7 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 	BOOST_MULTI_HD constexpr auto operator>(tuple const& /*other*/) const { return false; }
 
 	template<class F>
-	constexpr friend auto apply(F&& fn, tuple<> const& /*self*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr friend auto apply(F&& fn, tuple<> const& /*self*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)();
 	}
 };
@@ -165,17 +165,17 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<class F>
-	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> const& self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	friend BOOST_MULTI_HD constexpr auto apply(F&& fn, tuple<T0, Ts...> const& self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return self.apply(std::forward<F>(fn));
 	}
 
 	template<class F>
-	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> & self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	friend BOOST_MULTI_HD constexpr auto apply(F&& fn, tuple<T0, Ts...> & self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return self.apply(std::forward<F>(fn));
 	}
 
 	template<class F>
-	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> && self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	friend BOOST_MULTI_HD constexpr auto apply(F&& fn, tuple<T0, Ts...> && self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::move(self).apply(std::forward<F>(fn));
 	}
 
@@ -411,7 +411,7 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 };
 
 template<class F, class Tuple, std::size_t... I>
-constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	(void)tp;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
 	return std::forward<F>(fn)(boost::multi::detail::get<I>(std::forward<Tuple>(tp))...);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as?
 }
@@ -419,7 +419,7 @@ constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*0
 namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
 
 template<class F, class... Ts>
-constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), tp,
 		std::make_index_sequence<sizeof...(Ts)>{}
@@ -427,7 +427,7 @@ constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> de
 }
 
 template<class F, class... Ts>
-constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), tp,
 		std::make_index_sequence<sizeof...(Ts)>{}
@@ -435,7 +435,7 @@ constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype
 }
 
 template<class F, class... Ts>
-constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>&& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>&& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), std::move(tp),
 		std::make_index_sequence<sizeof...(Ts)>{}
