@@ -1029,7 +1029,7 @@ inq cuda:
     - ctest -j 2 --output-on-failure --timeout 2400
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
   timeout: 2 hours 30 minutes
-  needs: ["cuda", "inq"]
+  needs: ["inq", "g++"]  # "cuda", "inq"]
 
 inq rocm:
   stage: test
