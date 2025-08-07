@@ -171,13 +171,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic pop
 #endif
 
-		// clang-format off
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	char padding_[
-		(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string))
-		- (offsetof(employee_dummy, age) + sizeof(age))
-	] = {};
-		// clang-format on
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 1427)  // offsetof applied to a type other than a standard-layout class
+#endif
+		// ssclang-format off
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		char padding_[(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string)) - (offsetof(employee_dummy, age) + sizeof(age))] = {};
+		// ssclang-format on
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 	};
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
