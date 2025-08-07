@@ -1,4 +1,4 @@
-# Copyright 2018-2024 Alfredo A. Correa
+# Copyright 2018-2025 Alfredo A. Correa
 # Copyright 2024 Matt Borland
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
@@ -46,7 +46,7 @@ project(
   multi
   HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi"
   DESCRIPTION "A header-only modern C++ library that provides access and manipulation of data in multidimensional arrays."
-  VERSION 0.80.1
+  VERSION 0.88.0
   LANGUAGES CXX)
 
 message(STATUS "Boost.Multi: standalone mode ON")
@@ -56,13 +56,20 @@ add_library(multi INTERFACE)
 add_library(boost.multi ALIAS multi)
 add_library(boost::multi ALIAS multi)
 
-# target_sources(
+#target_sources(
 #  multi
 #  PUBLIC
 #    FILE_SET HEADERS
 #    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
 #    FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/boost/multi/array.hpp
 #)
+
+set_target_properties(
+  multi
+  PROPERTIES
+    VERIFY_INTERFACE_HEADER_SET ON
+    EXPORT_NAME multi-targets
+)
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 

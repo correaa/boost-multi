@@ -847,7 +847,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 	}
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> elements_iterator_t& {
-		auto const nn = std::apply(xs_, ns_);
+		auto const nn = apply(xs_, ns_);
 		ns_           = xs_.from_linear(nn + n);
 		n_ += n;
 		return *this;
