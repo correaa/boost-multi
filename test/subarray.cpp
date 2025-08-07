@@ -147,11 +147,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> const      AA = {1, 2, 3};
 		multi::array<unsigned, 1> const BB = {2, 3, 4};
 
+		BOOST_TEST( AA[0] != static_cast<int>(BB[0]) );
+
+		BOOST_TEST(   AA   != BB.element_transformed([](auto e) noexcept { return static_cast<int>(e); }) );
+
+	#if !defined(_MSC_VER)  // MSVC would warn deeply in the standard library here
 		BOOST_TEST(   AA   != BB    );
 		BOOST_TEST( !(AA   == BB  ) );
 
 		BOOST_TEST(   AA() != BB()  );
 		BOOST_TEST( !(AA() == BB()) );
+	#endif
 	}
 
 	// equality 2D
