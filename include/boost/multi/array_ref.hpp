@@ -211,10 +211,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t::is_compact;
 
-	friend constexpr auto size(array_types const& self) noexcept -> size_type { return self.size(); }
-	friend constexpr auto extension(array_types const& self) noexcept -> extension_type { return self.extension(); }
-	friend constexpr auto is_empty(array_types const& self) noexcept -> bool { return self.is_empty(); }
-	friend constexpr auto num_elements(array_types const& self) noexcept -> size_type { return self.num_elements(); }
+	friend constexpr auto                size(array_types const& self) noexcept -> size_type { return self.size(); }
+	friend BOOST_MULTI_HD constexpr auto extension(array_types const& self) noexcept -> extension_type { return self.extension(); }
+	friend constexpr auto                is_empty(array_types const& self) noexcept -> bool { return self.is_empty(); }
+	friend constexpr auto                num_elements(array_types const& self) noexcept -> size_type { return self.num_elements(); }
 
 	friend constexpr auto extensions(array_types const& self) noexcept -> extensions_type { return self.extensions(); }
 	friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
