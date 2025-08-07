@@ -161,7 +161,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	template<class T1, class T2, class T3, class T4, class T = void, class = decltype(base_{tuple<T1, T2, T3, T4>{}}), std::enable_if_t<sizeof(T*) && D == 4, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1, T2, T3, T4> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
+	BOOST_MULTI_HD constexpr extensions_t(tuple<T1, T2, T3, T4> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
 	: base_{std::move(extensions)} {}
 
 	template<class T1, class T2, class T3, class T4, class T = void, class = decltype(base_{::std::tuple<T1, T2, T3, T4>{}}), std::enable_if_t<sizeof(T*) && D == 4, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
@@ -171,7 +171,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	template<class T1, class T2, class T3, class T4, class T5, class T = void, class = decltype(base_{tuple<T1, T2, T3, T4, T5>{}}), std::enable_if_t<sizeof(T*) && D == 5, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(tuple<T1, T2, T3, T4, T5> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
+	BOOST_MULTI_HD constexpr extensions_t(tuple<T1, T2, T3, T4, T5> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) allow terse syntax
 	: base_{std::move(extensions)} {}
 
 	template<class T1, class T2, class T3, class T4, class T5, class T = void, class = decltype(base_{::std::tuple<T1, T2, T3, T4, T5>{}}), std::enable_if_t<sizeof(T*) && D == 5, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
@@ -1094,7 +1094,8 @@ struct layout_t
 		auto fa = extension();
 		auto sa = sub_.extensions().base();
 		auto ht_tuple = multi::detail::ht_tuple(fa, sa);
-		return extensions_type{ht_tuple};
+		auto ret = extensions_type{ht_tuple};
+		return ret;
 	}  // tuple_cat(make_tuple(extension()), sub_.extensions().base())};}
 	friend BOOST_MULTI_HD constexpr auto extensions(layout_t const& self) -> extensions_type { return self.extensions(); }
 

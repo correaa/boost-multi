@@ -350,7 +350,7 @@ class adl_uninitialized_copy_n_t {
 		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >
 	>
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
-		if(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
+		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return ::thrust::copy_n(first, count, d_first);
 		}
 		return ::thrust::uninitialized_copy_n(first, count, d_first);
