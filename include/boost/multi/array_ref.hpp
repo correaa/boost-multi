@@ -835,7 +835,8 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 	}
 
 	BOOST_MULTI_HD constexpr auto operator++() -> elements_iterator_t& {
-		std::apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
+		apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
+		// std::apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
 		++n_;
 		return *this;
 	}
@@ -1032,14 +1033,14 @@ struct elements_range_t {
 	constexpr auto begin() & -> iterator { return begin_aux_(); }
 	constexpr auto end() & -> iterator { return end_aux_(); }
 
-	constexpr auto front() const& -> const_reference { return *begin(); }
-	constexpr auto back() const& -> const_reference { return *std::prev(end(), 1); }
+	BOOST_MULTI_HD constexpr auto front() const& -> const_reference { return *begin(); }
+	BOOST_MULTI_HD constexpr auto back() const& -> const_reference { return *std::prev(end(), 1); }
 
-	constexpr auto front() && -> reference { return *begin(); }
-	constexpr auto back() && -> reference { return *std::prev(end(), 1); }
+	BOOST_MULTI_HD constexpr auto front() && -> reference { return *begin(); }
+	BOOST_MULTI_HD constexpr auto back() && -> reference { return *std::prev(end(), 1); }
 
-	constexpr auto front() & -> reference { return *begin(); }
-	constexpr auto back() & -> reference { return *std::prev(end(), 1); }
+	BOOST_MULTI_HD constexpr auto front() & -> reference { return *begin(); }
+	BOOST_MULTI_HD constexpr auto back() & -> reference { return *std::prev(end(), 1); }
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
@@ -2931,15 +2932,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename const_subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
-	constexpr auto front() const& -> const_reference { return *begin(); }
-	constexpr auto back() const& -> const_reference { return *std::prev(end(), 1); }
-
-	// TODO(correaa) remove or move to subarray interface
-	// constexpr auto front()     && ->       reference {return *begin();}
-	// constexpr auto back()      && ->       reference {return *std::prev(end(), 1);}
-
-	// constexpr auto front()      & ->       reference {return *begin();}
-	// constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
+	BOOST_MULTI_HD constexpr auto front() const& -> const_reference { return *begin(); }
+	BOOST_MULTI_HD constexpr auto back() const& -> const_reference { return *std::prev(end(), 1); }
 
  private:
 	template<class Self, typename Tuple, std::size_t... I, const_subarray* = nullptr>
