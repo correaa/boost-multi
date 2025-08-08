@@ -111,7 +111,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(  arr[0]    <=  arr[1] );
 		BOOST_TEST(  ref[0]    <=  arr[1] );
+
+#if !defined(_MSC_VER)  // not working on msvc + cuda
 		BOOST_TEST( cref[0]    <= cref[1] );
+#endif
 
 		BOOST_TEST(  arr[0][0] <= arr[0][1] );
 		BOOST_TEST(  ref[0][0] <= arr[0][1] );

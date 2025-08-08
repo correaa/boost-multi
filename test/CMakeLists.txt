@@ -51,13 +51,28 @@ else()
 	enable_testing()
 	include(CTest)
 
+	if (CMAKE_CUDA_HOST_COMPILER_ID STREQUAL "MSVC")
+		message(STATUS "NVCC's host compiler is MSVC.")
+		# Add specific actions or configurations for MSVC host compiler
+	else()
+		message(STATUS "NVCC's host compiler is not MSVC (ID: ${CMAKE_CUDA_HOST_COMPILER_ID}).")
+		# Add specific actions or configurations for other host compilers
+	endif()
+
 	set(WARNS
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
-		-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
+		#remove Xcompile for Windows?
+		#-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
 		#--Werror=cross-execution-space-call
-		--Werror ext-lambda-captures-this
-		--use_fast_math --extra-device-vectorization --restrict
-		-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
+		#--Werror ext-lambda-captures-this
+		#--use_fast_math --extra-device-vectorization --restrict
+		-Xcudafe=--display_error_number
+		#-Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
+		$<$<VERSION_LESS:$<CUDA_COMPILER_VERSION>,12>:
+			-Xcudafe=--diag_suppress=20011 # for std::string in test/allocator.cpp, more?
+			-Xcudafe=--diag_suppress=20014
+		>
+		#-Xcudafe=--diag_suppress=1427  # for member_array_cast.cpp in msvc
 	>
 	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror
 		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
@@ -256,12 +271,13 @@ else()
 	>
 	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
-	-Werror -Wall -Wextra -Weverything
+	-Wall -Wextra
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 	-Wno-poison-system-directories
+	#$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
 	-Wno-large-by-value-copy  # subarray references can be large
-	-Wno-padded  # most classes, e.g. layouts, need padding
+	#-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
 	-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5
 	-Wno-undefined-reinterpret-cast  # needed to cast to c-array
@@ -332,22 +348,22 @@ else()
 	--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
-	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
-	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
-	/wd4514  # unreferenced inline function has been removed
-	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
-	/wd4625  # copy constructor was implicitly defined as deleted
-	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
-	/wd4710  # function not inlined
-	/wd4711  # function selected for automatic inline expansion
-	/wd4820  # bytes padding added after base class
-	/wd4866  # compiler may not enforce left-to-right evaluation order for call
-	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
-	/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
-	/wd5026  # move constructor was implicitly defined as deleted
-	/wd5027  # move assignment operator was implicitly defined as deleted
-	/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+		$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+			/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline
+			/wd4514  # unreferenced inline function has been removed
+			/wd4866  # compiler may not enforce left-to-right evaluation order for call to 'boost::multi::subarray<int,1,int *,boost::multi::layout_t<1,__int64> >::operator[]' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_ref.cpp.x.vcxproj]
+			/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+			/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
+			/wd5031  # likely mismatch, popping warning state pushed in different file
+		>
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+			-Xcompiler=/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+			-Xcompiler=/wd4464  # relative include path contains '..'
+			-Xcompiler=/wd4514  # unreferenced inline function has been removed
+			-Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
+			-Xcompiler=/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+			-Xcompiler=/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
+		>
 	>
 	)
 
@@ -365,8 +381,6 @@ else()
 		target_link_libraries(main PUBLIC multi)
 		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
-
-		# target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
 		if(NOT DEFINED ENABLE_CIRCLE)
 			target_compile_options(main PRIVATE ${WARNS})
@@ -393,6 +407,8 @@ else()
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
 			endif()
 
+			set_property(TARGET ${TEST_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
+
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
 			else()
@@ -403,5 +419,8 @@ else()
 
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
+
+		target_compile_options(minimalistic_ptr.cpp.x PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
+		target_compile_options(transform.cpp.x        PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
 	endif()
 endif()

@@ -14,10 +14,6 @@ endif()
 # set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Boost REQUIRED NO_MODULE)
-# add_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
-# include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-# link_libraries(${Boost_LIBRARIES})
-# link_directories(${Boost_LIBRARY_DIRS})
 
 #find_package(LAPACK REQUIRED)
 

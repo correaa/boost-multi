@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -18,21 +18,35 @@
 
 namespace multi = boost::multi;
 
+template<class Ref, class Involution>
+class involuted {
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // '3' bytes padding added after data member 'involuted<int,std::negate<void>>::f_'
+#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
-
-template<class Ref, class Involution>
-class involuted {
-	Ref                                      r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
+	Ref r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr involuted(Ref ref, Involution fun) : r_{ref}, f_{fun} {}
-	constexpr explicit involuted(Ref ref) : r_{ref}, f_{} {}
+	constexpr involuted(Ref ref, Involution fun)
+	// : r_{ref}, f_{fun} {}
+	: f_{fun}, r_{ref} {}
+
+	constexpr explicit involuted(Ref ref)
+	// : r_{ref}, f_{} {}
+	: f_{}, r_{ref} {}
 
 	involuted(involuted const&)     = default;
 	involuted(involuted&&) noexcept = default;
@@ -61,10 +75,15 @@ class involuted {
 	}
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 template<class It, class F>
 class involuter {
 	It                              it_;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
+
 	template<class, class> friend class involuter;
 
  public:
@@ -79,20 +98,20 @@ class involuter {
 	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{} {}  // NOLINT(readability-identifier-length) clang-tidy 14 bug
 	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
-	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
+	// vvv this is needed to make involuter<T> implicitly convertible to involuter<T const>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
 	template<class Other> constexpr involuter(involuter<Other, F> const& other)  // NOSONAR(cpp:S1709)
 	: it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
-	constexpr auto operator->() const { return pointer{&*it_, f_}; }
+	constexpr auto operator->() const { return pointer{&*it_, f_}; }  // cppcheck-suppress redundantPointerOp ; lib idiom
 
 	constexpr auto operator==(involuter const& other) const { return it_ == other.it_; }
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
 	constexpr auto operator<(involuter const& other) const { return it_ < other.it_; }
 
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
@@ -101,16 +120,6 @@ class involuter {
 		return *this;
 	}
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#endif
-
 	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }
 	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }
 
@@ -118,13 +127,12 @@ class involuter {
 
 	constexpr auto operator[](typename involuter::difference_type n) const { return reference{*(it_ + n), f_}; }
 
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
 	constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 };
-
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif

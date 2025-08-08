@@ -47,18 +47,18 @@ auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {  // N
 	return gemv_n(&ctxt, static_cast<typename MIt::element>(a), m_first, count, x_first, static_cast<typename MIt::element>(b), y_first);
 }
 
-template<class Ctxt, class A, class M, class V, class B, class W>
-auto gemv(Ctxt ctxt, A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
+template<class Ctxt, class M, class V, class W>
+auto gemv(Ctxt ctxt, typename M::element const& a, M const& m, V const& v, typename M::element const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
 	assert(size(~m) == size(v) );
 
-	gemv_n(ctxt, static_cast<typename M::element>(a), begin(m), size(m), begin(v), static_cast<typename M::element>(b), begin(w));  // NOLINT(fuchsia-default-arguments-calls)
+	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));  // NOLINT(fuchsia-default-arguments-calls)
 
 	return std::forward<W>(w);
 }
 
-template<class A, class M, class V, class B, class W>
-auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
+template<class M, class V, class W>
+auto gemv(typename M::element a, M const& m, V const& v, typename M::element b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
 
 	if constexpr(is_conjugated<M>{}) {
@@ -114,11 +114,14 @@ class gemv_iterator {
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>
 class gemv_range {
-	Scalar alpha_{1.0};
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Context ctxt_;
+
 	It2D m_begin_;
 	It2D m_end_;
+
 	It1D v_first_;
-	Context ctxt_;
+
+	Scalar alpha_{1.0};
 
  public:
 	gemv_range(gemv_range&&) noexcept = default;
@@ -132,10 +135,11 @@ class gemv_range {
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	gemv_range(Context ctxt, Scalar alpha, It2D m_first, It2D m_last, It1D v_first)  // NOLINT(bugprone-easily-swappable-parameters)
-	: alpha_{alpha}
+	: ctxt_{std::move(ctxt)}
 	, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}
 	, v_first_{std::move(v_first)}
-	, ctxt_{std::move(ctxt)} {
+	, alpha_{alpha}
+	{
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	using iterator = gemv_iterator<Scalar, It2D, It1D, Context>;

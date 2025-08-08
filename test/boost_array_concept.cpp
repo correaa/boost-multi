@@ -10,12 +10,13 @@
 // Test explicitly calls deprecated function
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)  // assignment operator was implicitly defined as deleted
 #endif
 
 #include <boost/multi/array.hpp>  // for operator!=, implicit...
@@ -23,14 +24,17 @@
 // IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
 // IWYU pragma: no_include <algorithm>                             // for fill_n
 
-#include <boost/multi_array.hpp>                 // for multi_array
+#include <boost/multi_array.hpp>  // for multi_array
 // #include <boost/multi_array/base.hpp>            // for multi_array
+
 #include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 
 #include <cstddef>  // for ptrdiff_t

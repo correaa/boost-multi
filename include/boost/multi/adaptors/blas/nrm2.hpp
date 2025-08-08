@@ -62,7 +62,15 @@ class nrm2_ptr {
 	friend constexpr auto copy_n(nrm2_ptr first, Size2 count, ItOut d_first) {
 //  ->decltype(blas::nrm2_n(std::declval<ItX>(), Size2{}     , d_first), d_first + count) {
 		assert(count == 1); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		return blas::nrm2_n(first.x_first_     , first.count_, d_first), d_first + count; }
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+		return blas::nrm2_n(first.x_first_     , first.count_, d_first), d_first + count;
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic pop
+#endif
+	}
 
 	template<class ItOut, class Size2>
 	friend constexpr auto uninitialized_copy_n(nrm2_ptr first, Size2 count, ItOut d_first)

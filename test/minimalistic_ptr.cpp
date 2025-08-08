@@ -23,11 +23,12 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	template<class> friend class ptr;
 
  public:
-	ptr() = default;
+	ptr() = default;  // cppcheck-suppress uninitMemberVar ;
+
 	constexpr explicit ptr(T* impl) : impl_{impl} {}
-	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-			 >
-	// cppcheck-suppress [noExplicitConstructor,unmatchedSuppression]
+
+	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// cppcheck-suppress noExplicitConstructor ;
 	ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
@@ -103,7 +104,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(test_minimalistic_ptr)
 	{
 		std::array<int, 400> buffer{};
-		BOOST_TEST( buffer.size() == 400 );
+		BOOST_TEST( buffer.size() == 400 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		using pointer_type = minimalistic::ptr<int>;
 		multi::array_ptr<int, 2, pointer_type> const CCP(pointer_type{buffer.data()}, {20, 20});
@@ -111,7 +112,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		(*CCP)[1][1];
 		(*CCP)[1][1] = 9;
 
-		BOOST_TEST(  (*CCP)[1][1] == 9 );
+		BOOST_TEST(  (*CCP)[1][1] == 9 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 		BOOST_TEST( &(*CCP)[1][1] == &buffer[21] );
 
 		// auto&& CC2 = (*CCP).static_array_cast<double, minimalistic::ptr2<double>>();

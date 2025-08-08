@@ -20,6 +20,11 @@
 #define BOOST_MULTI_HD
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4626)  // 'boost::multi::transform_ptr<main::complex,const main::<lambda_3>,main::complex *,std::complex<double>>': assignment operator was implicitly defined as deleted [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\element_transformed.cpp.x.vcxproj]
+#endif
+
 namespace boost::multi {
 
 template<class T, class Ptr = T*>
@@ -171,7 +176,16 @@ struct transform_ptr {
 
  private:
 	Ptr p_;
-	UF  f_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) technically this type can be const
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // '7' bytes padding added after data member 'boost::multi::transform_ptr<main::complex,const main::<lambda_3>,main::complex *,std::complex<double>>::f_'
+#pragma warning(disable : 4371)  // layout of class may have changed from a previous version of the compiler due to better packing of member 'boost::multi::transform_ptr<int,int main::S::* ,main::S *,int &>::f_'
+#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS
+	UF f_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) technically this type can be const
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 	template<class, class, class, class> friend struct transform_ptr;
 };
@@ -625,6 +639,10 @@ inline auto valid_mull(int age) -> bool {
 }  // end namespace detail
 
 }  // end namespace boost::multi
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #undef BOOST_MULTI_HD
 

@@ -19,6 +19,7 @@ auto syrk(filling c_side, typename A2D::element alpha, A2D const& a, typename A2
 	//->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
 	using std::get;
 	assert( cc.size() == get<1>(cc.sizes()) );
+	// cppcheck-suppress knownConditionTrueFalse ; bug in cppcheck 2.18?
 	if(stride(a) == 1) {
 		if(cc.stride() == 1) {
 			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'N', cc.size(), size(a), &alpha, a.base(), a.rotated().stride(), &beta, cc.base(), cc.rotated().size());

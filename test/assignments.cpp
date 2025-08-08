@@ -74,7 +74,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 2> arr({3, 3}, 0.0);
 		multi::array<double, 2> arr2 = arr;
-		BOOST_TEST( arr == arr2 );
+		BOOST_TEST( arr == arr2 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		auto* arr_data = arr.data_elements();
 
@@ -118,7 +118,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		src[0][1][2][3][1] = 99;
 
-		BOOST_TEST( src[0][1][2][3][1] == 99 );
+		BOOST_TEST( src[0][1][2][3][1] == 99 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		// BOOST_TEST( tmp.unrotated().partitioned(2).transposed().rotated().extensions() == src.extensions() );
 		// BOOST_TEST( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
@@ -133,12 +133,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrB.size() == 4 );
 	}
 
-#ifndef _MSVER  // TODO(correaa) fix
-				// seems to produce a deterministic divide by zero
-				// Assertion failed: stride_ != 0, file D:\a\boost-multi\boost-root\boost/multi/detail/layout.hpp, line 767
-				// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : error C2220: the following warning is treated as an error
-				// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
-				// D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
+#ifndef _MSC_VER  // TODO(correaa) fix
+				  // seems to produce a deterministic divide by zero
+				  // Assertion failed: stride_ != 0, file D:\a\boost-multi\boost-root\boost/multi/detail/layout.hpp, line 767
+				  // D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : error C2220: the following warning is treated as an error
+				  // D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
+				  // D:\a\boost-multi\boost-root\boost\multi\detail\layout.hpp(770) : warning C4723: potential divide by 0
 
 	// BOOST_AUTO_TEST_CASE(rvalue_assignments) {
 	//  using complex = std::complex<double>;
@@ -167,7 +167,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 2> const arr({5, 7}, val);
 			multi::array_ref<int, 2>(vec.data(), {5, 7}) = arr();  // arr() is a subarray
 
-			BOOST_TEST( vec[9] == val );
+			BOOST_TEST( vec[9] == val );  // cppcheck-suppress containerOutOfBounds ;
 			BOOST_TEST( !vec.empty() );
 			BOOST_TEST( !is_empty(arr) );
 		}
@@ -217,8 +217,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 		auto* loc = &arr[1][1][5];
 
-		auto* arr_ptr = std::addressof(arr);
-		arr           = *arr_ptr;
+		auto const* arr_ptr = std::addressof(arr);
+
+		arr = *arr_ptr;
+
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( &arr[1][1][5] == loc );
@@ -238,6 +240,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::static_array<std::vector<int>, 2> arr2(std::move(arr));
 		BOOST_TEST( arr2[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
+		// cppcheck-suppress accessMoved ;
 		BOOST_TEST( arr[0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 		BOOST_TEST( arr[1][1].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 	}

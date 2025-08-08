@@ -1,8 +1,6 @@
-// Copyright 2023-2024 Alfredo A. Correa
+// Copyright 2023-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust universal copy and assignment"
 
 #include <boost/multi/array.hpp>
 
@@ -11,6 +9,8 @@
 #include <thrust/complex.h>
 
 #include <boost/mpl/list.hpp>
+
+#include <chrono>
 
 namespace multi = boost::multi;
 
@@ -58,6 +58,7 @@ BOOST_AUTO_TEST_CASE(warmup) {
 		// std::cout<<"memcpy    rate = "<< rate <<" GB/s (ratio = 1)\n";
 		return rate;
 	});
+	(void)dummy;
 
 	auto const memcpy_rate = std::invoke([&] {
 		auto start_time = std::chrono::high_resolution_clock::now();
@@ -135,6 +136,7 @@ BOOST_AUTO_TEST_CASE(thrust_nonuniversal_speed) {
 		std::cout << "memcpy    rate = " << rate << " GB/s (warmup)\n";
 		return rate;
 	});
+	(void)dummy;
 
 	auto const memcpy_rate = std::invoke([&] __host__ {
 		auto start_time = std::chrono::high_resolution_clock::now();
@@ -207,6 +209,7 @@ BOOST_AUTO_TEST_CASE(thrust_universal_speed) {
 		std::cout << "memcpy    rate = " << rate << " GB/s (warmup)\n";
 		return rate;
 	});
+	(void)dummy;
 
 	auto const memcpy_rate = std::invoke([&] __host__ {
 		auto start_time = std::chrono::high_resolution_clock::now();

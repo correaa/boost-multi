@@ -18,6 +18,12 @@
 #include <utility>      // for move
 #include <vector>
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4625)  // copy constructor was implicitly defined as deleted
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#pragma warning(disable : 5026)  // move constructor was implicitly defined as deleted
+#endif
+
 namespace multi = boost::multi;
 
 template<class Ref> class propagate_const;
@@ -372,7 +378,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &A3_ref[1][1][0] == &A2[3][0] );
 
 		A3_ref[0][0][0] = 99;
-		BOOST_TEST( A3_ref[0][0][0] == 99 );
+		BOOST_TEST( A3_ref[0][0][0] == 99 );  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_partitioned)

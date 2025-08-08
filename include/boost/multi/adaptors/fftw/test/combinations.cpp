@@ -65,7 +65,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// marray<complex, 4> ret(exts);
 			multi::array<complex, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
 			std::generate(
-				ret.data_elements(), ret.data_elements() + ret.num_elements(),
+				ret.elements().begin(), ret.elements().end(),
 				[eng        = std::default_random_engine{std::random_device{}()},
 				 uniform_01 = std::uniform_real_distribution<>{}]() mutable {
 					return complex{uniform_01(eng), uniform_01(eng)};
@@ -129,7 +129,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		namespace fftw = multi::fftw;
 
 		marray<complex, 4> in(exts);
-		std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
+		std::iota(in.elements().begin(), in.elements().end(), 1.2);
 
 		BOOST_TEST(in[0][0][0][0] == 1.2);
 		std::array<bool, 4> which = {false, true, true, true};
@@ -160,25 +160,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			marray<complex, 4> out2(exts);
 			fftw::dft(which, in, out2, fftw::forward);
 		}();
-		BOOST_TEST(in0000 == in[0][0][0][0]);
+		BOOST_TEST(in0000 == in[0][0][0][0]);  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 		// NOLINTNEXTLINE(fuchsia-default-arguments-calls) use of std::vector
-		std::vector<std::array<bool, 4>> const which_cases = {
-			{{false,  true,  true,  true}},
-			{{false,  true,  true, false}},
-			{{ true, false, false, false}},
-			{{ true,  true, false, false}},
-			{{false, false,  true, false}},
-			{{false, false, false, false}},
-		};
+		// std::vector<std::array<bool, 4>> const which_cases = {
+		// 	{{false,  true,  true,  true}},
+		// 	{{false,  true,  true, false}},
+		// 	{{ true, false, false, false}},
+		// 	{{ true,  true, false, false}},
+		// 	{{false, false,  true, false}},
+		// 	{{false, false, false, false}},
+		// };
 		using complex = std::complex<double>;
 
 		auto const in = [&] {
 			marray<complex, 4> ret(exts);
 			std::generate(
-				ret.data_elements(), ret.data_elements() + ret.num_elements(),
+				ret.elements().begin(), ret.elements().end(),
 				[eng        = std::default_random_engine{std::random_device{}()},
 				 uniform_01 = std::uniform_real_distribution<>{}]() mutable {
 					return complex{uniform_01(eng), uniform_01(eng)};

@@ -496,7 +496,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size(B2) == 4 );
 		B2[3][3] = 99;
 
-		BOOST_TEST( B2[3][3] == 99 );
+		BOOST_TEST( B2[3][3] == 99 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		multi::array<int, 2> B2copy{B2({0, 2}, {0, 2})};
 
@@ -1266,6 +1266,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& arrp2 = arr.partitioned(2);
 		BOOST_TEST( arrp2.num_elements() == arr.num_elements() );
 		BOOST_TEST( arrp2.size() == 2 );
+	}
+	{
+		multi::layout_t<2> const lyt(multi::extensions_t<2>{
+			{3,  9},
+			{0, 15}
+		});
+		BOOST_TEST( lyt.size() == 6 );
+		BOOST_TEST( lyt.extension().front() == 3 );
+		BOOST_TEST( lyt.extension().back() == 8 );
 	}
 
 	return boost::report_errors();

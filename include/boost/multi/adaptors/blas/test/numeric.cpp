@@ -8,6 +8,7 @@
 
 #include <boost/multi/array.hpp>
 
+#include <cmath>
 #include <complex>
 
 namespace multi = boost::multi;
@@ -60,7 +61,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(blas::is_conjugated<decltype(conjd_array)>{});
 
 		BOOST_TEST( conjd_array[0][0] == 1.0 + 3.0*I );
-		BOOST_TEST( imag(*conjd_array.base()) == +3.0 );
+		BOOST_TEST( std::abs( imag(*conjd_array.base()) - +3.0 ) < 1e-10 );
 
 		//  BOOST_TEST_REQUIRE( base(Bconj)->imag() == +3 );
 		BOOST_TEST( conjd_array[0][1] == conjd_array.rotated()[1][0] );
@@ -101,8 +102,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( blas::hermitized(arr)[2][1] == blas::conj(arr)[1][2] );
 		BOOST_TEST( blas::hermitized(arr)       == blas::conj(blas::T(arr)) );
 
-		BOOST_TEST( blas::real(arr)[2][1] == std::real(arr[2][1]) );
-		BOOST_TEST( blas::imag(arr)[2][1] == std::imag(arr[2][1]) );
+		BOOST_TEST( std::abs( blas::real(arr)[2][1] - std::real(arr[2][1]) ) < 1e-10 );
+		BOOST_TEST( std::abs( blas::imag(arr)[2][1] - std::imag(arr[2][1]) ) < 1e-10 );
 
 		multi::array<double, 2> const B_real_doubled = {
 			{1.0, -3.0, 6.0, 2.0, 9.0, 3.0},

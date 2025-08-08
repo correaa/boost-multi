@@ -11,6 +11,12 @@
 #include <type_traits>  // for declval, decay_t, conditional_t, true_type
 #include <utility>      // for forward, move
 
+#if defined(__NVCC__)
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
 
@@ -24,17 +30,24 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 
 	auto operator=(tuple const&) -> tuple& = default;
 
-	constexpr auto operator==(tuple const& /*other*/) const -> bool { return true; }
-	constexpr auto operator!=(tuple const& /*other*/) const -> bool { return false; }
+	BOOST_MULTI_HD constexpr auto operator==(tuple const& /*other*/) const { return true; }
+	BOOST_MULTI_HD constexpr auto operator!=(tuple const& /*other*/) const  { return false; }
 
-	constexpr auto operator<(tuple const& /*other*/) const { return false; }
-	constexpr auto operator>(tuple const& /*other*/) const { return false; }
+	BOOST_MULTI_HD constexpr auto operator<(tuple const& /*other*/) const { return false; }
+	BOOST_MULTI_HD constexpr auto operator>(tuple const& /*other*/) const { return false; }
 
 	template<class F>
-	constexpr friend auto apply(F&& fn, tuple<> const& /*self*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr friend auto apply(F&& fn, tuple<> const& /*self*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)();
 	}
 };
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4514)  // boost::multi::detail::tuple<>::operator <': unreferenced inline function has been removed
+#pragma warning(disable : 4623)  // default constructor was implicitly defined as deleted
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#endif
 
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference
@@ -42,31 +55,46 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	using tail_type = tuple<Ts...>;
 
  public:
-	constexpr auto head() const& -> T0 const& { return head_; }
-	constexpr auto head() && -> T0&& { return std::move(head_); }
-	constexpr auto head() & -> T0& { return head_; }
+	BOOST_MULTI_HD constexpr auto head() const& -> T0 const& { return head_; }
+	BOOST_MULTI_HD constexpr auto head() && -> T0&& { return std::move(head_); }
+	BOOST_MULTI_HD constexpr auto head() & -> T0& { return head_; }
 
-	constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
-	constexpr auto tail() && -> decltype(auto) { return static_cast<tail_type&&>(*this); }
-	constexpr auto tail() & -> tail_type& { return static_cast<tail_type&>(*this); }
+	BOOST_MULTI_HD constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
+	BOOST_MULTI_HD constexpr auto tail() && -> decltype(auto) { return static_cast<tail_type&&>(*this); }
+	BOOST_MULTI_HD constexpr auto tail() & -> tail_type& { return static_cast<tail_type&>(*this); }
 
 	constexpr tuple()             = default;
 	constexpr tuple(tuple const&) = default;
 
+	// this is horrible hack and can produce ODR reported by Circle
+	// operator std::tuple<T0&, Ts&...>() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// 	using std::apply;
+	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	// }
+	// operator std::tuple<T0&, Ts&...>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// 	using std::apply;
+	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	// }
+	// operator std::tuple<T0&, Ts&...>() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// 	using std::apply;
+	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
+	// }
+
 	// TODO(correaa) make conditional explicit constructor depending on the conversions for T0, Ts...
-	constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)}, head_{std::move(head)} {}
+	BOOST_MULTI_HD constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)}, head_{std::move(head)} {}
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
+	BOOST_MULTI_HD constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
 	template<class TT0 = T0,
 		std::enable_if_t<!std::is_same_v<TT0, tuple>, int> =0,  // NOLINT(modernize-use-constraints) for C++20
 		std::enable_if_t<sizeof(TT0*) && (sizeof...(Ts) == 0), int> =0  // NOLINT(modernize-use-constraints) for C++20
 	>
-	constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
+	// cppcheck-suppress noExplicitConstructor ; see below
+	BOOST_MULTI_HD constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
@@ -77,10 +105,16 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		return *this;
 	}
 
-	constexpr auto operator==(tuple const& other) const -> bool { return head_ == other.head_ && tail() == other.tail(); }
-	constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ || tail() != other.tail(); }
+	BOOST_MULTI_HD constexpr auto operator==(tuple const& other) const -> bool {
+		return
+			head_ == other.head_
+			&& 
+			tail() == other.tail()
+		;
+	}
+	BOOST_MULTI_HD constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ || tail() != other.tail(); }
 
-	constexpr auto operator<(tuple const& other) const {
+	BOOST_MULTI_HD constexpr auto operator<(tuple const& other) const {
 		if(head_ < other.head_) {
 			return true;
 		}
@@ -89,7 +123,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		}
 		return tail() < other.tail();
 	}
-	constexpr auto operator>(tuple const& other) const {
+	BOOST_MULTI_HD constexpr auto operator>(tuple const& other) const {
 		if(head_ > other.head_) {
 			return true;
 		}
@@ -102,46 +136,46 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
  private:
 
 	template<class F, std::size_t... I>
-	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
 	template<class F, std::size_t... I>
-	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
 	template<class F, std::size_t... I>
-	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) &&-> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) &&-> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(std::move(*this).template get<I>()...);
 	}
 
  public:
 	template<class F>
-	constexpr auto apply(F&& fn) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply(F&& fn) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
 	}
 	template<class F>
-	constexpr auto apply(F&& fn) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply(F&& fn) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
 	}
 	template<class F>
-	constexpr auto apply(F&& fn) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD constexpr auto apply(F&& fn) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::move(*this).apply_impl_(std::forward<F>(fn), std::make_index_sequence<sizeof...(Ts) + 1>{});
 	}
 
 	template<class F>
-	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> const& self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	friend BOOST_MULTI_HD constexpr auto apply(F&& fn, tuple<T0, Ts...> const& self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return self.apply(std::forward<F>(fn));
 	}
 
 	template<class F>
-	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> & self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	friend BOOST_MULTI_HD constexpr auto apply(F&& fn, tuple<T0, Ts...> & self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return self.apply(std::forward<F>(fn));
 	}
 
 	template<class F>
-	constexpr friend auto apply(F&& fn, tuple<T0, Ts...> && self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	friend BOOST_MULTI_HD constexpr auto apply(F&& fn, tuple<T0, Ts...> && self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::move(self).apply(std::forward<F>(fn));
 	}
 
@@ -168,17 +202,17 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<std::size_t N, std::enable_if_t<(N==0), int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr auto get() const& -> T0 const& {  // NOLINT(readability-identifier-length) std naming
+	BOOST_MULTI_HD constexpr auto get() const& -> T0 const& {  // NOLINT(readability-identifier-length) std naming
 		return head();
 	}
 
 	template<std::size_t N, std::enable_if_t<(N!=0), int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr auto get() const& -> auto const& {  // NOLINT(readability-identifier-length) std naming
+	BOOST_MULTI_HD constexpr auto get() const& -> auto const& {  // NOLINT(readability-identifier-length) std naming
 		return this->tail().template get<N - 1>();  // this-> for msvc 19.14 compilation
 	}
 
 	template<std::size_t N>
-	constexpr auto get() & -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+	BOOST_MULTI_HD constexpr auto get() & -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 		if constexpr(N == 0) {
 			return head();
 		} else {
@@ -187,7 +221,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<std::size_t N>
-	constexpr auto get() && -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
+	BOOST_MULTI_HD constexpr auto get() && -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 		if constexpr(N == 0) {
 			return std::move(*this).head();
 		} else {
@@ -195,6 +229,9 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		}
 	}
 };
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
 //  TODO(correaa) : this class can be collapsed with the general case with [[no_unique_address]] in C++20
@@ -240,7 +277,7 @@ template<class T0, class... Ts> constexpr auto tie(T0& head, Ts&... tail) {
 	return tuple<T0&, Ts&...>(head, tail...);
 }
 
-template<class T0, class... Ts> constexpr auto ht_tuple(T0 head, tuple<Ts...> tail)
+template<class T0, class... Ts> BOOST_MULTI_HD constexpr auto ht_tuple(T0 head, tuple<Ts...> tail)
 -> tuple<T0, Ts...> {
 	return tuple<T0, Ts...>(std::move(head), std::move(tail));
 }
@@ -271,13 +308,13 @@ constexpr auto head(tuple<T0, Ts...>& t) -> decltype(auto) {  // NOLINT(readabil
 }
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
+BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...>&& t) -> decltype(std::move(t).tail()) { return std::move(t).tail(); }  // NOLINT(readability-identifier-length) std naming
+BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>&& t) -> decltype(std::move(t).tail()) { return std::move(t).tail(); }  // NOLINT(readability-identifier-length) std naming
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
+BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
 #if defined __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
@@ -291,12 +328,12 @@ constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail()
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
-#if ! defined(_MSC_VER)
+#if !defined(_MSC_VER)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
+BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
 	if constexpr(N == 0) {
 		return t.head();
 	} else {
@@ -306,7 +343,7 @@ constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readab
 }
 
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
+BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
 	if constexpr(N == 0) {
 		return tup.head();
 	} else {
@@ -315,7 +352,7 @@ constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
 }
 
 template<std::size_t N, class T0, class... Ts>
-constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
+BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 	if constexpr(N == 0) {
 		return std::move(std::move(tup)).head();
 	} else {
@@ -374,7 +411,7 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 };
 
 template<class F, class Tuple, std::size_t... I>
-constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	(void)tp;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
 	return std::forward<F>(fn)(boost::multi::detail::get<I>(std::forward<Tuple>(tp))...);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as?
 }
@@ -382,7 +419,7 @@ constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*0
 namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
 
 template<class F, class... Ts>
-constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), tp,
 		std::make_index_sequence<sizeof...(Ts)>{}
@@ -390,7 +427,7 @@ constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> de
 }
 
 template<class F, class... Ts>
-constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), tp,
 		std::make_index_sequence<sizeof...(Ts)>{}
@@ -398,7 +435,7 @@ constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype
 }
 
 template<class F, class... Ts>
-constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>&& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>&& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), std::move(tp),
 		std::make_index_sequence<sizeof...(Ts)>{}
@@ -501,4 +538,7 @@ constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4, T5&& tup5) 
 using detail::tie;
 
 }  // end namespace boost::multi
+
+#undef BOOST_MULTI_HD
+
 #endif
