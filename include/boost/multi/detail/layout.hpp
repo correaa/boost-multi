@@ -250,6 +250,15 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return false;
 	}
 
+	auto elements() const {
+		struct elements_t {
+			struct iterator{};
+			auto begin() const { return iterator{}; }
+			auto end() const { return iterator{}; }
+		};
+		return elements_t{};
+	}
+
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });

@@ -53,12 +53,24 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 	BOOST_TEST( get<0>(A2Dxs).size() == 5 );
 
+	auto it2d = A2Dxs.elements().begin(); (void)it2d;
+
 	multi::array<int, 1> const A1D({37}, 1);
 	BOOST_TEST( A1D.size() == 37 );
 	BOOST_TEST( A1D.num_elements() == 37 );
 	BOOST_TEST( A1D.extensions().num_elements() == 37 );
 
 	BOOST_TEST( A1D.extensions().elements().size() == A1D.extensions().num_elements() );
+	{
+		auto it = A1D.extensions().elements().begin();
+		BOOST_TEST( get<0>(*it) == 0 );
+		++it;
+		BOOST_TEST( get<0>(*it) == 1 );
+
+		it = A1D.extensions().elements().end();
+		--it;
+		BOOST_TEST( get<0>(*it) == 36 );
+	}
 
 	return boost::report_errors();
 }
