@@ -45,27 +45,21 @@ template<class T> using test_allocator =
 }
 
 auto universal_memory_supported() -> bool {
+	std::cout << "testing for universal memory supported" << std::endl;
 	int d;
 	cudaGetDevice(&d);
 	int is_cma = 0;
 	cudaDeviceGetAttribute(&is_cma, cudaDevAttrConcurrentManagedAccess, d);
-	if(is_cma) { std::cout << "universal memory is supported" << std::endl; }
+	if(is_cma) {
+		std::cout << "universal memory is supported" << std::endl;
+	} else {
+		std::cout << "universal memory is NOT supported" << std::endl;
+	}
 	return (is_cma == 1)?true:false;
 }
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	
-	// BOOST_AUTO_TEST_CASE(cuda_universal_empty)
-	if(universal_memory_supported())
-	{
-		using complex = thrust::complex<double>;
-		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A;
-		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> B = A;
-		BOOST_TEST( A.is_empty() );
-		BOOST_TEST( B.is_empty() );
-		BOOST_TEST( A == B );
-	}
-
 	// BOOST_AUTO_TEST_CASE(cuda_allocators)
 	{
 
@@ -79,6 +73,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		A1[10] = B1[10];
 		BOOST_TEST( A1[10] == 2.0 );
+	}
+
+	// BOOST_AUTO_TEST_CASE(cuda_universal_empty)
+	if(universal_memory_supported())
+	{
+		using complex = thrust::complex<double>;
+		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A;
+		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> B = A;
+		BOOST_TEST( A.is_empty() );
+		BOOST_TEST( B.is_empty() );
+		BOOST_TEST( A == B );
 	}
 
 	// BOOST_AUTO_TEST_CASE(cuda_1d_initlist)
