@@ -58,6 +58,7 @@ BOOST_AUTO_TEST_CASE(warmup) {
 		// std::cout<<"memcpy    rate = "<< rate <<" GB/s (ratio = 1)\n";
 		return rate;
 	});
+	(void)dummy;
 
 	auto const memcpy_rate = std::invoke([&] {
 		auto start_time = std::chrono::high_resolution_clock::now();
@@ -135,6 +136,7 @@ BOOST_AUTO_TEST_CASE(thrust_nonuniversal_speed) {
 		std::cout << "memcpy    rate = " << rate << " GB/s (warmup)\n";
 		return rate;
 	});
+	(void)dummy;
 
 	auto const memcpy_rate = std::invoke([&] __host__ {
 		auto start_time = std::chrono::high_resolution_clock::now();
@@ -207,6 +209,7 @@ BOOST_AUTO_TEST_CASE(thrust_universal_speed) {
 		std::cout << "memcpy    rate = " << rate << " GB/s (warmup)\n";
 		return rate;
 	});
+	(void)dummy;
 
 	auto const memcpy_rate = std::invoke([&] __host__ {
 		auto start_time = std::chrono::high_resolution_clock::now();
