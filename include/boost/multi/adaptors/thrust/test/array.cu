@@ -49,6 +49,7 @@ auto universal_memory_supported() -> bool {
 	cudaGetDevice(&d);
 	int is_cma = 0;
 	cudaDeviceGetAttribute(&is_cma, cudaDevAttrConcurrentManagedAccess, d);
+	if(is_cma) { std::cout << "universal memory is supported" << std::endl; }
 	return (is_cma == 1)?true:false;
 }
 
