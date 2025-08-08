@@ -391,8 +391,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			constexpr explicit iterator(multi::index_range::iterator it)
 			: multi::index_range::iterator{it} {}
 
-			auto base_() const -> multi::index_range::iterator const& { return *this; }
-			auto base_() -> multi::index_range::iterator& { return *this; }
+			constexpr auto base_() const -> multi::index_range::iterator const& { return *this; }
+			constexpr auto base_() -> multi::index_range::iterator& { return *this; }
 
 		 public:
 			using value_type      = std::tuple<multi::index_range::iterator::value_type>;
