@@ -15,7 +15,7 @@ using complex   = thrust::complex<double>;
 template<typename T>
 void doNotOptimize(T const& val) {
 #if defined(_MSC_VER)
-	_ReadWriteBarrier();
+	_ReadWriteBarrier(); (void)val;
 #else
 	asm volatile("" : : "g"(val) : "memory");
 #endif
@@ -38,7 +38,7 @@ int main() {
 			std::fill_n(raw_pointer_cast(A.data_elements()), A.num_elements(), complex{1.0});
 
 			std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - tick;
-			double                        rate = size / time.count();
+			double                        rate = size / time.count(); (void)rate;
 		}
 		{  // cctor
 			auto                                                                 tick = std::chrono::high_resolution_clock::now();
