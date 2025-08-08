@@ -49,7 +49,7 @@ auto set_identity(Array2D&& arr) -> Array2D&&{
     auto ygrid_dim  = static_cast<int>((n + xblock_dim - 1) / xblock_dim);
     dim3 block_dim(xblock_dim, xblock_dim);
     dim3 grid_dim(xgrid_dim, ygrid_dim);
-    kernel_setIdentity<<<grid_dim, block_dim>>>(arr.home(), m, n);
+    kernel_setIdentity<<<grid_dim, block_dim>>>(arr.home(), static_cast<int>(m), static_cast<int>(n));
     CUDA_CHECKED(cudaGetLastError());
     // CUDA_CHECKED(cudaDeviceSynchronize());
     return std::forward<Array2D>(arr);
