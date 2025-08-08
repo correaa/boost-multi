@@ -28,10 +28,10 @@ class allocator1 {
 	using value_type = T;
 
 	allocator1() noexcept = delete;
-	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
 	allocator1(int* heap) : heap_{heap} { assert(heap_); }  // NOLINT(runtime/explicit)  // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
 
-	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
 	template<class U> allocator1(allocator1<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
 
 	auto allocate(std::size_t n) {
@@ -42,6 +42,8 @@ class allocator1 {
 			throw std::bad_alloc{};
 		}  // this cuts branches with UB (null deref) for the sanitizer
 		++*heap_;
+		static_assert(!std::is_same_v<value_type, void>);
+		// cppcheck-suppress sizeofVoid ;
 		return static_cast<value_type*>(::operator new(n * sizeof(value_type)));  // NOLINT(misc-include-cleaner) bug in clang-tidy 20
 	}
 	void deallocate(value_type* ptr, std::size_t n) noexcept {
@@ -67,10 +69,10 @@ class allocator2 {
 	using value_type = T;
 
 	allocator2() noexcept = default;
-	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
 	allocator2(std::int64_t* heap) : heap_{heap} { assert(heap_); }  // NOLINT(runtime/explicit) // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
 
-	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
 	template<class U> allocator2(allocator2<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
 
 	auto allocate(std::size_t n) {
@@ -81,6 +83,8 @@ class allocator2 {
 			throw std::bad_alloc{};
 		}
 		++*heap_;
+		static_assert(!std::is_same_v<value_type, void>);
+		// cppcheck-suppress sizeofVoid ;
 		return static_cast<value_type*>(::operator new(n * sizeof(value_type)));
 	}
 

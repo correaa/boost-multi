@@ -86,6 +86,7 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagona
 	assert( stride( a) == 1 || stride(~a) == 1 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( stride( b) == 1 || stride(~b) == 1 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
+	// cppcheck-suppress-begin knownConditionTrueFalse ; bug in cppcheck 2.18?
 	if(size(b) != 0) {
 		#define CTXT std::forward<Context>(ctxt)
 		if       constexpr(! is_conjugated<A2D>{} && ! is_conjugated<B2D>{}) {
@@ -109,6 +110,8 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagona
 		}
 		#undef CTXT
 	}
+	// cppcheck-suppress-end knownConditionTrueFalse ; bug in cppcheck 2.18?
+
 	return std::forward<B2D>(b);
 }
 

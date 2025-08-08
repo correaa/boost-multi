@@ -2,9 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef _VSTD
-# define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
-#endif
+// #ifndef _VSTD
+// # define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+// #endif
 
 #include <boost/multi/adaptors/thrust/omp.hpp>  // NOLINT(misc-include-cleaner)
 
@@ -13,8 +13,8 @@
 #endif
 
 #include <omp.h>
-#include <thrust/reduce.h>
-#include <thrust/system/omp/detail/par.h>
+#include <thrust/reduce.h>  // IWYU pragma: keep
+#include <thrust/system/omp/execution_policy.h>  // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -24,6 +24,11 @@
 # include <iostream>
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 5045)  // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+#endif
+
+#if !defined(__clang__)
 namespace {
 
 template<class Array1D>
@@ -55,7 +60,7 @@ auto parallel_idiom_array_sum(Array1D const& arr) {
 #if !defined(__NVCOMPILER) && !defined(_MSC_VER)
 	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
 	for(auto const i : arr.extension()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
+		// cppcheck-suppress useStlAlgorithm ;  // NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #elif defined(_MSC_VER)
@@ -119,6 +124,7 @@ void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
 }
 
 }  // end namespace
+#endif
 
 // auto parallel_array_sum(int n, float const *a) {
 //     float total = 0.0;

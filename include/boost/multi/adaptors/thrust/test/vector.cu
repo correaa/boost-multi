@@ -1,14 +1,16 @@
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA thrust"
+// Copyright 2021-2025 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 
-BOOST_AUTO_TEST_CASE(vector){
+// BOOST_AUTO_TEST_CASE(vector)
+{
 	// H has storage for 4 integers
 	thrust::host_vector<int> H(4);
 

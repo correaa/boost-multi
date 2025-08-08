@@ -74,6 +74,10 @@ struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self
 
 template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
 
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '3' bytes padding added after data member
+#endif
 template<class T>
 struct totally_ordered2<T, void> {
 	// template<class U>
@@ -83,6 +87,9 @@ struct totally_ordered2<T, void> {
 	// template<class U>
 	// friend constexpr auto operator>(T const& self, U const& other) { return other < self; }
 };
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
 
 template<class T>
 struct copy_constructible {};
@@ -163,8 +170,10 @@ struct affine_with_unit : steppable<Self> {
  public:
 	using self_type = Self;
 	constexpr auto cself() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using difference_type = Difference;
 	friend constexpr auto operator++(affine_with_unit& self) -> Self& { return self.self() += difference_type{1}; }
@@ -206,6 +215,11 @@ struct dereferenceable {
 	constexpr auto operator*() const -> reference { return *(self().operator->()); }
 };
 
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '7' bytes padding added after base class
+#endif
+
 template<class Self, typename Difference, typename Reference>
 struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 : affine_with_unit<Self, Difference>
@@ -220,11 +234,18 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 	using iterator_category = std::random_access_iterator_tag;
 
 	using self_type = Self;
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type idx) const -> reference { return *(self() + idx); }
 };
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
+
 
 // template<class T, class Reference>
 // struct dereferenceable {
@@ -272,6 +293,10 @@ struct affine : addable2<T, Difference>
 	using difference_type = Difference;
 };
 
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '3' bytes padding added after data member
+#endif
 template<class T>
 class random_iterable {
  protected:
@@ -284,6 +309,9 @@ class random_iterable {
 	friend constexpr auto cfront(T const& self) -> decltype(auto) { return self.cfront(); }
 	friend constexpr auto cback(T const& self) -> decltype(auto) { return self.cback(); }
 };
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
 
 namespace detail {
 template<class Self, class Value, class Reference = Value&, class Pointer = Value*, class Difference = std::ptrdiff_t>

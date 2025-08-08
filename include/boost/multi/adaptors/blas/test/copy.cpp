@@ -21,6 +21,7 @@
 	#include <iostream>    // for basic_ostream, endl, cout
 #endif
 
+#include <cmath>
 #include <complex>   // for operator*, operator+
 #include <iterator>  // for size
 #include <utility>  // for forward  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
@@ -74,7 +75,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[2][3] == 8.0 );
 
 		multi::array<double, 1> AR3 = blas::copy(arr.rotated()[3]);  // dcopy
-		BOOST_TEST( AR3[1] == arr[1][3] );
+		BOOST_TEST( std::abs( AR3[1] - arr[1][3] ) < 1e-10 );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_blas_copy_row) {

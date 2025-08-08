@@ -17,6 +17,7 @@
 #include <complex>
 // IWYU pragma: no_include <cstdlib>  // for abs
 #include <iostream>
+#include <limits>
 // IWYU pragma: no_include <iterator>                            // for size, begin
 // IWYU pragma: no_include <type_traits>                         // for is_same_v
 // IWYU pragma: no_include <utility>                             // for declval, forward
@@ -60,7 +61,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{9.0, 10.0, 11.0, 12.0},
 		};
 
-		double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
+		double n = std::numeric_limits<double>::quiet_NaN();  // NOLINT(readability-identifier-length) BLAS naming
 		blas::nrm2(cA.rotated()[1], n);
 
 		// BOOST_TEST( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.0*2.0 + 6.0*6.0 + 10.0*10.0) );  // TODO(correaa) nrm2 is returning a pointer?
@@ -82,24 +83,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( blas::nrm2(rotated(cA)[1]) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators) {
+	// BOOST_AUTO_TEST_CASE(multi_adaptor_blas_nrm2_operators)
+	{
 		multi::array<double, 1> const X = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
 
 		{
-			double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
+			auto n = std::numeric_limits<double>::quiet_NaN();  // NOLINT(readability-identifier-length) BLAS naming
 
 			multi::blas::nrm2(X, n);
-			BOOST_TEST( n == multi::blas::nrm2(X) );
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );
 		}
 		{
-			double n = NAN;  // NOLINT(readability-identifier-length) BLAS naming
+			auto n = std::numeric_limits<double>::quiet_NaN();  // NOLINT(readability-identifier-length) BLAS naming
 
-			n = multi::blas::nrm2(X);
-			BOOST_TEST( n == multi::blas::nrm2(X) );
+			n = multi::blas::nrm2(X);  // cppcheck-suppress redundantAssignment ; test assignment from conversion
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );  // cppcheck-suppress knownConditionTrueFalse ;
 		}
 		{
 			double const n = multi::blas::nrm2(X);  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( n == multi::blas::nrm2(X) );
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );  // cppcheck-suppress knownConditionTrueFalse ;
 		}
 		{
 			multi::array<double, 0> res{0.0};

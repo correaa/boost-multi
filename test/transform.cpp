@@ -18,6 +18,10 @@
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for move, declval
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#endif
+
 #define BOOST_MULTI_DECLRETURN(ExpR) \
 	->decltype(ExpR) { return ExpR; }  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
@@ -103,7 +107,8 @@ class involuter {
 	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{Involution{}, *it_}; }
-	constexpr auto operator->() const { return pointer{&*it_}; }
+	// cppcheck-suppress redundantPointerOp ; lib idiom
+	constexpr auto operator->() const { return &*it_; }  // pointer{&*it_}; }
 
 	constexpr auto operator==(involuter const& other) const { return it_ == other.it_; }
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
@@ -161,7 +166,7 @@ struct conjugate<> : private basic_conjugate_t {
 	constexpr auto operator()(T const& arg) const BOOST_MULTI_DECLRETURN(_(arg))
 };
 
-#if defined(__NVCC__)
+#if defined(__NVCC__) && !defined(_MSC_VER)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsubobject-linkage"
 #endif
@@ -181,7 +186,8 @@ template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRe
 		return imag(static_cast<typename conjd::decay_type>(self));
 	}
 };
-#if defined(__NVCC__)
+
+#if defined(__NVCC__) && !defined(_MSC_VER)
 #pragma GCC diagnostic pop
 #endif
 

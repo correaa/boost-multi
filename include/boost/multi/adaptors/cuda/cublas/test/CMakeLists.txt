@@ -23,9 +23,15 @@ if((NOT
 		"icpc"
 	   )
 )
-	# find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-	# link_libraries("-lboost_unit_test_framework")
-	find_package(BLAS REQUIRED)
+	find_package(BLAS)
+
+	if(BLAS_FOUND)
+    	message(STATUS "BLAS library found.")
+	else()
+		message(WARNING "BLAS library not found. cuBLAS tests need BLAS.")
+		return()
+	endif()
+
 	find_path(
 		BLAS_INCLUDE_DIRS
 		cblas.h
@@ -92,8 +98,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 		set(TEST_EXE "${TEST_FILE}.x")
 		add_executable(${TEST_EXE} ${TEST_FILE})
 
-		# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
-		target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
+		# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 		target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 
 		# target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
@@ -121,4 +126,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 		add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 	endif()
 endforeach()
+
+target_compile_options(all.cu.x PRIVATE  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda>)
+
 endif()

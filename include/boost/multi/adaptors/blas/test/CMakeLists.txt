@@ -83,6 +83,10 @@ set(TEST_SRCS
 
 find_package(TBB)
 
+add_library(multi-blas INTERFACE)
+target_link_libraries(multi-blas INTERFACE multi)
+target_link_libraries(multi-blas INTERFACE BLAS::BLAS)
+
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
@@ -101,17 +105,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 		target_link_libraries(${TEST_EXE} PRIVATE TBB::tbb)
 	endif()
 
-	# target_compile_options(
-	#   ${TEST_EXE} PRIVATE
-	#   $<$<CXX_COMPILER_ID:IntelLLVM>:
-	#   -Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
-	#   -Wno-enum-constexpr-conversion  # for Boost.Test
-	#   >
-	# )
-
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
 
-    target_link_libraries(${TEST_EXE} PRIVATE multi)
+    target_link_libraries(${TEST_EXE} PUBLIC multi)
 	target_link_libraries(${TEST_EXE} PRIVATE BLAS::BLAS)
 
 	if(NOT ENABLE_CIRCLE)
@@ -153,8 +149,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra
 					-Wpedantic
 					-Wmove
+					-Wno-padded
 					-Wno-pass-failed
 					-Wno-error=\#warnings
+					-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
 					> # -Wno-c++98-compat  # use of constexpr
 					$<$<CXX_COMPILER_ID:IntelLLVM>:
 					-Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
@@ -191,7 +189,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 						--display_error_number --diag_error=incompatible_assignment_operands,returning_ptr_to_local_variable,subscript_out_of_range,used_before_set,undefined_preproc_id,implicit_func_decl,implicit_return_from_non_void_function,missing_type_specifier
 					>
 					$<$<CXX_COMPILER_ID:MSVC>:
-					/W4>
+					#/W4
+					>
 		)
 		endif()
 	endif()

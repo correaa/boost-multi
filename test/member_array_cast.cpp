@@ -17,13 +17,10 @@
 #include <string>      // for operator""s, allocator, char_traits
 #include <tuple>       // for tie, operator==, tuple
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Winvalid-offsetof"  // Explicit padding, for particle example
-#elif defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4324)  // Explicit padding, for particle example
+#if defined(_MSC_VER)
+#pragma warning(disable : 4371)
+// 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed
+// from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
 #endif
 
 namespace multi = boost::multi;
@@ -33,19 +30,42 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using v3d = std::array<double, 3>;
 
+		// some members might need explicit padding to work well with member_cast
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
-
-		// some members might need explicit padding to work well with member_cast
 		struct particle {
 			int mass;
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#endif
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4324)  // 'main::particle': structure was padded due to alignment specifier
+#pragma warning(disable : 4371)
+// ^^^ 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed
+// from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm	'
+#endif
 			v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
-		};
-
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
+		};
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
 
 		class particles_soa {
@@ -151,13 +171,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic pop
 #endif
 
+#if defined(__NVCC__)
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 1427  // offsetof applied to a type other than a standard layout (this happens with NVCC+MSVC)
+#endif
 		// clang-format off
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	char padding_[
-		(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string))
-		- (offsetof(employee_dummy, age) + sizeof(age))
-	] = {};
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		char padding_[
+			(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string)) - (offsetof(employee_dummy, age) + sizeof(age))
+		] = {};
 		// clang-format on
+#if defined(__NVCC__)
+#pragma nv_diagnostic pop
+#endif
 	};
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
@@ -253,9 +279,3 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	return boost::report_errors();
 }
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#endif

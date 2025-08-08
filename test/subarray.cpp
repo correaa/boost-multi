@@ -147,11 +147,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> const      AA = {1, 2, 3};
 		multi::array<unsigned, 1> const BB = {2, 3, 4};
 
+		BOOST_TEST( AA[0] != static_cast<int>(BB[0]) );
+
+		auto const to_int = [](auto elem) noexcept {
+			return static_cast<int>(elem);
+		};
+
+		BOOST_TEST(   AA   != BB.element_transformed(to_int) );
+
+#if !defined(_MSC_VER)  // MSVC would warn deeply in the standard library here, TODO(correaa) make warning evident at top level lib
 		BOOST_TEST(   AA   != BB    );
 		BOOST_TEST( !(AA   == BB  ) );
 
 		BOOST_TEST(   AA() != BB()  );
 		BOOST_TEST( !(AA() == BB()) );
+#endif
 	}
 
 	// equality 2D
@@ -165,11 +175,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{4, 5},
 		};
 
+		auto const to_int = [](auto const& elem) noexcept {
+			return static_cast<int>(elem);
+		};
+
+		BOOST_TEST(   AA   != BB.element_transformed(to_int)  );
+		BOOST_TEST( !(AA   == BB.element_transformed(to_int)) );
+
+#if !defined(_MSC_VER)  // MSVC would warn deeply in the standard library here, TODO(correaa) make warning evident at top level lib
 		BOOST_TEST(   AA   != BB    );
 		BOOST_TEST( !(AA   == BB  ) );
 
 		BOOST_TEST(   AA() != BB()  );
 		BOOST_TEST( !(AA() == BB()) );
+#endif
 	}
 
 	/* test ref(begin, end)*/

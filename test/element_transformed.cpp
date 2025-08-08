@@ -60,7 +60,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 1> arr = {1.0 + 2.0 * I, 3.0 + 4.0 * I};
 
-		constexpr auto conj = static_cast<complex (&)(complex const&)>(std::conj<double>);
+		// conste xpr
+		auto const conj = static_cast<complex (&)(complex const&)>(std::conj<double>);
 
 		auto const& conjd_arr = arr.element_transformed(conj);
 		BOOST_TEST( conjd_arr[0] == conj(arr[0]) );

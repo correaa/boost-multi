@@ -118,6 +118,8 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 
 	auto base_a = base_aux(a);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
 	auto base_c = base_aux(c);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
+
+	// cppcheck-suppress-begin knownConditionTrueFalse ; bug in cppcheck 2.18?
 	if constexpr(is_conjugated<A2D>{}) {
 	//  auto& ctxt = *blas::default_context_of(underlying(a.base()));
 		// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
@@ -140,6 +142,7 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 		else if(stride(a)==1 && c.stride()==1) {herk(c_side==filling::upper?'U':'L', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
 	//  else                                   {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	}
+	// cppcheck-suppress-end knownConditionTrueFalse ; bug in cppcheck 2.18?
 
 	return std::forward<C2D>(c);
 }
