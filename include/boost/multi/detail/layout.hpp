@@ -388,7 +388,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	 public:
 		class iterator : multi::index_range::iterator {
 			friend class elements_t;  // enclosing class is friend automatically?
-			explicit iterator(multi::index_range::iterator it)
+			constexpr explicit iterator(multi::index_range::iterator it)
 			: multi::index_range::iterator{it} {}
 
 			auto base_() const -> multi::index_range::iterator const& { return *this; }
@@ -423,6 +423,10 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			auto operator+(difference_type n) const { return iterator{*this} += n; }
 			auto operator-(difference_type n) const { return iterator{*this} -= n; }
 
+			friend constexpr auto operator-(iterator const& self, iterator const& other) {
+				return self.base_() - other.base_();
+			}
+
 			auto operator==(iterator const& other) const { return base_() == other.base_(); }
 			auto operator!=(iterator const& other) const { return base_() != other.base_(); }
 
@@ -430,8 +434,10 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		};
 		// using const_iterator = iterator;
 
-		auto begin() const { return iterator{rng_.begin()}; }
-		auto end() const { return iterator{rng_.end()}; }
+		constexpr auto begin() const { return iterator{rng_.begin()}; }
+		constexpr auto end() const { return iterator{rng_.end()}; }
+
+		constexpr auto size() const { return end() - begin(); }
 
 		explicit elements_t(multi::index_range rng)
 		: rng_{rng} {}

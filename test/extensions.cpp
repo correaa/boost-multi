@@ -58,5 +58,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	BOOST_TEST( A1D.num_elements() == 37 );
 	BOOST_TEST( A1D.extensions().num_elements() == 37 );
 
+	BOOST_TEST( A1D.extensions().elements().size() == A1D.extensions().num_elements() );
+
 	return boost::report_errors();
 }
