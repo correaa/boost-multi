@@ -280,12 +280,19 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				++rest_it_;
 				using std::get;
 				if( get<0>(*rest_it_) == 3 ) {
+					std::cout << "boom 3 ?= " << get<0>(*rest_it_) << " " << get<0>(*rest_end_) << '\n'; 
+				// if( rest_it_ == rest_end_) {
 					rest_it_ = rest_begin_;
 					++curr_;
 				}
 				return *this;
 			}
 
+			// auto operator--( -> auto& {
+			// 	--rest_it_;
+			// 	using std::get;
+			// 	if( get<0>(*rest_it) == )
+			// }
 
 		};
 

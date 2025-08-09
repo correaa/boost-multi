@@ -401,6 +401,10 @@ vs2022-shell:
     - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     - .\vcpkg\bootstrap-vcpkg.bat
     - .\vcpkg\vcpkg install blas  # fftw3 boost-multi-array boost-timer
+    - git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    - .\vcpkg\bootstrap-vcpkg.bat
+    # - .\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer
+    - .\vcpkg\vcpkg install blas
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
