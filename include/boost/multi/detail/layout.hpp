@@ -21,6 +21,7 @@
 #include <cstddef>           // for size_t, ptrdiff_t, __GLIBCXX__
 #include <cstdlib>           // for abs
 #include <initializer_list>  // for initializer_list
+#include <iostream>
 #include <iterator>
 #include <memory>       // for swap
 #include <tuple>        // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
@@ -250,12 +251,57 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return false;
 	}
 
-	auto elements() const {
-		struct elements_t {
-			struct iterator{};
-			auto begin() const { return iterator{}; }
-			auto end() const { return iterator{}; }
+	class elements_t {
+		extensions_t xs_;
+
+	 public:
+		class iterator {
+			index curr_;
+			typename extensions_t<D - 1>::elements_t::iterator rest_it_;
+			typename extensions_t<D - 1>::elements_t::iterator rest_begin_;
+			typename extensions_t<D - 1>::elements_t::iterator rest_end_;
+
+			iterator(
+				index curr, 
+				typename extensions_t<D - 1>::elements_t::iterator rest_it,
+				typename extensions_t<D - 1>::elements_t::iterator rest_begin,
+				typename extensions_t<D - 1>::elements_t::iterator rest_end
+			)
+			: curr_{curr}, rest_it_{rest_it}, rest_begin_{rest_begin}, rest_end_{rest_end} {}
+
+			friend class elements_t;
+
+		 public:
+			auto operator*() const {
+				return std::apply([cu = curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
+			}
+
+			auto operator++() -> auto& {
+				++rest_it_;
+				using std::get;
+				if( get<0>(*rest_it_) == 3 ) {
+					rest_it_ = rest_begin_;
+					++curr_;
+				}
+				return *this;
+			}
+
+
 		};
+
+		auto begin() const {
+			return iterator{
+				0,
+				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().end(),
+			};
+		}
+	// 	auto end() const { return iterator{ext_.end()}; }
+	};
+
+
+	auto elements() const {
 		return elements_t{};
 	}
 

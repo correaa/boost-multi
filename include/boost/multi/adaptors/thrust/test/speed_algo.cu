@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/array.hpp>
 
@@ -20,10 +22,6 @@ void doNotOptimize(T const& val) {
 	asm volatile("" : : "g"(val) : "memory");
 #endif
 }
-
-#include <boost/core/lightweight_test.hpp>
-
-// #define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 
 int main() {
 	// BOOST_AUTO_TEST_CASE(thrust_universal_speed_algo)

@@ -26,6 +26,7 @@ variables:
   NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  CMAKE_COMPILE_WARNING_AS_ERROR: "ON"
 
 stages:
   - basic
@@ -43,7 +44,7 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1 -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -ftrivial-auto-var-init=zero -fPIE  -pie  -Wl,-z,relro,-z,now -fstack-protector-strong -fstack-clash-protection -fcf-protection=full"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1 -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -ftrivial-auto-var-init=zero -fPIE  -pie  -Wl,-z,relro,-z,now -fstack-protector-strong -fstack-clash-protection -fcf-protection=full"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
 
@@ -58,7 +59,7 @@ g++-omp-thrust:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["g++"]
@@ -77,7 +78,7 @@ g++-m32 sanitize:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -fsanitize=signed-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -fsanitize=signed-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 1 --output-on-failure
   needs: ["g++"]
@@ -94,7 +95,7 @@ arm64:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ cmake make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
     - cmake --build .
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -j 2 --output-on-failure
   needs: ["g++"]
@@ -113,7 +114,7 @@ coverage:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake curl g++ gcovr git make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DDISABLE_THRUST_OMP=1 -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_THRUST_OMP=1 -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 1 --output-on-failure -T Test
     - ctest -j 1 --output-on-failure -T Coverage
@@ -146,7 +147,7 @@ g++ cppcheck cpplint memcheck:
     - valgrind --version
     - mkdir build && cd build
     # - export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind-suppressions --gen-suppressions=all --error-exitcode=1 "
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=1 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_MPI=1 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
@@ -400,6 +401,7 @@ vs2022-shell:
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     # - .\vcpkg\bootstrap-vcpkg.bat
     # - .\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer
+    - .\vcpkg\vcpkg install blas
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
@@ -497,7 +499,7 @@ clang++-m32:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-latest tidy iwyu:
+clang++-latest tidy iwyu everything:
   stage: build
   image: debian:latest  # clang 18 as of Apr 2024
   tags:
@@ -511,7 +513,7 @@ clang++-latest tidy iwyu:
     - clang++ --version
     - clang-tidy --version
     - iwyu --version
-    - CXX=clang++ cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
+    - CXX=clang++ CXX_FLAGS="-Weverything" cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
