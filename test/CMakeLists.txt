@@ -336,16 +336,16 @@ else()
 	#-Wfatal-errors
 	-fmax-errors=2
 	>
-	-Werror -Wall
-	-Wcast-qual
-	-Wformat=2
-	-Wshadow
-	-Wsign-compare
+	-Werror -Wall -Wextra -Wpedantic
+	#-Wcast-qual
+	#-Wformat=2
+	#-Wshadow
+	#-Wsign-compare
 	#-Wpedantic
-	-Wundef
-	-Wuninitialized
-	-Wunused
-	--diag_suppress unrecognized_gcc_pragma
+	#-Wundef
+	#-Wuninitialized
+	#-Wunused
+	#--diag_suppress unrecognized_gcc_pragma
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
 		$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
