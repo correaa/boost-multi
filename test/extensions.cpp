@@ -53,7 +53,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 	BOOST_TEST( get<0>(A2Dxs).size() == 5 );
 
-	auto it2d = A2Dxs.elements().begin(); (void)it2d;
+	// auto it2d = A2Dxs.elements().begin(); (void)it2d;
 
 	multi::array<int, 1> const A1D({37}, 1);
 	BOOST_TEST( A1D.size() == 37 );
@@ -70,6 +70,49 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		it = A1D.extensions().elements().end();
 		--it;
 		BOOST_TEST( get<0>(*it) == 36 );
+	}
+	{
+		multi::extensions_t<2> x2d({4, 3});
+
+		auto it = x2d.elements().begin();
+
+		{
+			BOOST_TEST( get<0>(* multi::extensions_t<1>{x2d.tail()}.elements().begin()) == 0 );
+			BOOST_TEST( get<0>(* (multi::extensions_t<1>{x2d.tail()}.elements().end() - 1)) == 2 );
+			BOOST_TEST( get<0>(* (multi::extensions_t<1>{x2d.tail()}.elements().begin() + 2) ) == 2 );
+
+			auto it1d     = multi::extensions_t<1>{x2d.tail()}.elements().begin();
+			auto it1d_end = it1d + 3;
+			BOOST_TEST( it1d_end == multi::extensions_t<1>{x2d.tail()}.elements().end() );
+			BOOST_TEST( it1d_end != multi::extensions_t<1>{x2d.tail()}.elements().begin() );
+
+			BOOST_TEST( 0 == get<0>(*it) );
+			BOOST_TEST( 0 == get<1>(*it) );
+
+			++it;
+			BOOST_TEST( 0 == get<0>(*it) );
+			BOOST_TEST( 1 == get<1>(*it) );
+
+			++it;
+			BOOST_TEST( 0 == get<0>(*it) );
+			BOOST_TEST( 2 == get<1>(*it) );
+
+			++it;
+			BOOST_TEST( 1 == get<0>(*it) );
+			BOOST_TEST( 0 == get<1>(*it) );
+
+			++it;
+			BOOST_TEST( 1 == get<0>(*it) );
+			BOOST_TEST( 1 == get<1>(*it) );
+
+			++it;
+			BOOST_TEST( 1 == get<0>(*it) );
+			BOOST_TEST( 2 == get<1>(*it) );
+
+			++it;
+			BOOST_TEST( 2 == get<0>(*it) );
+			BOOST_TEST( 0 == get<1>(*it) );
+		}
 	}
 
 	return boost::report_errors();
