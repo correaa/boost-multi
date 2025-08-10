@@ -185,9 +185,9 @@ g++ cppcheck cpplint memcheck:
 #     - ctest -j 2 --output-on-failure -T Test
 #   needs: ["g++"]
 
-g++-bulleye:
+g++-bullseye:
   stage: build
-  image: debian:bulleye
+  image: debian:bullseye
   tags:
     - non-shared
     - docker
