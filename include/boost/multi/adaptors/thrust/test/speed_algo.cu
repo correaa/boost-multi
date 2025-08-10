@@ -17,7 +17,7 @@ using complex   = thrust::complex<double>;
 template<typename T>
 void doNotOptimize(T const& val) {
 #if defined(_MSC_VER)
-	_ReadWriteBarrier((void)val);
+	_ReadWriteBarrier(); (void)val;
 #else
 	asm volatile("" : : "g"(val) : "memory");
 #endif
