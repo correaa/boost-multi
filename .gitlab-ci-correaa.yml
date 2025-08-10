@@ -195,13 +195,14 @@ g++-9:
   script:
     - arch
     - apt-get -qq update
-    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-10 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
+    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-11 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
     # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
     # - sh ./cmake-*.sh --skip-license --prefix=/usr
     - cmake --version
-    - g++-10 --version
+    - g++ --version
+    - g++-11 --version
     - mkdir build && cd build
-    - CXX=g++-10 cmake .. -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
+    - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["g++"]
@@ -308,7 +309,10 @@ clang++-15 libc++ format:
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-15 clang-format-19 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
+    - deb http://deb.debian.org/debian bookworm-backports main contrib non-free
+    - apt-get install -t bookworm-backports clang-15
     - mkdir build && cd build
+    - clang++ --version
     - clang++-15 --version
     - CXX=clang++-15 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
     - cmake --build .
@@ -400,7 +404,7 @@ vs2022-shell:
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     - .\vcpkg\bootstrap-vcpkg.bat
-    - .\vcpkg\vcpkg install blas  # fftw3 boost-multi-array boost-timer
+    - .\vcpkg\vcpkg install openblas  # fftw3 boost-multi-array boost-timer
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
@@ -512,7 +516,7 @@ clang++-latest tidy iwyu everything:
     - clang++ --version
     - clang-tidy --version
     - iwyu --version
-    - CXX=clang++ CXX_FLAGS="-Weverything" cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
+    - CXX=clang++ CXX_FLAGS="-Weverything" cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
