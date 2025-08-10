@@ -308,7 +308,7 @@ clang++-15 libc++ format:
   interruptible: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-15 clang-format-19 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-format-19 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
     - deb http://deb.debian.org/debian bookworm-backports main contrib non-free
     - apt-get install -t bookworm-backports clang-15
     - mkdir build && cd build

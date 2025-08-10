@@ -51,4 +51,5 @@ else()
 		"\n    sudo apt install libblas-dev # in Ubuntu"
 		"\n    sudo dnf install blas-devel  # in Fedora")
 	message(WARNING "BLA_VENDOR was set to ${BLA_VENDOR}\n")
+	find_package(OpenBLAS CONFIG REQUIRED)
 endif()
