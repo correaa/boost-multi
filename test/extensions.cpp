@@ -97,7 +97,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it == x1d.elements().begin() );
 	}
 	{
-		multi::extensions_t<2> x2d({4, 3});
+		multi::extensions_t<2> const x2d({4, 3});
 
 		auto it = x2d.elements().begin();
 
