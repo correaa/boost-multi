@@ -255,6 +255,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		extensions_t xs_;
 
 	 public:
+		elements_t(extensions_t const& xs) : xs_{xs} {}
 		class iterator {
 			index curr_;
 			typename extensions_t<D - 1>::elements_t::iterator rest_it_;
@@ -278,22 +279,24 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 			auto operator++() -> auto& {
 				++rest_it_;
-				using std::get;
-				if( get<0>(*rest_it_) == 3 ) {
-					std::cout << "boom 3 ?= " << get<0>(*rest_it_) << " " << get<0>(*rest_end_) << '\n'; 
-				// if( rest_it_ == rest_end_) {
+				if( rest_it_ == rest_end_ ) {
 					rest_it_ = rest_begin_;
 					++curr_;
 				}
 				return *this;
 			}
 
-			// auto operator--( -> auto& {
-			// 	--rest_it_;
-			// 	using std::get;
-			// 	if( get<0>(*rest_it) == )
-			// }
+			auto operator--() -> auto& {
+				if( rest_it_ == rest_begin_ ) {
+					rest_it_ = rest_end_;
+					--curr_;
+				}
+				--rest_it_;
+				return *this;
+			}
 
+			auto operator==(iterator const& other) { return (curr_ == other.curr_) && (rest_it_ == other.rest_it_); }
+			auto operator!=(iterator const& other) { return (curr_ != other.curr_) || (rest_it_ != other.rest_it_); }
 		};
 
 		auto begin() const {
@@ -304,13 +307,20 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				extensions_t<D - 1>{xs_.tail()}.elements().end(),
 			};
 		}
-	// 	auto end() const { return iterator{ext_.end()}; }
+
+		auto end() const {
+			using std::get;
+			std::cout << "end " << get<0>(xs_).back() + 1 << std::endl;
+			return iterator{
+				get<0>(xs_).back() + 1,
+				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().end(),
+			};
+		}
 	};
 
-
-	auto elements() const {
-		return elements_t{};
-	}
+	auto elements() const { return elements_t{*this}; }
 
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
