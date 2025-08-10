@@ -96,10 +96,19 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(*it) == 0 );
 		BOOST_TEST( it == x1d.elements().begin() );
 	}
-	// {
-	// 	multi::extensions_t<2> x2d({4, 3});
+	{
+		multi::extensions_t<2> x2d({4, 3});
 
-	// 	auto it = x2d.elements().begin();
+		auto it = x2d.elements().begin();
+
+		using std::get;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
 
 	// 	{
 	// 		BOOST_TEST( get<0>(* multi::extensions_t<1>{x2d.tail()}.elements().begin()) == 0 );
@@ -140,7 +149,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 	// 		BOOST_TEST(false);
 	// 	}
-	// }
+	}
 
 	return boost::report_errors();
 }
