@@ -253,17 +253,19 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	class elements_t {
 		extensions_t xs_;
+		explicit elements_t(extensions_t const& xs) : xs_{xs} {}
+
+		friend struct extensions_t;
 
 	 public:
-		explicit elements_t(extensions_t const& xs) : xs_{xs} {}
 		class iterator {
-			// index curr_;
 			index_extension::iterator curr_;
+
 			typename extensions_t<D - 1>::elements_t::iterator rest_it_;
 			typename extensions_t<D - 1>::elements_t::iterator rest_begin_;
 			typename extensions_t<D - 1>::elements_t::iterator rest_end_;
 
-			iterator(
+			constexpr iterator(
 				index_extension::iterator curr,
 				typename extensions_t<D - 1>::elements_t::iterator rest_it,
 				typename extensions_t<D - 1>::elements_t::iterator rest_begin,
@@ -274,11 +276,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			friend class elements_t;
 
 		 public:
-			auto operator*() const {
+			constexpr auto operator*() const {
 				return std::apply([cu = *curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
 			}
 
-			auto operator++() -> auto& {
+			constexpr auto operator++() -> auto& {
 				++rest_it_;
 				if( rest_it_ == rest_end_ ) {
 					rest_it_ = rest_begin_;
@@ -287,7 +289,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return *this;
 			}
 
-			auto operator--() -> auto& {
+			constexpr auto operator--() -> auto& {
 				if( rest_it_ == rest_begin_ ) {
 					rest_it_ = rest_end_;
 					--curr_;
@@ -296,8 +298,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return *this;
 			}
 
-			auto operator==(iterator const& other) { return (curr_ == other.curr_) && (rest_it_ == other.rest_it_); }
-			auto operator!=(iterator const& other) { return (curr_ != other.curr_) || (rest_it_ != other.rest_it_); }
+			friend constexpr auto operator==(iterator const& self, iterator const& other) { return (self.curr_ == other.curr_) && (self.rest_it_ == other.rest_it_); }
+			friend constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
 		};
 
 		auto begin() const {
