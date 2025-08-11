@@ -106,6 +106,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "line " << __LINE__ << std::endl;
 
 		{
+			thrust::device_vector<int, 1> A = {1, 2, 3};
+			thrust::device_vector<int, 1> B(3, 0);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			BOOST_TEST( A[1] == 2 );
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int elem) { return elem * 2; });
+
+			std::cout << "line " << __LINE__ << std::endl;
+			int B1 = B[1];
+			BOOST_TEST( B1 == 4 );
+
+			std::cout << "line " << __LINE__ << std::endl;
+			BOOST_TEST( B[1] == 4 );
+		}
+
+		std::cout << "line " << __LINE__ << std::endl;
+
+		{
 			multi::array<int, 1, thrust::device_allocator<int> > A = {1, 2, 3};
 			multi::array<int, 1, thrust::device_allocator<int> > B(3, 0);
 
