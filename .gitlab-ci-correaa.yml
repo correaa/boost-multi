@@ -195,11 +195,11 @@ g++-8:
   script:
     - arch
     # - apt-get -qq update
-    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-8 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
+    # - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-8 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
     # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
     # - sh ./cmake-*.sh --skip-license --prefix=/usr
-    - cmake --version
     - g++-8 --version
+    - cmake --version
     - mkdir build && cd build
     - CXX=g++-8 cmake -S . B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
     - cmake --build . --parallel 2 || cmake --build . --verbose
