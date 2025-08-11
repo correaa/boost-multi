@@ -994,6 +994,7 @@ inq:
     - large-memory-space
   interruptible: true
   script:
+    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
     - export PREFIX=`mktemp -d`
@@ -1004,8 +1005,8 @@ inq:
     - git checkout $CI_COMMIT_SHA  # check that multi repo is mirrored correctly
     - cd ../..
     - mkdir build && cd build
-    - cmake .. -G Ninja --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
-    - cmake --build . || cmake --build . --parallel 1
+    - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --parallel 4 || cmake --build . --parallel 1
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
@@ -1024,6 +1025,7 @@ inq-debug:
     - large-memory-space
   interruptible: true
   script:
+    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
     - export PREFIX=`mktemp -d`
@@ -1034,8 +1036,8 @@ inq-debug:
     - git checkout $CI_COMMIT_SHA  # check that multi repo is mirrored correctly
     - cd ../..
     - mkdir build && cd build
-    - cmake .. -G Ninja --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build . || cmake --build . --parallel 1
+    - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build . --parallel 4 || cmake --build . --parallel 1
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
@@ -1057,6 +1059,7 @@ inq cuda:
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
   script:
+    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=0,1
     - __nvcc_device_query
@@ -1093,6 +1096,7 @@ inq rocm:
     - x86_64  # for image
   interruptible: true
   script:
+    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev rocm-device-libs wget
     - /opt/rocm/bin/hipconfig --full
