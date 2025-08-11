@@ -280,6 +280,24 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return std::apply([cu = *curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
 			}
 
+			constexpr auto operator+=(difference_type n) -> auto& {
+				rest_it_ += n;
+				// while(n != 0) {
+				// 	++(*this);
+				// 	--n;
+				// }
+				return *this;
+			}
+
+			constexpr auto operator-=(difference_type n) -> auto& {
+				rest_it_ -= n;
+				// while(n != 0) {
+				// 	++(*this);
+				// 	--n;
+				// }
+				return *this;
+			}
+
 			constexpr auto operator++() -> auto& {
 				++rest_it_;
 				if( rest_it_ == rest_end_ ) {
