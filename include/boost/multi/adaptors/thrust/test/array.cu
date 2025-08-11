@@ -10,6 +10,7 @@
 
 #include <thrust/complex.h>
 #include <thrust/device_allocator.h>
+#include <thrust/device_vector.h>
 #include <thrust/device_ptr.h>
 #include <thrust/system/cuda/memory.h>
 #include <thrust/uninitialized_copy.h>
