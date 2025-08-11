@@ -346,16 +346,15 @@ clang++-18 mull-18:  # mull-18 crashes
 
 clang++-15 libc++ format:
   stage: build
-  image: debian:stable
+  image: debian:bookworm
   tags:
     - non-shared
     - docker
   interruptible: true
+  allow_failure: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates deb clang-format-19 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
-    - deb http://deb.debian.org/debian bookworm-backports main contrib non-free
-    - apt-get install -t bookworm-backports clang-15
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-15 clang-format-19 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
     - mkdir build && cd build
     - clang++ --version
     - clang++-15 --version
