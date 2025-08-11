@@ -255,15 +255,16 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		extensions_t xs_;
 
 	 public:
-		elements_t(extensions_t const& xs) : xs_{xs} {}
+		explicit elements_t(extensions_t const& xs) : xs_{xs} {}
 		class iterator {
-			index curr_;
+			// index curr_;
+			index_extension::iterator curr_;
 			typename extensions_t<D - 1>::elements_t::iterator rest_it_;
 			typename extensions_t<D - 1>::elements_t::iterator rest_begin_;
 			typename extensions_t<D - 1>::elements_t::iterator rest_end_;
 
 			iterator(
-				index curr, 
+				index_extension::iterator curr,
 				typename extensions_t<D - 1>::elements_t::iterator rest_it,
 				typename extensions_t<D - 1>::elements_t::iterator rest_begin,
 				typename extensions_t<D - 1>::elements_t::iterator rest_end
@@ -274,7 +275,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 		 public:
 			auto operator*() const {
-				return std::apply([cu = curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
+				return std::apply([cu = *curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
 			}
 
 			auto operator++() -> auto& {
@@ -301,7 +302,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 		auto begin() const {
 			return iterator{
-				0,
+				xs_.head().begin(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
 				extensions_t<D - 1>{xs_.tail()}.elements().end(),
@@ -312,7 +313,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			using std::get;
 			std::cout << "end " << get<0>(xs_).back() + 1 << std::endl;
 			return iterator{
-				get<0>(xs_).back() + 1,
+				xs_.head().end(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
 				extensions_t<D - 1>{xs_.tail()}.elements().end(),
