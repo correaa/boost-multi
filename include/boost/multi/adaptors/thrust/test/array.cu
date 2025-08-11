@@ -138,7 +138,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int elem) { return elem * 2; });
+			thrust::transform(A.data_elements(), A.data_elements() + A.num_elements(), B.data_elements(), [] __device__(int const& elem) -> int { return elem * 2; });
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int const& elem) -> int { return elem * 2; });
 
 			std::cout << "line " << __LINE__ << std::endl;
 			int B1 = B[1];
