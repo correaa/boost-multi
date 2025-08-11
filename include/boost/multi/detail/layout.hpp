@@ -310,8 +310,6 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		}
 
 		auto end() const {
-			using std::get;
-			std::cout << "end " << get<0>(xs_).back() + 1 << std::endl;
 			return iterator{
 				xs_.head().end(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),

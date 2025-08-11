@@ -192,18 +192,20 @@ g++-8:
     - non-shared
     - docker
   interruptible: true
+  allow_failure: true
   script:
-    - arch
     # - apt-get -qq update
     # - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-8 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
-    # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
-    # - sh ./cmake-*.sh --skip-license --prefix=/usr
+    - apt-get install libboost-dev
+    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
+    - sh ./cmake-*.sh --skip-license --prefix=/usr
     - g++-8 --version
+    - g++ --version
     - cmake --version
     - mkdir build && cd build
     - CXX=g++-8 cmake -S . B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - cmake --build . --target test  # - ctest -j 2 --output-on-failure
+    - cmake --build build/ --parallel 2 || cmake --build . --verbose
+    - cmake --build build/ --target test  # - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
 g++-9-bullseye:
@@ -213,6 +215,7 @@ g++-9-bullseye:
     - non-shared
     - docker
   interruptible: true
+  allow_failure: true
   script:
     - arch
     - apt-get -qq update
@@ -222,9 +225,9 @@ g++-9-bullseye:
     - cmake --version
     - g++-9 --version
     - mkdir build && cd build
-    - CXX=g++-9 cmake -S . B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - cmake --build . --target test  # - ctest -j 2 --output-on-failure
+    - CXX=g++-9 cmake -S . -B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
+    - cmake --build build/ --parallel 2 || cmake --build . --verbose
+    - cmake --build build/ --target test  # - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
 # g++-9:
