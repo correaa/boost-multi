@@ -106,19 +106,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "line " << __LINE__ << std::endl;
 
 		{
-			multi::array<int, 1, thrust::device_allocator<int>> A = {1, 2, 3};
-			multi::array<int, 1, thrust::device_allocator<int>> B(3, 0);
+			multi::array<int, 1, thrust::device_allocator<int> > A = {1, 2, 3};
+			multi::array<int, 1, thrust::device_allocator<int> > B(3, 0);
 
 			BOOST_TEST( A[1] == 2 );
 
-			thrust::transform(
-				A.begin(), A.end(),
-				B.begin(),
-				[] __host__ __device__(int elem) {
-					return elem * 2;
-				}  // *2.0;}
-			);
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int elem) { return elem * 2; });
 
+			std::cout << "line " << __LINE__ << std::endl;
+			int B1 = B[1];
+			BOOS_TEST( B1 == 4 );
+
+			std::cout << "line " << __LINE__ << std::endl;
 			BOOST_TEST( B[1] == 4 );
 		}
 
@@ -131,11 +130,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// // for(int i = 0; i != A.size(); ++i) { B[i] = A[i]*2.0; }
 			// // for(auto i : A.extension()) { B[i] = A[i]*2.0; }
 
-			thrust::transform(
-				A.begin(), A.end(),
-				B.begin(),
-				[] __host__ __device__(double const& elem) { return elem * 2.0; }
-			);
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(double const& elem) { return elem * 2.0; });
 
 			BOOST_TEST( B[1] == 4.0 );
 		}
