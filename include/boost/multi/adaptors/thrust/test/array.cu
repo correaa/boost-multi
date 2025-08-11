@@ -107,8 +107,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "line " << __LINE__ << std::endl;
 
 		{
-			thrust::device_vector<int, 1> A = {1, 2, 3};
-			thrust::device_vector<int, 1> B(3, 0);
+			thrust::device_vector<int> A = {1, 2, 3};
+			thrust::device_vector<int> B(3, 0);
 
 			std::cout << "line " << __LINE__ << std::endl;
 
