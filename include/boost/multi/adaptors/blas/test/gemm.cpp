@@ -1665,14 +1665,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<double, 2> c = blas::gemm(0.1, a, blas::H(b));  // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( c[1][2] == 0. );
-		}
-		{
-			multi::array<double, 2> const a = {
-				{1, 3, 1},
-				{9, 7, 1},
-			};
-			(void)a;
+			BOOST_TEST( c[1][2] == 0.0 );
 		}
 	}
 

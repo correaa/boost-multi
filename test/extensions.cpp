@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Alfredo A. Correa
+// Copyright 2021-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -12,8 +12,8 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
-	multi::array<int, 2> A2D({5, 7}, 1);
-	auto const           A2Dx = A2D.extension();
+	auto       A2D  = multi::array<int, 2>({5, 7}, 1);
+	auto const A2Dx = A2D.extension();
 
 	BOOST_TEST( &A2D() == &A2D(A2Dx) );
 
@@ -53,12 +53,174 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 	BOOST_TEST( get<0>(A2Dxs).size() == 5 );
 
+	// auto it2d = A2Dxs.elements().begin(); (void)it2d;
+
 	multi::array<int, 1> const A1D({37}, 1);
 	BOOST_TEST( A1D.size() == 37 );
 	BOOST_TEST( A1D.num_elements() == 37 );
 	BOOST_TEST( A1D.extensions().num_elements() == 37 );
 
 	BOOST_TEST( A1D.extensions().elements().size() == A1D.extensions().num_elements() );
+	{
+		auto it = A1D.extensions().elements().begin();
+		BOOST_TEST( get<0>(*it) == 0 );
+		++it;
+		BOOST_TEST( get<0>(*it) == 1 );
+
+		it = A1D.extensions().elements().end();
+		--it;
+		BOOST_TEST( get<0>(*it) == 36 );
+	}
+	{
+		auto x1d = multi::extensions_t<1>(3);
+
+		auto it = x1d.elements().begin();
+		BOOST_TEST( get<0>(*it) == 0 );
+
+		++it;
+		BOOST_TEST( get<0>(*it) == 1 );
+
+		++it;
+		BOOST_TEST( get<0>(*it) == 2 );
+
+		++it;
+		BOOST_TEST( it == x1d.elements().end() );
+
+		--it;
+		BOOST_TEST( get<0>(*it) == 2 );
+
+		--it;
+		BOOST_TEST( get<0>(*it) == 1 );
+
+		--it;
+		BOOST_TEST( get<0>(*it) == 0 );
+		BOOST_TEST( it == x1d.elements().begin() );
+	}
+	{
+		auto x1d = multi::extensions_t<1>(3);
+
+		auto it = x1d.elements().begin();
+		BOOST_TEST( get<0>(*it) == 0 );
+
+		++it;
+		BOOST_TEST( get<0>(*it) == 1 );
+
+		it += 2;
+
+		BOOST_TEST( it == x1d.elements().end() );
+
+		it -= 3;
+		BOOST_TEST( get<0>(*it) == 0 );
+		BOOST_TEST( it == x1d.elements().begin() );
+	}
+	{
+		multi::extensions_t<2> const x2d({4, 3});
+
+		auto it = x2d.elements().begin();
+
+		BOOST_TEST( it == x2d.elements().begin() );
+
+		using std::get;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 1 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 1 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 1 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 2 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 2 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 2 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 3 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 3 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( 3 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		++it;
+		BOOST_TEST( it ==  x2d.elements().end() );
+
+		--it;
+		BOOST_TEST( 3 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 3 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 3 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 2 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 2 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 2 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 1 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 1 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 1 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 1 == get<1>(*it) );
+
+		--it;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		BOOST_TEST( it ==  x2d.elements().begin() );
+	}
 
 	return boost::report_errors();
 }

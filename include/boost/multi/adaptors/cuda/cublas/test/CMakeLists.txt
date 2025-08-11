@@ -26,7 +26,7 @@ if((NOT
 	find_package(BLAS)
 
 	if(BLAS_FOUND)
-    	message(STATUS "BLAS library found.")
+		message(STATUS "BLAS library found.")
 	else()
 		message(WARNING "BLAS library not found. cuBLAS tests need BLAS.")
 		return()

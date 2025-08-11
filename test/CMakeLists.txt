@@ -332,20 +332,12 @@ else()
 	-Wwrite-strings
 	>
 	$<$<CXX_COMPILER_ID:NVHPC>:
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:
-	#-Wfatal-errors
-	-fmax-errors=2
-	>
-	-Werror -Wall
-	-Wcast-qual
-	-Wformat=2
-	-Wshadow
-	-Wsign-compare
-	#-Wpedantic
-	-Wundef
-	-Wuninitialized
-	-Wunused
-	--diag_suppress unrecognized_gcc_pragma
+		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:
+			#-Wfatal-errors
+			-fmax-errors=2
+		>
+		-Wall -Wextra  # -Wpedantic
+		#-Wcast-qual -Wformat=2 -Wshadow -Wsign-compare -Wundef -Wuninitialized -Wunused
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
 		$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
