@@ -21,6 +21,7 @@
 #include <cstddef>           // for size_t, ptrdiff_t, __GLIBCXX__
 #include <cstdlib>           // for abs
 #include <initializer_list>  // for initializer_list
+#include <iostream>
 #include <iterator>
 #include <memory>       // for swap
 #include <tuple>        // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
@@ -249,6 +250,78 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		}
 		return false;
 	}
+
+	class elements_t {
+		extensions_t xs_;
+		explicit elements_t(extensions_t const& xs) : xs_{xs} {}
+
+		friend struct extensions_t;
+
+	 public:
+		class iterator {
+			index_extension::iterator curr_;
+
+			typename extensions_t<D - 1>::elements_t::iterator rest_it_;
+			typename extensions_t<D - 1>::elements_t::iterator rest_begin_;
+			typename extensions_t<D - 1>::elements_t::iterator rest_end_;
+
+			constexpr iterator(
+				index_extension::iterator curr,
+				typename extensions_t<D - 1>::elements_t::iterator rest_it,
+				typename extensions_t<D - 1>::elements_t::iterator rest_begin,
+				typename extensions_t<D - 1>::elements_t::iterator rest_end
+			)
+			: curr_{curr}, rest_it_{rest_it}, rest_begin_{rest_begin}, rest_end_{rest_end} {}
+
+			friend class elements_t;
+
+		 public:
+			constexpr auto operator*() const {
+				return std::apply([cu = *curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
+			}
+
+			constexpr auto operator++() -> auto& {
+				++rest_it_;
+				if( rest_it_ == rest_end_ ) {
+					rest_it_ = rest_begin_;
+					++curr_;
+				}
+				return *this;
+			}
+
+			constexpr auto operator--() -> auto& {
+				if( rest_it_ == rest_begin_ ) {
+					rest_it_ = rest_end_;
+					--curr_;
+				}
+				--rest_it_;
+				return *this;
+			}
+
+			friend constexpr auto operator==(iterator const& self, iterator const& other) { return (self.curr_ == other.curr_) && (self.rest_it_ == other.rest_it_); }
+			friend constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
+		};
+
+		auto begin() const {
+			return iterator{
+				xs_.head().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().end(),
+			};
+		}
+
+		auto end() const {
+			return iterator{
+				xs_.head().end(),
+				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
+				extensions_t<D - 1>{xs_.tail()}.elements().end(),
+			};
+		}
+	};
+
+	auto elements() const { return elements_t{*this}; }
 
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {

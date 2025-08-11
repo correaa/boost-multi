@@ -10,6 +10,7 @@
 
 #include <thrust/complex.h>
 #include <thrust/device_allocator.h>
+#include <thrust/device_vector.h>
 #include <thrust/device_ptr.h>
 #include <thrust/system/cuda/memory.h>
 #include <thrust/uninitialized_copy.h>
@@ -45,27 +46,21 @@ template<class T> using test_allocator =
 }
 
 auto universal_memory_supported() -> bool {
+	std::cout << "testing for universal memory supported" << std::endl;
 	int d;
 	cudaGetDevice(&d);
 	int is_cma = 0;
 	cudaDeviceGetAttribute(&is_cma, cudaDevAttrConcurrentManagedAccess, d);
-	if(is_cma) { std::cout << "universal memory is supported" << std::endl; }
+	if(is_cma) {
+		std::cout << "universal memory is supported" << std::endl;
+	} else {
+		std::cout << "universal memory is NOT supported" << std::endl;
+	}
 	return (is_cma == 1)?true:false;
 }
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	
-	// BOOST_AUTO_TEST_CASE(cuda_universal_empty)
-	if(universal_memory_supported())
-	{
-		using complex = thrust::complex<double>;
-		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A;
-		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> B = A;
-		BOOST_TEST( A.is_empty() );
-		BOOST_TEST( B.is_empty() );
-		BOOST_TEST( A == B );
-	}
-
 	// BOOST_AUTO_TEST_CASE(cuda_allocators)
 	{
 
@@ -80,6 +75,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		A1[10] = B1[10];
 		BOOST_TEST( A1[10] == 2.0 );
 	}
+	std::cout << "line " << __LINE__ << std::endl;
+
+	// BOOST_AUTO_TEST_CASE(cuda_universal_empty)
+	if(universal_memory_supported())
+	{
+		using complex = thrust::complex<double>;
+		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A;
+		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> B = A;
+		BOOST_TEST( A.is_empty() );
+		BOOST_TEST( B.is_empty() );
+		BOOST_TEST( A == B );
+	}
+
+	std::cout << "line " << __LINE__ << std::endl;
 
 	// BOOST_AUTO_TEST_CASE(cuda_1d_initlist)
 	{
@@ -95,22 +104,67 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// A1[10] = B1[10];
 		// BOOST_TEST( A1[10] == 2.0 );
 
+		std::cout << "line " << __LINE__ << std::endl;
+
 		{
-			multi::array<int, 1, thrust::device_allocator<int>> A = {1, 2, 3};
-			multi::array<int, 1, thrust::device_allocator<int>> B(3, 0);
+			thrust::device_vector<int> A(3, 44);
+			thrust::device_vector<int> B(3, 0);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			BOOST_TEST( A[1] == 44 );
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int elem) { return elem * 2; });
+
+			std::cout << "line " << __LINE__ << std::endl;
+			int B1 = B[1];
+			BOOST_TEST( B1 == 88 );
+
+			std::cout << "line " << __LINE__ << std::endl;
+			BOOST_TEST( B[1] == 88 );
+		}
+
+		std::cout << "line " << __LINE__ << std::endl;
+
+		{
+			multi::array<int, 1, thrust::device_allocator<int> > A(3, 44);
+			multi::array<int, 1, thrust::device_allocator<int> > B(3, 0);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			BOOST_TEST( A[1] == 44 );
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int elem) { return elem * 2; });
+
+			std::cout << "line " << __LINE__ << std::endl;
+			int B1 = B[1];
+			BOOST_TEST( B1 == 88 );
+
+			std::cout << "line " << __LINE__ << std::endl;
+			BOOST_TEST( B[1] == 88 );
+		}
+		
+		{
+			multi::array<int, 1, thrust::device_allocator<int> > A = {1, 2, 3};
+			multi::array<int, 1, thrust::device_allocator<int> > B(3, 0);
 
 			BOOST_TEST( A[1] == 2 );
 
-			thrust::transform(
-				A.begin(), A.end(),
-				B.begin(),
-				[] __host__ __device__(int elem) {
-					return elem * 2;
-				}  // *2.0;}
-			);
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int elem) { return elem * 2; });
 
+			std::cout << "line " << __LINE__ << std::endl;
+			int B1 = B[1];
+			BOOST_TEST( B1 == 4 );
+
+			std::cout << "line " << __LINE__ << std::endl;
 			BOOST_TEST( B[1] == 4 );
 		}
+
+		std::cout << "line " << __LINE__ << std::endl;
 
 		{
 			multi::array<double, 1, thrust::device_allocator<double>> A = {1.0, 2.0, 3.0};
@@ -119,15 +173,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// // for(int i = 0; i != A.size(); ++i) { B[i] = A[i]*2.0; }
 			// // for(auto i : A.extension()) { B[i] = A[i]*2.0; }
 
-			thrust::transform(
-				A.begin(), A.end(),
-				B.begin(),
-				[] __host__ __device__(double const& elem) { return elem * 2.0; }
-			);
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(double const& elem) { return elem * 2.0; });
 
 			BOOST_TEST( B[1] == 4.0 );
 		}
 	}
+
+	std::cout << "line " << __LINE__ << std::endl;
 
 	// BOOST_AUTO_TEST_CASE(test_univ_alloc)
 	if(universal_memory_supported())
@@ -136,12 +188,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		*raw_pointer_cast(Dev.base()) = 99.0;
 	}
 
+	std::cout << "line " << __LINE__ << std::endl;
+
 	// BOOST_AUTO_TEST_CASE(mtc_universal_array)
 	if(universal_memory_supported())
 	{
 		multi::thrust::cuda::universal_array<double, 2> Dev({128, 128});
 		*raw_pointer_cast(Dev.base()) = 99.0;
 	}
+
+	std::cout << "line " << __LINE__ << std::endl;
 
 	// BOOST_AUTO_TEST_CASE(mtc_universal_coloncolon_array)
 	if(universal_memory_supported())
@@ -150,6 +206,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		*raw_pointer_cast(Dev.base()) = 99.0;
 	}
 
+	std::cout << "line " << __LINE__ << std::endl;
+
 	// BOOST_AUTO_TEST_CASE(test_alloc)
 	{
 		multi::array<double, 2, thrust::cuda::allocator<double>> Dev({128, 128});
@@ -157,6 +215,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 #ifdef NDEBUG
+
+	std::cout << "line " << __LINE__ << std::endl;
+
 	auto const n = 1024;
 
 	// BOOST_AUTO_TEST_CASE(thrust_copy_1D_issue123_double)
@@ -216,6 +277,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::cout << "| strided    devc -> host | " << Host.strided(2).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 			// BOOST_TEST( Hos2 == Host );
 		}
+
+		std::cout << "line " << __LINE__ << std::endl;
+
 		{
 			boost::timer::auto_cpu_timer t{""};
 			Dev2 = Devc;
@@ -278,6 +342,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		std::cout << "   " << std::endl;
 	}
+
+	std::cout << "line " << __LINE__ << std::endl;
 
 	// BOOST_AUTO_TEST_CASE(thrust_copy_1D_issue123_complex)
 	{
@@ -853,6 +919,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "   " << std::endl;
 	}
 #endif
+
+	std::cout << "line " << __LINE__ << std::endl;
 
 	return boost::report_errors();
 }
