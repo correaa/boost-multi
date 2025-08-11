@@ -221,6 +221,119 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( it ==  x2d.elements().begin() );
 	}
+	{
+		multi::extensions_t<2> const x2d({4, 3});
+
+		auto it = x2d.elements().begin();
+
+		BOOST_TEST( it == x2d.elements().begin() );
+
+		using std::get;
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
+
+		it+=2;
+
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 0 == get<0>(*it) );
+		// BOOST_TEST( 1 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 0 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 1 == get<0>(*it) );
+		// BOOST_TEST( 0 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 1 == get<0>(*it) );
+		// BOOST_TEST( 1 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 1 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 2 == get<0>(*it) );
+		// BOOST_TEST( 0 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 2 == get<0>(*it) );
+		// BOOST_TEST( 1 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 2 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 3 == get<0>(*it) );
+		// BOOST_TEST( 0 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 3 == get<0>(*it) );
+		// BOOST_TEST( 1 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( 3 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// ++it;
+		// BOOST_TEST( it ==  x2d.elements().end() );
+
+		// --it;
+		// BOOST_TEST( 3 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 3 == get<0>(*it) );
+		// BOOST_TEST( 1 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 3 == get<0>(*it) );
+		// BOOST_TEST( 0 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 2 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 2 == get<0>(*it) );
+		// BOOST_TEST( 1 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 2 == get<0>(*it) );
+		// BOOST_TEST( 0 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 1 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 1 == get<0>(*it) );
+		// BOOST_TEST( 1 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 1 == get<0>(*it) );
+		// BOOST_TEST( 0 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 0 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 0 == get<0>(*it) );
+		// BOOST_TEST( 1 == get<1>(*it) );
+
+		// --it;
+		// BOOST_TEST( 0 == get<0>(*it) );
+		// BOOST_TEST( 0 == get<1>(*it) );
+
+		// BOOST_TEST( it ==  x2d.elements().begin() );
+	}
 
 	return boost::report_errors();
 }
