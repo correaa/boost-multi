@@ -97,6 +97,23 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it == x1d.elements().begin() );
 	}
 	{
+		auto x1d = multi::extensions_t<1>(3);
+
+		auto it = x1d.elements().begin();
+		BOOST_TEST( get<0>(*it) == 0 );
+
+		++it;
+		BOOST_TEST( get<0>(*it) == 1 );
+
+		it += 2;
+
+		BOOST_TEST( it == x1d.elements().end() );
+
+		it -= 3;
+		BOOST_TEST( get<0>(*it) == 0 );
+		BOOST_TEST( it == x1d.elements().begin() );
+	}
+	{
 		multi::extensions_t<2> const x2d({4, 3});
 
 		auto it = x2d.elements().begin();

@@ -115,7 +115,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 			int B1 = B[1];
-			BOOS_TEST( B1 == 4 );
+			BOOST_TEST( B1 == 4 );
 
 			std::cout << "line " << __LINE__ << std::endl;
 			BOOST_TEST( B[1] == 4 );
