@@ -107,12 +107,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "line " << __LINE__ << std::endl;
 
 		{
-			thrust::device_vector<int> A = {1, 2, 3};
+			thrust::device_vector<int> A(3, 44);
 			thrust::device_vector<int> B(3, 0);
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			BOOST_TEST( A[1] == 2 );
+			BOOST_TEST( A[1] == 44 );
 
 			std::cout << "line " << __LINE__ << std::endl;
 
@@ -120,10 +120,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 			int B1 = B[1];
-			BOOST_TEST( B1 == 4 );
+			BOOST_TEST( B1 == 88 );
 
 			std::cout << "line " << __LINE__ << std::endl;
-			BOOST_TEST( B[1] == 4 );
+			BOOST_TEST( B[1] == 88 );
 		}
 
 		std::cout << "line " << __LINE__ << std::endl;
