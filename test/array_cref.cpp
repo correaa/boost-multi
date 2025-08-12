@@ -14,7 +14,7 @@
 #include <complex>           // for complex, operator==
 #include <initializer_list>  // for initializer_list
 #include <memory>            // for pointer_traits
-#include <tuple>                            // for get
+#include <tuple>             // for get  // NOLINT(misc-include-cleaner)
 #include <type_traits>       // for is_same
 #include <vector>            // for vector
 
