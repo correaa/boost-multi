@@ -280,34 +280,34 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return std::apply([cu = *curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
 			}
 
-			static auto math_modulo_(difference_type a, difference_type b) {
-				auto result = a % b;
-				return (result < 0) ? (result + b) : result;
-			}
-
-			static auto math_div_(difference_type a, difference_type b) {
-				auto result = a / b;
-				return (result < 0) ? result - 1 : result;
-			}
-
-
 			constexpr auto operator+=(difference_type n) -> auto& {
-				curr_ += 
+				curr_ +=
 					(rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
-					// math_div_(rest_it_ - rest_begin_ + n, rest_end_ - rest_begin_);
-				rest_it_ = rest_begin_
-					+ (rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_)
+				// math_div_(rest_it_ - rest_begin_ + n, rest_end_ - rest_begin_);
+				rest_it_ = rest_begin_ + (rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_)
 					// + math_modulo_(rest_it_ - rest_begin_ + n, rest_end_ - rest_begin_)
-				;
+					;
 				return *this;
 			}
 
 			constexpr auto operator-=(difference_type n) -> auto& {
-				curr_ -= (rest_end_ - rest_it_ + n + 1) % (rest_end_ - rest_begin_);
-				rest_it_ = rest_end_ - (rest_end_ - rest_it_ + n + 1) % (rest_end_ - rest_begin_);
+				curr_ -= (rest_end_ - rest_it_ + n) / (rest_end_ - rest_begin_);
+				rest_it_ = rest_end_ - ((rest_end_ - rest_it_ + n) % (rest_end_ - rest_begin_));
+				if(rest_it_ == rest_end_) {
+					rest_it_ = rest_begin_;
+					++curr_;
+				}
 				// rest_it_ = rest_begin_
 				// 	+ (rest_it_ - rest_begin_ + (rest_end_ - rest_begin_) - n) )
 				return *this;
+			}
+
+			constexpr auto operator-(difference_type n) const {
+				auto ret = *this; ret -= n; return ret;
+			}
+
+			constexpr auto operator+(difference_type n) const {
+				auto ret = *this; ret += n; return ret;
 			}
 
 			constexpr auto operator++() -> auto& {
