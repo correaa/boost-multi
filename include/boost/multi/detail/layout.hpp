@@ -297,11 +297,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			constexpr auto operator-(difference_type n) const {
-				auto ret = *this; ret -= n; return ret;
+				return auto{*this} -= n;  // auto ret = *this; ret -= n; return ret;
 			}
 
 			constexpr auto operator+(difference_type n) const {
-				auto ret = *this; ret += n; return ret;
+				return auto{*this} += n;  // auto ret = *this; ret += n; return ret;
 			}
 
 			constexpr auto operator++() -> auto& {
