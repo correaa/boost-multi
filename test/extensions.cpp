@@ -232,26 +232,33 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( 0 == get<0>(*it) );
 		BOOST_TEST( 0 == get<1>(*it) );
 
-		it+=2;
+		it += 2;
 
 		BOOST_TEST( 0 == get<0>(*it) );
 		BOOST_TEST( 2 == get<1>(*it) );
 
-		// ++it;
-		// BOOST_TEST( 0 == get<0>(*it) );
-		// BOOST_TEST( 1 == get<1>(*it) );
+		it -= 2;
 
-		// ++it;
-		// BOOST_TEST( 0 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
+		std::cout << "x y " << get<0>(*it) << ' ' << get<1>(*it) << '\n';
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 0 == get<1>(*it) );
 
-		// ++it;
-		// BOOST_TEST( 1 == get<0>(*it) );
-		// BOOST_TEST( 0 == get<1>(*it) );
+		it += 2;
 
-		// ++it;
-		// BOOST_TEST( 1 == get<0>(*it) );
-		// BOOST_TEST( 1 == get<1>(*it) );
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		it += 3;
+
+		BOOST_TEST( 1 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
+
+		it -= 3;
+
+		std::cout << get<0>(*it) << ' ' << get<1>(*it) << std::endl;
+
+		BOOST_TEST( 0 == get<0>(*it) );
+		BOOST_TEST( 2 == get<1>(*it) );
 
 		// ++it;
 		// BOOST_TEST( 1 == get<0>(*it) );
