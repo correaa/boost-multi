@@ -21,6 +21,7 @@
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
+#include <version>  // for __GLIBCXX__
 
 namespace multi = boost::multi;
 
