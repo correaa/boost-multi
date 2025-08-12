@@ -3,10 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
-
-#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
@@ -21,7 +21,7 @@
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
-#include <version>  // for __GLIBCXX__
+#include <version>  // for __GLIBCXX__  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
@@ -578,11 +578,11 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 			BOOST_TEST( VV[0] == xx );
 			BOOST_TEST( VV[1] == vv );
 
-			std::sort(VV.begin(), VV.end());
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
+			std::sort(VV.begin(), VV.end());  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
 
 			VV.resize(10, xx);
-			std::sort(VV.begin(), VV.end());
+			std::sort(VV.begin(), VV.end());  // NOLINT(modernize-use-ranges) for C++20
 			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
 		}
 	}
