@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #ifdef __NVCC__                 // affects cuda 11.4.3
 #pragma nv_diag_suppress 20014  // error #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
 #endif
@@ -12,12 +14,11 @@
 #include <complex>           // for complex, operator==
 #include <initializer_list>  // for initializer_list
 #include <memory>            // for pointer_traits
+#include <tuple>                            // for get
 #include <type_traits>       // for is_same
 #include <vector>            // for vector
 
 namespace multi = boost::multi;
-
-#include <boost/core/lightweight_test.hpp>
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(array_cref) {
