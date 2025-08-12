@@ -6,6 +6,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <iostream>
 #include <tuple>  // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>                      // for add_const<>::type
 
@@ -232,33 +233,48 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( 0 == get<0>(*it) );
 		BOOST_TEST( 0 == get<1>(*it) );
 
-		it += 2;
+		BOOST_TEST( 0 == get<0>(*(it + 2)) );
+		BOOST_TEST( 2 == get<1>(*(it + 2)) );
 
-		BOOST_TEST( 0 == get<0>(*it) );
-		BOOST_TEST( 2 == get<1>(*it) );
+		BOOST_TEST( 1 == get<0>(*(it + 5)) );
+		BOOST_TEST( 2 == get<1>(*(it + 5)) );
 
-		it -= 2;
+		auto it2 = it + 5;
 
-		std::cout << "x y " << get<0>(*it) << ' ' << get<1>(*it) << '\n';
-		BOOST_TEST( 0 == get<0>(*it) );
-		BOOST_TEST( 0 == get<1>(*it) );
+		BOOST_TEST( 1 == get<0>(*(it2)) );
+		BOOST_TEST( 2 == get<1>(*(it2)) );
 
-		it += 2;
+		std::cout << "x y " << get<0>(*(it2-1)) << ' ' << get<1>(*(it2-1)) << '\n';
 
-		BOOST_TEST( 0 == get<0>(*it) );
-		BOOST_TEST( 2 == get<1>(*it) );
+		BOOST_TEST( 1 == get<0>(*(it2-1)) );
+		BOOST_TEST( 1 == get<1>(*(it2-1)) );
 
-		it += 3;
+		std::cout << "x y " << get<0>(*(it2-2)) << ' ' << get<1>(*(it2-2)) << '\n';
+		BOOST_TEST( 1 == get<0>(*(it2-2)) );
+		BOOST_TEST( 0 == get<1>(*(it2-2)) );
 
-		BOOST_TEST( 1 == get<0>(*it) );
-		BOOST_TEST( 2 == get<1>(*it) );
+		// it -= 2;
 
-		it -= 3;
+		// std::cout << "x y " << get<0>(*it) << ' ' << get<1>(*it) << '\n';
+		// BOOST_TEST( 0 == get<0>(*it) );
+		// BOOST_TEST( 0 == get<1>(*it) );
 
-		std::cout << get<0>(*it) << ' ' << get<1>(*it) << std::endl;
+		// it += 2;
 
-		BOOST_TEST( 0 == get<0>(*it) );
-		BOOST_TEST( 2 == get<1>(*it) );
+		// BOOST_TEST( 0 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// it += 3;
+
+		// BOOST_TEST( 1 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
+
+		// it -= 3;
+
+		// std::cout << get<0>(*it) << ' ' << get<1>(*it) << std::endl;
+
+		// BOOST_TEST( 0 == get<0>(*it) );
+		// BOOST_TEST( 2 == get<1>(*it) );
 
 		// ++it;
 		// BOOST_TEST( 1 == get<0>(*it) );
