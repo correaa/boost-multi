@@ -9,7 +9,7 @@
 
 #include <algorithm>    // for equal
 #include <array>        // for array  // IWYU pragma: keep  // bug in iwyu 8.22
-#include <memory>       // for addressof
+#include <memory>       // for addressof  // IWYU pragma: keep
 #include <type_traits>  // for is_trivially_copy_assignable_v
 #include <utility>      // for as_const, addressof, exchange, move
 #include <vector>       // for vector
