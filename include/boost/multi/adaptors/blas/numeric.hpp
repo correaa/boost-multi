@@ -20,6 +20,8 @@
 
 // #include <boost/multi/adaptors/complex.hpp>
 
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>   // for BOOST_MULTI_NO_UNIQUE_ADDRESS
+
 #include <complex>                                           // for complex
 #include <cstddef>                                           // for nullptr_t
 #include <functional>                                        // for negate
@@ -27,6 +29,7 @@
 #include <memory>                                            // for pointer_...
 #include <type_traits>                                       // for decay_t
 #include <utility>                                           // for declval
+// IWYU pragma: no_include <version>                                    // for nullptr_t
 
 #if defined(__NVCC__)
 #define BOOST_MULTI_HD __host__ __device__
