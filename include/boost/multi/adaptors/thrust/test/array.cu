@@ -115,12 +115,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			thrust::copy(vA.begin(), vA.end(), vB.begin());
 
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::copy(vA.data(), vA.data() + vA.size(), vB.begin());
+
 			BOOST_TEST( vB[0] == 44 );
 		}
 
 		{
 			thrust::device_vector<int, thrust::device_allocator<int> > aA(3, 44);
 			thrust::device_vector<int, thrust::device_allocator<int> > aB(3, 0);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::copy(aA.data_elements(), aA.data_elements() + aA.size(), aB.begin());
 
 			std::cout << "line " << __LINE__ << std::endl;
 
