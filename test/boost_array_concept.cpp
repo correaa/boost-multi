@@ -24,9 +24,8 @@
 // IWYU pragma: no_include <boost/multi_array/subarray.hpp>        // for const_sub_array, sub_array
 // IWYU pragma: no_include <algorithm>                             // for fill_n
 
-#include <boost/multi_array.hpp>  // for multi_array
-// #include <boost/multi_array/base.hpp>            // for multi_array
-
+#include <boost/multi_array.hpp>                 // for multi_array
+#include <boost/multi_array/base.hpp>            // for multi_array  // IWYU pragma: keep
 #include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept
 
 #if defined(__clang__)
