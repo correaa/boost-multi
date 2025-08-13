@@ -16,6 +16,7 @@
 #include <cmath>    // for NAN, abs
 #include <complex>  // for operator*, opera...
 #include <limits>
+// IWYU pragma: no_include <iterator>                                  // for size
 // IWYU pragma: no_include <cstdlib>  // for NAN, abs
 // #include <iterator>                                  // for size  // NOLINT(misc-include-cleaner)
 // IWYU pragma: no_include <memory>   // for allocator
