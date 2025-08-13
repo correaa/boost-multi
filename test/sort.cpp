@@ -118,7 +118,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
 
-		std::stable_sort(begin(d2D), end(d2D));
+		std::stable_sort(begin(d2D), end(d2D));  // NOLINT(modernize-use-ranges) for C++20
 		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
 
 		BOOST_TEST((
@@ -149,7 +149,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort)
 	{
 		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );
+		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(modernize-use-ranges) for C++20
 
 		// clang-format off
 	std::array<std::array<double, 5>, 4> d2D {{
