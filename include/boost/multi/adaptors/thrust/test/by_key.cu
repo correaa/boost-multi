@@ -43,7 +43,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	        [] __host__ __device__ (decltype(M)::indexes const& e) { using std::get; return get<0>(e); }
 	    )
 	;
-	auto row_ids_end = row_ids_begin + M.num_elements();
+	auto row_ids_end =
+		thrust::make_transform_iterator(
+			M.extensions().elements().end(),
+			[] __host__ __device__ (decltype(M)::indexes const& e) { using std::get; return get<0>(e); }
+		)
+	;
 
 	multi::thrust::universal_array<float, 1> sums(M.size());
 
