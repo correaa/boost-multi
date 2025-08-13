@@ -7,6 +7,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <tuple>    // for get
 #include <utility>  // for forward
 
 namespace multi = boost::multi;
