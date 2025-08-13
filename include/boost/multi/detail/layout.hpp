@@ -308,7 +308,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
-				return (self.curr_ - other.curr_) * (self.rest_end_ - self.rest_begin_) + (self.rest_it_ - self.rest_begin_) - (other.rest_it_ - other.rest_begin_);
+				return ((self.curr_ - other.curr_) * (self.rest_end_ - self.rest_begin_)) + (self.rest_it_ - self.rest_begin_) - (other.rest_it_ - other.rest_begin_);
 			}
 
 			constexpr auto operator-(difference_type n) const {
