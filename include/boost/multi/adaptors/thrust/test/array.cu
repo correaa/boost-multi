@@ -123,8 +123,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 		{
-			thrust::device_vector<int, thrust::device_allocator<int> > aA(3, 44);
-			thrust::device_vector<int, thrust::device_allocator<int> > aB(3, 0);
+			multi::array<int, 1, thrust::device_allocator<int> > aA(3, 44);
+			multi::array<int, 1, thrust::device_allocator<int> > aB(3, 0);
 
 			std::cout << "line " << __LINE__ << std::endl;
 
