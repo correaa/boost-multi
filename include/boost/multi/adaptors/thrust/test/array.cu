@@ -113,11 +113,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			thrust::copy(vA.begin(), vA.end(), vB.begin());
+			thrust::copy(thrust::cuda::par, vA.begin(), vA.end(), vB.begin());
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			thrust::copy(vA.data(), vA.data() + vA.size(), vB.begin());
+			thrust::copy(thrust::cuda::par, vA.data(), vA.data() + vA.size(), vB.begin());
 
 			BOOST_TEST( vB[0] == 44 );
 		}
@@ -128,11 +128,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			thrust::copy(aA.data_elements(), aA.data_elements() + aA.size(), aB.begin());
+			thrust::copy(thrust::cuda::par, aA.data_elements(), aA.data_elements() + aA.size(), aB.begin());
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			thrust::copy(aA.begin(), aA.end(), aB.begin());
+			thrust::copy(thrust::cuda::par, aA.begin(), aA.end(), aB.begin());
 
 			BOOST_TEST( aB[0] == 44 );
 		}
