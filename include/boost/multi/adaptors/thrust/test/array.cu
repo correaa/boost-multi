@@ -124,12 +124,53 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( vB[0] == 44 );
 		}
+		{
+			thrust::device_allocator<int> devalloc;
 
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			auto Aptr = devalloc.allocate(3);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			thrust::fill(thrust::cuda::par , Aptr, Aptr + 3, 44);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			auto Bptr = devalloc.allocate(3);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			thrust::fill(thrust::cuda::par , Bptr, Bptr + 3, 0);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			thrust::copy(thrust::cuda::par, Aptr, Aptr + 3, Bptr);
+
+			devalloc.deallocate(Aptr, 3);
+			devalloc.deallocate(Bptr, 3);
+		}
 		{
 			multi::array<int, 1, thrust::device_allocator<int> > aA(3, 44);
 			multi::array<int, 1, thrust::device_allocator<int> > aB(3, 0);
 
-			cudaDeviceSynchronize();
+			thrust::device_allocator<int> devalloc;
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			auto Aptr = devalloc.allocate(3);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::fill(thrust::cuda::par , Aptr, Aptr + 3, 44);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			auto Bptr = devalloc.allocate(3);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::fill(thrust::cuda::par , Aptr, Aptr + 3, 44);
 
 			std::cout << "line " << __LINE__ << std::endl;
 
