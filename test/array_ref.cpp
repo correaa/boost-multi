@@ -1062,15 +1062,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 #ifdef BOOST_MULTI_HAS_SPAN
 		auto print_me0 = [](std::span<int> rng) {
-			std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
-			std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });
+			std::cout << "rng.size(): " << rng.size() << '\n';                                          // (4)
+			std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });  // NOLINT(modernize-use-ranges)
 			std::cout << "\n\n";
 		};
 #endif
 
 		auto print_me1 = [](multi::array_ref<int, 1> const& rng) {
 			std::cout << "rng.size(): " << rng.size() << '\n';  // (4)
-			std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });
+			std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });  // NOLINT(modernize-use-ranges)
 			std::cout << "\n\n";
 		};
 
