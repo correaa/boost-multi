@@ -34,8 +34,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( BB[0] == bb );
 		BOOST_TEST( BB[1] == bb );
 
+		// NOLINTNEXTLINE(modernize-use-ranges)
 		BOOST_TEST( std::all_of(BB.begin(), BB.end(), [&bb](auto const& row) {
-			return row == bb; }) );  // NOLINT(boost-use-ranges)
+			return row == bb; }) );
 
 		multi::array<double, 0> const one{1.0};
 
