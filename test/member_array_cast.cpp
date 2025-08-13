@@ -267,8 +267,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 		multi::array<employee, 2> d2D = {
-			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
-			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
+			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},  // NOLINT(modernize-use-designated-initializers) for C++20
+			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},  // NOLINT(modernize-use-designated-initializers) for C++20
 		};
 
 		// multi::array<std::size_t, 2> d2D_ages_copy =

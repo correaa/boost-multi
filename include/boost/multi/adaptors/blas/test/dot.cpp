@@ -496,8 +496,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto CC = C;
 
 		auto const [is, js] = C.extensions();
-		std::for_each(is.begin(), is.end(), [&, Js = js](auto ii) {
-			std::for_each(Js.begin(), Js.end(), [&](auto jj) {
+		std::for_each(is.begin(), is.end(), [&, Js = js](auto ii) {  // NOLINT(modernize-use-ranges) for C++20
+			std::for_each(Js.begin(), Js.end(), [&](auto jj) {  // NOLINT(modernize-use-ranges) for C++20
 				C[ii][jj] *= 0.0;
 				std::for_each(B.extension().begin(), B.extension().end(), [&](auto kk) {
 					C[ii][jj] += A[ii][kk] * conj(B[kk][jj]);
@@ -508,7 +508,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// TODO(correaa) MKL gives an error here
 		// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
 
-		std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {
+		std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {  // NOLINT(modernize-use-ranges) for C++20
 			return std::transform(
 						begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto const& Ce) {
 							return (std::complex<double>{1.0, 0.0} * blas::dot(Ar, blas::C(Bc))) + (0.0 * Ce);
