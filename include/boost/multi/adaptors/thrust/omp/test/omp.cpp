@@ -2,9 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #ifndef _VSTD
-// # define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
-// #endif
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/adaptors/thrust/omp.hpp>  // NOLINT(misc-include-cleaner)
 
@@ -12,11 +10,9 @@
 # include <boost/multi/array.hpp>
 #endif
 
-#include <omp.h>
+// #include <omp.h>  // NOLINT(clang-diagnostic-error)
 #include <thrust/reduce.h>  // IWYU pragma: keep
 #include <thrust/system/omp/execution_policy.h>  // IWYU pragma: keep
-
-#include <boost/core/lightweight_test.hpp>
 
 #if !defined(__clang__)
 # include <chrono>

@@ -83,7 +83,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
 				// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
-				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment  // NOLINT(odernize-use-designated-initializers) for C++20
+				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment  // NOLINT(modernize-use-designated-initializers) for C++20
 				auto operator+() const { return operator particle(); }
 
 				reference(int& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
@@ -109,7 +109,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		multi::array<particle, 2> AoS({2, 2}, particle{});
-		AoS[1][1] = particle{99, v3d{{1.0, 2.0}}};  // NOLINT(odernize-use-designated-initializers) for C++20
+		AoS[1][1] = particle{99, v3d{{1.0, 2.0}}};  // NOLINT(modernize-use-designated-initializers) for C++20
 
 		auto&& masses = AoS.member_cast<int>(&particle::mass);
 		BOOST_TEST(size(masses) == 2);
@@ -246,8 +246,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		multi::array<record, 2> const recs = {
-			{{1, 1.1}, {2, 2.2}},
-			{{3, 3.3}, {4, 4.4}},
+			{{1, 1.1}, {2, 2.2}}, // NOLINT(modernize-use-designated-initializers) for C++
+			{{3, 3.3}, {4, 4.4}}, // NOLINT(modernize-use-designated-initializers) for C++
 		};
 
 		// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
