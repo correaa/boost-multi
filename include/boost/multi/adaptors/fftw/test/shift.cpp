@@ -85,7 +85,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(),  // cppcheck-suppress mismatchingContainerExpression ;
 				[&fdft, &arr, &res](auto /*idx*/) {
 					fdft.execute(arr.base(), res.base());
-					std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());
+					std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());  // NOLINT(modernize-use-ranges) for C++20
 				}
 			);
 			std::cout << "FFTW shift " << unnamed.elapsed_sec() / repeat << " sec\n";  // prints  0.000882224 sec

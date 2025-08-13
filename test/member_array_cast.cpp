@@ -194,8 +194,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
 		multi::array<employee, 1> d1D = {
-			{ "Al"s, 1430, 35},
-			{"Bob"s, 3212, 34},
+			{ "Al"s, 1430, 35}, // NOLINT(modernize-use-designated-initializers) for C++20
+			{"Bob"s, 3212, 34}, // NOLINT(modernize-use-designated-initializers) for C++20
 		};
 		// NOLINTEND(misc-include-cleaner) bug in clang-tidy 18
 
@@ -205,8 +205,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(&d1D_names[1] == &d1D[1].name);
 
 		multi::array<employee, 2> d2D = {
-			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
-			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
+			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}}, // NOLINT(modernize-use-designated-initializers) for C++20
+			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}}, // NOLINT(modernize-use-designated-initializers) for C++20
 		};
 		BOOST_TEST(d2D[0][0].name == "Al");
 		BOOST_TEST(d2D[0][0].salary == 1430);
