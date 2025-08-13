@@ -2,16 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
-// IWYU pragma: no_include <algorithm>                        // for fill_n, equal
+#include <boost/core/lightweight_test.hpp>
+
+// IWYU pragma: no_include <algorithm>       // for fill_n, equal
 #include <complex>
+// IWYU pragma: no_include <format>               // for vector
 // #include <numeric>  // for std::transform_reduce
 // #include <utility>  // for move  // IWYU pragma: keep
-#include <vector>   // for vector
+#include <vector>  // for vector
 
 namespace multi = boost::multi;
 
@@ -269,36 +270,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::array<int, 3> A1 = {
-			{
-				{1, 2},
-				{3, 4}
-			},
-			{
-				{5, 6},
-				{7, 8}
-			},
+			{{1, 2},
+			 {3, 4}},
+			{{5, 6},
+			 {7, 8}},
 		};
 
 		auto&& R1 = A1[1];
-		R1 = A1[0];
+		R1        = A1[0];
 
 		BOOST_TEST( A1[0] == A1[1] );
 	}
 	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls)
 		multi::array<std::vector<int>, 3> A1 = {
-			{
-				{std::vector<int>(1, 0), std::vector<int>(2, 0)},
-				{std::vector<int>(3, 0), std::vector<int>(4, 0)}
-			},
-			{
-				{std::vector<int>(5, 0), std::vector<int>(6, 0)},
-				{std::vector<int>(7, 0), std::vector<int>(8, 0)}
-			},
+			{{std::vector<int>(1, 0), std::vector<int>(2, 0)},
+			 {std::vector<int>(3, 0), std::vector<int>(4, 0)}},
+			{{std::vector<int>(5, 0), std::vector<int>(6, 0)},
+			 {std::vector<int>(7, 0), std::vector<int>(8, 0)}},
 		};
 
 		auto&& R1 = A1[1];
-		R1 = A1[0].move();
+		R1        = A1[0].move();
 
 		BOOST_TEST( A1[1][0][0] == std::vector<int>(1, 0) );
 		// BOOST_TEST( A1[0][0][0].empty() );  // TODO(correaa) make moved elements work
