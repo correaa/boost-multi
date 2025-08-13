@@ -130,7 +130,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	));
 
-		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
+		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
 
 		std::stable_sort(begin(d2D.rotated()), end(d2D.rotated()));
 		BOOST_TEST( std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
