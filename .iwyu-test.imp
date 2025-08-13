@@ -61,6 +61,5 @@
     { "include": ["@<__bit_reference>", "private", "<utility>", "public"] },
     { "include": ["@<__fwd/string_view.h>", "private", "<string_view>", "public"] },
     { "include": ["@<__ostream/basic_ostream.h>", "private", "<ostream>", "public"] },
-    { "include": ["@<__config>", "private", "<cstddef>", "public"] },
-    { "include": ["@<version>", "private", "<cstddef>", "public"] }
+    { "include": ["@<__config>", "private", "<cstddef>", "public"] }
 ]
