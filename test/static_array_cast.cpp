@@ -204,7 +204,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( neg_arr[2] == arr2[2] );
 			BOOST_TEST( arr2[2] == neg_arr[2] );
-			BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );
+			BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );  // NOLINT(modernize-use-ranges)
 			BOOST_TEST( neg_arr == arr2 );
 			BOOST_TEST( arr2 == neg_arr );
 		}
@@ -225,7 +225,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( arr2[1] == neg_arr[1] );
 			BOOST_TEST( neg_arr[1] == arr2[1] );
 
-			BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );
+			BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );  // NOLINT(modernize-use-ranges)
 			BOOST_TEST( neg_arr == arr2 );
 			BOOST_TEST( arr2 == neg_arr );
 		}

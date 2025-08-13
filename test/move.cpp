@@ -407,7 +407,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::vector<int>, 1> arr({3}, std::vector<int>{10, 20, 30});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr.size() == 3 );
 		multi::array<std::vector<int>, 1> arr2({3}, std::vector<int>{});  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		std::move(arr.begin(), arr.end(), arr2.begin());  // NOLINT(modernize-use-ranges)
+		std::move(arr.begin(), arr.end(), arr2.begin());                  // NOLINT(modernize-use-ranges)
 
 		BOOST_TEST( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
