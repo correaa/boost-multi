@@ -113,9 +113,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		it -= 3;
 		BOOST_TEST( get<0>(*it) == 0 );
 		BOOST_TEST( it == x1d.elements().begin() );
+
+		BOOST_TEST( x1d.elements().end() - x1d.elements().begin() == 3 );
 	}
 	{
 		multi::extensions_t<2> const x2d({4, 3});
+
+		BOOST_TEST( x2d.elements().end() - x2d.elements().begin() == 12 );
 
 		auto it = x2d.elements().begin();
 
@@ -133,6 +137,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( 0 == get<0>(*it) );
 		BOOST_TEST( 2 == get<1>(*it) );
 
+		BOOST_TEST( it - x2d.elements().begin() == 2 );
+
 		++it;
 		BOOST_TEST( 1 == get<0>(*it) );
 		BOOST_TEST( 0 == get<1>(*it) );
@@ -144,6 +150,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		++it;
 		BOOST_TEST( 1 == get<0>(*it) );
 		BOOST_TEST( 2 == get<1>(*it) );
+
+		BOOST_TEST( it - x2d.elements().begin() ==  5 );
+		BOOST_TEST( x2d.elements().begin() - it == -5 );
+		BOOST_TEST( x2d.elements().end() - it == 7 );
 
 		++it;
 		BOOST_TEST( 2 == get<0>(*it) );

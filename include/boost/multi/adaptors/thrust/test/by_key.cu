@@ -2,10 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/array.hpp>
 
-#include <boost/core/lightweight_test.hpp>
+#include <thrust/iterator/discard_iterator.h>
 
 namespace multi = boost::multi;
 
@@ -25,7 +27,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST( M.size() == 8 );
 	BOOST_TEST( (~M).size() == 4 );
 
-	multi::thrust::universal_array<float, 1> sums(M.size());
 
 	using std::get;
 	std::cout
@@ -36,12 +37,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(true);
 	// M.extensions().elements();
 
-	// auto row_ids_begin =
-	//     thrust::make_transform_iterator(
-	//         M.indexed_elements().begin(),
-	//         [] __host__ __device__ (auto const& e) { return thrust::get<0>(e); }
-	//     )
-	// ;
+	auto row_ids_begin =
+	    thrust::make_transform_iterator(
+			M.extensions().elements().begin(),
+	        [] __host__ __device__ (decltype(M)::indexes const& e) { using std::get; return get<0>(e); }
+	    )
+	;
+	auto row_ids_end = row_ids_begin + M.num_elements();
+
+	multi::thrust::universal_array<float, 1> sums(M.size());
+
+	thrust::reduce_by_key(thrust::cuda::par,
+		row_ids_begin, row_ids_end,
+		M.elements().begin(),
+		thrust::make_discard_iterator(),
+		sums.begin()
+	);
 
 	// thrust::reduce_by_key(
 	//     thrust::make_counting_iterator(0),

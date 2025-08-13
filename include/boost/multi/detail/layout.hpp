@@ -100,6 +100,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	extensions_t()    = default;
 	using nelems_type = multi::index;
 
+	using difference_type = index_extension::difference_type;
+
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extensions_t(multi::size_t size)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
@@ -258,6 +260,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		friend struct extensions_t;
 
 	 public:
+		using difference_type = extensions_t::difference_type;
+
 		class iterator {
 			index_extension::iterator curr_;
 
@@ -276,8 +280,15 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			friend class elements_t;
 
 		 public:
+			using difference_type   = elements_t::difference_type;
+			using value_type        = indices_type;
+			using pointer           = void;
+			using reference         = value_type;
+			using iterator_category = std::random_access_iterator_tag;
+
 			constexpr auto operator*() const {
-				return std::apply([cu = *curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
+				using std::apply;
+				return apply([cu = *curr_](auto... es) {return detail::mk_tuple(cu, es...);}, *rest_it_); 
 			}
 
 			constexpr auto operator+=(difference_type n) -> auto& {
@@ -294,6 +305,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 					++curr_;
 				}
 				return *this;
+			}
+
+			friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
+				return (self.curr_ - other.curr_) * (self.rest_end_ - self.rest_begin_) + (self.rest_it_ - self.rest_begin_) - (other.rest_it_ - other.rest_begin_);
 			}
 
 			constexpr auto operator-(difference_type n) const {
