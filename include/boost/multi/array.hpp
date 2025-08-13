@@ -1247,7 +1247,7 @@ struct array : static_array<T, D, Alloc> {
 		class Range, class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<!has_data_elements<std::decay_t<Range>>::value, int> = 0,
 		std::enable_if_t<has_extensions<std::decay_t<Range>>::value, int>     = 0,
-		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
 	auto operator=(Range&& other) -> array& {
 		if(array::extensions() == other.extensions()) {
 			this->operator()() = std::forward<Range>(other);
