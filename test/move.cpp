@@ -119,7 +119,7 @@ void move_element_1d_array() {
 
 		std::vector<std::vector<double>> out_vec(4, {}, {});
 
-		auto&&                           marr62 = multi::move(arr({2, 6}));
+		auto&& marr62 = multi::move(arr({2, 6}));
 
 		std::copy(marr62.begin(), marr62.end(), out_vec.begin());  // NOLINT(modernize-use-ranges) for C++20
 
@@ -293,7 +293,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		Bv.reserve(Av.size());
 
 		//  for(auto& v: Av) Bv.emplace_back(std::move(v), std::allocator<int>{});  // segfaults nvcc 11.0 but not nvcc 11.1
-		std::move(begin(Av), end(Av), std::back_inserter(Bv));
+		std::move(begin(Av), end(Av), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( size(Bv) == size(Av) );
 		BOOST_TEST( is_empty(Av[4]) );
@@ -382,7 +382,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<std::vector<int>> arr(10, std::vector<int>{10, 20, 30});  // NOLINT(fuchsia-default-arguments-calls)
 		std::vector<std::vector<int>> arr2(10);                               // NOLINT(fuchsia-default-arguments-calls)
-		std::move(arr.begin(), arr.end(), arr2.begin());
+		std::move(arr.begin(), arr.end(), arr2.begin());                      // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
