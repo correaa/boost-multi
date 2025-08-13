@@ -8,6 +8,7 @@
 #include <boost/multi/adaptors/thrust/managed_allocator.hpp>
 #include <boost/multi/array.hpp>
 
+#include <cuda_runtime_api.h>
 #include <thrust/complex.h>
 #include <thrust/device_allocator.h>
 #include <thrust/device_vector.h>
@@ -115,6 +116,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			thrust::copy(thrust::cuda::par, vA.begin(), vA.end(), vB.begin());
 
+			static_assert( std::is_same_v<decltype(vA.data()), thrust::device_ptr<int>> );
+
 			std::cout << "line " << __LINE__ << std::endl;
 
 			thrust::copy(thrust::cuda::par, vA.data(), vA.data() + vA.size(), vB.begin());
@@ -126,7 +129,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 1, thrust::device_allocator<int> > aA(3, 44);
 			multi::array<int, 1, thrust::device_allocator<int> > aB(3, 0);
 
+			cudaDeviceSynchronize();
+
 			std::cout << "line " << __LINE__ << std::endl;
+
+			static_assert( std::is_same_v<decltype(aA.data_elements()), thrust::device_ptr<int> > );
 
 			thrust::copy(thrust::cuda::par, aA.data_elements(), aA.data_elements() + aA.size(), aB.begin());
 
