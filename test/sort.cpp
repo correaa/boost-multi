@@ -116,6 +116,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{100.0, 11.0, 12.0, 13.0, 14.0},
 			{ 50.0,  6.0,  7.0,  8.0,  9.0},
 		};
+
+		{
+			bool check = true;
+			auto first = d2D.begin();
+			auto const last  = d2D.end();
+			auto next = d2D.begin();
+			++next;
+			while (next != last) {. // NOLINT(fuchsia-default-arguments-calls)
+				if (*next < *first) {
+					check = false;
+					break;
+				}
+				++first;
+				++next;
+			}
+			BOOST_TEST( !check );
+		}
+
 		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		std::stable_sort(d2D.begin(), d2D.end());
