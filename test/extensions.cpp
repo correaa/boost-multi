@@ -154,6 +154,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it - x2d.elements().begin() ==  5 );
 		BOOST_TEST( x2d.elements().begin() - it == -5 );
 		BOOST_TEST( x2d.elements().end() - it == 7 );
+		BOOST_TEST( x2d.elements().end() - x2d.elements().begin() == 12 );
 
 		++it;
 		BOOST_TEST( 2 == get<0>(*it) );
