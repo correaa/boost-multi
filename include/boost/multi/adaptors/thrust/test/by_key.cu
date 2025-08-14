@@ -9,6 +9,7 @@
 #include <boost/multi/array.hpp>
 
 #include <thrust/iterator/discard_iterator.h>
+#include <thrust/host_vector.h>
 
 namespace multi = boost::multi;
 
@@ -63,7 +64,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	multi::thrust::universal_array<float, 1> sums(M.size());
 
 	thrust::reduce_by_key(thrust::cuda::par,
-		row_ids_begin, row_ids_end,
+		row_ids_begin_ref, row_ids_end_ref,
 		M.elements().begin(),
 		thrust::make_discard_iterator(),
 		sums.begin()
