@@ -123,7 +123,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto const last  = d2D.end();
 			auto next = d2D.begin();
 			++next;
-			while (next != last) {. // NOLINT(fuchsia-default-arguments-calls)
+			while (next != last) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				if (*next < *first) {
 					check = false;
 					break;
