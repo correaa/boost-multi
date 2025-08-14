@@ -163,8 +163,8 @@ class range {
 		// cppcheck-suppress noExplicitConstructor ; see below
 		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-		constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
-		constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
+		BOOST_MULTI_HD constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
+		BOOST_MULTI_HD constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
 
 		constexpr auto operator<(const_iterator const& other) const -> bool { return curr_ < other.curr_; }
 
