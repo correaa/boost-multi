@@ -3,6 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 #include <boost/multi/array.hpp>
 
 #include <boost/core/lightweight_test.hpp>
@@ -10,12 +14,12 @@
 #include <algorithm>  // for equal
 #include <array>      // for array
 #include <iterator>   // for size, begin, end
-// #include <type_traits>  // for is_assignable_v
 
 namespace multi = boost::multi;
 
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-					  //  BOOST_AUTO_TEST_CASE(one_based_1D)
+// NOLINTNEXTLINE(readability-function-cognitive-complexity,bugprone-exception-escape)
+auto main() -> int {
+	//  one_based_1D
 	{
 		// clang-format off
 		multi::array<double, 1> const Ac({{0, 10}}, 0.0);
@@ -180,8 +184,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(Aone[1][0] == 'a' );
 		BOOST_TEST(Aone[2][1] == 'd' );
-
-		// static_assert(!std::is_assignable_v<decltype(Ar2.reindexed(0, 0)[0][0]), double>);
 	}
 	{
 		multi::array<int, 2> AA = {
@@ -196,8 +198,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(Aone[1][1] == 'a' );
 		BOOST_TEST(Aone[2][2] == 'd' );
-
-		// static_assert(!std::is_assignable_v<decltype(Ar2.reindexed(0, 0)[0][0]), double>);
 	}
 
 	return boost::report_errors();
