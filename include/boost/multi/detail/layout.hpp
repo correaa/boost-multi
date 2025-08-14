@@ -287,7 +287,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			using iterator_category = std::random_access_iterator_tag;
 
 			BOOST_MULTI_HD constexpr auto operator*() const {
-				printf("op* %ld ...\n", *curr_);
+				// printf("op* %ld ...\n", *curr_);
 				using std::apply;
 				return apply([cu = *curr_](auto... es) {return detail::mk_tuple(cu, es...);}, *rest_it_); 
 			}
