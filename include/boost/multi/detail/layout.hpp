@@ -294,10 +294,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
 				//printf("+= %ld\n", n);
-				if(n >= 0) {
+				if(n > 0) {
 					curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_begin_ + (rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_);
-				} else {
+				} else if(n < 0) {
 					curr_ -= (rest_end_ - rest_it_ - n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_end_ - (rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_);
 					if(rest_it_ == rest_end_) {
@@ -317,7 +317,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 						rest_it_ = rest_begin_;
 						++curr_;
 					}
-				} else {
+				} else if(n < 0) {
 					curr_ += (rest_it_ - rest_begin_ - n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_begin_ + (rest_it_ - rest_begin_ - n) % (rest_end_ - rest_begin_);
 				}
