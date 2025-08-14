@@ -154,24 +154,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 1, thrust::device_allocator<int> > aA(3, 44);
 			multi::array<int, 1, thrust::device_allocator<int> > aB(3, 0);
 
-			thrust::device_allocator<int> devalloc;
-
-			std::cout << "line " << __LINE__ << std::endl;
-
-			auto Aptr = devalloc.allocate(3);
-
-			std::cout << "line " << __LINE__ << std::endl;
-
-			thrust::fill(thrust::cuda::par , Aptr, Aptr + 3, 44);
-
-			std::cout << "line " << __LINE__ << std::endl;
-
-			auto Bptr = devalloc.allocate(3);
-
-			std::cout << "line " << __LINE__ << std::endl;
-
-			thrust::fill(thrust::cuda::par , Aptr, Aptr + 3, 44);
-
 			std::cout << "line " << __LINE__ << std::endl;
 
 			static_assert( std::is_same_v<decltype(aA.data_elements()), thrust::device_ptr<int> > );
