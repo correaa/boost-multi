@@ -118,13 +118,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		{
-			bool check = true;
-			auto first = d2D.begin();
+			bool       check = true;
+			auto       first = d2D.begin();
 			auto const last  = d2D.end();
-			auto next = d2D.begin();
+			auto       next  = d2D.begin();
 			++next;
-			while (next != last) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-				if (*next < *first) {
+			while(next != last) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+				if(*next < *first) {
 					check = false;
 					break;
 				}
