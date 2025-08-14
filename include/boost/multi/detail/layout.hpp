@@ -255,7 +255,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	class elements_t {
 		extensions_t xs_;
-		explicit elements_t(extensions_t const& xs) : xs_{xs} {}
+		explicit constexpr elements_t(extensions_t const& xs) : xs_{xs} {}
 
 		friend struct extensions_t;
 
@@ -291,13 +291,16 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return apply([cu = *curr_](auto... es) {return detail::mk_tuple(cu, es...);}, *rest_it_); 
 			}
 
-			constexpr auto operator+=(difference_type n) -> auto& {
+			constexpr auto operator+=(difference_type n) -> iterator& {
+				if(n < 0) { return operator-=(-n); }
+				assert(n >= 0);
 				curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
 				rest_it_ = rest_begin_ + (rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_);
 				return *this;
 			}
 
-			constexpr auto operator-=(difference_type n) -> auto& {
+			constexpr auto operator-=(difference_type n) -> iterator& {
+				if(n < 0) { return operator+=(-n); }
 				curr_ -= (rest_end_ - rest_it_ + n) / (rest_end_ - rest_begin_);
 				rest_it_ = rest_end_ - (rest_end_ - rest_it_ + n) % (rest_end_ - rest_begin_);
 				if(rest_it_ == rest_end_) {
@@ -341,7 +344,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			friend constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
 		};
 
-		auto begin() const {
+		constexpr auto begin() const {
 			return iterator{
 				xs_.head().begin(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
@@ -350,7 +353,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			};
 		}
 
-		auto end() const {
+		constexpr auto end() const {
 			return iterator{
 				xs_.head().end(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
@@ -360,7 +363,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		}
 	};
 
-	auto elements() const { return elements_t{*this}; }
+	constexpr auto elements() const { return elements_t{*this}; }
 
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
