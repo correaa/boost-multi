@@ -250,7 +250,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( 1 == get<0>(*(it + 5)) );
 		BOOST_TEST( 2 == get<1>(*(it + 5)) );
 
-		auto it2 = it + 5;
+		auto const it2 = it + 5;
 
 		BOOST_TEST( 1 == get<0>(*(it2)) );
 		BOOST_TEST( 2 == get<1>(*(it2)) );
@@ -263,6 +263,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		std::cout << "x y " << get<0>(*(it2 - 2)) << ' ' << get<1>(*(it2 - 2)) << '\n';
 		BOOST_TEST( 1 == get<0>(*(it2-2)) );
 		BOOST_TEST( 0 == get<1>(*(it2-2)) );
+
+		auto const it3 = it2 - 5;
+
+		BOOST_TEST( it3 == it );
 
 		// it -= 2;
 
