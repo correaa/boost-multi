@@ -326,12 +326,12 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return ((self.curr_ - other.curr_) * (self.rest_end_ - self.rest_begin_)) + (self.rest_it_ - self.rest_begin_) - (other.rest_it_ - other.rest_begin_);
 			}
 
-			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> iterator {
-				iterator ret{*this}; ret-=n; return ret;
+			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const {
+				return iterator{*this} -= n;
 			}
 
-			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> iterator {
-				iterator ret{*this}; ret+=n; return ret;
+			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const {
+				return iterator{*this} += n;
 			}
 
 			BOOST_MULTI_HD constexpr auto operator++() -> auto& {
