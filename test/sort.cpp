@@ -134,10 +134,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( !check );
 		}
 
-		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
 
-		std::stable_sort(d2D.begin(), d2D.end());
-		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls)
+		std::stable_sort(d2D.begin(), d2D.end());  // NOLINT(modernize-use-ranges) for C++20
+		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
 
 		BOOST_TEST((
 		d2D == decltype(d2D){
