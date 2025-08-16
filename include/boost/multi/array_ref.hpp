@@ -3823,6 +3823,10 @@ template<class Ptr> array_ref(Ptr, index_extensions<4>) -> array_ref<typename st
 template<class Ptr> array_ref(Ptr, index_extensions<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
 
 template<class It, class Tuple> array_ref(It, Tuple) -> array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size<Tuple>::value, It>;
+
+// const_subarray<typename T, int D, typename ElementPtr, class Layout>
+template<class It> const_subarray(It, It) -> const_subarray<
+	typename It::element_type, It::dimensionality + 1, typename It::element_ptr, layout_t<It::dimensionality + 1> >;
 #endif
 
 // TODO(correaa) move to utility
