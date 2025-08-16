@@ -777,9 +777,8 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	: static_array(multi::iextensions<0>{}, elem) {}
 
 	template<
-		class Singleton,
-		std::enable_if_t<!std::is_base_of_v<static_array, Singleton> && !std::is_same_v<Singleton, typename static_array::element_type>, int> = 0,
-		class                                                                                                                                 = decltype(adl_copy_n(&std::declval<Singleton>(), 1, typename static_array::element_ptr{}))>
+		class Singleton, std::enable_if_t<!std::is_base_of_v<static_array, Singleton> && !std::is_same_v<Singleton, typename static_array::element_type>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
+		class = decltype(adl_copy_n(&std::declval<Singleton>(), 1, typename static_array::element_ptr{}))>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax  // NOLINTNEXTLINE(runtime/explicit)
 	/*implict*/ static_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is used by the
 	: ref(static_array::allocate(1), typename static_array::extensions_type{}) {
@@ -1248,7 +1247,7 @@ struct array : static_array<T, D, Alloc> {
 		class Range, class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<!has_data_elements<std::decay_t<Range>>::value, int> = 0,
 		std::enable_if_t<has_extensions<std::decay_t<Range>>::value, int>     = 0,
-		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
 	auto operator=(Range&& other) -> array& {
 		if(array::extensions() == other.extensions()) {
 			this->operator()() = std::forward<Range>(other);

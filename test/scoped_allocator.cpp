@@ -14,6 +14,7 @@
 // IWYU pragma: no_include <memory>  // for allocator_traits<>::value_type
 #include <new>               // for bad_alloc
 #include <scoped_allocator>  // for scoped_allocator_adaptor
+#include <type_traits>       // for is_same_v
 #include <vector>            // for vector
 
 namespace multi = boost::multi;
