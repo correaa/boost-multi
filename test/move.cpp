@@ -96,8 +96,11 @@ void move_element_1d_array() {
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
 		std::vector<std::vector<double>> out_vec(4, {}, {});
-		auto&&                           marr62 = multi::move(arr({2, 6}));
-		std::copy(std::move(marr62).begin(), std::move(marr62).end(), out_vec.begin());  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+
+		auto&& marr62 = multi::move(arr({2, 6}));
+
+		std::copy(std::move(marr62).begin(), std::move(marr62).end(), out_vec.begin());  // NOLINT(modernize-use-ranges,bugprone-use-after-move,hicpp-invalid-access-moved)
+
 		BOOST_TEST( out_vec[0].size() == 5 );
 		BOOST_TEST( arr[2].empty() );
 	}
@@ -115,8 +118,11 @@ void move_element_1d_array() {
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
 		std::vector<std::vector<double>> out_vec(4, {}, {});
-		auto&&                           marr62 = multi::move(arr({2, 6}));
-		std::copy(marr62.begin(), marr62.end(), out_vec.begin());  // NOLINT(boost-use-ranges)
+
+		auto&& marr62 = multi::move(arr({2, 6}));
+
+		std::copy(marr62.begin(), marr62.end(), out_vec.begin());  // NOLINT(modernize-use-ranges) for C++20
+
 		BOOST_TEST( out_vec[0].size() == 5 );
 		BOOST_TEST( !arr[2].empty() );
 	}
@@ -164,7 +170,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[1] = std::make_unique<int>(42);
 
 		multi::array<std::unique_ptr<int>, 1> arr2(multi::extensions_t<1>{10});
-		std::move(arr.begin(), arr.end(), arr2.begin());
+		std::move(arr.begin(), arr.end(), arr2.begin());  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( !arr[1] );
 		BOOST_TEST(  arr2[1] );
@@ -272,7 +278,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<multi::array<int, 2>> Bv;
 		Bv.reserve(Av.size());  // NOLINT(fuchsia-default-arguments-calls)
 
-		std::move(begin(Av), end(Av), std::back_inserter(Bv));
+		std::move(begin(Av), end(Av), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( size(Bv) == size(Av) );
 		BOOST_TEST( is_empty(Av[4]) );
@@ -287,7 +293,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		Bv.reserve(Av.size());
 
 		//  for(auto& v: Av) Bv.emplace_back(std::move(v), std::allocator<int>{});  // segfaults nvcc 11.0 but not nvcc 11.1
-		std::move(begin(Av), end(Av), std::back_inserter(Bv));
+		std::move(begin(Av), end(Av), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( size(Bv) == size(Av) );
 		BOOST_TEST( is_empty(Av[4]) );
@@ -376,7 +382,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<std::vector<int>> arr(10, std::vector<int>{10, 20, 30});  // NOLINT(fuchsia-default-arguments-calls)
 		std::vector<std::vector<int>> arr2(10);                               // NOLINT(fuchsia-default-arguments-calls)
-		std::move(arr.begin(), arr.end(), arr2.begin());
+		std::move(arr.begin(), arr.end(), arr2.begin());                      // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
@@ -390,7 +396,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::vector<int>, 1> arr({3}, std::vector<int>{10, 20, 30});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr.size() == 3 );
 		multi::array<std::vector<int>, 1> arr2({3}, std::vector<int>{});
-		std::copy(arr.begin(), arr.end(), arr2.begin());  // NOLINT(boost-use-ranges)
+		std::copy(arr.begin(), arr.end(), arr2.begin());  // NOLINT(modernize-use-ranges)
 
 		BOOST_TEST( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
@@ -404,7 +410,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::vector<int>, 1> arr({3}, std::vector<int>{10, 20, 30});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr.size() == 3 );
 		multi::array<std::vector<int>, 1> arr2({3}, std::vector<int>{});  // std::vector NOLINT(fuchsia-default-arguments-calls)
-		std::move(arr.begin(), arr.end(), arr2.begin());
+		std::move(arr.begin(), arr.end(), arr2.begin());                  // NOLINT(modernize-use-ranges)
 
 		BOOST_TEST( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)

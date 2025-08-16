@@ -21,6 +21,7 @@
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
+#include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
 
 namespace multi = boost::multi;
 
@@ -577,12 +578,12 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 			BOOST_TEST( VV[0] == xx );
 			BOOST_TEST( VV[1] == vv );
 
-			std::sort(VV.begin(), VV.end());
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
+			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
 
 			VV.resize(10, xx);
-			std::sort(VV.begin(), VV.end());
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
+			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
 		}
 	}
 #endif

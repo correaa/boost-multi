@@ -157,7 +157,6 @@ struct prod {
 };
 
 auto main() -> int {
-
 	long const maxsize = 390;  // 390625;
 	long const nmax = 100;  // 10000;
 

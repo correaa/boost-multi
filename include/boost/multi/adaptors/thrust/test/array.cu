@@ -8,6 +8,7 @@
 #include <boost/multi/adaptors/thrust/managed_allocator.hpp>
 #include <boost/multi/array.hpp>
 
+#include <cuda_runtime_api.h>
 #include <thrust/complex.h>
 #include <thrust/device_allocator.h>
 #include <thrust/device_vector.h>
@@ -106,24 +107,64 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::cout << "line " << __LINE__ << std::endl;
 
+		
 		{
-			thrust::device_vector<int> A(3, 44);
-			thrust::device_vector<int> B(3, 0);
+			thrust::device_vector<int, thrust::device_allocator<int> > vA(3, 44);
+			thrust::device_vector<int, thrust::device_allocator<int> > vB(3, 0);
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			BOOST_TEST( A[1] == 44 );
+			thrust::copy(thrust::cuda::par, vA.begin(), vA.end(), vB.begin());
+
+			static_assert( std::is_same_v<decltype(vA.data()), thrust::device_ptr<int>> );
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int elem) { return elem * 2; });
+			thrust::copy(thrust::cuda::par, vA.data(), vA.data() + vA.size(), vB.begin());
+
+			BOOST_TEST( vB[0] == 44 );
+		}
+		{
+			thrust::device_allocator<int> devalloc;
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			auto Aptr = devalloc.allocate(3);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			thrust::fill(thrust::cuda::par , Aptr, Aptr + 3, 44);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			auto Bptr = devalloc.allocate(3);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			thrust::fill(thrust::cuda::par , Bptr, Bptr + 3, 0);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			thrust::copy(thrust::cuda::par, Aptr, Aptr + 3, Bptr);
+
+			devalloc.deallocate(Aptr, 3);
+			devalloc.deallocate(Bptr, 3);
+		}
+		{
+			multi::array<int, 1, thrust::device_allocator<int> > aA(3, 44);
+			multi::array<int, 1, thrust::device_allocator<int> > aB(3, 0);
 
 			std::cout << "line " << __LINE__ << std::endl;
-			int B1 = B[1];
-			BOOST_TEST( B1 == 88 );
+
+			static_assert( std::is_same_v<decltype(aA.data_elements()), thrust::device_ptr<int> > );
+
+			thrust::copy(thrust::cuda::par, aA.data_elements(), aA.data_elements() + aA.size(), aB.begin());
 
 			std::cout << "line " << __LINE__ << std::endl;
-			BOOST_TEST( B[1] == 88 );
+
+			thrust::copy(thrust::cuda::par, aA.begin(), aA.end(), aB.begin());
+
+			BOOST_TEST( aB[0] == 44 );
 		}
 
 		std::cout << "line " << __LINE__ << std::endl;
@@ -138,13 +179,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 
-			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int elem) { return elem * 2; });
+			thrust::transform(A.data_elements(), A.data_elements() + A.num_elements(), B.data_elements(), [] __device__(int const& elem) -> int { return elem * 2; });
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			B[0] = A[0]*2;
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::copy(A.begin(), A.end(), B.begin());
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::transform(A.begin(), A.end(), B.begin(), [] __device__(int const& elem) -> int { return elem * 2; });
 
 			std::cout << "line " << __LINE__ << std::endl;
 			int B1 = B[1];
 			BOOST_TEST( B1 == 88 );
 
 			std::cout << "line " << __LINE__ << std::endl;
+
 			BOOST_TEST( B[1] == 88 );
 		}
 		

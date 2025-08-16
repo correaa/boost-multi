@@ -2121,8 +2121,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<
 		class Range,
-		class = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,
-		class = std::enable_if_t<!is_subarray<Range>::value>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		class = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		class = std::enable_if_t<!is_subarray<Range>::value>            // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 		>
 	constexpr auto operator=(Range const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
 		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)

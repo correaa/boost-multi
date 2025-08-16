@@ -11,9 +11,9 @@
 #include <cmath>    // for abs  // IWYU pragma: keep
 #include <cstddef>  // for _LIBCPP_VERSION  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 // IWYU pragma: no_include <cstdlib>                          // for abs
-#include <complex>  // for complex, operator==
-// IWYU pragma: no_include <iosfwd>    // for __GLIBCXX__
+#include <complex>   // for complex, operator==
 #include <iterator>  // for data
+#include <version>   // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 #include <memory_resource>  // for monotonic_buffer_resource

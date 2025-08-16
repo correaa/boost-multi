@@ -127,7 +127,7 @@ class range {
 	// range(range const&) = default;
 
 	template<class Range,
-	         std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, int> = 0,
+	         std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
 	         decltype(detail::implicit_cast<IndexType>(std::declval<Range&&>().first()),
 	                  detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 	         )*                                                                    = nullptr>
@@ -163,8 +163,8 @@ class range {
 		// cppcheck-suppress noExplicitConstructor ; see below
 		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-		constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
-		constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
+		BOOST_MULTI_HD constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
+		BOOST_MULTI_HD constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
 
 		constexpr auto operator<(const_iterator const& other) const -> bool { return curr_ < other.curr_; }
 

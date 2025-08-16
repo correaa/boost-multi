@@ -100,6 +100,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	extensions_t()    = default;
 	using nelems_type = multi::index;
 
+	using difference_type = index_extension::difference_type;
+
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extensions_t(multi::size_t size)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
@@ -253,11 +255,13 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	class elements_t {
 		extensions_t xs_;
-		explicit elements_t(extensions_t const& xs) : xs_{xs} {}
+		explicit constexpr elements_t(extensions_t const& xs) : xs_{xs} {}
 
 		friend struct extensions_t;
 
 	 public:
+		using difference_type = extensions_t::difference_type;
+
 		class iterator {
 			index_extension::iterator curr_;
 
@@ -265,7 +269,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			typename extensions_t<D - 1>::elements_t::iterator rest_begin_;
 			typename extensions_t<D - 1>::elements_t::iterator rest_end_;
 
-			constexpr iterator(
+			BOOST_MULTI_HD constexpr iterator(
 				index_extension::iterator curr,
 				typename extensions_t<D - 1>::elements_t::iterator rest_it,
 				typename extensions_t<D - 1>::elements_t::iterator rest_begin,
@@ -276,11 +280,62 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			friend class elements_t;
 
 		 public:
-			constexpr auto operator*() const {
-				return std::apply([cu = *curr_](auto... es) {return std::make_tuple(cu, es...);}, *rest_it_); 
+			using difference_type   = elements_t::difference_type;
+			using value_type        = indices_type;
+			using pointer           = void;
+			using reference         = value_type;
+			using iterator_category = std::random_access_iterator_tag;
+
+			BOOST_MULTI_HD constexpr auto operator*() const {
+				// printf("op* %ld ...\n", *curr_);
+				using std::apply;
+				return apply([cu = *curr_](auto... es) {return detail::mk_tuple(cu, es...);}, *rest_it_); 
 			}
 
-			constexpr auto operator++() -> auto& {
+			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
+				if(n > 0) {  // mull-ignore: cxx_gt_to_ge
+					curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
+					rest_it_ = rest_begin_ + (rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_);
+				} else if(n < 0) {  // mull-ignore: cxx_lt_to_ge, cxx_lt_to_le
+					curr_ -= (rest_end_ - rest_it_ - n) / (rest_end_ - rest_begin_);
+					rest_it_ = rest_end_ - (rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_);
+					if(rest_it_ == rest_end_) {
+						rest_it_ = rest_begin_;
+						++curr_;
+					}
+				}
+				return *this;
+			}
+
+			BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> iterator& {
+				if(n > 0) {  // mull-ignore: cxx_gt_to_ge
+					curr_ -= (rest_end_ - rest_it_ + n) / (rest_end_ - rest_begin_);
+					rest_it_ = rest_end_ - (rest_end_ - rest_it_ + n) % (rest_end_ - rest_begin_);
+					if(rest_it_ == rest_end_) {
+						rest_it_ = rest_begin_;
+						++curr_;
+					}
+				} else if(n < 0) {  // mull-ignore: cxx_lt_to_ge, cxx_lt_to_le
+					curr_ += (rest_it_ - rest_begin_ - n) / (rest_end_ - rest_begin_);
+					rest_it_ = rest_begin_ + (rest_it_ - rest_begin_ - n) % (rest_end_ - rest_begin_);
+				}
+				return *this;
+			}
+
+			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
+				return ((self.curr_ - other.curr_) * (self.rest_end_ - self.rest_begin_)) + (self.rest_it_ - self.rest_begin_) - (other.rest_it_ - other.rest_begin_);
+			}
+
+			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const {
+				return iterator{*this} -= n;
+			}
+
+			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const {
+				return iterator{*this} += n;
+			}
+
+			BOOST_MULTI_HD constexpr auto operator++() -> auto& {
+				// printf("++\n");
 				++rest_it_;
 				if( rest_it_ == rest_end_ ) {
 					rest_it_ = rest_begin_;
@@ -289,7 +344,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return *this;
 			}
 
-			constexpr auto operator--() -> auto& {
+			BOOST_MULTI_HD constexpr auto operator--() -> auto& {
+				// assert(0);
+				// printf("--\n");
 				if( rest_it_ == rest_begin_ ) {
 					rest_it_ = rest_end_;
 					--curr_;
@@ -298,11 +355,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return *this;
 			}
 
-			friend constexpr auto operator==(iterator const& self, iterator const& other) { return (self.curr_ == other.curr_) && (self.rest_it_ == other.rest_it_); }
-			friend constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
+			friend BOOST_MULTI_HD constexpr auto operator==(iterator const& self, iterator const& other) { return (self.curr_ == other.curr_) && (self.rest_it_ == other.rest_it_); }
+			friend BOOST_MULTI_HD constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
 		};
 
-		auto begin() const {
+		constexpr auto begin() const {
 			return iterator{
 				xs_.head().begin(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
@@ -311,7 +368,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			};
 		}
 
-		auto end() const {
+		constexpr auto end() const {
 			return iterator{
 				xs_.head().end(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
@@ -321,7 +378,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		}
 	};
 
-	auto elements() const { return elements_t{*this}; }
+	constexpr auto elements() const { return elements_t{*this}; }
 
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
@@ -461,11 +518,11 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	 public:
 		class iterator : multi::index_range::iterator {
 			friend class elements_t;  // enclosing class is friend automatically?
-			constexpr explicit iterator(multi::index_range::iterator it)
+			BOOST_MULTI_HD constexpr explicit iterator(multi::index_range::iterator it)
 			: multi::index_range::iterator{it} {}
 
-			constexpr auto base_() const -> multi::index_range::iterator const& { return *this; }
-			constexpr auto base_() -> multi::index_range::iterator& { return *this; }
+			BOOST_MULTI_HD constexpr auto base_() const -> multi::index_range::iterator const& { return *this; }
+			BOOST_MULTI_HD constexpr auto base_() -> multi::index_range::iterator& { return *this; }
 
 		 public:
 			using value_type      = std::tuple<multi::index_range::iterator::value_type>;
@@ -473,46 +530,46 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			// using pointer = void;
 			// using reference = value_type;
 
-			auto operator*() const { return value_type(*base_()); }
+			BOOST_MULTI_HD constexpr auto operator*() const { return value_type(*base_()); }
 
-			auto operator++() -> iterator& {
+			BOOST_MULTI_HD constexpr auto operator++() -> iterator& {
 				++base_();
 				return *this;
 			}
-			auto operator--() -> iterator& {
+			BOOST_MULTI_HD constexpr auto operator--() -> iterator& {
 				--base_();
 				return *this;
 			}
 
-			auto operator+=(difference_type n) -> iterator& {
+			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
 				base_() += n;
 				return *this;
 			}
-			auto operator-=(difference_type n) -> iterator& {
+			BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> iterator& {
 				base_() -= n;
 				return *this;
 			}
 
-			auto operator+(difference_type n) const { return iterator{*this} += n; }
-			auto operator-(difference_type n) const { return iterator{*this} -= n; }
+			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const { return iterator{*this} += n; }
+			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const { return iterator{*this} -= n; }
 
-			friend constexpr auto operator-(iterator const& self, iterator const& other) {
+			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) {
 				return self.base_() - other.base_();
 			}
 
-			auto operator==(iterator const& other) const { return base_() == other.base_(); }
-			auto operator!=(iterator const& other) const { return base_() != other.base_(); }
+			BOOST_MULTI_HD constexpr auto operator==(iterator const& other) const { return base_() == other.base_(); }
+			BOOST_MULTI_HD constexpr auto operator!=(iterator const& other) const { return base_() != other.base_(); }
 
 			auto operator[](difference_type n) const { return *((*this) + n); }
 		};
 		// using const_iterator = iterator;
 
-		constexpr auto begin() const { return iterator{rng_.begin()}; }
-		constexpr auto end() const { return iterator{rng_.end()}; }
+		BOOST_MULTI_HD constexpr auto begin() const { return iterator{rng_.begin()}; }
+		BOOST_MULTI_HD constexpr auto end() const { return iterator{rng_.end()}; }
 
-		constexpr auto size() const { return end() - begin(); }
+		BOOST_MULTI_HD constexpr auto size() const { return end() - begin(); }
 
-		explicit elements_t(multi::index_range rng)
+		BOOST_MULTI_HD constexpr explicit elements_t(multi::index_range rng)
 		: rng_{rng} {}
 	};
 

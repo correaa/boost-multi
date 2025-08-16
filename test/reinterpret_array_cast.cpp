@@ -48,7 +48,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			double z;
 		};
 		multi::array<vec3, 1> arr(multi::extensions_t<1>{multi::iextension{100}});
-		arr[8] = {1.0, 2.0, 3.0};
+		arr[8] = {1.0, 2.0, 3.0};  // NOLINT(modernize-use-designated-initializers) for C++20
 		BOOST_TEST( std::abs( arr[8].y - 2.0 ) < 1E-6 );
 
 		BOOST_TEST( std::abs( arr.reinterpret_array_cast<double>(3)[8][1] - arr[8].y ) < 1E-6 );

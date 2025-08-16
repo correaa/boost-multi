@@ -12,11 +12,12 @@
 #if __has_include(<ranges>) && defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <ranges>  // IWYU pragma: keep
 #endif
+#include <tuple>        // for get // NOLINT(misc-include-cleaner)
 #include <type_traits>  // for is_assignable_v
 
 namespace multi = boost::multi;
 
-#if (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 
 template<class X1D, class Y1D>
@@ -327,7 +328,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &G3D[0][0][0] == &G2D[0][0] );
 	}
 
-#if (__cplusplus >= 202002L)
+#if __cplusplus >= 202002L
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 #if !defined(__GNUC__) || (__GNUC__ < 14)
 	// BOOST_AUTO_TEST_CASE(matlab_meshgrid)
