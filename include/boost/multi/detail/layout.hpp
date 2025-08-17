@@ -87,12 +87,13 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 
 // template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
-template<dimensionality_type D>
+template<dimensionality_type D, typename Proj = void*>
 struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_>;
 
  private:
 	base_ impl_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj proj_ = {};
 
  public:
 	static constexpr dimensionality_type dimensionality = D;
@@ -101,6 +102,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	using nelems_type = multi::index;
 
 	using difference_type = index_extension::difference_type;
+
+	constexpr extensions_t(extensions_t<D> const& other, Proj proj) : base_{static_cast<base_ const&>(other)}, proj_{std::move(proj)} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -226,8 +229,15 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
 	constexpr auto operator[](index idx) const
-		-> decltype(std::declval<base_ const&>()[idx]) {
-		return static_cast<base_ const&>(*this)[idx];
+		// -> decltype(std::declval<base_ const&>()[idx])
+	{
+		assert( D != 1 );
+		if constexpr(std::is_same_v<Proj, void*>) {
+			return static_cast<base_ const&>(*this)[idx];
+		} else {
+			auto xx = static_cast<base_ const&>(*this)[idx];
+			return xx;  // std::apply(proj_, xx);
+		}
 	}
 
 	template<class... Indices>
