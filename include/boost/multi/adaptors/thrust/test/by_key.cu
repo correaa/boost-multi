@@ -8,8 +8,8 @@
 #include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/array.hpp>
 
+#include <thrust/reduce.h>
 #include <thrust/iterator/discard_iterator.h>
-#include <thrust/host_vector.h>
 
 namespace multi = boost::multi;
 
