@@ -119,6 +119,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::extensions_t<2> const x2d({4, 3});
 
+		auto ll = [](auto x, auto y) { return x + y; };
+		multi::extensions_t<2, decltype(ll)> x2df({4, 2}, ll); (void)x2df;
+		// multi::detail::what(x2df[1]);
+		// std::cout << x2df[1][2] << std::endl;
+
+		// auto x2d_trd = x2d.element_transformed([](auto is) { using std::get; return get<0>(is) + get<1>(is); });
+
 		BOOST_TEST( x2d.elements().end() - x2d.elements().begin() == 12 );
 
 		auto it = x2d.elements().begin();
