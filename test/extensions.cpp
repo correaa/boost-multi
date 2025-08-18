@@ -119,8 +119,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::extensions_t<2> const x2d({4, 3});
 
-		auto ll = [](auto x, auto y) { return x + y; };
-		multi::extensions_t<2, decltype(ll)> x2df({4, 2}, ll); (void)x2df;
+		// auto ll = [](auto x, auto y) { return x + y; };
+		// multi::extensions_t<2, decltype(ll)> x2df({4, 2}, ll); (void)x2df;
 		// multi::detail::what(x2df[1]);
 		// std::cout << x2df[1][2] << std::endl;
 

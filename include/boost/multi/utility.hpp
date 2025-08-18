@@ -473,11 +473,6 @@ template<class Element, class T, std::enable_if_t<has_extensions<T>::value, int>
 	}
 }
 
-namespace detail {
-	template<class... Ts> auto what() -> std::tuple<Ts&&...>        = delete;
-	template<class... Ts> auto what(Ts&&...) -> std::tuple<Ts&&...> = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)
-}
-
 template<class Arr2D>
 auto transposed(Arr2D&& arr)
 	-> decltype(std::forward<Arr2D>(arr).transposed()) {
