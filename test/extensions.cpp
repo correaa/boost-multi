@@ -119,10 +119,20 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::extensions_t<2> const x2d({4, 3});
 
-		auto ll = [](auto x, auto y) { return x + y; };
-		multi::f_extensions_t<2, decltype(ll)> x2df({4, 2}, ll);  (void)x2df;
+		auto ll = [](auto xx, auto yy) {
+			return xx + yy;
+		};
+		multi::f_extensions_t<2, decltype(ll)> const x2df({4, 2}, ll);
+		(void)x2df;
 		auto val = x2df[3][1];
 		BOOST_TEST(val == 4);
+
+		auto elems = x2df.elements();
+		BOOST_TEST( elems[7] == 4 );
+		BOOST_TEST( *(x2df.elements().begin() + 1) == 1 + 0 );
+
+		// BOOST_TEST( *(*(x2df.begin()).begin()) == 0 )
+
 		// multi::detail::what(x2df[1]);
 		// std::cout << x2df[1][2] << std::endl;
 
@@ -244,6 +254,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		multi::extensions_t<2> const x2d({4, 3});
+
+		// auto it2d = x2d.begin();
 
 		auto it = x2d.elements().begin();
 
@@ -384,6 +396,39 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// BOOST_TEST( 0 == get<1>(*it) );
 
 		// BOOST_TEST( it ==  x2d.elements().begin() );
+	}
+	{
+		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
+
+		// boost::multi::f_extensions_t<2, decltype(ll)> x2df(multi::extensions_t<2>(3, 4), ll);
+		BOOST_TEST( x2df.elements()[0] == 0 );
+		BOOST_TEST( x2df.elements()[1] == 1 );
+		BOOST_TEST( x2df.elements()[2] == 2 );
+		BOOST_TEST( x2df.elements()[3] == 3 );
+		BOOST_TEST( x2df.elements()[4] == 1 );
+		BOOST_TEST( x2df.elements()[5] == 2 );
+
+		BOOST_TEST( x2df[2][1] == 2 + 1 );
+
+		for(auto it = x2df.elements().begin(); it != x2df.elements().end(); ++it) {
+			std::cout << *it << " " << std::endl;
+		}
+
+		multi::array<int, 2> const arr2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
+
+		BOOST_TEST( arr2df(2, 1) == 2 + 1 );
+		BOOST_TEST( arr2df[2][1] == 2 + 1 );
+
+		BOOST_TEST(std::equal(
+			arr2df.elements().begin(), arr2df.elements().end(), 
+			([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4)).elements().begin()
+		));
+
+		BOOST_TEST( arr2df[2][1] == ([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4))[2][1] );
+
+		BOOST_TEST( arr2df[2][1] == ([](auto x, auto y) { return x + y; } ^ multi::extensions_t(3, 4))[2][1] );
+		BOOST_TEST( arr2df[2][1] == multi::extensions_t<2>(3, 4).element_transformed( [](auto const& idxs) { using std::get; return get<0>(idxs) + get<1>(idxs); })[2][1] );
+		BOOST_TEST( arr2df[2][1] == multi::extensions_t<2>(3, 4).element_transformed( [](auto idxs) {auto [x, y] = idxs; return x + y; })[2][1] );
 	}
 
 	return boost::report_errors();

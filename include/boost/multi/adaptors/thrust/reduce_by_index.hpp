@@ -26,10 +26,10 @@ auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums) -> S&& {
 	auto const row_ids_begin =
 	    ::thrust::make_transform_iterator(
 			::thrust::make_counting_iterator(std::ptrdiff_t{0}),
-			detail::divide_by<decltype(M.num_elements())>{M.num_elements()/M.size()}
+			detail::divide_by<decltype(M.elements().size())>{M.elements().size()/M.size()}
 	    )
 	;
-	auto const row_ids_end = row_ids_begin + M.num_elements();
+	auto const row_ids_end = row_ids_begin + M.elements().size();
 
 	// auto const row_ids_begin =
 	//     thrust::make_transform_iterator(

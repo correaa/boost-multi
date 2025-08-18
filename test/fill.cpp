@@ -172,22 +172,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 500,  60,  70,  80,  90},
 		};
 		using std::all_of;
-		BOOST_TEST( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {
-			return elem == 50;}) );
+		BOOST_TEST( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 50;}) );
 
 		using std::fill;
 		fill(d2D[1].begin(), d2D[1].end(), 80);
 
-		BOOST_TEST( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {
-			return elem == 80;}) );
+		BOOST_TEST( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) { return elem == 80;}) );
 
 		fill(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), 80);
-		BOOST_TEST( all_of(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), [](auto&& elem) {
-			return elem == 80;}) );
+		BOOST_TEST( all_of(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), [](auto&& elem) { return elem == 80;}) );
 
 		fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 80);
-		BOOST_TEST( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) {
-			return elem == 80;}) );
+		BOOST_TEST( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) { return elem == 80;}) );
 
 		auto rand = [gauss = std::uniform_int_distribution<>(0, 10), gen = std::mt19937_64(randdev())]() mutable {
 			return gauss(gen);
