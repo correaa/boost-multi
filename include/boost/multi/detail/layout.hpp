@@ -88,6 +88,27 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 // template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
 template<dimensionality_type D, typename Proj = void*>
+struct extensions_t;
+
+template<dimensionality_type D, class Proj>
+struct f_extensions_t {
+	extensions_t<D> xs_;
+	Proj proj_;
+
+	f_extensions_t(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
+
+	constexpr auto operator[](index idx) const {
+		if constexpr(D != 1) {
+			auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
+			return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
+		} else {
+			return proj_(idx);
+		}
+	}
+
+};
+
+template<dimensionality_type D, typename Proj /*= void* */>
 struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_>;
 
