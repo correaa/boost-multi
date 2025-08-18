@@ -12,6 +12,7 @@
 #include <boost/multi/detail/serialization.hpp>  // IWYU pragma: export  // for archive_traits
 #include <boost/multi/detail/tuple_zip.hpp>      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
 #include <boost/multi/detail/types.hpp>          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
+#include "tuple_zip.hpp"
 
 // #include "types.hpp"
 
@@ -87,15 +88,18 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 
 // template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
-template<dimensionality_type D, typename Proj = void*>
+template<dimensionality_type D>
 struct extensions_t;
 
 template<dimensionality_type D, class Proj>
-struct f_extensions_t {
+class f_extensions_t {
 	extensions_t<D> xs_;
 	Proj proj_;
 
-	f_extensions_t(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
+ public:
+	using difference_type = typename extensions_t<D>::difference_type;
+
+	constexpr f_extensions_t(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
 	constexpr auto operator[](index idx) const {
 		if constexpr(D != 1) {
@@ -106,25 +110,99 @@ struct f_extensions_t {
 		}
 	}
 
+	class iterator {
+		typename extensions_t<D>::iterator it_;
+		Proj proj_;
+
+		iterator(typename extensions_t<D>::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+
+	 public:
+		auto operator++() -> auto& { ++it_; return *this; }
+		auto operator--() -> auto& { --it_; return *this; }
+
+		auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
+		auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
+
+		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
+
+		auto operator*() const -> decltype(auto) {
+			using std::get;
+			if constexpr(D != 1) {
+				auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
+				return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(get<1>(*it_).base().tail()), ll);
+			} else {
+				return proj_(get<0>(*it_));
+			}
+		}
+
+		auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+	};
+
+	constexpr auto size() const { return xs_.size(); }
+	constexpr auto extension() const { return xs_.extension(); }
+	constexpr auto extensions() const { return xs_; }
+
+	class elements_t {
+		typename extensions_t<D>::elements_t elems_;
+		Proj proj_;
+
+		elements_t(typename extensions_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
+		friend class f_extensions_t;
+
+	public:
+		auto operator[](index idx) const -> decltype(auto) { return std::apply(proj_, elems_[idx]); }
+
+		using difference_type = f_extensions_t::difference_type;
+
+		class iterator : ra_iterable<iterator> {
+			typename extensions_t<D>::elements_t::iterator it_;
+			BOOST_MULTI_NO_UNIQUE_ADDRESS Proj proj_;
+
+		 public:
+			iterator(typename extensions_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+
+			auto operator++() -> auto& { ++it_; return *this; }
+			auto operator--() -> auto& { --it_; return *this; }
+
+			auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
+			auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
+
+			friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
+
+			auto operator*() const -> decltype(auto) { return std::apply(proj_, *it_); }
+
+			using difference_type = elements_t::difference_type;
+			using value_type = difference_type;
+			using pointer = void;
+			using reference = value_type;
+			using iterator_category = std::random_access_iterator_tag;
+
+			friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
+		};
+
+		auto begin() const { return iterator{elems_.begin(), proj_}; }
+		auto end()   const { return iterator{elems_.end()  , proj_}; }
+
+		auto size() const { return elems_.size(); }
+	};
+
+	constexpr auto elements() const { return elements_t{xs_.elements(), proj_}; }
 };
 
-template<dimensionality_type D, typename Proj /*= void* */>
+template<dimensionality_type D>
 struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_>;
 
  private:
 	base_ impl_;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj proj_ = {};
 
  public:
 	static constexpr dimensionality_type dimensionality = D;
 
-	extensions_t()    = default;
+	using difference_type = index_extension::difference_type;
 	using nelems_type = multi::index;
 
-	using difference_type = index_extension::difference_type;
-
-	constexpr extensions_t(extensions_t<D> const& other, Proj proj) : base_{static_cast<base_ const&>(other)}, proj_{std::move(proj)} {}
+	extensions_t()    = default;
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -227,6 +305,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	using index        = multi::index;
 	using indices_type = multi::detail::tuple_prepend_t<index, typename extensions_t<D - 1>::indices_type>;
 
+	template<class Func>
+	friend auto operator^(Func fun, extensions_t const& xs) {
+		return f_extensions_t<D, Func>(xs, std::move(fun));
+	}
+
 	[[nodiscard]]
 	BOOST_MULTI_HD constexpr auto from_linear(nelems_type const& n) const -> indices_type {
 		auto const sub_num_elements = extensions_t<D - 1>{static_cast<base_ const&>(*this).tail()}.num_elements();
@@ -249,16 +332,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
-	constexpr auto operator[](index idx) const
-		// -> decltype(std::declval<base_ const&>()[idx])
-	{
-		assert( D != 1 );
-		if constexpr(std::is_same_v<Proj, void*>) {
-			return static_cast<base_ const&>(*this)[idx];
-		} else {
-			auto xx = static_cast<base_ const&>(*this)[idx];
-			return xx;  // std::apply(proj_, xx);
-		}
+	constexpr auto operator[](index idx) const {
+		return static_cast<base_ const&>(*this)[idx];
 	}
 
 	template<class... Indices>
@@ -386,6 +461,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return *this;
 			}
 
+			BOOST_MULTI_HD constexpr auto operator[](difference_type i) { return *((*this) + i); }
+
 			friend BOOST_MULTI_HD constexpr auto operator==(iterator const& self, iterator const& other) { return (self.curr_ == other.curr_) && (self.rest_it_ == other.rest_it_); }
 			friend BOOST_MULTI_HD constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
 		};
@@ -407,10 +484,18 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				extensions_t<D - 1>{xs_.tail()}.elements().end(),
 			};
 		}
+
+		auto operator[](index i) const { return begin()[i]; }
+
+		auto size() const { return xs_.num_elements(); }
 	};
 
 	constexpr auto elements() const { return elements_t{*this}; }
 
+	template<class Func>
+	constexpr auto element_transformed(Func fun) const { return [fun](auto const&... xs){ return fun(detail::mk_tuple(xs...)); } ^(*this); }
+
+	BOOST_MULTI_HD constexpr auto extension() const { return this->get<0>(); }
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
@@ -542,6 +627,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using base_ = tuple<multi::index_extension>;
 
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
+
+	using difference_type = multi::index_extension::difference_type;
 
 	class elements_t {
 		multi::index_range rng_;
