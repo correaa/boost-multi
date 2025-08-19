@@ -5,8 +5,8 @@
 #ifndef BOOST_MULTI_DETAIL_LAYOUT_HPP
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
-#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 #include <boost/multi/detail/config/NODISCARD.hpp>
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <boost/multi/detail/index_range.hpp>    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
 #include <boost/multi/detail/operators.hpp>      // IWYU pragma: export  // for equality_comparable
@@ -101,8 +101,9 @@ class f_extensions_t {
 
 	constexpr auto operator[](index idx) const {
 		if constexpr(D != 1) {
-			auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
-			return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
+			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
+			// return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
+			return [idx, proj = proj_](auto... rest) { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
 		} else {
 			return proj_(idx);
 		}
@@ -306,7 +307,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	using indices_type = multi::detail::tuple_prepend_t<index, typename extensions_t<D - 1>::indices_type>;
 
 	template<class Func>
-	friend auto operator^(Func fun, extensions_t const& xs) {
+	friend constexpr auto operator^(Func fun, extensions_t const& xs) {
 		return f_extensions_t<D, Func>(xs, std::move(fun));
 	}
 
@@ -706,6 +707,11 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		using std::get;
 		// auto rng = get<0>(static_cast<tuple<multi::index_extension> const&>(*this));
 		return elements_t{get<0>(static_cast<tuple<multi::index_extension> const&>(*this))};
+	}
+
+	template<class Func>
+	friend constexpr auto operator^(Func fun, extensions_t const& xs) {
+		return f_extensions_t<1, Func>(xs, std::move(fun));
 	}
 
 	using nelems_type = index;

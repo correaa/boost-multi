@@ -337,7 +337,10 @@ struct static_array                                                             
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
 	}
 
-	template<class ArrayElementsLike, class = typename ArrayElementsLike::elements_t>
+	template<
+		class ArrayElementsLike, class = typename ArrayElementsLike::elements_t,
+		std::enable_if_t<!std::is_base_of_v<boost::multi::extensions_t<2>, ArrayElementsLike>, int> =0
+	>
 	constexpr static_array(ArrayElementsLike const& other, allocator_type const& alloc)
 	: array_alloc{alloc},
 	  ref(

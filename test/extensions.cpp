@@ -420,9 +420,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( arr2df[2][1] == 2 + 1 );
 
 		BOOST_TEST(std::equal(
-			arr2df.elements().begin(), arr2df.elements().end(), 
+			arr2df.elements().begin(), arr2df.elements().end(),
 			([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4)).elements().begin()
 		));
+
+		BOOST_TEST(   arr2df.elements().begin() != arr2df.elements().end()  );
+		BOOST_TEST( !(arr2df.elements().begin() == arr2df.elements().end()) );
+
 
 		BOOST_TEST( arr2df[2][1] == ([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4))[2][1] );
 
