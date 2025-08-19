@@ -43,9 +43,13 @@ template<class Self> struct selfable {
 
 template<class Self>
 class ra_iterable : selfable<Self> {
+	ra_iterable() = default;
+	friend Self;
+
 	template<class Self2 = Self>
 	using difference_type_t = decltype(std::declval<Self2 const&>() - std::declval<Self2 const&>());
 
+ public:
 	using iterator_category = std::random_access_iterator_tag;
 
 	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>  // NOLINT(modernize-use-constraints) for C++20

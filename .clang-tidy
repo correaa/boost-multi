@@ -1,4 +1,4 @@
-# Copyright 2020-2024 Alfredo A. Correa
+# Copyright 2020-2025 Alfredo A. Correa
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.'
@@ -54,4 +54,4 @@ Checks: '*,
 #  -misc-include-cleaner                                  // allow PCH
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // many tests use magic numbers
-#  readability-simplify-boolean-expr,                     // for Boost Lightweight Test BOOST_TEST
+#  -readability-simplify-boolean-expr,                    // for Boost Lightweight Test BOOST_TEST
