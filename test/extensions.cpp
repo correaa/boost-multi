@@ -7,7 +7,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for std::equal
-#include <tuple>  // IWYU pragma: keep
+#include <tuple>      // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>                      // for add_const<>::type
 
 namespace multi = boost::multi;
@@ -315,7 +315,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST(   arr2df.elements().begin() != arr2df.elements().end()  );
 		BOOST_TEST( !(arr2df.elements().begin() == arr2df.elements().end()) );
-
 
 		BOOST_TEST( arr2df[2][1] == ([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4))[2][1] );
 
