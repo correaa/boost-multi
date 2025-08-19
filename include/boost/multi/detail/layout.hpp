@@ -120,12 +120,12 @@ class f_extensions_t {
 		auto operator++() -> auto& { ++it_; return *this; }
 		auto operator--() -> auto& { --it_; return *this; }
 
-		auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
-		auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
+		constexpr auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
+		constexpr auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 
-		auto operator*() const -> decltype(auto) {
+		constexpr auto operator*() const -> decltype(auto) {
 			using std::get;
 			if constexpr(D != 1) {
 				auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
@@ -164,12 +164,12 @@ class f_extensions_t {
 			auto operator++() -> auto& { ++it_; return *this; }
 			auto operator--() -> auto& { --it_; return *this; }
 
-			auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
-			auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
+			constexpr auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
+			constexpr auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
 
 			friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 
-			auto operator*() const -> decltype(auto) { return std::apply(proj_, *it_); }
+			constexpr auto operator*() const -> decltype(auto) { using std::apply; return apply(proj_, *it_); }
 
 			using difference_type = elements_t::difference_type;
 			using value_type = difference_type;
@@ -178,6 +178,8 @@ class f_extensions_t {
 			using iterator_category = std::random_access_iterator_tag;
 
 			friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
+
+			constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 		};
 
 		auto begin() const { return iterator{elems_.begin(), proj_}; }
@@ -392,10 +394,21 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			using reference         = value_type;
 			using iterator_category = std::random_access_iterator_tag;
 
+			template<class CUT>
+			class mk_tup {
+				CUT cu_;
+
+			 public:
+				constexpr mk_tup(CUT cu) : cu_{cu} {}
+				template<class... Ts>
+				constexpr auto operator()(Ts... es) const { return detail::mk_tuple(cu_, es...); }
+			};
+
 			BOOST_MULTI_HD constexpr auto operator*() const {
 				// printf("op* %ld ...\n", *curr_);
 				using std::apply;
-				return apply([cu = *curr_](auto... es) {return detail::mk_tuple(cu, es...);}, *rest_it_); 
+				return apply(mk_tup<decltype(*curr_)>{*curr_}, *rest_it_);
+				// return apply([cu = *curr_] BOOST_MULTI_HD (auto... es) {return detail::mk_tuple(cu, es...);}, *rest_it_); 
 			}
 
 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
@@ -1644,13 +1657,13 @@ struct layout_t<0, SSize>
 	constexpr auto hull_size() const -> size_type { return num_elements(); }  // not in bytes
 };
 
-constexpr auto
+BOOST_MULTI_HD constexpr auto
 operator*(layout_t<0>::index_extension const& extensions_0d, layout_t<0>::extensions_type const& /*zero*/)
 	-> typename layout_t<1>::extensions_type {
 	return typename layout_t<1>::extensions_type{tuple<layout_t<0>::index_extension>{extensions_0d}};
 }
 
-constexpr auto operator*(extensions_t<1> const& extensions_1d, extensions_t<1> const& self) {
+BOOST_MULTI_HD constexpr auto operator*(extensions_t<1> const& extensions_1d, extensions_t<1> const& self) {
 	using boost::multi::detail::get;
 	return extensions_t<2>({get<0>(extensions_1d.base()), get<0>(self.base())});
 }
