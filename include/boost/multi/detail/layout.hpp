@@ -5,16 +5,14 @@
 #ifndef BOOST_MULTI_DETAIL_LAYOUT_HPP
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
-#include <boost/multi/detail/config/NODISCARD.hpp>
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
+#include <boost/multi/detail/config/NODISCARD.hpp>
+
 #include <boost/multi/detail/index_range.hpp>    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
 #include <boost/multi/detail/operators.hpp>      // IWYU pragma: export  // for equality_comparable
 #include <boost/multi/detail/serialization.hpp>  // IWYU pragma: export  // for archive_traits
 #include <boost/multi/detail/tuple_zip.hpp>      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
 #include <boost/multi/detail/types.hpp>          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
-#include "tuple_zip.hpp"
-
-// #include "types.hpp"
 
 #include <algorithm>         // for max
 #include <array>             // for array
@@ -399,7 +397,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				CUT cu_;
 
 			 public:
-				constexpr mk_tup(CUT cu) : cu_{cu} {}
+				constexpr explicit mk_tup(CUT cu) : cu_{cu} {}
 				template<class... Ts>
 				constexpr auto operator()(Ts... es) const { return detail::mk_tuple(cu_, es...); }
 			};
@@ -474,7 +472,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return *this;
 			}
 
-			BOOST_MULTI_HD constexpr auto operator[](difference_type i) { return *((*this) + i); }
+			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) { return *((*this) + dd); }
 
 			friend BOOST_MULTI_HD constexpr auto operator==(iterator const& self, iterator const& other) { return (self.curr_ == other.curr_) && (self.rest_it_ == other.rest_it_); }
 			friend BOOST_MULTI_HD constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
@@ -498,7 +496,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			};
 		}
 
-		auto operator[](index i) const { return begin()[i]; }
+		auto operator[](index idx) const { return begin()[idx]; }
 
 		auto size() const { return xs_.num_elements(); }
 	};
