@@ -6,7 +6,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <iostream>
+#include <algorithm>  // for std::equal
 #include <tuple>  // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>                      // for add_const<>::type
 
@@ -278,12 +278,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( 1 == get<0>(*(it2)) );
 		BOOST_TEST( 2 == get<1>(*(it2)) );
 
-		std::cout << "x y " << get<0>(*(it2 - 1)) << ' ' << get<1>(*(it2 - 1)) << '\n';
-
 		BOOST_TEST( 1 == get<0>(*(it2-1)) );
 		BOOST_TEST( 1 == get<1>(*(it2-1)) );
 
-		std::cout << "x y " << get<0>(*(it2 - 2)) << ' ' << get<1>(*(it2 - 2)) << '\n';
 		BOOST_TEST( 1 == get<0>(*(it2-2)) );
 		BOOST_TEST( 0 == get<1>(*(it2-2)) );
 
@@ -292,110 +289,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it3 == it33 );
 
 		BOOST_TEST( it3 == it );
-
-		// it -= 2;
-
-		// std::cout << "x y " << get<0>(*it) << ' ' << get<1>(*it) << '\n';
-		// BOOST_TEST( 0 == get<0>(*it) );
-		// BOOST_TEST( 0 == get<1>(*it) );
-
-		// it += 2;
-
-		// BOOST_TEST( 0 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// it += 3;
-
-		// BOOST_TEST( 1 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// it -= 3;
-
-		// std::cout << get<0>(*it) << ' ' << get<1>(*it) << std::endl;
-
-		// BOOST_TEST( 0 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// ++it;
-		// BOOST_TEST( 1 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// ++it;
-		// BOOST_TEST( 2 == get<0>(*it) );
-		// BOOST_TEST( 0 == get<1>(*it) );
-
-		// ++it;
-		// BOOST_TEST( 2 == get<0>(*it) );
-		// BOOST_TEST( 1 == get<1>(*it) );
-
-		// ++it;
-		// BOOST_TEST( 2 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// ++it;
-		// BOOST_TEST( 3 == get<0>(*it) );
-		// BOOST_TEST( 0 == get<1>(*it) );
-
-		// ++it;
-		// BOOST_TEST( 3 == get<0>(*it) );
-		// BOOST_TEST( 1 == get<1>(*it) );
-
-		// ++it;
-		// BOOST_TEST( 3 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// ++it;
-		// BOOST_TEST( it ==  x2d.elements().end() );
-
-		// --it;
-		// BOOST_TEST( 3 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 3 == get<0>(*it) );
-		// BOOST_TEST( 1 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 3 == get<0>(*it) );
-		// BOOST_TEST( 0 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 2 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 2 == get<0>(*it) );
-		// BOOST_TEST( 1 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 2 == get<0>(*it) );
-		// BOOST_TEST( 0 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 1 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 1 == get<0>(*it) );
-		// BOOST_TEST( 1 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 1 == get<0>(*it) );
-		// BOOST_TEST( 0 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 0 == get<0>(*it) );
-		// BOOST_TEST( 2 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 0 == get<0>(*it) );
-		// BOOST_TEST( 1 == get<1>(*it) );
-
-		// --it;
-		// BOOST_TEST( 0 == get<0>(*it) );
-		// BOOST_TEST( 0 == get<1>(*it) );
-
-		// BOOST_TEST( it ==  x2d.elements().begin() );
 	}
 	{
 		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
@@ -409,10 +302,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( x2df.elements()[5] == 2 );
 
 		BOOST_TEST( x2df[2][1] == 2 + 1 );
-
-		for(auto it = x2df.elements().begin(); it != x2df.elements().end(); ++it) {
-			std::cout << *it << " " << std::endl;
-		}
 
 		multi::array<int, 2> const arr2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
 
