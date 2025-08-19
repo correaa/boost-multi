@@ -337,22 +337,19 @@ struct static_array                                                             
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
 	}
 
-	template<
-		class ArrayElementsLike, class = typename ArrayElementsLike::elements_t,
-		// std::enable_if_t<std::is_assignable_v<typename static_array::element, typename ArrayElementsLike::element>, int> = 0,
-		std::enable_if_t<!std::is_base_of_v<boost::multi::extensions_t<D>, ArrayElementsLike>, int> = 0  // NOLINT(modernize-use-constraints) for C++20
-		>
-	constexpr static_array(ArrayElementsLike const& other, allocator_type const& alloc)
-	: array_alloc{alloc},
-	  ref(
-		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())),
-		  other.extensions()
-	  ) {
-		// if constexpr(D == 2) {
-		// 	std::cout << get<0>(other.extensions()) << ' ' << get<1>(other.extensions()) << std::endl;
-		// }
-		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
-	}
+	// template<
+	// 	class ArrayElementsLike, class = typename ArrayElementsLike::elements_t,
+	// 	// std::enable_if_t<std::is_assignable_v<typename static_array::element, typename ArrayElementsLike::element>, int> = 0,
+	// 	std::enable_if_t<!std::is_base_of_v<boost::multi::extensions_t<D>, ArrayElementsLike>, int> = 0  // NOLINT(modernize-use-constraints) for C++20
+	// 	>
+	// constexpr static_array(ArrayElementsLike const& other, allocator_type const& alloc)
+	// : array_alloc{alloc},
+	//   ref(
+	// 	  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())),
+	// 	  other.extensions()
+	//   ) {
+	// 	adl_alloc_uninitialized_copy_n(static_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
+	// }
 
 	template<class ArrayElementsLike, class = typename ArrayElementsLike::elements_t>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
