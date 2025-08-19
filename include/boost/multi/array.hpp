@@ -351,6 +351,7 @@ struct static_array                                                             
 	}
 
 	template<class ArrayElementsLike, class = typename ArrayElementsLike::elements_t>
+	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
 	constexpr static_array(ArrayElementsLike const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow terse syntax
 	: static_array(other, allocator_type{}) {}
 
