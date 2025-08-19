@@ -310,6 +310,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	friend constexpr auto operator^(Func fun, extensions_t const& xs) {
 		return f_extensions_t<D, Func>(xs, std::move(fun));
 	}
+	template<class Func>
+	friend constexpr auto operator->*(extensions_t const& xs, Func fun) {
+		return f_extensions_t<D, Func>(xs, std::move(fun));
+	}
 
 	[[nodiscard]]
 	BOOST_MULTI_HD constexpr auto from_linear(nelems_type const& n) const -> indices_type {

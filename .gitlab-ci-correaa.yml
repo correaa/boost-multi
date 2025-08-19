@@ -356,7 +356,7 @@ clang++-15 libc++ format:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-15 clang-format-19 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
     - mkdir build && cd build
-    - clang++ --version
+    # - clang++ --version
     - clang++-15 --version
     - CXX=clang++-15 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
     - cmake --build .
@@ -984,7 +984,7 @@ circle-latest c++20:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["circle"]
+#  needs: ["circle"]
 
 inq:
   stage: test

@@ -87,17 +87,17 @@ auto thrust_omp_array_sum(Array1D const& arr) {
 	return thrust::reduce(thrust::omp::par, arr.begin(), arr.end(), typename Array1D::value_type{});
 }
 
+// clang-format off
 template<class Tp>
 inline
 #if defined(_MSC_VER)
-	__forceinline
+__forceinline
 #else
-	__attribute__((always_inline))
+__attribute__((always_inline))
 #endif
-	void
-	DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
+void DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
 #if defined(_MSC_VER)
-	_ReadWriteBarrier();
+	_ReadWriteBarrier(); (void)value;
 #else
 	asm volatile("" : : "r,m"(value) : "memory");  // NOLINT(hicpp-no-assembler)
 #endif
@@ -106,12 +106,11 @@ inline
 template<class Tp>
 inline
 #if defined(_MSC_VER)
-	__forceinline
+__forceinline
 #else
-	__attribute__((always_inline))
+__attribute__((always_inline))
 #endif
-	void
-	DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
+void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
 #if defined(_MSC_VER)
 	_ReadWriteBarrier(); (void)value;
 #else
@@ -122,6 +121,7 @@ inline
 #endif
 #endif
 }
+// clang-format on
 
 }  // end namespace
 #endif

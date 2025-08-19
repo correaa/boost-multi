@@ -6,7 +6,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for std::equal
+#include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <tuple>      // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>                      // for add_const<>::type
 
@@ -311,6 +311,12 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST(std::equal(
 			arr2df.elements().begin(), arr2df.elements().end(),
 			([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4)).elements().begin()
+		));
+
+		BOOST_TEST(std::equal(
+			arr2df.elements().begin(), arr2df.elements().end(),
+			(multi::extensions_t<2>(3, 4) ->* [](auto x, auto y) { return x + y; }).elements().begin()
+			// ([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4)).elements().begin()
 		));
 
 		BOOST_TEST(   arr2df.elements().begin() != arr2df.elements().end()  );
