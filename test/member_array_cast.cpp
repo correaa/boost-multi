@@ -82,8 +82,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				int& mass;      // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 				v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
-				// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
-				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment  // NOLINT(modernize-use-designated-initializers) for C++20
+				// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-designated-initializers) for C++20
+				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment
 				auto operator+() const { return operator particle(); }
 
 				reference(int& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
@@ -192,22 +192,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
-		// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
+		// NOLINTBEGIN(misc-include-cleaner,modernize-use-designated-initializers) bug in clang-tidy 18
 		multi::array<employee, 1> d1D = {
-			{ "Al"s, 1430, 35}, // NOLINT(modernize-use-designated-initializers) for C++20
-			{"Bob"s, 3212, 34}, // NOLINT(modernize-use-designated-initializers) for C++20
+			{ "Al"s, 1430, 35},
+			{"Bob"s, 3212, 34},
 		};
-		// NOLINTEND(misc-include-cleaner) bug in clang-tidy 18
+		// NOLINTEND(misc-include-cleaner,modernize-use-designated-initializers) bug in clang-tidy 18
 
 		auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
 		BOOST_TEST(size(d1D_names) == size(d1D));
 		BOOST_TEST(d1D_names[1] == d1D[1].name);
 		BOOST_TEST(&d1D_names[1] == &d1D[1].name);
 
+		// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 		multi::array<employee, 2> d2D = {
-			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}}, // NOLINT(modernize-use-designated-initializers) for C++20
-			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}}, // NOLINT(modernize-use-designated-initializers) for C++20
+			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
+			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
 		};
+		// NOLINTEND(modernize-use-designated-initializers) for C++20
+
 		BOOST_TEST(d2D[0][0].name == "Al");
 		BOOST_TEST(d2D[0][0].salary == 1430);
 		BOOST_TEST(d2D[0][0].age == 35);
