@@ -339,8 +339,8 @@ struct static_array                                                             
 
 	template<
 		class ArrayElementsLike, class = typename ArrayElementsLike::elements_t,
-		std::enable_if_t<!std::is_base_of_v<boost::multi::extensions_t<2>, ArrayElementsLike>, int> =0  // NOLINT(modernize-use-constraints) for C++20
-	>
+		std::enable_if_t<!std::is_base_of_v<boost::multi::extensions_t<2>, ArrayElementsLike>, int> = 0  // NOLINT(modernize-use-constraints) for C++20
+		>
 	constexpr static_array(ArrayElementsLike const& other, allocator_type const& alloc)
 	: array_alloc{alloc},
 	  ref(
