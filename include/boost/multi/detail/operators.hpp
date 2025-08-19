@@ -49,14 +49,14 @@ class ra_iterable : selfable<Self> {
 	using iterator_category = std::random_access_iterator_tag;
 
 	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>
-	friend auto operator+(Self2 self, difference_type_t<Self2> const& n) { return self += n; }
+	friend BOOST_MULTI_HD constexpr auto operator+(Self2 self, difference_type_t<Self2> const& n) { return self += n; }
 	// template<class Self2 = Self>
 	// friend auto operator+(difference_type<Self2> const& n, Self2 const& self) { return self + n; }
-	auto operator++(int) {Self tmp{*this}; ++(this->self()); return tmp; }
-	auto operator--(int) {Self tmp{*this}; --(this->self()); return tmp; }
+	constexpr auto operator++(int) {Self tmp{*this}; ++(this->self()); return tmp; }
+	constexpr auto operator--(int) {Self tmp{*this}; --(this->self()); return tmp; }
 
 	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>
-	auto friend operator!=(Self2 const& self, Self2 const& other) { return !(self == other); }
+	constexpr auto friend operator!=(Self2 const& self, Self2 const& other) { return !(self == other); }
 };
 
 template<class Self, class U> struct equality_comparable2;
