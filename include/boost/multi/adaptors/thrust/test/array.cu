@@ -156,6 +156,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 
+			thrust::copy_n(thrust::cuda::par, aA.data_elements(), aA.size(), aB.begin());
+
+			std::cout << "line " << __LINE__ << std::endl;
+
 			static_assert( std::is_same_v<decltype(aA.data_elements()), thrust::device_ptr<int> > );
 
 			thrust::copy(thrust::cuda::par, aA.data_elements(), aA.data_elements() + aA.size(), aB.begin());
