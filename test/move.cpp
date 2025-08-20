@@ -99,7 +99,8 @@ void move_element_1d_array() {
 
 		auto&& marr62 = multi::move(arr({2, 6}));
 
-		std::copy(std::move(marr62).begin(), std::move(marr62).end(), out_vec.begin());  // NOLINT(modernize-use-ranges,bugprone-use-after-move,hicpp-invalid-access-moved)
+		// NOLINTNEXTLINE(modernize-use-ranges,bugprone-use-after-move,hicpp-invalid-access-moved)
+		std::copy(std::move(marr62).begin(), std::move(marr62).end(), out_vec.begin());
 
 		BOOST_TEST( out_vec[0].size() == 5 );
 		BOOST_TEST( arr[2].empty() );

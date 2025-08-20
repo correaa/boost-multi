@@ -228,5 +228,17 @@ auto main() -> int {
 		}
 	}
 	std::cout << "time " << mus.count() << " µs FLOPS " << FLOPs << " flops/s " << FLOPs/(mus.count()/1e6)/1e9 << '\n';
+
+	{
+		auto nx = 13;
+		auto ny = 19;
+
+		multi::thrust::device_array<double, 1> sums(nx);
+		multi::thrust::reduce_by_index(
+			[] __host__ __device__(long ix, long iy) -> double { return double(ix) * double(iy); }
+			^ multi::extensions_t<2>(nx, ny),
+			sums
+		);
+	}
 	return boost::report_errors();
 }

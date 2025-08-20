@@ -3824,12 +3824,8 @@ template<class Ptr> array_ref(Ptr, index_extensions<5>) -> array_ref<typename st
 
 template<class It, class Tuple> array_ref(It, Tuple) -> array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size<Tuple>::value, It>;
 
-template<class It>
-const_subarray(It, It)
-	-> const_subarray<
-		typename It::element_type, It::dimensionality + 1, typename It::element_ptr, layout_t<It::dimensionality + 1>>;
+template<class It> const_subarray(It, It) -> const_subarray<typename It::element_type, It::dimensionality + 1, typename It::element_ptr, layout_t<It::dimensionality + 1>>;
 #endif
-
 // TODO(correaa) move to utility
 template<class T, std::size_t N>
 constexpr auto rotated(T const (&array)[N]) noexcept {                                                 // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility

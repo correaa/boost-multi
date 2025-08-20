@@ -16,7 +16,7 @@ AlignConsecutiveDeclarations:
   AcrossComments: false
 AlignOperands: AlignAfterOperator
 AllowAllArgumentsOnNextLine: false
-AllowShortLambdasOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: All
 AllowShortCaseLabelsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: No
 # BreakConstructorInitializers: BeforeComma

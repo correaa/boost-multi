@@ -151,8 +151,37 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			devalloc.deallocate(Bptr, 3);
 		}
 		{
-			multi::array<int, 1, thrust::device_allocator<int> > aA(3, 44);
-			multi::array<int, 1, thrust::device_allocator<int> > aB(3, 0);
+			thrust::device_allocator<int> devalloc;
+
+			auto Aptr = devalloc.allocate(3);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			thrust::uninitialized_fill(thrust::cuda::par , Aptr, Aptr + 3, 44);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			auto Bptr = devalloc.allocate(3);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			thrust::uninitialized_fill(thrust::cuda::par , Bptr, Bptr + 3, 44);
+
+			std::cerr << "line " << __LINE__ << std::endl;
+
+			multi::array_ref<int, 1, thrust::device_ptr<int> > aA(Aptr, 3);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			multi::array_ref<int, 1, thrust::device_ptr<int> > aB(Bptr, 3);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::copy_n(thrust::cuda::par, Aptr, aA.size(), Bptr);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::copy_n(thrust::cuda::par, aA.data_elements(), aA.size(), aB.begin());
 
 			std::cout << "line " << __LINE__ << std::endl;
 

@@ -62,8 +62,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( exts.to_linear(4, 0, 0) == exts.num_elements() );
 
 		for(int idx = 0; idx != exts.num_elements(); ++idx) {  // NOLINT(altera-unroll-loops)
-			BOOST_TEST( std::apply([&](auto... indices) {
-				return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
+			BOOST_TEST( std::apply([&](auto... indices) { return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
 		}
 	}
 

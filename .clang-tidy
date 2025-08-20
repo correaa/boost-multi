@@ -1,4 +1,4 @@
-# Copyright 2020-2024 Alfredo A. Correa
+# Copyright 2020-2025 Alfredo A. Correa
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.'
@@ -9,6 +9,7 @@ CheckOptions:
   - { key: readability-identifier-naming.FunctionCase                      , value: lower_case }
   - { key: readability-identifier-naming.GlobalConstantCase                , value: aNy_CasE   }
   - { key: readability-identifier-length.IgnoredLoopCounterNames           , value: "^[ijk_]$" }
+  - { key: readability-identifier-length.IgnoredParameterNames             , value: "^[xyzabcdnml]$" }
   - { key: readability-identifier-length.IgnoredVariableNames              , value: "^[ijk_]$" }
   - { key: readability-identifier-length.MethodCase                        , value: lower_case }
   - { key: readability-identifier-length.MinimumLoopCounterNameLength      , value: 2          }
@@ -23,9 +24,6 @@ CheckOptions:
   - { key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp, value: expr-type}
   - { key: readability-operators-representation.BinaryOperators            , value: '&&;&=;&;|;~;!;!=;||;|=;^;^='}
 # value: expr-type , bug in clang 16 in c++20 mode https://stackoverflow.com/a/75157215/225186
-
-# for range-for loops, e.g. `for(auto i : is) ...`
-#  - { key: readability-identifier-length.IgnoredVariableNames        , value: "^[ijk]$"  }
 
 Checks: '*,
   -altera-struct-pack-align,
@@ -56,4 +54,4 @@ Checks: '*,
 #  -misc-include-cleaner                                  // allow PCH
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // many tests use magic numbers
-#  readability-simplify-boolean-expr,                     // for Boost Lightweight Test BOOST_TEST
+#  -readability-simplify-boolean-expr,                    // for Boost Lightweight Test BOOST_TEST
