@@ -551,14 +551,19 @@ clang++-oldstable-cmake4:
   script:
     - arch
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-7 clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-9 clang-10 clang-11 clang-12 clang-13 clang-14 clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - cmake --version
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
     - mkdir build && cd build
     - clang++ --version
-    - clang++-7 --version
+    - clang++-14 --version
+    - clang++-13 --version
+    - clang++-12 --version
+    - clang++-11 --version
+    - clang++-10 --version
+    - clang++-9 --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
