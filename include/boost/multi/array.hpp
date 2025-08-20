@@ -347,9 +347,9 @@ struct static_array                                                             
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
 	}
 
-	template<class ArrayElementsLike, class = typename ArrayElementsLike::elements_t>
+	template<class F>  // ArrayElementsLike, class = typename ArrayElementsLike::elements_t>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr static_array(ArrayElementsLike const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow terse syntax
+	constexpr static_array(multi::f_extensions_t<D, F> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow terse syntax
 	: static_array(other, allocator_type{}) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout, class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>, class = decltype(adl_copy(std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().begin(), std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
