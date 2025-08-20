@@ -344,7 +344,7 @@ clang++-18 mull-18:  # mull-18 crashes
 #       - build/multi_all.deb
 #   needs: ["g++", "clang++"]
 
-clang++-latest libc++ format:  // Aug2025 clang 19
+clang++-latest libc++ format:  # Aug2025 clang 19
   stage: build
   image: debian:latest
   tags:
