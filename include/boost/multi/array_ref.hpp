@@ -796,7 +796,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 	template<typename, class> friend struct elements_iterator_t;
 	template<typename, class> friend struct elements_range_t;
 
-	constexpr elements_iterator_t(pointer base, layout_type const& lyt, difference_type n)
+	BOOST_MULTI_HD constexpr elements_iterator_t(pointer base, layout_type const& lyt, difference_type n)
 	: base_{base}, l_{lyt}, n_{n}, xs_{l_.extensions()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)} {}
 
  public:
@@ -1016,11 +1016,11 @@ struct elements_range_t {
 	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{base_, l_, l_.num_elements()}; }
 
  public:
-	constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
-	constexpr auto end() const& -> const_iterator { return end_aux_(); }
+	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
+	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
 
-	constexpr auto begin() && -> iterator { return begin_aux_(); }
-	constexpr auto end() && -> iterator { return end_aux_(); }
+	BOOST_MULTI_HD constexpr auto begin() && -> iterator { return begin_aux_(); }
+	BOOST_MULTI_HD constexpr auto end() && -> iterator { return end_aux_(); }
 
 	BOOST_MULTI_HD constexpr auto begin() & -> iterator { return begin_aux_(); }
 	BOOST_MULTI_HD constexpr auto end() & -> iterator { return end_aux_(); }
