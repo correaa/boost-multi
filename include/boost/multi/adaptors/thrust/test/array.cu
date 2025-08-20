@@ -165,12 +165,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cerr << "line " << __LINE__ << std::endl;
 
-			thrust::uninitialized_fill(thrust::cuda::par , Aptr, Aptr + 3, 44);
+			thrust::uninitialized_fill(thrust::cuda::par , Bptr, Bptr + 3, 44);
 
 			std::cerr << "line " << __LINE__ << std::endl;
 
 			multi::array_ref<int, 1, thrust::device_ptr<int> > aA(Aptr, 3);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
 			multi::array_ref<int, 1, thrust::device_ptr<int> > aB(Bptr, 3);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::copy_n(thrust::cuda::par, Aptr, aA.size(), Bptr);
 
 			std::cout << "line " << __LINE__ << std::endl;
 
