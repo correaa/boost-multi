@@ -1224,9 +1224,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic pop
 #endif
 
-	//  BOOST_MULTI_HD constexpr auto operator[](index idx)     && ->     reference { return                              at_aux_(idx) ; }
-	//  BOOST_MULTI_HD constexpr auto operator[](index idx)      & ->     reference { return                              at_aux_(idx) ; }
-
 	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>,
 			 typename    = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 			 >
@@ -1243,12 +1240,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	constexpr auto front() const& -> const_reference { return *begin(); }
 	constexpr auto back() const& -> const_reference { return *(end() - 1); }  // std::prev(end(), 1);}
-
-	// constexpr auto front()     && ->       reference { return *begin(); }
-	// constexpr auto back()      && ->       reference { return *(end() - 1); }  // std::prev(end(), 1);}
-
-	// constexpr auto front()      & ->       reference {return *begin();}
-	// constexpr auto back()       & ->       reference {return *(end() - 1);}  // std::prev(end(), 1);}
 
 	using typename types::index;
 
@@ -1276,8 +1267,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  public:
 	constexpr auto taked(difference_type n) const& -> basic_const_array { return taked_aux_(n); }
-	// constexpr auto taked(difference_type n)     && -> const_subarray    { return taked_aux_(n); }
-	// constexpr auto taked(difference_type n)      & -> const_subarray    { return taked_aux_(n); }
 
  private:
 	BOOST_MULTI_HD constexpr auto halved_aux_() const {
@@ -1491,10 +1480,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	BOOST_MULTI_HD constexpr auto partitioned(size_type n) const& -> const_subarray<T, D + 1, element_ptr> { return partitioned_aux_(n); }
 
-	// friend BOOST_MULTI_HD constexpr auto partitioned(const_subarray const& self, size_type n) -> partitioned_const_type {return           self .partitioned(n);}
-	// friend BOOST_MULTI_HD constexpr auto partitioned(const_subarray      & self, size_type n) -> partitioned_type       {return           self .partitioned(n);}
-	// friend BOOST_MULTI_HD constexpr auto partitioned(const_subarray     && self, size_type n) -> partitioned_type       {return std::move(self).partitioned(n);}
-
  private:
 	BOOST_MULTI_HD constexpr auto chunked_aux_(size_type count) const {
 		BOOST_MULTI_ASSERT(this->size() % count == 0);
@@ -1523,9 +1508,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reversed() const& -> basic_const_array { return reversed_aux_(); }
 	constexpr auto reversed() & -> const_subarray { return reversed_aux_(); }
 	constexpr auto reversed() && -> const_subarray { return reversed_aux_(); }
-	// friend constexpr auto reversed(const_subarray const& self) -> basic_const_array { return           self .reversed(); }
-	// friend constexpr auto reversed(const_subarray      & self) ->          const_subarray { return           self .reversed(); }
-	// friend constexpr auto reversed(const_subarray     && self) ->          const_subarray { return std::move(self).reversed(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto transposed_aux_() const {
@@ -1876,7 +1858,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 };
 
-#if defined(__clang__)
+#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
