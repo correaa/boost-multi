@@ -3,6 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
+#endif
+
 #include <boost/multi/array.hpp>  // for transform_ptr, array, subarray
 
 #include <boost/core/lightweight_test.hpp>

@@ -41,6 +41,28 @@ template<class Self> struct selfable {
 	}
 };
 
+template<class Self>
+class ra_iterable : selfable<Self> {
+	ra_iterable() = default;
+	friend Self;
+
+	template<class Self2 = Self>
+	using difference_type_t = decltype(std::declval<Self2 const&>() - std::declval<Self2 const&>());
+
+ public:
+	using iterator_category = std::random_access_iterator_tag;
+
+	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	friend BOOST_MULTI_HD constexpr auto operator+(Self2 self, difference_type_t<Self2> const& n) { return self += n; }
+	// template<class Self2 = Self>
+	// friend auto operator+(difference_type<Self2> const& n, Self2 const& self) { return self + n; }
+	constexpr auto operator++(int) { Self tmp{*this}; ++(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
+	constexpr auto operator--(int) { Self tmp{*this}; --(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
+
+	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	constexpr auto friend operator!=(Self2 const& self, Self2 const& other) { return !(self == other); }
+};
+
 template<class Self, class U> struct equality_comparable2;
 
 template<class Self>
