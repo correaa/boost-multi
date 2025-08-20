@@ -208,9 +208,9 @@ g++-8:
     - cmake --build build/ --target test  # - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
-g++-8-bullseye:
+g++-8-buster:
   stage: build
-  image: debian:bullseye
+  image: debian:buster
   tags:
     - non-shared
     - docker
@@ -240,10 +240,11 @@ g++-9-bullseye:
   script:
     - arch
     - apt-get -qq update
-    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-9 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
+    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++ g++-9 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
     # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
     # - sh ./cmake-*.sh --skip-license --prefix=/usr
     - cmake --version
+    - g++ --version
     - g++-9 --version
     - CXX=g++-9 cmake -S . -B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
     - cmake --build build/ --parallel 2 || cmake --build . --verbose
