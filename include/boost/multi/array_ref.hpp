@@ -657,7 +657,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 		return *this;
 	}
 
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
