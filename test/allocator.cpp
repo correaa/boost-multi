@@ -21,7 +21,7 @@
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
-// #include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
 
 namespace multi = boost::multi;
 
