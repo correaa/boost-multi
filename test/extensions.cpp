@@ -303,7 +303,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( x2df[2][1] == 2 + 1 );
 
-		multi::array<int, 2> const arr2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
+		multi::array<multi::index, 2> const arr2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
 
 		BOOST_TEST( arr2df(2, 1) == 2 + 1 );
 		BOOST_TEST( arr2df[2][1] == 2 + 1 );
