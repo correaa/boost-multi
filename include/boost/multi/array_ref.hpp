@@ -1023,7 +1023,7 @@ struct elements_range_t {
 	~elements_range_t() = default;
 
  private:
-	constexpr auto begin_aux_() const { return iterator{base_, l_, 0}; }
+	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator{base_, l_, 0}; }
 	constexpr auto end_aux_() const { return iterator{base_, l_, l_.num_elements()}; }
 
  public:
@@ -1033,7 +1033,7 @@ struct elements_range_t {
 	constexpr auto begin() && -> iterator { return begin_aux_(); }
 	constexpr auto end() && -> iterator { return end_aux_(); }
 
-	constexpr auto begin() & -> iterator { return begin_aux_(); }
+	BOOST_MULTI_HD constexpr auto begin() & -> iterator { return begin_aux_(); }
 	constexpr auto end() & -> iterator { return end_aux_(); }
 
 	BOOST_MULTI_HD constexpr auto front() const& -> const_reference { return *begin(); }
@@ -2496,7 +2496,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	BOOST_MULTI_HD constexpr /*impl*/ array_iterator(array_iterator<EElement, 1, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of original pointer
 	: ptr_{other.base()}, stride_{other.stride_} {}
 
-	constexpr explicit operator bool() const { return static_cast<bool>(this->ptr_); }
+	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(this->ptr_); }
 
 	BOOST_MULTI_HD constexpr auto operator[](typename array_iterator::difference_type n) const -> decltype(auto) {
 		return *((*this) + n);
@@ -2506,13 +2506,10 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 
 	using element     = Element;
 	using element_ptr = Ptr;
-	// using pointer = element_ptr;
 
 	static constexpr dimensionality_type rank_v = 1;
-	using rank                                  = std::integral_constant<dimensionality_type, rank_v>;
 
-	// BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, typename const_subarray<Element, 1, Ptr>::index stride)
-	// : ptr_{ptr}, stride_{stride} {}
+	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, Stride stride)
 	: ptr_{ptr}, stride_{stride} {}
@@ -2540,23 +2537,20 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	[[deprecated("use base() for iterator")]]
 	BOOST_MULTI_HD constexpr auto data() const { return base(); }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR
-	auto base(array_iterator const& self) { return self.base(); }
+	BOOST_MULTI_FRIEND_CONSTEXPR auto base(array_iterator const& self) { return self.base(); }
 
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type { return stride_; }
 	friend constexpr auto         stride(array_iterator const& self) -> stride_type { return self.stride_; }
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-
-	constexpr auto operator++() -> array_iterator& {
+	BOOST_MULTI_HD constexpr auto operator++() -> array_iterator& {
 		ptr_ += stride_;
 		return *this;
 	}
-	constexpr auto operator--() -> array_iterator& {
+	BOOST_MULTI_HD constexpr auto operator--() -> array_iterator& {
 		ptr_ -= stride_;
 		return *this;
 	}
@@ -2569,36 +2563,35 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		ptr_ -= stride_ * n;
 		return *this;
 	}
-
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
-	constexpr auto operator-(array_iterator const& other) const -> difference_type {
+	BOOST_MULTI_HD constexpr auto operator-(array_iterator const& other) const -> difference_type {
 		BOOST_MULTI_ASSERT(stride() != 0);
 		BOOST_MULTI_ASSERT(stride() == other.stride());
 		BOOST_MULTI_ASSERT((ptr_ - other.ptr_) % stride() == 0);
 		return (ptr_ - other.ptr_) / stride();  // with struct-overflow=3 error: assuming signed overflow does not occur when simplifying `X - Y > 0` to `X > Y` [-Werror=strict-overflow]
 	}
 
-	constexpr auto operator==(array_iterator const& other) const noexcept {
+	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const noexcept {
 		BOOST_MULTI_ASSERT(this->stride_ == other.stride_);
 		return this->ptr_ == other.ptr_;
 	}
 
-	constexpr auto operator!=(array_iterator const& other) const noexcept {
+	BOOST_MULTI_HD constexpr auto operator!=(array_iterator const& other) const noexcept {
 		BOOST_MULTI_ASSERT(this->stride_ == other.stride_);
 		return this->ptr_ != other.ptr_;
 	}
 
 	template<bool OtherIsConst, std::enable_if_t<OtherIsConst != IsConst, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr auto operator==(array_iterator<Element, 1, Ptr, OtherIsConst> const& other) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator==(array_iterator<Element, 1, Ptr, OtherIsConst> const& other) const -> bool {
 		BOOST_MULTI_ASSERT(this->stride_ == other.stride_);
 		BOOST_MULTI_ASSERT(stride_ != 0);
 		return this->ptr_ == other.ptr_;
 	}
 
-	constexpr auto operator<(array_iterator const& other) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator<(array_iterator const& other) const -> bool {
 		return 0 < other - *this;
 	}
 
@@ -3209,12 +3202,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  private:
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
-	constexpr BOOST_MULTI_HD auto begin_aux_() const { return iterator{this->base_, this->stride()}; }
-	constexpr BOOST_MULTI_HD auto end_aux_() const { return iterator{this->base_ + types::nelems(), this->stride()}; }
+	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator{this->base_, this->stride()}; }
+	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{this->base_ + types::nelems(), this->stride()}; }
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
@@ -3222,8 +3214,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
-
-	constexpr auto end() const& -> const_iterator { return end_aux_(); }
+	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
