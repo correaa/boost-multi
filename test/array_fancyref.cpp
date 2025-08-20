@@ -9,7 +9,7 @@
 #include <iterator>     // for random_access_iterator_tag
 #include <memory>       // for allocator
 #include <type_traits>  // for decay_t
-// #include <version>      // for nullptr_t  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
 
 namespace fancy {
 
