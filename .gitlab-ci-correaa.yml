@@ -344,29 +344,7 @@ clang++-18 mull-18:  # mull-18 crashes
 #       - build/multi_all.deb
 #   needs: ["g++", "clang++"]
 
-clang++-15 libc++ format:
-  stage: build
-  image: debian:bookworm
-  tags:
-    - non-shared
-    - docker
-  interruptible: true
-  allow_failure: true
-  script:
-    - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-15 clang-format-19 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
-    - mkdir build && cd build
-    # - clang++ --version
-    - clang++-15 --version
-    - CXX=clang++-15 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
-    - cmake --build .
-    - ctest -j 2 --output-on-failure
-    - cd ..
-    - clang-format-19 --version
-    - clang-format-19 --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
-  needs: ["clang++"]
-
-clang++-latest libc++:
+clang++-latest libc++ format:  // Aug2025 clang 19
   stage: build
   image: debian:latest
   tags:
@@ -375,31 +353,16 @@ clang++-latest libc++:
   interruptible: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang clang-format cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
     - cmake --build .
     - ctest -j 2 --output-on-failure
+    - cd ..
+    - clang-format --version
+    - clang-format --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
   needs: ["clang++"]
-
-# - name: Install vcpkg
-#   run: |
-#       git clone https://github.com/microsoft/vcpkg.git
-#       .\vcpkg\bootstrap-vcpkg.bat
-
-# - name: Install Boost
-#   run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
-
-# - name: Set up Boost environment variables
-#   run: |
-#     echo "BOOST_ROOT=$(Get-Location)\vcpkg\installed\x64-windows" >> $env:GITHUB_ENV
-#     echo "BOOST_INCLUDEDIR=$(Get-Location)\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
-#     echo "BOOST_LIBRARYDIR=$(Get-Location)\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
-#     echo "PATH=$(Get-Location)\vcpkg\installed\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV
-
-# - name: Configure CMake
-#   run: cmake -S . -B build -A x64 -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=.\vcpkg\installed\x64-windows
 
 vs2019-windows:
   stage: build
@@ -439,7 +402,7 @@ vs2019-windows:
 
 vs2022-shell:
   stage: build
-  allow_failure: true
+  allow_failure: false
   interruptible: true
   script:
     # - choco --version
@@ -461,7 +424,7 @@ vs2022-shell:
 
 vs2022-shell c++17:
   stage: build
-  allow_failure: true
+  allow_failure: false
   interruptible: true
   script:
     # - choco --version
@@ -476,6 +439,27 @@ vs2022-shell c++17:
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall /wd5045" -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel 2 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
+  tags:
+    - windows, shell
+  needs: ["vs2022-shell"]
+  timeout: 20 minutes
+
+vs2022-shell c++23:
+  stage: build
+  allow_failure: false
+  interruptible: true
+  script:
+    # - choco --version
+    # - choco install -y visualstudio2019community poshgit
+    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    #- git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    #- .\vcpkg\bootstrap-vcpkg.bat
+    #- .\vcpkg\vcpkg install boost-multi-array boost-timer
+    - mkdir build
+    - cmake --version
+    - cmake -S . -B build -DCMAKE_CXX_STANDARD=23 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" # -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.3"
+    - cmake --build build --config Release --parallel 2 ; if (!$?) { cmake --build build --config Release --parallel 1 --verbose }
+    - ctest -j 4 --test-dir build --output-on-failure -C Release
   tags:
     - windows, shell
   needs: ["vs2022-shell"]
@@ -505,27 +489,6 @@ vs2022-shell cuda:
     - windows, shell
   needs: ["vs2022-shell", "cuda"]
   timeout: 60 minutes
-
-vs2022-shell c++23:
-  stage: build
-  allow_failure: true
-  interruptible: true
-  script:
-    # - choco --version
-    # - choco install -y visualstudio2019community poshgit
-    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
-    #- git clone --depth=1 https://github.com/microsoft/vcpkg.git
-    #- .\vcpkg\bootstrap-vcpkg.bat
-    #- .\vcpkg\vcpkg install boost-multi-array boost-timer
-    - mkdir build
-    - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_STANDARD=23 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" # -DBoost_DIR="C:\local\boost_1_86_0" -DBOOST_LIBRARYDIR="C:\local\boost_1_86_0\lib64-msvc-14.3"
-    - cmake --build build --config Release --parallel 2 ; if (!$?) { cmake --build build --config Release --parallel 1 --verbose }
-    - ctest -j 4 --test-dir build --output-on-failure -C Release
-  tags:
-    - windows, shell
-  needs: ["vs2022-shell"]
-  timeout: 20 minutes
 
 clang++-m32:
   stage: build
