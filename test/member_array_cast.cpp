@@ -248,10 +248,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 		};
 
+		// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 		multi::array<record, 2> const recs = {
-			{{1, 1.1}, {2, 2.2}}, // NOLINT(modernize-use-designated-initializers) for C++
-			{{3, 3.3}, {4, 4.4}}, // NOLINT(modernize-use-designated-initializers) for C++
+			{{1, 1.1}, {2, 2.2}},
+			{{3, 3.3}, {4, 4.4}},
 		};
+		// NOLINTEND(modernize-use-designated-initializers) for C++20
 
 		// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
 		multi::array<int, 2> ids{recs.element_transformed(&record::id)};
@@ -269,10 +271,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
+		// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 		multi::array<employee, 2> d2D = {
-			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}}, // NOLINT(modernize-use-designated-initializers) for C++20
-			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}}, // NOLINT(modernize-use-designated-initializers) for C++20
+			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
+			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
 		};
+		// NOLINTEND(modernize-use-designated-initializers) for C++20
 
 		// multi::array<std::size_t, 2> d2D_ages_copy =
 		d2D.element_transformed(std::mem_fn(&employee::age));
