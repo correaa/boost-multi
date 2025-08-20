@@ -1230,9 +1230,11 @@ struct layout_t
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
 #endif
+ private:
 	template<class... Args>
 	static BOOST_MULTI_HD constexpr auto std_apply_(Args&&... args) ->decltype(auto) { using std::apply; return apply(std::forward<Args>(args)...); }
 
+ public:
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions)
 	: sub_{
 		// [extensions]() {
