@@ -186,6 +186,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 
+			thrust::copy_n(thrust::cuda::par, aA.data_elements(), aA.size(), aB.data_elements());
+
+			std::cout << "line " << __LINE__ << std::endl;
+
 			thrust::copy_n(thrust::cuda::par, aA.data_elements(), aA.size(), aB.begin());
 
 			std::cout << "line " << __LINE__ << std::endl;
