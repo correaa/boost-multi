@@ -525,6 +525,7 @@ class device_array_iterator<Element, 1, ElementPtr, IsConst, IsMove, Stride> {
 	constexpr auto operator=(device_array_iterator&&) noexcept -> device_array_iterator& = default;
 
 	device_array_iterator(device_array_iterator&&) noexcept = default;
+	device_array_iterator(device_array_iterator const&) noexcept = default;
 };
 
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride>
