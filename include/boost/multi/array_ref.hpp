@@ -489,29 +489,45 @@ struct array_iterator;
 
 template<class Element, class ElementPtr, bool IsConst, bool IsMove, typename Stride>
 class device_array_iterator<Element, 1, ElementPtr, IsConst, IsMove, Stride> {
-	ElementPtr ptr_;
+	ElementPtr     ptr_;
 	std::ptrdiff_t stride_;
 
  public:
-	using difference_type = std::ptrdiff_t;
-	using value_type = typename std::iterator_traits<ElementPtr>::value_type;
-	using pointer = ElementPtr;
-	using reference = typename std::iterator_traits<ElementPtr>::reference;
+	using difference_type   = std::ptrdiff_t;
+	using value_type        = typename std::iterator_traits<ElementPtr>::value_type;
+	using pointer           = ElementPtr;
+	using reference         = typename std::iterator_traits<ElementPtr>::reference;
 	using iterator_category = std::random_access_iterator_tag;
 
-	BOOST_MULTI_HD constexpr
-	device_array_iterator(pointer ptr, std::ptrdiff_t stride) : ptr_{ptr}, stride_{stride} {}
+	BOOST_MULTI_HD constexpr device_array_iterator(pointer ptr, std::ptrdiff_t stride) : ptr_{ptr}, stride_{stride} {}
 
-	BOOST_MULTI_HD constexpr auto operator++() -> device_array_iterator& {ptr_ += stride_; return *this; }
-	BOOST_MULTI_HD constexpr auto operator+=(std::ptrdiff_t d) -> device_array_iterator& {ptr_ += stride_*d; return *this; }
+	BOOST_MULTI_HD constexpr auto operator++() -> device_array_iterator& {
+		ptr_ += stride_;
+		return *this;
+	}
+	BOOST_MULTI_HD constexpr auto operator+=(std::ptrdiff_t d) -> auto& {
+		ptr_ += stride_ * d;
+		return *this;
+	}
 
-	BOOST_MULTI_HD constexpr auto operator+(difference_type d) const { device_array_iterator ret = *this; ret += d; return ret; }
+	BOOST_MULTI_HD constexpr auto operator+(difference_type d) const { return device_array_iterator{*this} += d; }
+
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *ptr_; }
-	BOOST_MULTI_HD constexpr auto operator[](difference_type d) const -> reference { return *((*this)+d); }
-	BOOST_MULTI_HD constexpr auto operator-(device_array_iterator const& other) const { return (ptr_ - other.ptr_)/stride_; }
+	BOOST_MULTI_HD constexpr auto operator[](difference_type d) const -> reference { return *((*this) + d); }
+
+	BOOST_MULTI_HD constexpr auto operator-(device_array_iterator const& other) const { return (ptr_ - other.ptr_) / stride_; }
 
 	BOOST_MULTI_HD constexpr auto operator==(device_array_iterator const& other) const { return ptr_ == other.ptr_; }
 	BOOST_MULTI_HD constexpr auto operator!=(device_array_iterator const& other) const { return ptr_ != other.ptr_; }
+
+	~device_array_iterator() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+
+	constexpr auto operator=(device_array_iterator&&)  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		noexcept                                // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+		-> device_array_iterator& = default;
+
+	device_array_iterator(device_array_iterator&&) noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+		= default;                             // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 };
 
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride>
