@@ -68,7 +68,7 @@ template<class Self, class U> struct equality_comparable2;
 template<class Self>
 struct equality_comparable2<Self, Self> : selfable<Self> {
 	// friend constexpr auto operator==(equality_comparable2 const& self, equality_comparable2 const& other) {return     self.self() == other.self() ;}
-	friend constexpr auto operator!=(equality_comparable2 const& self, equality_comparable2 const& other) { return !(self.self() == other.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator!=(equality_comparable2 const& self, equality_comparable2 const& other) { return !(self.self() == other.self()); }
 };
 
 template<class Self> struct equality_comparable : equality_comparable2<Self, Self> {
