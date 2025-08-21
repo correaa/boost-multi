@@ -124,12 +124,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-		std::cout << "std::transform BLAS\n"
-				  << std::invoke([&, start_time = high_resolution_clock::now()] {
-						 std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });  // NOLINT(modernize-use-ranges) for C++20
-						 return duration<double>{high_resolution_clock::now() - start_time};
-					 }).count()
-				  << '\n';
+		std::cout
+			<< "std::transform BLAS\n"
+			<< std::invoke(
+				   [&, start_time = high_resolution_clock::now()] {
+					   // NOLINTNEXTLINE(modernize-use-ranges) for C++20
+					   std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
+					   return duration<double>{high_resolution_clock::now() - start_time};
+				   }
+			   ).count()
+			<< '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
 

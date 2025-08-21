@@ -190,6 +190,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "line " << __LINE__ << std::endl;
 
+			auto Ait = multi::array_iterator<int, 1, thrust::device_ptr<int> >(Aptr, 1);
+
+			thrust::copy_n(thrust::cuda::par, Ait, aA.size(), aB.data_elements());
+
+			std::cout << "line " << __LINE__ << std::endl;
+
 			thrust::copy_n(thrust::cuda::par, aA.begin(), aA.size(), aB.data_elements());
 
 			std::cout << "line " << __LINE__ << std::endl;

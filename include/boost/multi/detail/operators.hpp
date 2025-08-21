@@ -56,11 +56,11 @@ class ra_iterable : selfable<Self> {
 	friend BOOST_MULTI_HD constexpr auto operator+(Self2 self, difference_type_t<Self2> const& n) { return self += n; }
 	// template<class Self2 = Self>
 	// friend auto operator+(difference_type<Self2> const& n, Self2 const& self) { return self + n; }
-	constexpr auto operator++(int) { Self tmp{*this}; ++(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
-	constexpr auto operator--(int) { Self tmp{*this}; --(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
+	BOOST_MULTI_HD constexpr auto operator++(int) { Self tmp{*this}; ++(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
+	BOOST_MULTI_HD constexpr auto operator--(int) { Self tmp{*this}; --(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
 
 	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr auto friend operator!=(Self2 const& self, Self2 const& other) { return !(self == other); }
+	BOOST_MULTI_HD constexpr auto friend operator!=(Self2 const& self, Self2 const& other) { return !(self == other); }
 };
 
 template<class Self, class U> struct equality_comparable2;
@@ -136,7 +136,7 @@ struct incrementable : totally_ordered<Self> {
 	friend Self;
 
  public:
-	friend constexpr auto operator++(incrementable& self, int) -> Self {
+	friend BOOST_MULTI_HD constexpr auto operator++(incrementable& self, int) -> Self {
 		static_assert(std::is_base_of_v<incrementable<Self>, Self>);
 		Self tmp{self.self()};
 		++self.self();
@@ -171,12 +171,12 @@ struct steppable : totally_ordered<Self> {
 	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
 
-	friend constexpr auto operator++(steppable& self, int) -> Self {
+	friend BOOST_MULTI_HD constexpr auto operator++(steppable& self, int) -> Self {
 		Self tmp{self.self()};
 		++self.self();
 		return tmp;
 	}
-	friend constexpr auto operator--(steppable& self, int) -> Self {
+	friend BOOST_MULTI_HD constexpr auto operator--(steppable& self, int) -> Self {
 		Self tmp{self.self()};
 		--self.self();
 		return tmp;
@@ -198,20 +198,15 @@ struct affine_with_unit : steppable<Self> {
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using difference_type = Difference;
-	friend constexpr auto operator++(affine_with_unit& self) -> Self& { return self.self() += difference_type{1}; }
-	friend constexpr auto operator--(affine_with_unit& self) -> Self& { return self.self() -= difference_type{1}; }
+	friend BOOST_MULTI_HD constexpr auto operator++(affine_with_unit& self) -> Self& { return self.self() += difference_type{1}; }
+	friend BOOST_MULTI_HD constexpr auto operator--(affine_with_unit& self) -> Self& { return self.self() -= difference_type{1}; }
 
-	// friend constexpr auto operator-(affine_with_unit const& self, difference_type const& diff) -> Self {
-	//  auto ret{self.self()};
-	//  ret += (-diff);
-	//  return ret;
-	// }
-	constexpr auto operator+(difference_type const& diff) const -> Self {
+	BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff) const -> Self {
 		auto ret{cself()};
 		ret += diff;
 		return ret;
 	}
-	friend constexpr auto operator+(difference_type const& diff, affine_with_unit const& self) -> Self {
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff, affine_with_unit const& self) -> Self {
 		auto ret{self.self()};
 		ret += diff;
 		return ret;
@@ -234,7 +229,7 @@ struct dereferenceable {
 
 	using reference = Reference;
 
-	constexpr auto operator*() const -> reference { return *(self().operator->()); }
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *(self().operator->()); }
 };
 
 #if defined(_MSC_VER)
@@ -285,10 +280,10 @@ class addable2 {
 	using difference_type = D;
 
 	template<class TT, typename = std::enable_if_t<std::is_base_of<Self, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto operator+(TT&& self, difference_type const& diff) -> Self { return Self{std::forward<TT>(self)} += diff; }
+	friend BOOST_MULTI_HD constexpr auto operator+(TT&& self, difference_type const& diff) -> Self { return Self{std::forward<TT>(self)} += diff; }
 
 	template<class TT, typename = std::enable_if_t<std::is_base_of<Self, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto operator+(difference_type const& diff, TT&& self) -> Self { return std::forward<TT>(self) + diff; }
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff, TT&& self) -> Self { return std::forward<TT>(self) + diff; }
 };
 
 template<class T, class D>
@@ -348,7 +343,7 @@ struct random_access_iterator : equality_comparable2<Self, Self> {
 	using pointer           = Pointer;
 	using reference         = Reference;
 	using iterator_category = std::random_access_iterator_tag;
-	auto operator*() const -> Reference { return *static_cast<Self const&>(*this); }
+	BOOST_MULTI_HD constexpr auto operator*() const -> Reference { return *static_cast<Self const&>(*this); }
 };
 }  // end namespace detail
 
