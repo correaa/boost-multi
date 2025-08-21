@@ -522,6 +522,7 @@ class device_array_iterator<Element, 1, ElementPtr, IsConst, IsMove, Stride> {
 
 	~device_array_iterator() = default;
 
+	constexpr auto operator=(device_array_iterator const&) noexcept -> device_array_iterator& = default;
 	constexpr auto operator=(device_array_iterator&&) noexcept -> device_array_iterator& = default;
 
 	device_array_iterator(device_array_iterator&&) noexcept = default;
