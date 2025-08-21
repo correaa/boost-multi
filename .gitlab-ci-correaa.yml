@@ -419,7 +419,8 @@ vs2022-shell c++23:
   timeout: 20 minutes
 
 vs2022-shell cuda:
-  stage: build
+  #stage: build
+  stage: basic
   allow_failure: true
   interruptible: true
   script:
