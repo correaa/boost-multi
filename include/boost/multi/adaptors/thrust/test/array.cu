@@ -82,6 +82,9 @@ class device_array_iterator {
 	__host__ __device__ constexpr auto operator*() const -> reference { return *ptr_; }
 	__host__ __device__ constexpr auto operator[](difference_type d) const -> reference { return *((*this)+d); }
 	__host__ __device__ constexpr auto operator-(device_array_iterator const& other) const { return (ptr_ - other.ptr_)/stride_; }
+
+	__host__ __device__ constexpr auto operator==(device_array_iterator const& other) const { return ptr_ == other.ptr_; }
+	__host__ __device__ constexpr auto operator!=(device_array_iterator const& other) const { return ptr_ != other.ptr_; }
 };
 
 template<class T>

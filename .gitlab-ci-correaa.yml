@@ -759,12 +759,12 @@ culang++-16 cuda-11.4.3:
 
 cuda-12.9.0:
   stage: build
-  allow_failure: true
+  allow_failure: false
+  interruptible: true
   image: nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   tags:
     - non-shared
     - nvidia-gpu
-  interruptible: true
   script:
     - nvidia-smi
     - apt-get -qq update
