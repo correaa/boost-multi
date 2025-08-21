@@ -39,13 +39,13 @@ template<
 	class Reference = ValueType&, class DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, class Pointer = ValueType*>
 class iterator_facade {
  protected:
-	iterator_facade() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+	iterator_facade() = default;
 	friend Self;
 
  private:
 	using self_type = Self;
-	[[nodiscard]] constexpr auto self_() & { return static_cast<self_type&>(*this); }
-	[[nodiscard]] constexpr auto self_() const& { return static_cast<self_type const&>(*this); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto self_() & { return static_cast<self_type&>(*this); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto self_() const& { return static_cast<self_type const&>(*this); }
 
  public:
 	using value_type        = ValueType;
@@ -56,26 +56,26 @@ class iterator_facade {
 
 	// friend constexpr auto operator!=(self_type const& self, self_type const& other) { return !(self == other); }
 
-	friend constexpr auto operator<=(self_type const& self, self_type const& other) { return (self < other) || (self == other); }
-	friend constexpr auto operator>(self_type const& self, self_type const& other) { return !(self <= other); }
-	friend constexpr auto operator>=(self_type const& self, self_type const& other) { return !(self < other); }
+	friend BOOST_MULTI_HD constexpr auto operator<=(self_type const& self, self_type const& other) { return (self < other) || (self == other); }
+	friend BOOST_MULTI_HD constexpr auto operator>(self_type const& self, self_type const& other) { return !(self <= other); }
+	friend BOOST_MULTI_HD constexpr auto operator>=(self_type const& self, self_type const& other) { return !(self < other); }
 
-	constexpr auto        operator-(difference_type n) const { return self_type{self_()} -= n; }
-	constexpr auto        operator+(difference_type n) const { return self_type{self_()} += n; }
-	friend constexpr auto operator+(difference_type n, self_type const& self) { return self + n; }
+	BOOST_MULTI_HD constexpr auto        operator-(difference_type n) const { return self_type{self_()} -= n; }
+	BOOST_MULTI_HD constexpr auto        operator+(difference_type n) const { return self_type{self_()} += n; }
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type n, self_type const& self) { return self + n; }
 
-	friend constexpr auto operator++(self_type& self, int) -> self_type {
+	friend BOOST_MULTI_HD constexpr auto operator++(self_type& self, int) -> self_type {
 		self_type ret = self;
 		++self;
 		return ret;
 	}
-	friend constexpr auto operator--(self_type& self, int) -> self_type {
+	friend BOOST_MULTI_HD constexpr auto operator--(self_type& self, int) -> self_type {
 		self_type ret = self;
 		--self;
 		return ret;
 	}
 
-	constexpr auto operator[](difference_type n) const { return *(self_() + n); }
+	constexpr BOOST_MULTI_HD auto operator[](difference_type n) const { return *(self_() + n); }
 };
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<>>

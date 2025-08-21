@@ -77,21 +77,24 @@ template<class Self> struct equality_comparable : equality_comparable2<Self, Sel
 	friend Self;
 };
 
-template<class T, class V> struct totally_ordered2;
+template<class T, class V> class totally_ordered2;
 
 template<class Self>
-struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self, Self>, totally_ordered2<Self, Self>> {
+class totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self, Self>, totally_ordered2<Self, Self>> {
 	using self_type = Self;
-	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	friend Self;
+
+public:
 
 	// friend auto operator< (totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return     self.self() < other.self() ;}
-	friend constexpr auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(other.self() < self.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(other.self() < self.self()); }
 	// friend auto operator!=(totally_ordered2 const& self, totally_ordered2 const& other) {return    (s.self() < o.self()) or     (o.self() < s.self());}
 
-	friend auto operator<=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(other.self() < self.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator<=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(other.self() < self.self()); }
 
-	friend auto operator>(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(self.self() == other.self()); }
-	friend auto operator>=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator>(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(self.self() == other.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator>=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()); }
 };
 
 template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
@@ -101,7 +104,7 @@ template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
 #pragma warning( disable : 4820 )  // '3' bytes padding added after data member
 #endif
 template<class T>
-struct totally_ordered2<T, void> {
+class totally_ordered2<T, void> {
 	// template<class U>
 	// friend constexpr auto operator<=(T const& self, U const& other) { return (self < other) || (self == other); }
 	// template<class U>
@@ -153,7 +156,7 @@ struct decrementable : weakly_decrementable<T> {
 
  public:
 	template<class U, typename = std::enable_if_t<!std::is_base_of_v<T, U>>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto operator--(U& self, int) -> T {
+	friend BOOST_MULTI_HD constexpr auto operator--(U& self, int) -> T {
 		T tmp{self};
 		--self;
 		return tmp;

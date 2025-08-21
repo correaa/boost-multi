@@ -60,9 +60,9 @@ auto universal_memory_supported() -> bool {
 	return (is_cma == 1)?true:false;
 }
 
-template<class T, class Ptr>
-struct ::thrust::iterator_system<multi::device_array_iterator<T, Ptr> > {
-	using type = typename ::thrust::iterator_system<Ptr>::type;
+template<class Element, class ElementPtr, bool IsConst, bool IsMove, typename Stride>
+struct ::thrust::iterator_system<multi::device_array_iterator<Element, 1, ElementPtr, IsConst, IsMove, Stride> > {
+	using type = typename ::thrust::iterator_system<ElementPtr>::type;
 };
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -196,7 +196,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::cout << "line " << __LINE__ << std::endl;
 
 			auto Ait2 = multi::array_iterator<int, 1, thrust::device_ptr<int> >(Aptr, 1);
-			auto Ait = multi::device_array_iterator<int, ::thrust::device_ptr<int> >(Aptr, 1);
+			auto Ait = multi::device_array_iterator<int, 1, ::thrust::device_ptr<int> >(Aptr, 1);
 
 			std::cout << "line " << __LINE__ << std::endl;
 
