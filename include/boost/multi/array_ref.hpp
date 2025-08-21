@@ -520,14 +520,11 @@ class device_array_iterator<Element, 1, ElementPtr, IsConst, IsMove, Stride> {
 	BOOST_MULTI_HD constexpr auto operator==(device_array_iterator const& other) const { return ptr_ == other.ptr_; }
 	BOOST_MULTI_HD constexpr auto operator!=(device_array_iterator const& other) const { return ptr_ != other.ptr_; }
 
-	~device_array_iterator() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	~device_array_iterator() = default;
 
-	constexpr auto operator=(device_array_iterator&&)  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-		noexcept                                // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-		-> device_array_iterator& = default;
+	constexpr auto operator=(device_array_iterator&&) noexcept -> device_array_iterator& = default;
 
-	device_array_iterator(device_array_iterator&&) noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-		= default;                             // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	device_array_iterator(device_array_iterator&&) noexcept = default;
 };
 
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride>
