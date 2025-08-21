@@ -60,36 +60,9 @@ auto universal_memory_supported() -> bool {
 	return (is_cma == 1)?true:false;
 }
 
-template<class T>
-class device_array_iterator {
-	::thrust::device_ptr<T> ptr_;
-	std::ptrdiff_t stride_;
-
- public:
-	using difference_type = std::ptrdiff_t;
-	using value_type = typename std::iterator_traits<::thrust::device_ptr<T>>::value_type;
-	using pointer = ::thrust::device_ptr<T>;
-	using reference = typename std::iterator_traits<::thrust::device_ptr<T>>::reference;
-	using iterator_category = std::random_access_iterator_tag;
-
-	__host__ __device__ constexpr
-	device_array_iterator(::thrust::device_ptr<T> ptr, std::ptrdiff_t stride) : ptr_{ptr}, stride_{stride} {}
-
-	__host__ __device__ constexpr auto operator++() -> device_array_iterator& {ptr_ += stride_; return *this; }
-	__host__ __device__ constexpr auto operator+=(std::ptrdiff_t d) -> device_array_iterator& {ptr_ += stride_*d; return *this; }
-
-	__host__ __device__ constexpr auto operator+(difference_type d) const { device_array_iterator ret = *this; ret += d; return ret; }
-	__host__ __device__ constexpr auto operator*() const -> reference { return *ptr_; }
-	__host__ __device__ constexpr auto operator[](difference_type d) const -> reference { return *((*this)+d); }
-	__host__ __device__ constexpr auto operator-(device_array_iterator const& other) const { return (ptr_ - other.ptr_)/stride_; }
-
-	__host__ __device__ constexpr auto operator==(device_array_iterator const& other) const { return ptr_ == other.ptr_; }
-	__host__ __device__ constexpr auto operator!=(device_array_iterator const& other) const { return ptr_ != other.ptr_; }
-};
-
-template<class T>
-struct ::thrust::iterator_system<device_array_iterator<T> > {
-	using type = typename ::thrust::iterator_system<::thrust::device_ptr<T>>::type;
+template<class T, class Ptr>
+struct ::thrust::iterator_system<multi::device_array_iterator<T, Ptr> > {
+	using type = typename ::thrust::iterator_system<Ptr>::type;
 };
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -223,7 +196,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::cout << "line " << __LINE__ << std::endl;
 
 			auto Ait2 = multi::array_iterator<int, 1, thrust::device_ptr<int> >(Aptr, 1);
-			auto Ait = ::device_array_iterator<int>(Aptr, 1);
+			auto Ait = multi::device_array_iterator<int, ::thrust::device_ptr<int> >(Aptr, 1);
 
 			std::cout << "line " << __LINE__ << std::endl;
 

@@ -480,6 +480,33 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	}
 };
 
+template<class T, class Ptr>
+class device_array_iterator {
+	Ptr ptr_;
+	std::ptrdiff_t stride_;
+
+ public:
+	using difference_type = std::ptrdiff_t;
+	using value_type = typename std::iterator_traits<Ptr>::value_type;
+	using pointer = Ptr;
+	using reference = typename std::iterator_traits<Ptr>::reference;
+	using iterator_category = std::random_access_iterator_tag;
+
+	BOOST_MULTI_HD constexpr
+	device_array_iterator(Ptr ptr, std::ptrdiff_t stride) : ptr_{ptr}, stride_{stride} {}
+
+	BOOST_MULTI_HD constexpr auto operator++() -> device_array_iterator& {ptr_ += stride_; return *this; }
+	BOOST_MULTI_HD constexpr auto operator+=(std::ptrdiff_t d) -> device_array_iterator& {ptr_ += stride_*d; return *this; }
+
+	BOOST_MULTI_HD constexpr auto operator+(difference_type d) const { device_array_iterator ret = *this; ret += d; return ret; }
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *ptr_; }
+	BOOST_MULTI_HD constexpr auto operator[](difference_type d) const -> reference { return *((*this)+d); }
+	BOOST_MULTI_HD constexpr auto operator-(device_array_iterator const& other) const { return (ptr_ - other.ptr_)/stride_; }
+
+	BOOST_MULTI_HD constexpr auto operator==(device_array_iterator const& other) const { return ptr_ == other.ptr_; }
+	BOOST_MULTI_HD constexpr auto operator!=(device_array_iterator const& other) const { return ptr_ != other.ptr_; }
+};
+
 template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type>
 struct array_iterator;
 
@@ -527,8 +554,6 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;  // layout_t<D - 1>
 
-	// BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
-	// BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
 	BOOST_MULTI_HD constexpr array_iterator() : ptr_{}, stride_{} {}  // = default;  // TODO(correaa) make = default, now it is not compiling
 
 	template<class, dimensionality_type, class, bool, bool, typename> friend struct array_iterator;
