@@ -532,7 +532,7 @@ class device_array_iterator<Element, 1, ElementPtr, IsConst, IsMove, Stride> {
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride>
 struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
-	  array_iterator<Element, D, ElementPtr, IsConst, IsMove>, void, std::random_access_iterator_tag,
+	  array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void, std::random_access_iterator_tag,
 	  subarray<Element, D - 1, ElementPtr> const&, typename layout_t<D - 1>::difference_type>
 , multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>>
 , multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>>
