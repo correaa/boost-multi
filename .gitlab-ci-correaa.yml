@@ -185,50 +185,6 @@ g++ cppcheck cpplint memcheck:
 #     - ctest -j 2 --output-on-failure -T Test
 #   needs: ["g++"]
 
-g++-8:
-  stage: build
-  image: gcc:8
-  tags:
-    - non-shared
-    - docker
-  interruptible: true
-  allow_failure: true
-  script:
-    # - apt-get -qq update
-    # - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-8 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
-    - apt-get install libboost-dev
-    - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
-    - sh ./cmake-*.sh --skip-license --prefix=/usr
-    - g++-8 --version
-    - g++ --version
-    - cmake --version
-    - mkdir build && cd build
-    - CXX=g++-8 cmake -S . B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
-    - cmake --build build/ --parallel 2 || cmake --build . --verbose
-    - cmake --build build/ --target test  # - ctest -j 2 --output-on-failure
-  needs: ["g++"]
-
-g++-8-bullseye:
-  stage: build
-  image: debian:bullseye
-  tags:
-    - non-shared
-    - docker
-  interruptible: true
-  allow_failure: true
-  script:
-    - arch
-    - apt-get -qq update
-    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-8 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
-    # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
-    # - sh ./cmake-*.sh --skip-license --prefix=/usr
-    - cmake --version
-    - g++-8 --version
-    - CXX=g++-8 cmake -S . -B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
-    - cmake --build build/ --parallel 2 || cmake --build . --verbose
-    - cmake --build build/ --target test  # - ctest -j 2 --output-on-failure
-  needs: ["g++"]
-
 g++-9-bullseye:
   stage: build
   image: debian:bullseye
@@ -240,10 +196,9 @@ g++-9-bullseye:
   script:
     - arch
     - apt-get -qq update
-    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-9 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
-    # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
-    # - sh ./cmake-*.sh --skip-license --prefix=/usr
+    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++ g++-9 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
     - cmake --version
+    - g++ --version
     - g++-9 --version
     - CXX=g++-9 cmake -S . -B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
     - cmake --build build/ --parallel 2 || cmake --build . --verbose
@@ -596,14 +551,14 @@ clang++-oldstable-cmake4:
   script:
     - arch
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-13 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - cmake --version
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
-    - mkdir build && cd build 
-    - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release
+    - mkdir build && cd build
+    - clang++-13 --version
+    - CXX=clang++-13 cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
