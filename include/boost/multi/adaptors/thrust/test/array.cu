@@ -192,6 +192,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			auto Ait = multi::array_iterator<int, 1, thrust::device_ptr<int> >(Aptr, 1);
 
+			std::cout << "line " << __LINE__ << std::endl;
+
+			static_assert( std::is_same_v< 
+				::thrust::iterator_system<decltype(Ait)>::type,
+				::thrust::iterator_system< thrust::device_ptr<int> >::type
+			>);
+
+			std::cout << "line " << __LINE__ << std::endl;
+
+			thrust::copy_n(Ait, aA.size(), aB.data_elements());
+
+			std::cout << "line " << __LINE__ << std::endl;
+
 			thrust::copy_n(thrust::cuda::par, Ait, aA.size(), aB.data_elements());
 
 			std::cout << "line " << __LINE__ << std::endl;
