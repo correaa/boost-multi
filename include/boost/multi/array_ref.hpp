@@ -2386,10 +2386,11 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 			  std::add_rvalue_reference_t<std::decay_t<typename std::iterator_traits<Ptr>::reference>>,
 			  typename std::iterator_traits<Ptr>::reference>>,
 	  multi::difference_type>
-, multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>
-, multi::decrementable<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>>
-, multi::incrementable<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>>
-, multi::totally_ordered2<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, void> {
+// , multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>
+// , multi::decrementable<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>>
+// , multi::incrementable<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>>
+// , multi::totally_ordered2<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, void>
+{
 	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>;
 
 	using pointer = std::conditional_t<
