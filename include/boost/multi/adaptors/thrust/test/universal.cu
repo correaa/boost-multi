@@ -9,11 +9,25 @@
 
 #include <thrust/system/cuda/memory.h>
 
-#include <boost/mpl/list.hpp>
+// #include <boost/mpl/list.hpp>
 
 #include <iostream>
 #include <memory_resource>
 #include <numeric>
+
+auto universal_memory_supported() -> bool {
+	std::cout << "testing for universal memory supported" << std::endl;
+	int d;
+	cudaGetDevice(&d);
+	int is_cma = 0;
+	cudaDeviceGetAttribute(&is_cma, cudaDevAttrConcurrentManagedAccess, d);
+	if(is_cma) {
+		std::cout << "universal memory is supported" << std::endl;
+	} else {
+		std::cout << "universal memory is NOT supported" << std::endl;
+	}
+	return (is_cma == 1)?true:false;
+}
 
 namespace multi = boost::multi;
 
@@ -35,6 +49,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	// BOOST_AUTO_TEST_CASE(thrust_universal_ptr_initializer_list)
+	if(universal_memory_supported())
 	{
 		multi::array<double, 1> Host = {1.0, 2.0, 3.0};
 		BOOST_TEST( Host.size() == 3 );
