@@ -9,6 +9,7 @@
 #include <boost/multi/array.hpp>
 
 #include <cuda_runtime_api.h>
+
 #include <thrust/complex.h>
 #include <thrust/device_allocator.h>
 #include <thrust/device_vector.h>
