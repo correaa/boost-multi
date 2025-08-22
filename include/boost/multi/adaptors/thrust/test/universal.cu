@@ -34,6 +34,7 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 
 	// BOOST_AUTO_TEST_CASE(thrust_universal_ptr)
+	if(universal_memory_supported())
 	{
 		multi::array<double, 2> Host({1024, 1024});
 		std::iota(Host.data_elements(), Host.data_elements() + Host.num_elements(), 12.0);
