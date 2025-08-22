@@ -23,8 +23,23 @@ void doNotOptimize(T const& val) {
 #endif
 }
 
+auto universal_memory_supported() -> bool {
+	std::cout << "testing for universal memory supported" << std::endl;
+	int d;
+	cudaGetDevice(&d);
+	int is_cma = 0;
+	cudaDeviceGetAttribute(&is_cma, cudaDevAttrConcurrentManagedAccess, d);
+	if(is_cma) {
+		std::cout << "universal memory is supported" << std::endl;
+	} else {
+		std::cout << "universal memory is NOT supported" << std::endl;
+	}
+	return (is_cma == 1) ? true : false;
+}
+
 int main() {
 	// BOOST_AUTO_TEST_CASE(thrust_universal_speed_algo)
+	if(universal_memory_supported())
 	{
 		auto const n = 8000;
 		{  // cctor
