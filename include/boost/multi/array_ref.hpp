@@ -488,8 +488,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
 	  array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void, std::random_access_iterator_tag,
 	  subarray<Element, D - 1, ElementPtr> const&, typename layout_t<D - 1>::difference_type>
-, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride> >
-, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride> >
+, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>>
+, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>>
 , multi::affine<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, multi::difference_type>
 , multi::totally_ordered2<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void> {
 	~array_iterator() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
