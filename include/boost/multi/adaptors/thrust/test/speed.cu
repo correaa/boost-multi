@@ -197,6 +197,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{  // subarray assign
 			auto tick = std::chrono::high_resolution_clock::now();
 
+			std::cout << "after assign line " << __LINE__ << std::endl;
+
+			BOOST_TEST( dst({0, n - 2}, {0, n - 2}).extensions() == src({2, n}, {2, n}).extensions() );
+
+			std::cout << "after assign line " << __LINE__ << std::endl;
+
+			dst({0, n - 2}, {0, n - 2}).elements() = src({2, n}, {2, n}).elements();
+
+			std::cout << "after assign line " << __LINE__ << std::endl;
+
 			dst({0, n - 2}, {0, n - 2}) = src({2, n}, {2, n});
 
 			std::chrono::duration<double> time  = std::chrono::high_resolution_clock::now() - tick;
