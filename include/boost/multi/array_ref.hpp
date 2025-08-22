@@ -2487,7 +2487,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 #pragma warning(push)
 #pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
 #endif
-	BOOST_MULTI_NO_UNIQUE_ADDRESS
+	// BOOST_MULTI_NO_UNIQUE_ADDRESS, testing removing this for MSVC-CUDA on Windows
 	stride_type stride_;
 #if defined(_MSC_VER)
 #pragma warning(pop)
