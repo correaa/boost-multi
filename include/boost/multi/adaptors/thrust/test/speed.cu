@@ -186,8 +186,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			double                        rate  = size / time.count();
 			double                        ratio = rate / memcpy_rate;
 
+			std::cout << "before assign line " << __LINE__ << std::endl;
+
 			std::cout << "assign     rate = " << rate << " GB/s (ratio = " << ratio << ")\n";
 			BOOST_TEST(ratio >= threshold);
+
+			std::cout << "after assign line " << __LINE__ << std::endl;
 		}
 		std::cout << "after assign line " << __LINE__ << std::endl;
 		{  // subarray assign
@@ -262,8 +266,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			double                        rate  = size / time.count();
 			double                        ratio = rate / memcpy_rate;
 
+			std::cout << "before assign line " << __LINE__ << std::endl;
+
 			std::cout << "assign     rate = " << rate << " GB/s (ratio = " << ratio << ")\n";
 			BOOST_TEST(ratio >= threshold);
+
+			std::cout << "after assign line " << __LINE__ << std::endl;
 		}
 		std::cout << "after assign line " << __LINE__ << std::endl;
 		{  // subarray assign
