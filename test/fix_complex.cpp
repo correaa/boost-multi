@@ -15,7 +15,7 @@
 #include <iterator>  // for data
 
 #if __has_include(<version>)
-#include <version>   // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
+#include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
 #endif
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
