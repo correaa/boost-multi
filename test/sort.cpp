@@ -140,7 +140,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				&& (*(d2D.begin() + 2) <= *(d2D.begin() + 3))
 		));
 
-#if !defined(__clang_major__) || (__clang_major__ != 7)
+#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
 #endif
 
@@ -153,10 +153,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 50.0,  6.0,  7.0,  8.0,  9.0},
 			{100.0, 11.0, 12.0, 13.0, 14.0},
 			{150.0, 16.0, 17.0, 18.0, 19.0},
-		}
-	));
+			}
+		));
 
+#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
+#endif
 
 		std::stable_sort(begin(d2D.rotated()), end(d2D.rotated()));           // NOLINT(modernize-use-ranges) for C++20
 		BOOST_TEST( std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
@@ -188,11 +190,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 
+#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
+#endif
+
 		std::stable_sort(begin(d2D_ref), end(d2D_ref));
 		BOOST_TEST( std::is_sorted( begin(d2D_ref), end(d2D_ref) ) );
 
+#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
+#endif
+
 		std::stable_sort(begin(d2D_ref.rotated()), end(d2D_ref.rotated()));
 		BOOST_TEST( std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
 	}
