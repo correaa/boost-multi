@@ -13,7 +13,10 @@
 // IWYU pragma: no_include <cstdlib>                          // for abs
 #include <complex>   // for complex, operator==
 #include <iterator>  // for data
+
+#if __has_include(<version>)
 #include <version>   // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
+#endif
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 #include <memory_resource>  // for monotonic_buffer_resource
