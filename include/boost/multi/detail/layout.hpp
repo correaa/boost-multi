@@ -775,12 +775,16 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
-		// using boost::multi::detail::get;
-		if(idx == ::boost::multi::detail::get<0>(this->base()).back()) {
-			idx = ::boost::multi::detail::get<0>(this->base()).first();
+		using boost::multi::detail::get;
+		// if(idx == ::boost::multi::detail::get<0>(this->base()).back()) {
+		// 	idx = ::boost::multi::detail::get<0>(this->base()).first();
+		// 	return true;
+		// }
+		++idx;
+		if(idx == get<0>(this->base()).last()) {
+			idx = get<0>(this->base()).first();
 			return true;
 		}
-		++idx;
 		return false;
 	}
 	constexpr auto prev_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated

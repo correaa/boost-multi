@@ -203,6 +203,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "after assign line " << __LINE__ << std::endl;
 
+			thrust::copy_n( src({2, n}, {2, n}).elements().begin(), src({2, n}, {2, n}).num_elements(), dst({0, n - 2}, {0, n - 2}).elements().begin() );
+
+			std::cout << "after assign line " << __LINE__ << std::endl;
+
 			dst({0, n - 2}, {0, n - 2}).elements() = src({2, n}, {2, n}).elements();
 
 			std::cout << "after assign line " << __LINE__ << std::endl;
