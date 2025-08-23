@@ -773,7 +773,9 @@ struct cursor_t {
 
 template<typename Pointer, class LayoutType>
 // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference> {
+struct elements_iterator_t
+// : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
+{
 	using difference_type   = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type        = typename std::iterator_traits<Pointer>::value_type;
 	using pointer           = Pointer;
