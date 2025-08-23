@@ -855,7 +855,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 		return n_ - other.n_;
 	}
 
-	constexpr auto n() const { return n_; }
+	// BOOST_MULTI_HD constexpr auto n() const { return n_; }
 
 	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);
@@ -867,7 +867,7 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
-	constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
+	BOOST_MULTI_HD constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
 
