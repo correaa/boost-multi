@@ -134,7 +134,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( !check );
 		}
 
+		BOOST_TEST(!(
+				   (*(d2D.begin()    ) <= *(d2D.begin() + 1))
+				&& (*(d2D.begin() + 1) <= *(d2D.begin() + 2))
+				&& (*(d2D.begin() + 2) <= *(d2D.begin() + 3))
+		));
+
+#if !defined(__clang_major__) || (__clang_major__ != 7)
 		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
+#endif
 
 		std::stable_sort(d2D.begin(), d2D.end());         // NOLINT(modernize-use-ranges) for C++20
 		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
