@@ -21,21 +21,6 @@ inline constexpr bool multi::force_element_trivial_default_construction<thrust::
 template<>
 inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<float>> = true;
 
-// template<>
-// inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
-
-// template<>
-// inline constexpr bool multi::force_element_trivial_default_construction<std::complex<float>> = true;
-
-// using test_types = boost::mpl::list<
-//  char, unsigned, int,
-//  ::thrust::complex<double>,  // std::complex<double>,
-//  ::thrust::complex<float>,  // std::complex<float>,
-//  double, float
-// >;
-
-// #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto universal_memory_supported() -> bool {
 	std::cout << "testing for universal memory supported" << std::endl;
 	int d;
@@ -197,6 +182,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::chrono::duration<double> time  = std::chrono::high_resolution_clock::now() - tick;
 			double                        rate  = size / time.count();
 			double                        ratio = rate / memcpy_rate;
+
 			std::cout << "subasssign rate = " << rate << " GB/s (ratio = " << ratio << ")\n";
 			BOOST_TEST(ratio >= threshold);
 		}

@@ -488,8 +488,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
 	  array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void, std::random_access_iterator_tag,
 	  subarray<Element, D - 1, ElementPtr> const&, typename layout_t<D - 1>::difference_type>
-, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride> >
-, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride> >
+, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>>
+, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>>
 , multi::affine<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, multi::difference_type>
 , multi::totally_ordered2<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void> {
 	~array_iterator() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
@@ -773,7 +773,9 @@ struct cursor_t {
 
 template<typename Pointer, class LayoutType>
 // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference> {
+struct elements_iterator_t
+// : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
+{
 	using difference_type   = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type        = typename std::iterator_traits<Pointer>::value_type;
 	using pointer           = Pointer;
@@ -855,19 +857,24 @@ struct elements_iterator_t : boost::multi::random_accessable<elements_iterator_t
 		return n_ - other.n_;
 	}
 
-	constexpr auto n() const { return n_; }
+	// BOOST_MULTI_HD constexpr auto n() const { return n_; }
 
-	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
+	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> bool {
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
 	}
+
+	BOOST_MULTI_HD constexpr auto operator<=(elements_iterator_t const& other) const -> bool { return ((*this) < other) || ((*this) == other); }
+
+	BOOST_MULTI_HD constexpr auto operator>(elements_iterator_t const& other) const -> bool { return other < (*this); }
+	BOOST_MULTI_HD constexpr auto operator>=(elements_iterator_t const& other) const -> bool { return !((*this) < other); }
 
 #if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
-	constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
+	BOOST_MULTI_HD constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
 
