@@ -864,9 +864,10 @@ struct elements_iterator_t
 		return n_ < other.n_;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator<=(elements_iterator_t const& other) const -> bool {
-		return ((*this) < other) || ((*this) == other);
-	}
+	BOOST_MULTI_HD constexpr auto operator<=(elements_iterator_t const& other) const -> bool { return ((*this) < other) || ((*this) == other); }
+
+	BOOST_MULTI_HD constexpr auto operator>(elements_iterator_t const& other) const -> bool { return other < (*this); }
+	BOOST_MULTI_HD constexpr auto operator>=(elements_iterator_t const& other) const -> bool { return !((*this) < other); }
 
 #if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
