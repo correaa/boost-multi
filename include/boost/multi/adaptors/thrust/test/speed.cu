@@ -249,10 +249,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::cout << "assign     rate = " << rate << " GB/s (ratio = " << ratio << ")\n";
 			BOOST_TEST(ratio >= threshold);
-
-			std::cout << "after assign line " << __LINE__ << std::endl;
 		}
-		std::cout << "after assign line " << __LINE__ << std::endl;
 		{  // subarray assign
 			auto tick = std::chrono::high_resolution_clock::now();
 
