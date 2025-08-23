@@ -21,21 +21,6 @@ inline constexpr bool multi::force_element_trivial_default_construction<thrust::
 template<>
 inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<float>> = true;
 
-// template<>
-// inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
-
-// template<>
-// inline constexpr bool multi::force_element_trivial_default_construction<std::complex<float>> = true;
-
-// using test_types = boost::mpl::list<
-//  char, unsigned, int,
-//  ::thrust::complex<double>,  // std::complex<double>,
-//  ::thrust::complex<float>,  // std::complex<float>,
-//  double, float
-// >;
-
-// #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto universal_memory_supported() -> bool {
 	std::cout << "testing for universal memory supported" << std::endl;
 	int d;
@@ -186,36 +171,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			double                        rate  = size / time.count();
 			double                        ratio = rate / memcpy_rate;
 
-			std::cout << "before assign line " << __LINE__ << std::endl;
-
 			std::cout << "assign     rate = " << rate << " GB/s (ratio = " << ratio << ")\n";
 			BOOST_TEST(ratio >= threshold);
-
-			std::cout << "after assign line " << __LINE__ << std::endl;
 		}
-		std::cout << "after assign line " << __LINE__ << std::endl;
 		{  // subarray assign
 			auto tick = std::chrono::high_resolution_clock::now();
-
-			std::cout << "after assign line " << __LINE__ << std::endl;
-
-			BOOST_TEST( dst({0, n - 2}, {0, n - 2}).extensions() == src({2, n}, {2, n}).extensions() );
-
-			std::cout << "after assign line " << __LINE__ << std::endl;
-
-			thrust::copy_n( src({2, n}, {2, n}).elements().begin(), src({2, n}, {2, n}).num_elements(), dst({0, n - 2}, {0, n - 2}).elements().begin() );
-
-			std::cout << "after assign line " << __LINE__ << std::endl;
-
-			dst({0, n - 2}, {0, n - 2}).elements() = src({2, n}, {2, n}).elements();
-
-			std::cout << "after assign line " << __LINE__ << std::endl;
 
 			dst({0, n - 2}, {0, n - 2}) = src({2, n}, {2, n});
 
 			std::chrono::duration<double> time  = std::chrono::high_resolution_clock::now() - tick;
 			double                        rate  = size / time.count();
 			double                        ratio = rate / memcpy_rate;
+
 			std::cout << "subasssign rate = " << rate << " GB/s (ratio = " << ratio << ")\n";
 			BOOST_TEST(ratio >= threshold);
 		}
@@ -279,8 +246,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::chrono::duration<double> time  = std::chrono::high_resolution_clock::now() - tick;
 			double                        rate  = size / time.count();
 			double                        ratio = rate / memcpy_rate;
-
-			std::cout << "before assign line " << __LINE__ << std::endl;
 
 			std::cout << "assign     rate = " << rate << " GB/s (ratio = " << ratio << ")\n";
 			BOOST_TEST(ratio >= threshold);
