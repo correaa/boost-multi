@@ -859,9 +859,13 @@ struct elements_iterator_t
 
 	// BOOST_MULTI_HD constexpr auto n() const { return n_; }
 
-	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
+	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> bool {
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
+	}
+
+	BOOST_MULTI_HD constexpr auto operator<=(elements_iterator_t const& other) const -> bool {
+		return ((*this) < other) || ((*this) == other);
 	}
 
 #if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
