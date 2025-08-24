@@ -41,7 +41,7 @@ IncludeCategories:
     Priority: 3
   - Regex: '"([A-Za-z0-9.\Q/-_\E])+"'
     Priority: 2
-IndentPPDirectives: None
+IndentPPDirectives: BeforeHash
 IndentWidth: 4
 # LambdaBodyIndentation: Signature
 # PackConstructorInitializers: CurrentLine

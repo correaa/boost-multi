@@ -3,9 +3,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/array.hpp>  // for array, implicit_cast, explicit_cast
 
-#include <boost/core/lightweight_test.hpp>
+#include <boost/multi/detail/what.hpp>
 
 #include <algorithm>    // for is_sorted, copy
 #include <iterator>     // for begin, end, size, cbegin, make_r...
@@ -46,6 +48,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto const begin_plus_10 = arr.begin() + 10;
 			BOOST_TEST( begin_plus_10 - 10 == arr.begin() );
 
+			std::ptrdiff_t const test = std::integral_constant<int, 1>{};
+			BOOST_TEST( test == 1 );
+
+			// multi::detail::what(arr.cbegin());
 			multi::array<double, 1>::const_iterator const cbarr = arr.cbegin();
 			multi::array<double, 1>::iterator             barr  = arr.begin();
 

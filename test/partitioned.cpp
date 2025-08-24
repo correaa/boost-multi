@@ -74,6 +74,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &A2_ref[1][0] == &A1[3] );
 
+		BOOST_TEST(( A2_ref.extensions() == multi::array<double, 2>{ {0, 10, 20}, {30, 40, 50} }.extensions() ));
 		BOOST_TEST(( A2_ref == multi::array<double, 2>{ {0, 10, 20}, {30, 40, 50} } ));
 	}
 

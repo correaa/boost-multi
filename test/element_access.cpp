@@ -226,10 +226,70 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> arr = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 		BOOST_TEST( arr.size() == 10 );
+		BOOST_TEST( arr[0] == 0 );
+		BOOST_TEST( arr[1] == 1 );
 
-		arr().elements() = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+		BOOST_TEST( arr() == arr );
+
+		*arr().elements().begin() = 99;
+
+		BOOST_TEST( *arr().elements().begin() == 99 );
+		BOOST_TEST( &*arr().elements().begin() == &arr[0] );
+		BOOST_TEST( arr[0] == 99 );
+
+		*(arr().elements().begin() + 1) = 999;
+
+		BOOST_TEST( &*(arr.begin() + 1) == &*(arr().begin() + 1) );
+
+		BOOST_TEST( arr.base() == arr().base() );
+		BOOST_TEST( arr.layout() == arr().layout() );
+
+		BOOST_TEST( *(arr().elements().begin() + 1) == 999 );
+		BOOST_TEST( (arr.elements().begin() + 1).base() == &arr[1] );
+
+		BOOST_TEST( arr().elements().base() == arr.elements().base() );
+		BOOST_TEST( arr().elements().layout() == arr.elements().layout() );
+		BOOST_TEST( arr.stride() == arr().stride() );
+
+		BOOST_TEST( arr()            == arr            );
+
+		for(auto idx : arr.elements().extension() ) {
+			std::cout << idx << " " << arr.elements()[idx] << " " << arr().elements()[idx] << '\n';
+		}
+
+		BOOST_TEST( arr().elements() == arr.elements() );
+
+		BOOST_TEST( (arr().elements().begin()).base() == (arr.elements().begin()).base() );
+
+		// BOOST_TEST( (arr().elements().begin() + 1).base() == (arr.elements().begin() + 1).base() );
+
+		// BOOST_TEST( (arr().elements().begin() + 1).base() == &arr[1] );
+
+		BOOST_TEST( &*(arr().elements().begin() + 1) == &arr[1] );
+		BOOST_TEST( arr[1] == 999 );
+
+		*(arr().elements().begin() + 2) = 9999;
+
+		BOOST_TEST( arr[2] == 9999 );
+
+		std::vector<int> tmp = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+
+		std::copy(tmp.begin(), tmp.end(), arr.elements().begin());
+		BOOST_TEST( arr[0] == 9 );
+
+		std::copy(tmp.begin(), tmp.end(), arr().elements().begin());
+		BOOST_TEST( arr[0] == 9 );
+
+		std::cout << arr[2] << std::endl;
 		BOOST_TEST( arr[2] == 7 );
-		BOOST_TEST( arr.elements()[2] == 7 );
+
+		std::initializer_list<int> il = {9, 8, 77, 6, 5, 4, 3, 2, 1, 0};
+
+		arr().elements() = il;
+		std::cout << arr[2] << std::endl;
+
+		BOOST_TEST( arr[2] == 77 );
+		BOOST_TEST( arr.elements()[2] == 77 );
 
 		arr(2) = 9;
 		BOOST_TEST( arr[2] == 9 );

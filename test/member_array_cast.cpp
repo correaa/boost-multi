@@ -200,9 +200,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTEND(misc-include-cleaner,modernize-use-designated-initializers) bug in clang-tidy 18
 
 		auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
-		BOOST_TEST(size(d1D_names) == size(d1D));
-		BOOST_TEST(d1D_names[1] == d1D[1].name);
-		BOOST_TEST(&d1D_names[1] == &d1D[1].name);
+
+		BOOST_TEST( d1D_names.size() ==  d1D.size() );
+		BOOST_TEST( d1D_names[1]     ==  d1D[1].name);
+		BOOST_TEST(&d1D_names[1]     == &d1D[1].name);
 
 		// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 		multi::array<employee, 2> d2D = {

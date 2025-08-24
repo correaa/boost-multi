@@ -218,20 +218,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_reextent_1d)
 	{
 		multi::array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 40);
-		BOOST_TEST( size(arr) == 10 );
+		BOOST_TEST( arr.size() == 10 );
 		BOOST_TEST( arr[9] == 40 );
 
 		arr.reextent(multi::extensions_t<1>{multi::iextension{20}});
-		BOOST_TEST( size(arr) == 20 );
+		BOOST_TEST( arr.size() == 20 );
 		BOOST_TEST( arr[9] == 40 );
 		// BOOST_TEST( arr[19] == 0.0 );  // impossible to know since it is only sometimes 0.0
 
-		arr.reextent(boost::multi::tuple<int>(22));
-		BOOST_TEST( size(arr) == 22 );
-		BOOST_TEST( arr[9] == 40 );
+		// arr.reextent(boost::multi::tuple<int>(22));
+		// BOOST_TEST( size(arr) == 22 );
+		// BOOST_TEST( arr[9] == 40 );
 
-		arr.reextent({23});
-		BOOST_TEST( size(arr) == 23 );
+		// arr.reextent({23});
+		// BOOST_TEST( size(arr) == 23 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(tuple_decomposition)

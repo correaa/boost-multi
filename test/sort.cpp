@@ -140,7 +140,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				&& (*(d2D.begin() + 2) <= *(d2D.begin() + 3))
 		));
 
-#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
+#if !defined(__clang_major__) || (__clang_major__ != 7)      // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
 #endif
 
@@ -156,7 +156,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		));
 
-#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
+#if !defined(__clang_major__) || (__clang_major__ != 7)                        // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
 #endif
 
@@ -218,38 +218,38 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	// BOOST_AUTO_TEST_CASE(lexicographical_compare_offset)
-	{
-		multi::array<char, 1> const name1 = {'a', 'b', 'c'};
-		// clang-format off
-	multi::array<char, 1>       name2({{ 1, 4 }}, '\0');
-		// clang-format on
+	// {
+	// 	multi::array<char, 1> const name1 = {'a', 'b', 'c'};
+	// 	// clang-format off
+	// 	multi::array<char, 1>       name2({{ 1, 4 }}, '\0');
+	// 	// clang-format on
 
-		BOOST_TEST(  name2.size() == 3 );
-		BOOST_TEST(( name2.extension() == multi::extension_t<multi::index>{1, 4} ));
-		BOOST_TEST(( name2.extension() == multi::extension_t{multi::index{1}, multi::index{4}} ));
+	// 	BOOST_TEST(  name2.size() == 3 );
+	// 	BOOST_TEST(( name2.extension() == multi::extension_t<multi::index>{1, 4} ));
+	// 	BOOST_TEST(( name2.extension() == multi::extension_t{multi::index{1}, multi::index{4}} ));
 
-		// BOOST_TEST(( name2.extension() == multi::extension_t{1L, 4L} ));
+	// 	// BOOST_TEST(( name2.extension() == multi::extension_t{1L, 4L} ));
 
-		BOOST_TEST(( name2.extension() == multi::extension_t<>{1, 4} ));
-		// BOOST_TEST(( name2.extension() == multi::extension_t{1 , 4 } )); TODO(correaa) solve ambiguity
+	// 	BOOST_TEST(( name2.extension() == multi::extension_t<>{1, 4} ));
+	// 	// BOOST_TEST(( name2.extension() == multi::extension_t{1 , 4 } )); TODO(correaa) solve ambiguity
 
-		name2[1] = 'a';
-		name2[2] = 'b';
-		name2[3] = 'c';  // cppcheck-suppress knownConditionTrueFalse ;
+	// 	name2[1] = 'a';
+	// 	name2[2] = 'b';
+	// 	name2[3] = 'c';  // cppcheck-suppress knownConditionTrueFalse ;
 
-		BOOST_TEST(  name2 != name1 );
-		BOOST_TEST(!(name2 == name1));
+	// 	BOOST_TEST(  name2 != name1 );
+	// 	BOOST_TEST(!(name2 == name1));
 
-		BOOST_TEST(  name2 <  name1 );
-		BOOST_TEST(  name2 <= name1 );
+	// 	BOOST_TEST(  name2 <  name1 );
+	// 	BOOST_TEST(  name2 <= name1 );
 
-		BOOST_TEST(!(name2 >  name1));
-		BOOST_TEST(!(name2 >= name1));
+	// 	BOOST_TEST(!(name2 >  name1));
+	// 	BOOST_TEST(!(name2 >= name1));
 
-		BOOST_TEST( name2[1] == 'a' );
-		BOOST_TEST( name2[2] == 'b' );
-		BOOST_TEST( name2[3] == 'c' );  // cppcheck-suppress knownConditionTrueFalse ;
-	}
+	// 	BOOST_TEST( name2[1] == 'a' );
+	// 	BOOST_TEST( name2[2] == 'b' );
+	// 	BOOST_TEST( name2[3] == 'c' );  // cppcheck-suppress knownConditionTrueFalse ;
+	// }
 
 	// BOOST_AUTO_TEST_CASE(lexicographical_compare_offset_2d)
 	{

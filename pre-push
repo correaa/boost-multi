@@ -24,7 +24,8 @@ export CMAKE_GENERATOR=Ninja
 export CMAKE_CUDA_COMPILER_LAUNCHER="ccache"
 export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
 export CMAKE_COMPILE_WARNING_AS_ERROR="ON"
-
+export CMAKE_COLOR_DIAGNOSTICS="ON"
+ 
 if [ -z "$1" ]; then
 echo "no arg"
 else

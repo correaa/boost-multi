@@ -46,6 +46,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// BOOST_TEST( ones.layout().nelems() == (std::numeric_limits<multi::size_type>::max)() );
 	}
-
+	// {
+	// 	std::vector<int> test = {1, 2, 3};
+	// 	const int* const ptr = test.data();
+	// 	BOOST_TEST( ptr[2] == 3 );
+	// }
 	return boost::report_errors();
 }

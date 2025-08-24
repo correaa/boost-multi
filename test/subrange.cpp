@@ -138,6 +138,42 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto Aba = arr.sliced(1, 3);
 		BOOST_TEST( &Aba[0] == &arr[1] );
 	}
+	{
+		multi::array<int, 1> const AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
+		auto const&&               BB = AA.strided(2);
+
+		BOOST_TEST( BB.size() == 3 );
+		BOOST_TEST( BB.num_elements() == 3 );
+
+		BOOST_TEST(( BB.extensions() == multi::array<double, 1>({1, 3, 5}).extensions() ));
+		for(auto idx : BB.extension()) {
+			std::cout << idx << ' ' << BB[idx] << '\n';
+		}
+
+		BOOST_TEST( BB[0] == 1 );
+		BOOST_TEST( BB[1] == 3 );
+		BOOST_TEST( BB[2] == 5 );
+
+		auto gold = multi::array<double, 1>({1, 3, 5});
+
+		BOOST_TEST( BB.extensions() == gold.extensions() );
+
+		auto const& gold_e = gold.elements();
+		auto const& BB_e = BB.elements();
+
+		BOOST_TEST( std::equal(BB_e.begin(), BB_e.end(), gold_e.begin() ) );
+
+		std::cout << gold.elements().extension().first() << " -- " << gold.elements().extension().last() << std::endl;
+		std::cout << BB.elements().size() << " | " << BB.elements().extension().first() << " -- " << BB.elements().extension().last() << std::endl;
+
+		BOOST_TEST( gold.elements().extension() == BB.elements().extension() );
+		BOOST_TEST( gold.elements() == BB.elements() );
+
+		BOOST_TEST( gold.elements() == BB.elements() );
+		BOOST_TEST( BB.elements() == gold.elements() );
+
+		BOOST_TEST(( BB == gold ));
+	}
 
 	// subrange_ranges_strided_1D
 	{

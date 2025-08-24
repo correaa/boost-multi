@@ -981,6 +981,11 @@ class contiguous_layout {
 	using stride_type  = std::integral_constant<int, 1>;
 	using strides_type = typename boost::multi::detail::tuple<stride_type>;
 
+	// using strides_type = typename boost::multi::detail::tuple_prepend<stride_type, typename sub_type::strides_type>::type;
+	// using offsets_type = typename boost::multi::detail::tuple_prepend<offset_type, typename sub_type::offsets_type>::type;
+	// using nelemss_type = typename boost::multi::detail::tuple_prepend<nelems_type, typename sub_type::nelemss_type>::type;
+
+
 	using offset_type = std::integral_constant<int, 0>;
 
 	using nelems_type = SSize;
@@ -1010,9 +1015,33 @@ class contiguous_layout {
 	)
 	: /*sub_{sub}, stride_{} offset_{},*/ nelems_{nelems} {}
 
+	BOOST_MULTI_HD constexpr auto do_stride(difference_type idx) const {
+		return layout_t<1, SSize>{*this}.do_stride(idx);
+	}
+
+	BOOST_MULTI_HD constexpr auto reindex(SSize idx) const {
+		return layout_t<1, SSize>{
+			sub(),
+			stride(),
+			idx * stride(),
+			nelems()
+		};
+	}
+
+	BOOST_MULTI_HD constexpr auto scale(size_type num, size_type den) const {
+		return layout_t<1, SSize>(*this).scale(num, den);
+		// assert((stride_ * num) % den == 0);
+		// assert(offset_ == 0);  // TODO(correaa) implement ----------------vvv
+		// return layout_t{sub_.scale(num, den), stride_ * num / den, offset_ /* *num/den */, nelems_ * num / den};
+	}
+
+	BOOST_MULTI_HD constexpr auto halve() const { return layout_t<1, SSize>(*this).halve(); }
+
  private:
-	constexpr auto at_aux_(index /*idx*/) const {
-		return sub_type{};  // sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx*stride_), sub_.nelems_}();
+	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
+		// return sub_type{sub_.sub(), sub_.stride(), sub_.offset_ + offset_ + (idx * stride_), sub_.nelems_}();
+		return idx;
+	//	return sub_type{}();  // sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx*stride_), sub_.nelems_}();
 	}
 
  public:
@@ -1027,9 +1056,11 @@ class contiguous_layout {
 	BOOST_MULTI_HD constexpr auto offset() const { return std::integral_constant<int, 0>{}; }
 	BOOST_MULTI_HD constexpr auto extension() const { return extension_type{0, nelems_}; }
 
+	BOOST_MULTI_HD constexpr auto strides() const { return strides_type{stride()}; }
+
 	BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 
-	BOOST_MULTI_HD constexpr auto size() const { return nelems_; }
+	BOOST_MULTI_HD constexpr auto size() const noexcept { return nelems_; }
 	BOOST_MULTI_HD constexpr auto sizes() const { return sizes_type{size()}; }
 
 	BOOST_MULTI_HD constexpr auto nelems() const { return nelems_; }
@@ -1063,6 +1094,13 @@ class contiguous_layout {
 			this->offset(),
 			(this->is_empty()) ? 0 : this->nelems() / this->size() * (last - first)
 		};
+	}
+
+	friend BOOST_MULTI_HD constexpr auto operator==(contiguous_layout const& /*self*/, contiguous_layout const& /*other*/) {
+		return std::true_type{};
+	}
+	friend BOOST_MULTI_HD constexpr auto operator!=(contiguous_layout const& /*self*/, contiguous_layout const& /*other*/) {
+		return std::false_type{};
 	}
 };
 
@@ -1152,7 +1190,7 @@ struct bilayout {
 
 template<dimensionality_type D, typename SSize>
 struct layout_t
-: multi::equality_comparable<layout_t<D, SSize>> {
+	: multi::equality_comparable<layout_t<D, SSize>> {
 	auto flatten() const {
 		return bilayout<D - 1>{
 			stride(),
@@ -1217,10 +1255,10 @@ struct layout_t
 	BOOST_MULTI_HD constexpr explicit layout_t(OtherLayout const& other)
 	: sub_{other.sub()}, stride_{other.stride()}, offset_{other.offset()}, nelems_{other.nelems()} {}
 
-#if defined(__NVCC__)
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
-#endif
+	#if defined(__NVCC__)
+	#pragma nv_diagnostic push
+	#pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
+	#endif
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions)
 	: sub_{/*std::*/apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}, stride_{sub_.num_elements() ? sub_.num_elements() : 1}
 	, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}
@@ -1228,9 +1266,9 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
 	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
-#if defined(__NVCC__)
-#pragma nv_diagnostic pop
-#endif
+	#if defined(__NVCC__)
+	#pragma nv_diagnostic pop
+	#endif
 
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
@@ -1241,10 +1279,10 @@ struct layout_t
 	constexpr auto origin() const { return sub_.origin() - offset_; }
 
  private:
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"
-#endif
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"
+	#endif
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
 		return sub_type{sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx * stride_), sub_.nelems_}();
@@ -1257,21 +1295,20 @@ struct layout_t
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const { return at_aux_(idx); }
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
-#endif
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
+	#endif
 
 	BOOST_MULTI_HD constexpr auto operator()() const { return *this; }
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
 	BOOST_MULTI_HD constexpr auto        sub() & -> sub_type& { return sub_; }
 	BOOST_MULTI_HD constexpr auto        sub() const& -> sub_type const& { return sub_; }
@@ -1295,6 +1332,10 @@ struct layout_t
 
 	constexpr BOOST_MULTI_HD auto operator<(layout_t const& other) const -> bool {
 		return std::tie(sub_, stride_, offset_, nelems_) < std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
+	}
+
+	constexpr auto do_stride(difference_type diff) const {
+		return layout_t{sub(), stride() * diff, offset(), nelems()};
 	}
 
 	constexpr auto reindex() const { return *this; }
@@ -1514,7 +1555,7 @@ struct layout_t
 		);
 	}
 
-	constexpr auto scale(size_type num, size_type den) const {
+	BOOST_MULTI_HD constexpr auto scale(size_type num, size_type den) const {
 		assert((stride_ * num) % den == 0);
 		assert(offset_ == 0);  // TODO(correaa) implement ----------------vvv
 		return layout_t{sub_.scale(num, den), stride_ * num / den, offset_ /* *num/den */, nelems_ * num / den};
@@ -1571,12 +1612,12 @@ struct layout_t<0, SSize>
 
 	offset_type offset_;
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+	#if defined(__clang__)
+		#pragma clang diagnostic pop
+	#endif
+	#if defined(_MSC_VER)
+		#pragma warning(pop)
+	#endif
 
 	nelems_type nelems_;
 

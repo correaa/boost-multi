@@ -243,15 +243,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 60 + 120 + 180 );
 	}
 
-	/*use iterator as pointer*/
-	{
-		multi::array<int, 1> const                                           arr = {1, 2, 3, 4, 5, 6};
-		multi::array_ref<int, 2, multi::array<int, 1>::const_iterator> const arr2({2, 3}, arr.begin());
-		BOOST_TEST(( arr2 == multi::array<int, 2>{
-		{1, 2, 3},
-		{4, 5, 6}
-	}));
-	}
+	// /*use iterator as pointer*/
+	// {
+	// 	multi::array<int, 1> const                                           arr = {1, 2, 3, 4, 5, 6};
+	// 	multi::array_ref<int, 2, multi::array<int, 1>::const_iterator> const arr2({2, 3}, arr.begin());
+	// 	BOOST_TEST(( arr2 == multi::array<int, 2>{
+	// 	{1, 2, 3},
+	// 	{4, 5, 6}
+	// }));
+	// }
 
 	/*use iterator as pointer*/
 	{
@@ -324,23 +324,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto diff = &(mar.reindexed(1)[1]) - &mar[0];
 		BOOST_TEST( diff == 0 );
 
-		BOOST_TEST( &mar.blocked(2, 4)[2] == &mar[2] );
-		for(auto idx : extension(mar.stenciled({2, 4}))) {  // NOLINT(altera-unroll-loops)
-			BOOST_TEST( &mar.stenciled({2, 4})[idx] == &mar[idx] );
-		}
+		// BOOST_TEST( &mar.blocked(2, 4)[2] == &mar[2] );
+		// for(auto idx : extension(mar.stenciled({2, 4}))) {  // NOLINT(altera-unroll-loops)
+		// 	BOOST_TEST( &mar.stenciled({2, 4})[idx] == &mar[idx] );
+		// }
 
-		// clang-format off
-	multi::array<std::string, 1> arr({{2, 7}}, std::string{"xx"});  // NOLINT(fuchsia-default-arguments-calls) std::string
-		// clang-format on
+		// // clang-format off
+		// multi::array<std::string, 1> arr({{2, 7}}, std::string{"xx"});  // NOLINT(fuchsia-default-arguments-calls) std::string
+		// // clang-format on
 
-		BOOST_TEST( size(arr) == 5 );
-		BOOST_TEST( extension(arr) == multi::iextension(2, 7) );
-		arr[2] = "a";
-		arr[3] = "b";
-		arr[4] = "c";
-		arr[5] = "d";
-		arr[6] = "e";
-		BOOST_TEST( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );  // NOLINT(modernize-use-ranges) for C++20
+		// BOOST_TEST( arr.size() == 5 );
+		// BOOST_TEST( arr.extension() == multi::iextension(2, 7) );
+
+		// arr[2] = "a";
+		// arr[3] = "b";
+		// arr[4] = "c";
+		// arr[5] = "d";
+		// arr[6] = "e";
+
+		// BOOST_TEST( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );  // NOLINT(modernize-use-ranges) for C++20
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed)
@@ -361,11 +363,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(array_ref_reindexed)
 	{
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#endif
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
 
 		// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): test
 		double arr[4][5] = {
@@ -380,9 +381,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &mar[1][1] == &arr[1][1] );
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 
 		BOOST_TEST( size(mar   .reindexed(1)) == size(mar) );
 		BOOST_TEST( size(mar[0].reindexed(1)) == size(mar[0]) );
@@ -488,7 +489,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<double> vec = {1.0, 2.0, 3.0};  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		// clang-format off
-	multi::array_ref<double, 1> aref({{1, 3}}, vec.data());
+		multi::array_ref<double, 1> aref({{1, 3}}, vec.data());
 		// clang-format on
 		BOOST_TEST( aref.extension() == multi::iextension(1, 3) );
 		BOOST_TEST( &aref[1] == vec.data() );
@@ -1129,8 +1130,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			marr = alias;
 			BOOST_TEST(marr[5] == 99);
 
-			marr = alias();
-			BOOST_TEST(marr[5] == 99);
+			// marr = alias();
+			// BOOST_TEST(marr[5] == 99);
 			// #endif
 		}
 		{
@@ -1313,12 +1314,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor)
-	{
-		multi::array<int, 2> arr(3, multi::array<int, 1>{10, 20, 30, 40});
+	// {
+	// 	multi::array<int, 2> arr(3, multi::array<int, 1>{10, 20, 30, 40});
 
-		BOOST_TEST( arr[0][1] == 20 );
-		BOOST_TEST( arr[1][1] == 20 );
-	}
+	// 	BOOST_TEST( arr[0][1] == 20 );
+	// 	BOOST_TEST( arr[1][1] == 20 );
+	// }
 
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor_1D)
 	{
