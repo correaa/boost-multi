@@ -5,7 +5,6 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/detail/what.hpp>
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <tuple>      // IWYU pragma: keep
@@ -292,11 +291,12 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it3 == it );
 	}
 	{
-		multi::array<int, 1> arr(10);
+		multi::array<int, 1> const arr(10);
+
 		auto const xn = decltype(arr.extension())(10);
-		multi::extension_t xn2(10);
-		// multi::detail::what(xn2);
 		BOOST_TEST( xn. size() == 10 );
+
+		multi::extension_t const xn2(10);
 		BOOST_TEST( xn2.size() == 10 );
 	}
 	{
