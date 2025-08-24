@@ -296,7 +296,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto const xn = decltype(arr.extension())(10);
 		multi::extension_t xn2(10);
 		// multi::detail::what(xn2);
-		BOOST_TEST( xn.size() == 10 );
+		BOOST_TEST( xn. size() == 10 );
+		BOOST_TEST( xn2.size() == 10 );
 	}
 	{
 		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
