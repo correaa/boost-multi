@@ -81,7 +81,7 @@ Lexicographical order applies naturally if the extensions of `A` and `B` are dif
 |===
 | `sizes`           | returns a tuple with the sizes in each dimension
 | `extensions`      | returns a tuple with the extensions in each dimension
-| `size`            | returns the number of subarrays contained in the first dimension |
+| `size`            | returns the number of subarrays contained in the first dimension
 | `extension`       | returns a contiguous index range describing the set of valid indices
 | `num_elements`    | returns the total number of elements
 |===
@@ -89,7 +89,7 @@ Lexicographical order applies naturally if the extensions of `A` and `B` are dif
 #### Element access
 
 |===
-|`operator[]`       | access specified element by index (single argument), returns a `reference` (see above), for `D > 1` it can be used recursively |
+|`operator[]`       | access specified element by index (single argument), returns a `reference` (see above), for `D > 1` it can be used recursively
 |`front`            | access first element (undefined result if array is empty). Takes no argument.
 |`back`             | access last element  (undefined result if array is empty). Takes no argument.
 |`operator()`       | When used with zero arguments, it returns a `subarray` representing the whole array. When used with one argument, access a specified element by index (return a `reference`) or by range (return a `subarray` of equal dimension). For more than one, arguments are positional and reproduce expected array access syntax from Fortran or Matlab: |
@@ -112,7 +112,7 @@ These member functions are generally used for accessing details of the internal 
 |===
 | `subarray::`      |
 
-| `layout`          | returns a single layout object with stride and size information |
+| `layout`          | returns a single layout object with stride and size information
 | `base`            | direct access to underlying memory pointer (`S[i][j]... == S.base() + std::get<0>(S.strides())*i + std::get<1>(S.strides())*j + ...`)
 | `stride`          | return the stride value of the leading dimension, e.g `(&A[1][0][0]... - &A[0][0]...)`
 | `strides`         | returns a tuple with the strides defining the internal layout

@@ -80,23 +80,23 @@ class iterator_facade {
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<>>
 class range {
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4820)	// 'boost::multi::range<IndexType,IndexTypeLast,std::plus<void>,std::minus<void>>': '3' bytes padding added after data member 'boost::multi::range<IndexType,IndexTypeLast,std::plus<void>,std::minus<void>>::first_'
-#endif
+	#if defined(_MSC_VER)
+	#pragma warning(push)
+	#pragma warning(disable : 4820)	// 'boost::multi::range<IndexType,IndexTypeLast,std::plus<void>,std::minus<void>>': '3' bytes padding added after data member 'boost::multi::range<IndexType,IndexTypeLast,std::plus<void>,std::minus<void>>::first_'
+	#endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	IndexType     first_ = {};
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpadded"
-#endif
+	#if defined(_MSC_VER)
+	#pragma warning(pop)
+	#endif
+	#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wpadded"
+	#endif
 	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+	#if defined(__clang__)
+	#pragma clang diagnostic pop
+	#endif
 
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
@@ -325,9 +325,11 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	BOOST_MULTI_HD constexpr extension_t(IndexType first, IndexTypeLast last) noexcept
 	: range<IndexType, IndexTypeLast>{first, last} {}
 
+//	BOOST_MULTI_HD constexpr extension_t(extension_t::size_type size) : extensions_t(IndexType{}, IndexType{} + size) {}
+
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extension_t(IndexType last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) allow terse syntax
-	: range<IndexType, IndexTypeLast>(0, last) {}
+	BOOST_MULTI_HD constexpr extension_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) allow terse syntax
+	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
 
 	BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
