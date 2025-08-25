@@ -291,8 +291,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	// template<std::size_t I, class TU> static constexpr auto get_(TU const& tu) { using std::get; return get<I>(tu); }
 
-	template<class OtherExtensions, decltype(OtherExtensions{}.extension(), (void)OtherExtensions{}.sub())* = nullptr>
-	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)
+	template<class OtherExtensions,
+		decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extension()) )* = nullptr,
+		decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extensions_type>(OtherExtensions{}.sub()) )* = nullptr
+	>
+	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: extensions_t(other.extension(), other.sub()) {}
 
 	BOOST_MULTI_HD constexpr extensions_t(index_extension const& extension, typename layout_t<D - 1>::extensions_type const& other)
@@ -742,9 +745,10 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	BOOST_MULTI_HD constexpr explicit extensions_t(base_ tup)
 	: base_{tup} {}
 
-
-	template<class OtherExtensions, decltype(OtherExtensions{}.extension())* = nullptr>
-	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)
+	template<class OtherExtensions,
+		decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtensions{}.extension()) )* = nullptr
+	>
+	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: extensions_t(multi::index_extension{other.extension()}) {}
 
 	extensions_t() = default;
