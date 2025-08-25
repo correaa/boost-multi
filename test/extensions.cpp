@@ -4,7 +4,6 @@
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/extensions.hpp>
-#include <boost/multi/detail/what.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -313,10 +312,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xns2d_a == xn2 );
 		BOOST_TEST( xns2d_b == xn2 );
 
-		multi::extensions_t<2> met2{xns2d};
+		multi::extensions_t<2> const met2{xns2d};
 
-		multi::layout_t<2> lyt(met2);
-		multi::layout_t<2> lyt_2(xns2d);
+		multi::layout_t<2> const lyt(met2);
+		multi::layout_t<2> const lyt_2(xns2d);
 
 		BOOST_TEST( lyt == lyt_2 );
 

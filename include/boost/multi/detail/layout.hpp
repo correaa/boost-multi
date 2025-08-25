@@ -295,14 +295,15 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extension()) )* = nullptr,
 		decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extensions_type>(OtherExtensions{}.sub()) )* = nullptr
 	>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: extensions_t(other.extension(), other.sub()) {}
 
 	BOOST_MULTI_HD constexpr extensions_t(index_extension const& extension, typename layout_t<D - 1>::extensions_type const& other)
 	: extensions_t(multi::detail::ht_tuple(extension, other.base())) {}
 
-	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }  // impl_;}
-	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }             // impl_;}
+	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
+	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
 
 	friend constexpr auto operator*(index_extension const& extension, extensions_t const& self) -> extensions_t<D + 1> {
 		// return extensions_t<D + 1>(tuple(extension, self.base()));
@@ -748,6 +749,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	template<class OtherExtensions,
 		decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtensions{}.extension()) )* = nullptr
 	>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: extensions_t(multi::index_extension{other.extension()}) {}
 

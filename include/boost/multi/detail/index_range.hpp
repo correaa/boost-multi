@@ -338,6 +338,7 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 			detail::implicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
 		)* = nullptr
 	>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extension_t(OtherExtension const& other) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: extension_t{other.first(), other.last()} {}
 
