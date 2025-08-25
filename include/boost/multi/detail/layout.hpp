@@ -291,10 +291,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	// template<std::size_t I, class TU> static constexpr auto get_(TU const& tu) { using std::get; return get<I>(tu); }
 
-	template<class OtherExtensions, decltype(OtherExtensions{}.extension(), OtherExtensions{}.sub())* = nullptr>
+	template<class OtherExtensions, decltype(OtherExtensions{}.extension(), (void)OtherExtensions{}.sub())* = nullptr>
 	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)
 	: extensions_t(other.extension(), other.sub()) {}
-
 
 	BOOST_MULTI_HD constexpr extensions_t(index_extension const& extension, typename layout_t<D - 1>::extensions_type const& other)
 	: extensions_t(multi::detail::ht_tuple(extension, other.base())) {}

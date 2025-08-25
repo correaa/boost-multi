@@ -304,6 +304,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		xn = xn2;
 
 		multi::detail::extensions const xns2{xn2};
+		using std::get;
+		BOOST_TEST( get<0>(xns2) == xn2 );
 
 		multi::detail::extensions const xns2d{xn2, xn2};
 		auto [xns2d_a, xns2d_b] = xns2d;
@@ -315,6 +317,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		multi::layout_t<2> lyt(met2);
 		multi::layout_t<2> lyt_2(xns2d);
+
+		BOOST_TEST( lyt == lyt_2 );
 
 		// multi::array<int, 1> const arr2({xn2});
 	}
