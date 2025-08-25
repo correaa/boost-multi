@@ -36,10 +36,10 @@ class extensions<Ex, Exts...> : private Ex {
  public:
 	extensions() = default;
 
-	extensions(Ex ex, Exts... rest) : Ex{ex}, rest_{rest...} {}
+	BOOST_MULTI_HD constexpr extensions(Ex ex, Exts... rest) : Ex{ex}, rest_{rest...} {}
 
 	template<std::size_t I>
-	auto get() const {
+	BOOST_MULTI_HD constexpr auto get() const {
 		if constexpr(I == 0) {
 			return static_cast<Ex const&>(*this); }
 		else {
@@ -47,8 +47,8 @@ class extensions<Ex, Exts...> : private Ex {
 		}
 	}
 
-	auto extension() const { return static_cast<Ex const&>(*this); }
-	auto sub() const { return rest_; }
+	BOOST_MULTI_HD constexpr auto extension() const { return static_cast<Ex const&>(*this); }
+	BOOST_MULTI_HD constexpr auto sub() const { return rest_; }
 };
 
 template<class... Exts> extensions(Exts...) -> extensions<Exts...>;
