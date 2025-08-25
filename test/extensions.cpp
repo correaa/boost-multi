@@ -2,9 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <tuple>      // IWYU pragma: keep
