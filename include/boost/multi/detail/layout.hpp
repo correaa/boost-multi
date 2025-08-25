@@ -289,11 +289,21 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	BOOST_MULTI_HD constexpr explicit extensions_t(tuple<Ts...> const& tup)
 	: extensions_t(tup, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
 
+	// template<std::size_t I, class TU> static constexpr auto get_(TU const& tu) { using std::get; return get<I>(tu); }
+
+	template<class OtherExtensions,
+		decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extension()) )* = nullptr,
+		decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extensions_type>(OtherExtensions{}.sub()) )* = nullptr
+	>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
+	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: extensions_t(other.extension(), other.sub()) {}
+
 	BOOST_MULTI_HD constexpr extensions_t(index_extension const& extension, typename layout_t<D - 1>::extensions_type const& other)
 	: extensions_t(multi::detail::ht_tuple(extension, other.base())) {}
 
-	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }  // impl_;}
-	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }             // impl_;}
+	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
+	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
 
 	friend constexpr auto operator*(index_extension const& extension, extensions_t const& self) -> extensions_t<D + 1> {
 		// return extensions_t<D + 1>(tuple(extension, self.base()));
@@ -736,21 +746,20 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	BOOST_MULTI_HD constexpr explicit extensions_t(base_ tup)
 	: base_{tup} {}
 
+	template<class OtherExtensions,
+		decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtensions{}.extension()) )* = nullptr
+	>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
+	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: extensions_t(multi::index_extension{other.extension()}) {}
+
 	extensions_t() = default;
 
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
 
-// #if defined(__NVCC__)
-// #pragma nv_diagnostic push
-// #pragma nv_diag_suppress = 20013  // calling a constexpr __host__ function("operator==") from a __host__ __device__ function("operator==") is not allowed. The experimental flag '--expt-relaxed-constexpr' can be used to allow this.
-// #pragma nv_diag_suppress = 20014  // TODO(correa) op== can be external to the library
-// #endif
 	BOOST_MULTI_HD constexpr auto operator==(extensions_t const& other) const { return base() == other.base(); }
 	BOOST_MULTI_HD constexpr auto operator!=(extensions_t const& other) const { return base() != other.base(); }
-// #if defined(__NVCC__)
-// #pragma nv_diagnostic pop
-// #endif
 
 	BOOST_MULTI_HD constexpr auto num_elements() const -> size_type { return this->base().head().size(); }
 
