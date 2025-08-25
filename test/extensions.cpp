@@ -2,9 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/array.hpp>
+#include <boost/multi/detail/extensions.hpp>
+#include <boost/multi/detail/what.hpp>
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <tuple>      // IWYU pragma: keep
@@ -293,11 +295,28 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 1> const arr(10);
 
-		auto const xn = decltype(arr.extension())(10);
+		auto xn = decltype(arr.extension())(10);
 		BOOST_TEST( xn. size() == 10 );
 
 		multi::extension_t const xn2(10);
 		BOOST_TEST( xn2.size() == 10 );
+
+		xn = xn2;
+
+		multi::detail::extensions const xns2{xn2};
+
+		multi::detail::extensions const xns2d{xn2, xn2};
+		auto [xns2d_a, xns2d_b] = xns2d;
+
+		BOOST_TEST( xns2d_a == xn2 );
+		BOOST_TEST( xns2d_b == xn2 );
+
+		multi::extensions_t<2> met2{xns2d};
+
+		multi::layout_t<2> lyt(met2);
+		multi::layout_t<2> lyt_2(xns2d);
+
+		// multi::array<int, 1> const arr2({xn2});
 	}
 	{
 		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);

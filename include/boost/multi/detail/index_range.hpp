@@ -331,9 +331,29 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	BOOST_MULTI_HD constexpr extension_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) allow terse syntax
 	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
 
+	template<
+		class OtherExtension,
+		decltype(
+			detail::implicit_cast<IndexType>(std::declval<OtherExtension>().first()),
+			detail::implicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
+		)* = nullptr
+	>
+	BOOST_MULTI_HD constexpr extension_t(OtherExtension const& other) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: extension_t{other.first(), other.last()} {}
+
+	template<
+	class OtherExtension,
+		decltype(
+			detail::explicit_cast<IndexType>(std::declval<OtherExtension>().first()),
+			detail::explicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
+		)* = nullptr
+	>
+	BOOST_MULTI_HD constexpr explicit extension_t(OtherExtension const& other) noexcept
+	: extension_t{other.first(), other.last()} {}
+
 	BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
-	friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
+	// friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
 
 	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
 		using std::max;
@@ -352,7 +372,7 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 template<class IndexType, class IndexTypeLast>
 extension_t(IndexType, IndexTypeLast) -> extension_t<IndexType, IndexTypeLast>;
 
-template<class IndexType>
+template<class IndexType = multi::index>
 extension_t(IndexType) -> extension_t<std::integral_constant<IndexType, 0>, IndexType>;
 #endif
 
