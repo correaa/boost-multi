@@ -140,7 +140,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				&& (*(d2D.begin() + 2) <= *(d2D.begin() + 3))
 		));
 
-#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
+#if !defined(__clang_major__) || (__clang_major__ != 7)      // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
 #endif
 
@@ -156,9 +156,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		));
 
-#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
+#if !defined(__clang_major__) || (__clang_major__ != 7)                        // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
-#endif
+		#endif
 
 		std::stable_sort(begin(d2D.rotated()), end(d2D.rotated()));           // NOLINT(modernize-use-ranges) for C++20
 		BOOST_TEST( std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
