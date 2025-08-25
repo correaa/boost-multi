@@ -147,14 +147,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::stable_sort(d2D.begin(), d2D.end());         // NOLINT(modernize-use-ranges) for C++20
 		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
 
-		BOOST_TEST((
-		d2D == decltype(d2D){
-			{ 30.0,  1.0,  2.0,  3.0,  4.0},
-			{ 50.0,  6.0,  7.0,  8.0,  9.0},
-			{100.0, 11.0, 12.0, 13.0, 14.0},
-			{150.0, 16.0, 17.0, 18.0, 19.0},
-			}
-		));
+		// clang-format off
+		BOOST_TEST(
+			d2D == decltype(d2D)({
+				{ 30.0,  1.0,  2.0,  3.0,  4.0},
+				{ 50.0,  6.0,  7.0,  8.0,  9.0},
+				{100.0, 11.0, 12.0, 13.0, 14.0},
+				{150.0, 16.0, 17.0, 18.0, 19.0},
+			})
+		);
+		// clang-format on
 
 #if !defined(__clang_major__) || (__clang_major__ != 7)                        // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
