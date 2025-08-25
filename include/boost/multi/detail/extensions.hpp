@@ -16,9 +16,7 @@
 #define BOOST_MULTI_HD
 #endif
 
-namespace boost::multi {
-
-namespace detail {
+namespace boost::multi::detail {
 
 template<class... Exts>
 class extensions;
@@ -36,7 +34,7 @@ class extensions<Ex, Exts...> : private Ex {
  public:
 	extensions() = default;
 
-	BOOST_MULTI_HD constexpr extensions(Ex ex, Exts... rest) : Ex{ex}, rest_{rest...} {}
+	BOOST_MULTI_HD explicit constexpr extensions(Ex ex, Exts... rest) : Ex{ex}, rest_{rest...} {}
 
 	template<std::size_t I>
 	BOOST_MULTI_HD constexpr auto get() const {
@@ -58,29 +56,27 @@ auto get(::boost::multi::detail::extensions<Exts...> const& exts)
 ->decltype(exts.template get<I>()) {
 	return exts.template get<I>(); }
 
-}
+template<class Self>
+struct tyid {
+	using type = Self;
+};
 
-}
+}  // end namespace boost::multi::detail
 
 template<class... Exts>
 struct std::tuple_size<::boost::multi::detail::extensions<Exts...> > {
 	static constexpr std::size_t value = sizeof...(Exts);
 };
 
-template<class Self>
-struct tyid {
-	using type = Self;
-};
-
 template<std::size_t I, class Ex, class... Exts>
 struct std::tuple_element<I, ::boost::multi::detail::extensions<Ex, Exts...> > {
 	using type = typename std::conditional_t<
 		I == 0,
-		tyid<Ex>,
+		::boost::multi::detail::tyid<Ex>,
 		::std::tuple_element<I - 1, ::boost::multi::detail::extensions<Exts...>>
 	>::type;
 };
 
 #undef BOOST_MULTI_HD
 
-#endif  // BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
+#endif  // BOOST_MULTI_DETAIL_EXTENSIONS_HPP

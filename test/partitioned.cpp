@@ -516,7 +516,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());
 
-		BOOST_TEST( std::is_sorted(strides.rbegin(), strides.rend()) && arr.num_elements() == arr.nelems() );  // contiguous c-ordering  // NOLINT(modernize-use-ranges) for C++20
+		// NOLINTNEXTLINE(modernize-use-ranges) for C++20
+		BOOST_TEST( std::is_sorted(strides.rbegin(), strides.rend()) && arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 
 		// #ifndef _MSC_VER  // problem with MSVC 14.3 c++17
 		auto&& A4 = arr.reinterpret_array_cast<double>(1);
