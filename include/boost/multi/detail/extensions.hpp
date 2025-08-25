@@ -45,6 +45,9 @@ class extensions<Ex, Exts...> : private Ex {
 		}
 	}
 
+	using extension_type = Ex;
+	using sub_type = extensions<Exts...>;
+
 	BOOST_MULTI_HD constexpr auto extension() const { return static_cast<Ex const&>(*this); }
 	BOOST_MULTI_HD constexpr auto sub() const { return rest_; }
 };
@@ -64,16 +67,16 @@ struct tyid {
 }  // end namespace boost::multi::detail
 
 template<class... Exts>
-struct std::tuple_size<::boost::multi::detail::extensions<Exts...> > {
+struct std::tuple_size<::boost::multi::detail::extensions<Exts...> > {  // NOLINT(cert-dcl58-cpp) structured binding
 	static constexpr std::size_t value = sizeof...(Exts);
 };
 
-template<std::size_t I, class Ex, class... Exts>
-struct std::tuple_element<I, ::boost::multi::detail::extensions<Ex, Exts...> > {
+template<std::size_t I, class... Exts>
+struct std::tuple_element<I, ::boost::multi::detail::extensions<Exts...> > {  // NOLINT(cert-dcl58-cpp) structured binding
 	using type = typename std::conditional_t<
 		I == 0,
-		::boost::multi::detail::tyid<Ex>,
-		::std::tuple_element<I - 1, ::boost::multi::detail::extensions<Exts...>>
+		::boost::multi::detail::tyid<typename ::boost::multi::detail::extensions<Exts...>::extension_type>,
+		::std::tuple_element<I - 1, typename ::boost::multi::detail::extensions<Exts...>::sub_type >
 	>::type;
 };
 
