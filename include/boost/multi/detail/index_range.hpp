@@ -353,6 +353,12 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	// BOOST_MULTI_HD constexpr explicit extension_t(OtherExtension const& other) noexcept
 	// : extension_t{other.first(), other.last()} {}
 
+	template<class OtherExtension>
+	BOOST_MULTI_HD constexpr auto operator=(OtherExtension const& other) -> extension_t& {
+		(*this) = extension_t{other};
+		return *this;
+	}
+
 	BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
 	// friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
