@@ -269,10 +269,10 @@ class message : skeleton<void, DatatypeT, Size> {
 	template<class ArrayElements>
 	explicit message(ArrayElements const& arrelems)
 	: message{
-		  const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
-		  arrelems.layout(),
-		  mpi::datatype<typename ArrayElements::value_type> // value_type>
-	  } {}
+		const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+		arrelems.layout(),
+		mpi::datatype<typename ArrayElements::element>  // value_type>
+	} {}
 
 	message(message const& other) = delete;
 	message(message&&)            = delete;
