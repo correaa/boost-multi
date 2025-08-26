@@ -1383,9 +1383,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto strided_aux_(difference_type diff) const {
 		// auto new_layout = this->layout().do_stride();
-		typename types::layout_t new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
+		typename types::layout_t const new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
 		// template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-		return subarray<T, D, ElementPtr, decltype(new_layout)>(new_layout, types::base_);
+		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, types::base_);
 	}
 
  public:
@@ -1990,7 +1990,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto strided(difference_type diff) && { return this->strided_aux_(diff); }
-	constexpr auto strided(difference_type diff) &  { return this->strided_aux_(diff); }
+	constexpr auto strided(difference_type diff) & { return this->strided_aux_(diff); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::taked;

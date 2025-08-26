@@ -46,7 +46,7 @@ void test_single_number(MPI_Comm comm) {
 	}
 }
 
-void test_1d(MPI_Comm comm) {
+void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexity)
 	int world_rank;  // NOLINT(cppcoreguidelines-init-variables)
 	MPI_Comm_rank(comm, &world_rank);
 	int world_size;  // NOLINT(cppcoreguidelines-init-variables)
