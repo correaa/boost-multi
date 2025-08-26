@@ -5,9 +5,7 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/extensions.hpp>
 
-#include <boost/core/lightweight_test.hpp>
-
-#include <boost/core/lightweight_test.hpp>
+#include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <tuple>      // IWYU pragma: keep
