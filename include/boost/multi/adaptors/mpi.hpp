@@ -98,6 +98,25 @@ class data {
 	auto datatype() const { return datatype_; }
 };
 
+template<class Array>
+auto begin(Array& arr);
+
+template<class Size = int>
+class iterator : data {
+	public:
+	template<class It>
+	explicit iterator(It first) : data{first} {}
+
+	using data::buffer;
+	using data::datatype;
+	auto count() const { return 1; }
+
+	template<class Array> auto begin(Array&);
+};
+
+template<class Array>
+auto begin(Array& arr) { return iterator<>(arr.begin()); }
+
 template<class Layout>
 auto create_subarray_aux(
 	Layout        lyt,
@@ -252,7 +271,7 @@ class message : skeleton<void, DatatypeT, Size> {
 	: message{
 		  const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		  arrelems.layout(),
-		  mpi::datatype<typename ArrayElements::value_type>
+		  mpi::datatype<typename ArrayElements::value_type> // value_type>
 	  } {}
 
 	message(message const& other) = delete;
