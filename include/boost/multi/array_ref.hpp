@@ -937,7 +937,7 @@ struct elements_range_t {
 	using iterator       = elements_iterator_t<pointer, layout_type>;
 	using const_iterator = elements_iterator_t<const_pointer, layout_type>;
 
-	// using element        = value_type;
+	using element = value_type;
 
  private:
 	pointer     base_;

@@ -107,19 +107,18 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 				{5, 88}
 			}) ));
 
-			auto const B_data = multi::mpi::data(BB.begin());
-
-		//	MPI_Send(B_data.buffer(), static_cast<int>(BB.size()), B_data.datatype(), 1, 0, comm);
+			auto const& B_msg = multi::mpi::message(BB);
+			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
-			// multi::array<int, 2> CC({3, 2}, 99);  // NOLINT(misc-const-correctness)
-			// auto const C_data = multi::mpi::data(CC.begin());
+			multi::array<int, 2> CC({3, 2}, 99);  // NOLINT(misc-const-correctness)
+			auto const& C_msg = multi::mpi::message(CC);
 
-			// MPI_Recv(C_data.buffer(), 3, C_data.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
-			// BOOST_TEST(( CC == multi::array<int, 2>({
-			// 	{1, 88},
-			// 	{3, 88},
-			// 	{5, 88}
-			// }) ));
+			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
+			BOOST_TEST(( CC == multi::array<int, 2>({
+				{1, 88},
+				{3, 88},
+				{5, 88}
+			}) ));
 		}
 	}
 
