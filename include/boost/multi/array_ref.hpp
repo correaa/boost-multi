@@ -1382,14 +1382,16 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 	constexpr auto strided_aux_(difference_type diff) const {
-		typename types::layout_t const new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
-		return const_subarray(new_layout, types::base_);
+		// auto new_layout = this->layout().do_stride();
+		typename types::layout_t new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
+		// template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
+		return subarray<T, D, ElementPtr, decltype(new_layout)>(new_layout, types::base_);
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> basic_const_array { return strided_aux_(diff); }
-	constexpr auto strided(difference_type diff) && -> const_subarray { return strided_aux_(diff); }
-	constexpr auto strided(difference_type diff) & -> const_subarray { return strided_aux_(diff); }
+	constexpr auto strided(difference_type diff) const& { return strided_aux_(diff).as_const(); }
+	// constexpr auto strided(difference_type diff) && -> const_subarray { return strided_aux_(diff); }
+	// constexpr auto strided(difference_type diff) & -> const_subarray { return strided_aux_(diff); }
 
 	constexpr auto sliced(
 		typename types::index first, typename types::index last, typename types::index stride_
@@ -1987,8 +1989,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	constexpr auto strided(difference_type diff) && -> subarray { return this->strided_aux_(diff); }
-	constexpr auto strided(difference_type diff) & -> subarray { return this->strided_aux_(diff); }
+	constexpr auto strided(difference_type diff) && { return this->strided_aux_(diff); }
+	constexpr auto strided(difference_type diff) &  { return this->strided_aux_(diff); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::taked;
