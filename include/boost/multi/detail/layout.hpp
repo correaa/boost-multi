@@ -751,7 +751,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: extensions_t(multi::index_extension{other.extension()}) {}
+	: base_{other.extension()} {}
 
 	extensions_t() = default;
 
