@@ -48,6 +48,8 @@ template<> const_MPI_Datatype const datatype<float>  = MPI_FLOAT;   // NOLINT(mi
 
 template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(misc-definitions-in-headers)
 
+template<> const_MPI_Datatype const datatype<std::complex<double>> = MPI_DOUBLE_COMPLEX;  // NOLINT(misc-definitions-in-headers)
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
