@@ -388,16 +388,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	test_2d_int(MPI_COMM_WORLD);
 	test_2d_double(MPI_COMM_WORLD);
 
-	{
-		int rank = -1; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-		int size = -1; MPI_Comm_size(MPI_COMM_WORLD, &size);
+	if(world_size == 4) {
+		multi::array<int, 1> local_arr(world_size);
+		std::iota(local_arr.begin(), local_arr.end(), world_rank*10);
 
-		multi::array<int, 1> local_arr(size);
-		std::iota(local_arr.begin(), local_arr.end(), rank*10);
+		BOOST_TEST( local_arr[1] == (world_rank*10) + 1 );
 
-		BOOST_TEST( local_arr[1] == rank*10 + 1 );
-
-		multi::array<int, 1> local_arr2(size, 99);
+		multi::array<int, 1> local_arr2(world_size, 99);
 
 		auto local_arr_it = multi::mpi::begin(local_arr);
 		auto local_arr2_it = multi::mpi::begin(local_arr2);
@@ -408,25 +405,20 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			MPI_COMM_WORLD
 		);
 
-		if(size == 4) {
-			if(rank == 0) {
-				BOOST_TEST(( local_arr2 == multi::array<int, 1>{00, 10, 20, 30} ));
-			}
-			if(rank == 1) {
-				BOOST_TEST(( local_arr2 == multi::array<int, 1>{01, 11, 21, 31} ));
-			}
+		if(world_rank == 0) {
+			BOOST_TEST(( local_arr2 == multi::array<int, 1>{00, 10, 20, 30} ));
+		}
+		if(world_rank == 1) {
+			BOOST_TEST(( local_arr2 == multi::array<int, 1>{01, 11, 21, 31} ));
 		}
 	}
 
-	{
-		int rank = -1; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-		int size = -1; MPI_Comm_size(MPI_COMM_WORLD, &size);
-
+	if(world_size == 4) {
 		multi::array<int, 2> local_arr = {
-			{(rank*10) + 0, (rank*10) + 0},
-			{(rank*10) + 1, (rank*10) + 1},
-			{(rank*10) + 2, (rank*10) + 2},
-			{(rank*10) + 3, (rank*10) + 3}
+			{(world_rank*10) + 0, (world_rank*10) + 0},
+			{(world_rank*10) + 1, (world_rank*10) + 1},
+			{(world_rank*10) + 2, (world_rank*10) + 2},
+			{(world_rank*10) + 3, (world_rank*10) + 3}
 		};
 
 		multi::array<int, 2> local_arr2({4, 2}, 99);
@@ -440,13 +432,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			MPI_COMM_WORLD
 		);
 
-		if(size == 4) {
-			if(rank == 0) {
-				BOOST_TEST(( local_arr2 == multi::array<int, 2>{{00, 00}, {10, 10}, {20, 20}, {30, 30}} ));
-			}
-			if(rank == 1) {
-				BOOST_TEST(( local_arr2 == multi::array<int, 2>{{01, 01}, {11, 11}, {21, 21}, {31, 31}} ));
-			}
+		if(world_rank == 0) {
+			BOOST_TEST(( local_arr2 == multi::array<int, 2>{{00, 00}, {10, 10}, {20, 20}, {30, 30}} ));
+		}
+		if(world_rank == 1) {
+			BOOST_TEST(( local_arr2 == multi::array<int, 2>{{01, 01}, {11, 11}, {21, 21}, {31, 31}} ));
 		}
 	}
 
