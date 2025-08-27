@@ -284,7 +284,7 @@ class message : skeleton<void, DatatypeT, Size> {
 	: message{
 		const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		arrelems.layout(),
-		DatatypeT<typename ArrayElements::element>{}()  // value_type>
+		DatatypeT<typename ArrayElements::element>{}  // value_type>
 	} {}
 
 	message(message const& other) = delete;
@@ -329,7 +329,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		it.stride(),
 		it->layout(),
-		DatatypeT<typename ArrayIterator::element>{}()
+		DatatypeT<typename ArrayIterator::element>{}
 	} {}
 
 	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>
@@ -338,7 +338,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		it.stride(),
 		multi::layout_t<0>{},
-		DatatypeT<typename ArrayIterator::element>{}()
+		DatatypeT<typename ArrayIterator::element>{}
 	} {}
 
 	iterator(iterator const& other) = delete;
