@@ -60,7 +60,8 @@ template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(mi
 template<typename T>
 struct datatype_t {
 	static const_MPI_Datatype const value;  // = datatype<T>;
-	auto operator()() const -> MPI_Datatype { return value; }
+	auto operator()() const -> decltype(datatype<T>) { return datatype<T>; }
+	operator const_MPI_Datatype() const { return datatype<T>; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 };
 
 template<typename T>

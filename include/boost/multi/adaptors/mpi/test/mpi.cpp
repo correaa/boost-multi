@@ -411,6 +411,18 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		if(world_rank == 1) {
 			BOOST_TEST(( local_arr2 == multi::array<int, 1>{01, 11, 21, 31} ));
 		}
+
+		multi::array<int, 1> in_place_arr = local_arr;
+
+		auto in_place_arr_it = multi::mpi::begin(in_place_arr);
+
+		MPI_Alltoall(
+			MPI_IN_PLACE            , 1, in_place_arr_it.datatype(),
+			in_place_arr_it.buffer(), 1, in_place_arr_it.datatype(),
+			MPI_COMM_WORLD
+		);
+
+		BOOST_TEST( in_place_arr == local_arr2 );
 	}
 
 	if(world_size == 4) {
