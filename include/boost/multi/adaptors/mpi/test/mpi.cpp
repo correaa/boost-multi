@@ -57,16 +57,20 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 			auto const&&               BB = AA.strided(2);
 			BOOST_TEST(( BB == multi::array<double, 1>({1, 3, 5}) ));
 
-			auto const B_data = multi::mpi::data(BB.begin());
+			static_assert( decltype(BB.begin())::rank_v == 1 );
 
-			MPI_Send(B_data.buffer(), static_cast<int>(BB.size()), B_data.datatype(), 1, 0, comm);
+			auto const B_it = multi::mpi::begin(BB);
+
+			MPI_Send(B_it.buffer(), static_cast<int>(BB.size()), B_it.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
 			multi::array<int, 1> CC(3, 99);  // NOLINT(misc-const-correctness)
 
 			auto const& C_msg = multi::mpi::message(CC.elements());
 
 			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
-			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
+
+			std::cout << "ddddd " <<  CC[0] << ' ' << CC[1] << ' ' << CC[2] << '\n';
+			BOOST_TEST(( CC == multi::array<double, 1>({1, 3, 5}) ));
 		}
 	}
 	std::cout << world_rank << '\n';
@@ -76,7 +80,7 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 			auto const& BB = AA.strided(2);
 			BOOST_TEST(( BB == multi::array<int, 1>({1, 3, 5}) ));
 
-			auto const B_data = multi::mpi::data(BB.begin());
+			auto const B_data = multi::mpi::begin(BB);
 
 			MPI_Send(B_data.buffer(), static_cast<int>(BB.size()), B_data.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
@@ -85,7 +89,7 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 			auto const C_msg = multi::mpi::message(CC);
 
 			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
-			BOOST_TEST(( CC == multi::array<double, 1>({1, 2, 3}) ));
+			BOOST_TEST(( CC == multi::array<double, 1>({1, 3, 5}) ));
 		}
 	}
 	{
@@ -107,8 +111,17 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 				{5, 88}
 			}) ));
 
+			// auto const& B_msg = multi::mpi::message(BB);
+			// MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
+
 			auto const& B_msg = multi::mpi::message(BB);
-			MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
+			// MPI_Send(B_msg.buffer(), 3, B_msg.datatype(), 1, 0, comm);
+
+			// auto const& B_it = multi::mpi::iterator(BB.begin());
+			auto const B_it = multi::mpi::begin(BB);
+			// BOOST_TEST( B_it.buffer() == B_msg.buffer());
+			// BOOST_TEST( B_it.datatype() == B_msg.datatype() );
+			MPI_Send(B_it.buffer(), static_cast<int>(BB.size()), B_it.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
 			multi::array<int, 2> CC({3, 2}, 99);  // NOLINT(misc-const-correctness)
 			auto const& C_msg = multi::mpi::message(CC);
@@ -386,9 +399,12 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		multi::array<int, 1> local_arr2(size, 99);
 
+		auto local_arr_it = multi::mpi::begin(local_arr);
+		auto local_arr2_it = multi::mpi::begin(local_arr2);
+
 		MPI_Alltoall(
-			local_arr.base(), 1, MPI_INT,
-			local_arr2.base(), 1, MPI_INT,
+			local_arr_it.buffer(), 1, local_arr_it.datatype(),
+			local_arr2_it.buffer(), 1, local_arr2_it.datatype(),
 			MPI_COMM_WORLD
 		);
 
@@ -406,30 +422,30 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		int rank = -1; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 		int size = -1; MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-		multi::array<int, 1> local_arr(size);
-		std::iota(local_arr.begin(), local_arr.end(), rank*10);
+		multi::array<int, 2> local_arr = {
+			{(rank*10) + 0, (rank*10) + 0},
+			{(rank*10) + 1, (rank*10) + 1},
+			{(rank*10) + 2, (rank*10) + 2},
+			{(rank*10) + 3, (rank*10) + 3}
+		};
 
-		BOOST_TEST( local_arr[1] == rank*10 + 1 );
+		multi::array<int, 2> local_arr2({4, 2}, 99);
 
-		multi::array<int, 1> local_arr2(size, 99);
+		auto local_arr_it = multi::mpi::begin(local_arr);
+		auto local_arr2_it = multi::mpi::begin(local_arr2);
 
-		{
-			auto const begin_local_msg = multi::mpi::begin(local_arr);
-			auto const begin_local_msg2 = multi::mpi::begin(local_arr2);
-
-			MPI_Alltoall(
-				begin_local_msg.buffer(), begin_local_msg.count(), begin_local_msg.datatype(),
-				begin_local_msg2.buffer(), begin_local_msg2.count(), begin_local_msg2.datatype(),
-				MPI_COMM_WORLD
-			);
-		}
+		MPI_Alltoall(
+			local_arr_it.buffer(), 1, local_arr_it.datatype(),
+			local_arr2_it.buffer(), 1, local_arr2_it.datatype(),
+			MPI_COMM_WORLD
+		);
 
 		if(size == 4) {
 			if(rank == 0) {
-				BOOST_TEST(( local_arr2 == multi::array<int, 1>{00, 10, 20, 30} ));
+				BOOST_TEST(( local_arr2 == multi::array<int, 2>{{00, 00}, {10, 10}, {20, 20}, {30, 30}} ));
 			}
 			if(rank == 1) {
-				BOOST_TEST(( local_arr2 == multi::array<int, 1>{01, 11, 21, 31} ));
+				BOOST_TEST(( local_arr2 == multi::array<int, 2>{{01, 01}, {11, 11}, {21, 21}, {31, 31}} ));
 			}
 		}
 	}
