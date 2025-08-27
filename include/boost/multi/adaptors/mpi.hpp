@@ -284,7 +284,7 @@ class message : skeleton<void, DatatypeT, Size> {
 	: message{
 		const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		arrelems.layout(),
-		mpi::datatype<typename ArrayElements::element>  // value_type>
+		DatatypeT<typename ArrayElements::element>{}()  // value_type>
 	} {}
 
 	message(message const& other) = delete;
@@ -329,7 +329,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		it.stride(),
 		it->layout(),
-		mpi::datatype<typename ArrayIterator::element>  // value_type>
+		DatatypeT<typename ArrayIterator::element>{}()
 	} {}
 
 	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>
@@ -338,7 +338,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		it.stride(),
 		multi::layout_t<0>{},
-		mpi::datatype<typename ArrayIterator::element>  // value_type>
+		DatatypeT<typename ArrayIterator::element>{}()
 	} {}
 
 	iterator(iterator const& other) = delete;
@@ -355,8 +355,8 @@ class iterator : skeleton<void, DatatypeT, Size> {
 	using skeleton_type::datatype;
 };
 
-template<class Array>
-auto begin(Array& arr) {return iterator<>{arr.begin()}; }
+template<template<typename> class DatatypeT = mpi::datatype_t, class Array>
+auto begin(Array& arr) {return iterator<DatatypeT>{arr.begin()}; }
 
 #if defined(__cpp_deduction_guides) && (__cpp_deduction_guides>=201703L)
 template<class ArrayElements> message(ArrayElements) -> message<>;
