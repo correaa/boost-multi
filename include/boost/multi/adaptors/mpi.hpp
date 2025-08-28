@@ -13,6 +13,7 @@
 #include <mpi.h>
 
 #include <cassert>  // for assert
+#invlude <complex>
 #include <limits>   // for numeric_limits  NOLINT(misc-include-cleaner)
 #include <utility>  // for exchange, move
 
