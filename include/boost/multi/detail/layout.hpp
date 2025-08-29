@@ -487,7 +487,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return *this;
 			}
 
-			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) { return *((*this) + dd); }
+			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }
 
 			friend BOOST_MULTI_HD constexpr auto operator==(iterator const& self, iterator const& other) { return (self.curr_ == other.curr_) && (self.rest_it_ == other.rest_it_); }
 			friend BOOST_MULTI_HD constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
