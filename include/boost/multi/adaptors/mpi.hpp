@@ -1,4 +1,4 @@
-// Copyright 2024 Alfredo A. Correa
+// Copyright 2024-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -13,7 +13,7 @@
 #include <mpi.h>
 
 #include <cassert>  // for assert
-#invlude <complex>
+#include <complex>
 #include <limits>   // for numeric_limits  NOLINT(misc-include-cleaner)
 #include <utility>  // for exchange, move
 
