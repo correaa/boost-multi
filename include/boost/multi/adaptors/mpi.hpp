@@ -1,4 +1,4 @@
-// Copyright 2024 Alfredo A. Correa
+// Copyright 2024-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -13,6 +13,7 @@
 #include <mpi.h>
 
 #include <cassert>  // for assert
+#include <complex>
 #include <limits>   // for numeric_limits  NOLINT(misc-include-cleaner)
 #include <utility>  // for exchange, move
 
@@ -48,6 +49,8 @@ template<> const_MPI_Datatype const datatype<float>  = MPI_FLOAT;   // NOLINT(mi
 
 template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(misc-definitions-in-headers)
 
+template<> const_MPI_Datatype const datatype<std::complex<double>> = MPI_DOUBLE_COMPLEX;  // NOLINT(misc-definitions-in-headers)
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -60,7 +63,8 @@ template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(mi
 template<typename T>
 struct datatype_t {
 	static const_MPI_Datatype const value;  // = datatype<T>;
-	auto operator()() const -> MPI_Datatype { return value; }
+	auto operator()() const -> decltype(datatype<T>) { return datatype<T>; }
+	operator const_MPI_Datatype() const { return datatype<T>; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 };
 
 template<typename T>
@@ -283,7 +287,7 @@ class message : skeleton<void, DatatypeT, Size> {
 	: message{
 		const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		arrelems.layout(),
-		mpi::datatype<typename ArrayElements::element>  // value_type>
+		DatatypeT<typename ArrayElements::element>{}  // value_type>
 	} {}
 
 	message(message const& other) = delete;
@@ -328,7 +332,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		it.stride(),
 		it->layout(),
-		mpi::datatype<typename ArrayIterator::element>  // value_type>
+		DatatypeT<typename ArrayIterator::element>{}
 	} {}
 
 	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>
@@ -337,7 +341,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		it.stride(),
 		multi::layout_t<0>{},
-		mpi::datatype<typename ArrayIterator::element>  // value_type>
+		DatatypeT<typename ArrayIterator::element>{}
 	} {}
 
 	iterator(iterator const& other) = delete;
@@ -354,8 +358,8 @@ class iterator : skeleton<void, DatatypeT, Size> {
 	using skeleton_type::datatype;
 };
 
-template<class Array>
-auto begin(Array& arr) {return iterator<>{arr.begin()}; }
+template<template<typename> class DatatypeT = mpi::datatype_t, class Array>
+auto begin(Array& arr) {return iterator<DatatypeT>{arr.begin()}; }
 
 #if defined(__cpp_deduction_guides) && (__cpp_deduction_guides>=201703L)
 template<class ArrayElements> message(ArrayElements) -> message<>;
