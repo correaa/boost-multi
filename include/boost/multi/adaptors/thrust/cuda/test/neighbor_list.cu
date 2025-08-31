@@ -14,11 +14,11 @@ struct v2d {
 	double x;
 	double y;
 
-	friend __host__ __device__ auto x(v2d const& self) { return self.x; }
-	friend __host__ __device__ auto y(v2d const& self) { return self.y; }
+	friend __host__ __device__ constexpr auto x(v2d const& self) { return self.x; }
+	friend __host__ __device__ constexpr auto y(v2d const& self) { return self.y; }
 };
 
-__host__ __device__ auto v(double dist) -> double {
+__host__ __device__ constexpr auto v(double dist) -> double {
 	return dist * dist;
 }
 
@@ -67,7 +67,12 @@ auto energy_range_loops(auto const& positions, auto const& neighbors) {
 auto energy_reduce_in_loop(auto const& positions, auto const& neighbors) {
 	double ret = 0.0;
 	for(auto const i : positions.extension()) {
-		ret += std::transform_reduce(neighbors[i].begin(), neighbors[i].end(), 0.0, std::plus<>{}, [positions_i = positions[i], &positions](auto nbidx) { return nbidx == -1 ? 0.0 : v(std::abs(x(positions_i) - x(positions[nbidx]))); });
+		ret += std::transform_reduce(
+			neighbors[i].begin(), neighbors[i].end(), 0.0, std::plus<>{},
+			[positions_i = positions[i], &positions](auto nbidx) {
+				return nbidx == -1 ? 0.0 : v(std::abs(x(positions_i) - x(positions[nbidx])));
+			}
+		);
 	}
 	return ret;
 }
@@ -120,8 +125,7 @@ auto energy_flatten_par_reduce(auto const& positions, auto const& neighbors) {
 		std::plus<>{},
 		[&positions, &neighbors](multi::array<int, 2>::indexes c) {
 			auto [i, j] = c;
-			return neighbors[i][j] == -1 ? 0.0
-										 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
+			return neighbors[i][j] == -1 ? 0.0 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
 		}
 	);
 }
@@ -135,8 +139,7 @@ double energy_flatten_gpu_reduce(Arr1D const& positions, Arr2D const& neighbors)
 		neighbors.extensions().elements().begin(), neighbors.extensions().elements().end(),
 		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(array<int, 2>::indexes c) -> double {
 			auto [i, j] = c;
-			return neighbors[i][j] == -1 ? 0.0
-										 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
+			return neighbors[i][j] == -1 ? 0.0 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
 		},
 		0.0,
 		std::plus<>{}
