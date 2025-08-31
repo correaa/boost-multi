@@ -11,8 +11,9 @@
 namespace multi = boost::multi;
 
 struct v2d {
-	double                          x;
-	double                          y;
+	double x;
+	double y;
+
 	friend __host__ __device__ auto x(v2d const& self) { return self.x; }
 	friend __host__ __device__ auto y(v2d const& self) { return self.y; }
 };
@@ -20,17 +21,6 @@ struct v2d {
 __host__ __device__ auto v(double dist) -> double {
 	return dist * dist;
 }
-
-template<class Posi, class Pos>
-struct inner {
-	Posi                     posi;
-	Pos                      pos;
-	__host__ __device__      inner(Posi posi, Pos pos) : posi{posi}, pos{pos} {}
-	__host__ __device__ auto operator()(int nbidx) const {
-		return nbidx == -1 ? 0.0
-						   : v(std::abs(static_cast<v2d const&>(posi).x - static_cast<v2d const&>(pos[nbidx]).x));
-	}
-};
 
 // declare universal array type
 // pros: can be used in CPU, and GPU
@@ -45,7 +35,9 @@ auto energy_raw_loops(auto const& positions, auto const& neighbors) {
 	for(multi::index i = 0; i != positions.size(); ++i) {
 		auto const& neighbors_i = neighbors[i];
 		for(multi::index j = 0; j != neighbors_i.size(); ++j) {
-			if(neighbors_i[j] == -1) { continue; } // or add zero
+			if(neighbors_i[j] == -1) {
+				continue;
+			}  // or add zero
 			auto dist = std::abs(x(positions[i]) - x(positions[neighbors_i[j]]));
 			ret += v(dist);
 		}
@@ -60,7 +52,9 @@ auto energy_range_loops(auto const& positions, auto const& neighbors) {
 	for(auto const i : positions.extension()) {
 		auto const positions_i = positions[i];
 		for(auto const& nbidx : neighbors[i]) {
-			if(nbidx == -1) { continue; }
+			if(nbidx == -1) {
+				continue;
+			}
 			auto dist = std::abs(x(positions_i) - x(positions[nbidx]));
 			ret += v(dist);
 		}
