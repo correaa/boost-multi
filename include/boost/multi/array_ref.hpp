@@ -1897,8 +1897,8 @@ class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 	using subarray<T, D, ElementPtr, Layout>::begin;
 	using subarray<T, D, ElementPtr, Layout>::end;
 
-	auto begin() && { return this->mbegin(); }
-	auto end() && { return this->mend(); }
+	BOOST_MULTI_HD constexpr auto begin() && { return this->mbegin(); }
+	BOOST_MULTI_HD constexpr auto end() && { return this->mend(); }
 };
 
 #if defined(__clang__)
@@ -1953,8 +1953,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::begin;
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto begin() && noexcept { return this->begin_aux_(); }
-	constexpr auto begin() & noexcept { return this->begin_aux_(); }
+	BOOST_MULTI_HD constexpr auto begin() && noexcept { return this->begin_aux_(); }
+	BOOST_MULTI_HD constexpr auto begin() & noexcept { return this->begin_aux_(); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::end;
 	constexpr auto end() && noexcept { return this->end_aux_(); }
