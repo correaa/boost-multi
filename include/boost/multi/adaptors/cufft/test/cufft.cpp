@@ -45,7 +45,7 @@ class watch : std::chrono::high_resolution_clock {
 	time_point  start_;
 
  public:
-	explicit watch(std::string label) : label_{std::move(label)} {
+	explicit watch(char const* label) : label_{label} {
 		cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);  // NOLINT(misc-include-cleaner) the header is included conditionally
 		start_ = now();
 	}
