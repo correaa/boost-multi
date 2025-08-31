@@ -56,7 +56,7 @@ class watch : std::chrono::high_resolution_clock {
 	auto operator=(watch const&) -> watch& = delete;
 	auto operator=(watch&&) -> watch&      = delete;
 
-	watch() : watch(std::string{}) {}
+	watch() : watch("") {}
 	~watch() {
 		cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);
 		auto const count = std::chrono::duration<double>(now() - start_).count();
