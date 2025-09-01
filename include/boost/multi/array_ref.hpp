@@ -2871,7 +2871,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename const_subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 		if constexpr(std::is_integral_v<decltype(this->stride())>) {
-			BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+			BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));
 		}
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -2887,10 +2887,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	constexpr auto broadcasted() const& {
-		multi::layout_t<1> const self_layout{this->layout()};
+		// multi::layout_t<1> const self_layout{this->layout()};
+		// 
 		// TODO(correaa) introduce a broadcasted_layout?
-		multi::layout_t<2> const new_layout(self_layout, 0, 0, 1);  // , (std::numeric_limits<size_type>::max)()};
-		return const_subarray<T, 2, ElementPtr>(new_layout, types::base_);
+		multi::layout_t<2> new_layout(this->layout(), 0, 0, 1);  // , (std::numeric_limits<size_type>::max)()};
+		return const_subarray<T, 2, ElementPtr, multi::layout_t<2> >(new_layout, types::base_);
 	}
 
 	template<template<class...> class Container = std::vector, class... As>

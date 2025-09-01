@@ -315,7 +315,8 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 		flags |= FFTW_PRESERVE_INPUT;
 	}
 
-	auto* const out_base_digested = [](auto&& ref) { return &ref; }(out_base);  // workaround to take address of out_base when it returns an rvalue
+	// auto* const out_base_digested = [](auto&& ref) { return &ref; }(out_base);  // workaround to take address of out_base when it returns an rvalue
+	auto* const out_base_digested = &out_base;
 
 	fftw_plan ret = fftw_plan_guru64_dft(
 		/*int                 rank         */ static_cast<int>(dims_end - dims.begin()),
