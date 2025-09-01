@@ -2847,7 +2847,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		auto diff = self.base() - other.base();
 		using std::gcd;
 		auto my_gcd = gcd(self.stride(), other.stride());
-		if(diff % my_gcd) { return false; }
+		if(diff % my_gcd) {
+			return false;
+		}
 		assert(0);
 		return true;
 	}
@@ -3010,8 +3012,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
-		auto new_layout = this->layout().slice(first, last);
-		return subarray<T, 1, ElementPtr, decltype(new_layout)>{new_layout, this->base_ + (first * this->layout().stride())};
+		return subarray<T, 1, ElementPtr, decltype(this->layout().slice(first, last))>{this->layout().slice(first, last), this->base_ + (first * this->layout().stride())};
 		// return const_subarray{this->layout().slice(first, last), this->base_ + (first * this->layout().stride() /*- this->layout().offset()*/)};  // TODO(correaa) fix need for offset
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
