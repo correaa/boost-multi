@@ -155,7 +155,7 @@ int main() {
 		{5.0, 0.0}
 	};
 
-	array<int, 2> neighbors = {
+	array<array<v2d, 1>::index, 2> neighbors = {
 		{1, 2, -1, -1}, /* of at 0*/
 		{0, 2,  3, -1}, /* of at 1*/
 		{0, 1,  3,  4}, /* of at 2*/
