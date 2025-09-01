@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-
-include_directories(${Boost_INCLUDE_DIRS})
+find_package(Boost CONFIG REQUIRED)  # tests require Boost.Core LightweightTest
 
 file(
 	GLOB TEST_SRCS
@@ -24,8 +22,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	# target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
-	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
-	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+	target_link_libraries(${TEST_EXE} PRIVATE Boost::boost)
+	#target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
+	#target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE multi)
 
 	# if(NOT ENABLE_CUDA) target_compile_options  (${TEST_EXE} PRIVATE -Werror -Wall -Wextra -fno-common $<$<CXX_COMPILER_ID:GNU>: -Wpedantic -Wformat-truncation -fstack-usage>#-Wconversion
