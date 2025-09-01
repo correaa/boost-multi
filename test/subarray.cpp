@@ -5,6 +5,8 @@
 
 #include <boost/multi/array.hpp>  // for implicit_cast, explicit_cast
 
+// #include <boost/multi/detail/what.hpp>
+
 #include <boost/core/lightweight_test.hpp>
 
 #include <type_traits>  // for std::is_swappable_v
@@ -258,6 +260,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_trivially_copyable_v<multi::array<int, 4>::iterator>);
 		static_assert(std::is_swappable_v<multi::array<int, 4>::iterator>);
 		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>::iterator>);  // <==========
+	}
+	{
+		multi::array<int, 1> const arr({18}, 0);
+		// multi::detail::what(arr.strided(2));
+		// multi::detail::what( arr, arr.strided(2), arr({1, 17}), arr({1, 17}).strided(2) );
+
+		static_assert(
+			std::is_same_v<decltype(arr.strided(2)), boost::multi::const_subarray<int, 1, int*>>
+		);
+		static_assert(
+			std::is_same_v<decltype(arr({1, 17})), boost::multi::const_subarray<int, 1, int*>>
+		);
+		static_assert(
+			std::is_same_v<decltype(arr({1, 17}).strided(2)), boost::multi::const_subarray<int, 1, int*>>
+		);
+
+		auto const& arr1 = arr({0, 16}).strided(2);
+		auto const& arr2 = arr({1, 17}).strided(2);
+
+		BOOST_TEST( ! is_intersecting(arr1, arr2) );
 	}
 
 	return boost::report_errors();

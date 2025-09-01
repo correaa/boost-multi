@@ -9,10 +9,11 @@
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
-#include "detail/layout.hpp"
+// #include <boost/multi/detail/layout.hpp>
 
+#include <numeric>  // for std::gcd
+// #include <string>  // for to_string
 #include <stdexcept>
-#include <string>  // for to_string
 #include <type_traits>
 
 #if defined(_MSC_VER)
@@ -1806,7 +1807,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
 	constexpr auto as_const() const {
-		return rebind<element, element_const_ptr>{this->layout(), this->base()};
+		return *this;
+		//	return rebind<element, element_const_ptr>{this->layout(), this->base()};  // TODO(correaa) this is incorrect, should be return *this;
 	}
 
  private:
@@ -2841,6 +2843,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	template<class It>
 	constexpr void assign(It first, It last) && { assign(first, last); }
 
+	friend auto is_intersecting(const_subarray const& self, const_subarray const& other) -> bool {
+		auto diff = self.base() - other.base();
+		using std::gcd;
+		return (diff % gcd(self.stride(), other.stride())) == 0;
+	}
+
 	// constexpr auto operator=(const_subarray     &&) const& noexcept -> const_subarray const&;  // UNIMPLEMENTABLE! TO PASS THE viewable_range CONCEPT!!!, can't be = delete;
 	constexpr auto operator=(const_subarray&&) & noexcept -> const_subarray&;  // UNIMPLEMENTABLE! TO PASS THE viewable_range CONCEPT!!!, can't be = delete;
 	constexpr auto operator=(const_subarray const&) const -> const_subarray const& = delete;
@@ -2994,24 +3002,25 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto dropped(difference_type count) const& -> const_subarray { return dropped_aux_(count); }
 
  private:
-	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
-
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-
-		return const_subarray{this->layout().slice(first, last), this->base_ + (first * this->layout().stride() /*- this->layout().offset()*/)};  // TODO(correaa) fix need for offset
-
+	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
+		auto new_layout = this->layout().slice(first, last);
+		return subarray<T, 1, ElementPtr, decltype(new_layout)>{new_layout, this->base_ + (first * this->layout().stride())};
+		// return const_subarray{this->layout().slice(first, last), this->base_ + (first * this->layout().stride() /*- this->layout().offset()*/)};  // TODO(correaa) fix need for offset
+	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
-	}
 
  public:
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> basic_const_array { return basic_const_array{sliced_aux_(first, last)}; }
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last) & -> const_subarray { return sliced_aux_(first, last); }
-	BOOST_MULTI_HD constexpr auto sliced(index first, index last) && -> const_subarray { return sliced_aux_(first, last); }
+	BOOST_MULTI_HD constexpr auto as_const() const { return *this; }
+	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& { return sliced_aux_(first, last).as_const(); }
+	// BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> basic_const_array { return basic_const_array{sliced_aux_(first, last)}; }
+	// BOOST_MULTI_HD constexpr auto sliced(index first, index last) & -> const_subarray { return sliced_aux_(first, last); }
+	// BOOST_MULTI_HD constexpr auto sliced(index first, index last) && -> const_subarray { return sliced_aux_(first, last); }
 
 	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
@@ -3061,6 +3070,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return operator[](idx); }
 
 	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& { return range(rng); }
+	BOOST_MULTI_HD constexpr auto operator[](index_range const& rng) const& { return range(rng); }
 
  private:
 	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return operator()(); }
