@@ -146,6 +146,26 @@ double energy_flatten_gpu_reduce(Arr1D const& positions, Arr2D const& neighbors)
 	);
 }
 
+// no pros: this for testing purposed only
+template<class Arr1D, class Arr2D>
+double energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) {
+	return thrust::transform_reduce(
+		thrust::cuda::par,
+		pos.extension().begin(), pos.extension().end(),
+		[pos = pos.begin(), nl = nl.begin()] __device__(int i) {
+			return thrust::transform_reduce(
+				thrust::device,
+				nl[i].begin(), nl[i].end(),
+				inner{pos[i], pos},
+				0.0,
+				std::plus<>{}
+			);
+		},
+		0.0,
+		std::plus<>{}
+	);
+}
+
 int main() {
 	array<v2d, 1> positions = {
 		{1.0, 0.0},
@@ -190,5 +210,9 @@ int main() {
 	{
 		auto en = energy_flatten_gpu_reduce(positions, neighbors);
 		BOOST_TEST(en == 32.0 );
+	}
+	{  // this is not recommended, it is for testing purposes
+		auto en = energy_gpu_nested_reduce(positions, neighbors);
+		BOOST_TEST( en == 32.0 );
 	}
 }
