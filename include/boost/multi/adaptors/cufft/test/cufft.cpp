@@ -45,7 +45,7 @@ class watch : std::chrono::high_resolution_clock {
 	time_point  start_;
 
  public:
-	explicit watch(std::string label) : label_{std::move(label)} {
+	explicit watch(char const* label) : label_{label} {
 		cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);  // NOLINT(misc-include-cleaner) the header is included conditionally
 		start_ = now();
 	}
@@ -56,7 +56,7 @@ class watch : std::chrono::high_resolution_clock {
 	auto operator=(watch const&) -> watch& = delete;
 	auto operator=(watch&&) -> watch&      = delete;
 
-	watch() : watch(std::string{}) {}
+	watch() : watch("") {}
 	~watch() {
 		cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);
 		auto const count = std::chrono::duration<double>(now() - start_).count();
