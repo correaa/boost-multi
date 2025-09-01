@@ -2846,7 +2846,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	friend auto is_intersecting(const_subarray const& self, const_subarray const& other) -> bool {
 		auto diff = self.base() - other.base();
 		using std::gcd;
-		return (diff % gcd(self.stride(), other.stride())) == 0;
+		auto my_gcd = gcd(self.stride(), other.stride());
+		if(diff % my_gcd) { return false; }
+		assert(0);
+		return true;
 	}
 
 	// constexpr auto operator=(const_subarray     &&) const& noexcept -> const_subarray const&;  // UNIMPLEMENTABLE! TO PASS THE viewable_range CONCEPT!!!, can't be = delete;
@@ -3056,7 +3059,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> const_subarray { return strided_aux_(diff); }
+	constexpr auto strided(difference_type diff) const& { return strided_aux_(diff).as_const(); }
 
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
 
