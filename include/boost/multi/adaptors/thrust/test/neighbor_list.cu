@@ -37,7 +37,8 @@ using array = multi::thrust::universal_array<T, D>;
 
 // pros: familiarity
 // cons: bug prone, lots of state and variables, for init is ugly
-auto energy_raw_loops(auto const& positions, auto const& neighbors) {
+template<class Array1D, class Array2D>
+auto energy_raw_loops(Array1D const& positions, Array2D const& neighbors) {
 	double ret = 0;
 	for(multi::index i = 0; i != positions.size(); ++i) {
 		auto const& neighbors_i = neighbors[i];
@@ -54,7 +55,8 @@ auto energy_raw_loops(auto const& positions, auto const& neighbors) {
 
 // pros: familiar, more compact
 // cons: bug prone
-auto energy_range_loops(auto const& positions, auto const& neighbors) {
+template<class Array1D, class Array2D>
+auto energy_range_loops(Array1D const& positions, Array2D const& neighbors) {
 	double ret = 0;
 	for(auto const i : positions.extension()) {
 		auto const positions_i = positions[i];
@@ -71,7 +73,8 @@ auto energy_range_loops(auto const& positions, auto const& neighbors) {
 
 // pros: familiar, less state
 // const: too nested
-auto energy_reduce_in_loop(auto const& positions, auto const& neighbors) {
+template<class Array1D, class Array2D>
+auto energy_reduce_in_loop(Array1D const& positions, Array2D const& neighbors) {
 	double ret = 0.0;
 	for(auto const i : positions.extension()) {
 		ret += std::transform_reduce(
@@ -86,7 +89,8 @@ auto energy_reduce_in_loop(auto const& positions, auto const& neighbors) {
 
 // pros: single ouput, no state, ready for some parallelism, ready for CUDA thrust
 // cons: unfamiliar, too many nested structures, return type buried
-auto energy_nested_reduce(auto const& positions, auto const& neighbors) {
+template<class Array1D, class Array2D>
+auto energy_nested_reduce(Array1D const& positions, Array2D const& neighbors) {
 	return std::transform_reduce(
 		positions.extension().begin(), positions.extension().end(),
 		0.0, std::plus<>{},
