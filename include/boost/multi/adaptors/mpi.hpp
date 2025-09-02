@@ -21,7 +21,7 @@ namespace boost::multi::mpi {
 
 using const_MPI_Datatype = MPI_Datatype const;
 
-template<class T> static const_MPI_Datatype const datatype = std::conditional_t<static_cast<bool>(sizeof(T*)), void, int>{};
+template<class T> static inline const_MPI_Datatype const datatype = std::conditional_t<static_cast<bool>(sizeof(T*)), void, int>{};
 
 // template<> MPI_Datatype const datatype<char> = MPI_CHAR;
 // template<> MPI_Datatype const datatype<unsigned char> = MPI_UNSIGNED_CHAR;
@@ -38,18 +38,18 @@ template<class T> static const_MPI_Datatype const datatype = std::conditional_t<
 #pragma clang diagnostic ignored "-Wmissing-variable-declarations"
 #endif
 
-template<> const_MPI_Datatype const datatype<int> = MPI_INT;  // NOLINT(misc-misplaced-const,misc-definitions-in-headers)
+template<> inline const_MPI_Datatype const datatype<int> = MPI_INT;  // NOLINT(misc-misplaced-const)
 
 // MPI3_DECLARE_DATATYPE(unsigned int           , MPI_UNSIGNED);
 // MPI3_DECLARE_DATATYPE(long                   , MPI_LONG);
 // MPI3_DECLARE_DATATYPE(unsigned long          , MPI_UNSIGNED_LONG);
 // MPI3_DECLARE_DATATYPE(float                  , MPI_FLOAT);
 
-template<> const_MPI_Datatype const datatype<float>  = MPI_FLOAT;   // NOLINT(misc-definitions-in-headers)
+template<> inline const_MPI_Datatype const datatype<float>  = MPI_FLOAT;
 
-template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(misc-definitions-in-headers)
+template<> inline const_MPI_Datatype const datatype<double> = MPI_DOUBLE;
 
-template<> const_MPI_Datatype const datatype<std::complex<double>> = MPI_DOUBLE_COMPLEX;  // NOLINT(misc-definitions-in-headers)
+template<> inline const_MPI_Datatype const datatype<std::complex<double>> = MPI_DOUBLE_COMPLEX;
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
