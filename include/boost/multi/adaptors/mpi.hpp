@@ -64,7 +64,7 @@ template<typename T>
 struct datatype_t {
 	static const_MPI_Datatype const value;  // = datatype<T>;
 	auto operator()() const -> decltype(datatype<T>) { return datatype<T>; }
-	operator const_MPI_Datatype() const { return datatype<T>; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	operator const_MPI_Datatype() const { return datatype<T>; }  // NOLINT(readability-const-return-type,google-explicit-constructor,hicpp-explicit-conversions)
 };
 
 template<typename T>
@@ -326,7 +326,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 	template<class Stride, class SubLayout>
 	iterator(void* buf, Stride stride, SubLayout const& sublyt, MPI_Datatype dt) : skeleton_type{stride, sublyt, dt}, buf_{buf} {}
 
-	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v != 1, int> =0>
+	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v != 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit iterator(ArrayIterator const& it)
 	: iterator{
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
@@ -335,7 +335,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		DatatypeT<typename ArrayIterator::element>{}
 	} {}
 
-	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>
+	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit iterator(ArrayIterator const& it)
 	: iterator{
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
