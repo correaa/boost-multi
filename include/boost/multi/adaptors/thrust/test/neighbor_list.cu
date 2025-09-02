@@ -141,17 +141,36 @@ auto energy_nested_reduce(Array1D const& positions, Array2D const& neighbors) {
 // 	);
 // }
 
+#ifdef _MSC_VER
+template<class Positions, class Neighbors>
+struct inner_coordinates {
+	Positions positions;
+	Neighbors neighbors;
+
+	__host__ __device__ inner_coordinates(Positions positions, Neighbors neighbors) : positions{positions}, neighbors{neighbors} {}
+
+	__host__ __device__ auto operator()(array<int, 2>::indexes ij) const -> double {
+		auto [i, j] = ij;
+		return neighbors[i][j] == -1 ? 0.0 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
+	}
+};
+#endif
+
 // pros: GPU optimized, runs completely on GPU
 // const: verbose, enclosing function cannot deduce return, or auto parameters, lamba captures need special care, order of arguments is different from STL, may need a complete diffeent algorithm to extract different information: e.g. thrust::reduce_by_key
 template<class Arr1D, class Arr2D>
-double energy_flatten_gpu_reduce(Arr1D const& positions, Arr2D const& neighbors) {
+auto energy_flatten_gpu_reduce(Arr1D const& positions, Arr2D const& neighbors) -> double {
 	return thrust::transform_reduce(
 		thrust::cuda::par,
 		neighbors.extensions().elements().begin(), neighbors.extensions().elements().end(),
-		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(array<int, 2>::indexes c) -> double {
-			auto [i, j] = c;
+		#ifdef _MSC_VER
+		inner_coordinates{positions.begin(), neighbors.begin()},
+		#else
+		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(array<int, 2>::indexes ij) -> double {
+			auto [i, j] = ij;
 			return neighbors[i][j] == -1 ? 0.0 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
 		},
+		#endif
 		0.0,
 		std::plus<>{}
 	);
