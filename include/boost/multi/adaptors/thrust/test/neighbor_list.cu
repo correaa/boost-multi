@@ -1,10 +1,17 @@
-#include <multi/adaptors/thrust.hpp>
-#include <multi/array.hpp>
-#include <thrust/device_allocator.h>
-#include <thrust/execution_policy.h>  // Include for execution policies
-#include <thrust/transform_reduce.h>  // for thrust::transform_reduce
+// Copyright 2025 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
 
-#include <execution>  // for std::execution::par
+// #include <boost/multi/adaptors/thrust.hpp>
+#include <boost/multi/array.hpp>
+
+// #include <thrust/device_allocator.h>
+// #include <thrust/execution_policy.h>  // Include for execution policies
+// #include <thrust/transform_reduce.h>  // for thrust::transform_reduce
+
+#include <boost/core/lightweight_test.hpp>
+
+// #include <execution>  // for std::execution::par, doesn't work on gcc 13.3 and nvcc 12.0
 #include <iostream>
 #include <numeric>  // for std::transform_reduce
 
@@ -95,25 +102,25 @@ auto energy_nested_reduce(auto const& positions, auto const& neighbors) {
 	);
 }
 
-// pros: single ouput, no state, parallel
-// cons: unfamiliar, too many nested structures, parallelization is partial and nested
-auto energy_nested_par_reduce(auto const& positions, auto const& neighbors) {
-	return std::transform_reduce(
-		std::execution::par,
-		positions.extension().begin(), positions.extension().end(),
-		0.0, std::plus<>{},
-		[&positions, &neighbors](auto i) {
-			return std::transform_reduce(
-				std::execution::unseq,
-				neighbors[i].begin(), neighbors[i].end(),
-				0.0, std::plus<>{},
-				[positions_i = positions[i], &positions](auto nbidx) {
-					return nbidx == -1 ? 0.0 : v(std::abs(x(positions_i) - x(positions[nbidx])));
-				}
-			);
-		}
-	);
-}
+// // pros: single ouput, no state, parallel
+// // cons: unfamiliar, too many nested structures, parallelization is partial and nested
+// auto energy_nested_par_reduce(auto const& positions, auto const& neighbors) {
+// 	return std::transform_reduce(
+// 		std::execution::par,
+// 		positions.extension().begin(), positions.extension().end(),
+// 		0.0, std::plus<>{},
+// 		[&positions, &neighbors](auto i) {
+// 			return std::transform_reduce(
+// 				std::execution::unseq,
+// 				neighbors[i].begin(), neighbors[i].end(),
+// 				0.0, std::plus<>{},
+// 				[positions_i = positions[i], &positions](auto nbidx) {
+// 					return nbidx == -1 ? 0.0 : v(std::abs(x(positions_i) - x(positions[nbidx])));
+// 				}
+// 			);
+// 		}
+// 	);
+// }
 
 // pros: correct parallelization, no state
 // cons: unfamiliar, needs coordinate decomposition, use special Multi features
@@ -166,53 +173,71 @@ double energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) 
 	);
 }
 
-int main() {
-	array<v2d, 1> positions = {
-		{1.0, 0.0},
-		{2.0, 0.0},
-		{3.0, 0.0},
-		{4.0, 0.0},
-		{5.0, 0.0}
-	};
+auto universal_memory_supported() -> bool {
+	std::cout << "testing for universal memory supported" << std::endl;
+	int d;
+	cudaGetDevice(&d);
+	int is_cma = 0;
+	cudaDeviceGetAttribute(&is_cma, cudaDevAttrConcurrentManagedAccess, d);
+	if(is_cma) {
+		std::cout << "universal memory is supported" << std::endl;
+	} else {
+		std::cout << "universal memory is NOT supported" << std::endl;
+	}
+	return (is_cma == 1)?true:false;
+}
 
-	array<array<v2d, 1>::index, 2> neighbors = {
-		{1, 2, -1, -1}, /* of at 0*/
-		{0, 2,  3, -1}, /* of at 1*/
-		{0, 1,  3,  4}, /* of at 2*/
-		{1, 2,  4, -1}, /* of at 3*/
-		{2, 3, -1, -1}  /* of at 4*/
-	};
+auto main() -> int {
+	if(universal_memory_supported()) {
+		array<v2d, 1> positions = {
+			{1.0, 0.0},
+			{2.0, 0.0},
+			{3.0, 0.0},
+			{4.0, 0.0},
+			{5.0, 0.0}
+		};
 
-	{
-		auto en = energy_raw_loops(positions, neighbors);
-		BOOST_TEST(en == 32.0 );
+		array<array<v2d, 1>::index, 2> neighbors = {
+			{1, 2, -1, -1}, /* of at 0*/
+			{0, 2,  3, -1}, /* of at 1*/
+			{0, 1,  3,  4}, /* of at 2*/
+			{1, 2,  4, -1}, /* of at 3*/
+			{2, 3, -1, -1}  /* of at 4*/
+		};
+
+		{
+			auto en = energy_raw_loops(positions, neighbors);
+			BOOST_TEST( en == 32.0 );
+		}
+		{
+			auto en = energy_range_loops(positions, neighbors);
+			BOOST_TEST( en == 32.0 );
+		}
+		{
+			auto en = energy_reduce_in_loop(positions, neighbors);
+			BOOST_TEST( en == 32.0 );
+		}
+		{
+			auto en = energy_nested_reduce(positions, neighbors);
+			BOOST_TEST( en == 32.0 );
+		}
+		// {
+		// 	auto en = energy_nested_par_reduce(positions, neighbors);
+		// 	BOOST_TEST( en == 32.0 );
+		// }
+		{
+			auto en = energy_flatten_par_reduce(positions, neighbors);
+			BOOST_TEST( en == 32.0 );
+		}
+		{
+			auto en = energy_flatten_gpu_reduce(positions, neighbors);
+			BOOST_TEST( en == 32.0 );
+		}
+		{  // this is not recommended, it is for testing purposes
+			auto en = energy_gpu_nested_reduce(positions, neighbors);
+			BOOST_TEST( en == 32.0 );
+		}
 	}
-	{
-		auto en = energy_range_loops(positions, neighbors);
-		BOOST_TEST(en == 32.0 );
-	}
-	{
-		auto en = energy_reduce_in_loop(positions, neighbors);
-		BOOST_TEST(en == 32.0 );
-	}
-	{
-		auto en = energy_nested_reduce(positions, neighbors);
-		BOOST_TEST(en == 32.0 );
-	}
-	{
-		auto en = energy_nested_par_reduce(positions, neighbors);
-		BOOST_TEST(en == 32.0 );
-	}
-	{
-		auto en = energy_flatten_par_reduce(positions, neighbors);
-		BOOST_TEST(en == 32.0 );
-	}
-	{
-		auto en = energy_flatten_gpu_reduce(positions, neighbors);
-		BOOST_TEST(en == 32.0 );
-	}
-	{  // this is not recommended, it is for testing purposes
-		auto en = energy_gpu_nested_reduce(positions, neighbors);
-		BOOST_TEST( en == 32.0 );
-	}
+
+	return boost::report_errors();
 }
