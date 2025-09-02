@@ -229,14 +229,14 @@ class involuter {
 #endif
 
 	template<class = void>  // workaround for nvcc
-	constexpr friend auto operator+(involuter lhs, difference_type n) { return lhs += n; }
+	friend BOOST_MULTI_HD constexpr auto operator+(involuter lhs, difference_type n) { return lhs += n; }
 	template<class = void>  // workaround for nvcc
-	constexpr friend auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
+	friend BOOST_MULTI_HD constexpr auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
 
 	template<class = void>  // workaround for nvcc
-	constexpr friend auto operator+(difference_type n, involuter lhs) { return lhs + n; }
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type n, involuter lhs) { return lhs + n; }
 
-	auto operator-(involuter const& other) const { return it_ - other.it_; }
+	BOOST_MULTI_HD constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 
 	explicit operator bool() const { return it_; }
 	using underlying_type = It;

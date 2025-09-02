@@ -1706,7 +1706,7 @@ namespace boost::multi::detail {
 template<class Tuple>
 struct convertible_tuple : Tuple {
 	using Tuple::Tuple;
-	explicit convertible_tuple(Tuple const& other)
+	BOOST_MULTI_HD explicit convertible_tuple(Tuple const& other)
 	: Tuple(other) {}
 
  public:
@@ -1733,7 +1733,7 @@ struct convertible_tuple : Tuple {
 #endif
 
 	template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Tuple>), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto get(convertible_tuple const& self) -> typename std::tuple_element<Index, Tuple>::type {
+	friend BOOST_MULTI_HD constexpr auto get(convertible_tuple const& self) -> typename std::tuple_element<Index, Tuple>::type {
 		using std::get;
 		return get<Index>(static_cast<Tuple const&>(self));
 	}
