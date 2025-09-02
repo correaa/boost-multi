@@ -64,7 +64,7 @@ template<typename T>
 struct datatype_t {
 	static const_MPI_Datatype const value;  // = datatype<T>;
 	auto operator()() const -> decltype(datatype<T>) { return datatype<T>; }
-	operator const_MPI_Datatype() const { return datatype<T>; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	operator const_MPI_Datatype() const { return datatype<T>; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,readability-const-return-type)
 };
 
 template<typename T>
