@@ -2,12 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #include <boost/multi/adaptors/thrust.hpp>
+#include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/array.hpp>
 
 // #include <thrust/device_allocator.h>
-// #include <thrust/execution_policy.h>  // Include for execution policies
-// #include <thrust/transform_reduce.h>  // for thrust::transform_reduce
+#include <thrust/execution_policy.h>  // Include for execution policies
+#include <thrust/transform_reduce.h>  // for thrust::transform_reduce
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -124,18 +124,18 @@ auto energy_nested_reduce(auto const& positions, auto const& neighbors) {
 
 // pros: correct parallelization, no state
 // cons: unfamiliar, needs coordinate decomposition, use special Multi features
-auto energy_flatten_par_reduce(auto const& positions, auto const& neighbors) {
-	return std::transform_reduce(
-		std::execution::par,
-		neighbors.extensions().elements().begin(), neighbors.extensions().elements().end(),
-		0.0,
-		std::plus<>{},
-		[&positions, &neighbors](multi::array<int, 2>::indexes c) {
-			auto [i, j] = c;
-			return neighbors[i][j] == -1 ? 0.0 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
-		}
-	);
-}
+// auto energy_flatten_par_reduce(auto const& positions, auto const& neighbors) {
+// 	return std::transform_reduce(
+// 		std::execution::par,
+// 		neighbors.extensions().elements().begin(), neighbors.extensions().elements().end(),
+// 		0.0,
+// 		std::plus<>{},
+// 		[&positions, &neighbors](multi::array<int, 2>::indexes c) {
+// 			auto [i, j] = c;
+// 			return neighbors[i][j] == -1 ? 0.0 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
+// 		}
+// 	);
+// }
 
 // pros: GPU optimized, runs completely on GPU
 // const: verbose, enclosing function cannot deduce return, or auto parameters, lamba captures need special care, order of arguments is different from STL, may need a complete diffeent algorithm to extract different information: e.g. thrust::reduce_by_key
@@ -153,17 +153,31 @@ double energy_flatten_gpu_reduce(Arr1D const& positions, Arr2D const& neighbors)
 	);
 }
 
+template<class V2D, class Positions>
+struct inner {
+    V2D posi;
+    Positions pos;
+    __host__ __device__ inner(V2D posi, Positions pos) : posi{posi}, pos{pos} {}
+    __host__ __device__ auto operator()(array<int, 2>::index nbidx) const {
+        return nbidx==-1?
+            0.0
+            :v(std::abs(x(posi) - x(pos[nbidx])))
+        ;
+    }
+};
+
 // no pros: this for testing purposed only
+// const: requires auxiliary class
 template<class Arr1D, class Arr2D>
 double energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) {
 	return thrust::transform_reduce(
 		thrust::cuda::par,
-		pos.extension().begin(), pos.extension().end(),
-		[pos = pos.begin(), nl = nl.begin()] __device__(int i) {
+		positions.extension().begin(), positions.extension().end(),
+		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(int i) {
 			return thrust::transform_reduce(
 				thrust::device,
-				nl[i].begin(), nl[i].end(),
-				inner{pos[i], pos},
+				neighbors[i].begin(), neighbors[i].end(),
+				inner{positions[i], positions},
 				0.0,
 				std::plus<>{}
 			);
@@ -225,10 +239,10 @@ auto main() -> int {
 		// 	auto en = energy_nested_par_reduce(positions, neighbors);
 		// 	BOOST_TEST( en == 32.0 );
 		// }
-		{
-			auto en = energy_flatten_par_reduce(positions, neighbors);
-			BOOST_TEST( en == 32.0 );
-		}
+		// {
+		// 	auto en = energy_flatten_par_reduce(positions, neighbors);
+		// 	BOOST_TEST( en == 32.0 );
+		// }
 		{
 			auto en = energy_flatten_gpu_reduce(positions, neighbors);
 			BOOST_TEST( en == 32.0 );

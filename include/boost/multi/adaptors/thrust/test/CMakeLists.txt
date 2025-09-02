@@ -32,6 +32,7 @@ set(TEST_SRCS
 	array.cu
 	by_key.cu
 	memory_resource.cu
+	neighbor_list.cu
 	run_reduce.cu
 	set_identity_kernel.cu
 	speed.cu
@@ -88,3 +89,5 @@ set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
 # target_compile_options(by_key.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > >)
 # target_compile_options(run_reduce.cu.x PRIVATE  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
 # target_compile_options(speed.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
+
+target_compile_features(neighbor_list.cu.x PRIVATE cuda_std_20 cxx_std_20)
