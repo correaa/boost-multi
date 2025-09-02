@@ -173,11 +173,11 @@ struct inner {
 // no pros: this for testing purposed only
 // const: requires auxiliary class
 template<class Arr1D, class Arr2D>
-double energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) {
+auto energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) -> double {
 	return thrust::transform_reduce(
 		thrust::cuda::par,
 		positions.extension().begin(), positions.extension().end(),
-		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(int i) {
+		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(Arr1D::index i) -> double {
 			return thrust::transform_reduce(
 				thrust::device,
 				neighbors[i].begin(), neighbors[i].end(),
