@@ -326,7 +326,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 	template<class Stride, class SubLayout>
 	iterator(void* buf, Stride stride, SubLayout const& sublyt, MPI_Datatype dt) : skeleton_type{stride, sublyt, dt}, buf_{buf} {}
 
-	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v != 1, int> =0>
+	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v != 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit iterator(ArrayIterator const& it)
 	: iterator{
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
@@ -335,7 +335,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		DatatypeT<typename ArrayIterator::element>{}
 	} {}
 
-	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>
+	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit iterator(ArrayIterator const& it)
 	: iterator{
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
