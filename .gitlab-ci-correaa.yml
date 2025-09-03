@@ -380,7 +380,8 @@ vs2022-shell:
   allow_failure: false
   interruptible: true
   script:
-    # - winget install Git.Git
+    - winget install --id=Microsoft.VisualStudio.2022.Community -e
+    - winget install Git.Git Kitware.CMake
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
     - dir C:\local\
