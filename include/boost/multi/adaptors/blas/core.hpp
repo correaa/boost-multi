@@ -21,11 +21,17 @@
 
 #include <boost/multi/adaptors/blas/traits.hpp>  // IWYU pragma: export
 
+#if defined(__PRETTY_FUNCTION__)
+#define BOOST_MULTI_BLAS_PRETTY_FUNCTION __PRETTY_FUNCTION__
+#else
+#define BOOST_MULTI_BLAS_PRETTY_FUNCTION "some-multi-blas-function"
+#endif
+
 #if ! defined(NDEBUG)
 	#include<stdexcept>
 	#include<string>
-	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
-	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
+	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(BOOST_MULTI_BLAS_PRETTY_FUNCTION)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
+	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(BOOST_MULTI_BLAS_PRETTY_FUNCTION)+"\nLogic assertion `" #ExpR "' failed."))
 #else
 	#define BOOST_MULTI_ASSERT1(ExpR)              assert(ExpR)
 	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
