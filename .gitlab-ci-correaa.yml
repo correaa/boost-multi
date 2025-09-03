@@ -380,6 +380,7 @@ vs2022-shell:
   allow_failure: false
   interruptible: true
   script:
+    - winget install git
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
     - dir C:\local\
