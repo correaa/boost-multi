@@ -380,7 +380,7 @@ vs2022-shell:
   allow_failure: false
   interruptible: true
   script:
-    - winget install Git.Git
+    # - winget install Git.Git
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
     - dir C:\local\
@@ -395,7 +395,7 @@ vs2022-shell:
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
     - windows, shell
-  needs: ["clang++", "g++"]
+#  needs: ["clang++", "g++"]
   timeout: 20 minutes
 
 vs2022-shell c++17:
