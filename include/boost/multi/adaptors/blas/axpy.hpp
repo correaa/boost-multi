@@ -25,8 +25,8 @@ using core::axpy;
 
 template<class It1, class Size, class OutIt>
 auto axpy_n(typename It1::value_type alpha, It1 first, Size n, OutIt d_first)
-->decltype(axpy(n, &alpha, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
-	return axpy(n, &alpha, first.base(), first.stride(), d_first.base() , stride(d_first) ), d_first + n; }
+->decltype(axpy(n, &alpha, first.base(), first.stride(), d_first.base(), static_cast<core::ssize_t>(d_first.stride())), d_first + n) {
+	return axpy(n, &alpha, first.base(), first.stride(), d_first.base(), static_cast<core::ssize_t>(d_first.stride())), d_first + n; }
 
 template<class Context, class It1, class Size, class OutIt>//, class=std::enable_if_t<is_context<decltype(*Context{})>{}>>
 auto axpy_n(Context ctxt, typename It1::value_type alpha, It1 first, Size n, OutIt d_first)
