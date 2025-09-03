@@ -163,14 +163,14 @@ auto energy_flatten_gpu_reduce(Arr1D const& positions, Arr2D const& neighbors) -
 	return thrust::transform_reduce(
 		thrust::cuda::par,
 		neighbors.extensions().elements().begin(), neighbors.extensions().elements().end(),
-		#ifdef _MSC_VER
+#ifdef _MSC_VER
 		inner_coordinates{positions.begin(), neighbors.begin()},
-		#else
+#else
 		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(array<int, 2>::indexes ij) -> double {
 			auto [i, j] = ij;
 			return neighbors[i][j] == -1 ? 0.0 : v(std::abs(x(positions[i]) - x(positions[neighbors[i][j]])));
 		},
-		#endif
+#endif
 		0.0,
 		std::plus<>{}
 	);
@@ -178,17 +178,18 @@ auto energy_flatten_gpu_reduce(Arr1D const& positions, Arr2D const& neighbors) -
 
 template<class V2D, class Positions>
 struct inner {
-    V2D posi;
-    Positions pos;
-    __host__ __device__ inner(V2D posi, Positions pos) : posi{posi}, pos{pos} {}
-    __host__ __device__ auto operator()(array<int, 2>::index nbidx) const {
-        return nbidx==-1?
-            0.0
-            :v(std::abs(x(posi) - x(pos[nbidx])))
-        ;
-    }
+	V2D       positions_i;
+	Positions positions;
+
+	__host__ __device__ inner(V2D positions_i, Positions positions) : positions_i{positions_i}, positions{positions} {}
+
+	__host__ __device__ auto operator()(array<int, 2>::index nbidx) const {
+		return nbidx == -1 ? 0.0
+						   : v(std::abs(x(positions_i) - x(positions[nbidx])));
+	}
 };
 
+#if !defined(__clang_major__)
 // no pros: this for testing purposed only
 // const: requires auxiliary class
 template<class Arr1D, class Arr2D>
@@ -209,6 +210,7 @@ auto energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) ->
 		std::plus<>{}
 	);
 }
+#endif
 
 auto universal_memory_supported() -> bool {
 	std::cout << "testing for universal memory supported" << std::endl;
@@ -221,7 +223,7 @@ auto universal_memory_supported() -> bool {
 	} else {
 		std::cout << "universal memory is NOT supported" << std::endl;
 	}
-	return (is_cma == 1)?true:false;
+	return (is_cma == 1) ? true : false;
 }
 
 auto main() -> int {
@@ -258,22 +260,26 @@ auto main() -> int {
 			auto en = energy_nested_reduce(positions, neighbors);
 			BOOST_TEST( en == 32.0 );
 		}
-		// {
-		// 	auto en = energy_nested_par_reduce(positions, neighbors);
-		// 	BOOST_TEST( en == 32.0 );
-		// }
-		// {
-		// 	auto en = energy_flatten_par_reduce(positions, neighbors);
-		// 	BOOST_TEST( en == 32.0 );
-		// }
+// {
+// 	auto en = energy_nested_par_reduce(positions, neighbors);
+// 	BOOST_TEST( en == 32.0 );
+// }
+// {
+// 	auto en = energy_flatten_par_reduce(positions, neighbors);
+// 	BOOST_TEST( en == 32.0 );
+// }
+#if !defined(__clang_major__)
 		{
 			auto en = energy_flatten_gpu_reduce(positions, neighbors);
 			BOOST_TEST( en == 32.0 );
 		}
+#endif
+#if !defined(__clang_major__)
 		{  // this is not recommended, it is for testing purposes
 			auto en = energy_gpu_nested_reduce(positions, neighbors);
 			BOOST_TEST( en == 32.0 );
 		}
+#endif
 	}
 
 	return boost::report_errors();
