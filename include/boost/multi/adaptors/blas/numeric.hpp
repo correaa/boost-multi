@@ -183,8 +183,15 @@ auto default_allocator_of(involuter<It, F> const& iv) {
 #endif
 template<class It, class F, class Reference>
 class involuter {
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 7 bytes padding added after f_
+#endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F  f_;
 	It it_;
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 	template<class, class, class> friend class involuter;
 
