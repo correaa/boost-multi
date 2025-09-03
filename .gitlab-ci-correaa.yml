@@ -367,14 +367,6 @@ vs2019-windows:
   needs: ["clang++", "g++"]
   timeout: 30 minutes
 
-#winget install Microsoft.PowerShell
-#winget install -e --id Kitware.CMake
-# cd C:\
-# git clone --depth=1 https://github.com/microsoft/vcpkg.git
-# C:\vcpkg\bootstrap-vcpkg.bat
-# C:\vcpkg\vcpkg install boost-multi-array boost-timer
-# install Boost binaries from here https://sourceforge.net/projects/boost/
-
 vs2022-shell:
   stage: build
   allow_failure: false
@@ -382,7 +374,7 @@ vs2022-shell:
   script:
     # - winget install --id=Microsoft.VisualStudio.2022.Community -e
     # - winget install Microsoft.VisualStudio.2022.BuildTools
-    # - winget install Git.Git Kitware.CMake
+    # - winget install Git.Git Kitware.CMake Microsoft.PowerShell
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
     - pwd
@@ -393,7 +385,7 @@ vs2022-shell:
     # - .\vcpkg\vcpkg install blas fftw3 boost-multi-array boost-timer
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/Wall /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel 2 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
