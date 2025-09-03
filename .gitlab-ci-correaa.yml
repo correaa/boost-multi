@@ -381,6 +381,7 @@ vs2022-shell:
   interruptible: true
   script:
     # - winget install --id=Microsoft.VisualStudio.2022.Community -e
+    # - winget install Microsoft.VisualStudio.2022.BuildTools
     # - winget install Git.Git Kitware.CMake
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
