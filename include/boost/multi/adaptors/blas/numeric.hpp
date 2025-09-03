@@ -77,8 +77,15 @@ template<class It, class F, class Reference = involuted<typename std::iterator_t
 #endif
 template<class Ref, class Involution>
 class involuted {
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 7 bytes padding added after f_
+#endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;
 	Ref        r_;  // [[no_unique_address]]  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
