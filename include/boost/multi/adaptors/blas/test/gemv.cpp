@@ -2,22 +2,21 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/adaptors/blas/axpy.hpp>  // for operator-
 #include <boost/multi/adaptors/blas/core.hpp>  // for gemv, context, dot, nrm2
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
-
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
 
-#include <algorithm>    // for generate, transform
-#include <cmath>        // for abs  // // IWYU pragma: keep
-#include <complex>      // for complex, operator*
+#include <boost/core/lightweight_test.hpp>
+
+#include <algorithm>  // for generate, transform
+#include <cmath>      // for abs  // // IWYU pragma: keep
+#include <complex>    // for complex, operator*
 // IWYU pragma: no_include <cstdlib>  // for abs
-#include <iostream>     // for char_traits, basic_ost...
-#include <iterator>     // for size, begin
+#include <iostream>  // for char_traits, basic_ost...
+#include <iterator>  // for size, begin
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for inner_product
 #include <random>       // for normal_distribution
@@ -34,16 +33,12 @@ namespace {
 template<class M, class VI, class VO>
 auto MV(M const& a, VI const& x, VO&& y) -> VO&& {  // NOLINT(readability-identifier-naming,readability-identifier-length) BLAS naming
 	std::transform(
-		begin(a), end(a), begin(y),
-		[&x](auto const& row) { return std::inner_product(begin(row), end(row), begin(x), 0.0); }
+		a.begin(), a.end(), y.begin(),
+		[&x](auto const& row) { return std::inner_product(row.begin(), row.end(), x.begin(), typename VI::value_type{}); }
 	);
 	return std::forward<VO>(y);
 }
 }  // end unnamed namespace
-
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
-#define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
 namespace {
 void gemv_broadcast() {
@@ -92,7 +87,8 @@ void gemv_broadcast() {
 }  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_double) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_double)
+	{
 		using T = double;
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<T, 2> const a = {
@@ -132,25 +128,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			y = blas::gemv(1.0, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001);
 		}
 		{
 			multi::array<T, 1> y = blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001);
 		}
 		{
 			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
 			y += blas::gemv(1.0, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001);
 		}
 		{
 			multi::array<T, 1> y = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemv(1.1, a, x, 1.0, y);           // y = a*M*x + b*y
-			BOOST_REQUIRE_CLOSE(y[1], 105.43, 0.00001);
+			BOOST_TEST( std::abs(y[1] - 105.43) < 0.00001);
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_float) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_float)
+	{
 		using T = float;
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<T, 2> const a = {
@@ -203,12 +200,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<T, 1> y = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemv(1.1F, a, x, 1.0F, y);           // y = a*M*x + b*y
+			blas::gemv(1.1F, a, x, 1.0F, y);         // y = a*M*x + b*y
 			BOOST_TEST( std::abs( y[1] - 105.43F) < 0.00001F );
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_double) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_double)
+	{
 		using T        = double;
 		namespace blas = multi::blas;
 
@@ -231,14 +229,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		if constexpr(!std::is_same_v<T, float>) {
 			auto Y = +blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_REQUIRE_CLOSE(Y[0], +blas::dot(a[0], x), 0.00001);
-			BOOST_REQUIRE_CLOSE(Y[1], +blas::dot(a[1], x), 0.00001);
-			BOOST_REQUIRE_CLOSE(Y[2], +blas::dot(a[2], x), 0.00001);
+			BOOST_TEST( std::abs( Y[0] - +blas::dot(a[0], x)) < 0.00001 );
+			BOOST_TEST( std::abs( Y[1] - +blas::dot(a[1], x)) < 0.00001);
+			BOOST_TEST( std::abs( Y[2] - +blas::dot(a[2], x)) < 0.00001);
 		}
 		{
-			multi::array<T, 1> const x_shadow   = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
-			multi::array<T, 1> const y   = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
-			multi::array<T, 1> const dot = blas::gemv(1.0, multi::array<T, 2>({x_shadow}), y);
+			multi::array<T, 1> const x_shadow = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> const y        = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> const dot      = blas::gemv(1.0, multi::array<T, 2>({x_shadow}), y);
 			if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
 				BOOST_TEST( std::abs( dot[0] - blas::dot(x_shadow, y) ) < 1e-10 );
 			}
@@ -247,11 +245,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			using blas::operators::operator%;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			using blas::operators::operator^;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
-			BOOST_REQUIRE_SMALL(((~+~a) % x - a % x) ^ 2, 1e-9);
+			BOOST_TEST((((~+~a) % x - a % x) ^ 2) < 1e-9);
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_float) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_float)
+	{
 		using T        = float;
 		namespace blas = multi::blas;
 
@@ -267,8 +266,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<T, 1> const x = {static_cast<T>(1.1), static_cast<T>(2.1), static_cast<T>(3.1), static_cast<T>(4.1)};
 		{
 			multi::array<T, 1> y     = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
-			auto const            alpha = static_cast<T>(1.1);
-			auto const            beta  = static_cast<T>(1.2);
+			auto const         alpha = static_cast<T>(1.1);
+			auto const         beta  = static_cast<T>(1.2);
 			blas::gemv(alpha, a, x, beta, y);  // y = a*M*x + b*y
 
 			multi::array<T, 1> const y3 = {static_cast<T>(214.02), static_cast<T>(106.43F), static_cast<T>(188.37)};
@@ -292,11 +291,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			using blas::operators::operator%;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			using blas::operators::operator^;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
-			BOOST_REQUIRE_SMALL(((~+~a) % x - a % x) ^ 2, 1e-9);
+			BOOST_TEST((((~+~a) % x - a % x) ^ 2) < 1e-9);
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_double) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_double)
+	{
 		using T        = double;
 		namespace blas = multi::blas;
 		using complex  = std::complex<T>;
@@ -337,18 +337,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			T const n2{blas::nrm2(Y - Y3)};
-			BOOST_REQUIRE_SMALL(n2, T{1.0e-4});
+			BOOST_TEST(n2 < T{1.0e-4});
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(blas_gemv_complex_float_mimic_cdot) {
+	// BOOST_AUTO_TEST_CASE(blas_gemv_complex_float_mimic_cdot)
+	{
 		multi::array<std::complex<float>, 2> const v1 = {
-			{std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F,  4.0F}, std::complex<float>{ 5.0F,  6.0F}}
+			{std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F, 4.0F}, std::complex<float>{5.0F, 6.0F}}
 		};
 		BOOST_TEST( v1.size() == 1 );
 		BOOST_TEST( v1.num_elements() == 3 );
 
-		multi::array<std::complex<float>, 1> const v2 = {std::complex<float>{7.0F, 8.0F}, std::complex<float>{9.0F, 10.0F}, std::complex<float>{11.0F, 12.0F}};
+		multi::array<std::complex<float>, 1> const v2 = {
+			std::complex<float>{ 7.0F,  8.0F},
+			std::complex<float>{ 9.0F, 10.0F},
+			std::complex<float>{11.0F, 12.0F}
+		};
 		BOOST_TEST( v2.size() == 3 );
 
 		multi::array<std::complex<float>, 1> res({1}, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
@@ -365,7 +370,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs(res[0] - res_dot) < 1e-8F );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_float) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_float)
+	{
 		using T        = float;
 		namespace blas = multi::blas;
 		using complex  = std::complex<T>;
@@ -410,7 +416,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex)
+	{
 		namespace blas = multi::blas;
 		using complex  = std::complex<double>;
 		auto const I   = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -433,7 +440,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( +blas::gemv(1., ~a, x) == + blas::gemv(1.0, aT, x) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary)
+	{
 		using complex = std::complex<double>;
 
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -461,7 +469,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( (((+(A*B))[2] - B[2])^2) == 0.0 );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_context) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_context)
+	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<double, 2> const a = {
 			{ 9.0, 24.0, 30.0, 9.0},
@@ -474,50 +483,50 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			blas::gemv_n(&ctxt, 1.0, begin(a), size(a), begin(x), 0.0, begin(y));
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.0001);
-			BOOST_REQUIRE_CLOSE(y[2], +blas::dot(a[2], x), 0.0001);
+			BOOST_TEST( std::abs( y[1] - 91.3) < 0.0001);
+			BOOST_TEST( std::abs( y[2] - +blas::dot(a[2], x)) < 0.0001);
 		}
 		{
 			multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			multi::array<double, 2> const aT{~a};
 			blas::gemv_n(&ctxt, 1.0, begin(~aT), size(~aT), begin(x), 0.0, begin(y));
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
-			BOOST_REQUIRE_CLOSE(y[2], +blas::dot(a[2], x), 0.00001);
+			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001);
+			BOOST_TEST( std::abs( y[2] - +blas::dot(a[2], x)) < 0.00001);
 		}
 		{
 			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			auto&&                  mv = blas::gemv(&ctxt, 1.0, a, x);
 			copy_n(mv.begin(), mv.size(), y.begin());
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y = blas::gemv(&ctxt, 1.0, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y = blas::gemv(1.0, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y() = blas::gemv(1.0, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<double, 1> y = blas::gemv(&ctxt, 1.0, a, x);  // NOLINT(readability-identifier-length) conventional name in BLAS
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.0);  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y += blas::gemv(&ctxt, 1.0, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 91.3, 0.00001);
+			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<double, 1> y = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y += blas::gemv(&ctxt, 1.1, a, x);
-			BOOST_REQUIRE_CLOSE(y[1], 105.43, 0.00001);
+			BOOST_TEST( std::abs( y[1] - 105.43) < 0.00001 );
 		}
 	}
 

@@ -492,7 +492,7 @@ v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	if(transA == 'N' || transA == 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, n) ); }                                                                                                                     \
 	if(transA != 'N' && transA != 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, k) ); }                                                                                                                     \
 	BOOST_MULTI_ASSERT1( ldc >= max(S{1}, n) );                                                                                                                                                           \
-	BLAS(T##syrk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<T const*>(alpha), aa, BC(lda),        *reinterpret_cast<T const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
+	BLAS(T##syrk)(      uplo, transA,            static_cast<INT>(BC(n)), static_cast<INT>(BC(k)), *reinterpret_cast<T const*>(alpha), aa, static_cast<INT>(BC(lda)),        *reinterpret_cast<T const*>(beta), cc, static_cast<INT>(BC(ldc)));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
 }                                                                                                                                                                                                 \
 
 #define xherk(T) \
@@ -568,7 +568,6 @@ v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wundefined-reinterpret-cast"
 #endif
 

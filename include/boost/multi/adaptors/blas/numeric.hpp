@@ -99,7 +99,7 @@ class involuted {
 	involuted(involuted&&) noexcept = default;
 
 	auto operator=(involuted const& other) -> involuted&     = delete;
-	auto operator=(involuted&& other) noexcept -> involuted& = default;
+	auto operator=(involuted&& other) noexcept -> involuted& = delete;  // default
 
 	constexpr auto decay() const& -> decay_type { return f_(r_); }
 
