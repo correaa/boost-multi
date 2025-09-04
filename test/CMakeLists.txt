@@ -82,6 +82,7 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Waddress-of-packed-member>
 	-Wno-aggregate-return # (disallow return classes or structs, seems a C-compatibility warning)
 	-Waggressive-loop-optimizations
+	-Wanalyzer-out-of-bounds
 	-Waligned-new=all # (gcc 12, not in 11)
 	# -Walloc-size-larger-than=<bytes> # (gcc 12, not in 11)
 	-Walloc-zero
