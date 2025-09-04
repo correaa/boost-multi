@@ -351,8 +351,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<std::complex<float>, 1> const v2 = {
 			std::complex<float>{ 7.0F,  8.0F},
-            std::complex<float>{ 9.0F, 10.0F},
-            std::complex<float>{11.0F, 12.0F}
+			std::complex<float>{ 9.0F, 10.0F},
+			std::complex<float>{11.0F, 12.0F}
 		};
 		BOOST_TEST( v2.size() == 3 );
 
