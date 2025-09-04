@@ -425,6 +425,93 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( in_place_arr == local_arr2 );
 	}
 
+	{
+		{
+			multi::array<int, 3> arr = {{
+				{1, 2},
+				{3, 4},
+			}};
+
+			multi::array<int, 3> brr(arr.extensions(), 666);
+			auto arr_begin = multi::mpi::begin(arr);
+			auto brrt = brr.rotated().transposed().unrotated();
+			auto brrt_begin = multi::mpi::begin(brrt);
+
+			MPI_Alltoall(
+				arr_begin.buffer(), 1, arr_begin.datatype(),
+				brrt_begin.buffer(), 1, brrt_begin.datatype(),
+				MPI_COMM_SELF
+			);
+
+			// if(world_rank == 1) {
+			// 	std::cout
+			// 		<< "|| " << brr[0][0][0] << ' ' << brr[0][0][1] << '\n'
+			// 		<< "|| " << brr[0][1][0] << ' ' << brr[0][1][1] << '\n'
+			// 	;
+			// }
+
+			BOOST_TEST((
+				brr == multi::array<int, 3>{{
+					{1, 3},
+					{2, 4},
+				}}
+			));
+		}
+		{
+			multi::array<int, 3> arr = {{
+				{1, 2},
+				{3, 4},
+			}};
+
+			auto&& trr = arr.rotated().transposed().unrotated();
+
+			auto arr_begin = multi::mpi::begin(arr);
+			auto trr_begin = multi::mpi::begin(trr);
+
+			BOOST_TEST( arr_begin.buffer() == trr_begin.buffer() );
+
+			MPI_Alltoall(
+				arr_begin.buffer(), 1, arr_begin.datatype(),
+				trr_begin.buffer(), 1, trr_begin.datatype(),
+				MPI_COMM_SELF
+			);
+
+			BOOST_TEST((
+				arr == multi::array<int, 3>{{
+					{1, 3},
+					{2, 4},
+				}}
+			));
+		}
+		{
+			multi::array<int, 3> arr({1, 2, 2}, 666);
+			std::iota(arr.elements().begin(), arr.elements().end(), 1);
+
+			auto Tarr = +arr.transposed();
+
+			auto&& trr = arr.rotated().transposed().unrotated();
+
+			auto arr_begin = multi::mpi::begin(arr);
+			auto trr_begin = multi::mpi::begin(trr);
+
+			BOOST_TEST( arr_begin.buffer() == trr_begin.buffer() );
+
+			MPI_Alltoall(
+				arr_begin.buffer(), 1, arr_begin.datatype(),
+				trr_begin.buffer(), 1, trr_begin.datatype(),
+				MPI_COMM_SELF
+			);
+
+			BOOST_TEST((
+				arr == multi::array<int, 3>{{
+					{1, 3},
+					{2, 4},
+				}}
+			));
+		}
+
+	}
+
 	if(world_size == 4) {
 		multi::array<int, 2> local_arr = {
 			{(world_rank*10) + 0, (world_rank*10) + 0},
