@@ -567,7 +567,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 						{16, 17, 18},
 						{22, 23, 24},
 					};
-				default: {}
+				break; default: {}
 			}
 
 			multi::array<int, 2> B({6, 2}, 99);  // NOLINT(readability-identifier-length)
@@ -585,7 +585,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			);
 
 			switch(sub_rank) {
-				break; case 0:
+				/****/ case 0:
 					BOOST_TEST((
 						B == multi::array<int, 2>{
 							{1, 7},
@@ -607,7 +607,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 							{18, 24}
 						}
 					));
-				default: {}
+				break; default: {}
 			}
 		}
 
@@ -636,7 +636,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 						{16, 17, 18},
 						{22, 23, 24},
 					};
-				default: {}
+				break; default: {}
 			}
 
 			// B's memmory completelly aliases A's memory
@@ -680,7 +680,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 							{18, 24}
 						}
 					));
-				default: {}
+				break; default: {}
 			}
 		}
 	}
