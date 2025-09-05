@@ -435,6 +435,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			multi::array<int, 3> brr(arr.extensions(), 666);
 			auto arr_begin = multi::mpi::begin(arr);
 			auto brrt = brr.rotated().transposed().unrotated();
+
 			auto brrt_begin = multi::mpi::begin(brrt);
 
 			MPI_Alltoall(
@@ -442,13 +443,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 				brrt_begin.buffer(), 1, brrt_begin.datatype(),
 				MPI_COMM_SELF
 			);
-
-			// if(world_rank == 1) {
-			// 	std::cout
-			// 		<< "|| " << brr[0][0][0] << ' ' << brr[0][0][1] << '\n'
-			// 		<< "|| " << brr[0][1][0] << ' ' << brr[0][1][1] << '\n'
-			// 	;
-			// }
 
 			BOOST_TEST((
 				brr == multi::array<int, 3>{{
@@ -538,7 +532,85 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			BOOST_TEST(( local_arr2 == multi::array<int, 2>{{01, 01}, {11, 11}, {21, 21}, {31, 31}} ));
 		}
 	}
+	{
+		MPI_Comm sub_comm;  // NOLINT(cppcoreguidelines-init-variables)
+    	int color;  // NOLINT(cppcoreguidelines-init-variables)
+		int key;  // NOLINT(cppcoreguidelines-init-variables)
+		if (world_rank < 2) {
+			color = 0;      // Assign to the same color to group them
+			key = world_rank; // Use the original rank for ordering
+		} else {
+			color = MPI_UNDEFINED;
+			key = 0;
+	    }
+		MPI_Comm_split(MPI_COMM_WORLD, color, key, &sub_comm);
+		if (sub_comm != MPI_COMM_NULL) {
+			int sub_rank;  // NOLINT(cppcoreguidelines-init-variables)
+			MPI_Comm_rank(sub_comm, &sub_rank);
 
+			int sub_size;  // NOLINT(cppcoreguidelines-init-variables)
+			MPI_Comm_size(sub_comm, &sub_size);
+
+			multi::array<int, 2> A;  // NOLINT(readability-identifier-length) conventional name
+			switch(sub_rank) {
+				break; case 0:
+					A = multi::array<int, 2>{
+						{ 1, 2,   3},
+						{ 7, 8,   9},
+						{13, 14, 15},
+						{19, 20, 21},
+					};
+				break; case 1:
+					A = multi::array<int, 2>{
+						{ 4,  5,  6},
+						{10, 11, 12},
+						{16, 17, 18},
+						{22, 23, 24},
+					};
+				default: {}
+			}
+
+			multi::array<int, 2> B({6, 2}, 99);  // NOLINT(readability-identifier-length)
+
+			auto&& Ap2 = A.partitioned(2); BOOST_TEST( Ap2.size() == 2 );
+			auto&& Bp2 = B.partitioned(2).rotated().transposed().unrotated(); BOOST_TEST( Bp2.size() == 2 );
+
+			auto A_it = multi::mpi::begin(Ap2);
+			auto B_it = multi::mpi::begin(Bp2);
+
+			MPI_Alltoall(
+				A_it.buffer(), 1, A_it.datatype(),
+				B_it.buffer(), 1, B_it.datatype(),
+				sub_comm
+			);
+
+			switch(sub_rank) {
+				break; case 0:
+					BOOST_TEST((
+						B == multi::array<int, 2>{
+							{1, 7},
+							{2, 8},
+							{3, 9},
+							{4, 10},
+							{5, 11},
+							{6, 12}
+						}
+					));
+				break; case 1:
+					BOOST_TEST((
+						B == multi::array<int, 2>{
+							{13, 19},
+							{14, 20},
+							{15, 21},
+							{16, 22},
+							{17, 23},
+							{18, 24}
+						}
+					));
+				default: {}
+			}
+		}
+	}
 	MPI_Finalize();
 	return boost::report_errors();
 }
