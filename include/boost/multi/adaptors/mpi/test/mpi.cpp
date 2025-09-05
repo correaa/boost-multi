@@ -553,7 +553,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 			multi::array<int, 2> A;  // NOLINT(readability-identifier-length) conventional name
 			switch(sub_rank) {
-				break; case 0:
+				/****/ case 0:
 					A = multi::array<int, 2>{
 						{ 1, 2,   3},
 						{ 7, 8,   9},
@@ -622,7 +622,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 			multi::array<int, 2> A;  // NOLINT(readability-identifier-length) conventional name
 			switch(sub_rank) {
-				break; case 0:
+				/****/ case 0:
 					A = multi::array<int, 2>{
 						{ 1, 2,   3},
 						{ 7, 8,   9},
@@ -658,7 +658,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			);
 
 			switch(sub_rank) {
-				break; case 0:
+				/****/ case 0:
 					BOOST_TEST((
 						B == multi::array<int, 2>{
 							{1, 7},
@@ -684,6 +684,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			}
 		}
 	}
+
 	MPI_Finalize();
+
 	return boost::report_errors();
 }
