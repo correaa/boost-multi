@@ -618,6 +618,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			int sub_size;  // NOLINT(cppcoreguidelines-init-variables)
 			MPI_Comm_size(sub_comm, &sub_size);
 
+			BOOST_TEST( sub_size == 2 );
+
 			multi::array<int, 2> A;  // NOLINT(readability-identifier-length) conventional name
 			switch(sub_rank) {
 				break; case 0:
@@ -637,14 +639,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 				default: {}
 			}
 
+			// B's memmory completelly aliases A's memory
 			auto&& B = multi::array_ref<int, 2>({6, 2}, A.data_elements());  // NOLINT(readability-identifier-length) conventional name
 			// multi::array<int, 2> B({6, 2}, 99);  // NOLINT(readability-identifier-length) conventional name
 
 			auto&& Ap2 = A.partitioned(2); BOOST_TEST( Ap2.size() == 2 );
 			auto&& Bp2 = B.partitioned(2).rotated().transposed().unrotated(); BOOST_TEST( Bp2.size() == 2 );
 
-			auto A_it = multi::mpi::begin(Ap2);
-			auto B_it = multi::mpi::begin(Bp2);
+			auto A_it = multi::mpi::begin(Ap2);  // magic way to compute the datatype
+			auto B_it = multi::mpi::begin(Bp2);  // magic way to compute the datatype
 
 			BOOST_TEST( A_it.buffer() == B_it.buffer() );
 
