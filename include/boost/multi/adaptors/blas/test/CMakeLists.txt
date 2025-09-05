@@ -135,9 +135,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 		)
 		target_compile_options(
 			${TEST_EXE}
-			PRIVATE -Werror
-					-Wall
+			PRIVATE 
 					$<$<CXX_COMPILER_ID:GNU>:
+					-Werror
+					-Wall
 					-Wextra
 					-Wpedantic
 					-Wformat-truncation
@@ -145,6 +146,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wparentheses
 					> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+					-Werror
+					-Wall
 					# -Weverything
 					-Wextra
 					-Wpedantic
