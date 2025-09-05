@@ -641,7 +641,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 			// B's memmory completelly aliases A's memory
 			auto&& B = multi::array_ref<int, 2>({6, 2}, A.data_elements());  // NOLINT(readability-identifier-length) conventional name
-			// multi::array<int, 2> B({6, 2}, 99);  // NOLINT(readability-identifier-length) conventional name
+			// multi::array<int, 2> B({6, 2}, 99);  // this one would do out-of-place // NOLINT(readability-identifier-length) conventional name
 
 			auto&& Ap2 = A.partitioned(2); BOOST_TEST( Ap2.size() == 2 );
 			auto&& Bp2 = B.partitioned(2).rotated().transposed().unrotated(); BOOST_TEST( Bp2.size() == 2 );
