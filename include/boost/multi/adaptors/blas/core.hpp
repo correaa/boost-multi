@@ -21,11 +21,17 @@
 
 #include <boost/multi/adaptors/blas/traits.hpp>  // IWYU pragma: export
 
+#if defined(__PRETTY_FUNCTION__)
+#define BOOST_MULTI_BLAS_PRETTY_FUNCTION __PRETTY_FUNCTION__
+#else
+#define BOOST_MULTI_BLAS_PRETTY_FUNCTION "some-multi-blas-function"
+#endif
+
 #if ! defined(NDEBUG)
 	#include<stdexcept>
 	#include<string>
-	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
-	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
+	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(BOOST_MULTI_BLAS_PRETTY_FUNCTION)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
+	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(BOOST_MULTI_BLAS_PRETTY_FUNCTION)+"\nLogic assertion `" #ExpR "' failed."))
 #else
 	#define BOOST_MULTI_ASSERT1(ExpR)              assert(ExpR)
 	#define BOOST_MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
@@ -486,7 +492,7 @@ v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	if(transA == 'N' || transA == 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, n) ); }                                                                                                                     \
 	if(transA != 'N' && transA != 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, k) ); }                                                                                                                     \
 	BOOST_MULTI_ASSERT1( ldc >= max(S{1}, n) );                                                                                                                                                           \
-	BLAS(T##syrk)(      uplo, transA,            BC(n), BC(k), *reinterpret_cast<T const*>(alpha), aa, BC(lda),        *reinterpret_cast<T const*>(beta), cc, BC(ldc));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
+	BLAS(T##syrk)(      uplo, transA,            static_cast<INT>(BC(n)), static_cast<INT>(BC(k)), *reinterpret_cast<T const*>(alpha), aa, static_cast<INT>(BC(lda)),        *reinterpret_cast<T const*>(beta), cc, static_cast<INT>(BC(ldc)));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
 }                                                                                                                                                                                                 \
 
 #define xherk(T) \
@@ -562,7 +568,6 @@ v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wundefined-reinterpret-cast"
 #endif
 
