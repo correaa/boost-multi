@@ -8,6 +8,10 @@
 
 #include <boost/multi/detail/index_range.hpp>
 
+#if (__cplusplus >= 202002L) && __has_include(<format>)
+#include <format>
+#endif
+
 #include <tuple>
 
 #if defined(__NVCC__)
@@ -23,7 +27,7 @@ class extensions;
 
 template<>
 class extensions<> {
-	public:
+ public:
 	extensions() = default;
 };
 
@@ -39,14 +43,14 @@ class extensions<Ex, Exts...> : private Ex {
 	template<std::size_t I>
 	BOOST_MULTI_HD constexpr auto get() const {
 		if constexpr(I == 0) {
-			return static_cast<Ex const&>(*this); }
-		else {
+			return static_cast<Ex const&>(*this);
+		} else {
 			return rest_.template get<I - 1>();
 		}
 	}
 
 	using extension_type = Ex;
-	using sub_type = extensions<Exts...>;
+	using sub_type       = extensions<Exts...>;
 
 	BOOST_MULTI_HD constexpr auto extension() const { return static_cast<Ex const&>(*this); }
 	BOOST_MULTI_HD constexpr auto sub() const { return rest_; }
@@ -56,8 +60,9 @@ template<class... Exts> extensions(Exts...) -> extensions<Exts...>;
 
 template<std::size_t I, class... Exts>
 auto get(::boost::multi::detail::extensions<Exts...> const& exts)
-->decltype(exts.template get<I>()) {
-	return exts.template get<I>(); }
+	-> decltype(exts.template get<I>()) {
+	return exts.template get<I>();
+}
 
 template<class Self>
 struct tyid {
@@ -67,18 +72,42 @@ struct tyid {
 }  // end namespace boost::multi::detail
 
 template<class... Exts>
-struct std::tuple_size<::boost::multi::detail::extensions<Exts...> > {  // NOLINT(cert-dcl58-cpp) structured binding
+struct std::tuple_size<::boost::multi::detail::extensions<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	static constexpr std::size_t value = sizeof...(Exts);
 };
 
 template<std::size_t I, class... Exts>
-struct std::tuple_element<I, ::boost::multi::detail::extensions<Exts...> > {  // NOLINT(cert-dcl58-cpp) structured binding
+struct std::tuple_element<I, ::boost::multi::detail::extensions<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	using type = typename std::conditional_t<
 		I == 0,
 		::boost::multi::detail::tyid<typename ::boost::multi::detail::extensions<Exts...>::extension_type>,
-		::std::tuple_element<I - 1, typename ::boost::multi::detail::extensions<Exts...>::sub_type >
-	>::type;
+		::std::tuple_element<I - 1, typename ::boost::multi::detail::extensions<Exts...>::sub_type>>::type;
 };
+
+#if defined(__cpp_lib_format) && (__cpp_lib_format >= 202106L)
+
+template<class... Exts>
+struct std::formatter<::boost::multi::detail::extensions<Exts...> > {  // NOLINT(cert-dcl58-cpp) it's the way
+	constexpr auto parse(std::format_parse_context& /*ctx*/) { return /* */; }
+
+	auto format(::boost::multi::detail::extensions<Exts...> const& obj, std::format_context& ctx) const {
+		using std::get;
+		if constexpr(sizeof...(Exts) == 1) {
+			return std::format_to(ctx.out(), "({})", get<0>(obj));
+		}
+		if constexpr(sizeof...(Exts) == 2) {
+			return std::format_to(ctx.out(), "({} x {})", get<0>(obj), get<1>(obj));
+		}
+		if constexpr(sizeof...(Exts) == 3) {
+			return std::format_to(ctx.out(), "({} x {})", get<0>(obj), get<1>(obj), get<2>(obj));
+		}
+		if constexpr(sizeof...(Exts) == 4) {
+			return std::format_to(ctx.out(), "({} x {} x {} x {})", get<0>(obj), get<1>(obj), get<2>(obj), get<3>(obj));
+		}
+	}
+};
+
+#endif
 
 #undef BOOST_MULTI_HD
 
