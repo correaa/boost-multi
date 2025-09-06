@@ -80,7 +80,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	std::cout << pn.flops() << "FLOPS\n";
 
 	[&, unnamed = watch{"3D *100x100x100"}] {
-		for(int i = 0; i != 100; ++i) {
+		for(int i = 0; i != 100; ++i) {  // NOLINT(altera-unroll-loops)
 			pn.execute(in.base(), in.base());
 		}
 	}();
