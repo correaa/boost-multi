@@ -21,10 +21,12 @@
 #define hicup(name) cuda##name
 #define hicu(name) cu##name
 #define HICU(name) CU##name
+#define thrust_hicup thrust::cuda
 #else
 #define hicup(name) hip##name
 #define hicu(name) hip##name
 #define HICU(name) HIP##name
+#define thrust_hicup thrust::hip
 #endif
 
 namespace boost {
@@ -168,7 +170,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		class = decltype(std::swap(std::declval<X&>(), std::declval<Y&>())),
-		std::enable_if_t<std::is_convertible_v<XP, ::thrust::hicup()::pointer<X>>, int> = 0
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
 	void swap(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
 		if(is_s<X>{}) {sync_call<hicu(blasSswap)>(n, (float        *)raw_pointer_cast(x), incx, (float        *)raw_pointer_cast(y), incy);}
@@ -181,7 +183,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		class = decltype(std::declval<Y&>() = std::declval<X&>()),
-		std::enable_if_t<std::is_convertible_v<XP, ::thrust::hicup()::pointer<X>>, int> = 0
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
 	void copy(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
 		if(is_s<X>{}) {sync_call<hicu(blasScopy)>(n, (float         const*)raw_pointer_cast(x), incx, (float        *)raw_pointer_cast(y), incy);}
@@ -192,7 +194,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 
 	template<class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class = decltype(std::declval<X&>() *= ALPHA{}),
-		std::enable_if_t<std::is_convertible_v<XP, ::thrust::hicup()::pointer<X>>, int> = 0
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
 	void scal(ssize_t n, ALPHA const& alpha, XP x, ssize_t incx) const {
 		if(is_s<X>{}) {sync_call<hicu(blasSscal)>(n, (float         const*)alpha, (float        *)::thrust::raw_pointer_cast(x), incx);}

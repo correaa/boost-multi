@@ -17,6 +17,13 @@
 #define BOOST_MULTI_HD
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4514)  // boost::multi::detail::tuple<>::operator <': unreferenced inline function has been removed
+#pragma warning(disable : 4623)  // default constructor was implicitly defined as deleted
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#endif
+
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
 
@@ -41,13 +48,6 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 		return std::forward<F>(fn)();
 	}
 };
-
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4514)  // boost::multi::detail::tuple<>::operator <': unreferenced inline function has been removed
-#pragma warning(disable : 4623)  // default constructor was implicitly defined as deleted
-#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
-#endif
 
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference

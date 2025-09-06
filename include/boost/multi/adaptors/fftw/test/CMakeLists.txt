@@ -43,6 +43,7 @@ set(TEST_SRCS
   combinations.cpp
 # copy.cpp
   core.cpp
+  direct_vs_transpose.cpp
   fft.cpp
   moved.cpp
   shift.cpp
