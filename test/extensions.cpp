@@ -9,7 +9,8 @@
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <tuple>      // IWYU pragma: keep
-// IWYU pragma: no_include <type_traits>                      // for add_const<>::type
+// IWYU pragma: no_include <type_traits>    // for add_const<>::type
+// IWYU pragma: no_include <variant>        // for get, iwyu bug
 
 namespace multi = boost::multi;
 
