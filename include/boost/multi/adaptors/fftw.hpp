@@ -460,14 +460,13 @@ class plan {
 
 	[[nodiscard]] auto cost() const -> double { return fftw_cost(const_cast<fftw_plan>(impl_.get())); }  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 	[[nodiscard]] auto flops() const {
-		struct /*ret_t&*/ {
-			double add = {};
-			double mul = {};
-			double fma = {};
-			//  explicit operator double() const{return add + mul + 2*fma;}
-		} ret;
-		fftw_flops(const_cast<fftw_plan>(impl_.get()), &ret.add, &ret.mul, &ret.fma);  // NOLINT(cppcoreguidelines-pro-type-const-cast)
-		return ret;
+		double add;  // NOLINT(cppcoreguidelines-init-variables)
+		double mul;  // NOLINT(cppcoreguidelines-init-variables)
+		double fma;  // NOLINT(cppcoreguidelines-init-variables)
+
+		fftw_flops(const_cast<fftw_plan>(impl_.get()), &add, &mul, &fma);
+
+		return add + mul + fma;  // <- if FMA supported, otherwise: add + mul + 2*fma;
 	}
 
 #if defined(HAVE_FFTW3_THREADS)

@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
@@ -38,8 +40,6 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }
 };
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
 
@@ -48,7 +48,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	multi::fftw::environment const env;
 
-	BOOST_AUTO_TEST_CASE(fft_combinations) {  // , *boost::unit_test::tolerance(0.00001)) {
+	// BOOST_AUTO_TEST_CASE(fft_combinations)
+	{
 		using complex = std::complex<double>;
 		{
 			multi::static_array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
@@ -120,7 +121,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark) {  //, *boost::unit_test::enabled()) {
+	// BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark)
+	{
 		using namespace std::string_literals;        // NOLINT(build/namespaces) for ""s
 
 		using complex  = std::complex<double>;
@@ -161,7 +163,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(in0000 == in[0][0][0][0]);  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
+	// BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax)
+	{
 		// NOLINTNEXTLINE(fuchsia-default-arguments-calls) use of std::vector
 		// std::vector<std::array<bool, 4>> const which_cases = {
 		// 	{{false,  true,  true,  true}},
