@@ -38,20 +38,31 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 };
 
 namespace {
-#if !defined(_MSC_VER)
-template<class T>
-__attribute__((always_inline)) inline void DoNotOptimize(T const& value) {  // NOLINT(readability-identifier-naming) consistency with Google benchmark
-	asm volatile("" : "+m"(const_cast<T&>(value)));                         // NOLINT(hicpp-no-assembler,cppcoreguidelines-pro-type-const-cast) hack
+// clang-format off
+template<class Tp>
+inline
+#if defined(_MSC_VER)
+__forceinline
+#else
+__attribute__((always_inline))
+#endif
+void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
+#if defined(_MSC_VER)
+	_ReadWriteBarrier(); (void)value;
+#else
+#if defined(__clang__) || defined(__circle_build__)
+if constexpr(!std::is_const_v<Tp>) {
+	asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
+} else {
+	asm volatile("" : "+m,r"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
 }
 #else
-template<class T>
-inline void DoNotOptimize(T const& value) { /*nothihg*/ }
+	asm volatile("" : "+m,r"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
 #endif
+#endif
+}
+// clang-format on
 }  // end namespace
-// template<class T>
-// __attribute__((always_inline)) inline void DoNotOptimize(T const& value) {  // NOLINT(readability-identifier-naming) consistency with Google benchmark
-// 	asm volatile("" : "+m"(const_cast<T&>(value)));                         // NOLINT(hicpp-no-assembler,cppcoreguidelines-pro-type-const-cast) hack
-// }
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 
@@ -73,7 +84,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		return ret;
 	}();
 
-	auto const pn = multi::fftw::plan::forward({false, false, false}, in.base(), in.layout(), in.base(), in.layout());
+	auto const pn = multi::fftw::plan::forward({{false, false, false}}, in.base(), in.layout(), in.base(), in.layout());
 
 	DoNotOptimize(in);
 
