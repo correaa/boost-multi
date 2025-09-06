@@ -7,6 +7,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <complex>
 #include <iostream>
