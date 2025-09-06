@@ -40,6 +40,7 @@ namespace boost::multi::detail { template <class ...Ts> class tuple; }
 
 #if defined(_MSC_VER)
 #pragma warning(push)
+#pragma warning(disable : 4514)  // inline function removed, in MSVC C++17 mode
 #pragma warning(disable : 5045)  // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 #endif
 
