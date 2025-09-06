@@ -189,7 +189,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		// for(double x = as.lower() + 0.01; x < as.upper(); x += 0.01) {
 		for(int i = 0; i != static_cast<int>((as.upper() - as.lower()) / 0.01); ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use algorithms
-			double const x = as.lower() + static_cast<double>(i) * 0.01;  // NOLINT(readability-identifier-length)
+			double const x = as.lower() + static_cast<double>(i) * 0.01;                // NOLINT(readability-identifier-length)
 			std::cout << x << '\t' << as(x) << '\n';
 		}
 	}

@@ -62,6 +62,8 @@ class iterator_facade {
 
 	constexpr auto        operator-(difference_type n) const { return self_type{self_()} -= n; }
 	constexpr auto        operator+(difference_type n) const { return self_type{self_()} += n; }
+
+	template<class = void>  // nvcc workaround 
 	friend constexpr auto operator+(difference_type n, self_type const& self) { return self + n; }
 
 	friend constexpr auto operator++(self_type& self, int) -> self_type {
