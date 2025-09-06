@@ -133,6 +133,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				>
 				$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 					-Xcompiler=/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+					-Xcompiler=/wd4668  # '__CUDA_ARCH__' is not defined as a preprocessor macro, TODO(correaa) move to Thrust target
 					# -Xcompiler=/wd4464  # relative include path contains '..'
 					# -Xcompiler=/wd4514  # unreferenced inline function has been removed
 					# -Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
