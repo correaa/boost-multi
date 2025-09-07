@@ -173,7 +173,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_t::strides_type;
 
-	auto strides() const { return detail::convertible_tuple<decltype(layout_t::strides())>(layout_t::strides()); }
+	BOOST_MULTI_HD constexpr auto strides() const { return detail::convertible_tuple<decltype(layout_t::strides())>(layout_t::strides()); }
 
 	using typename layout_t::difference_type;
 
@@ -1637,31 +1637,31 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #endif
 
 	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->sub(), this->stride()); }
-	constexpr auto                end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }
+	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }
 
 #if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
  public:
-	constexpr auto            begin() const& -> const_iterator { return begin_aux_(); }
-	constexpr auto            end() const& -> const_iterator { return end_aux_(); }
-	friend /*constexpr*/ auto begin(const_subarray const& self) -> const_iterator { return self.begin(); }  // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
-	friend /*constexpr*/ auto end(const_subarray const& self) -> const_iterator { return self.end(); }      // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
+	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
+	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
+	// friend /*constexpr*/ auto begin(const_subarray const& self) -> const_iterator { return self.begin(); }  // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
+	// friend /*constexpr*/ auto end(const_subarray const& self) -> const_iterator { return self.end(); }      // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
 
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }
-	/*fd*/ constexpr auto         cend() const& { return end(); }
-	friend constexpr auto         cbegin(const_subarray const& self) { return self.cbegin(); }
-	friend constexpr auto         cend(const_subarray const& self) { return self.cend(); }
+	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }
+	// friend constexpr auto         cbegin(const_subarray const& self) { return self.cbegin(); }
+	// friend constexpr auto         cend(const_subarray const& self) { return self.cend(); }
 
 	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
 
  private:
-	constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
+	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
-	constexpr auto home() const& -> const_cursor { return home_aux_(); }
+	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }
 
 	template<
 		class Range,
@@ -1957,23 +1957,23 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto begin() & noexcept { return this->begin_aux_(); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::end;
-	constexpr auto end() && noexcept { return this->end_aux_(); }
+	BOOST_MULTI_HD constexpr auto end() && noexcept { return this->end_aux_(); }
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto end() & noexcept { return this->end_aux_(); }
+	BOOST_MULTI_HD constexpr auto end() & noexcept { return this->end_aux_(); }
 
-	constexpr auto mbegin() { return move_iterator{this->begin()}; }
-	constexpr auto mend() { return move_iterator{this->end()}; }
+	BOOST_MULTI_HD constexpr auto mbegin() { return move_iterator{this->begin()}; }
+	BOOST_MULTI_HD constexpr auto mend() { return move_iterator{this->end()}; }
 
 	using const_subarray<T, D, ElementPtr, Layout>::home;
-	constexpr auto home() && { return this->home_aux_(); }
-	constexpr auto home() & { return this->home_aux_(); }
+	BOOST_MULTI_HD constexpr auto home() && { return this->home_aux_(); }
+	BOOST_MULTI_HD constexpr auto home() & { return this->home_aux_(); }
 
 	template<class It> constexpr auto assign(It first) & -> It {
 		adl_copy_n(first, this->size(), begin());
 		std::advance(first, this->size());
 		return first;
 	}
-	template<class It> constexpr auto assign(It first) && -> It { return assign(first); }
+	template<class It> BOOST_MULTI_HD constexpr auto assign(It first) && -> It { return assign(first); }
 
 	template<class TT = typename subarray::element_type>
 	constexpr auto fill(TT const& value) & -> decltype(auto) {
@@ -2676,10 +2676,10 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, 0, typename const_subarray::strides_type>;
 
  private:
-	constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
+	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
-	constexpr auto home() const& -> const_cursor { return home_aux_(); }
+	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }
 
  private:
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
@@ -2861,10 +2861,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	auto diagonal() const = delete;
 
  private:
-	constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
+	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
-	constexpr auto home() const& -> const_cursor { return home_aux_(); }
+	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }
 
  private:
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
