@@ -14,6 +14,7 @@
 #include <random>
 #include <string>
 #include <string_view>
+#include <type_traits>  // for is_const_v
 
 namespace multi = boost::multi;
 
