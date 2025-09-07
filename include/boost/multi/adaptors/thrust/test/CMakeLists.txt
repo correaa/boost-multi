@@ -76,7 +76,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Xcompiler=/W4
 				-Xcompiler=/wd4061  # enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label
 				-Xcompiler=/wd4324  # structure was padded due to alignment specifier
-				-Xcompiler=/wd4464 -Xcompiler=/wd4664 -Xcompiler=/wd4668
+				-Xcompiler=/wd4464
+				-Xcompiler=/wd4664
+				-Xcompiler=/wd4668
 			>
 		>
 	>
