@@ -84,7 +84,7 @@ struct std::tuple_element<I, ::boost::multi::detail::extensions<Exts...>> {  // 
 		::std::tuple_element<I - 1, typename ::boost::multi::detail::extensions<Exts...>::sub_type>>::type;
 };
 
-#if defined(__cpp_lib_format) && (__cpp_lib_format >= 202106L)
+#if defined(__cpp_lib_format) && (__cpp_lib_format >= 202106L) && !defined(_MSC_VER)
 
 template<class... Exts>
 struct std::formatter<::boost::multi::detail::extensions<Exts...> > {  // NOLINT(cert-dcl58-cpp) it's the way
