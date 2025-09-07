@@ -6,90 +6,13 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <algorithm>  // for copy
 #include <cmath>
 #include <iostream>
+#include <iterator>  // for distance
 #include <vector>
 
 namespace multi = boost::multi;
-
-// template<class ValueType>  // = double>
-// struct uniform_cspline {
-// 	using value_type      = ValueType;
-// 	using argument_type   = value_type;
-// 	using result_type     = value_type;
-// 	using array_type      = boost::multi::array<value_type, 2>;
-// 	using size_type       = typename array_type::size_type;
-// 	using difference_type = typename array_type::difference_type;
-
-//  private:
-// 	array_type    M_;
-// 	argument_type low_, h_;
-
-//  public:
-// 	argument_type step_size() const { return h_; }
-
-// 	argument_type left_endpoint() const { return low_; }
-// 	argument_type right_endpoint() const { return low_ + h_ * static_cast<double>(M_.size() - 1); }
-
-// 	template<class It>
-// 	uniform_cspline(It f, It l, argument_type left_endpoint, argument_type step_size) : M_({std::distance(f, l), 4}, 0.0), low_{left_endpoint}, h_{step_size} {
-// 		constexpr auto const um1 = 0;
-// 		constexpr auto const zm1 = 0;
-
-// 		auto&& RM = M_.rotated();
-// 		auto&& a  = RM[0];
-// 		auto&& b  = RM[1];
-// 		auto&& c  = RM[2];
-// 		auto&& d  = RM[3];
-
-// 		using std::size;
-// 		size_type n = size(a);
-// 		assert(n > 2);
-
-// 		using std::copy;
-// 		copy(f, l, begin(a));
-// 		auto&&    z = c;
-// 		auto&&    A = b;
-// 		auto&&    u = d;
-// 		size_type i = n - 2;
-// 		for(; i != 0; --i)
-// 			A[i] = 3 * (a[i + 1] - 2 * a[i] + a[i - 1]) / h_;
-// 		auto L = h_ * (4 - um1);
-// 		u[0]   = h_ / L;
-// 		z[0]   = (A[1] - h_ * zm1) / L;
-// 		for(; i != n - 2; ++i) {
-// 			L    = h_ * (4 - u[i - 1]);
-// 			u[i] = h_ / L;
-// 			z[i] = (A[i + 1] - h_ * z[i - 1]) / L;
-// 		}
-// 		c[n - 1] = 0;
-// 		for(; i != 0; --i) {
-// 			c[i] = z[i - 1] - u[i - 1] * c[i + 1];
-// 			b[i] = (a[i + 1] - a[i]) / h_ - h_ * (c[i + 1] + 2 * c[i]) / 3;
-// 			d[i] = (c[i + 1] - c[i]) / (3 * h_);
-// 		}
-// 		c[0] = zm1 - um1 * c[1];
-// 		b[0] = (a[1] - a[0]) / h_ - h_ * (c[1] + 2 * c[0]) / 3;
-// 		d[0] = (c[1] - c[0]) / (3 * h_);
-// 	}
-
-// 	std::array<result_type, 4> f(argument_type x) const {
-// 		auto i = static_cast<difference_type>((x -= low_) / h_);
-// 		assert(i >= 0 and i < size(M_));
-// 		x -= static_cast<double>(i) * h_;
-// 		auto const& Mi = M_[i];
-// 		return {
-// 			{Mi[0] + x * (Mi[1] + x * (Mi[2] + x * Mi[3])), Mi[1] + x * (2 * Mi[2] + 3 * x * Mi[3]), 2 * Mi[2] + x * 6 * Mi[3], 6 * Mi[3]}
-// 		};
-// 	}
-
-// 	auto h() const { return h_; }
-
-// 	result_type operator()(argument_type x) const { return std::get<0>(f(x)); }
-// 	result_type prime(argument_type x) const { return std::get<1>(f(x)); }
-// 	result_type pprime(argument_type x) const { return std::get<2>(f(x)); }
-// 	result_type ppprime(argument_type x) const { return std::get<3>(f(x)); }
-// };
 
 class uniform_cspline {
 	using argument_type = double;
