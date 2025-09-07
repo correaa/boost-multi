@@ -104,15 +104,15 @@ class uniform_cspline {
  public:
 	auto dx() const -> argument_type { return dx_; }
 	auto lower() const -> argument_type { return lower_; }
-	auto upper() const -> argument_type { return lower_ + dx_ * static_cast<double>(K_.size() - 1); }
+	auto upper() const -> argument_type { return lower_ + (dx_ * static_cast<double>(K_.size() - 1)); }
 
  private:
 	multi::array<double, 2> K_;
-	//	vector a;
-	//	vector b;
-	//	vector c;
-	//	vector d;
-	//	std::vector<std::array<double, 4>> K;
+	// vector a;
+	// vector b;
+	// vector c;
+	// vector d;
+	// std::vector<std::array<double, 4>> K;
  public:
 	// template<class It>
 	// uniform_cspline(It a_begin, It a_end, argument_type lower, argument_type dx)
@@ -160,16 +160,16 @@ class uniform_cspline {
 		c[0] = 0;
 		b[0] = (a[1] - a[0]) / dx_ - dx_ * c[1] / 3;
 		d[0] = c[1] / (3 * dx_);
-		//	for(std::size_t i = 0; i != K.size(); ++i) K[i] = {a[i], b[i], c[i], d[i]};
+		// for(std::size_t i = 0; i != K.size(); ++i) K[i] = {a[i], b[i], c[i], d[i]};
 	}
 	auto operator()(argument_type x) const -> result_type {
 		auto const i  = static_cast<index>((x - lower_) / dx_);
-		auto const Dx = x - static_cast<double>(i) * dx_ - lower_;
-		//	return a[i] + Dx*(b[i] + Dx*(c[i] + Dx*d[i]));
-		//	auto const& Ki = K[i]; using std::get;
-		//	return K[0][i] + Dx*(K[1][i] + Dx*(K[2][i] + Dx*K[3][i]));
+		auto const Dx = x - (static_cast<double>(i) * dx_) - lower_;
+		// return a[i] + Dx*(b[i] + Dx*(c[i] + Dx*d[i]));
+		// auto const& Ki = K[i]; using std::get;
+		// return K[0][i] + Dx*(K[1][i] + Dx*(K[2][i] + Dx*K[3][i]));
 		auto const& Ki = K_[i];
-		return Ki[0] + Dx * (Ki[1] + Dx * (Ki[2] + Dx * Ki[3]));
+		return Ki[0] + (Dx * (Ki[1] + Dx * (Ki[2] + Dx * Ki[3])));
 	}
 };
 
@@ -178,7 +178,6 @@ class uniform_cspline {
 // #endif
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	using std::cout;
 	using vector = std::vector<double>;
 
@@ -188,8 +187,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	uniform_cspline const as(a.begin(), a.end(), 1.0, 0.4);
 	{
 		// for(double x = as.lower() + 0.01; x < as.upper(); x += 0.01) {
-		for(int i = 0; i != static_cast<int>((as.upper() - as.lower()) / 0.01); ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use algorithms
-			double const x = as.lower() + static_cast<double>(i) * 0.01;                // NOLINT(readability-identifier-length)
+		for(int i = 0; i != static_cast<int>((as.upper() - as.lower()) / 0.01); ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+			double const x = as.lower() + (static_cast<double>(i) * 0.01);              // NOLINT(readability-identifier-length)
 			std::cout << x << '\t' << as(x) << '\n';
 		}
 	}

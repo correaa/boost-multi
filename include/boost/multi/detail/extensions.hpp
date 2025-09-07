@@ -8,7 +8,7 @@
 
 #include <boost/multi/detail/index_range.hpp>
 
-#if (__cplusplus >= 202002L) && __has_include(<format>)
+#if (__cplusplus >= 202002L) && !defined(_MSC_VER) && __has_include(<format>)
 #include <format>
 #endif
 
