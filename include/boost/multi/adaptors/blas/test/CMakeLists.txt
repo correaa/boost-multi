@@ -135,7 +135,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 		)
 		target_compile_options(
 			${TEST_EXE}
-			PRIVATE 
+			PRIVATE
 					$<$<CXX_COMPILER_ID:GNU>:
 					-Werror
 					-Wall
