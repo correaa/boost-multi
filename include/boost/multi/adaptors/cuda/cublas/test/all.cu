@@ -4,6 +4,8 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <boost/multi/adaptors/cuda/cublas.hpp>
+
 #include <boost/multi/adaptors/blas/asum.hpp>
 #include <boost/multi/adaptors/blas/axpy.hpp>
 #include <boost/multi/adaptors/blas/copy.hpp>
