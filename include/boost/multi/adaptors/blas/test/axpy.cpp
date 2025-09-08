@@ -3,7 +3,6 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(_MSC_VER)
-#pragma warning(push)
 #pragma warning(disable : 4244)  // conversion deep in xmemory header
 #endif
 
