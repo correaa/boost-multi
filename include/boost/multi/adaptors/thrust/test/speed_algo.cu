@@ -49,7 +49,7 @@ int main() {
 			// cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements() * sizeof(complex), 0);
 			cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements() * sizeof(complex), 0, 0);
 			#else
-			cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements() * sizeof(complex), cudaMemLocation{0, cudaMemLocationTypeHost}, 0);
+			cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements() * sizeof(complex), cudaMemLocation{cudaMemLocationTypeHost, 0}, 0);
 			#endif
 
 			auto size = A.num_elements() * sizeof(complex) / 1e9;
