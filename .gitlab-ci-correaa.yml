@@ -454,7 +454,7 @@ vs2022-shell cudatk:
     - ctest -j 4 --test-dir build --output-on-failure -C Debug || echo "ctest failed, probably due to lack of hardware"
   tags:
     - windows, shell, cudatk
-#  needs: ["vs2022-shell"]  #, "cuda"]
+  needs: ["vs2022-shell", "cuda"]
   timeout: 60 minutes
 
 vs2022-shell cuda:
