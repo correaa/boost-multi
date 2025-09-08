@@ -47,13 +47,12 @@ int main() {
 			auto const tick = std::chrono::high_resolution_clock::now();
 
 			multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A({n, n});
-			multi::detail::what_value<CUDART_VERSION>();
 
 			#if(CUDART_VERSION < 13000)
 			// cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements() * sizeof(complex), 0);
 			cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements() * sizeof(complex), 0, 0);
-			#else
-			cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements() * sizeof(complex), cudaMemLocation{cudaMemLocationTypeHost, 0}, 0);
+			// #else
+			// cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements() * sizeof(complex), cudaMemLocation{cudaMemLocationTypeHost, 0}, 0);
 			#endif
 
 			auto size = A.num_elements() * sizeof(complex) / 1e9;
