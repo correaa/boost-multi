@@ -434,8 +434,7 @@ vs2022-shell c++23:
   timeout: 20 minutes
 
 vs2022-shell cudatk:
-# stage: build
-  stage: basic
+  stage: build
   allow_failure: false
   interruptible: true
   script:
