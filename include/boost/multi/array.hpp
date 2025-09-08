@@ -1016,7 +1016,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 
 	using static_array<T, 0, Alloc>::operator=;
 
-#if !defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ > 22 || (__NVCOMPILER_MAJOR__ == 22 && __NVCOMPILER_MINOR__ > 5))  // bug in nvcc 22.5: error: "operator=" has already been declared in the current scope
+	#if !defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ > 22 || (__NVCOMPILER_MAJOR__ == 22 && __NVCOMPILER_MINOR__ > 5))  // bug in nvcc 22.5: error: "operator=" has already been declared in the current scope
 	template<class TT, class... Args>
 	auto operator=(multi::array<TT, 0, Args...> const& other) & -> array& {
 		if(other.base()) {
@@ -1032,13 +1032,16 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 		}
 		return std::move(*this);
 	}
-#endif
+	#endif
 
-	template<class Other, std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Other>>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	auto operator=(Other const& other) -> array& {
-		this->assign(&other);
-		return *this;
-	}
+	// template<
+	// 	class Other,
+	// 	std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Other>>, int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// >
+	// auto operator=(Other const& other) -> array& {
+	// 	this->assign(&other);
+	// 	return *this;
+	// }
 
 	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array& {
 		return *this;
