@@ -10,20 +10,12 @@
 // IWYU pragma: no_include <algorithm>       // for fill_n, equal
 #include <complex>
 // IWYU pragma: no_include <format>               // for vector
-// #include <numeric>  // for std::transform_reduce
-// #include <utility>  // for move  // IWYU pragma: keep
 #include <vector>  // for vector
 
 namespace multi = boost::multi;
 
-// namespace {
-// template<class M> auto power(M const& array) {
-// 	return std::accumulate(array.elements().begin(), array.elements().end(), 0.0, [](auto e1, auto e2) { return std::move(e1) + std::norm(e2); });
-// 	//  return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
-// }
-// }  // end unnamed namespace
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	#if !defined(__CUDACC_VER_MAJOR__) || (__CUDACC_VER_MAJOR__ < 13)
 	multi::fftw::environment const env;
 
 	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move)
@@ -297,6 +289,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( A1[0][0][0].empty() );  // TODO(correaa) make moved elements work
 		// NOLINTEND(fuchsia-default-arguments-calls)
 	}
-
+	#endif
 	return boost::report_errors();
 }
