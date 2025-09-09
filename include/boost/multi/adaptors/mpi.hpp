@@ -359,7 +359,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 };
 
 template<template<typename> class DatatypeT = mpi::datatype_t, class Array>
-auto begin(Array& arr) {return iterator<DatatypeT>{arr.begin()}; }
+auto begin(Array&& arr) {return iterator<DatatypeT>{std::forward<Array>(arr).begin()}; }
 
 #if defined(__cpp_deduction_guides) && (__cpp_deduction_guides>=201703L)
 template<class ArrayElements> message(ArrayElements) -> message<>;
