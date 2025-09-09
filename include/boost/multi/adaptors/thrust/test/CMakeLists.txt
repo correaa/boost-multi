@@ -31,6 +31,7 @@ endif()
 set(TEST_SRCS
 	array.cu
 	by_key.cu
+	diffusion3d_kernel.cu
 	memory_resource.cu
 	neighbor_list.cu
 	run_reduce.cu
