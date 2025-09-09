@@ -450,7 +450,6 @@ vs2022-shell cudatk:
     # -DCMAKE_CUDA_FLAGS=-Xcompiler=/Wall -Xcompiler=/wd4061,/wd4191,/wd4244,/wd4296,/wd4365,/wd4464 -Xcompiler=/wd4555 -Xcompiler=/wd4619 -Xcompiler=/wd4668 -Xcompiler=/wd4820 -Xcompiler=/wd5026 -Xcompiler=/wd5027 -Xcompiler=/wd5039 -Xcompiler=/wd5031 -Xcompiler=/wd5032 -Xcompiler=/wd5045 -Xcompiler=/wd5220 -Xcompiler=/wd5246 
     - cmake -S . -B build -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CXX_STANDARD=20 -DENABLE_CUDA=1 "-Wno-deprecated-gpu-targets" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
-    - ctest -j 4 --test-dir build --output-on-failure -C Debug || echo "ctest failed, probably due to lack of hardware"
   tags:
     - windows, shell, cudatk
   needs: ["vs2022-shell", "cuda"]
