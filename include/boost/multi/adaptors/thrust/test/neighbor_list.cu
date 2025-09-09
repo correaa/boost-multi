@@ -210,7 +210,7 @@ struct outer {
 
 #if !defined(__clang_major__)
 // no pros: this for testing purposed only
-// const: requires auxiliary class
+// const: requires auxiliary class, and an extra auxiliary class (outer) on Windows
 template<class Arr1D, class Arr2D>
 auto energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) -> double {
 	return thrust::transform_reduce(
