@@ -189,14 +189,34 @@ struct inner {
 	}
 };
 
+
+template<class Positions, class Neighbors>
+struct outer {
+	Positions positions;
+	Neighbors neighbors;
+
+	__host__ __device__ outer(Positions positions, Neighbors neighbors) : positions{positions}, neighbors{neighbors} {}
+
+	__host__ __device__ auto operator()(array<int, 2>::index i) -> double {
+		return thrust::transform_reduce(
+			thrust::device,
+			neighbors[i].begin(), neighbors[i].end(),
+			inner{positions[i], positions},
+			0.0,
+			std::plus<>{}
+		);
+	}
+};
+
 #if !defined(__clang_major__)
 // no pros: this for testing purposed only
-// const: requires auxiliary class
+// const: requires auxiliary class, and an extra auxiliary class (outer) on Windows
 template<class Arr1D, class Arr2D>
 auto energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) -> double {
 	return thrust::transform_reduce(
 		thrust::cuda::par,
 		positions.extension().begin(), positions.extension().end(),
+	#if !defined(_MSC_VER)
 		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(typename Arr1D::index i) -> double {
 			return thrust::transform_reduce(
 				thrust::device,
@@ -206,10 +226,14 @@ auto energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) ->
 				std::plus<>{}
 			);
 		},
+	#else
+		outer{positions.begin(), neighbors.begin()},
+	#endif
 		0.0,
 		std::plus<>{}
 	);
 }
+
 #endif
 
 auto universal_memory_supported() -> bool {

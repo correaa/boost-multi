@@ -18,12 +18,10 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
-#define BOOST_REQUIRE_CLOSE(X, Y, ToL) BOOST_TEST( std::abs( (X) - (Y) ) < (ToL) )
 
 int main() {
-	BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex)
+	{
 		namespace blas = multi::blas;
 		using complex  = thrust::complex<double>;
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -51,15 +49,15 @@ int main() {
 		multi::array<complex, 1> const Y_copy = Y_gpu;
 
 		using blas::operators::operator-;
-		BOOST_REQUIRE_CLOSE(+blas::nrm2(Y_copy - multi::array<complex, 1>{
+		BOOST_TEST(+blas::nrm2(Y_copy - multi::array<complex, 1>{
 													 {214.02, 0.0},
 													 {106.43, 0.0},
 													 {188.37, 0.0}
-        }),
-							0.0, 1e-13);
+        }) < 1e-13);
 	}
 
-	BOOST_AUTO_TEST_CASE(cublas_gemv_real) {
+	// BOOST_AUTO_TEST_CASE(cublas_gemv_real)
+	{
 		namespace blas = multi::blas;
 		using T        = double;
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -78,21 +76,23 @@ int main() {
 		multi::array<T, 1> const Y_copy = Y_gpu;
 
 		using blas::operators::operator-;
-		BOOST_REQUIRE_CLOSE(+blas::nrm2(Y_copy - multi::array{214.02, 106.43, 188.37}), 0.0, 1e-13);
+		BOOST_TEST(+blas::nrm2(Y_copy - multi::array{214.02, 106.43, 188.37}) < 1e-13);
 	}
 
-	BOOST_AUTO_TEST_CASE(cublas_gemm_nh) {
+	// BOOST_AUTO_TEST_CASE(cublas_gemm_nh)
+	{
 		namespace blas = multi::blas;
 
 		using complex = thrust::complex<double>;
 		complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 
-		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-		multi::thrust::cuda::array<complex, 2> const a = {
-			{1.0 - 2.0 * I, 9.0 - 1.0 * I},
-			{2.0 + 3.0 * I, 1.0 - 2.0 * I},
-		};
 		{
+						// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+			multi::thrust::cuda::array<complex, 2> const a = {
+				{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+				{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+			};
+
 			multi::thrust::cuda::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm({1.0, 0.0}, a, a, {0.0, 0.0}, c);                      // c=aa†, c†=aa†
 
@@ -101,6 +101,12 @@ int main() {
 			BOOST_TEST( c_copy[0][1] == 14.0 - 38.0*I );
 		}
 		{
+									// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+			multi::thrust::cuda::array<complex, 2> const a = {
+				{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+				{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+			};
+
 			auto const c = +blas::gemm(complex{1.0, 0.0}, a, a);  // c=aa†, c†=aa†
 
 			multi::array<complex, 2> const c_copy = c;
@@ -108,6 +114,12 @@ int main() {
 			BOOST_TEST( c_copy[0][1] == 14.0 - 38.0*I );
 		}
 		{
+						// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+			multi::thrust::cuda::array<complex, 2> const a = {
+				{1.0 - 2.0 * I, 9.0 - 1.0 * I},
+				{2.0 + 3.0 * I, 1.0 - 2.0 * I},
+			};
+
 			multi::thrust::cuda::array<complex, 2> c({2, 2}, {0.0, 0.0});
 			c += blas::gemm(complex{1.0, 0.0}, a, a);  // c=aa†, c†=aa†
 
