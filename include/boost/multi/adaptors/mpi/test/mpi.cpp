@@ -612,25 +612,22 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		}
 
 		if (sub_comm != MPI_COMM_NULL) {
-			int sub_rank;  // NOLINT(cppcoreguidelines-init-variables)
-			MPI_Comm_rank(sub_comm, &sub_rank);
-
-			int sub_size;  // NOLINT(cppcoreguidelines-init-variables)
-			MPI_Comm_size(sub_comm, &sub_size);
+			int sub_rank; MPI_Comm_rank(sub_comm, &sub_rank);  // NOLINT(cppcoreguidelines-init-variables)
+			int sub_size; MPI_Comm_size(sub_comm, &sub_size);  // NOLINT(cppcoreguidelines-init-variables)
 
 			BOOST_TEST( sub_size == 2 );
 
-			multi::array<int, 2> A;  // NOLINT(readability-identifier-length) conventional name
+			multi::array<int, 2> A_local;
 			switch(sub_rank) {
 				/****/ case 0:
-					A = multi::array<int, 2>{
+					A_local = multi::array<int, 2>{
 						{ 1, 2,   3},
 						{ 7, 8,   9},
 						{13, 14, 15},
 						{19, 20, 21},
 					};
 				break; case 1:
-					A = multi::array<int, 2>{
+					A_local = multi::array<int, 2>{
 						{ 4,  5,  6},
 						{10, 11, 12},
 						{16, 17, 18},
@@ -640,27 +637,27 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			}
 
 			// B's memmory completelly aliases A's memory
-			auto&& B = multi::array_ref<int, 2>({6, 2}, A.data_elements());  // NOLINT(readability-identifier-length) conventional name
+			auto&& B_local = multi::array_ref<int, 2>({6, 2}, A_local.data_elements());  // NOLINT(readability-identifier-length) conventional name
 			// multi::array<int, 2> B({6, 2}, 99);  // this one would do out-of-place // NOLINT(readability-identifier-length) conventional name
 
-			auto&& Ap2 = A.partitioned(2); BOOST_TEST( Ap2.size() == 2 );
-			auto&& Bp2 = B.partitioned(2).rotated().transposed().unrotated(); BOOST_TEST( Bp2.size() == 2 );
+			auto&& A_local_p2 = A_local.partitioned(2); BOOST_TEST( A_local_p2.size() == 2 );
+			auto&& B_local_p2 = B_local.partitioned(2).rotated().transposed().unrotated(); BOOST_TEST( B_local_p2.size() == 2 );
 
-			auto A_it = multi::mpi::begin(Ap2);  // magic way to compute the datatype
-			auto B_it = multi::mpi::begin(Bp2);  // magic way to compute the datatype
+			auto A_local_it = multi::mpi::begin(A_local_p2);  // magic way to compute the datatype
+			auto B_local_it = multi::mpi::begin(B_local_p2);  // magic way to compute the datatype
 
-			BOOST_TEST( A_it.buffer() == B_it.buffer() );
+			BOOST_TEST( A_local_it.buffer() == B_local_it.buffer() );
 
 			MPI_Alltoall(
-				A_it.buffer(), 1, A_it.datatype(),
-				B_it.buffer(), 1, B_it.datatype(),
+				A_local_it.buffer(), 1, A_local_it.datatype(),
+				B_local_it.buffer(), 1, B_local_it.datatype(),
 				sub_comm
 			);
 
 			switch(sub_rank) {
 				/****/ case 0:
 					BOOST_TEST((
-						B == multi::array<int, 2>{
+						B_local == multi::array<int, 2>{
 							{1, 7},
 							{2, 8},
 							{3, 9},
@@ -671,7 +668,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 					));
 				break; case 1:
 					BOOST_TEST((
-						B == multi::array<int, 2>{
+						B_local == multi::array<int, 2>{
 							{13, 19},
 							{14, 20},
 							{15, 21},
@@ -682,6 +679,47 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 					));
 				break; default: {}
 			}
+		}
+
+		if (sub_comm != MPI_COMM_NULL) {
+			int sub_rank; MPI_Comm_rank(sub_comm, &sub_rank);  // NOLINT(cppcoreguidelines-init-variables)
+			int sub_size; MPI_Comm_size(sub_comm, &sub_size);  // NOLINT(cppcoreguidelines-init-variables)
+
+			BOOST_TEST( sub_size == 2 );
+
+			auto block_n = 20L;
+			auto block_m = 30L;
+
+			multi::array<int, 2> A_local({block_n*sub_size, block_m});
+			std::iota(A_local.elements().begin(), A_local.elements().end(), sub_rank);
+			
+			// B's memmory completelly aliases A's memory
+			auto&& B_local = multi::array_ref<int, 2>({block_m*sub_size, block_n}, A_local.data_elements());  // NOLINT(readability-identifier-length) conventional name
+			// multi::array<int, 2> B_local({6, 2}, 99);  // this one would do out-of-place // NOLINT(readability-identifier-length) conventional name
+			auto&& G_local = multi::array    <int, 2>({block_m*sub_size, block_n});
+
+			auto A_local_it = multi::mpi::begin(A_local.partitioned(sub_size));  // magic way to compute the datatype
+			auto B_local_it = multi::mpi::begin(B_local.partitioned(sub_size).rotated().transposed().unrotated());  // magic way to compute the datatype
+			auto G_local_it = multi::mpi::begin(G_local.partitioned(sub_size).rotated().transposed().unrotated());  // magic way to compute the datatype
+
+			BOOST_TEST( G_local_it.buffer() != A_local_it.buffer() );
+
+			MPI_Alltoall(
+				A_local_it.buffer(), 1, A_local_it.datatype(),
+				G_local_it.buffer(), 1, G_local_it.datatype(),
+				sub_comm
+			);
+
+			BOOST_TEST( A_local_it.buffer() == B_local_it.buffer() );
+
+			MPI_Alltoall(
+				A_local_it.buffer(), 1, A_local_it.datatype(),
+				B_local_it.buffer(), 1, B_local_it.datatype(),
+				sub_comm
+			);
+
+			BOOST_TEST( B_local == G_local );
+
 		}
 	}
 
