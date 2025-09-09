@@ -1034,11 +1034,14 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 	}
 #endif
 
-	template<class Other, std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Other>>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	auto operator=(Other const& other) -> array& {
-		this->assign(&other);
-		return *this;
-	}
+	// template<
+	// 	class Other,
+	// 	std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Other>>, int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// >
+	// auto operator=(Other const& other) -> array& {
+	// 	this->assign(&other);
+	// 	return *this;
+	// }
 
 	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array& {
 		return *this;
