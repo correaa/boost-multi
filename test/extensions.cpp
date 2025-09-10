@@ -365,6 +365,36 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			== multi::extensions_t<2>(3, 4).element_transformed( [](auto idxs) {auto [xx, yy] = idxs; return xx + yy; })[2][1]
 		);
 	}
+	{
+		multi::array<int, 2> const arr({3, 4});
+
+		auto const& xs = arr.extensions();
+
+		using std::get;
+		BOOST_TEST( get<0>(xs[0][0]) == 0 );
+		BOOST_TEST( get<1>(xs[0][0]) == 0 );
+
+		BOOST_TEST(   xs.begin() != xs.end()  );
+		BOOST_TEST( !(xs.begin() == xs.end()) );
+
+		BOOST_TEST( xs[0] == xs[0] );
+		BOOST_TEST( xs[0] != xs[1] );
+
+		BOOST_TEST( xs[0] == *xs.begin() );
+		BOOST_TEST( xs[1] == *(xs.begin() + 1) );
+
+		auto it = xs.begin();
+		++it;
+		BOOST_TEST( *it == xs[1] );
+
+		// auto const& values = [](auto i, auto j) { return i + j; } ^ arr.extensions();
+
+		// BOOST_TEST( values.extensions() == arr.extensions() );
+		// BOOST_TEST( *values.elements().begin() == 0 );
+		// BOOST_TEST( values[0][0] == 0 );
+		// BOOST_TEST( values.begin() != values.end() );
+		// arr = ;
+	}
 
 	return boost::report_errors();
 }
