@@ -711,7 +711,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			// B's memmory completelly aliases A's memory
 			// auto&& B_local = multi::array_ref<int, 2>({block_m*sub_size, block_n}, A_local.data_elements());  // NOLINT(readability-identifier-length) conventional name
 			// multi::array<int, 2> B_local({6, 2}, 99);  // this one would do out-of-place // NOLINT(readability-identifier-length) conventional name
-			auto&& G_local = multi::array<int, 2>({block_m * sub_size, block_n});
+			auto G_local = multi::array<int, 2>({block_m * sub_size, block_n});
 
 			auto A_local_it = multi::mpi::begin(A_local.partitioned(sub_size));  // magic way to compute the datatype
 			// auto B_local_it = multi::mpi::begin(B_local.partitioned(sub_size).rotated().transposed().unrotated());  // magic way to compute the datatype
@@ -725,7 +725,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 				sub_comm
 			);
 
-			// warning MPI_All_to_all doesn't work
+			// warning MPI_All_to_all doesn't work in-place
 			// BOOST_TEST( A_local_it.buffer() == B_local_it.buffer() );
 
 			// MPI_Alltoall(
