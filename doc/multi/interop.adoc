@@ -3,3 +3,78 @@
 = Interoperability
 
 :idprefix: interop_
+
+## STL (Standard Template Library)
+
+The fundamental goal of the library is that the arrays and iterators can be used with STL algorithms out-of-the-box with a reasonable efficiency.
+The most dramatic example of this is that `std::sort` works with array as it is shown in a previous example.
+
+Along with STL itself, the library tries to interact with other existing quality C++ libraries listed below.
+
+### Ranges (C++20)
+
+[Standard ranges](https://en.cppreference.com/w/cpp/ranges) extend standard algorithms, reducing the need for iterators, in favor of more composability and a less error-prone syntax.
+
+In this example, we replace the values of the first row for which the sum of the elements is odd:
+
+```cpp
+	static constexpr auto accumulate = [](auto const& R) {return std::ranges::fold_left(R, 0, std::plus<>{});};
+
+	auto arr = multi::array<int, 2>{
+		{2, 0, 2, 2},
+		{2, 7, 0, 2},  // this row adds to an odd number
+		{2, 2, 0, 4},
+	};
+
+	auto const row = std::ranges::find_if(arr, [](auto const& r) { return accumulate(r) % 2 == 1; });
+	if(row != arr.end()) std::ranges::fill(*row, 9);
+
+	assert(arr[1][0] == 9 );
+```
+[(live)](https://godbolt.org/z/cT9WGffM3)
+
+Together with the array constructors, the ranges library enables a more functional programming style;
+this allows us to work with immutable variables in many cases.
+
+```cpp
+	multi::array<double, 2> const A = {{...}};
+	multi::array<double, 1> const V = {...};
+
+	multi::array<double, 1> const R = std::views::zip_transform(std::plus<>{}, A[0], V);
+
+	// Alternative imperative mutating code:
+	// multi::array<double, 1> R(V.size());  // R is created here...
+	// for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...and then mutated here
+```
+[(live)](https://godbolt.org/z/M84arKMnT)
+
+
+The "pipe" (`|`) notation of standard ranges allows one-line expressions.
+In this example, the expression will yield the maximum value of the rows sums:
+[`std::ranges::max(arr | std::views::transform(accumulate))`](https://godbolt.org/z/hvqnsf4xb)
+
+Like in classic STL, standard range algorithms acting on sequences operate in the first dimension by default,
+for example, lexicographical sorting on rows can be performed with the `std::ranges::sort` algorithm.
+
+```cpp
+	auto A = multi::array<char, 2>{
+		{'S', 'e', 'a', 'n', ' ', ' '},
+		{'A', 'l', 'e', 'x', ' ', ' '},
+		{'B', 'j', 'a', 'r', 'n', 'e'},
+	};
+	assert(!std::ranges::is_sorted(A));
+
+	std::ranges::sort(A);  // will sort on rows
+
+	assert( std::ranges::is_sorted(A));
+
+	assert(
+		A == multi::array<char, 2>{
+			{'A', 'l', 'e', 'x', ' ', ' '},
+			{'B', 'j', 'a', 'r', 'n', 'e'},
+			{'S', 'e', 'a', 'n', ' ', ' '},
+		}
+	);
+```
+
+To operate on the second dimension (sort by columns), use `std::ranges::sort(~A)` (or `std::ranges::sort(A.transposed())`).
