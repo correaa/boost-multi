@@ -620,10 +620,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		}
 
 		if(sub_comm != MPI_COMM_NULL) {
-			int sub_rank;
-			MPI_Comm_rank(sub_comm, &sub_rank);  // NOLINT(cppcoreguidelines-init-variables)
-			int sub_size;
-			MPI_Comm_size(sub_comm, &sub_size);  // NOLINT(cppcoreguidelines-init-variables)
+			int sub_rank;  // NOLINT(cppcoreguidelines-init-variables)
+			MPI_Comm_rank(sub_comm, &sub_rank);
+			int sub_size;  // NOLINT(cppcoreguidelines-init-variables)
+			MPI_Comm_size(sub_comm, &sub_size);
 
 			BOOST_TEST( sub_size == 2 );
 
