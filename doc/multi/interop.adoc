@@ -4,8 +4,6 @@
 
 :idprefix: interop_
 
-# Interoperability
-
 ## STL (Standard Template Library)
 
 The fundamental goal of the library is that the arrays and iterators can be used with STL algorithms out-of-the-box with a reasonable efficiency.

@@ -1,5 +1,5 @@
 = https://gitlab.com/correaa/boost-multi[Boost.Multi]
-_© Alfredo A. Correa, 2018-2025_
+© Alfredo A. Correa, 2018-2025
 
 :toc: left
 :toclevels: 3
