@@ -5,6 +5,8 @@
 #ifndef BOOST_MULTI_DETAIL_LAYOUT_HPP
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 
+#include <boost/multi/detail/what.hpp>
+
 #include <boost/multi/detail/config/NODISCARD.hpp>
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
@@ -329,9 +331,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	[[nodiscard]]
 	BOOST_MULTI_HD constexpr auto from_linear(nelems_type const& n) const -> indices_type {
 		auto const sub_num_elements = extensions_t<D - 1>{static_cast<base_ const&>(*this).tail()}.num_elements();
-#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
+		#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
 		assert(sub_num_elements != 0);  // clang hip doesn't allow assert in host device functions
-#endif
+		#endif
 		return multi::detail::ht_tuple(n / sub_num_elements, extensions_t<D - 1>{static_cast<base_ const&>(*this).tail()}.from_linear(n % sub_num_elements));
 	}
 
@@ -347,6 +349,32 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
+
+	class iterator {
+		index idx_;
+		extensions_t<D - 1> rest_;
+		friend extensions_t;
+	
+		iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
+
+	 public:
+		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
+		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
+
+		constexpr auto operator++() -> auto& { ++idx_; return *this; }
+		constexpr auto operator--() -> auto& { --idx_; return *this; }
+
+		constexpr auto operator*() const {
+			// multi::detail::what(rest_);
+			return ht_tuple(idx_, rest_.base());
+		}
+
+		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
+		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
+	};
+
+	constexpr auto begin() const { return iterator{this->base().head().first(), this->base().tail()}; }
+	constexpr auto end()   const { return iterator{this->base().head().last() , this->base().tail()}; }
 
 	constexpr auto operator[](index idx) const {
 		return static_cast<base_ const&>(*this)[idx];
