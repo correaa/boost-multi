@@ -172,7 +172,8 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 |===
 | Member functions  | same as for `subarray` plus ...
 
-| (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size size of the multidimensional array (product of sizes). The default constructor and copy constructor are not exposed. Destructor is trivial since elements are not owned or managed. |
+| (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size size of the multidimensional array (product of sizes). The default constructor and copy constructor are not exposed. Destructor is trivial since elements are not owned or managed.
+|===
 
 |===
 | Element access    | same as for `subarray`
@@ -195,11 +196,11 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 |===
 
 |===
-| Creating arrays   | same as for `subarray`  |
+| Creating arrays   | same as for `subarray`
 |===
 
 |===
-| Relational functions   |  same as for `subarray`  |
+| Relational functions   |  same as for `subarray`
 |===
 
 An `array_ref` can be invalidated if the original buffer is deallocated.
@@ -247,17 +248,16 @@ For most uses, a `multi::array` should be preferred instead.
 |===
 
 |===
-| Creating views    | same as for `array_ref`  |
+| Creating views    | same as for `array_ref`
 |===
 
 |===
-| Creating arrays   | same as for `array_ref`  |
+| Creating arrays   | same as for `array_ref`
 |===
 
 |===
 | Relational fuctions   |  same as for `array_ref`
 |===
-
 
 ### `multi::array<T, D, Alloc = std::allocator<T>>`
 
@@ -312,7 +312,7 @@ It supports stateful and polymorphic allocators, which is implied for the specia
 |===
 
 
-#### `multi::[sub]array<T, D, P>::(const_)iterator
+### `multi::[sub]array<T, D, P>::(const_)iterator`
 
 A random-access iterator to subarrays of dimension `D - 1`, that is generally used to interact with or implement algorithms.
 They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
