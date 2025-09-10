@@ -361,8 +361,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
 		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
 
-		constexpr auto& operator++() { ++idx_; return *this; }
-		constexpr auto& operator--() { --idx_; return *this; }
+		constexpr auto operator++() -> auto& { ++idx_; return *this; }
+		constexpr auto operator--() -> auto& { --idx_; return *this; }
 
 		constexpr auto operator*() const {
 			// multi::detail::what(rest_);
