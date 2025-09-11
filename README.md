@@ -212,64 +212,6 @@ auto dot_product(X1D const& x, Y1D const& y) {
 ```
 [(live)](https://godbolt.org/z/cMq87xPvb)
 
-### Polymorphic Memory Resources
-
-In addition to supporting classic allocators (`std::allocator` by default), the library is compatible with C++17's [polymorphic memory resources (PMR)](https://en.cppreference.com/w/cpp/header/memory_resource), which allows using advanced allocation strategies, including preallocated buffers.
-This example code uses a buffer as memory for two arrays; 
-in it, a predefined buffer will contain the arrays' data (something like `"aaaabbbbbbXX"`).
-
-```cpp
-#include <memory_resource>  // for polymorphic memory resource, monotonic buffer
-
-int main() {
-	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
-	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
-
-	multi::pmr::array<char, 2> A({2, 2}, 'a', &pool);
-	multi::pmr::array<char, 2> B({3, 2}, 'b', &pool);
-
-	assert( buffer != std::string{"XXXXXXXXXXXX"} );  // overwritten w/elements, implementation-dependent (libstd consumes from left, and libc++, from the right)
-}
-```
-
-`multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.
-In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. [(live)](https://godbolt.org/z/fP9P5Ksvb)
-
-The library also supports memory resources from other libraries, including those returning special pointer types (see the [CUDA Thrust](#cuda-thrust) section and the Boost.Interprocess section).
-
-### Substitutability with standard vector and span
-
-The one-dimensional case `multi::array<T, 1>` is special and overlaps functionality with other dynamic array implementations, such as `std::vector`.
-Indeed, both types of containers are similar and usually substitutable, with no or minor modifications.
-For example, both can be constructed from a list of elements (`C c = {x0, x2, ...};`) or from a size `C c(size);`, where `C` is either type.
-
-Both values are assignable, have the same element access patterns and iterator interface, and implement all (lexical) comparisons.
-
-They differ conceptually in their resizing operations: `multi::array<T, 1>` doesn't insert or push elements and resizing works differently.
-The difference is that the library doesn't implement *amortized* allocations; therefore, these operations would be of a higher complexity cost than the `std::vector`.
-For this reason, `resize(new_size)` is replaced with `reextent({new_size})` in `multi::array`, whose primary utility is for element preservation when necessary.
-
-In a departure from standard containers, elements are left initialized if they have trivial constructor.
-So, while `multi::array<T, 1> A({N}, T{})` is equivalent to `std::vector<T> V(N, T{})`, `multi::array<T, 1> A(N)` will leave elements `T` uninitialized if the type allows this (e.g. built-ins), unlike `std::vector<T> V(N)` which will initialize the values.
-RAII types (e.g. `std::string`) do not have trivial default constructor, therefore they are not affected by this rule.
-
-With the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`.
-
-Finally, an array `A1D` can be copied by `std::vector<T> v(A1D.begin(), A1D.end());` or `v.assign(A1D.begin(), A1D.end());` or vice versa.
-Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data_elements(), A1D.num_elements());`. 
-(See examples [here](https://godbolt.org/z/n4TY998o4).)
-
-The `std::span` (C++20) has not a well defined reference- or pointer-semantics; it doesn't respect `const` correctness in generic code.
-This behavior is contrary to the goals of this library;
-and for this reason, there is no single substitute for `std::span` for all cases.
-Depending on how it is used, either `multi::array_ref<T, 1> [const& | &&]` or `multi::array_ptr<T [const], 1>` may replace the features of `std::span`.
-The former typically works when using it as function argument.
-
-Multi-dimensinal arrays can interoperate with C++23's non-owning `mdspan`.
-[Preliminarily](https://godbolt.org/z/aWW3vzfPj), Multi's subarrays (arrays) can be converted (viewed as) `mdspan`.
-
-A detailed comparison with other array libraries (mspan, Boost.MultiArray, Eigen) is explained in an Appendix.
-
 ## Serialization
 
 The ability to serialize arrays is essential for storing data in a persistent medium (files on disk) and communicating values via streams or networks (e.g., MPI).
