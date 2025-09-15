@@ -375,6 +375,7 @@ vs2022-shell:
     # - winget install --id=Microsoft.VisualStudio.2022.Community -e
     # - winget install Microsoft.VisualStudio.2022.BuildTools
     # - winget install Git.Git Kitware.CMake Microsoft.PowerShell
+    - winget install Microsoft.msmpi
     # - choco --version
     # - choco install -y visualstudio2019community poshgit
     - pwd
