@@ -1111,9 +1111,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
-	const_subarray()                                         = default;
-	auto operator=(const_subarray const&) -> const_subarray& = delete;
-	auto operator=(const_subarray&&) -> const_subarray&      = delete;
+	const_subarray() = delete;  // TODO(correaa) should be = delete; ?
+
+	auto operator=(const_subarray const&) -> const_subarray& = delete;  // CHECK THAT THE ASSIGNED ARRAY IS MUTABLE (NOT MARKED CONST)
+	auto operator=(const_subarray&&) -> const_subarray&      = delete;  // CHECK THAT THE ASSIGNED ARRAY IS MUTABLE (NOT MARKED CONST)
 
 	BOOST_MULTI_HD constexpr const_subarray(layout_type const& layout, ElementPtr const& base)
 	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
@@ -2097,11 +2098,25 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		class Range,
 		class = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
 		class = std::enable_if_t<!is_subarray<Range>::value>            // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		, std::enable_if_t<!has_elements<Range>::value, int> =0
 		>
 	constexpr auto operator=(Range const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
 		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
 		adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
+		return *this;
+	}
+
+	template<
+		class RangeWE,
+		class = std::enable_if_t<!std::is_base_of_v<subarray, RangeWE>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		class = std::enable_if_t<!is_subarray<RangeWE>::value>            // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		, std::enable_if_t<has_elements<RangeWE>::value, int> =0
+	>
+	constexpr auto operator=(RangeWE const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
+		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		BOOST_MULTI_ASSERT(this->extensions() == other.extensions());
+		this->elements() = rng.elements();
 		return *this;
 	}
 

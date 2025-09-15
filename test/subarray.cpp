@@ -24,6 +24,10 @@ auto f_sub(multi::const_subarray<int, 1> const& arr) {
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
+		// multi::const_subarray<int, 2> cs;
+		static_assert(!std::is_default_constructible_v<multi::const_subarray<int, 2>>);
+	}
+	{
 		auto f_arr_ret = f_arr({1, 2, 3});
 		BOOST_TEST(f_arr_ret == 3 );
 

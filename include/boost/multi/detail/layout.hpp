@@ -92,6 +92,36 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 template<dimensionality_type D>
 struct extensions_t;
 
+template<class PivotTuple, class RestExtensions>
+class pivot_extensions {
+	PivotTuple pivot_;
+	RestExtensions rest_;
+
+ public:
+	pivot_extensions(PivotTuple pivot, RestExtensions rest) : pivot_{pivot}, rest_{rest} {}
+
+	constexpr auto operator[](index idx) const {
+		if constexpr(RestExtensions::dimensionality > 1) {
+			using std::apply;
+			auto new_pivot = apply([idx](auto... heads) {return detail::mk_tuple(heads..., idx); }, pivot_);
+			auto new_sub = rest_.sub();
+			pivot_extensions<decltype(new_pivot), decltype(new_sub)>{new_pivot, new_sub};
+		} else {
+			using std::apply;
+			auto new_pivot = apply([idx](auto... heads) {return detail::mk_tuple(heads..., idx); }, pivot_);
+			return new_pivot;
+		}
+	}
+
+	friend constexpr auto operator==(pivot_extensions const& self, pivot_extensions const& other) -> bool {
+		return self.pivot_ == other.pivot_ && self.rest_ == other.rest_;
+	}
+
+	friend constexpr auto operator!=(pivot_extensions const& self, pivot_extensions const& other) -> bool {
+		return self.pivot_ != other.pivot_ || self.rest_ != other.rest_;
+	}
+};
+
 template<dimensionality_type D, class Proj>
 class f_extensions_t {
 	extensions_t<D> xs_;
@@ -113,32 +143,49 @@ class f_extensions_t {
 	}
 
 	class iterator {
-		typename extensions_t<D>::iterator it_;
+		index idx_;
+		extensions_t<D-1> rest_;
+		// typename extensions_t<D>::iterator it_;
 		Proj proj_;
 
-		iterator(typename extensions_t<D>::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+		iterator(index idx, extensions_t<D-1> rest, Proj proj) : idx_{idx}, rest_{rest}, proj_{std::move(proj)} {}
+		friend f_extensions_t;
 
 	 public:
-		auto operator++() -> auto& { ++it_; return *this; }
-		auto operator--() -> auto& { --it_; return *this; }
+		using difference_type   = index;
+		using value_type        = void;
+		using pointer           = void;
+		using reference         = void;
+		using iterator_category = std::random_access_iterator_tag;
 
-		constexpr auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
-		constexpr auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
+		auto operator++() -> auto& { ++idx_; return *this; }
+		auto operator--() -> auto& { --idx_; return *this; }
 
-		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
+		constexpr auto operator+=(difference_type dd) -> auto& { idx_+=dd; return *this; }
+		constexpr auto operator-=(difference_type dd) -> auto& { idx_-=dd; return *this; }
+
+		constexpr auto operator+(difference_type dd) const { return iterator{*this} += dd; }
+
+		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.idx_ - other.idx_; }
 
 		constexpr auto operator*() const -> decltype(auto) {
 			using std::get;
 			if constexpr(D != 1) {
-				auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-				return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(get<1>(*it_).base().tail()), ll);
+				auto ll = [idx = idx_, proj = proj_](auto... rest) noexcept /*(noexcept(proj(idx_, rest...)))*/ { return proj(idx, rest...); };
+				return f_extensions_t<D - 1, decltype(ll)>(rest_, ll);
 			} else {
-				return proj_(get<0>(*it_));
+				return proj_(idx_);
 			}
 		}
 
 		auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+
+		friend constexpr auto operator==(iterator const& self, iterator const& other) { return self.idx_ == other.idx_; }
+		friend constexpr auto operator!=(iterator const& self, iterator const& other) { return self.idx_ != other.idx_; }
 	};
+
+	constexpr auto begin() const { using std::get; return iterator{get<0>(xs_).first(), xs_.sub(), proj_}; }
+	constexpr auto end() const { using std::get; return iterator{get<0>(xs_).last(), xs_.sub(), proj_}; }
 
 	constexpr auto size() const { return xs_.size(); }
 	constexpr auto extension() const { return xs_.extension(); }
@@ -366,8 +413,13 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 		constexpr auto operator*() const {
 			// multi::detail::what(rest_);
-			return ht_tuple(idx_, rest_.base());
+			// return ht_tuple(idx_, rest_.base());
+			auto heads = detail::mk_tuple(idx_);
+			auto rst = rest_;
+			return pivot_extensions<decltype(heads), decltype(rst)>{heads, rest_};
 		}
+
+		constexpr auto operator-(iterator const& other) const { return idx_ - other.idx_; }
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
@@ -376,8 +428,12 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto begin() const { return iterator{this->base().head().first(), this->base().tail()}; }
 	constexpr auto end()   const { return iterator{this->base().head().last() , this->base().tail()}; }
 
+	constexpr auto sub() const { return extensions_t<D - 1>(this->base().tail()); }
+
 	constexpr auto operator[](index idx) const {
-		return static_cast<base_ const&>(*this)[idx];
+		auto heads = detail::mk_tuple(idx);
+		auto sb = sub();
+		return pivot_extensions<decltype(heads), decltype(sb)>{heads, sb};
 	}
 
 	template<class... Indices>
@@ -683,7 +739,12 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
+	using size_type = multi::index_extension::size_type;
+	constexpr auto size() const -> size_type { using std::get; return get<0>(static_cast<base_ const&>(*this)).size(); }
+
 	using difference_type = multi::index_extension::difference_type;
+
+	static constexpr auto sub() { return extensions_t<0>{}; }
 
 	class elements_t {
 		multi::index_range rng_;
