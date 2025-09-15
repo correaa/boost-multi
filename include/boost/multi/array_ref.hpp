@@ -1111,7 +1111,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
-	const_subarray() = delete;  // TODO(correaa) should be = delete; ?
+	const_subarray() = default;  // delete;  // TODO(correaa) should be = delete; ?
 
 	auto operator=(const_subarray const&) -> const_subarray& = delete;  // CHECK THAT THE ASSIGNED ARRAY IS MUTABLE (NOT MARKED CONST)
 	auto operator=(const_subarray&&) -> const_subarray&      = delete;  // CHECK THAT THE ASSIGNED ARRAY IS MUTABLE (NOT MARKED CONST)
