@@ -366,7 +366,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		);
 	}
 	{
-		multi::array<int, 2> const arr({3, 4});
+		multi::extensions_t<3> const xs{3, 4, 5};
+		BOOST_TEST( xs.sub() == multi::extensions_t<2>(4, 5) );
+	}
+	{
+		multi::array<int, 2> arr({3, 4});
 
 		auto const& xs = arr.extensions();
 
@@ -387,13 +391,22 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		++it;
 		BOOST_TEST( *it == xs[1] );
 
-		// auto const& values = [](auto i, auto j) { return i + j; } ^ arr.extensions();
+		auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extensions();
 
-		// BOOST_TEST( values.extensions() == arr.extensions() );
-		// BOOST_TEST( *values.elements().begin() == 0 );
-		// BOOST_TEST( values[0][0] == 0 );
-		// BOOST_TEST( values.begin() != values.end() );
+		BOOST_TEST( values.extensions() == arr.extensions() );
+		BOOST_TEST( values[0][0] == 0 );
+		BOOST_TEST( *values.elements().begin() == 0 );
+		BOOST_TEST( values.begin() != values.end() );
+
+		arr.elements() = values.elements();
+
+		static_assert(boost::multi::has_elements<decltype(values)>::value);
+
+		BOOST_TEST( arr[1][2] == 1 + 2 );
 		// arr = ;
+
+		std::copy_n(values.begin(), values.size(), arr.begin());
+		arr = values;
 	}
 
 	return boost::report_errors();

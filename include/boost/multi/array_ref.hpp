@@ -2115,7 +2115,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	>
 	constexpr auto operator=(RangeWE const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
 		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		BOOST_MULTI_ASSERT(this->extensions() == other.extensions());
+		BOOST_MULTI_ASSERT(this->extensions() == rng.extensions());
 		this->elements() = rng.elements();
 		return *this;
 	}
