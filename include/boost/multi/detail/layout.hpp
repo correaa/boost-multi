@@ -416,7 +416,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			// return ht_tuple(idx_, rest_.base());
 			auto heads = detail::mk_tuple(idx_);
 			auto rst = rest_;
-			return pivot_extensions<decltype(heads), decltype(rst)>{heads, rest_};
+			return pivot_extensions<decltype(heads), decltype(rst)>{heads, rst};
 		}
 
 		constexpr auto operator-(iterator const& other) const { return idx_ - other.idx_; }
