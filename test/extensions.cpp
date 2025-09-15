@@ -391,7 +391,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		++it;
 		BOOST_TEST( *it == xs[1] );
 
-		auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extensions();
+		auto const& values = [](auto ii, auto jj) { return static_cast<int>(ii + jj); } ^ arr.extensions();
 
 		BOOST_TEST( values.extensions() == arr.extensions() );
 		BOOST_TEST( values[0][0] == 0 );
