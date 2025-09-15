@@ -108,8 +108,9 @@ class pivot_extensions {
 			pivot_extensions<decltype(new_pivot), decltype(new_sub)>{new_pivot, new_sub};
 		} else {
 			using std::apply;
-			auto new_pivot = apply([idx](auto... heads) {return detail::mk_tuple(heads..., idx); }, pivot_);
-			return new_pivot;
+			// auto new_pivot = apply([idx](auto... heads) {return detail::mk_tuple(heads..., idx); }, pivot_);
+			// return new_pivot;
+			return apply([idx](auto... heads) {return detail::mk_tuple(heads..., idx); }, pivot_);
 		}
 	}
 
@@ -148,7 +149,7 @@ class f_extensions_t {
 		// typename extensions_t<D>::iterator it_;
 		Proj proj_;
 
-		iterator(index idx, extensions_t<D-1> rest, Proj proj) : idx_{idx}, rest_{rest}, proj_{std::move(proj)} {}
+		constexpr iterator(index idx, extensions_t<D-1> rest, Proj proj) : idx_{idx}, rest_{rest}, proj_{std::move(proj)} {}
 		friend f_extensions_t;
 
 	 public:
@@ -158,8 +159,8 @@ class f_extensions_t {
 		using reference         = void;
 		using iterator_category = std::random_access_iterator_tag;
 
-		auto operator++() -> auto& { ++idx_; return *this; }
-		auto operator--() -> auto& { --idx_; return *this; }
+		constexpr auto operator++() -> auto& { ++idx_; return *this; }
+		constexpr auto operator--() -> auto& { --idx_; return *this; }
 
 		constexpr auto operator+=(difference_type dd) -> auto& { idx_+=dd; return *this; }
 		constexpr auto operator-=(difference_type dd) -> auto& { idx_-=dd; return *this; }
@@ -431,9 +432,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto sub() const { return extensions_t<D - 1>(this->base().tail()); }
 
 	constexpr auto operator[](index idx) const {
-		auto heads = detail::mk_tuple(idx);
-		auto sb = sub();
-		return pivot_extensions<decltype(heads), decltype(sb)>{heads, sb};
+		//auto heads = detail::mk_tuple(idx);
+		// auto sb = sub();
+		return pivot_extensions<decltype(detail::mk_tuple(idx)), decltype(sub())>{detail::mk_tuple(idx), sub()};
 	}
 
 	template<class... Indices>
@@ -743,6 +744,32 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	constexpr auto size() const -> size_type { using std::get; return get<0>(static_cast<base_ const&>(*this)).size(); }
 
 	using difference_type = multi::index_extension::difference_type;
+
+	class iterator {
+		index idx_;
+		friend extensions_t;
+	
+		constexpr explicit iterator(index idx) : idx_{idx} {}
+
+	 public:
+		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d}; }
+		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d}; }
+
+		constexpr auto operator++() -> auto& { ++idx_; return *this; }
+		constexpr auto operator--() -> auto& { --idx_; return *this; }
+
+		constexpr auto operator*() const {
+			return detail::mk_tuple(idx_);
+		}
+
+		constexpr auto operator-(iterator const& other) const { return idx_ - other.idx_; }
+
+		friend constexpr auto operator==(iterator const& self, iterator const& other) { return self.idx_ == other.idx_; }
+		friend constexpr auto operator!=(iterator const& self, iterator const& other) { return self.idx_ != other.idx_; }
+	};
+
+	constexpr auto begin() const { return iterator{this->base().head().first()}; }
+	constexpr auto end()   const { return iterator{this->base().head().last()}; }
 
 	static constexpr auto sub() { return extensions_t<0>{}; }
 
