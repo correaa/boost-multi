@@ -23,6 +23,7 @@ endif()
 target_link_libraries(mpi.cpp.x PRIVATE multi)
 target_link_libraries(mpi.cpp.x PRIVATE MPI::MPI_CXX Boost::boost)
 
+#^tcp  sm,self
 if(APPLE)
     add_test(NAME mpi.cpp.x COMMAND ${MPIEXEC_EXECUTABLE} --mca btl ^tcp ${MPIEXEC_NUMPROC_FLAG} 4 ${MPIEXEC_PREFLAGS} $<TARGET_FILE:mpi.cpp.x> ${MPIEXEC_POSTFLAGS})
 else()
