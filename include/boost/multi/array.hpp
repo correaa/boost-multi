@@ -235,15 +235,15 @@ struct static_array                                                             
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),
 		  index_extension(adl_distance(first, last)) * multi::extensions(*first)
 	  ) {
-#if defined(__clang__) && defined(__CUDACC__)
+		#if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
 		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), ref::data_elements(), ref::num_elements());
 		}
 		adl_copy_n(first, last - first, ref::begin());
-#else
+		#else
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
-#endif
+		#endif
 	}
 
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
@@ -252,7 +252,8 @@ struct static_array                                                             
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
-		class = std::enable_if_t<!is_subarray<Range const&>::value>                                                      // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+		class = std::enable_if_t<!is_subarray<Range const&>::value>,                                                     // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+		class = std::enable_if_t<!std::is_same_v<Range, ::boost::multi::extensions_t<D> > >                                  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 		>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	static_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
