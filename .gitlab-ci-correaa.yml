@@ -866,7 +866,7 @@ rocm:
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
-  needs: ["clang++", "g++"]
+#  needs: ["clang++", "g++"]
 
 circle:
   stage: build
@@ -1048,7 +1048,7 @@ inq rocm:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400 || echo "ctest failed, probably due to lack of hardware"
   timeout: 2 hours 30 minutes
-  needs: ["rocm", "inq"]
+#  needs: ["rocm", "inq"]
 
 qmcpack:
   stage: test
