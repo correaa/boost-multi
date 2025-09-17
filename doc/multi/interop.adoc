@@ -653,3 +653,67 @@ In same way, the size of the array can be printed simply by passing the sizes ou
 link:https://godbolt.org/z/WTEfnMG7n[(live)]
 
 When saving arrays to files, consider using serialization (see section) instead of formatting facilities.
+
+## Python (cppyy)
+
+There is no special code to interoperated with Python;
+however the memory layout is compatible with Numpy and pybind11 binding with zero-copy could be written.
+Furthermore the library works out-of-the-box via de automatic `cppyy` bindings.
+
+Here it is a complete Python session:
+
+```python
+# We import the library
+import cppyy
+cppyy.add_include_path('path-to/boost-multi/include')
+cppyy.include("boost/multi/array.hpp")
+
+multi = cppyy.gbl.boost.multi
+
+# We can created a one-dimensional array with 4 initialized to 0.0, or from a list of numbers.
+# We can print the array and change the element values:
+a1d = multi.array['double', 1](4, 0.0)
+a1d = multi.array['double', 1]([1.0, 2.0, 3.0, 4.0])
+print(a1d)
+```
+> ```python
+> { 1.0000000, 2.0000000, 3.0000000, 4.0000000 }
+> ```
+```python
+# elements and assignable
+a1d[2] = 99.9
+print(a1d)
+```
+> ```python
+> { 1.0000000, 2.0000000, 99.900000, 4.0000000 }
+> ```
+```python
+# We can also create a 2x2 array, or directly from a bidimensional list:
+a2d = multi.array['double', 2](multi.extensions_t[2](2, 2), 0.0)
+a2d = multi.array['double', 2]([[1.0, 2.0], [3.0, 4.0]])
+
+# We can retrive information from an individual element, or from a row
+print(a2d.transposed()[0])
+```
+> ```python
+> { 1.0000000, 3.0000000 }
+> ```
+```python
+arow = a2d[0]
+print(arow)
+
+# rows (or slices in general) are references to the original arrays
+arow[0] = 66.6
+print(a2d[0])
+```
+> ```python
+> { 66.600000, 2.0000000 }
+> ```
+```python
+arow_copy = + a2d[0]
+arow_copy = 11111.1
+print(a2d[0])
+```
+> ```python
+> { 66.600000, 2.0000000 }
+> ```
