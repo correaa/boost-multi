@@ -608,3 +608,48 @@ Algorithms are expected to work with oneAPI execution policies as well (not test
 
     std::fill(policy, vec.begin(), vec.end(), 42);
 ```
+
+## Formatting ({fmt} pretty printing)
+
+The library doesn't have a "pretty" printing facility to display arrays.
+Although it is not ideal, arrays can be printed and formated by looping over elements and dimension, as shown in other examples (using standard streams).
+
+Fortunatelly, the library automatically works with the external library link:https://fmt.dev/latest/index.html[{fmt}], both for arrays and subarrays.
+The fmt library is not a dependency of the Multi library;
+they simply work well together using the "ranges" part of the formatting library.
+fmt allows a high degree of confurability.
+
+This example prints a 2-dimensional subblock of a larger array.
+
+```cpp
+#include "fmt/ranges.h"
+...
+    multi::array<double, 2> A2 = {
+        {1.0, 2.0,      3.0}, 
+        /*-subblock-**/
+        {3.0, 4.0, /**/ 5.0},
+        {6.0, 7.0, /**/ 8.0},
+    };
+
+    fmt::print("A2 subblock = {}", A2({1, 3}, {0, 2}));  // second and third row, first and second column
+```
+obtaining the "flat" output `A2 subblock = [[3, 4], [6, 7]]`.
+(A similar effect can be achieved with link:https://godbolt.org/z/4ehd4s5vf[experimental C++23 `std::print` in libc++].)
+
+For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
+
+```cpp
+    fmt::print("{}\n", fmt::join(A2({1, 3}, {0, 2}), "\n"));  // first dimension rows are printer are in different lines
+```
+with the output:
+
+> ```
+> [3, 4]
+> [6, 7]
+> ```
+
+In same way, the size of the array can be printed simply by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which print `(2, 2)`.
+
+link:https://godbolt.org/z/WTEfnMG7n[(live)]
+
+When saving arrays to files, consider using serialization (see section) instead of formatting facilities.
