@@ -717,3 +717,54 @@ print(a2d[0])
 > ```python
 > { 66.600000, 2.0000000 }
 > ```
+
+## Legacy libraries (C-APIs)
+
+Multi-dimensional array data structures exist in all languages, whether implicitly defined by its strides structure or explicitly at the language level.
+Functions written in C tend to receive arrays by pointer arguments (e.g., to the "first" element) and memory layout (sizes and strides).
+
+A C-function taking a 2D array with a concrete type might look like this in the general case:
+```c
+void fun(double* data, int size1, int size2, int stride1, int stride2);
+```
+such a function can be called from C++ on Multi array (`arr`), by extracting the size and layout information,
+```cpp
+fun(arr.base(), std::get<0>(arr.sizes()), std::get<1>(arr.sizes()), std::get<0>(arr.strides()), std::get<1>(arr.strides());
+```
+or
+```cpp
+auto const [size1, size2] = arr.sizes();
+auto const [stride1, stride2] = arr.strides();
+
+fun(arr.base(), size1, size2, stride1, stride2);
+```
+
+Although the recipe can be applied straightforwardly, different libraries make various assumptions about memory layouts (e.g.,  2D arrays assume that the second stride is 1), and some might take stride information in a different way (e.g., FFTW doesn't use strides but stride products).
+Furthermore, some arguments may need to be permuted if the function expects arrays in column-major (Fortran) ordering.
+
+For these reasons, the library is accompanied by a series of adaptor libraries to popular C-based libraries, which can be found in the `include/multi/adaptors/` subdirectory:
+
+- link:https://gitlab.com/correaa/boost-multi/-/blob/master/include/boost/multi/adaptors/blas/README.md[BLAS/cuBLAS Adator 🔗]
+
+Interface for BLAS-like linear algebra libraries, such as openblas, Apple's Accelerate, MKL and hipBLAS/cuBLAS (GPUs).
+Simply `#include "multi/adaptors/blas.hpp"` (and link your program with `-lblas` for example).
+
+- Lapack
+
+Interface for Lapack linear solver libraries.
+Simply `#include "multi/adaptors/lapack.hpp"` (and link your program with `-llapack` for example).
+
+- FFTW/cuFFT
+
+Interface for FFTW libraries, including FFTW 3, MKL, cuFFT/hipFFT (for GPU).
+Simply `#include "multi/adaptors/fftw.hpp"` (and link your program with `-lfftw3` for example).
+
+- link:https://gitlab.com/correaa/boost-multi/-/blob/master/include/boost/multi/adaptors/mpi/README.md[MPI Adaptor 🔗]
+
+Use arrays (and subarrays) as messages for distributed interprocess communication (GPU and CPU) that can be passed to MPI functions through datatypes.
+Simply `#include "multi/adaptors/mpi.hpp"`.
+
+- TotalView: visual debugger (commercial)
+
+Popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
+Simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
