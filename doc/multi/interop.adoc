@@ -283,7 +283,7 @@ The output JSON file created by Cereal in the previous example looks like this.
     }
 }
 ```
-(The [Cereal XML](https://godbolt.org/z/de814Ycar) and Boost XML output would have a similar structure.)
+(The link:https://godbolt.org/z/de814Ycar[Cereal XML] and Boost XML output would have a similar structure.)
 
 Large datasets tend to be serialized slowly for archives with heavy formatting.
 Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array of with random `double`s.
@@ -411,7 +411,7 @@ int main() {
 	assert( B[5][0] == 50.0 );
 }
 ```
-[(live)](https://godbolt.org/z/oM4YbPYz8)
+link:https://godbolt.org/z/oM4YbPYz8[(live)]
 
 which uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a HIP/ROCm compiler, or OpenMP or TBB in other cases).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` (from `<thrust/universal_allocator.h>`) instead.
@@ -471,7 +471,7 @@ int main() {
 	auto C = B;  // uses omp automatically for copying behind the scenes
 }
 ```
-https://godbolt.org/z/KW19zMYnE
+link:https://godbolt.org/z/KW19zMYnE[(live)]
 
 Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
@@ -519,8 +519,92 @@ int main() {
 	for(int i = 0; i != 10; ++i) { array2D A({100, 100}); /*... use A ...*/ }
 }
 ```
-https://godbolt.org/z/rKG8PhsEh
+link:https://godbolt.org/z/rKG8PhsEh[(live)]
 
 In the example, most of the frequent memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
 
+## CUDA C++
+
+CUDA is a dialect of C++ that allows writing pieces of code for GPU execution, known as "CUDA kernels".
+CUDA code is generally "low level" (less abstracted) but it can be used in combination with CUDA Thrust or the CUDA runtime library, specially to implement custom algorithms.
+Although code inside kernels has certain restrictions, most Multi features can be used. 
+(Most functions in Multi, except those involving memory allocations, are marked `__device__` to allow this.)
+
+Calling kernels involves a special syntax (`<<< ... >>>`), and they cannot take arguments by reference (or by values that are not trivial).
+Since arrays are usually passed by reference (e.g. `multi::array<double, 2>&` or `Array&&`), a different idiom needs to be used.
+(Large arrays are not passed by value to avoid copies, but even if a copy would be fine, kernel arguments cannot allocate memory themselves.)
+Iterators (e.g. `.begin()/.end()`) and "cursors" (e.g. `.home()`) are "trivial to copy" and can be passed by value and represent a "proxy" to an array, including allowing the normal index syntax and other transformations.
+
+Cursors are a generalization of iterators for multiple dimensions.
+They are cheaply copied (like iterators) and they allow indexing.
+Also, they have no associated `.size()` or `.extensions()`, but this is generally fine for kernels.
+(Since `cursors` have minimal information for indexing, they can save stack/register space in individual kernels.)
+
+Here it is an example implementation for matrix multiplication, in combination with Thrust and Multi,
+
+```cpp
+#include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi
+#include <thrust/system/cuda/memory.h>  // for thrust::cuda::allocator
+
+template<class ACursor, class BCursor, class CCursor>
+__global__ void Kernel(ACursor A, BCursor B, CCursor C, int N) {
+	int x = threadIdx.x + blockIdx.x * blockDim.x;
+	int y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	typename CCursor::element_type value{0.0};
+	for (int k = 0; k != N; ++k) { value += A[y][k] * B[k][x]; }
+	C[y][x] = value;
+}
+
+namespace multi = boost::multi;
+
+int main() {
+	int N = 1024;
+
+	// declare 3 square arrays
+	multi::array<double, 2, thrust::cuda::allocator<double>> A({N, N}); A[0][0] = ...;
+	multi::array<double, 2, thrust::cuda::allocator<double>> B({N, N}); B[0][0] = ...;
+	multi::array<double, 2, thrust::cuda::allocator<double>> C({N, N});
+
+	// kernel invocation code
+	assert(N % 32 == 0);
+	dim3 dimBlock(32, 32);
+	dim3 dimGrid(N/32, N/32);
+	Kernel<<<dimGrid, dimBlock>>>(A.home(), B.home(), C.home(), N);
+	cudaDeviceSynchronize();
+
+    // now C = A x B
+}
+```
+link:https://godbolt.org/z/eKbeosrWa[(live)]
+
+Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarely occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()`).
+
+## SYCL
+
+The SYCL library promises the unify CPU, GPU and FPGA code.
+At the moment, the array containers can use the Unified Shared Memory (USM) allocator, but no other tests have been investigated.
+
+```cpp
+    sycl::queue q;
+
+    sycl::usm_allocator<int, sycl::usm::alloc::shared> q_alloc(q);
+    multi::array<int, 1, decltype(q_alloc)> data(N, 1.0, q_alloc);
+
+    //# Offload parallel computation to device
+    q.parallel_for(sycl::range<1>(N), [=,ptr = data.base()] (sycl::id<1> i) {
+        ptr[i] *= 2;
+    }).wait();
+```
+link:https://godbolt.org/z/8WG8qaf4s[(live)]
+
+Algorithms are expected to work with oneAPI execution policies as well (not tested)
+
+```cpp
+    auto policy = oneapi::dpl::execution::dpcpp_default;
+    sycl::usm_allocator<int, sycl::usm::alloc::shared> alloc(policy.queue());
+    multi::array<int, 1, decltype(alloc)> vec(n, alloc);
+
+    std::fill(policy, vec.begin(), vec.end(), 42);
+```
