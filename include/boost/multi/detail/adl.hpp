@@ -596,7 +596,7 @@ class adl_alloc_uninitialized_default_construct_n_t {
 #if defined(THRUST_VERSION) && (THRUST_VERSION < 200800)
 	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const BOOST_MULTI_DECLRETURN(         (thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n), ::boost::multi::detail::what_value<THRUST_VERSION>()) )
 #else
-	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const BOOST_MULTI_DECLRETURN(         thrust::detail::value_initialize_range(std::forward<Alloc>(alloc), first, n))
+	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const BOOST_MULTI_DECLRETURN(         (thrust::detail::value_initialize_range(std::forward<Alloc>(alloc), first, n) , ::boost::multi::detail::what_value<THRUST_VERSION>()) )
 #endif
 #endif
 	template<class... As>                       constexpr auto _(priority<4>/**/,          As&&... args          ) const BOOST_MULTI_DECLRETURN(                     alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  
