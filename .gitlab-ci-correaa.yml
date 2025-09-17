@@ -1048,7 +1048,7 @@ inq rocm:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400 || echo "ctest failed, probably due to lack of hardware"
   timeout: 2 hours 30 minutes
-#  needs: ["rocm", "inq"]
+  needs: ["rocm", "inq"]
 
 qmcpack:
   stage: test
