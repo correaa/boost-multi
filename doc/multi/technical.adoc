@@ -1,0 +1,59 @@
+[#technical]
+
+= Installation
+
+:idprefix: technical_
+
+# Technical points
+
+## Indexing (square brackets vs. parenthesis?)
+
+The chained bracket notation (`A[i][j][k]`) allows you to refer to elements and lower-dimensional subarrays consistently and generically, and it is the recommended way to access array objects.
+It is a frequently raised question whether the chained bracket notation is beneficial for performance, as each use of the bracket leads to the creation of temporary objects, which in turn generates a partial copy of the layout.
+Moreover, this goes against link:https://isocpp.org/wiki/faq/operator-overloading#matrix-subscript-op[historical recommendations].
+
+It turns out that modern compilers with a fair level of optimization (`-O2`) can elide these temporary objects so that `A[i][j][k]` generates identical machine code as `A.base() + i*stride1 + j*stride2 + k*stride3` (+offsets not shown).
+In a subsequent optimization, constant indices can have their "partial stride" computation removed from loops. 
+As a result, these two loops lead to the link:https://godbolt.org/z/ncqrjnMvo[same machine code]:
+
+```cpp
+	// given the values of i and k and accumulating variable acc ...
+    for(long j = 0; j != M; ++j) {acc += A[i][j][k];}
+```
+```cpp
+    auto* base = A.base() + i*std::get<0>(A.strides()) + k*std::get<2>(A.strides());
+    for(long j = 0; j != M; ++j) {acc += *(base + j*std::get<1>(A.strides()));}
+```
+
+Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access;
+it does so as part of a more general syntax to generate sub-blocks.
+In any case, `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i`, `j`, and `k` are normal integer indices.
+For this reason, `A(i, j, k)`, `A(i, j)(k)`, `A(i)(j)(k)`, `A[i](j)[k]` are examples of equivalent expressions.
+
+Sub-block notation, when at least one argument is an index range, e.g., `A({i0, i1}, j, k)` has no equivalent square-bracket notation.
+Note also that `A({i0, i1}, j, k)` is not equivalent to `A({i0, i1})(j, k)`; their resulting sublocks have different dimensionality.
+
+Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
+
+```cpp
+std::array<int, 3> p = {2, 3, 4};
+std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
+```
+
+## Iteration past-end in the abstract machine
+
+It's crucial to grasp that pointers are limited to referencing valid memory in the strict C abstract machine, such as allocated memory.
+This understanding is key to avoiding undefined behavior in your code.
+Since the library iteration is pointer-based, the iterators replicate these restrictions.
+
+There are three cases to consider; the first two can be illustrated with one-dimensional arrays, and one is intrinsic to multiple dimensions.
+
+The first case is that of strided views (e.g. `A.strided(n)`) whose stride value are not divisors of original array size.
+The second case is that or negative strides in general.
+The third case is that of iterators of transposed array.
+
+In all these cases, the `.end()` iterator may point to invalid memory. 
+It's important to note that the act of constructing certain iterators, even if the element is never dereferenced, is undefined in the abstract machine.
+This underscores the need for caution when using such operations in your code.
+
+A thorough description of the cases and workaround is beyond the scope of this section.
