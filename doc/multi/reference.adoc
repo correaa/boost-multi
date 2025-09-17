@@ -321,3 +321,141 @@ Note that this is the same type for all related arrays, for example, `multi::arr
 
 `iterator` can be invalidated when its original array is invalidated, destroyed or resized.
 An `iterator` that stems from `static_array` becomes invalid only if the original array was destroyed or out-of-scope.
+
+## Type Requirements
+
+The library design tries to impose the minimum possible requirements over the types that parameterize the arrays.
+Array operations assume that the contained type (element type) are regular (i.e. different element represent disjoint entities that behave like values).
+Pointer-like random access types can be used as substitutes of built-in pointers.
+(Therefore pointers to special memory and fancy-pointers are supported.)
+
+### Linear Sequences: Pointers
+
+An `array_ref` can reference an arbitrary random access linear sequence (e.g. memory block defined by pointer and size).
+This way, any linear sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be efficiently arranged as a multidimensional array.
+
+```cpp
+std::vector<double> buffer(100);
+multi::array_ref<double, 2> A({10, 10}, buffer.data());
+A[1][1] = 9.0;
+
+assert( buffer[11] == 9.0 );  // the target memory is affected
+```
+Since `array_ref` does not manage the memory associated with it, the reference can be simply dangle if the `buffer` memory is reallocated (e.g. by vector-`resize` in this case).
+
+### Special Memory: Pointers and Views
+
+`array`s manage their memory behind the scenes through allocators, which can be specified at construction.
+It can handle special memory, as long as the underlying types behave coherently, these include link:https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers] (and fancy references).
+Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
+
+#### Allocators and Fancy Pointers
+
+Specific uses of fancy memory are file-mapped memory or interprocess shared memory.
+This example illustrates memory persistency by combining with Boost.Interprocess library. 
+The arrays support their allocators and fancy pointers (`boost::interprocess::offset_ptr`).
+
+```cpp
+#include <boost/interprocess/managed_mapped_file.hpp>
+using namespace boost::interprocess;
+using manager = managed_mapped_file;
+template<class T> using mallocator = allocator<T, manager::segment_manager>;
+decltype(auto) get_allocator(manager& m) {return m.get_segment_manager();}
+
+template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
+
+int main() {
+{
+	manager m{create_only, "mapped_file.bin", 1 << 25};
+	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(marray<double, 2>::extensions_type{1000, 1000}, 0.0, get_allocator(m));
+	arr2d[4][5] = 45.001;
+}
+// imagine execution restarts here, the file "mapped_file.bin" persists
+{
+	manager m{open_only, "mapped_file.bin"};
+	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
+	assert( arr2d[7][8] == 0. );
+	assert( arr2d[4][5] == 45.001 );
+	m.destroy<marray<double, 2>>("arr2d");
+}
+}
+```
+link:https://godbolt.org/z/oeTss3s35[(live)]
+
+(See also, examples of interactions with the CUDA Thrust library to see more uses of special pointer types to handle special memory.)
+
+### Transformed views
+
+Another kind of use of the internal pointer-like type is to transform underlying values.
+These are useful to create "projections" or "views" of data elements.
+In the following example a "transforming pointer" is used to create a conjugated view of the elements.
+In combination with a transposed view, it can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
+We can adapt the library type `boost::transform_iterator` to save coding, but other libraries can be used also.
+The hermitized view is read-only, but with additional work, a read-write view can be created (see `multi::::hermitized` in multi-adaptors).
+
+```cpp
+constexpr auto conj = [](auto const& c) {return std::conj(c);};
+
+template<class T> struct conjr : boost::transform_iterator<decltype(conj), T*> {
+	template<class... As> conjr(As const&... as) : boost::transform_iterator<decltype(conj), T*>{as...} {}
+};
+
+template<class Array2D, class Complex = typename Array2D::element_type>
+auto hermitized(Array2D const& arr) {
+	return arr
+		.transposed() // lazily tranposes the array
+		.template static_array_cast<Complex, conjr<Complex>>(conj)  // lazy conjugate elements
+	;
+}
+
+int main() {
+	using namespace std::complex_literals;
+	multi::array A = {
+		{ 1.0 + 2.0i,  3.0 +  4.0i},
+		{ 8.0 + 9.0i, 10.0 + 11.0i}
+	};
+
+	auto const& Ah = hermitized(A);
+
+	assert( Ah[1][0] == std::conj(A[0][1]) );
+}
+```
+
+To simplify this boilerplate, the library provides the `.element_transformed(F)` method that will apply a transformation `F` to each element of the array.
+In this example, the original array is transformed into a transposed array with duplicated elements.
+
+```cpp
+	multi::array<double, 2> A = {
+		{1.0, 2.0},
+		{3.0, 4.0},
+	};
+
+	auto const scale = [](auto x) { return x * 2.0; };
+
+	auto B = + A.transposed().element_transformed(scale);
+	assert( B[1][0] == A[0][1] * 2 );
+```
+
+link:https://godbolt.org/z/TYavYEG1T[(live)]
+
+Since `element_transformed` is a reference-like object (transformed view) to the original data, it is important to understand the semantics of evaluation and possible allocations incurred.
+As mentioned in other sections using `auto` and/or `+` appropriately can lead to simple and efficient expressions.
+
+|===
+| Construction    | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes
+
+| `multi::array<T, D> const B = A.element_transformed(fun);` | Yes        | No  | Yes | Implicit conversion to `T` if result is different, dimensions must match. B can be mutable.
+| `multi::array<T, D> const B = + A.element_transformed(fun);` | Yes (and move, or might allocate twice if types don't match)  | No  | Yes | Not recommended
+| `multi::array<T, D> const B{A.element_transformed(fun)};` | Yes        | No  | Yes | Explicit conversion to `T` if result is different, dimensions must match
+| `auto const B = + A.elements_transformed(fun);`           | Yes         | No  | Yes | Types and dimension are deduced, result is contiguous, preferred
+| `auto const B = A.element_transformed(fun);`               | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`, usually `const`, not recommended
+| `auto const& B = A.elements_transformed(fun);`           | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`. Preferred way.
+| `multi::array<T, D> B(A.extensions()); B = A.element_transformed(fun);`           | Yes         | Yes (during construction)  | Yes | "Two-step" construction. `B` is mutable. Not recommended
+|===
+
+|===
+| Assigment    | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes
+
+| `B = A.elements_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred
+| `B = + A.elements_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended.
+|===
