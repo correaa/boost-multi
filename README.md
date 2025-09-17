@@ -35,7 +35,7 @@ int main() {
 
 ## Install Multi
 
-Before using the library, you can try it https://godbolt.org/z/dvacqK8jE[online].
+Before using the library, you can try it [online](https://godbolt.org/z/dvacqK8jE).
 
 _Multi_ has no external dependencies and can be used immediately after downloading.
 ```bash
