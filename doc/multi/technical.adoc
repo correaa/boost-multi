@@ -1,10 +1,8 @@
 [#technical]
 
-= Installation
+= Technical points
 
 :idprefix: technical_
-
-# Technical points
 
 ## Indexing (square brackets vs. parenthesis?)
 
