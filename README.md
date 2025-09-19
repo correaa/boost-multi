@@ -81,4 +81,4 @@ target_link_libraries(my_target PUBLIC multi)
 ## Support
 
 * File an issue
-* Join the **#boost-multi** discussion group at [cpplang.slack.com](https://cpplang.slack.com/)
+* Join the [**#boost-multi**](https://cpplang.slack.com/archives/C071VGKUA5P) discussion group at [cpplang.slack.com](https://cpplang.slack.com/)
