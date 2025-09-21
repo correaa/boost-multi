@@ -593,11 +593,11 @@ class adl_alloc_uninitialized_default_construct_n_t {
 	template<class Alloc, class... As>          constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const BOOST_MULTI_JUSTRETURN(                      adl_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
 	template<class... As>                       constexpr auto _(priority<2>/**/,                    As&&... args) const BOOST_MULTI_DECLRETURN(               xtd::alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 #if defined(__CUDACC__) || defined(__HIPCC__)
-#if defined(THRUST_VERSION) && (THRUST_VERSION < 200800)
-	boost::multi::detail::what_value_t<THRUST_VERSION> a;
+#if defined(THRUST_VERSION) && (THRUST_VERSION < 200700)  // 200800)
+	// boost::multi::detail::what_value_t<THRUST_VERSION> a;
 	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const BOOST_MULTI_DECLRETURN(         (thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n)) )
 #else
-	boost::multi::detail::what_value_t<THRUST_VERSION> b;
+	// boost::multi::detail::what_value_t<THRUST_VERSION> b;
 	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const BOOST_MULTI_DECLRETURN(         (thrust::detail::value_initialize_range(std::forward<Alloc>(alloc), first, n)) )
 #endif
 #endif
