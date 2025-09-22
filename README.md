@@ -14,18 +14,18 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 #include <boost/multi/array.hpp>
 
 int main() {
-    multi::array<int, 2> A {
+    multi::array<int, 2> A {  // two-dimensional array of integers
       {1, 2, 3},
       {4, 5, 6}
     };
 
-    assert( A.size() == 2 );
-    assert( A.size() == A.end() - A.begin() );
+    assert( A.size() == 2 );  // the array has 2 rows
+    assert( A.size() == A.end() - A.begin() );  // array provides interators to rows
 
-    assert( A[1][1] == 5);
+    assert( A[1][1] == 5);  // array provies element access through indexing
 
-    assert( A.elements().size() == 2*3 );
-    aseert( A.elements()[4] == 5);
+    assert( A.elements().size() == 2*3 );  // elements can be accessed as a "flat" sequences
+    aseert( A.elements()[4] == 5);  // the "flat" sequence can be accessed by index (and by iterator)
 }
 ```
 
@@ -33,9 +33,11 @@ int main() {
 
 * [Online documentation](https://correaa.gitlab.io/boost-multi/multi.html)
 
-## Install Multi
+## Try Multi
 
-Before using the library, you can try it [online](https://godbolt.org/z/dvacqK8jE).
+Before installing the library, you can try it [online](https://godbolt.org/z/dvacqK8jE) through the Godbolt's Compiler Explorer.
+
+## Install Multi
 
 _Multi_ has no external dependencies and can be used immediately after downloading.
 ```bash
@@ -69,7 +71,7 @@ Once installed, other CMake projects (targets) can depend on Multi by adding a s
 find_package(multi)  # see https://gitlab.com/correaa/boost-multi
 ```
 
-Alternatively to the library can be fetched on demand:
+Alternatively, the library can be fetched on demand:
 ```cmake
 include(FetchContent)
 FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
@@ -80,5 +82,5 @@ target_link_libraries(my_target PUBLIC multi)
 
 ## Support
 
-* File an issue
+* File a Gitlab [issue](https://gitlab.com/correaa/boost-multi/-/issues/new?type=ISSUE) or Github [issue](https://github.com/correaa/boost-multi/issues/new/choose).
 * Join the [**#boost-multi**](https://cpplang.slack.com/archives/C071VGKUA5P) discussion group at [cpplang.slack.com](https://cpplang.slack.com/)
