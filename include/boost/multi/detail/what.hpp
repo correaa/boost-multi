@@ -11,6 +11,7 @@ namespace boost::multi::detail {
 	template<class... Ts> auto what(Ts&&...) -> std::tuple<Ts&&...> = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)
 
 	template<int V> auto what_value() -> std::integral_constant<int, V> = delete;
+	template<int V> struct what_value_t;
 }  // namespace boost::multi::detail
 
 #endif  // BOOST_MULTI_DETAIL_WHAT_HPP
