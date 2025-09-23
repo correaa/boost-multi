@@ -7,6 +7,8 @@
 In this example, we are going to use memory that is not managed by the library and manipulate the elements.
 We can create a static C-array of ``double``s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
+(This tutorial can be followed https://godbolt.org/z/4zWTPcoK6[online].)
+
 ```cpp
 #include <boost/multi/array.hpp>
 
@@ -23,7 +25,9 @@ int main() {
 	...
 ```
 
-Next, we print the elements in a way that corresponds to the logical arrangement:
+Next, we print the elements in a way that corresponds to the logical arrangement.
+To do that, first, we extract the extensions (the 2-dimensional range of valid indexes) of the array,
+then we decompose it as the cartesian product of two 1-dimensional ranges of integer indices.
 
 ```cpp
 #include <iostream>  // for print
@@ -91,8 +95,6 @@ In this case, the original array will be transformed by sorting the matrix into:
 > 11 12 13 14 100
 > 16 17 18 19 150
 > ```
-
-https://godbolt.org/z/4zWTPcoK6[(live code)]
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
