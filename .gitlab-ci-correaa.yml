@@ -615,13 +615,13 @@ oneapi-2022.2:
 oneapi-latest c++20:
   stage: build
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
-  allow_failure: true
+  allow_failure: false
+  interruptible: true
   tags:
     - non-shared
     - large-disk-space
     - high-bandwidth
     - x86_64
-  interruptible: true
   script:
     # - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
     # - echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
