@@ -133,7 +133,7 @@ Depending on how it is used, either `multi::array_ref<T, 1> [const& | &&]` or `m
 The former typically works when using it as function argument.
 
 Multi-dimensinal arrays can interoperate with C++23's non-owning `mdspan`.
-link:https://godbolt.org/z/aWW3vzfPj[Preliminarily], Multi's subarrays (arrays) can be converted (viewed as) `mdspan`.
+link:https://godbolt.org/z/aocn73bzf[Preliminarily], Multi's subarrays (arrays) can be converted (viewed as) `mdspan` automatically (replicating the behavior of `std::vector`).
 
 A detailed comparison with other array libraries (mspan, Boost.MultiArray, Eigen) is explained in an Appendix.
 
