@@ -5,7 +5,7 @@
 :idprefix: tutorial_
 
 In this example, we are going to use memory that is not managed by the library and manipulate the elements.
-We can create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
+We can create a static C-array of ``double``s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
 ```cpp
 #include <boost/multi/array.hpp>
@@ -172,8 +172,8 @@ or equivalently,
 ```cpp
 auto C2 = + A2( {0, 2}, {0, 2} );
 ```
-Note the use of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
-Due to a language limitation, omitting the `+` will create another non-independent reference view of the left-hand side, which is generally undesired.
+Note the use of the prefix `\+` (plus) as an indicator that a copy must be created (it has no arithmetic implications).
+Due to a language limitation, omitting the plus symbol will create another non-independent reference view of the left-hand side, which is generally undesired.
 
 Subarray-references can also assigned, but only if the shapes of the left-hand side (LHS) and right-hand side (RHS) match.
 Otherwise, the behavior is undefined (in debug mode, the program will fail an assertion).
@@ -191,7 +191,7 @@ A2 = A2.transposed();  // undefined result, this is an error
 
 This is an instance of the problem of _data aliasing_, which describes a common situation in which a data location in memory can be accessed through different parts of an expression or function call.
 
-This below statement below, instead, does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
+This statement below, instead, does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
 
 ```cpp
 A2 = + A2.transposed();  // ok, (might allocate)
