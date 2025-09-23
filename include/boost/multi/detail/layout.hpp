@@ -328,13 +328,17 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return f_extensions_t<D, Func>(xs, std::move(fun));
 	}
 
+	BOOST_MULTI_HD constexpr auto sub() const {
+		return extensions_t<D - 1>{static_cast<base_ const&>(*this).tail()};
+	}
+
 	[[nodiscard]]
 	BOOST_MULTI_HD constexpr auto from_linear(nelems_type const& n) const -> indices_type {
-		auto const sub_num_elements = extensions_t<D - 1>{static_cast<base_ const&>(*this).tail()}.num_elements();
+		auto const sub_num_elements = sub().num_elements();
 		#if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
 		assert(sub_num_elements != 0);  // clang hip doesn't allow assert in host device functions
 		#endif
-		return multi::detail::ht_tuple(n / sub_num_elements, extensions_t<D - 1>{static_cast<base_ const&>(*this).tail()}.from_linear(n % sub_num_elements));
+		return multi::detail::ht_tuple(n / sub_num_elements, sub().from_linear(n % sub_num_elements));
 	}
 
 	friend constexpr auto operator%(nelems_type idx, extensions_t const& extensions) { return extensions.from_linear(idx); }

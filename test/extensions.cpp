@@ -367,6 +367,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		multi::array<int, 2> const arr({3, 4});
+		multi::extensions_t<3> const xs{3, 4, 5};
+		BOOST_TEST( xs.sub() == multi::extensions_t<2>(4, 5) );
+	}
+	{
+		multi::array<int, 2> const arr({3, 4});
 
 		auto const& xs = arr.extensions();
 
