@@ -230,6 +230,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(multi::detail::valid_mull(22));
 		}
 	}
+	{
+		static_assert(  multi::has_elements<multi::array<int, 2>>::value );
+		static_assert( !multi::has_elements<std::vector<int> >::value );
+	}
 
 	return boost::report_errors();
 }

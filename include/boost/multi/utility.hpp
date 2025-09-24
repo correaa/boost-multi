@@ -206,6 +206,14 @@ struct array_traits {
 	using default_allocator_type = typename Array::default_allocator_type;
 };
 
+namespace detail {
+template<class T>
+auto has_elements_aux(T const& arr) -> decltype(arr.elements(), std::true_type{});
+auto has_elements_aux(...) -> decltype(std::false_type{});
+}  // namespace detail
+
+template<class T> struct has_elements : decltype(detail::has_elements_aux(std::declval<T>())){};
+
 template<class T, typename = typename T::rank>
 auto        has_rank_aux(T const&) -> std::true_type;
 inline auto has_rank_aux(...) -> std::false_type;
