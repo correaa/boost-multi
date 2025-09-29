@@ -12,8 +12,8 @@ namespace boost::multi::blas {
 
 template<class It, typename Size, class A0D>
 auto asum_n(It first, Size n, A0D res)
-->decltype(blas::default_context_of(base(first))->asum(n, base(first), stride(first), res), std::next(res)) {
-	return blas::default_context_of(base(first))->asum(n, base(first), stride(first), res), std::next(res); }
+->decltype(blas::default_context_of(base(first))->asum(static_cast<core::ssize_t>(n), base(first), stride(first), res), std::next(res)) {
+	return blas::default_context_of(base(first))->asum(static_cast<core::ssize_t>(n), base(first), stride(first), res), std::next(res); }
 
 using std::begin; using std::end;
 
