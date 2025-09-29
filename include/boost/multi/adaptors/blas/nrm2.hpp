@@ -27,7 +27,7 @@ auto nrm2_n(Context&& ctxt, XIt x_first, Size count, RPtr rp) {
 template<class It, class Size, class A0D>
 auto nrm2_n(It const& x, Size n, A0D res)  // NOLINT(readability-identifier-length) conventional BLAS naming
 //->decltype(blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res)) {  // NOLINT(fuchsia-default-arguments-calls)
-{   return blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res); }  // NOLINT(fuchsia-default-arguments-calls)
+{   return blas::default_context_of(x.base())->nrm2(static_cast<core::ssize_t>(n), x.base(), static_cast<core::ssize_t>(x.stride()), res), std::next(res); }  // NOLINT(fuchsia-default-arguments-calls)
 
 template<class Context, class X1D, class R,
 	std::enable_if_t<! multi::has_base<std::decay_t<R>>::value, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
