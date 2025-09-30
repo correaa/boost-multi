@@ -204,13 +204,13 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		if(is_z<X>{}) {sync_call<hicu(blasZscal)>(n, (DoubleComplex const*)alpha, (DoubleComplex*)::thrust::raw_pointer_cast(x), incx);}
 	}
 
-	template<class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type,
+	template<class SSize, class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		typename = decltype(std::declval<Y&>() = ALPHA{}*X{} + Y{}),
 		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>> and std::is_convertible_v<YP, ::thrust_hicup::pointer<Y>>, int> = 0
 	>
-	void axpy(ssize_t n, ALPHA const* alpha, XP x, ssize_t incx, YP y, ssize_t incy) {
-		if(is_d<X>{}) {sync_call<hicu(blasDaxpy)>(n, (double        const*)alpha, (double        const*)raw_pointer_cast(x), incx, (double       *)raw_pointer_cast(y), incy);}
-		if(is_z<X>{}) {sync_call<hicu(blasZaxpy)>(n, (DoubleComplex const*)alpha, (DoubleComplex const*)raw_pointer_cast(x), incx, (DoubleComplex*)raw_pointer_cast(y), incy);}
+	void axpy(SSize n, ALPHA const* alpha, XP x, SSize incx, YP y, SSize incy) {
+		if(is_d<X>{}) {sync_call<hicu(blasDaxpy)>(static_cast<int>(n), (double        const*)alpha, (double        const*)raw_pointer_cast(x), static_cast<int>(incx), (double       *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_z<X>{}) {sync_call<hicu(blasZaxpy)>(static_cast<int>(n), (DoubleComplex const*)alpha, (DoubleComplex const*)raw_pointer_cast(x), static_cast<int>(incx), (DoubleComplex*)raw_pointer_cast(y), static_cast<int>(incy));}
 	}
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class XXP, class XX = typename std::pointer_traits<XXP>::element_type, class BETA, class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
@@ -234,7 +234,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
 		std::enable_if_t<
-			is_z<AA>{} and is_z<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and 
+			is_z<AA>{} and is_z<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> && 
 			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> and is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
 		,int> =0
 	>
@@ -244,8 +244,8 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
 		std::enable_if_t<
-			is_d<AA>{} and is_d<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and 
-			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> and is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
+			is_d<AA>{} && is_d<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> && 
+			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> && is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
 		,int> =0
 	>
 	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
@@ -259,20 +259,21 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
+		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
-			is_d<XX>{} and is_d<YY>{} and is_d<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
-			is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> and is_convertible_v<YYP, ::thrust_hicup::pointer<YY>>
-			and is_convertible_v<RRP, RR*>
+			is_d<XX>{} && is_d<YY>{} && is_d<RR>{} && is_assignable_v<RR&, decltype(XX{}*YY{})>
+			&& is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> && is_convertible_v<YYP, ::thrust_hicup::pointer<YY>>
+			&& is_convertible_v<RRP, RR*>
 		, int> =0
 	>
-	void dot(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
+	void dot(SSize n, XXP xx, SSize incx, YYP yy, SSize incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
 		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
-		sync_call<hicu(blasDdot)>(n, ::thrust::raw_pointer_cast(xx), incx, ::thrust::raw_pointer_cast(yy), incy, rr);
+		sync_call<hicu(blasDdot)>(static_cast<int>(n), ::thrust::raw_pointer_cast(xx), static_cast<int>(incx), ::thrust::raw_pointer_cast(yy), static_cast<int>(incy), rr);
 	}
 
 	template<
