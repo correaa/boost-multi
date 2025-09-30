@@ -298,19 +298,20 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
+		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
-			is_z<XX>{}  and is_d<RR>{} and is_assignable<RR&, decltype(XX{}.real())>{} and
-			is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> and (is_convertible_v<RRP, ::thrust_hicup::pointer<RR>> or is_convertible_v<RRP, RR*>)
+			is_z<XX>{} && is_d<RR>{} && is_assignable<RR&, decltype(XX{}.real())>{} and
+			is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> && (is_convertible_v<RRP, ::thrust_hicup::pointer<RR>> || is_convertible_v<RRP, RR*>)
 		, int> =0
 	>
-	void asum(int n, XXP xx, int incx, RRP rr) {
+	void asum(SSize n, XXP xx, SSize incx, RRP rr) {
 		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
-			sync_call<hicu(blasDzasum)>(n, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (double*)::thrust::raw_pointer_cast(rr) );
+			sync_call<hicu(blasDzasum)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (double*)::thrust::raw_pointer_cast(rr) );
 		} else {
-			sync_call<hicu(blasDzasum)>(n, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (double*)                           rr  );
+			sync_call<hicu(blasDzasum)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (double*)                           rr  );
 		}
 		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));}
 	}
