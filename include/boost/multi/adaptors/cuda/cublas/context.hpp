@@ -180,13 +180,13 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
-		class Size,
+		class SSize,
 		class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		class = decltype(std::declval<Y&>() = std::declval<X&>()),
 		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
-	void copy(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
+	void copy(SSize n, XP x, SSize incx, YP y, SSize incy) const {
 		if(is_s<X>{}) {sync_call<hicu(blasScopy)>(static_cast<int>(n), (float          const*)raw_pointer_cast(x), static_cast<int>(incx), (float         *)raw_pointer_cast(y), static_cast<int>(incy));}
 		if(is_d<X>{}) {sync_call<hicu(blasDcopy)>(static_cast<int>(n), (double        const*)raw_pointer_cast(x), static_cast<int>(incx), (double       *)raw_pointer_cast(y), static_cast<int>(incy));}
 		if(is_c<X>{}) {sync_call<hicu(blasCcopy)>(static_cast<int>(n), (Complex       const*)raw_pointer_cast(x), static_cast<int>(incx), (Complex      *)raw_pointer_cast(y), static_cast<int>(incy));}
