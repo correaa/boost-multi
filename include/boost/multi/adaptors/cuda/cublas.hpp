@@ -4,4 +4,4 @@
 
 #pragma once
 
-#include <boost/multi/adaptors/cublas/context.hpp>
+#include <boost/multi/adaptors/cuda/cublas/context.hpp>
