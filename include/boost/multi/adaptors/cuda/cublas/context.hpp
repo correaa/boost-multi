@@ -366,7 +366,6 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));}
 	}
 
-
 	template<
 		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
