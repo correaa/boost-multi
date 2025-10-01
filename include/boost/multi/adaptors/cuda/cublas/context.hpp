@@ -180,16 +180,17 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
+		class SSize,
 		class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		class = decltype(std::declval<Y&>() = std::declval<X&>()),
 		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
-	void copy(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
-		if(is_s<X>{}) {sync_call<hicu(blasScopy)>(n, (float         const*)raw_pointer_cast(x), incx, (float        *)raw_pointer_cast(y), incy);}
-		if(is_d<X>{}) {sync_call<hicu(blasDcopy)>(n, (double        const*)raw_pointer_cast(x), incx, (double       *)raw_pointer_cast(y), incy);}
-		if(is_c<X>{}) {sync_call<hicu(blasCcopy)>(n, (Complex       const*)raw_pointer_cast(x), incx, (Complex      *)raw_pointer_cast(y), incy);}
-		if(is_z<X>{}) {sync_call<hicu(blasZcopy)>(n, (DoubleComplex const*)raw_pointer_cast(x), incx, (DoubleComplex*)raw_pointer_cast(y), incy);}
+	void copy(SSize n, XP x, SSize incx, YP y, SSize incy) const {
+		if(is_s<X>{}) {sync_call<hicu(blasScopy)>(static_cast<int>(n), (float          const*)raw_pointer_cast(x), static_cast<int>(incx), (float        *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_d<X>{}) {sync_call<hicu(blasDcopy)>(static_cast<int>(n), (double        const*)raw_pointer_cast(x), static_cast<int>(incx), (double       *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_c<X>{}) {sync_call<hicu(blasCcopy)>(static_cast<int>(n), (Complex       const*)raw_pointer_cast(x), static_cast<int>(incx), (Complex      *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_z<X>{}) {sync_call<hicu(blasZcopy)>(static_cast<int>(n), (DoubleComplex const*)raw_pointer_cast(x), static_cast<int>(incx), (DoubleComplex*)raw_pointer_cast(y), static_cast<int>(incy));}
 	}
 
 	template<class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type,
@@ -258,6 +259,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
+		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
@@ -267,14 +269,15 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 			and is_convertible_v<RRP, RR*>
 		, int> =0
 	>
-	void dot(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
+	void dot(SSize n, XXP xx, SSize incx, YYP yy, SSize incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
 		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
-		sync_call<hicu(blasDdot)>(n, ::thrust::raw_pointer_cast(xx), incx, ::thrust::raw_pointer_cast(yy), incy, rr);
+		sync_call<hicu(blasDdot)>(static_cast<int>(n), ::thrust::raw_pointer_cast(xx), static_cast<int>(incx), ::thrust::raw_pointer_cast(yy), static_cast<int>(incy), rr);
 	}
 
 	template<
+		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
@@ -284,15 +287,15 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 			and (is_convertible_v<RRP, ::thrust_hicup::pointer<RR>> or is_convertible_v<RRP, RR*>)
 		, int> =0
 	>
-	void dotc(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
+	void dotc(SSize n, XXP xx, SSize incx, YYP yy, SSize incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
 		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
-			sync_call<hicu(blasZdotc)>(n, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (DoubleComplex const*)::thrust::raw_pointer_cast(yy), incy, (DoubleComplex*)::thrust::raw_pointer_cast(rr) );
+			sync_call<hicu(blasZdotc)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (DoubleComplex const*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy), (DoubleComplex*)::thrust::raw_pointer_cast(rr) );
 		} else {
-			sync_call<hicu(blasZdotc)>(n, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (DoubleComplex const*)::thrust::raw_pointer_cast(yy), incy, (DoubleComplex*)rr);
+			sync_call<hicu(blasZdotc)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (DoubleComplex const*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy), (DoubleComplex*)rr);
 		}
 	}
 
