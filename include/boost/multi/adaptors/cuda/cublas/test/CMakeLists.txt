@@ -124,7 +124,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 		target_compile_options(
 			${TEST_EXE} PRIVATE
-			$<$<CXX_COMPILER_ID:GNU>
+			$<$<CXX_COMPILER_ID:GNU>:
 				$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 					-Xcompiler=-Wconversion
 					-Xcompiler=-Wsign-conversion
