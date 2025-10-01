@@ -1,5 +1,9 @@
 = https://gitlab.com/correaa/boost-multi[Boost.Multi]
+
 Alfredo A. Correa
+
+Last updated: {docdatetime}
+
 :toc: left
 :toclevels: 2
 :idprefix:
