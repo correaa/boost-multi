@@ -131,7 +131,7 @@ coverage:
         path: build/coverage.xml
   needs: ["g++"]
 
-g++ cppcheck cpplint memcheck:
+g++ cppcheck cpplint memcheck lto:
   stage: build
   allow_failure: false
   interruptible: true
@@ -147,7 +147,7 @@ g++ cppcheck cpplint memcheck:
     - valgrind --version
     - mkdir build && cd build
     # - export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind-suppressions --gen-suppressions=all --error-exitcode=1 "
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_MPI=1 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE -DDISABLE_MPI=1 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
