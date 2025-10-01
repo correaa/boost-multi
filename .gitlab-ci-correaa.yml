@@ -353,7 +353,7 @@ vs2019-windows:
   script:
     - choco --version
     - choco install poshgit -y
-    - choco install visualstudio2019community --params "'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'"
+    - choco install visualstudio2019community -y --params "'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'"
     - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     - .\vcpkg\bootstrap-vcpkg.bat
     - .\vcpkg\vcpkg install boost-core boost-multi-array boost-timer pkgconf
