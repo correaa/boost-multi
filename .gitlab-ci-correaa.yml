@@ -339,7 +339,7 @@ clang++-latest libc++ format:  # Aug2025 clang 19
     - clang-format --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
   needs: ["clang++"]
 
-vs2019-windows:
+.vs2019-windows:
   stage: build
   only:
     refs:
@@ -352,7 +352,8 @@ vs2019-windows:
     # BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
   script:
     - choco --version
-    - choco install -y visualstudio2019community poshgit
+    - choco install poshgit -y
+    - choco install visualstudio2019community -y --params "'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'"
     - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     - .\vcpkg\bootstrap-vcpkg.bat
     - .\vcpkg\vcpkg install boost-core boost-multi-array boost-timer pkgconf
@@ -1179,6 +1180,7 @@ pages:
     # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
     - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
     - cd ..
+    - cp -r include/boost/multi/array.hpp .public/boost-multi.html
     - cp -r doc/multi.html .public
     # - cp -r doc/multi.adoc .public
     - mv .public public

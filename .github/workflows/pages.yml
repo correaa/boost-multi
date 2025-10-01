@@ -44,7 +44,7 @@ jobs:
           asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
           cd ..
           cp -r doc/multi.html .public
-          cp -r doc/multi.html .public/index.html
+          # cp -r doc/multi.html .public/index.html
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
