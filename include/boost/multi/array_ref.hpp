@@ -2270,6 +2270,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator()(A1 arg1, A2 arg2, A3 arg3) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3); }                                      // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...); }  // NOLINT(whitespace/line_length) pattern line
 
+	// clang-format off
 	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	// template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                       operator[](A1 arg1) & -> decltype(auto) { return this->paren_aux_(arg1); }
 	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator[](A1 arg1, A2 arg2) & -> decltype(auto) { return this->paren_aux_(arg1, arg2); }
@@ -2281,7 +2282,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator[](A1 arg1, A2 arg2, A3 arg3) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3); }                                      // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator[](A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...); }  // NOLINT(whitespace/line_length) pattern line
 	#endif
-
+	// clang-format on
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
  private:
