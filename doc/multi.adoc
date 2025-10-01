@@ -1,5 +1,5 @@
 = https://gitlab.com/correaa/boost-multi[Boost.Multi]
-Alfredo A. Correa
+Alfredo A. Correa (last modified: {docdatetime})
 :toc: left
 :toclevels: 2
 :idprefix:
@@ -30,7 +30,6 @@ Alfredo A. Correa
 </style>
 ++++
 
-// include::../README.md[]
 include::multi/intro.adoc[]
 include::multi/install.adoc[]
 include::multi/primer.adoc[]
