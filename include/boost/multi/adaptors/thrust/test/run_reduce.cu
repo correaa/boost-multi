@@ -32,6 +32,8 @@ inline
 #endif
 }
 
+namespace multi = boost::multi;
+
 template<class kernel_type, class array_type>
 __global__ void reduce_kernel_vr(multi::size_t sizex, multi::size_t sizey, kernel_type kernel, array_type odata) {
 
@@ -179,8 +181,6 @@ struct prod {
 		return double(ix) * double(iy);
 	}
 };
-
-namespace multi = boost::multi;
 
 auto main() -> int {
 	#ifdef NDEBUG
