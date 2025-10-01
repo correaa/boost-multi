@@ -124,6 +124,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 		target_compile_options(
 			${TEST_EXE} PRIVATE
+			$<$<CXX_COMPILER_ID:GNU>
+				$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+					-Xcompiler=-Wconversion
+					-Xcompiler=-Wsign-conversion
+					-Xcompiler=-Wfloat-conversion
+				>
+			>
 			$<$<CXX_COMPILER_ID:MSVC>:
 				$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
 					/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline
