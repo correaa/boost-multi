@@ -1197,53 +1197,59 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
-		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));
 
-#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-#endif
+		// clang-format off
+	#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
 		return const_reference(
 			this->layout().sub(),
 			this->base_ + (idx * this->layout().stride() - this->layout().offset())
-		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
-#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
-#pragma clang diagnostic pop
-#endif
+		);
+	#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic pop
+	#endif
+		// clang-format on
 	}
 
  public:
-#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
-#endif
+	// clang-format off
+	#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+	#endif
+	// clang-format on
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> const_reference {
 		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return const_reference(
 			this->layout().sub(),
 			this->base_ + (idx * this->layout().stride() - this->layout().offset())
-		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
-			// return at_aux_(idx);  // TODO(correaa) use at_aux
+		);
+		// return at_aux_(idx);  // TODO(correaa) use at_aux
 	}  // TODO(correaa) use return type to cast
 
-#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
-#pragma clang diagnostic pop
-#endif
+	// clang-format off
+	#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic pop
+	#endif
+	// clang-format on
 
-	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>,
-			 typename    = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-			 >
-	BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
-		-> decltype(operator[](detail::head(tup))[detail::tuple_tail(tup)]) {
-		return operator[](detail::head(tup))[detail::tuple_tail(tup)];
-	}
+	// template<class Tuple = std::array<index, static_cast<std::size_t>(D)>,
+	// 		 typename    = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	// 		 >
+	// BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
+	// 	-> decltype(operator[](detail::head(tup))[detail::tuple_tail(tup)]) {
+	// 	return operator[](detail::head(tup))[detail::tuple_tail(tup)];
+	// }
 
-	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<Tuple>::value == 1)>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
-		-> decltype(operator[](detail::head(tup))) {
-		return operator[](detail::head(tup));
-	}
+	// template<class Tuple, typename = std::enable_if_t<(std::tuple_size<Tuple>::value == 1)>>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	// BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
+	// 	-> decltype(operator[](detail::head(tup))) {
+	// 	return operator[](detail::head(tup));
+	// }
 
 	constexpr auto front() const& -> const_reference { return *begin(); }
 	constexpr auto back() const& -> const_reference { return *(end() - 1); }  // std::prev(end(), 1);}
@@ -1546,11 +1552,13 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return const_subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
 
  public:
-	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return paren_aux_(); }  // NOLINT(readability-redundant-access-specifiers,readability-const-return-type)
+	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return paren_aux_(); }
 
-#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	// clang-format off
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
-#endif
+	#endif
+	// clang-format on
 
 	template<template<class...> class Container = std::vector, template<class...> class ContainerSub = std::vector, class... As>
 	constexpr auto to(As&&... as) const& {
@@ -1562,14 +1570,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  private:
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index_range rng, As... args) const& { return range(rng).rotated().paren_aux_(args...).unrotated(); }
-
-	// template<class... As>    constexpr auto paren_aux_(intersecting_range<index> inr, As... args)      & -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
-	// template<class... As>    constexpr auto paren_aux_(intersecting_range<index> inr, As... args)     && -> decltype(auto) {return paren_aux_(intersection(this->extension(), inr), args...);}
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extension(), inr), args...); }
-
-	// template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args)      & -> decltype(auto) {return operator[](idx).paren_aux_(args...);}
-	// template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args)     && -> decltype(auto) {return operator[](idx).paren_aux_(args...);}
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args) const& -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
+
+	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(index_range rng, As... args) const& { return range(rng).rotated().paren_aux_(args...).unrotated(); }
+	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extension(), inr), args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(index idx, As... args) const& -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
 
  public:
 	// vvv DO NOT remove default parameter `= irange` : the default template parameters below help interpret the expression `{first, last}` syntax as index ranges
@@ -1577,6 +1583,16 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator()(A1 arg1, A2 arg2) const& -> decltype(auto) { return paren_aux_(arg1, arg2); }                 // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator()(A1 arg1, A2 arg2, A3 arg3) const& -> decltype(auto) { return paren_aux_(arg1, arg2, arg3); }  // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const& -> decltype(auto) { return paren_aux_(arg1, arg2, arg3, arg4, args...); }
+
+	// clang-format off
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	// vvv DO NOT remove default parameter `= irange` : the default template parameters below help interpret the expression `{first, last}` syntax as index ranges
+	// template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                    operator[](A1 arg1) const& -> decltype(auto) { return paren_aux_(arg1); }                             // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator[](A1 arg1, A2 arg2) const& -> decltype(auto) { return brckt_aux_(arg1, arg2); }                 // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator[](A1 arg1, A2 arg2, A3 arg3) const& -> decltype(auto) { return brckt_aux_(arg1, arg2, arg3); }  // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator[](A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const& -> decltype(auto) { return brckt_aux_(arg1, arg2, arg3, arg4, args...); }
+	#endif
+	// clang-format on
 
  private:
 	template<typename Tuple, std::size_t... I> BOOST_MULTI_HD constexpr auto apply_impl_(Tuple const& tuple, std::index_sequence<I...> /*012*/) const& -> decltype(auto) {
@@ -2248,13 +2264,24 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator()(A1 arg1, A2 arg2) & -> decltype(auto) { return this->paren_aux_(arg1, arg2); }
 	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator()(A1 arg1, A2 arg2, A3 arg3) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3); }
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3, arg4, args...); }
-	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
-	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                       operator()(A1 arg1) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1); }                                                                    // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator()(A1 arg1, A2 arg2) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2); }                                                     // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator()(A1 arg1, A2 arg2, A3 arg3) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3); }                                      // NOLINT(whitespace/line_length) pattern line
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...); }  // NOLINT(whitespace/line_length) pattern line
+
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	// template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                       operator[](A1 arg1) & -> decltype(auto) { return this->paren_aux_(arg1); }
+	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator[](A1 arg1, A2 arg2) & -> decltype(auto) { return this->paren_aux_(arg1, arg2); }
+	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator[](A1 arg1, A2 arg2, A3 arg3) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3); }
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator[](A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) & -> decltype(auto) { return this->paren_aux_(arg1, arg2, arg3, arg4, args...); }
+
+	// template<class A1 = irange> BOOST_MULTI_HD constexpr auto                                                                       operator[](A1 arg1) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1); }                                                                    // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange> BOOST_MULTI_HD constexpr auto                                                    operator[](A1 arg1, A2 arg2) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2); }                                                     // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange> BOOST_MULTI_HD constexpr auto                                 operator[](A1 arg1, A2 arg2, A3 arg3) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3); }                                      // NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As> BOOST_MULTI_HD constexpr auto operator[](A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) && -> decltype(auto) { return std::move(*this).paren_aux_(arg1, arg2, arg3, arg4, args...); }  // NOLINT(whitespace/line_length) pattern line
+	#endif
+
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
  private:
