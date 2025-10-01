@@ -709,8 +709,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			std::iota(A_local.elements().begin(), A_local.elements().end(), sub_rank);
 
 			// B's memmory completelly aliases A's memory
-			// auto&& B_local = multi::array_ref<int, 2>({block_m*sub_size, block_n}, A_local.data_elements());  // NOLINT(readability-identifier-length) conventional name
-			// multi::array<int, 2> B_local({6, 2}, 99);  // this one would do out-of-place // NOLINT(readability-identifier-length) conventional name
+			// auto&& B_local = multi::array_ref<int, 2>({block_m*sub_size, block_n}, A_local.data_elements());  // NOLINT(readability-identifier-length)
+			// multi::array<int, 2> B_local({6, 2}, 99);  // this one would do out-of-place // NOLINT(readability-identifier-length)
 			auto G_local = multi::array<int, 2>({block_m * sub_size, block_n});
 
 			auto A_local_it = multi::mpi::begin(A_local.partitioned(sub_size));  // magic way to compute the datatype
