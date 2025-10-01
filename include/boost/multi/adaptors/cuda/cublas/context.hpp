@@ -213,13 +213,13 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		if(is_z<X>{}) {sync_call<hicu(blasZaxpy)>(static_cast<int>(n), (DoubleComplex const*)alpha, (DoubleComplex const*)raw_pointer_cast(x), static_cast<int>(incx), (DoubleComplex*)raw_pointer_cast(y), static_cast<int>(incy));}
 	}
 
-	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class XXP, class XX = typename std::pointer_traits<XXP>::element_type, class BETA, class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
+	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class XXP, class XX = typename std::pointer_traits<XXP>::element_type, class BETA, class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		typename = decltype(std::declval<YY&>() = ALPHA{}*(AA{}*XX{} + AA{}*XX{})),
 		std::enable_if_t<std::is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> and std::is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> and std::is_convertible_v<YYP, ::thrust_hicup::pointer<YY>>, int> = 0
 	>
-	auto gemv(char transA, ssize_t m, ssize_t n, ALPHA const* alpha, AAP aa, ssize_t lda, XXP xx, ssize_t incx, BETA const* beta, YYP yy, ssize_t incy) {
-		if(is_d<AA>{}) {sync_call<hicu(blasDgemv)>(operation{transA}, m, n, (double        const*)alpha, (double        const*)::thrust::raw_pointer_cast(aa), lda, (double          const*)::thrust::raw_pointer_cast(xx), incx, (double          const*)beta, (double         *)::thrust::raw_pointer_cast(yy), incy);}
-		if(is_z<AA>{}) {sync_call<hicu(blasZgemv)>(operation{transA}, m, n, (DoubleComplex const*)alpha, (DoubleComplex const*)::thrust::raw_pointer_cast(aa), lda, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (DoubleComplex const*)beta, (DoubleComplex*)::thrust::raw_pointer_cast(yy), incy);}
+	auto gemv(char transA, SSize m, SSize n, ALPHA const* alpha, AAP aa, SSize lda, XXP xx, SSize incx, BETA const* beta, YYP yy, SSize incy) {
+		if(is_d<AA>{}) {sync_call<hicu(blasDgemv)>(operation{transA}, static_cast<int>(m), static_cast<int>(n), (double        const*)alpha, (double        const*)::thrust::raw_pointer_cast(aa), static_cast<int>(lda), (double        const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (double          const*)beta, (double         *)::thrust::raw_pointer_cast(yy), static_cast<int>(incy));}
+		if(is_z<AA>{}) {sync_call<hicu(blasZgemv)>(operation{transA}, static_cast<int>(m), static_cast<int>(n), (DoubleComplex const*)alpha, (DoubleComplex const*)::thrust::raw_pointer_cast(aa), static_cast<int>(lda), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (DoubleComplex const*)beta, (DoubleComplex*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy));}
 	}
 
 	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
