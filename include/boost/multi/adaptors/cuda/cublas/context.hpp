@@ -226,7 +226,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		typename = decltype(std::declval<CC&>() = ALPHA{}*(AA{}*BB{} + AA{}*BB{})),
 		class = std::enable_if_t<std::is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> and std::is_convertible_v<BBP, ::thrust_hicup::pointer<BB>> and std::is_convertible_v<CCP, ::thrust_hicup::pointer<CC>>>
 	>
-	void gemm(char transA, char transB, SSize m, SSize n, ssize_t k, ALPHA const* alpha, AAP aa, SSize lda, BBP bb, SSize ldb, BETA const* beta, CCP cc, SSize ldc) {
+	void gemm(char transA, char transB, SSize m, SSize n, SSize k, ALPHA const* alpha, AAP aa, SSize lda, BBP bb, SSize ldb, BETA const* beta, CCP cc, SSize ldc) {
 		/*MULTI_MARK_SCOPE("cublasXgemm");*/
 		if(is_d<AA>{}) {sync_call<hicu(blasDgemm)>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, static_cast<int>(m), static_cast<int>(n), static_cast<int>(k), (double        const*)alpha, (double        const*)::thrust::raw_pointer_cast(aa), static_cast<int>(lda), (double        const*)::thrust::raw_pointer_cast(bb), static_cast<int>(ldb), (double        const*)beta, (double       *)::thrust::raw_pointer_cast(cc), static_cast<int>(ldc));}
 		if(is_z<AA>{}) {sync_call<hicu(blasZgemm)>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, static_cast<int>(m), static_cast<int>(n), static_cast<int>(k), (DoubleComplex const*)alpha, (DoubleComplex const*)::thrust::raw_pointer_cast(aa), static_cast<int>(lda), (DoubleComplex const*)::thrust::raw_pointer_cast(bb), static_cast<int>(ldb), (DoubleComplex const*)beta, (DoubleComplex*)::thrust::raw_pointer_cast(cc), static_cast<int>(ldc));}
