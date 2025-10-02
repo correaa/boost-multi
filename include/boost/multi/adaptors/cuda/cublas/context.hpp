@@ -167,16 +167,17 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
+		class SSize,
 		class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		class = decltype(std::swap(std::declval<X&>(), std::declval<Y&>())),
 		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
-	void swap(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
-		if(is_s<X>{}) {sync_call<hicu(blasSswap)>(n, (float        *)raw_pointer_cast(x), incx, (float        *)raw_pointer_cast(y), incy);}
-		if(is_d<X>{}) {sync_call<hicu(blasDswap)>(n, (double       *)raw_pointer_cast(x), incx, (double       *)raw_pointer_cast(y), incy);}
-		if(is_c<X>{}) {sync_call<hicu(blasCswap)>(n, (Complex      *)raw_pointer_cast(x), incx, (Complex      *)raw_pointer_cast(y), incy);}
-		if(is_z<X>{}) {sync_call<hicu(blasZswap)>(n, (DoubleComplex*)raw_pointer_cast(x), incx, (DoubleComplex*)raw_pointer_cast(y), incy);}
+	void swap(SSize n, XP x, ssize_t incx, YP y, SSize incy) const {
+		if(is_s<X>{}) {sync_call<hicu(blasSswap)>(static_cast<int>(n), (float        *)raw_pointer_cast(x), static_cast<int>(incx), (float        *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_d<X>{}) {sync_call<hicu(blasDswap)>(static_cast<int>(n), (double       *)raw_pointer_cast(x), static_cast<int>(incx), (double       *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_c<X>{}) {sync_call<hicu(blasCswap)>(static_cast<int>(n), (Complex      *)raw_pointer_cast(x), static_cast<int>(incx), (Complex      *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_z<X>{}) {sync_call<hicu(blasZswap)>(static_cast<int>(n), (DoubleComplex*)raw_pointer_cast(x), static_cast<int>(incx), (DoubleComplex*)raw_pointer_cast(y), static_cast<int>(incy));}
 	}
 
 	template<
