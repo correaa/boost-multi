@@ -19,7 +19,7 @@ using core::scal;
 template<class It, class Size>
 auto scal_n(typename It::element a, It first, Size count) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	auto ctxt = blas::default_context_of(first.base());
-	ctxt->scal(count, &a, first.base(), first.stride());
+	ctxt->scal(static_cast<core::ssize_t>(count), &a, first.base(), static_cast<core::ssize_t>(first.stride()));
 }
 
 template<class Scalar, class It1D>

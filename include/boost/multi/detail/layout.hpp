@@ -687,6 +687,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
+	using size_type = multi::index_extension::size_type;
 	using difference_type = multi::index_extension::difference_type;
 
 	class elements_t {
@@ -730,7 +731,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const { return iterator{*this} += n; }
 			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const { return iterator{*this} -= n; }
 
-			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) {
+			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
 				return self.base_() - other.base_();
 			}
 
@@ -744,7 +745,10 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		BOOST_MULTI_HD constexpr auto begin() const { return iterator{rng_.begin()}; }
 		BOOST_MULTI_HD constexpr auto end() const { return iterator{rng_.end()}; }
 
-		BOOST_MULTI_HD constexpr auto size() const { return end() - begin(); }
+		using size_type = multi::index_extension::size_type;
+		using difference_type = multi::index_extension::difference_type;
+
+		BOOST_MULTI_HD constexpr auto size() const -> size_type { return end() - begin(); }
 
 		BOOST_MULTI_HD constexpr explicit elements_t(multi::index_range rng)
 		: rng_{rng} {}
