@@ -745,8 +745,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		BOOST_MULTI_HD constexpr auto begin() const { return iterator{rng_.begin()}; }
 		BOOST_MULTI_HD constexpr auto end() const { return iterator{rng_.end()}; }
 
-		using size_type = extensions_t<1>::size_type;
-		using difference_type = extensions_t<1>::difference_type; 
+		using size_type = multi::index_extension::size_type;
+		using difference_type = multi::index_extension::difference_type;
 
 		BOOST_MULTI_HD constexpr auto size() const -> size_type { return end() - begin(); }
 
