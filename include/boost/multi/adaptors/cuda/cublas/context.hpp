@@ -320,7 +320,8 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
-		class SSize,
+		typename Size,
+		typename SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type
 		,
@@ -333,7 +334,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		//  is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> && (is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>> or is_convertible_v<RRP, RR*>)
 		// , int> =0
 	>
-	void nrm2(SSize n, XXP xx, SSize incx, RRP rr) {
+	void nrm2(Size n, XXP xx, SSize incx, RRP rr) {
 		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
 			sync_call<hicu(blasDznrm2)>(static_cast<int>(n), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<double*>(::thrust::raw_pointer_cast(rr)) );
@@ -344,7 +345,8 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
-		class SSize,
+		typename Size,
+		typename SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type
 		,
@@ -357,7 +359,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		//  is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> && (is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>> or is_convertible_v<RRP, RR*>)
 		// , int> =0
 	>
-	void nrm2(SSize n, XXP xx, SSize incx, RRP rr) {
+	void nrm2(Size n, XXP xx, SSize incx, RRP rr) {
 		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
 			sync_call<hicu(blasDnrm2)>(static_cast<int>(n), ::thrust::raw_pointer_cast(xx), static_cast<int>(incx), reinterpret_cast<double*>(::thrust::raw_pointer_cast(rr)) );
