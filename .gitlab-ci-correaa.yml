@@ -1181,6 +1181,7 @@ pages:
     - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
     - cd ..
     - cp -r include/boost/multi/array.hpp .public/boost-multi.html
+    - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
     - cp -r doc/multi.html .public
     # - cp -r doc/multi.adoc .public
     - mv .public public
