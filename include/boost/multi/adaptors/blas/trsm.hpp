@@ -143,6 +143,7 @@ auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type al
 	if constexpr(! is_conjugated<A2D>{}) {return trsm(blas::default_context_of(           a.base() ), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 	else                                 {return trsm(blas::default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 }
+
 #if defined __NVCC__
 	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 		#pragma nv_diagnostic pop
@@ -162,13 +163,13 @@ namespace operators {
 
 	template<class B2D, class UL>
 	auto operator/=(B2D&& b, UL const& a)  // NOLINT(readability-identifier-length) BLAS naming
-	->decltype(blas::trsm(blas::side::right, 1.0, a, std::forward<B2D>(b))) {
-		return blas::trsm(blas::side::right, 1.0, a, std::forward<B2D>(b)); }
+	->decltype(blas::trsm(blas::side::right, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b))) {
+		return blas::trsm(blas::side::right, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b)); }
 
 	template<class B2D, class UL>
 	auto operator|=(B2D&& b, UL const& a)  // NOLINT(readability-identifier-length) BLAS naming
-	->decltype(blas::trsm(blas::side::left, 1.0, a, std::forward<B2D>(b))) {
-		return blas::trsm(blas::side::left, 1.0, a, std::forward<B2D>(b)); }
+	->decltype(blas::trsm(blas::side::left, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b))) {
+		return blas::trsm(blas::side::left, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b)); }
 
 	using blas::U;
 	using blas::L;
