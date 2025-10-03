@@ -9,10 +9,9 @@
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
-#include "detail/layout.hpp"
+#include <boost/multi/detail/layout.hpp>
 
-#include <stdexcept>
-#include <string>  // for to_string
+//#include <stdexcept>
 #include <type_traits>
 
 #if defined(_MSC_VER)
