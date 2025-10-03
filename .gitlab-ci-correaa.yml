@@ -1171,7 +1171,7 @@ pages:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge pip python3-venv
     - pandoc --version
     - asciidoctor --version
     - mkdir .public
@@ -1180,10 +1180,13 @@ pages:
     # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
     - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
     - cd ..
-    - cp -r include/boost/multi/array.hpp .public/boost-multi.html
-    - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
     - cp -r doc/multi.html .public
     # - cp -r doc/multi.adoc .public
+    - python3 -m venv .venv
+    - source .venv/bin/activate
+    - pip install quom
+    - cp -r include/boost/multi/array.hpp .public/boost-multi.html
+    - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
     - mv .public public
   artifacts:
     paths:
