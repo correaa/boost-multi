@@ -1185,8 +1185,10 @@ pages:
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install quom
+    - quom include/boost/multi/array.hpp boost-multi.hpp
     - cp -r include/boost/multi/array.hpp .public/boost-multi.html
-    - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
+    - cp -r boost-multi.hpp .public/boost-multi.hpp
+    # - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
     - mv .public public
   artifacts:
     paths:
