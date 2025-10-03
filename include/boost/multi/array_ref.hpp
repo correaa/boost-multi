@@ -1121,7 +1121,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
 
 	// TODO(correaa) vvv consider making it explicit (seems that in C++23 it can prevent auto s = a[0];)
-	const_subarray(const_subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
+	// const_subarray(const_subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
+	const_subarray(const_subarray const&) = delete;
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
@@ -2794,7 +2795,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		);
 	}
 
-	const_subarray(const_subarray const&) = default;
+	const_subarray(const_subarray const&) = delete;  // = default;
 
 	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct const_subarray;
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;  // TODO(correaa) check if this is necessary
@@ -3055,22 +3056,24 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	BOOST_MULTI_HD constexpr auto range(index_range const& rng) const& { return sliced(rng.front(), rng.last()); }
 
-	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return *this; }
-#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+ private:
+	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return const_subarray(this->layout(), this->base_); }
+
+	BOOST_MULTI_HD constexpr auto paren_aux_(index idx) const& -> decltype(auto) { return operator[](idx); }
+
+	BOOST_MULTI_HD constexpr auto paren_aux_(index_range const& rng) const& { return range(rng); }
+
+ public:
+	BOOST_MULTI_HD constexpr auto operator()() const& { return paren_aux_(); }
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
-#endif
+	#endif
 
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return operator[](idx); }
 
 	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& { return range(rng); }
 
  private:
-	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return operator()(); }
-
-	BOOST_MULTI_HD constexpr auto paren_aux_(index idx) const& -> decltype(auto) { return operator[](idx); }
-
-	BOOST_MULTI_HD constexpr auto paren_aux_(index_range const& rng) const& { return range(rng); }
-
 	constexpr auto paren_aux_(intersecting_range<index> const& rng) const& -> decltype(auto) { return paren_aux_(intersection(this->extension(), rng)); }
 
  public:
