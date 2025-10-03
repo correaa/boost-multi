@@ -679,14 +679,14 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	}
 
 	template<typename It> auto uninitialized_copy(It first) {
-		#if defined(__clang__) && defined(__CUDACC__)
+#if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(this->alloc(), this->data_elements(), this->num_elements());
 		}
 		return adl_copy(first, this->num_elements(), this->data_elements());
-		#else
+#else
 		return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());
-		#endif
+#endif
 	}
 
 	template<typename It>
@@ -736,28 +736,28 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	: array_alloc{alloc}, ref(static_array::allocate(other.num_elements()), extensions(other)) {
 		assert(other.num_elements() <= 1);
 		if(other.num_elements()) {
-			#if defined(__clang__) && defined(__CUDACC__)
+#if defined(__clang__) && defined(__CUDACC__)
 			if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 				adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
 			}
 			adl_copy(other.base(), other.base() + other.num_elements(), this->base());
-			#else
+#else
 			adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + other.num_elements(), this->base());
-			#endif
+#endif
 		}
 	}
 
 	template<class TT, class... Args>
 	explicit static_array(multi::static_array<TT, 0, Args...> const& other, allocator_type const& alloc)  // TODO(correaa) : call other constructor (above)
 	: array_alloc{alloc}, ref(static_array::allocate(static_cast<typename std::allocator_traits<Alloc>::size_type>(other.num_elements())), extensions(other)) {
-		#if defined(__clang__) && defined(__CUDACC__)
+#if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
 		}
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
-		#else
+#else
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
-		#endif
+#endif
 	}
 
 	template<class TT, class... Args>
@@ -797,14 +797,14 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax  // NOLINTNEXTLINE(runtime/explicit)
 	/*implict*/ static_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is used by the
 	: ref(static_array::allocate(1), typename static_array::extensions_type{}) {
-		#if defined(__clang__) && defined(__CUDACC__)
+#if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->data_elements(), this->num_elements());
 		}
-		adl_copy_n(&single,typename multi::allocator_traits<Alloc>::size_type{1}, this->data_elements());
-		#else
+		adl_copy_n(&single, typename multi::allocator_traits<Alloc>::size_type{1}, this->data_elements());
+#else
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), &single, typename multi::allocator_traits<Alloc>::size_type{1}, this->data_elements());
-		#endif
+#endif
 	}
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>                                        // NOLINT(modernize-use-constraints) TODO(correaa) for C++20

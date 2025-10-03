@@ -2051,12 +2051,12 @@ int main() {
 			{3.0 + 1.0 * I, 1.0 - 1.0 * I},
 		};
 
-		// #if !defined(_MSC_VER)
+		#if !defined(_MSC_VER)
 		using blas::operators::operator|=;
 		using blas::operators::U;
 		B |= U(A);  // B←A⁻¹.B, B†←A⁻¹.B†
 		BOOST_TEST( std::abs( static_cast<complex>(B[2][1]).imag() - -0.0882353) < 0.001 );
-		// #endif
+		#endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right)
