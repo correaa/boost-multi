@@ -265,11 +265,11 @@ using std::enable_if_t;
 using std::is_convertible_v;
 
 #define xaxpy(T) \
-template<class SSize, class ALPHA, class SXP, class SX = typename pointer_traits<SXP>::element_type, class SYP, class SY = typename pointer_traits<SYP>::element_type, enable_if_t<  /* NOLINT(modernize-use-constraints) */ \
+template<class Size, class SSize, class ALPHA, class SXP, class SX = typename pointer_traits<SXP>::element_type, class SYP, class SY = typename pointer_traits<SYP>::element_type, enable_if_t<  /* NOLINT(modernize-use-constraints) */ \
 	is_##T<ALPHA>{} && is_##T<SX>{} && is_##T<SY>{} && is_assignable<SY&, decltype(ALPHA{}*SX{})>{} \
 	&& is_convertible_v<SXP, SX*> && is_convertible_v<SYP, SY*> \
 , int> =0> \
-void axpy(SSize n, ALPHA const* a, SXP x, SSize incx, SYP y, SSize incy) { BLAS(T##axpy)(static_cast<ssize_t>(n), reinterpret_cast<T const *>(a), reinterpret_cast<T const*>(static_cast<SX*>(x)), static_cast<ssize_t>(incx), reinterpret_cast<T*>(static_cast<SY*>(y)), static_cast<int>(incy));}  /*NOLINT(readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses) conventional BLAS name*/
+void axpy(Size n, ALPHA const* a, SXP x, SSize incx, SYP y, SSize incy) { BLAS(T##axpy)(static_cast<ssize_t>(n), reinterpret_cast<T const *>(a), reinterpret_cast<T const*>(static_cast<SX*>(x)), static_cast<ssize_t>(incx), reinterpret_cast<T*>(static_cast<SY*>(y)), static_cast<int>(incy));}  /*NOLINT(readability-identifier-length,cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses) conventional BLAS name*/
 
 xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 #undef  xaxpy
