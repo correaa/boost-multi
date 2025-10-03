@@ -548,12 +548,12 @@ xgemm(s) xgemm(d) xgemm(c) xgemm(z)  // NOLINT(modernize-use-constraints,readabi
 #endif
 
 #define xtrsm(T) \
-template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,                                                         \
+template<class SSize, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,                                                         \
 enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                                                                                                                                                                                                      \
 	is_##T<AA>{} && is_##T<BB>{} && is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} && is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} &&                                                                 \
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*>                                                                                                                                                     \
 ,int> =0>                                                                                                                                                                                                         \
-v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) { /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/  \
+v trsm(char side, char uplo, char transA, char diag, SSize m, SSize n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, SSize ldb) { /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/  \
 	assert( side   == 'L' || side   == 'R' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( uplo   == 'U' || uplo   == 'L' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( transA == 'N' || transA == 'T' || transA == 'C' );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
@@ -562,8 +562,8 @@ v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA
 	using std::max;                                                                                                                                                                                           \
 	if(side == 'L') {BOOST_MULTI_ASSERT1( lda >= max(ssize_t{1}, m) );}   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                         \
 	if(side == 'R') {BOOST_MULTI_ASSERT1( lda >= max(ssize_t{1}, n) );}                                                                                                                                                 \
-	BOOST_MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) );                                                                                                                                                                   \
-	BLAS(T##trsm)(side, uplo, transA, diag, BC(m), BC(n), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), BC(lda), reinterpret_cast<T*>(static_cast<BB*>(bb)), BC(ldb));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
+	BOOST_MULTI_ASSERT1( ldb >= max(SSize{1}, m) );                                                                                                                                                                   \
+	BLAS(T##trsm)(side, uplo, transA, diag, static_cast<ssize_t>(BC(m)), static_cast<ssize_t>(BC(n)), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), static_cast<ssize_t>(BC(lda)), reinterpret_cast<T*>(static_cast<BB*>(bb)), static_cast<ssize_t>(BC(ldb)));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
 }                                                                                                                                                                                                                 \
 
 #if defined(__clang__)

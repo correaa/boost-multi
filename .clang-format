@@ -1,5 +1,5 @@
 # https://clang-format-configurator.site
-# Copyright 2020-2024 Alfredo A. Correa
+# Copyright 2020-2025 Alfredo A. Correa
 # this format specification requires clang-format version 15, it is optimized for clang-format version 19
 ---
 Language: Cpp
