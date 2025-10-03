@@ -453,7 +453,7 @@ vs2022-shell cudatk:
     - cmake --build build --config Debug --parallel ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
   tags:
     - windows, shell, cudatk
-  needs: ["vs2022-shell", "cuda"]
+  needs: ["vs2022-shell"]  # , "cuda"]
   timeout: 60 minutes
 
 vs2022-shell cuda:
