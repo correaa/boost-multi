@@ -553,7 +553,7 @@ enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                 
 	is_##T<AA>{} && is_##T<BB>{} && is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} && is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} &&                                                                 \
 	is_convertible_v<AAP, AA*> && is_convertible_v<BBP, BB*>                                                                                                                                                     \
 ,int> =0>                                                                                                                                                                                                         \
-v trsm(char side, char uplo, char transA, char diag, SSize m, SSize n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, SSize ldb) { /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/  \
+v trsm(char side, char uplo, char transA, char diag, SSize m, SSize n, ALPHA alpha, AAP aa, SSize lda, BBP bb, SSize ldb) { /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/  \
 	assert( side   == 'L' || side   == 'R' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( uplo   == 'U' || uplo   == 'L' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( transA == 'N' || transA == 'T' || transA == 'C' );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
