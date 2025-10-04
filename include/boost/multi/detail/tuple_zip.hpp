@@ -316,15 +316,15 @@ BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>&& t) -> decltype(std::move(t
 template<class T0, class... Ts>
 BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
-#if defined __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__) || (__CUDACC_VER_MAJOR__ <= 11)
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = implicit_return_from_non_void_function
 #else
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
-#elif defined      __NVCOMPILER
+#elif defined(__NVCOMPILER)
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
