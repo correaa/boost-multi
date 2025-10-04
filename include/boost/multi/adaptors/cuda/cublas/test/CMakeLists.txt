@@ -129,6 +129,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Xcompiler=-Wconversion
 					-Xcompiler=-Wsign-conversion
 					-Xcompiler=-Wfloat-conversion
+					-Xcompiler=-Wall
+					-Xcompiler=-Wextra
 				>
 			>
 			$<$<CXX_COMPILER_ID:MSVC>:

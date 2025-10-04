@@ -121,8 +121,6 @@ BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
 
 		double res2 = blas::nrm2(xx);
 		BOOST_TEST( res2 == *res.base() );
-
-		auto res3 = blas::nrm2(xx);
 	}
 	{
 		multi::thrust::cuda::array<double, 0> res{0.0};
