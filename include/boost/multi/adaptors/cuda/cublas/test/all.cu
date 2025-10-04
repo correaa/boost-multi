@@ -430,8 +430,8 @@ int main() {
 		{
 			// T res;
 			// blas::dot(blas::C(x), blas::C(y), res);
-			multi::array<T, 2, Alloc> res({1, 1}, 0.0);
-			auto                      rr = blas::gemm(1.0, x.partitioned(1), blas::H(y.partitioned(1)), 0.0, res)[0][0];
+			// multi::array<T, 2, Alloc> res({1, 1}, 0.0);
+			// auto                      rr = blas::gemm(1.0, x.partitioned(1), blas::H(y.partitioned(1)), 0.0, res)[0][0];
 			// {
 			//  using blas::operators::operator,;
 			//  auto res2 = +(x, blas::C(y));
