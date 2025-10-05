@@ -228,12 +228,16 @@ class range {
 	friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
 
 	#if defined(__NVCC__)
+	#if defined(____NVCC_DIAG_PRAGMA_SUPPORT__)
 	#pragma nv_diagnostic push
 	#pragma nv_diag_suppress = 20013  // calling a constexpr __host__ function("operator std::streamoff") from a __host__ __device__ function("size") is not allowed.  // TODO(correaa) implement HD integral_constant
 	#endif
+	#endif
 	BOOST_MULTI_HD constexpr auto        size() const& noexcept -> size_type { return last_ - first_; }
 	#if defined(__NVCC__)
+	#if defined(____NVCC_DIAG_PRAGMA_SUPPORT__)
 	#pragma nv_diagnostic pop
+	#endif
 	#endif
 
 	friend BOOST_MULTI_HD constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }

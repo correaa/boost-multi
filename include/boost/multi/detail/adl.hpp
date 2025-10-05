@@ -11,10 +11,12 @@
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 
 #if defined(__NVCC__)
+#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20011  // deep inside Thrust: calling a __host__ function("std::vector<double, ::std::allocator<double> > ::vector(const ::std::vector<double, ::std::allocator<double> > &)") from a __host__ __device__ function("thrust::system::detail::generic::detail::uninitialized_copy_functor<    ::std::vector<double, ::std::allocator<double> > ,     ::std::vector<double, ::std::allocator<double> > > ::operator ()< ::thrust::detail::tuple_of_iterator_references<    ::std::vector<double, ::std::allocator<double> >  &,     ::std::vector<double, ::std::allocator<double> >  & > > ") is not allowed
 #pragma nv_diag_suppress = 20014  // deep inside Thrust: calling a __host__ function from a __host__ __device__ function is not allowed
 #pragma nv_diag_suppress = 20015  // deep inside Thrust: calling a constexpr __host__ function from a __host__ __device__ function is not allowed
+#endif
 #endif
 #include <thrust/copy.h>
 #include <thrust/detail/allocator/destroy_range.h>
@@ -22,7 +24,9 @@
 #include <thrust/equal.h>
 #include <thrust/uninitialized_copy.h>
 #if defined(__NVCC__)
+#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
 #pragma nv_diagnostic pop  // nv_diagnostics pop
+#endif
 #endif
 
 #endif
@@ -342,6 +346,14 @@ class adl_uninitialized_copy_t {
 };
 inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 
+#if defined(__NVCC__)
+#if !defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#if !defined(__GNUC__)
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
+#endif
+#endif
+#endif
 class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
@@ -366,6 +378,13 @@ class adl_uninitialized_copy_n_t {
 	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
 };
 inline constexpr adl_uninitialized_copy_n_t adl_uninitialized_copy_n;
+#if defined(__NVCC__)
+#if !defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#if !defined(__GNUC__)
+#pragma diagnostic pop
+#endif
+#endif
+#endif
 
 class adl_uninitialized_move_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(              std::  uninitialized_move_n(std::forward<As>(args)...))

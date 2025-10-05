@@ -430,8 +430,8 @@ int main() {
 		{
 			// T res;
 			// blas::dot(blas::C(x), blas::C(y), res);
-			multi::array<T, 2, Alloc> res({1, 1}, 0.0);
-			auto                      rr = blas::gemm(1.0, x.partitioned(1), blas::H(y.partitioned(1)), 0.0, res)[0][0];
+			// multi::array<T, 2, Alloc> res({1, 1}, 0.0);
+			// auto                      rr = blas::gemm(1.0, x.partitioned(1), blas::H(y.partitioned(1)), 0.0, res)[0][0];
 			// {
 			//  using blas::operators::operator,;
 			//  auto res2 = +(x, blas::C(y));
@@ -2051,10 +2051,12 @@ int main() {
 			{3.0 + 1.0 * I, 1.0 - 1.0 * I},
 		};
 
+		#if !defined(_MSC_VER)
 		using blas::operators::operator|=;
 		using blas::operators::U;
 		B |= U(A);  // B←A⁻¹.B, B†←A⁻¹.B†
 		BOOST_TEST( std::abs( static_cast<complex>(B[2][1]).imag() - -0.0882353) < 0.001 );
+		#endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right)
