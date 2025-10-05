@@ -2796,8 +2796,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		);
 	}
 
-	const_subarray(const_subarray const&) = delete;  // = default;
-
 	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct const_subarray;
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;  // TODO(correaa) check if this is necessary
 
@@ -2805,6 +2803,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
 
  public:
+	const_subarray(const_subarray const&) = delete;  // = default;
+
 	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
 	friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }     // needed by nvcc
 
