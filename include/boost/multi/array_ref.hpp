@@ -1913,9 +1913,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<class, multi::dimensionality_type, class, bool, bool, typename> friend struct array_iterator;
 
-	subarray(subarray const&) = default;
+	// subarray(subarray const&) = default;
 
  public:
+#if defined(__NVCC__)
+ 	subarray(subarray const&) = default;
+#else
+ 	subarray(subarray const&) = delete;
+#endif
+
 	BOOST_MULTI_HD constexpr auto        move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }

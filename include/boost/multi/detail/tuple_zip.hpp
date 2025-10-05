@@ -211,6 +211,28 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		return this->tail().template get<N - 1>();  // this-> for msvc 19.14 compilation
 	}
 
+
+#if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+	#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+		#pragma nv_diagnostic push
+		#pragma nv_diag_suppress = implicit_return_from_non_void_function
+	#else
+		#if !defined(__GNUC__)
+		#pragma diagnostic push
+		#pragma diag_suppress = implicit_return_from_non_void_function
+		#endif
+	#endif
+#endif
+
+#if defined(__NVCOMPILER)
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
+#endif
+#if !defined(_MSC_VER)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+#endif
+
 	template<std::size_t N>
 	BOOST_MULTI_HD constexpr auto get() & -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
 		if constexpr(N == 0) {
@@ -229,6 +251,23 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		}
 	}
 };
+
+#if defined(__NVCC__)
+#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#pragma nv_diagnostic pop
+#else
+	#if !defined(__GNUC__)
+		#pragma diagnostic pop
+	#endif
+#endif
+#elif defined(__NVCOMPILER)
+#pragma diagnostic pop
+#endif
+
+#if ! defined(_MSC_VER)
+#pragma GCC diagnostic pop
+#endif
+
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
@@ -317,14 +356,16 @@ template<class T0, class... Ts>
 BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
 #if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__) || (__CUDACC_VER_MAJOR__ <= 11)
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = implicit_return_from_non_void_function
-#else
-#pragma diagnostic push
-#pragma diag_suppress = implicit_return_from_non_void_function
+	#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+		#pragma nv_diagnostic push
+		#pragma nv_diag_suppress = implicit_return_from_non_void_function
+	#else
+		// #pragma diagnostic push
+		#pragma diag_suppress = implicit_return_from_non_void_function
+	#endif
 #endif
-#elif defined(__NVCOMPILER)
+
+#if defined(__NVCOMPILER)
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
@@ -332,6 +373,7 @@ BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
+
 template<std::size_t N, class T0, class... Ts>
 BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
 	if constexpr(N == 0) {
@@ -360,18 +402,24 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 	}
 }
 
-#if defined __NVCC__
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#if defined(__NVCC__)
+#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
 #pragma nv_diagnostic pop
 #else
-#pragma diagnostic pop
+	#if !defined(__GNUC__)
+		#pragma diagnostic pop
+	#endif
 #endif
-#elif defined      __NVCOMPILER
+#elif defined(__NVCOMPILER)
 #pragma diagnostic pop
 #endif
 
 #if ! defined(_MSC_VER)
 #pragma GCC diagnostic pop
+#endif
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 
 }  // end namespace detail

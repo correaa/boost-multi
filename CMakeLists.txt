@@ -201,6 +201,34 @@ if(MULTI_BUILD_TESTS)
   endif()
 endif()
 
+# # Find the quom tool. Adjust the path if quom is not in your system's PATH.
+# # Alternatively, you could download it as part of a custom build step.
+# find_program(QUOM_EXECUTABLE quom REQUIRED)
+
+# # Define variables for the input and output files
+# set(QUOM_INPUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/boost/multi/array.hpp")
+# set(QUOM_OUTPUT_HEADER "${CMAKE_CURRENT_BINARY_DIR}/array_amalgamated.hpp")
+
+# # Use add_custom_command to run quom and generate the single header.
+# add_custom_command(
+#     OUTPUT ${QUOM_OUTPUT_HEADER}
+#     COMMAND ${QUOM_EXECUTABLE} --output ${QUOM_OUTPUT_HEADER} ${QUOM_INPUT_HEADER}
+#     DEPENDS ${QUOM_INPUT_HEADER}
+#     COMMENT "Generating single header file with quom"
+# )
+
+# # Create an interface library to encapsulate the single header.
+# # This makes it easy for other targets to use the generated header.
+# add_library(my_project_single_header INTERFACE)
+
+# # The generated header becomes a dependency of the interface library.
+# add_dependencies(my_project_single_header ${QUOM_OUTPUT_HEADER})
+
+# # Add the binary directory to the include path so targets can find the generated header.
+# target_include_directories(my_project_single_header INTERFACE
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+# )
+
 if(MULTI_BUILD_PACKAGE)
   list(APPEND source-generators TBZ2 TGZ TXZ ZIP)
 
