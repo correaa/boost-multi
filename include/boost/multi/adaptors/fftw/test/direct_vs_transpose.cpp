@@ -66,7 +66,6 @@ if constexpr(!std::is_const_v<Tp>) {
 }  // end namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	using complex = std::complex<double>;
 
 	auto in = [] {

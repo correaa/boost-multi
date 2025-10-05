@@ -126,7 +126,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 			${TEST_EXE} PRIVATE
 			$<$<CXX_COMPILER_ID:GNU>:
 				$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
-					-Xcompiler=-Wconversion -Xcompiler=-Wsign-conversion
+					-Xcompiler=-Wconversion
+					-Xcompiler=-Wsign-conversion
+					-Xcompiler=-Wfloat-conversion
+					-Xcompiler=-Wall
+					-Xcompiler=-Wextra
 				>
 			>
 			$<$<CXX_COMPILER_ID:MSVC>:
