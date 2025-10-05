@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -20,10 +20,10 @@ auto dot_n(Context&& ctxt, XIt x_first, Size count, YIt y_first, RPtr rp) {
 	if constexpr(! is_complex<typename XIt::value_type>{}) {
                                                                            std::forward<Context>(ctxt)->dot (count,            x_first.base() , stride(x_first), y_first.base(), stride(y_first), rp);
 	} else {
-		if      constexpr(!is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotu(count,            x_first.base() , stride(x_first), y_first.base(), stride(y_first), rp);}
-		else if constexpr(!is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotc(count, underlying(y_first.base()), stride(y_first), x_first.base(), stride(x_first), rp);}
-		else if constexpr( is_conjugated<XIt>{} && !is_conjugated<YIt>{}) {std::forward<Context>(ctxt)->dotc(count, underlying(x_first.base()), stride(x_first), y_first.base(), stride(y_first), rp);}
-		else if constexpr( is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) {static_assert(!sizeof(XIt*), "not implemented in blas");}
+		if      constexpr(!is_conjugated<XIt>{} && !is_conjugated<YIt>{}) { std::forward<Context>(ctxt)->dotu(count,            x_first.base() , stride(x_first), y_first.base(), stride(y_first), rp); }
+		else if constexpr(!is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) { std::forward<Context>(ctxt)->dotc(count, underlying(y_first.base()), stride(y_first), x_first.base(), stride(x_first), rp); }
+		else if constexpr( is_conjugated<XIt>{} && !is_conjugated<YIt>{}) { std::forward<Context>(ctxt)->dotc(count, underlying(x_first.base()), stride(x_first), y_first.base(), stride(y_first), rp); }
+		else if constexpr( is_conjugated<XIt>{} &&  is_conjugated<YIt>{}) { static_assert(!sizeof(XIt*), "not implemented in blas"); }
 	}
 
 	struct{XIt x_last; YIt y_last;} ret{x_first + count, y_first + count};
@@ -157,8 +157,10 @@ auto dot(Context ctxt, X const& x, Y const& y) {  // NOLINT(readability-identifi
 		#pragma nv_diagnostic push
 		#pragma nv_diag_suppress = implicit_return_from_non_void_function
 	#else
+		#if !defined(__GNUC__)
 		#pragma    diagnostic push
 		#pragma    diag_suppress = implicit_return_from_non_void_function
+		#endif
 	#endif
 #elif defined __NVCOMPILER
 	#pragma    diagnostic push
@@ -179,7 +181,9 @@ auto dot(X const& x, Y const& y) {  // NOLINT(readability-identifier-length) BLA
 	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 		#pragma nv_diagnostic pop
 	#else
+		#if !defined(__GNUC__)
 		#pragma    diagnostic pop
+		#endif
 	#endif
 #elif defined __NVCOMPILER
 	#pragma    diagnostic pop

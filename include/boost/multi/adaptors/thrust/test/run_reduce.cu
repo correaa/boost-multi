@@ -32,8 +32,10 @@ inline
 #endif
 }
 
+namespace multi = boost::multi;
+
 template<class kernel_type, class array_type>
-__global__ void reduce_kernel_vr(long sizex, long sizey, kernel_type kernel, array_type odata) {
+__global__ void reduce_kernel_vr(multi::size_t sizex, multi::size_t sizey, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto                   reduction_buffer = (typename array_type::element*)shared_mem;  // {blockDim.x, blockDim.y}
@@ -73,26 +75,26 @@ template<class type, size_t dim, class allocator = thrust::universal_allocator<t
 using array = boost::multi::array<type, dim, allocator>;
 
 struct reduce {
-	explicit reduce(long arg_size) : size(arg_size) {
+	explicit reduce(multi::size_t arg_size) : size(arg_size) {
 	}
-	long size;
+	multi::size_t size;
 };
 
 template<typename array_type>
 struct array_access {
 	array_type array;
 
-	__host__ __device__ auto operator()(long ii) const {
+	__host__ __device__ auto operator()(multi::size_t ii) const {
 		return array[ii];
 	}
 
-	__host__ __device__ auto operator()(long ix, long iy) const {
+	__host__ __device__ auto operator()(multi::size_t ix, multi::size_t iy) const {
 		return array[ix][iy];
 	}
 };
 
 template<class type, class kernel_type>
-auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<decltype(kernel(0, 0)), 1>*/ {
+auto run(multi::size_t sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<decltype(kernel(0, 0)), 1>*/ {
 
 	auto const sizey = redy.size;
 
@@ -102,8 +104,8 @@ auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<dec
 
 	gpu::array<type, 1> accumulator(sizex, 0.0);
 
-	for(long iy = 0; iy < sizey; iy++) {
-		for(long ix = 0; ix < sizex; ix++) {
+	for(multi::size_t iy = 0; iy < sizey; iy++) {
+		for(multi::size_t ix = 0; ix < sizex; ix++) {
 			accumulator[ix] += kernel(ix, iy);
 		}
 	}
@@ -175,33 +177,32 @@ auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<dec
 }  // namespace gpu
 
 struct prod {
-	/*__host__*/ __device__ auto operator()(long ix, long iy) const {
+	/*__host__*/ __device__ auto operator()(multi::size_t ix, multi::size_t iy) const {
 		return double(ix) * double(iy);
 	}
 };
 
-namespace multi = boost::multi;
-
 auto main() -> int {
 	#ifdef NDEBUG
-	long const maxsize = 39062;
-	long const nmax = 1000;
+	multi::size_t const maxsize = 39062;
+	multi::size_t const nmax = 1000;
 	#else
-	long const maxsize = 390;  // 390625;
-	long const nmax = 100;  // 10000;
+	multi::size_t const maxsize = 390;  // 390625;
+	multi::size_t const nmax = 100;  // 10000;
 	#endif
-	auto pp = [] __host__ __device__(long ix, long iy) -> double { return double(ix) * double(iy); };
+	auto pp = [] __host__ __device__(multi::index ix, multi::index iy) -> double { return double(ix) * double(iy); };
 
 	std::chrono::microseconds mus{0};
 	std::size_t FLOPs = 0;
 
-	for(long nx = 1; nx <= nmax; nx *= 10) {
-		for(long ny = 1; ny <= maxsize; ny *= 5) {
+	for(multi::size_t nx = 1; nx <= nmax; nx *= 10) {
+		for(multi::size_t ny = 1; ny <= maxsize; ny *= 5) {
 
 			multi::thrust::device_array<double, 2> M = [&]() {
 				multi::thrust::universal_array<double, 2> ret({nx, ny});
-				for(long ix = 0; ix < nx; ix++) {
-					for(long iy = 0; iy < ny; iy++) {
+				auto const [xs, ys] = ret.extensions();
+				for(auto ix : xs) {
+					for(auto iy : ys) {
 						ret[ix][iy] = pp(ix, iy);
 					}
 				}
@@ -222,9 +223,6 @@ auto main() -> int {
 
 			mus += std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
 			FLOPs += nx*ny;
-
-			// for(long ix = 0; ix < nx; ix++)
-			// 	BOOST_TEST(sums[ix] == double(ix) * ny * (ny - 1.0) / 2.0);
 		}
 	}
 	std::cout << "time " << mus.count() << " µs FLOPS " << FLOPs << " flops/s " << FLOPs/(mus.count()/1e6)/1e9 << '\n';
@@ -235,7 +233,7 @@ auto main() -> int {
 
 		multi::thrust::device_array<double, 1> sums(nx);
 		multi::thrust::reduce_by_index(
-			[] __host__ __device__(long ix, long iy) -> double { return double(ix) * double(iy); }
+			[] __host__ __device__(multi::index ix, multi::index iy) -> double { return double(ix) * double(iy); }
 			^ multi::extensions_t<2>(nx, ny),
 			sums
 		);

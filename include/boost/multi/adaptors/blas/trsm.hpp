@@ -126,31 +126,49 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D:
 ->decltype(trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::non_unit, alpha, a, std::forward<B2D>(b))) {
 	return trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::non_unit, alpha, a, std::forward<B2D>(b)); }
 
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+	#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
 		#pragma nv_diagnostic push
 		#pragma nv_diag_suppress = implicit_return_from_non_void_function
 	#else
-		#pragma    diagnostic push
-		#pragma    diag_suppress = implicit_return_from_non_void_function
+		// #pragma diagnostic push
+		#pragma diag_suppress = implicit_return_from_non_void_function
 	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic push
-	#pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
+
+#if defined(__NVCOMPILER)
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
+#endif
+#if !defined(_MSC_VER)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+#endif
+
 template<class A2D, class B2D>
 auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type alpha, A2D const& a, B2D&& b) -> decltype(auto) {  // NOLINT(readability-identifier-length) BLAS naming
 	if constexpr(! is_conjugated<A2D>{}) {return trsm(blas::default_context_of(           a.base() ), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 	else                                 {return trsm(blas::default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 }
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic pop
-	#else
-		#pragma    diagnostic pop
+
+#if defined(__NVCC__)
+#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#pragma nv_diagnostic pop
+#else
+	#if !defined(__GNUC__)
+		#pragma diagnostic pop
 	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic pop
+#endif
+#elif defined(__NVCOMPILER)
+#pragma diagnostic pop
+#endif
+
+#if ! defined(_MSC_VER)
+#pragma GCC diagnostic pop
+#endif
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 
 template<class UTArr, class B2D>
@@ -162,13 +180,13 @@ namespace operators {
 
 	template<class B2D, class UL>
 	auto operator/=(B2D&& b, UL const& a)  // NOLINT(readability-identifier-length) BLAS naming
-	->decltype(blas::trsm(blas::side::right, 1.0, a, std::forward<B2D>(b))) {
-		return blas::trsm(blas::side::right, 1.0, a, std::forward<B2D>(b)); }
+	->decltype(blas::trsm(blas::side::right, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b))) {
+		return blas::trsm(blas::side::right, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b)); }
 
 	template<class B2D, class UL>
 	auto operator|=(B2D&& b, UL const& a)  // NOLINT(readability-identifier-length) BLAS naming
-	->decltype(blas::trsm(blas::side::left, 1.0, a, std::forward<B2D>(b))) {
-		return blas::trsm(blas::side::left, 1.0, a, std::forward<B2D>(b)); }
+	->decltype(blas::trsm(blas::side::left, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b))) {
+		return blas::trsm(blas::side::left, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b)); }
 
 	using blas::U;
 	using blas::L;

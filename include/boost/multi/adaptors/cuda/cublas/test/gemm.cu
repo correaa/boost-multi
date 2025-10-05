@@ -49,11 +49,13 @@ int main() {
 		multi::array<complex, 1> const Y_copy = Y_gpu;
 
 		using blas::operators::operator-;
-		BOOST_TEST(+blas::nrm2(Y_copy - multi::array<complex, 1>{
-													 {214.02, 0.0},
-													 {106.43, 0.0},
-													 {188.37, 0.0}
-        }) < 1e-13);
+		BOOST_TEST(+blas::nrm2(Y_copy - 
+			multi::array<complex, 1>{
+				{214.02, 0.0},
+				{106.43, 0.0},
+				{188.37, 0.0}
+        	}
+		) < 1e-13);
 	}
 
 	// BOOST_AUTO_TEST_CASE(cublas_gemv_real)
