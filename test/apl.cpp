@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #if defined(__NVCC__) && !defined(_MSC_VER)
-#pragma diag_suppress 177  // Suppress warning number 177 variable "apl::symbols::<unnamed>::\u019f" was declared but never referenced
+#pragma nv_diag_suppress 177  // Suppress warning number 177 variable "apl::symbols::<unnamed>::\u019f" was declared but never referenced
 #endif
 
 #include <boost/multi/array.hpp>
@@ -31,6 +31,7 @@ constexpr auto iota(Extensions const& exts) {
 
 template<class... Es>
 constexpr auto iota([[maybe_unused]] Es... es) {  // for nvcc 14
+	((void)es,...);
 	return iota<sizeof...(Es)>(multi::extensions_t<static_cast<multi::dimensionality_type>(sizeof...(Es))>{es...});
 }
 

@@ -449,11 +449,11 @@ vs2022-shell cudatk:
     - cmake --version
     # -DCMAKE_CXX_FLAGS="/Wall /wd4668 /wd5045"
     # -DCMAKE_CUDA_FLAGS=-Xcompiler=/Wall -Xcompiler=/wd4061,/wd4191,/wd4244,/wd4296,/wd4365,/wd4464 -Xcompiler=/wd4555 -Xcompiler=/wd4619 -Xcompiler=/wd4668 -Xcompiler=/wd4820 -Xcompiler=/wd5026 -Xcompiler=/wd5027 -Xcompiler=/wd5039 -Xcompiler=/wd5031 -Xcompiler=/wd5032 -Xcompiler=/wd5045 -Xcompiler=/wd5220 -Xcompiler=/wd5246 
-    - cmake -S . -B build -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CXX_STANDARD=20 -DENABLE_CUDA=1 "-Wno-deprecated-gpu-targets" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake -S . -B build -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CXX_STANDARD=20 -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=75 "-Wno-deprecated-gpu-targets" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
   tags:
     - windows, shell, cudatk
-  needs: ["vs2022-shell", "cuda"]
+  needs: ["vs2022-shell"]  # , "cuda"]
   timeout: 60 minutes
 
 vs2022-shell cuda:
@@ -725,9 +725,9 @@ cuda:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++"]
 
-cuda-11.4.3:
+cuda-11.5.2:
   stage: build
-  image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
+  image: nvcr.io/nvidia/cuda:11.5.2-devel-ubuntu20.04  # 11.4.3-devel-ubuntu20.04
   tags:
     - non-shared
     - nvidia-gpu
@@ -1171,7 +1171,7 @@ pages:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge pip python3-venv
     - pandoc --version
     - asciidoctor --version
     - mkdir .public
@@ -1180,9 +1180,15 @@ pages:
     # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
     - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
     - cd ..
-    - cp -r include/boost/multi/array.hpp .public/boost-multi.html
     - cp -r doc/multi.html .public
     # - cp -r doc/multi.adoc .public
+    - python3 -m venv .venv
+    - source .venv/bin/activate
+    - pip install quom
+    - quom include/boost/multi/array.hpp boost-multi.hpp
+    - cp -r include/boost/multi/array.hpp .public/boost-multi.html
+    - cp -r boost-multi.hpp .public/boost-multi.hpp
+    # - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
     - mv .public public
   artifacts:
     paths:
