@@ -418,10 +418,6 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
-
 }  // end namespace detail
 }  // end namespace boost::multi
 
