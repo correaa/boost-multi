@@ -362,7 +362,7 @@ template<template<typename> class DatatypeT = mpi::datatype_t, class Array>
 auto begin(Array&& arr) {return iterator<DatatypeT>{std::forward<Array>(arr).begin()}; }
 
 #if defined(__cpp_deduction_guides) && (__cpp_deduction_guides>=201703L)
-template<class ArrayElements> message(ArrayElements) -> message<>;
+template<class ArrayElements> message(ArrayElements const&) -> message<>;
 #endif
 
 }  // namespace boost::multi::mpi

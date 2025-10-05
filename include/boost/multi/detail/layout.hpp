@@ -1272,8 +1272,10 @@ struct layout_t
 
  public:
 #if defined(__NVCC__)
+#if defined(____NVCC_DIAG_PRAGMA_SUPPORT__)
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
+#endif
 #endif
  private:
 	template<class... Args>
@@ -1290,7 +1292,9 @@ struct layout_t
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
 	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 #if defined(__NVCC__)
+#if defined(____NVCC_DIAG_PRAGMA_SUPPORT__)
 #pragma nv_diagnostic pop
+#endif
 #endif
 
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)

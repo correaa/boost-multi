@@ -725,9 +725,9 @@ cuda:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++"]
 
-cuda-11.4.3:
+cuda-11.5.2:
   stage: build
-  image: nvcr.io/nvidia/cuda:11.4.3-devel-ubuntu20.04
+  image: nvcr.io/nvidia/cuda:11.5.2-devel-ubuntu20.04  # 11.4.3-devel-ubuntu20.04
   tags:
     - non-shared
     - nvidia-gpu

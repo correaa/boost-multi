@@ -157,8 +157,10 @@ auto dot(Context ctxt, X const& x, Y const& y) {  // NOLINT(readability-identifi
 		#pragma nv_diagnostic push
 		#pragma nv_diag_suppress = implicit_return_from_non_void_function
 	#else
+		#if !defined(__GNUC__)
 		#pragma    diagnostic push
 		#pragma    diag_suppress = implicit_return_from_non_void_function
+		#endif
 	#endif
 #elif defined __NVCOMPILER
 	#pragma    diagnostic push
@@ -179,7 +181,9 @@ auto dot(X const& x, Y const& y) {  // NOLINT(readability-identifier-length) BLA
 	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 		#pragma nv_diagnostic pop
 	#else
+		#if !defined(__GNUC__)
 		#pragma    diagnostic pop
+		#endif
 	#endif
 #elif defined __NVCOMPILER
 	#pragma    diagnostic pop

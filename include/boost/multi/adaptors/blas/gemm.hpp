@@ -313,18 +313,25 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(rea
 		;
 }
 
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+	#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
 		#pragma nv_diagnostic push
 		#pragma nv_diag_suppress = implicit_return_from_non_void_function
 	#else
-		#pragma    diagnostic push
-		#pragma    diag_suppress = implicit_return_from_non_void_function
+		// #pragma diagnostic push
+		#pragma diag_suppress = implicit_return_from_non_void_function
 	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic push
-	#pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
+
+#if defined(__NVCOMPILER)
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
+#endif
+#if !defined(_MSC_VER)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+#endif
+
 template<class A2D, class B2D, class Scalar = typename A2D::element_type, class = decltype(Scalar{0.0})>
 auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	if constexpr(is_conjugated<A2D>{}) {
@@ -335,14 +342,25 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 		return blas::gemm(ctxtp, s, a, b);
 	}
 }
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic pop
-	#else
-		#pragma    diagnostic pop
+
+#if defined(__NVCC__)
+#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#pragma nv_diagnostic pop
+#else
+	#if !defined(__GNUC__)
+		#pragma diagnostic pop
 	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic pop
+#endif
+#elif defined(__NVCOMPILER)
+#pragma diagnostic pop
+#endif
+
+#if ! defined(_MSC_VER)
+#pragma GCC diagnostic pop
+#endif
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 
 namespace operators {
