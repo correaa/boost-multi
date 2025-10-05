@@ -240,7 +240,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(std::is_move_constructible_v<multi::subarray<int, 4>>);          // mmm, something strange here
 		static_assert(std::is_nothrow_move_constructible_v<multi::subarray<int, 4>>);  // mmm, something strange here
+
+#if !defined(__NVCC__)
 		static_assert(!std::is_copy_constructible_v<multi::subarray<int, 4>>);
+#endif
 
 #if !defined(__circle_build__)
 		static_assert(!std::is_trivially_copyable_v<multi::subarray<int, 4>>);
