@@ -242,8 +242,8 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	try {
 		//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 		//  workadoung for gcc 8.3.1 in Lass
-		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
-		return first + count;
+		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return first + count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	} catch(...) {
 		// LCOV_EXCL_START  // TODO(correaa) add test
 		std::for_each(first, current, [&](T& elem) { alloc_traits::destroy(alloc, std::addressof(elem)); });
@@ -263,10 +263,10 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 
 template<class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
 constexpr auto destroy_n(BidirIt first, Size count)
-->std::decay_t<decltype(std::addressof(*(first - 1)), first)> {
+->std::decay_t<decltype(std::addressof(*(first - 1)), first)> {  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	first += count;
 	for(; count != 0; --first, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		std::addressof(*(first-1))->~T();
+		std::addressof(*(first-1))->~T();  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	return first;
 }
@@ -280,9 +280,9 @@ constexpr auto destroy_n(BidirIt first, Size count)
 template<class Alloc, class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
 constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 ->std::decay_t<decltype(std::addressof(*(first-1)), first)> {
-	first += count;
-	for (; count != 0; --first, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*(first - 1)));
+	first += count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	for (; count != 0; --first, --count) {  // NOLINT(altera-unroll-loops,cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) consider using an algorithm
+		std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*(first - 1)));  // NOLINT(NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	return first;
 }
