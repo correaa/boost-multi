@@ -2919,8 +2919,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  public:
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(*this, tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
 
-	template<class Tuple, std::enable_if_t<(std::tuple_size_v<Tuple> == 0), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) { return *this; }  // NOLINT(modernize-use-constraints) for C++20
-	template<class Tuple, std::enable_if_t<(std::tuple_size_v<Tuple> == 1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices) const& -> decltype(auto) {                    // NOLINT(modernize-use-constraints) for C++20
+	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) { return *this; }  // NOLINT(modernize-use-constraints) for C++20
+	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices) const& -> decltype(auto) {                    // NOLINT(modernize-use-constraints) for C++20
 		using std::get;
 		return operator[](get<0>(indices));
 	}
