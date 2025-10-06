@@ -4,14 +4,13 @@
 
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
-#pragma once
 
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
 #include <type_traits>
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4623)  // assignment operator was implicitly defined as deleted
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
@@ -78,13 +77,13 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 
 #include <utility>  // for forward
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_FRIEND_CONSTEXPR template<class = void> friend constexpr  // workaround nvcc
 #else
 #define BOOST_MULTI_FRIEND_CONSTEXPR friend constexpr
 #endif
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
@@ -132,7 +131,7 @@ struct of_dim {
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -260,13 +259,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) { return self.origin(); }
 
  protected:
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
 #endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
@@ -307,7 +306,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	template<class T2, ::boost::multi::dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -326,19 +325,23 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
  private:
 	Layout layout_;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
-#if defined(_MSC_VER)
+
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  //'boost::multi::subarray_ptr<double,1,fancy::ptr<double>,boost::multi::layout_t<1,boost::multi::size_type>,true>': '7' bytes padding added after data member 'boost::multi::subarray_ptr<double,1,fancy::ptr<double>,boost::multi::layout_t<1,boost::multi::size_type>,true>::base_'
 #endif
+
 	ElementPtr                                                 base_;
 	typename std::iterator_traits<ElementPtr>::difference_type offset_;  // = []() { assert(0); return 0; } ();
-#if defined(_MSC_VER)
+
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
