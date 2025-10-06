@@ -288,10 +288,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(( buffer != std::array<char, 13>{{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}} ));
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST(( buffer == std::array<char, 13>{{'x', 'y', 'z', '&', 'o', 'o', 'o', 'o', 'o', 'o', 'A', 'B', 'C'}} ));
 #endif
-#if defined(_LIBCPP_VERSION)
+#ifdef _LIBCPP_VERSION
 		BOOST_TEST(( buffer == std::array<char, 13>{{'0', '1', '2', 'o', 'o', 'o', 'o', 'o', 'o', 'x', 'y', 'z', '&'}} ));
 #endif
 
@@ -315,10 +315,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
 #endif
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
 #endif
-#if defined(_LIBCPP_VERSION)
+#ifdef _LIBCPP_VERSION
 		BOOST_TEST(( buffer == std::array<char, 13>{{'X', 'X', 'X', 'b', 'b', 'b', 'b', 'b', 'b', 'a', 'a', 'a', 'a'}} ));
 #endif
 
@@ -339,10 +339,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( buffer[0] == 4 );
 		BOOST_TEST( buffer[1] == 5 );
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST(Aarr[0][0] == 4);
 #endif
-#if defined(_LIBCPP_VERSION)
+#ifdef _LIBCPP_VERSION
 		BOOST_TEST(Aarr[0][0] == 996);
 #endif
 	}
