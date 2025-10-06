@@ -35,6 +35,7 @@ Checks: '*,
   -fuchsia-default-arguments-calls,
   -fuchsia-trailing-return,
   -hicpp-no-array-decay,
+  -llvm-prefer-static-over-anonymous-namespace,
   -llvmlibc-*,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
@@ -50,6 +51,7 @@ Checks: '*,
 #  -fuchsia-default-arguments-calls,                      // this library uses STL functions, which use default arguments
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -hicpp-no-array-decay,                                 // for Boost Lightweight Test
+#  -llvm-prefer-static-over-anonymous-namespace,          // contradicts other rules
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
 #  -llvm-header-guard,                                    // allow PCH
 #  -misc-include-cleaner                                  // allow PCH

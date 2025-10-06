@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_DETAIL_WHAT_HPP
 #define BOOST_MULTI_DETAIL_WHAT_HPP
-#pragma once
 
 namespace boost::multi::detail {
 	template<class... Ts> auto what() -> std::tuple<Ts&&...>        = delete;

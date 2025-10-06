@@ -34,13 +34,13 @@ namespace boost::multi { template <boost::multi::dimensionality_type D, typename
 namespace boost::multi::detail { template <class ...Ts> class tuple; }
 // clang-format on
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4514)  // inline function removed, in MSVC C++17 mode
 #pragma warning(disable : 5045)  // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
@@ -460,10 +460,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
 				if(n > 0) {  // mull-ignore: cxx_gt_to_ge
 					curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
-					rest_it_ = rest_begin_ + (rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_);
+					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_));
 				} else if(n < 0) {  // mull-ignore: cxx_lt_to_ge, cxx_lt_to_le
 					curr_ -= (rest_end_ - rest_it_ - n) / (rest_end_ - rest_begin_);
-					rest_it_ = rest_end_ - (rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_);
+					rest_it_ = rest_end_ - ((rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_));
 					if(rest_it_ == rest_end_) {
 						rest_it_ = rest_begin_;
 						++curr_;
@@ -475,14 +475,14 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> iterator& {
 				if(n > 0) {  // mull-ignore: cxx_gt_to_ge
 					curr_ -= (rest_end_ - rest_it_ + n) / (rest_end_ - rest_begin_);
-					rest_it_ = rest_end_ - (rest_end_ - rest_it_ + n) % (rest_end_ - rest_begin_);
+					rest_it_ = rest_end_ - ((rest_end_ - rest_it_ + n) % (rest_end_ - rest_begin_));
 					if(rest_it_ == rest_end_) {
 						rest_it_ = rest_begin_;
 						++curr_;
 					}
 				} else if(n < 0) {  // mull-ignore: cxx_lt_to_ge, cxx_lt_to_le
 					curr_ += (rest_it_ - rest_begin_ - n) / (rest_end_ - rest_begin_);
-					rest_it_ = rest_begin_ + (rest_it_ - rest_begin_ - n) % (rest_end_ - rest_begin_);
+					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ - n) % (rest_end_ - rest_begin_));
 				}
 				return *this;
 			}
@@ -604,13 +604,13 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < D), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
+	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element_t<Index, base_> {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < D), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+	constexpr auto get() const -> std::tuple_element_t<Index, base_> {
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
 	}
@@ -669,14 +669,14 @@ template<> struct extensions_t<0> : tuple<> {
 	constexpr BOOST_MULTI_HD auto operator!=(extensions_t const& /*other*/) const { return false; }
 
 	template<std::size_t Index>  // TODO(correaa) = detele ?
-	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
+	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element_t<Index, base_> {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
 
 	template<std::size_t Index>  // TODO(correaa) = detele ?
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto get() const -> typename std::tuple_element<Index, base_>::type {
+	constexpr auto get() const -> typename std::tuple_element_t<Index, base_> {
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
 	}
@@ -907,7 +907,7 @@ struct std::tuple_element<0, boost::multi::extensions_t<0>> {  // NOLINT(cert-dc
 
 template<std::size_t Index, boost::multi::dimensionality_type D>
 struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cert-dcl58-cpp) to implement structured binding
-	using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
+	using type = typename std::tuple_element_t<Index, typename boost::multi::extensions_t<D>::base_>;
 };
 
 namespace std {  // NOLINT(cert-dcl58-cpp)
@@ -1271,11 +1271,9 @@ struct layout_t
 	}
 
  public:
-#if defined(__NVCC__)
-#if defined(____NVCC_DIAG_PRAGMA_SUPPORT__)
+#ifdef __NVCC__
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
-#endif
 #endif
  private:
 	template<class... Args>
@@ -1291,10 +1289,8 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
 	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
-#if defined(__NVCC__)
-#if defined(____NVCC_DIAG_PRAGMA_SUPPORT__)
+#ifdef __NVCC__
 #pragma nv_diagnostic pop
-#endif
 #endif
 
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
@@ -1306,7 +1302,7 @@ struct layout_t
 	constexpr auto origin() const { return sub_.origin() - offset_; }
 
  private:
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"
 #endif
@@ -1322,11 +1318,11 @@ struct layout_t
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const { return at_aux_(idx); }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
@@ -1334,7 +1330,7 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr auto operator()() const { return *this; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -1555,7 +1551,7 @@ struct layout_t
 		return layout_t{sub_.scale(factor), stride_ * factor, offset_ * factor, nelems_ * factor};
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
 #endif
@@ -1585,7 +1581,7 @@ struct layout_t
 		return layout_t{sub_.scale(num, den), stride_ * num / den, offset_ /* *num/den */, nelems_ * num / den};
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 };
@@ -1623,11 +1619,11 @@ struct layout_t<0, SSize>
 	friend constexpr auto dimensionality(layout_t const& /*self*/) { return rank_v; }
 
  private:
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // '6' bytes padding added after data member
 #endif
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -1636,10 +1632,10 @@ struct layout_t<0, SSize>
 
 	offset_type offset_;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
@@ -1756,7 +1752,7 @@ struct convertible_tuple : Tuple {
 	: Tuple(other) {}
 
  public:
-	using array_type = std::array<std::ptrdiff_t, std::tuple_size<Tuple>::value>;
+	using array_type = std::array<std::ptrdiff_t, std::tuple_size_v<Tuple>>;
 	auto to_array() const noexcept {
 		return std::apply([](auto... es) noexcept {
 			return std::array<std::common_type_t<decltype(es)...>, sizeof...(es)>{{static_cast<size_type>(es)...}};
@@ -1779,7 +1775,7 @@ struct convertible_tuple : Tuple {
 #endif
 
 	template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Tuple>), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend BOOST_MULTI_HD constexpr auto get(convertible_tuple const& self) -> typename std::tuple_element<Index, Tuple>::type {
+	friend BOOST_MULTI_HD constexpr auto get(convertible_tuple const& self) -> std::tuple_element_t<Index, Tuple> {
 		using std::get;
 		return get<Index>(static_cast<Tuple const&>(self));
 	}
@@ -1795,7 +1791,7 @@ struct decaying_array : Array {
 	constexpr operator std::ptrdiff_t const*() const { return Array::data(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Array>), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto get(decaying_array const& self) -> typename std::tuple_element<Index, Array>::type {
+	friend constexpr auto get(decaying_array const& self) -> std::tuple_element_t<Index, Array> {
 		using std::get;
 		return get<Index>(static_cast<Array const&>(self));
 	}
@@ -1809,7 +1805,7 @@ template<class Array> struct std::tuple_size<boost::multi::detail::decaying_arra
 #pragma clang diagnostic pop
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 

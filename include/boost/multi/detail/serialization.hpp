@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
 #define BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
-#pragma once
 
 #include <algorithm>    // for std::for_each  // IWYU pragma: keep  // bug in iwyu 0.18
 #include <cstddef>      // for size_t, byte
