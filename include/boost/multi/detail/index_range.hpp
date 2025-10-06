@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
 #define BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
-#pragma once
 
 #include <boost/multi/detail/implicit_cast.hpp>
 #include <boost/multi/detail/serialization.hpp>
@@ -23,7 +22,7 @@
 #include <type_traits>  // for declval, true_type, decay_t, enable_if_t
 #include <utility>      // for forward
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
@@ -82,21 +81,26 @@ class iterator_facade {
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<>>
 class range {
-	#if defined(_MSC_VER)
+	#ifdef _MSC_VER
 	#pragma warning(push)
 	#pragma warning(disable : 4820)	// 'boost::multi::range<IndexType,IndexTypeLast,std::plus<void>,std::minus<void>>': '3' bytes padding added after data member 'boost::multi::range<IndexType,IndexTypeLast,std::plus<void>,std::minus<void>>::first_'
 	#endif
+
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	IndexType     first_ = {};
-	#if defined(_MSC_VER)
+
+	#ifdef _MSC_VER
 	#pragma warning(pop)
 	#endif
-	#if defined(__clang__)
+
+	#ifdef __clang__
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wpadded"
 	#endif
+
 	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
-	#if defined(__clang__)
+
+	#ifdef __clang__
 	#pragma clang diagnostic pop
 	#endif
 
@@ -227,17 +231,15 @@ class range {
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto empty() const& noexcept { return is_empty(); }
 	friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
 
-	#if defined(__NVCC__)
-	#if defined(____NVCC_DIAG_PRAGMA_SUPPORT__)
+	#ifdef __NVCC__
 	#pragma nv_diagnostic push
 	#pragma nv_diag_suppress = 20013  // calling a constexpr __host__ function("operator std::streamoff") from a __host__ __device__ function("size") is not allowed.  // TODO(correaa) implement HD integral_constant
 	#endif
-	#endif
+
 	BOOST_MULTI_HD constexpr auto        size() const& noexcept -> size_type { return last_ - first_; }
-	#if defined(__NVCC__)
-	#if defined(____NVCC_DIAG_PRAGMA_SUPPORT__)
+
+	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
-	#endif
 	#endif
 
 	friend BOOST_MULTI_HD constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }

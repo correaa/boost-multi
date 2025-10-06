@@ -4,20 +4,19 @@
 
 #ifndef BOOST_MULTI_DETAIL_TUPLE_ZIP_HPP
 #define BOOST_MULTI_DETAIL_TUPLE_ZIP_HPP
-#pragma once
 
 #include <cstddef>      // for size_t
 #include <tuple>        // for deprecated functions  // for make_index_sequence, index_sequence, tuple_element, tuple_size, apply, tuple
 #include <type_traits>  // for declval, decay_t, conditional_t, true_type
 #include <utility>      // for forward, move
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4514)  // boost::multi::detail::tuple<>::operator <': unreferenced inline function has been removed
 #pragma warning(disable : 4623)  // default constructor was implicitly defined as deleted
@@ -212,16 +211,9 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 
-#if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-	#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = implicit_return_from_non_void_function
-	#else
-		#if !defined(__GNUC__)
-		#pragma diagnostic push
-		#pragma diag_suppress = implicit_return_from_non_void_function
-		#endif
-	#endif
+#ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+	#pragma nv_diagnostic push
+	#pragma nv_diag_suppress = implicit_return_from_non_void_function
 #endif
 
 #ifdef __NVCOMPILER
@@ -253,14 +245,8 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 };
 
-#if defined(__NVCC__)
-#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#ifdef __NVCC__
 #pragma nv_diagnostic pop
-#else
-	#if !defined(__GNUC__)
-		#pragma diagnostic pop
-	#endif
-#endif
 #elif defined(__NVCOMPILER)
 #pragma diagnostic pop
 #endif
@@ -269,11 +255,11 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
-#if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
+#ifdef __INTEL_COMPILER  // this instance is necessary due to a bug in intel compiler icpc
 //  TODO(correaa) : this class can be collapsed with the general case with [[no_unique_address]] in C++20
 template<class T0> class tuple<T0> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0      head_;
@@ -356,21 +342,17 @@ BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>&& t) -> decltype(std::move(t
 template<class T0, class... Ts>
 BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
-#if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-	#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = implicit_return_from_non_void_function
-	#else
-		// #pragma diagnostic push
-		#pragma diag_suppress = implicit_return_from_non_void_function
-	#endif
+#ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+	#pragma nv_diagnostic push
+	#pragma nv_diag_suppress = implicit_return_from_non_void_function
 #endif
 
-#if defined(__NVCOMPILER)
+#ifdef __NVCOMPILER
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
-#if !defined(_MSC_VER)
+
+#ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
@@ -403,19 +385,13 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 	}
 }
 
-#if defined(__NVCC__)
-#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#ifdef __NVCC__
 #pragma nv_diagnostic pop
-#else
-	#if !defined(__GNUC__)
-		#pragma diagnostic pop
-	#endif
-#endif
 #elif defined(__NVCOMPILER)
 #pragma diagnostic pop
 #endif
 
-#if ! defined(_MSC_VER)
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
 #endif
 
@@ -452,7 +428,7 @@ struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 
 template<std::size_t N, class T0, class... Ts>
 struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
-	using type = typename tuple_element<N - 1, boost::multi::detail::tuple<Ts...>>::type;
+	using type = tuple_element_t<N - 1, boost::multi::detail::tuple<Ts...>>;
 };
 
 template<class F, class Tuple, std::size_t... I>
@@ -550,7 +526,7 @@ template<class T1, class T2>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2),
-		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
+		std::make_index_sequence<std::tuple_size_v<std::decay_t<T1>>>()
 	);
 }
 
@@ -558,7 +534,7 @@ template<class T1, class T2, class T3>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3),
-		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
+		std::make_index_sequence<std::tuple_size_v<std::decay_t<T1>>>()
 	);
 }
 
@@ -566,7 +542,7 @@ template<class T1, class T2, class T3, class T4>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3), std::forward<T4>(tup4),
-		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
+		std::make_index_sequence<std::tuple_size_v<std::decay_t<T1>>>()
 	);
 }
 
@@ -574,7 +550,7 @@ template<class T1, class T2, class T3, class T4, class T5>
 constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4, T5&& tup5) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(tup1), std::forward<T2>(tup2), std::forward<T3>(tup3), std::forward<T4>(tup4), std::forward<T5>(tup5),
-		std::make_index_sequence<std::tuple_size<std::decay_t<T1>>::value>()
+		std::make_index_sequence<std::tuple_size_v<std::decay_t<T1>>>()
 	);
 }
 

@@ -10,7 +10,7 @@
 #include <type_traits>  // for enable_if_t, is_base_of
 #include <utility>      // for forward
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 	#define BOOST_MULTI_HD __host__ __device__
 #else
 	#define BOOST_MULTI_HD
@@ -96,7 +96,7 @@ struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self
 
 template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning( push )
 #pragma warning( disable : 4820 )  // '3' bytes padding added after data member
 #endif
@@ -109,7 +109,7 @@ struct totally_ordered2<T, void> {
 	// template<class U>
 	// friend constexpr auto operator>(T const& self, U const& other) { return other < self; }
 };
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning( pop )
 #endif
 
@@ -232,7 +232,7 @@ struct dereferenceable {
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *(self().operator->()); }
 };
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning( push )
 #pragma warning( disable : 4820 )  // '7' bytes padding added after base class
 #endif
@@ -259,16 +259,9 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 	BOOST_MULTI_HD constexpr auto operator[](difference_type idx) const -> reference { return *(self() + idx); }
 };
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning( pop )
 #endif
-
-
-// template<class T, class Reference>
-// struct dereferenceable {
-//   using reference = Reference;
-//   friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
-// };
 
 template<class Self, class D>
 class addable2 {
@@ -310,7 +303,7 @@ struct affine : addable2<T, Difference>
 	using difference_type = Difference;
 };
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning( push )
 #pragma warning( disable : 4820 )  // '3' bytes padding added after data member
 #endif
@@ -326,7 +319,7 @@ class random_iterable {
 	friend constexpr auto cfront(T const& self) -> decltype(auto) { return self.cfront(); }
 	friend constexpr auto cback(T const& self) -> decltype(auto) { return self.cback(); }
 };
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning( pop )
 #endif
 
