@@ -367,6 +367,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		v1D(_)    = A2D(0, _);            // v1D() = A2D( 0 )   ;
 		B2D(_, _) = A2D({0, 2}, {0, 2});  // B2D() = A2D({0, 2}, {0, 2});
 	}
+	{
+		auto A2D = multi::array<int, 2>{
+			{1, 2},
+			{3, 4}
+		};
+		BOOST_TEST( A2D[1][1] == 4 );
 
+		A2D[1][1] = 44;
+
+		BOOST_TEST( A2D[1][1] == 44 );  // cppcheck-suppress knownConditionTrueFalse ;  // test syntax
+
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+		BOOST_TEST(( A2D[1, 1] == 44 ));
+
+		A2D[1, 1] = 444;
+		BOOST_TEST(( A2D[1, 1] == 444 ));
+
+		using boost::multi::_;
+		BOOST_TEST(( &A2D[_, 1][1] == &A2D[1, 1] ));
+#endif
+	}
 	return boost::report_errors();
 }
