@@ -282,7 +282,7 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 ->std::decay_t<decltype(std::addressof(*(first-1)), first)> {
 	first += count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	for (; count != 0; --first, --count) {  // NOLINT(altera-unroll-loops,cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) consider using an algorithm
-		std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*(first - 1)));  // NOLINT(NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*(first - 1)));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	return first;
 }
