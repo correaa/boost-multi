@@ -324,8 +324,12 @@ class intersecting_range {
 [[maybe_unused]] constexpr intersecting_range<> V = U;  // NOLINT(readability-identifier-length)
 [[maybe_unused]] constexpr intersecting_range<> A = V;  // NOLINT(readability-identifier-length)
 
-// [[maybe_unused]] constexpr intersecting_range<> ∀ = V;
+#if !defined(__clang__) && !defined(CPPCHECK)
+// cppcheck-suppress preprocessorErrorDirective ;  // unicode
+// [[maybe_unused]] constexpr intersecting_range<> ∀ = V;  // not valid in clang or g++-15
 // [[maybe_unused]] constexpr intersecting_range<> https://www.compart.com/en/unicode/U+2200 = V;
+// [[maybe_unused]] constexpr intersecting_range<> ┄ = ALL;  // not valid in g++-15
+#endif
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + IndexType{1})>
 struct extension_t : public range<IndexType, IndexTypeLast> {
