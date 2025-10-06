@@ -1630,7 +1630,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #endif
 
 	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->sub(), this->stride()); }
-	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }
+	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
