@@ -37,6 +37,7 @@ Checks: '*,
   -hicpp-no-array-decay,
   -llvmlibc-*,
   -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
   -readability-magic-numbers,
   -readability-simplify-boolean-expr'
 ## explanation of the suppressed rules above:
@@ -53,5 +54,6 @@ Checks: '*,
 #  -llvm-header-guard,                                    // allow PCH
 #  -misc-include-cleaner                                  // allow PCH
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
+#  -modernize-use-trailing-return-type                    // mandates all lambdas end with -> auto
 #  -readability-magic-numbers,                            // many tests use magic numbers
 #  -readability-simplify-boolean-expr,                    // for Boost Lightweight Test BOOST_TEST

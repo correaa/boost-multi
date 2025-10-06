@@ -224,11 +224,12 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	#endif
 #endif
 
-#if defined(__NVCOMPILER)
+#ifdef __NVCOMPILER
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
-#if !defined(_MSC_VER)
+
+#ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
@@ -264,7 +265,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #pragma diagnostic pop
 #endif
 
-#if ! defined(_MSC_VER)
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
 #endif
 
