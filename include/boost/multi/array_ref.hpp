@@ -342,7 +342,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 #pragma warning(pop)
 #endif
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -611,9 +611,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	}
 
  public:
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) const -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
-	// template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl)     && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
-	// template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl)      & -> decltype(auto) { return apply_impl_(          *this , tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) const -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
 
  private:
 	ptr_type    ptr_;
@@ -644,7 +642,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 #endif
 
 	constexpr auto operator++() -> array_iterator& {
-		ptr_.base_ += stride_;
+		ptr_.base_ += stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 	constexpr auto operator--() -> array_iterator& {
@@ -756,7 +754,7 @@ struct cursor_t {
  public:
 	template<class Tuple = indices_type>
 	BOOST_MULTI_HD constexpr auto operator+=(Tuple const& tup) -> cursor_t& {
-		base_ += apply_impl_(tup, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
+		base_ += apply_impl_(tup, std::make_index_sequence<std::tuple_size_v<Tuple>>{});
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *base_; }
@@ -880,14 +878,7 @@ struct elements_iterator_t
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator*() const -> reference /*decltype(base_[0])*/ {
-		// #if defined(__NVCC__)
-		// #pragma nv_diagnostic push
-		// #pragma nv_diag_suppress = 20014  // TODO(correa) use multi::apply
-		// #endif
-		return base_[apply(l_, ns_)];
-		// #if defined(__NVCC__)
-		// #pragma nv_diagnostic pop
-		// #endif
+		return base_[apply(l_, ns_)];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
@@ -1207,7 +1198,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #endif
 		return const_reference(
 			this->layout().sub(),
-			this->base_ + (idx * this->layout().stride() - this->layout().offset())
+			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -1224,7 +1215,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return const_reference(
 			this->layout().sub(),
-			this->base_ + (idx * this->layout().stride() - this->layout().offset())
+			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 			// return at_aux_(idx);  // TODO(correaa) use at_aux
 	}  // TODO(correaa) use return type to cast
@@ -1327,7 +1318,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
-		return const_subarray(new_layout, this->base_ + (first * this->layout().stride() - this->layout().offset()));
+		return const_subarray(new_layout, this->base_ + (first * this->layout().stride() - this->layout().offset()));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -1587,7 +1578,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
 
 	using iterator       = array_iterator<element, D, element_ptr>;
 	using const_iterator = array_iterator<element, D, element_ptr, true>;
@@ -2530,7 +2521,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 	BOOST_MULTI_HD constexpr auto operator++() -> array_iterator& {
-		ptr_ += stride_;
+		ptr_ += stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator--() -> array_iterator& {
@@ -2539,7 +2530,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	}
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> array_iterator& {
-		ptr_ += stride_ * n;
+		ptr_ += stride_ * n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> array_iterator& {
@@ -2886,7 +2877,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-		return *((this->stride() * idx - this->offset()) + this->base_);
+		return *((this->stride() * idx - this->offset()) + this->base_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -3009,6 +3000,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return const_subarray{this->layout().slice(first, last), this->base_ + (first * this->layout().stride() /*- this->layout().offset()*/)};  // TODO(correaa) fix need for offset
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -3191,7 +3183,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #endif
 
 	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator{this->base_, this->stride()}; }
-	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{this->base_ + types::nelems(), this->stride()}; }
+	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{this->base_ + types::nelems(), this->stride()}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -3835,7 +3827,7 @@ constexpr auto uninitialized_copy
 	(In first, In last, multi::array_iterator<T, N, TP> dest) {
 	while(first != last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
-		++first;
+		++first;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		++dest;
 	}
 	return dest;

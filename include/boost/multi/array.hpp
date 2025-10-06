@@ -26,13 +26,13 @@
 #endif
 
 // TODO(correaa) or should be (__CUDA__) or CUDA__ || HIP__
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #endif
@@ -108,7 +108,7 @@ struct array_allocator {
 
 }  // end namespace detail
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -590,7 +590,7 @@ struct static_array                                                             
 		return *this;
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
@@ -598,12 +598,12 @@ struct static_array                                                             
 
 	constexpr auto operator=(static_array&& other) noexcept -> static_array& {                                 // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		assert(extensions(other) == static_array::extensions());                                               // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
-		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
+		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) there is no std::move_n algorithm
 		assert(this->stride() != 0);
 		return *this;
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -625,7 +625,7 @@ struct static_array                                                             
 	friend void swap(static_array& lhs, static_array& rhs) noexcept { lhs.swap_(rhs); }
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -955,12 +955,6 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	friend constexpr auto unrotated(static_array& self) -> decltype(auto) { return self.unrotated(); }
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) { return self.unrotated(); }
 
-	//  TODO(correaa) find a symbolic way to express rotations, A << 1, A >> 1, A <<o; A >>o; ~A; !A; ++A; A++; --A; A--; -A; +A; e<<A; A>>e; e>>A; <<A; ~A;
-	//  constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
-	//  constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
-	//  constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
-	//  constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
-
 	constexpr auto operator=(static_array const& other) -> static_array& {
 		assert(extensions(other) == static_array::extensions());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		if(this == &other) {
@@ -975,7 +969,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 	constexpr auto equal_extensions_if_(std::false_type /*false*/, static_array const& /*other*/) { return true; }
 
  public:
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -987,7 +981,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 		return *this;
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -1034,15 +1028,6 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 	}
 #endif
 
-	// template<
-	// 	class Other,
-	// 	std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Other>>, int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	// >
-	// auto operator=(Other const& other) -> array& {
-	// 	this->assign(&other);
-	// 	return *this;
-	// }
-
 	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array& {
 		return *this;
 	}
@@ -1051,7 +1036,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 	constexpr auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -1437,11 +1422,11 @@ struct array : static_array<T, D, Alloc> {
 	// }
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-#if defined(__cpp_deduction_guides)
+#ifdef __cpp_deduction_guides
 
 #define BOOST_MULTI_IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing, TODO(correaa) use template typedef instead of macro
 
@@ -1546,12 +1531,13 @@ template<typename T> struct version;  // in case serialization was not included 
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version<boost::multi::array<T, D, A>> {
 	using type = std::integral_constant<int, BOOST_MULTI_SERIALIZATION_ARRAY_VERSION>;  // TODO(correaa) use constexpr variable here, not a macro
+	// NOLINTNEXTLINE(cppcoreguidelines-use-enum-class) for backward compatibility with Boost Serialization
 	enum /*class value_t*/ { value = type::value };                                     // NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
 };
 
 }  // end namespace boost::serialization
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
