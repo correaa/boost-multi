@@ -1919,9 +1919,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
  public:
 #if defined(__NVCC__)
- 	subarray(subarray const&) = default;
+	subarray(subarray const&) = default;
 #else
- 	subarray(subarray const&) = delete;
+	subarray(subarray const&) = delete;
 #endif
 
 	BOOST_MULTI_HD constexpr auto        move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
@@ -3066,9 +3066,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	BOOST_MULTI_HD constexpr auto operator()() const& { return paren_aux_(); }
-	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
-	#endif
+#endif
 
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return operator[](idx); }
 

@@ -31,7 +31,7 @@ constexpr auto iota(Extensions const& exts) {
 
 template<class... Es>
 constexpr auto iota([[maybe_unused]] Es... es) {  // for nvcc 14
-	((void)es,...);
+	((void)es, ...);
 	return iota<sizeof...(Es)>(multi::extensions_t<static_cast<multi::dimensionality_type>(sizeof...(Es))>{es...});
 }
 
