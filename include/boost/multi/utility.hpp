@@ -614,7 +614,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 	return num_elements(arr[0]);
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
@@ -625,7 +625,7 @@ constexpr auto layout(std::array<T, N> const& arr) {
 	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -637,7 +637,7 @@ inline auto valid_mull(int age) -> bool {
 
 }  // end namespace boost::multi
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
