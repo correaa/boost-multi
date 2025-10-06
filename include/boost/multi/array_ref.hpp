@@ -547,14 +547,14 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return ptr_->base(); }  // TODO(correaa) implement bool conversion for subarray_ptr
 	BOOST_MULTI_HD constexpr auto     operator*() const -> reference { return *ptr_; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
 #endif
 
 	BOOST_MULTI_HD constexpr auto operator->() const -> decltype(auto) { return ptr_; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -581,10 +581,6 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	BOOST_MULTI_HD constexpr auto operator!=(array_iterator const& other) const -> bool {
 		return !operator==(other);
 	}
-
-	// BOOST_MULTI_HD constexpr auto operator==(array_iterator<Element, D, ElementPtr, true> const& other) const -> bool {
-	//  return this->ptr_ == other.ptr_ && this->stride_== other.stride_ && this->ptr_->layout() == other.ptr_->layout();
-	// }
 
 	BOOST_MULTI_HD constexpr auto operator<(array_iterator const& other) const -> bool {
 		// BOOST_MULTI_ASSERT((*ptr_).layout() == (*(other.ptr_)).layout());
@@ -690,20 +686,25 @@ struct cursor_t {
 	cursor_t() = default;
 
  private:
-#if defined(_MSC_VER)
+
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
 #endif
-#if defined(__clang__)
+
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
+
 	strides_type strides_;
 	element_ptr  base_;
-#if defined(__clang__)
+
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#if defined(_MSC_VER)
+
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
@@ -1083,7 +1084,7 @@ template<class It>
 
 template<typename, ::boost::multi::dimensionality_type, class Alloc> struct static_array;  // this might be needed by MSVC 14.3 in c++17 mode
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -1325,7 +1326,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 		return const_subarray(new_layout, this->base_ + (first * this->layout().stride() - this->layout().offset()));
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -1899,7 +1900,7 @@ class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto end() && { return this->mend(); }
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -1918,7 +1919,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// subarray(subarray const&) = default;
 
  public:
-#if defined(__NVCC__)
+#ifdef __NVCC__
 	subarray(subarray const&) = default;
 #else
 	subarray(subarray const&) = delete;
@@ -1935,7 +1936,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using ptr = subarray_ptr<T, D, ElementPtr, Layout, false>;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
 #endif
@@ -1945,7 +1946,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() & { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -2271,8 +2272,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
  public:
 	using const_subarray<T, D, ElementPtr, Layout>::apply;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) & -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size<Tuple>::value>()); }
+	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
+	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) & -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::partitioned;
@@ -2375,13 +2376,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr> {};
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -2497,13 +2498,13 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	friend struct const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
 
 	element_ptr ptr_;
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
 #endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	stride_type stride_;
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
@@ -2579,7 +2580,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	}
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -2724,7 +2725,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
