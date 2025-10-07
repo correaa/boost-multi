@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>  // for copy, default_context_of  // IWYU pragma: export
 // IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // bug in iwyu 18.1.8?

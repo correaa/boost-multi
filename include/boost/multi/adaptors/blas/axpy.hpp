@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>
 

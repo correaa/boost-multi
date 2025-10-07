@@ -116,7 +116,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::cout
 			<< "MULTI assignment\n"
-			<< std::invoke([&, start_time = high_resolution_clock::now()] {
+			<< std::invoke([&, start_time = high_resolution_clock::now()] () noexcept {
 				   B2D_block = A2D_block;
 				   return duration<double>{high_resolution_clock::now() - start_time};
 			   }).count()
@@ -127,7 +127,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout
 			<< "std::transform BLAS\n"
 			<< std::invoke(
-				   [&, start_time = high_resolution_clock::now()] {
+				   [&, start_time = high_resolution_clock::now()] () noexcept {
 					   // NOLINTNEXTLINE(modernize-use-ranges) for C++20
 					   std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
 					   return duration<double>{high_resolution_clock::now() - start_time};
@@ -185,7 +185,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 		std::cout << "std::copy\n"
-				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+				  << std::invoke([&, start_time = high_resolution_clock::now()] () noexcept {
 						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());  // NOLINT(modernize-use-ranges) for C++20
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()
@@ -194,7 +194,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A2D_block == B2D_block );
 
 		std::cout << "Multi element assignment\n"
-				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+				  << std::invoke([&, start_time = high_resolution_clock::now()] () noexcept {
 						 B2D_block.elements() = A2D_block.elements();
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()

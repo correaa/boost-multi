@@ -17,7 +17,7 @@
 #include <string>      // for operator""s, allocator, char_traits
 #include <tuple>       // for tie, operator==, tuple
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(disable : 4371)
 // 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed
 // from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
@@ -31,21 +31,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using v3d = std::array<double, 3>;
 
 		// some members might need explicit padding to work well with member_cast
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
-#if defined(__clang__)
+
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 		struct particle {
 			int mass;
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #endif
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4324)  // 'main::particle': structure was padded due to alignment specifier
 #pragma warning(disable : 4371)
@@ -53,17 +54,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 // from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm	'
 #endif
 			v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-#if defined(__clang__)
+
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 		};
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#if defined(_MSC_VER)
+
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
@@ -142,14 +145,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(runtime/int)
 		short salary;  // NOLINT(google-runtime-int)
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
 		std::size_t age;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	};
@@ -160,18 +163,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(runtime/int)
 		short salary;  // NOLINT(google-runtime-int)
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
 		std::size_t age;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 1427  // offsetof applied to a type other than a standard layout (this happens with NVCC+MSVC)
 #endif
@@ -181,7 +184,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string)) - (offsetof(employee_dummy, age) + sizeof(age))
 		] = {};
 		// clang-format on
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #pragma nv_diagnostic pop
 #endif
 	};
@@ -236,14 +239,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		struct record {
 			int id;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
 			double data;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 		};

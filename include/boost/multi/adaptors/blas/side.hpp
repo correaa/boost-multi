@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_SIDE_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_SIDE_HPP
-#pragma once
 
 namespace boost::multi::blas {
 
@@ -13,7 +12,7 @@ enum class side : char {
 	right = 'R'
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-default"
 #endif
@@ -26,7 +25,7 @@ inline auto swap(side sid) noexcept -> side {
 	return {};
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
