@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_UTILITY_HPP
 #define BOOST_MULTI_UTILITY_HPP
-#pragma once
 
 #include <boost/multi/detail/implicit_cast.hpp>  // IWYU pragma: export
 #include <boost/multi/detail/layout.hpp>
@@ -14,13 +13,13 @@
 #include <memory>       // for allocator<>
 #include <type_traits>  // for std::invoke_result
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4626)  // 'boost::multi::transform_ptr<main::complex,const main::<lambda_3>,main::complex *,std::complex<double>>': assignment operator was implicitly defined as deleted [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\element_transformed.cpp.x.vcxproj]
 #endif
@@ -90,7 +89,7 @@ template<class T> struct ref_add_const<T&> {
 	using type = T const&;
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -138,7 +137,7 @@ struct transform_ptr {
 		return std::invoke(f_, *p_);  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
@@ -153,7 +152,7 @@ struct transform_ptr {
 		return *this;
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -176,21 +175,22 @@ struct transform_ptr {
 
  private:
 	Ptr p_;
-#if defined(_MSC_VER)
+
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // '7' bytes padding added after data member 'boost::multi::transform_ptr<main::complex,const main::<lambda_3>,main::complex *,std::complex<double>>::f_'
 #pragma warning(disable : 4371)  // layout of class may have changed from a previous version of the compiler due to better packing of member 'boost::multi::transform_ptr<int,int main::S::* ,main::S *,int &>::f_'
 #endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
 	UF f_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) technically this type can be const
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
 	template<class, class, class, class> friend struct transform_ptr;
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -614,7 +614,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 	return num_elements(arr[0]);
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
@@ -625,7 +625,7 @@ constexpr auto layout(std::array<T, N> const& arr) {
 	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -637,7 +637,7 @@ inline auto valid_mull(int age) -> bool {
 
 }  // end namespace boost::multi
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 

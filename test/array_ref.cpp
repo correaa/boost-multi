@@ -41,7 +41,7 @@ using Array = std::conditional_t<
 
 }  // end namespace boost::multi
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
@@ -58,7 +58,7 @@ void f2d54(int const (&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-array
 	BOOST_TEST(carr[0][1] == 1);
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -150,7 +150,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(array_ref_from_carray)
 	{
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -193,12 +193,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// *(cmar[0].base()) = 88.0;
 		// *(cmar.data_elements()) = 99.0;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
 
-#if !defined(__NVCC__)
+#ifndef __NVCC__
 	// BOOST_AUTO_TEST_CASE(array_ref_test_ub)
 	{
 #if defined(__GNUC__) || defined(__NVCC__)
@@ -220,7 +220,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( diag.begin() != diag.end() );
 // BOOST_TEST( std::accumulate(diag.begin(), diag.end(), 0) == 0 + 6 + 12 + 18 );
-#if defined(__GNUC__)
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
 	}
@@ -265,7 +265,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(array_ref_test_no_ub2)
 	{
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -283,7 +283,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array_ref<int, 2> const map(&arr[1][0], {4, 4});
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -361,7 +361,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(array_ref_reindexed)
 	{
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -380,7 +380,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &mar[1][1] == &arr[1][1] );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -712,7 +712,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		ref[1][1] = 20;
 		BOOST_TEST( ref[1][1] == 20 );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -734,14 +734,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( & ref[1].static_array_cast<int, int const*>()[1] == &ref[1][1] ));
 		BOOST_TEST(( &multi::static_array_cast<int, int const*>(ref[1])[1] == &ref[1][1] ));
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_ref_cast_carray)
 	{
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -766,7 +766,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &other_darr2[1][0] == &darr[1][0] );
 		BOOST_TEST( &other_darr3[1][0] == &darr[1][0] );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -786,7 +786,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray)
 	{
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -803,7 +803,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d2Rce.size() == 4 );
 		BOOST_TEST( num_elements(d2Rce) == 20 );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -1008,7 +1008,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 5 );
 		std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -1025,7 +1025,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &carr[3] == &arr[3] );
 		}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -1035,7 +1035,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({5, 4});
 		std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -1052,7 +1052,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &carr[3][2] == &arr[3][2] );
 		}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -1068,9 +1068,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 #endif
 
-		auto print_me1 = [](multi::array_ref<int, 1> const& rng) {
+		auto print_me1 = [](multi::array_ref<int, 1> const& rng) -> void {
 			std::cout << "rng.size(): " << rng.size() << '\n';                                          // (4)
-			std::for_each(rng.begin(), rng.end(), [](auto const& elem) { std::cout << elem << ' '; });  // NOLINT(modernize-use-ranges)
+			std::for_each(rng.begin(), rng.end(), [](auto const& elem) -> void { std::cout << elem << ' '; });  // NOLINT(modernize-use-ranges)
 			std::cout << "\n\n";
 		};
 
@@ -1156,7 +1156,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(diagonal)
 	{
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -1177,7 +1177,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &mar({0, 3}, {0, 3}).diagonal()[1] == &arr[1][1] );
 		BOOST_TEST( &mar({0, 3}, {0, 3}).diagonal()[2] == &arr[2][2] );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 

@@ -15,7 +15,7 @@
 
 namespace boost::multi::detail {
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -123,7 +123,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	using is_always_equal = std::true_type;
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
