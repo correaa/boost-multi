@@ -2,7 +2,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_HERK_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_HERK_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/copy.hpp>
 #include <boost/multi/adaptors/blas/core.hpp>

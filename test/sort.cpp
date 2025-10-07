@@ -16,7 +16,7 @@
 #include <numeric>   // for accumulate
 #include <vector>    // for vector
 // IWYU pragma: no_include <version>  // for __cpp_lib_ranges
-#if defined(__cpp_lib_ranges)
+#ifdef __cpp_lib_ranges
 #include <concepts>  // IWYU pragma: keep
 #endif
 
@@ -40,7 +40,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(    (uu >= tt)  );
 	}
 
-#if defined(__cpp_lib_ranges)
+#ifdef __cpp_lib_ranges
 	// BOOST_AUTO_TEST_CASE(sort_2D)
 	{
 		multi::array<int, 2> A2D = {

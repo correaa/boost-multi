@@ -279,7 +279,7 @@ constexpr auto destroy_n(BidirIt first, Size count)
 
 template<class Alloc, class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
 constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
-->std::decay_t<decltype(std::addressof(*(first-1)), first)> {
+->std::decay_t<decltype(std::addressof(*(first-1)), first)> {  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	first += count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	for (; count != 0; --first, --count) {  // NOLINT(altera-unroll-loops,cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) consider using an algorithm
 		std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*(first - 1)));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -411,12 +411,12 @@ auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, Forward
 	ForwardIt current = d_first;
 	try {
 		// NOLINTNEXTLINE(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		for(; count > 0; ++first, ++current, --count) {  // mull-ignore: cxx_gt_to_ge
+		for(; count > 0; ++first, ++current, --count) {  // mull-ignore: cxx_gt_to_ge  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), std::move(*first));
 		}
 		return current;
 	} catch(...) {
-		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) consider using an algorithm
+		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*d_first));
 		}
 		throw;
