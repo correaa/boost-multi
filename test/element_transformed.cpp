@@ -20,7 +20,7 @@
 template<typename ComplexRef> struct Conjd;  // NOLINT(readability-identifier-naming) for testing
 
 struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
-	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }
+	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const noexcept { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }
 	template<class T> constexpr auto          operator()(Conjd<T> const&) const = delete;
 	template<class T> constexpr auto          operator()(Conjd<T>&&) const      = delete;
 	template<class T> constexpr auto          operator()(Conjd<T>&) const       = delete;
@@ -227,7 +227,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( cref[0][1] == 990 );
 		//  cref[0][1] = 990;  // compile error "assignment of read-only location"
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}

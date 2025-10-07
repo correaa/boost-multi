@@ -57,7 +57,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST         ( &Aarr[0][0] == buffer.data() );
 		BOOST_TEST( std::abs( Aarr[0][0] - 4.0 ) < 1E-6);
 #elif defined(_LIBCPP_VERSION)
@@ -130,7 +130,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST( std::abs( Aarr[0][0].real() - 4.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( Aarr[0][0].imag() - 5.0 ) < 1E-6 );
 #elif defined(_LIBCPP_VERSION)
@@ -182,7 +182,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
 			BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 			BOOST_TEST(Aarr[0][0] == std::complex<double>(4.0, 5.0) );
 #elif defined(_LIBCPP_VERSION)
 			BOOST_TEST( std::abs( Aarr[0][0].real() - 8.0 ) < 1E-6 );

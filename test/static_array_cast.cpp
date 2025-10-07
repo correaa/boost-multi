@@ -33,7 +33,7 @@ class involuted {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 	Ref r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -116,12 +116,12 @@ class involuter {
 #endif
 
 	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto) {
-		it_ += n;
+		it_ += n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 
-	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }
-	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }
+	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	friend constexpr auto operator+(typename involuter::difference_type n, involuter const& self) { return self + n; }
 
