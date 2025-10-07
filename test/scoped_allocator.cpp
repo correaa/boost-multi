@@ -130,7 +130,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			cont.back().resize(300);
 
 // these values are depdenent on the implementation of std::vector
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 			BOOST_TEST( heap1 == 1  );
 			BOOST_TEST( heap2 == 1L );
 #endif
@@ -162,7 +162,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			cont[1][2].resize(200);
 
 // these values are depdenent on the implementation of std::vector
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 			BOOST_TEST( heap1 == 1  );
 			BOOST_TEST( heap2 == 1L );
 #endif
@@ -187,7 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( heap1 == 1  );
 // these values are depdenent on the implementation of std::vector
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 			BOOST_TEST( heap2 ==  1L );
 #endif
 		}

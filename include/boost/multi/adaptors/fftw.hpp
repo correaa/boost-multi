@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_FFTW_HPP
 #define BOOST_MULTI_ADAPTORS_FFTW_HPP
-#pragma once
 
 #include <boost/multi/array.hpp>
 
@@ -15,7 +14,7 @@
 #include <complex>
 #include <numeric>  // accumulate
 
-#if defined(HAVE_FFTW3_THREADS)
+#ifdef HAVE_FFTW3_THREADS
 #include <thread>
 #endif
 
@@ -341,7 +340,7 @@ auto fftw_plan_dft(In const& in, Out&& out, int dir) {
 namespace fftw {
 
 inline auto initialize_threads() -> bool {
-#if defined(HAVE_FFTW3_THREADS)
+#ifdef HAVE_FFTW3_THREADS
 	return fftw_init_threads();
 #else
 	return false;
@@ -469,7 +468,7 @@ class plan {
 		return add + mul + fma;  // <- if FMA supported, otherwise: add + mul + 2*fma;
 	}
 
-#if defined(HAVE_FFTW3_THREADS)
+#ifdef HAVE_FFTW3_THREADS
  public:
 	static void make_thread_safe() {
 		fftw_make_planner_thread_safe();  // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
@@ -561,7 +560,7 @@ auto environment::make_plan_backward(std::array<bool, +In::rank_v> which, In con
 	return plan::backward(which, in, std::forward<Out>(out));
 }
 
-#if defined(HAVE_FFTW3_THREADS)
+#ifdef HAVE_FFTW3_THREADS
 bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
 int  plan::nthreads_       = (initialize_threads(), with_nthreads());
 #endif

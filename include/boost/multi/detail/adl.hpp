@@ -410,8 +410,8 @@ template<class Alloc, class InputIt, class Size, class ForwardIt>
 auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
 	ForwardIt current = d_first;
 	try {
-		// NOLINTNEXTLINE(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		for(; count > 0; ++first, ++current, --count) {  // mull-ignore: cxx_gt_to_ge  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		// NOLINTNEXTLINE(altera-unroll-loops,cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) consider using an algorithm
+		for(; count > 0; ++first, ++current, --count) {  // mull-ignore: cxx_gt_to_ge
 			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), std::move(*first));
 		}
 		return current;

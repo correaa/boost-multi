@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_DETAIL_EXTENSIONS_HPP
 #define BOOST_MULTI_DETAIL_EXTENSIONS_HPP
-#pragma once
 
 #include <boost/multi/detail/index_range.hpp>
 
@@ -14,7 +13,7 @@
 
 #include <tuple>
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
@@ -80,8 +79,13 @@ template<std::size_t I, class... Exts>
 struct std::tuple_element<I, ::boost::multi::detail::extensions<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	using type = typename std::conditional_t<
 		I == 0,
-		::boost::multi::detail::tyid<typename ::boost::multi::detail::extensions<Exts...>::extension_type>,
-		::std::tuple_element<I - 1, typename ::boost::multi::detail::extensions<Exts...>::sub_type>>::type;
+		::boost::multi::detail::tyid<
+			typename ::boost::multi::detail::extensions<Exts...>::extension_type
+		>,
+		::std::tuple_element<
+			I - 1, typename ::boost::multi::detail::extensions<Exts...>::sub_type
+		>
+	>::type;
 };
 
 #if defined(__cpp_lib_format) && (__cpp_lib_format >= 202106L) && !defined(_MSC_VER)
