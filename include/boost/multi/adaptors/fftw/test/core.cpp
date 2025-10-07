@@ -181,7 +181,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 													in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
 
-		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-7 );
+		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-7 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
@@ -197,7 +197,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
         },
 																  in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
+		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
