@@ -63,7 +63,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 0 );
 	}
 
-#if !defined(__circle_build__)
+#ifndef __circle_build__
 	{
 		multi::array<int, 2> const arr({2, 3});
 
@@ -331,7 +331,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( Darr.extensions() == Aarr.extensions() );
 	}
 
-#if !defined(__INTEL_COMPILER)
+#ifndef __INTEL_COMPILER
 	// BOOST_AUTO_TEST_CASE(extension_index_op)
 	{
 		multi::array<double, 2> const Aarr({11, 13});

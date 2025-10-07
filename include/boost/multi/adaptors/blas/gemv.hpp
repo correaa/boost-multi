@@ -98,7 +98,7 @@ class gemv_iterator {
 	friend auto copy(gemv_iterator first, gemv_iterator last, It1DOut result){return copy_n(first, last - first, result);}
 	template<class It1DOut>
 	friend auto uninitialized_copy(gemv_iterator first, gemv_iterator last, It1DOut result) {
-		#if defined(__cpp_lib_start_lifetime_as)
+		#ifdef __cpp_lib_start_lifetime_as
 		auto count = last - first;
 		// or use start_lifetime_as_array<typename It1DOut::value_type>(std::addressof(*result), count); since this is always called on contiguos iterators
 		for(; count > 0; ++result, --count) {

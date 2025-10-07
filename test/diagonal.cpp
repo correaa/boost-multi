@@ -49,7 +49,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(altera-unroll-loops) testing loops
 		for(auto i : is) {
 			for(auto j : js) {  // NOLINT(altera-unroll-loops) testing loops
-				arr[i][j] = 10 * i + j;
+				arr[i][j] = (10 * i) + j;
 			}
 		}
 
