@@ -1,32 +1,29 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_ADL_HPP
 #define BOOST_MULTI_DETAIL_ADL_HPP
-#pragma once
 
 #include <boost/multi/detail/what.hpp>
 
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 
-#if defined(__NVCC__)
-#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#ifdef __NVCC__
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20011  // deep inside Thrust: calling a __host__ function("std::vector<double, ::std::allocator<double> > ::vector(const ::std::vector<double, ::std::allocator<double> > &)") from a __host__ __device__ function("thrust::system::detail::generic::detail::uninitialized_copy_functor<    ::std::vector<double, ::std::allocator<double> > ,     ::std::vector<double, ::std::allocator<double> > > ::operator ()< ::thrust::detail::tuple_of_iterator_references<    ::std::vector<double, ::std::allocator<double> >  &,     ::std::vector<double, ::std::allocator<double> >  & > > ") is not allowed
 #pragma nv_diag_suppress = 20014  // deep inside Thrust: calling a __host__ function from a __host__ __device__ function is not allowed
 #pragma nv_diag_suppress = 20015  // deep inside Thrust: calling a constexpr __host__ function from a __host__ __device__ function is not allowed
 #endif
-#endif
+
 #include <thrust/copy.h>
 #include <thrust/detail/allocator/destroy_range.h>
 #include <thrust/detail/memory_algorithms.h>
 #include <thrust/equal.h>
 #include <thrust/uninitialized_copy.h>
-#if defined(__NVCC__)
-#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+
+#ifdef __NVCC__
 #pragma nv_diagnostic pop  // nv_diagnostics pop
-#endif
 #endif
 
 #endif
@@ -177,14 +174,6 @@ namespace adl {
 	inline constexpr fill_t fill;
 }  // end namespace adl
 
-// template<class Alloc>
-// struct alloc_construct_elem_t {
-//  Alloc* palloc_;
-//  template<class T> auto operator()(T&& ptr) const
-//  ->decltype(std::allocator_traits<Alloc>::construct(*palloc_, std::addressof(ptr))) {
-//      return std::allocator_traits<Alloc>::construct(*palloc_, std::addressof(ptr)); }
-// };
-
 namespace xtd {
 
 template<class T>  // this one goes last!!!
@@ -234,7 +223,7 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size c
 	}
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
@@ -253,8 +242,8 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	try {
 		//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 		//  workadoung for gcc 8.3.1 in Lass
-		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
-		return first + count;
+		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return first + count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	} catch(...) {
 		// LCOV_EXCL_START  // TODO(correaa) add test
 		std::for_each(first, current, [&](T& elem) { alloc_traits::destroy(alloc, std::addressof(elem)); });
@@ -266,30 +255,23 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	// return current;
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
 }  // end namespace xtd
 
-// template<class Alloc> struct alloc_destroy_elem_t {
-//  Alloc* palloc_;
-//  template<class T> constexpr auto operator()(T&& ptr) const {  // ->decltype(std::allocator_traits<Alloc>::construct(*palloc_, std::forward<T>(t)...)){
-//      return std::allocator_traits<Alloc>::destroy(*palloc_, std::addressof(ptr));
-//  }
-// };
-
 template<class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
 constexpr auto destroy_n(BidirIt first, Size count)
-->std::decay_t<decltype(std::addressof(*(first - 1)), first)> {
+->std::decay_t<decltype(std::addressof(*(first - 1)), first)> {  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	first += count;
 	for(; count != 0; --first, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		std::addressof(*(first-1))->~T();
+		std::addressof(*(first-1))->~T();  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	return first;
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
@@ -298,14 +280,14 @@ constexpr auto destroy_n(BidirIt first, Size count)
 template<class Alloc, class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
 constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 ->std::decay_t<decltype(std::addressof(*(first-1)), first)> {
-	first += count;
-	for (; count != 0; --first, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*(first - 1)));
+	first += count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	for (; count != 0; --first, --count) {  // NOLINT(altera-unroll-loops,cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) consider using an algorithm
+		std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*(first - 1)));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	return first;
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -346,14 +328,11 @@ class adl_uninitialized_copy_t {
 };
 inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 
-#if defined(__NVCC__)
-#if !defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
-#if !defined(__GNUC__)
-#pragma diagnostic push
-#pragma diag_suppress = implicit_return_from_non_void_function
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function
 #endif
-#endif
-#endif
+
 class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
@@ -378,12 +357,9 @@ class adl_uninitialized_copy_n_t {
 	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
 };
 inline constexpr adl_uninitialized_copy_n_t adl_uninitialized_copy_n;
-#if defined(__NVCC__)
-#if !defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
-#if !defined(__GNUC__)
-#pragma diagnostic pop
-#endif
-#endif
+
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
 #endif
 
 class adl_uninitialized_move_n_t {
@@ -423,7 +399,7 @@ auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, Forward
 	}
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
@@ -447,7 +423,7 @@ auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, Forward
 	}
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
