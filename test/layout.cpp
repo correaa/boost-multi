@@ -203,8 +203,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(int i = 0; i != 10; ++i) {
 			for(int j = 0; j != 12; ++j) {
-				for(int k = 0; k != 15; ++k) {  // NOLINT(altera-unroll-loops)
-					BOOST_TEST( &  sub.base()  [sub.layout()(i, j, k)] == &sub(i, j, k) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+				for(int k = 0; k != 15; ++k) {                                    // NOLINT(altera-unroll-loops)
+					BOOST_TEST( &  sub.base()  [sub.layout()(i, j, k)] == &sub(i, j, k) );    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 					BOOST_TEST( &*(sub.base() + sub.layout()(i, j, k)) == &sub(i, j, k) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
@@ -238,8 +238,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(auto const i : is) {
 			for(auto const j : js) {
-				for(auto const k : ks) {  // NOLINT(altera-unroll-loops)
-					BOOST_TEST( &  rot.base()  [rot.layout()(i, j, k)] == &rot(i, j, k) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+				for(auto const k : ks) {                                          // NOLINT(altera-unroll-loops)
+					BOOST_TEST( &  rot.base()  [rot.layout()(i, j, k)] == &rot(i, j, k) );    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 					BOOST_TEST( &*(rot.base() + rot.layout()(i, j, k)) == &rot(i, j, k) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}

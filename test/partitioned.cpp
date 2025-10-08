@@ -7,9 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for is_sorted
-#include <array>      // for array
-#include <cstddef>    // for ptrdiff_t
+#include <algorithm>    // for is_sorted
+#include <array>        // for array
+#include <cstddef>      // for ptrdiff_t
 #include <iterator>     // for size
 #include <string>       // for operator""s, string, string_lite...
 #include <tuple>        // for apply  // IWYU pragma: keep
