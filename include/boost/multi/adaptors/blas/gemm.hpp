@@ -344,7 +344,7 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 #pragma diagnostic pop
 #endif
 
-#ifdef _MSC_VER
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
 #endif
 

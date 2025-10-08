@@ -1069,7 +1069,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 		auto print_me1 = [](multi::array_ref<int, 1> const& rng) -> void {
-			std::cout << "rng.size(): " << rng.size() << '\n';                                          // (4)
+			std::cout << "rng.size(): " << rng.size() << '\n';                                                  // (4)
 			std::for_each(rng.begin(), rng.end(), [](auto const& elem) -> void { std::cout << elem << ' '; });  // NOLINT(modernize-use-ranges)
 			std::cout << "\n\n";
 		};

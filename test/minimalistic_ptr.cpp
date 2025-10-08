@@ -36,7 +36,7 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
 	constexpr auto operator*() const -> reference { return *impl_; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -49,7 +49,7 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 
 	friend constexpr auto operator+(difference_type n, ptr const& self) { return self + n; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -77,7 +77,7 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
 	constexpr auto operator*() const -> reference { return *impl_; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -90,7 +90,7 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 
 	friend constexpr auto operator+(difference_type n, ptr2 const& self) { return self + n; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
