@@ -41,7 +41,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	using complex = std::complex<double>;
 
-	auto const in = std::invoke([] {
+	auto const in = std::invoke([] () noexcept {
 		multi::array<complex, 2> ret({101, 99});  // ({1013, 997});  // ({10137, 9973});
 		std::generate(
 			ret.elements().begin(), ret.elements().end(),

@@ -75,8 +75,8 @@ class uniform_cspline {
 		c[n - 1] = 0;
 
 		for(index j = n - 2; j != 0; --j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use algorithms
-			c[j] = z[j - 1] - u[j - 1] * c[j + 1];
-			b[j] = (a[j + 1] - a[j]) / dx_ - dx_ * (c[j + 1] + 2 * c[j]) / 3;
+			c[j] = z[j - 1] - (u[j - 1] * c[j + 1]);
+			b[j] = ((a[j + 1] - a[j]) / dx_) - (dx_ * (c[j + 1] + 2 * c[j]) / 3);
 			d[j] = (c[j + 1] - c[j]) / (3 * dx_);
 		}
 
