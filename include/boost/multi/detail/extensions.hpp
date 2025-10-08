@@ -77,7 +77,7 @@ struct std::tuple_size<::boost::multi::detail::extensions<Exts...>> {  // NOLINT
 
 template<std::size_t I, class... Exts>
 struct std::tuple_element<I, ::boost::multi::detail::extensions<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
-	using type = typename std::conditional_t<
+	using type = typename std::conditional_t<  // NOLINT(modernize-type-traits) bug in clang-tidy
 		I == 0,
 		::boost::multi::detail::tyid<
 			typename ::boost::multi::detail::extensions<Exts...>::extension_type

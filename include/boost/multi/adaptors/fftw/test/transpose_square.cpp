@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 
 	multi::fftw::initialize_threads();
 	{
-		auto const in = std::invoke([] {
+		auto const in = std::invoke([] () noexcept {
 			//  multi::array<complex, 2> ret({819, 819});
 			multi::array<complex, 2> ret({ 81, 81 });
 			std::generate(
