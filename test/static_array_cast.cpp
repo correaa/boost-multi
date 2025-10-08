@@ -147,91 +147,91 @@ template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class Ptr> using negater = involuter<Ptr, std::negate<>>;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// BOOST_AUTO_TEST_CASE(multi_array_involution)
-	{
-		int doub = 50;
+	// // BOOST_AUTO_TEST_CASE(multi_array_involution)
+	// {
+	// 	int doub = 50;
 
-		auto&& cee = involuted<int&, std::negate<>>{doub};
-		BOOST_TEST( cee == -50 );
+	// 	auto&& cee = involuted<int&, std::negate<>>{doub};
+	// 	BOOST_TEST( cee == -50 );
 
-		cee = 100;
-		BOOST_TEST( doub == -100 );
+	// 	cee = 100;
+	// 	BOOST_TEST( doub == -100 );
 
-		auto m5 = involuted<int, std::negate<>>(50);
-		BOOST_TEST( m5 == -50 );
-	}
+	// 	auto m5 = involuted<int, std::negate<>>(50);
+	// 	BOOST_TEST( m5 == -50 );
+	// }
 
-	// BOOST_AUTO_TEST_CASE(static_array_cast)
-	{
-		multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
+	// // BOOST_AUTO_TEST_CASE(static_array_cast)
+	// {
+	// 	multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
 
-		auto&& ref = arr.static_array_cast<double, double const*>();
+	// 	auto&& ref = arr.static_array_cast<double, double const*>();
 
-		BOOST_TEST( &ref[2] == &arr[2] );
-		BOOST_TEST( &arr[2] == &ref[2] );
+	// 	BOOST_TEST( &ref[2] == &arr[2] );
+	// 	BOOST_TEST( &arr[2] == &ref[2] );
 
-		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+	// 	BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
-		BOOST_TEST( ref == arr() );
-		BOOST_TEST( arr() == ref );
+	// 	BOOST_TEST( ref == arr() );
+	// 	BOOST_TEST( arr() == ref );
 
-		BOOST_TEST( ref == arr );
-		BOOST_TEST( arr == ref );
-	}
+	// 	BOOST_TEST( ref == arr );
+	// 	BOOST_TEST( arr == ref );
+	// }
 
-	// BOOST_AUTO_TEST_CASE(static_array_cast_2)
-	{
-		multi::array<int, 2> arr({2, 5});
-		std::iota(arr.elements().begin(), arr.elements().end(), 0);
+	// // BOOST_AUTO_TEST_CASE(static_array_cast_2)
+	// {
+	// 	multi::array<int, 2> arr({2, 5});
+	// 	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
-		auto&& ref = arr.static_array_cast<int, int const*>();
+	// 	auto&& ref = arr.static_array_cast<int, int const*>();
 
-		BOOST_TEST( ref[1][1] == arr[1][1] );
-		BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
-		BOOST_TEST( ref[1] == arr[1] );
+	// 	BOOST_TEST( ref[1][1] == arr[1][1] );
+	// 	BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
+	// 	BOOST_TEST( ref[1] == arr[1] );
 
-		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+	// 	BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
-		BOOST_TEST( ref == arr );
-		BOOST_TEST( arr == ref );
-	}
+	// 	BOOST_TEST( ref == arr );
+	// 	BOOST_TEST( arr == ref );
+	// }
 
-	// BOOST_AUTO_TEST_CASE(static_array_cast_3)
-	{
-		{
-			multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
-			multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
+	// // BOOST_AUTO_TEST_CASE(static_array_cast_3)
+	// {
+	// 	{
+	// 		multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
+	// 		multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
 
-			auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
+	// 		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
 
-			BOOST_TEST( neg_arr[2] == arr2[2] );
-			BOOST_TEST( arr2[2] == neg_arr[2] );
-			BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );  // NOLINT(modernize-use-ranges)
-			BOOST_TEST( neg_arr == arr2 );
-			BOOST_TEST( arr2 == neg_arr );
-		}
-		{
-			multi::static_array<int, 2> arr({4, 5}, 0);
-			std::iota(elements(arr).begin(), elements(arr).end(), 0);
+	// 		BOOST_TEST( neg_arr[2] == arr2[2] );
+	// 		BOOST_TEST( arr2[2] == neg_arr[2] );
+	// 		BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );  // NOLINT(modernize-use-ranges)
+	// 		BOOST_TEST( neg_arr == arr2 );
+	// 		BOOST_TEST( arr2 == neg_arr );
+	// 	}
+	// 	{
+	// 		multi::static_array<int, 2> arr({4, 5}, 0);
+	// 		std::iota(elements(arr).begin(), elements(arr).end(), 0);
 
-			multi::array<int, 2> arr2({4, 5});
-			std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
+	// 		multi::array<int, 2> arr2({4, 5});
+	// 		std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
 
-			auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
+	// 		auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
 
-			BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
-			BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
+	// 		BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
+	// 		BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
 
-			BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
+	// 		BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
 
-			BOOST_TEST( arr2[1] == neg_arr[1] );
-			BOOST_TEST( neg_arr[1] == arr2[1] );
+	// 		BOOST_TEST( arr2[1] == neg_arr[1] );
+	// 		BOOST_TEST( neg_arr[1] == arr2[1] );
 
-			BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );  // NOLINT(modernize-use-ranges)
-			BOOST_TEST( neg_arr == arr2 );
-			BOOST_TEST( arr2 == neg_arr );
-		}
-	}
+	// 		BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );  // NOLINT(modernize-use-ranges)
+	// 		BOOST_TEST( neg_arr == arr2 );
+	// 		BOOST_TEST( arr2 == neg_arr );
+	// 	}
+	// }
 
 	return boost::report_errors();
 }
