@@ -687,7 +687,6 @@ struct cursor_t {
 	cursor_t() = default;
 
  private:
-
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
@@ -1219,8 +1218,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return const_reference(
 			this->layout().sub(),
 			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
-			// return at_aux_(idx);  // TODO(correaa) use at_aux
+		);                                                                           // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
+																					 // return at_aux_(idx);  // TODO(correaa) use at_aux
 	}  // TODO(correaa) use return type to cast
 
 	// clang-format off
