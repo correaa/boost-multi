@@ -213,7 +213,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
         },
 																  in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
+		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_power_dft) {
@@ -227,7 +227,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 									 {true, true}
         },
 								 in, out);
-		BOOST_TEST( power(in) - power(out)/static_cast<double>(num_elements(out)) < 1e-8 );
+		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
@@ -248,7 +248,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array_ref<complex, 3>(data_elements(io), extensions(io)),
 			multi::array_ref<complex, 3>(data_elements(io), extensions(io))
 		);
-		BOOST_TEST( powerin - power(io)/static_cast<double>(num_elements(io)) < 1e-10 );
+		BOOST_TEST( powerin - (power(io)/static_cast<double>(num_elements(io))) < 1e-10 );
 	}
 
 	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {

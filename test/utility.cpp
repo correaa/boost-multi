@@ -134,16 +134,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using std::rend;
 		BOOST_TEST( *(end(varr)-1) == *(end(marr)-1) );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		using std::end;
-		BOOST_TEST( *(end(carr)-1) == *(end(marr)-1) );
+		BOOST_TEST( *(end(carr)-1) == *(end(marr)-1) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}

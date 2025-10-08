@@ -73,7 +73,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::pmr::array<double, 2> Aarr({2, 2}, double{}, &pool);
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST( std::abs( buffer[0] - 0.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( buffer[1] - 0.0 ) < 1E-6 );
 
@@ -100,7 +100,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 		BOOST_TEST( Aarr[0][0] == std::complex<double>(4.0, 5.0) );
@@ -112,7 +112,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 		Aarr[0][0] = std::complex<double>{40.0, 50.0};
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST( std::abs( buffer[0] - 40.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( buffer[1] - 50.0 ) < 1E-6 );
 #elif defined(_LIBCPP_VERSION)
@@ -141,7 +141,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST( static_cast<void*>(buffer.data()) == static_cast<void*>(&Aarr[0][0]) );
 #elif defined(_LIBCPP_VERSION)
 		BOOST_TEST( static_cast<void*>(&buffer[4]) == static_cast<void*>(&Aarr[0][0]) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -160,7 +160,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs( Aarr[0][0].real() - 40.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( Aarr[0][0].imag() - 50.0 ) < 1E-6 );
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST( std::abs( buffer[0] - 40.0 ) < 1E-6 );
 		BOOST_TEST( std::abs( buffer[1] - 50.0 ) < 1E-6 );
 #elif defined(_LIBCPP_VERSION)

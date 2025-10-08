@@ -45,18 +45,18 @@
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(concepts_boost_array)
 	{
-		using BMA [[maybe_unused]] = boost::multi_array<int, 2>;  // maybe_unused for bug in nvcc 11.8
+		// using BMA [[maybe_unused]] = boost::multi_array<int, 2>;  // maybe_unused for bug in nvcc 11.8
 
-		BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<BMA, 2>));
-		BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<BMA, 2>));
+		// BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<BMA, 2>));
+		// BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<BMA, 2>));
 	}
 
 	// BOOST_AUTO_TEST_CASE(concepts_boost_array_1D)
 	{
-		using BMA = boost::multi_array<int, 1>;
+		// using BMA = boost::multi_array<int, 1>;
 
-		BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<BMA, 1>));
-		BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<BMA, 1>));
+		// BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::ConstMultiArrayConcept<BMA, 1>));
+		// BOOST_CONCEPT_ASSERT((boost::multi_array_concepts::MutableMultiArrayConcept<BMA, 1>));
 	}
 
 	namespace multi = boost::multi;

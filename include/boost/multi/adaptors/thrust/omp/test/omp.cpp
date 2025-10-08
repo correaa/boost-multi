@@ -8,7 +8,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#if !defined(__clang__)
+#ifndef __clang__
 #include <boost/multi/array.hpp>
 #endif
 
@@ -16,17 +16,17 @@
 #include <thrust/reduce.h>                       // IWYU pragma: keep
 #include <thrust/system/omp/execution_policy.h>  // IWYU pragma: keep
 
-#if !defined(__clang__)
+#ifndef __clang__
 #include <chrono>
 #include <cstdio>
 #include <iostream>
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(disable : 5045)  // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 #endif
 
-#if !defined(__clang__)
+#ifndef __clang__
 namespace {
 
 template<class Array1D>
@@ -152,7 +152,7 @@ auto main() -> int {
 		printf("\"Hello world!\" from thread %d, we are %d threads.\n", my_id, thread_number);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 	}
 
-#if !defined(__clang__)
+#ifndef __clang__
 	namespace multi = boost::multi;
 
 	multi::thrust::omp::array<double, 1> arr(1U << 20U);
