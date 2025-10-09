@@ -180,36 +180,35 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	// BOOST_AUTO_TEST_CASE(static_array_cast_2)
-	{
-		multi::array<int, 2> arr({2, 5});
-		std::iota(arr.elements().begin(), arr.elements().end(), 0);
+	// {
+	// 	multi::array<int, 2> arr({2, 5});
+	// 	std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
-		auto&& ref = arr.static_array_cast<int, int const*>();
+	// 	auto&& ref = arr.static_array_cast<int, int const*>();
 
-		BOOST_TEST( ref[1][1] == arr[1][1] );
-		BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
-		BOOST_TEST( ref[1] == arr[1] );
+	// 	BOOST_TEST( ref[1][1] == arr[1][1] );
+	// 	BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
+	// 	BOOST_TEST( ref[1] == arr[1] );
 
-		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+	// 	BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
-		BOOST_TEST( ref == arr );
-		BOOST_TEST( arr == ref );
-	}
+	// 	BOOST_TEST( ref == arr );
+	// 	BOOST_TEST( arr == ref );
+	// }
 
 	// // BOOST_AUTO_TEST_CASE(static_array_cast_3)
-	// {
-	// 	{
-	// 		multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
-	// 		multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
+	{
+		multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
+		multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
 
-	// 		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
+		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
 
-	// 		BOOST_TEST( neg_arr[2] == arr2[2] );
-	// 		BOOST_TEST( arr2[2] == neg_arr[2] );
-	// 		BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );  // NOLINT(modernize-use-ranges)
-	// 		BOOST_TEST( neg_arr == arr2 );
-	// 		BOOST_TEST( arr2 == neg_arr );
-	// 	}
+		BOOST_TEST( neg_arr[2] == arr2[2] );
+		BOOST_TEST( arr2[2] == neg_arr[2] );
+		BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( neg_arr == arr2 );
+		BOOST_TEST( arr2 == neg_arr );
+	}
 	// 	{
 	// 		multi::static_array<int, 2> arr({4, 5}, 0);
 	// 		std::iota(elements(arr).begin(), elements(arr).end(), 0);
