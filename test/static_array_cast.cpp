@@ -7,12 +7,12 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>    // for equal
-#include <cassert>      // for assert
-#include <functional>   // for negate  // IWYU pragma: keep
-#include <iterator>     // for begin, end
-#include <memory>       // for pointer_t...
-#include <numeric>      // for iota
+#include <algorithm>   // for equal
+#include <cassert>     // for assert
+#include <functional>  // for negate  // IWYU pragma: keep
+#include <iterator>    // for begin, end
+#include <memory>      // for pointer_t...
+// #include <numeric>      // for iota
 #include <type_traits>  // for decay_t
 #include <utility>      // for move, dec...
 
@@ -147,37 +147,37 @@ template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class Ptr> using negater = involuter<Ptr, std::negate<>>;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// // BOOST_AUTO_TEST_CASE(multi_array_involution)
-	// {
-	// 	int doub = 50;
+	// BOOST_AUTO_TEST_CASE(multi_array_involution)
+	{
+		int doub = 50;
 
-	// 	auto&& cee = involuted<int&, std::negate<>>{doub};
-	// 	BOOST_TEST( cee == -50 );
+		auto&& cee = involuted<int&, std::negate<>>{doub};
+		BOOST_TEST( cee == -50 );
 
-	// 	cee = 100;
-	// 	BOOST_TEST( doub == -100 );
+		cee = 100;
+		BOOST_TEST( doub == -100 );
 
-	// 	auto m5 = involuted<int, std::negate<>>(50);
-	// 	BOOST_TEST( m5 == -50 );
-	// }
+		auto m5 = involuted<int, std::negate<>>(50);
+		BOOST_TEST( m5 == -50 );
+	}
 
-	// // BOOST_AUTO_TEST_CASE(static_array_cast)
-	// {
-	// 	multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
+	// BOOST_AUTO_TEST_CASE(static_array_cast)
+	{
+		multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
 
-	// 	auto&& ref = arr.static_array_cast<double, double const*>();
+		auto&& ref = arr.static_array_cast<double, double const*>();
 
-	// 	BOOST_TEST( &ref[2] == &arr[2] );
-	// 	BOOST_TEST( &arr[2] == &ref[2] );
+		BOOST_TEST( &ref[2] == &arr[2] );
+		BOOST_TEST( &arr[2] == &ref[2] );
 
-	// 	BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
-	// 	BOOST_TEST( ref == arr() );
-	// 	BOOST_TEST( arr() == ref );
+		BOOST_TEST( ref == arr() );
+		BOOST_TEST( arr() == ref );
 
-	// 	BOOST_TEST( ref == arr );
-	// 	BOOST_TEST( arr == ref );
-	// }
+		BOOST_TEST( ref == arr );
+		BOOST_TEST( arr == ref );
+	}
 
 	// // BOOST_AUTO_TEST_CASE(static_array_cast_2)
 	// {
