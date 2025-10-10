@@ -1927,7 +1927,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// subarray(subarray const&) = default;
 
  public:
-#ifdef __NVCC__
+#if defined(__NVCC__) && (__CUDACC_VER_MAJOR__ <= 11)
 	subarray(subarray const&) = default;
 #else
 	subarray(subarray const&) = delete;
