@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_SCAL_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_SCAL_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>
 // IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi

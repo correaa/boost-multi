@@ -3,7 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(disable : 4244)  // warning C4244: 'initializing': conversion from '_Ty' to '_Ty', possible loss of data
 #endif
 
@@ -20,7 +20,7 @@
 template<typename ComplexRef> struct Conjd;  // NOLINT(readability-identifier-naming) for testing
 
 struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
-	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }
+	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const noexcept { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }
 	template<class T> constexpr auto          operator()(Conjd<T> const&) const = delete;
 	template<class T> constexpr auto          operator()(Conjd<T>&&) const      = delete;
 	template<class T> constexpr auto          operator()(Conjd<T>&) const       = delete;
@@ -211,7 +211,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& ref = vec.element_transformed(&S::a);
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -227,7 +227,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( cref[0][1] == 990 );
 		//  cref[0][1] = 990;  // compile error "assignment of read-only location"
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -251,7 +251,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  for(auto&& elem : indirect_v) {elem = 88.;}
 		//  std::fill(indirect_v.begin(), indirect_v.end(), 88.0);
 
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 		indirect_v.fill(880);
 		BOOST_TEST(  vec[3] ==  880 );
 
@@ -264,7 +264,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(indirect_transformed_carray)
 	{
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -298,7 +298,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// const_indirect_v[1][2] = 999.0;  // doesn't compile, good!
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}

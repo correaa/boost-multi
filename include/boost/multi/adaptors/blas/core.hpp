@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_CORE_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_CORE_HPP
-#pragma once
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
@@ -21,13 +20,13 @@
 
 #include <boost/multi/adaptors/blas/traits.hpp>  // IWYU pragma: export
 
-#if defined(__PRETTY_FUNCTION__)
+#ifdef __PRETTY_FUNCTION__
 #define BOOST_MULTI_BLAS_PRETTY_FUNCTION __PRETTY_FUNCTION__
 #else
 #define BOOST_MULTI_BLAS_PRETTY_FUNCTION "some-multi-blas-function"
 #endif
 
-#if ! defined(NDEBUG)
+#ifndef NDEBUG
 	#include<stdexcept>
 	#include<string>
 	#define BOOST_MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(BOOST_MULTI_BLAS_PRETTY_FUNCTION)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(fuchsia-default-arguments-calls,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
@@ -43,7 +42,7 @@
 #define BLAS(NamE) NamE##_
 
 #ifndef MULTI_BLAS_INT
-#if defined(__INTPTR_WIDTH__)
+#ifdef __INTPTR_WIDTH__
 	#define MULTI_BLAS_INT __INTPTR_WIDTH__
 #endif
 #endif
@@ -62,7 +61,7 @@ using Complex_double = struct { double real; double imag; };
 #define C Complex_float   // _Complex s
 #define Z Complex_double  // _Complex d
 
-#if defined(MULTI_BLAS_INT)
+#ifdef MULTI_BLAS_INT
 	#if   MULTI_BLAS_INT==32
 		using INT = std::int32_t;  // #define INT int32_t
 	#elif MULTI_BLAS_INT==64
@@ -103,7 +102,7 @@ static_assert(sizeof(INT)==32/8 || sizeof(INT)==64/8, "please set MULTI_BLAS_INT
 #define xDOT(R, TT, T)    auto    TT##dot  ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
-#if defined(BLAS_DOT_RETURNS_VOID)
+#ifdef BLAS_DOT_RETURNS_VOID
 //#if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
 //#define xDOT(R, TT, T)    v       TT##dot  ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
 #define xDOTU(R, T)       v       T ##dotu ##_ (R*, N,              T const * /*x*/, INCX, T const * /*y*/, INCY)  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
@@ -306,7 +305,7 @@ template<class XP, class X = typename std::pointer_traits<XP*>::element_type, cl
 template<class XP, class X = typename std::pointer_traits<XP*>::element_type, class YP, class Y = typename std::pointer_traits<YP*>::element_type, class RP, class R = typename std::pointer_traits<RP*>::element_type, enable_if_t<is_d<X>{} && is_d<Y>{} && is_assignable<R&, decltype(0.0 +(X{}*Y{})+(X{}*Y{}))>{}, int> =0> void dot (ssize_t n, XP* xp, ptrdiff_t incx, YP* yp, ptrdiff_t incy, RP* r) {auto const rr = BLAS(ddot )(n, reinterpret_cast<d const*>(static_cast<X*>(xp)), incx, reinterpret_cast<d const*>(static_cast<Y*>(yp)), incy); std::memcpy(reinterpret_cast<double *    >(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)  // NOSONAR
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
-#if defined(BLAS_DOT_RETURNS_VOID)
+#ifdef BLAS_DOT_RETURNS_VOID
 template<class SSize, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_c<Y>{} && is_assignable<R&, decltype(0.0F+(X{}*Y{})+(X{}*Y{}))>{}, int> =0> void dotu(SSize n, XP xp, SSize incx, YP yp, SSize incy, RP rp) {
 	[[maybe_unused]] static bool const check = []{
 		std::array<std::complex<float>, 3> const v1 = {std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F,  4.0F}, std::complex<float>{ 5.0F,  6.0F}};
@@ -512,7 +511,7 @@ v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 	BLAS(T##herk)(      uplo, transA,            static_cast<ssize_t>(BC(n)), static_cast<ssize_t>(BC(k)), *reinterpret_cast<Real const*>(alpha), reinterpret_cast<T const*>(aa), static_cast<ssize_t>(BC(lda)),        *reinterpret_cast<Real const*>(beta), reinterpret_cast<T*>(cc), static_cast<ssize_t>(BC(ldc)));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                                            \
 }                                                                                                                                                                                                                                          \
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wundefined-reinterpret-cast"
@@ -543,7 +542,7 @@ v gemm(char transA, char transB, SSize m, SSize n, SSize k, ALPHA const* alpha, 
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)  // NOLINT(modernize-use-constraints,readability-function-cognitive-complexity) : 36 of 25
 #undef xgemm
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -566,7 +565,7 @@ v trsm(char side, char uplo, char transA, char diag, SSize m, SSize n, ALPHA alp
 	BLAS(T##trsm)(side, uplo, transA, diag, static_cast<ssize_t>(BC(m)), static_cast<ssize_t>(BC(n)), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), static_cast<ssize_t>(BC(lda)), reinterpret_cast<T*>(static_cast<BB*>(bb)), static_cast<ssize_t>(BC(ldb)));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
 }                                                                                                                                                                                                                 \
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundefined-reinterpret-cast"
 #endif
@@ -578,7 +577,7 @@ xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)  // NOLINT(modernize-use-constraints) for C+
 #undef xsyrk
 	              xherk(c) xherk(z)  // NOLINT(modernize-use-constraints) for C++20
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 

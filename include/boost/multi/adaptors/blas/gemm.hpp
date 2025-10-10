@@ -313,21 +313,16 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(rea
 		;
 }
 
-#if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-	#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = implicit_return_from_non_void_function
-	#else
-		// #pragma diagnostic push
-		#pragma diag_suppress = implicit_return_from_non_void_function
-	#endif
+#ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function
 #endif
 
-#if defined(__NVCOMPILER)
+#ifdef __NVCOMPILER
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
@@ -343,23 +338,17 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 	}
 }
 
-#if defined(__NVCC__)
-#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#ifdef __NVCC__
 #pragma nv_diagnostic pop
-#else
-	#if !defined(__GNUC__)
-		#pragma diagnostic pop
-	#endif
-#endif
 #elif defined(__NVCOMPILER)
 #pragma diagnostic pop
 #endif
 
-#if ! defined(_MSC_VER)
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 

@@ -42,7 +42,7 @@ auto upper_parted(Array const& arr) {return triangular_parted<filling::upper>(ar
 template<class Array> auto L(Array const& arr) { return lower_parted(arr); }  // NOLINT(readability-identifier-naming) BLAS naming
 template<class Array> auto U(Array const& arr) { return upper_parted(arr); }  // NOLINT(readability-identifier-naming) BLAS naming
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-default"
 #endif
@@ -71,7 +71,7 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 	return ret;
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -126,21 +126,16 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D:
 ->decltype(trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::non_unit, alpha, a, std::forward<B2D>(b))) {
 	return trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::non_unit, alpha, a, std::forward<B2D>(b)); }
 
-#if defined(__NVCC__)  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-	#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = implicit_return_from_non_void_function
-	#else
-		// #pragma diagnostic push
-		#pragma diag_suppress = implicit_return_from_non_void_function
-	#endif
+#ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function
 #endif
 
-#if defined(__NVCOMPILER)
+#ifdef __NVCOMPILER
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
@@ -151,23 +146,17 @@ auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type al
 	else                                 {return trsm(blas::default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 }
 
-#if defined(__NVCC__)
-#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__)
+#ifdef __NVCC__
 #pragma nv_diagnostic pop
-#else
-	#if !defined(__GNUC__)
-		#pragma diagnostic pop
-	#endif
-#endif
 #elif defined(__NVCOMPILER)
 #pragma diagnostic pop
 #endif
 
-#if ! defined(_MSC_VER)
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 

@@ -195,7 +195,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
@@ -203,14 +203,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(int i = 0; i != 10; ++i) {
 			for(int j = 0; j != 12; ++j) {
-				for(int k = 0; k != 15; ++k) {  // NOLINT(altera-unroll-loops)
-					BOOST_TEST( &  sub.base()  [sub.layout()(i, j, k)] == &sub(i, j, k) );
-					BOOST_TEST( &*(sub.base() + sub.layout()(i, j, k)) == &sub(i, j, k) );
+				for(int k = 0; k != 15; ++k) {                                    // NOLINT(altera-unroll-loops)
+					BOOST_TEST( &  sub.base()  [sub.layout()(i, j, k)] == &sub(i, j, k) );    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+					BOOST_TEST( &*(sub.base() + sub.layout()(i, j, k)) == &sub(i, j, k) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
 		}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -230,7 +230,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const [is, js, ks] = rot.extensions();
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -238,14 +238,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(auto const i : is) {
 			for(auto const j : js) {
-				for(auto const k : ks) {  // NOLINT(altera-unroll-loops)
-					BOOST_TEST( &  rot.base()  [rot.layout()(i, j, k)] == &rot(i, j, k) );
-					BOOST_TEST( &*(rot.base() + rot.layout()(i, j, k)) == &rot(i, j, k) );
+				for(auto const k : ks) {                                          // NOLINT(altera-unroll-loops)
+					BOOST_TEST( &  rot.base()  [rot.layout()(i, j, k)] == &rot(i, j, k) );    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+					BOOST_TEST( &*(rot.base() + rot.layout()(i, j, k)) == &rot(i, j, k) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
 		}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}

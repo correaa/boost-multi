@@ -253,7 +253,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
 	// [[clang::unsafe_buffer_usage]]
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }
+	constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_POP()
 
 	friend constexpr auto origin(array_types const& self) -> decltype(auto) { return self.origin(); }
@@ -623,7 +623,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 #endif
 
 	BOOST_MULTI_HD constexpr void decrement_() { ptr_.base_ -= stride_; }
-	BOOST_MULTI_HD constexpr void advance_(difference_type n) { ptr_.base_ += stride_ * n; }
+	BOOST_MULTI_HD constexpr void advance_(difference_type n) { ptr_.base_ += stride_ * n; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -646,7 +646,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 		return *this;
 	}
 	constexpr auto operator--() -> array_iterator& {
-		ptr_.base_ -= stride_;
+		ptr_.base_ -= stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 
@@ -687,7 +687,6 @@ struct cursor_t {
 	cursor_t() = default;
 
  private:
-
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
@@ -956,7 +955,7 @@ struct elements_range_t {
 
 	constexpr auto at_aux_(difference_type n) const -> reference {
 		BOOST_MULTI_ASSERT(!is_empty());
-		return base_[std::apply(l_, l_.extensions().from_linear(n))];
+		return base_[std::apply(l_, l_.extensions().from_linear(n))];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -1219,8 +1218,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return const_reference(
 			this->layout().sub(),
 			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
-			// return at_aux_(idx);  // TODO(correaa) use at_aux
+		);                                                                           // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
+																					 // return at_aux_(idx);  // TODO(correaa) use at_aux
 	}  // TODO(correaa) use return type to cast
 
 	// clang-format off
@@ -1297,7 +1296,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
-		return const_subarray(new_layout, this->base_ + n * this->layout().stride() /*- this->layout().offset()*/);
+		return const_subarray(new_layout, this->base_ + n * this->layout().stride() /*- this->layout().offset()*/);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -1925,14 +1924,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<class, multi::dimensionality_type, class, bool, bool, typename> friend struct array_iterator;
 
-	// subarray(subarray const&) = default;
-
  public:
-#ifdef __NVCC__
-	subarray(subarray const&) = default;
-#else
-	subarray(subarray const&) = delete;
-#endif
+ 	subarray(subarray const&) = delete;
 
 	BOOST_MULTI_HD constexpr auto        move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
@@ -2552,7 +2545,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator--() -> array_iterator& {
-		ptr_ -= stride_;
+		ptr_ -= stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 
@@ -2561,7 +2554,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> array_iterator& {
-		ptr_ -= stride_ * n;
+		ptr_ -= stride_ * n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -2825,7 +2818,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
 
  public:
-	const_subarray(const_subarray const&) = delete;  // = default;
+	const_subarray(const_subarray const&) = delete;
 
 	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
 	friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }     // needed by nvcc
@@ -2941,17 +2934,17 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  public:
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(*this, tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
 
-	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) { return *this; }  // NOLINT(modernize-use-constraints) for C++20
-	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices) const& -> decltype(auto) {                    // NOLINT(modernize-use-constraints) for C++20
-		using std::get;
-		return operator[](get<0>(indices));
-	}
+	// template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) { return *this; }  // NOLINT(modernize-use-constraints) for C++20
+	// template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices) const& -> decltype(auto) {                    // NOLINT(modernize-use-constraints) for C++20
+	// 	using std::get;
+	// 	return operator[](get<0>(indices));
+	// }
 
-	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value > 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices) const& -> decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
-		using std::get;  // for C++17 compatibility
-		return operator[](get<0>(indices))[detail::tuple_tail(indices)];
-	}
+	// template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value > 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	// BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices) const& -> decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
+	// 	using std::get;  // for C++17 compatibility
+	// 	return operator[](get<0>(indices))[detail::tuple_tail(indices)];
+	// }
 
 // Warning C4459 comes from boost::multi_array having a namespace indices which collides with the variable name?
 #ifdef _MSC_VER
@@ -3008,7 +3001,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #endif
 
 		return const_subarray(
-			this->layout().drop(count), this->base_ + (count * this->layout().stride() /*- this->layout().offset()*/)  // TODO(correaa) fix need for offset
+			this->layout().drop(count), this->base_ + (count * this->layout().stride() /*- this->layout().offset()*/)  // TODO(correaa) fix need for offset  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		);
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)

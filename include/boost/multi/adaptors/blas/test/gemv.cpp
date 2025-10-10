@@ -12,10 +12,11 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for generate, transform
-#include <cmath>      // for abs  // // IWYU pragma: keep
+#include <cmath>      // for abs  // IWYU pragma: keep
 #include <complex>    // for complex, operator*
+// #include <cstdlib>    // IWYU pragma: keep
 // IWYU pragma: no_include <cstdlib>  // for abs
-#include <iostream>  // for char_traits, basic_ost...
+#include <iostream>  // for char_traits, basic_ost...	
 #include <iterator>  // for size, begin
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for inner_product
@@ -210,7 +211,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using T        = double;
 		namespace blas = multi::blas;
 
-		using std::abs;
+		using std::abs;  // NOLINT(misc-include-cleaner) bug in clang-tidy 21.1.2
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<T, 2> const a = {
 			{ 9.0, 24.0, 30.0, 9.0},

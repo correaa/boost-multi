@@ -7,10 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for is_sorted
-#include <array>      // for array
-#include <cstddef>    // for ptrdiff_t
-// #include <iostream>
+#include <algorithm>    // for is_sorted
+#include <array>        // for array
+#include <cstddef>      // for ptrdiff_t
 #include <iterator>     // for size
 #include <string>       // for operator""s, string, string_lite...
 #include <tuple>        // for apply  // IWYU pragma: keep
@@ -18,7 +17,7 @@
 #include <utility>      // for move
 #include <vector>
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(disable : 4625)  // copy constructor was implicitly defined as deleted
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #pragma warning(disable : 5026)  // move constructor was implicitly defined as deleted

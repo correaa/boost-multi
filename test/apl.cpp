@@ -97,7 +97,7 @@ struct underscore_t {
 #endif
 };
 
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 [[maybe_unused]] constexpr underscore_t _;
 #endif
 

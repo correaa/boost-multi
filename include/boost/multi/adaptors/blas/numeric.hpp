@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
-#pragma once
 
 // #include <boost/multi/adaptors/complex.hpp>
 
@@ -31,7 +30,7 @@
 #include <utility>                                           // for declval
 // IWYU pragma: no_include <version>                                    // for nullptr_t
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
@@ -71,19 +70,19 @@ template<class Ref, class Involution> class involuted;
 
 template<class It, class F, class Reference = involuted<typename std::iterator_traits<It>::reference, F>> class involuter;  // IWYU pragma: keep  // bug in iwyu 0.22/18.1.8?
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 template<class Ref, class Involution>
 class involuted {
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // 7 bytes padding added after f_
 #endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;
 	Ref        r_;  // [[no_unique_address]]  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
@@ -164,11 +163,11 @@ class involuted {
 		return self.operator decay_type().imag();
 	}
 };
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-#if defined(__cpp_deduction_guides)
+#ifdef __cpp_deduction_guides
 template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;
 #endif
 
@@ -177,19 +176,19 @@ auto default_allocator_of(involuter<It, F> const& iv) {
 	return default_allocator_of(iv.it_);
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 template<class It, class F, class Reference>
 class involuter {
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // 7 bytes padding added after f_
 #endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F  f_;
 	It it_;
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
@@ -230,14 +229,14 @@ class involuter {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 	constexpr auto operator+=(difference_type n) -> involuter& {
-		it_ += n;
+		it_ += n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 	constexpr auto operator-=(difference_type n) -> involuter& {
-		it_ -= n;
+		it_ -= n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
-	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }
+	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
@@ -269,7 +268,7 @@ class involuter {
 		return get_allocator(inv.it_);
 	}
 };
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -283,13 +282,13 @@ struct conjugate {
 		return conj(zee);
 	}
 
-#if defined(__CUDACC__)
+#ifdef __CUDACC__
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::cuda_cub::tag> zee) const {
 		return conj(static_cast<Complex>(zee));
 	}
 #endif
-#if defined(__HIPCC__)
+#ifdef __HIPCC__
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::hip::tag> zee) const {
 		return conj(static_cast<Complex>(zee));

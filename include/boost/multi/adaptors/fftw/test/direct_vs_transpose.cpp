@@ -42,19 +42,19 @@ namespace {
 // clang-format off
 template<class Tp>
 inline
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 __forceinline
 #else
 __attribute__((always_inline))
 #endif
 void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 	_ReadWriteBarrier(); (void)value;
 #else
 #if defined(__clang__) || defined(__circle_build__)
-if constexpr(!std::is_const_v<Tp>) {
+if constexpr(!std::is_const_v<Tp>) {  // NOLINT(bugprone-branch-clone)
 	asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
-} else {
+} else {  // NOLINT(bugprone-branch-clone)
 	asm volatile("" : "+m,r"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
 }
 #else
@@ -69,7 +69,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	using complex = std::complex<double>;
 
 	auto in = [] {
-#if !defined(NDEBUG)
+#ifndef NDEBUG
 		auto ret = multi::array<complex, 3>({100, 100, 100});
 #else
 		auto ret = multi::array<complex, 3>({10, 10, 10});
