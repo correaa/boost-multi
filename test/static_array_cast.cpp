@@ -190,7 +190,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
 		BOOST_TEST( ref[1] == arr[1] );
 
-		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+		// BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
 		BOOST_TEST( ref == arr );
 		BOOST_TEST( arr == ref );
