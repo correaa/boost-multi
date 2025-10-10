@@ -209,28 +209,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( neg_arr == arr2 );
 		BOOST_TEST( arr2 == neg_arr );
 	}
-	// 	{
-	// 		multi::static_array<int, 2> arr({4, 5}, 0);
-	// 		std::iota(elements(arr).begin(), elements(arr).end(), 0);
+	{
+		multi::static_array<int, 2> arr({4, 5}, 0);
+		std::iota(elements(arr).begin(), elements(arr).end(), 0);
 
-	// 		multi::array<int, 2> arr2({4, 5});
-	// 		std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
+		multi::array<int, 2> arr2({4, 5});
+		std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
 
-	// 		auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
+		auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
 
-	// 		BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
-	// 		BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
+		BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
+		BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
 
-	// 		BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
+		BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
 
-	// 		BOOST_TEST( arr2[1] == neg_arr[1] );
-	// 		BOOST_TEST( neg_arr[1] == arr2[1] );
+		BOOST_TEST( arr2[1] == neg_arr[1] );
+		BOOST_TEST( neg_arr[1] == arr2[1] );
 
-	// 		BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );  // NOLINT(modernize-use-ranges)
-	// 		BOOST_TEST( neg_arr == arr2 );
-	// 		BOOST_TEST( arr2 == neg_arr );
-	// 	}
-	// }
+		BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( neg_arr == arr2 );
+		BOOST_TEST( arr2 == neg_arr );
+	}
 
 	return boost::report_errors();
 }
