@@ -187,14 +187,39 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& ref = arr.static_array_cast<int, int const*>();
 
 		BOOST_TEST( ref[1][1] == arr[1][1] );
-		BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
+		BOOST_TEST( std::equal(ref[1].begin(), ref[1].end(), arr[1].begin(), arr[1].end()) );
 		BOOST_TEST( ref[1] == arr[1] );
 
-		// BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+		// #if !defined(_MSC_VER) && !defined(__NVCC__)
+		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );
+		// #endif
+		// ^^^ this doesn't work on MSVC+NVCC in C++20 because it tries to generate this type:
+		// using coty = std::common_reference<
+		// 	boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, 
+		//  	boost::multi::array<int, 1LL, std::allocator<int>> &
+		// >::type;
 
 		BOOST_TEST( ref == arr );
 		BOOST_TEST( arr == ref );
 	}
+
+// instantiation of type "std::_Cond_res<boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, boost::multi::array<int, 1LL, std::allocator<int>> &>" at line 1405
+// instantiation of class "std::_Common_reference2C<_Ty1, _Ty2> [with _Ty1=boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, _Ty2=boost::multi::array<int, 1LL, std::allocator<int>> &]" at line 1414
+// instantiation of class "std::_Common_reference2B<_Ty1, _Ty2> [with _Ty1=boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, _Ty2=boost::multi::array<int, 1LL, std::allocator<int>> &]" at line 1426
+// instantiation of class "std::_Common_reference2A<_Ty1, _Ty2> [with _Ty1=boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, _Ty2=boost::multi::array<int, 1LL, std::allocator<int>> &]" at line 1474
+// instantiation of class "std::common_reference<_Ty1, _Ty2> [with 
+// 	_Ty1=boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, 
+// 	_Ty2=boost::multi::array<int, 1LL, std::allocator<int>> &]" at line 1313 of C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility
+// instantiation of "const __nv_bool std::_Is_ranges_random_iter_v [with _Iter=
+// 	boost::multi::array_iterator<int, 2LL, const int *, false, false, ptrdiff_t>]" at line 5563 of C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility
+
+// instantiation of "__nv_bool std::equal(_InIt1, _InIt1, _InIt2, _InIt2, _Pr) [with 
+// 		_InIt1=boost::multi::array_iterator<int, 2LL, const int *, false, false, ptrdiff_t>, 
+// 		_InIt2=boost::multi::array_iterator<int, 2LL, int *      , false, false, ptrdiff_t>, _Pr=std::equal_to<void>]" at line 5599 of C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility
+// instantiation of "__nv_bool std::equal(_InIt1, _InIt1, _InIt2, _InIt2) [with 
+// 	_InIt1=boost::multi::array_iterator<int, 2LL, const int *, false, false, ptrdiff_t>,
+// 	_InIt2=boost::multi::array_iterator<int, 2LL, int *.     , false, false, ptrdiff_t>]" at line 193 of C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\test\static_array_cast.cpp
+  
 
 	// // BOOST_AUTO_TEST_CASE(static_array_cast_3)
 	{
