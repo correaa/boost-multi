@@ -191,7 +191,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( ref[1] == arr[1] );
 
 #if !defined(_MSC_VER) && !defined(__NVCC__)
-		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );  // NOLINT([modernize-use-ranges)
+		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );  // NOLINT(modernize-use-ranges)
 #endif
 		// ^^^ this doesn't work on MSVC+NVCC in C++20 because it tries to generate this type:
 		// using coty = std::common_reference<
