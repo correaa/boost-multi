@@ -179,7 +179,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr == ref );
 	}
 
-	BOOST_AUTO_TEST_CASE(static_array_cast_2)
+	// BOOST_AUTO_TEST_CASE(static_array_cast_2)
 	{
 		multi::array<int, 2> arr({2, 5});
 		std::iota(arr.elements().begin(), arr.elements().end(), 0);
