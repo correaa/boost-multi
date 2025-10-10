@@ -187,9 +187,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& ref = arr.static_array_cast<int, int const*>();
 		(void)ref;
 
-		// BOOST_TEST( ref[1][1] == arr[1][1] );
-		// BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
-		// BOOST_TEST( ref[1] == arr[1] );
+		BOOST_TEST( ref[1][1] == arr[1][1] );
+		BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
+		BOOST_TEST( ref[1] == arr[1] );
 
 		// BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
 
