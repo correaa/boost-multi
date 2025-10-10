@@ -434,6 +434,28 @@ vs2022-shell c++23:
   needs: ["vs2022-shell"]
   timeout: 20 minutes
 
+vs2022-shell cudatk-17:
+  stage: build
+  allow_failure: false
+  interruptible: true
+  script:
+    - whoami
+    - dir C:\local\
+    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    # - .\vcpkg\bootstrap-vcpkg.bat
+    # - .\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer
+    - mkdir build
+    - cmake --version
+    # -DCMAKE_CXX_FLAGS="/Wall /wd4668 /wd5045"
+    # -DCMAKE_CUDA_FLAGS=-Xcompiler=/Wall -Xcompiler=/wd4061,/wd4191,/wd4244,/wd4296,/wd4365,/wd4464 -Xcompiler=/wd4555 -Xcompiler=/wd4619 -Xcompiler=/wd4668 -Xcompiler=/wd4820 -Xcompiler=/wd5026 -Xcompiler=/wd5027 -Xcompiler=/wd5039 -Xcompiler=/wd5031 -Xcompiler=/wd5032 -Xcompiler=/wd5045 -Xcompiler=/wd5220 -Xcompiler=/wd5246 
+    - cmake -S . -B build -DCMAKE_CUDA_STANDARD=17 -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=75 "-Wno-deprecated-gpu-targets" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake --build build --config Debug --parallel ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+  tags:
+    - windows, shell, cudatk
+  needs: ["vs2022-shell"]  # , "cuda"]
+  timeout: 60 minutes
+
 vs2022-shell cudatk:
   stage: build
   allow_failure: false

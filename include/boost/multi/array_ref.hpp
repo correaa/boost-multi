@@ -1927,11 +1927,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// subarray(subarray const&) = default;
 
  public:
-#if defined(__NVCC__) && (__CUDACC_VER_MAJOR__ <= 11)
-	subarray(subarray const&) = default;
-#else
-	subarray(subarray const&) = delete;
-#endif
+// #if defined(__NVCC__) && (__CUDACC_VER_MAJOR__ <= 11)
+//	subarray(subarray const&) = default;
+// #else
+ 	subarray(subarray const&) = delete;
+// #endif
 
 	BOOST_MULTI_HD constexpr auto        move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
