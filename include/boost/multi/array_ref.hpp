@@ -1925,7 +1925,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class, multi::dimensionality_type, class, bool, bool, typename> friend struct array_iterator;
 
  public:
- 	subarray(subarray const&) = delete;
+	subarray(subarray const&) = delete;
 
 	BOOST_MULTI_HD constexpr auto        move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
