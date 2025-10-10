@@ -1924,8 +1924,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<class, multi::dimensionality_type, class, bool, bool, typename> friend struct array_iterator;
 
-	// subarray(subarray const&) = default;
-
  public:
  	subarray(subarray const&) = delete;
 
@@ -2820,7 +2818,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
 
  public:
-	const_subarray(const_subarray const&) = delete;  // = default;
+	const_subarray(const_subarray const&) = delete;
 
 	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
 	friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }     // needed by nvcc
