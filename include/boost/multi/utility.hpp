@@ -144,11 +144,11 @@ struct transform_ptr {
 #endif
 
 	constexpr auto operator+=(difference_type n) -> transform_ptr& {
-		p_ += n;
+		p_ += n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 	constexpr auto operator-=(difference_type n) -> transform_ptr& {
-		p_ -= n;
+		p_ -= n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 

@@ -977,7 +977,7 @@ struct static_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT
 
 	constexpr auto operator=(static_array&& other) noexcept -> static_array& {
 		assert(equal_extensions_if_(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other));      // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
-		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
+		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 
@@ -1532,7 +1532,7 @@ template<typename T, boost::multi::dimensionality_type D, class A>
 struct version<boost::multi::array<T, D, A>> {
 	using type = std::integral_constant<int, BOOST_MULTI_SERIALIZATION_ARRAY_VERSION>;  // TODO(correaa) use constexpr variable here, not a macro
 	// NOLINTNEXTLINE(cppcoreguidelines-use-enum-class) for backward compatibility with Boost Serialization
-	enum /*class value_t*/ { value = type::value };                                     // NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
+	enum /*class value_t*/ { value = type::value };  // NOSONAR(cpp:S3642)  // https://community.sonarsource.com/t/suppress-issue-in-c-source-file/43154/24
 };
 
 }  // end namespace boost::serialization

@@ -5,7 +5,6 @@
 #ifndef BOOST_MULTI_ADAPTORS_MPI_HPP_
 #define BOOST_MULTI_ADAPTORS_MPI_HPP_
 #include <type_traits>
-#pragma once
 
 #include <boost/multi/array.hpp>
 
@@ -33,7 +32,7 @@ template<class T> static inline const_MPI_Datatype const datatype = std::conditi
 
 // MPI3_DECLARE_DATATYPE(short                  , MPI_SHORT);
 // MPI3_DECLARE_DATATYPE(unsigned short         , MPI_UNSIGNED_SHORT);
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-variable-declarations"
 #endif
@@ -51,7 +50,7 @@ template<> inline const_MPI_Datatype const datatype<double> = MPI_DOUBLE;
 
 template<> inline const_MPI_Datatype const datatype<std::complex<double>> = MPI_DOUBLE_COMPLEX;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 

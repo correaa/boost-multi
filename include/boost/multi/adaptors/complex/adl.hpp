@@ -6,7 +6,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_COMPLEX_ADL_HPP
 #define BOOST_MULTI_ADAPTORS_COMPLEX_ADL_HPP
-#pragma once
 
 // #include <boost/multi/array_ref.hpp>
 

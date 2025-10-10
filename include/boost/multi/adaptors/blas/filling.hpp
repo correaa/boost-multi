@@ -17,7 +17,7 @@ enum class filling : char {
 	upper = 'L'
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-default"
 #endif
@@ -30,7 +30,7 @@ inline auto flip(filling side) -> filling {
 	return {};
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 

@@ -59,7 +59,7 @@ class uniform_cspline {
 		auto&& z = A;  // NOLINT(readability-identifier-length)
 
 		for(index i = 1; i != n - 1; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use algorithms
-			A[i] = 3 * (a[i + 1] - a[i]) / dx_ - 3 * (a[i] - a[i - 1]) / dx_;
+			A[i] = (3 * (a[i + 1] - a[i]) / dx_) - (3 * (a[i] - a[i - 1]) / dx_);
 		}
 
 		l[0] = 4 * dx_;
@@ -67,7 +67,7 @@ class uniform_cspline {
 		z[0] = A[1] / l[0];
 
 		for(index i = 1; i != n - 2; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use algorithms
-			l[i] = 4 * dx_ - dx_ * u[i - 1];
+			l[i] = (4 * dx_) - (dx_ * u[i - 1]);
 			u[i] = dx_ / l[i];
 			z[i] = (A[i + 1] - dx_ * z[i - 1]) / l[i];
 		}
@@ -75,13 +75,13 @@ class uniform_cspline {
 		c[n - 1] = 0;
 
 		for(index j = n - 2; j != 0; --j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use algorithms
-			c[j] = z[j - 1] - u[j - 1] * c[j + 1];
-			b[j] = (a[j + 1] - a[j]) / dx_ - dx_ * (c[j + 1] + 2 * c[j]) / 3;
+			c[j] = z[j - 1] - (u[j - 1] * c[j + 1]);
+			b[j] = ((a[j + 1] - a[j]) / dx_) - (dx_ * (c[j + 1] + 2 * c[j]) / 3);
 			d[j] = (c[j + 1] - c[j]) / (3 * dx_);
 		}
 
 		c[0] = 0;
-		b[0] = (a[1] - a[0]) / dx_ - dx_ * c[1] / 3;
+		b[0] = ((a[1] - a[0]) / dx_) - (dx_ * c[1] / 3);
 		d[0] = c[1] / (3 * dx_);
 		// for(std::size_t i = 0; i != K.size(); ++i) K[i] = {a[i], b[i], c[i], d[i]};
 	}

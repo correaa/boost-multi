@@ -3,7 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4244)  // allow conversion from double to float in uninitialized_construct algorithms
 #endif
@@ -188,6 +188,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	return boost::report_errors();
 }
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif

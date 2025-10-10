@@ -82,13 +82,13 @@ class dot_ptr {
 
 	template<class ItOut, class Size2>
 	friend constexpr auto copy_n(dot_ptr first, Size2 count, ItOut d_first)
-	->decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count) {
+	->decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count) {  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		assert(count == 1); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
-		return blas::dot_n(first.ctxt_               , first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;
+		return blas::dot_n(first.ctxt_               , first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
@@ -152,16 +152,9 @@ auto dot(Context ctxt, X const& x, Y const& y) {  // NOLINT(readability-identifi
 	return dot_ref<Context, X, Y>{ctxt, x, y};
 }
 
-#if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = implicit_return_from_non_void_function
-	#else
-		#if !defined(__GNUC__)
-		#pragma    diagnostic push
-		#pragma    diag_suppress = implicit_return_from_non_void_function
-		#endif
-	#endif
+#ifdef __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+	#pragma nv_diagnostic push
+	#pragma nv_diag_suppress = implicit_return_from_non_void_function
 #elif defined __NVCOMPILER
 	#pragma    diagnostic push
 	#pragma    diag_suppress = implicit_return_from_non_void_function
@@ -177,16 +170,10 @@ auto dot(X const& x, Y const& y) {  // NOLINT(readability-identifier-length) BLA
 		return blas::dot(ctxtp, x, y);
 	}
 }
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic pop
-	#else
-		#if !defined(__GNUC__)
-		#pragma    diagnostic pop
-		#endif
-	#endif
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
 #elif defined __NVCOMPILER
-	#pragma    diagnostic pop
+#pragma    diagnostic pop
 #endif
 
 namespace operators {
