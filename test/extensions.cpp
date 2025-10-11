@@ -400,10 +400,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( values[0][0] == 0 );
 		BOOST_TEST( values.begin() != values.end() );
 
-		auto arr2 = multi::array<int, 2>(arr.extensions());
+		auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
 
 		arr2.elements() = values.elements();
-		
+
 		arr2() = values;
 
 		arr2 = values;

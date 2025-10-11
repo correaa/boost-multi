@@ -422,22 +422,22 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) { return self.base(); }
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-	constexpr auto operator==(OtherSubarrayPtr const& other) const
+	BOOST_MULTI_HD constexpr auto operator==(OtherSubarrayPtr const& other) const
 		-> decltype((base_ == other.base_) && (layout_ == other.layout_)) {
 		return (base_ == other.base_) && (layout_ == other.layout_);
 	}
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-	constexpr auto operator!=(OtherSubarrayPtr const& other) const
+	BOOST_MULTI_HD constexpr auto operator!=(OtherSubarrayPtr const& other) const
 		-> decltype((base_ != other.base_) || (layout_ != other.layout_)) {
 		return (base_ != other.base_) || (layout_ != other.layout_);
 	}
 
-	constexpr auto operator==(subarray_ptr const& other) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator==(subarray_ptr const& other) const -> bool {
 		return (base_ == other.base_) && (layout_ == other.layout_);
 	}
 
-	constexpr auto operator!=(subarray_ptr const& other) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator!=(subarray_ptr const& other) const -> bool {
 		return (base_ != other.base_) || (layout_ != other.layout_);
 	}
 
@@ -980,11 +980,11 @@ struct elements_range_t {
 	elements_range_t(elements_range_t const&) = delete;
 	elements_range_t(elements_range_t&&)      = delete;
 
-	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
+	template<typename OP, class OL> BOOST_MULTI_HD constexpr auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
 		// if( is_empty() && other.is_empty()) { return true; }
 		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());
 	}
-	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
+	template<typename OP, class OL> BOOST_MULTI_HD constexpr auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
 		// if(is_empty() && other.is_empty()) { return false; }
 		return size() != other.size() || !adl_equal(other.begin(), other.end(), begin());
 	}
@@ -1678,18 +1678,18 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr explicit operator Range() const { return Range(begin(), end()); }  // NOLINT(fuchsia-default-arguments-calls) for example std::vector(it, ti, alloc = {})
 
 	template<class TT, class... As>
-	friend constexpr auto operator==(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
+	friend BOOST_MULTI_HD constexpr auto operator==(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
 		return (self.extension() == other.extension()) && (self.elements() == other.elements());
 	}
 	template<class TT, class... As>
-	friend constexpr auto operator!=(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
+	friend BOOST_MULTI_HD constexpr auto operator!=(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
 		return (self.extension() != other.extension()) || (self.elements() != other.elements());
 	}
 
-	constexpr auto operator==(const_subarray const& other) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator==(const_subarray const& other) const -> bool {
 		return (this->extension() == other.extension()) && (this->elements() == other.elements());
 	}
-	constexpr auto operator!=(const_subarray const& other) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator!=(const_subarray const& other) const -> bool {
 		return (this->extension() != other.extension()) || (this->elements() != other.elements());
 	}
 
@@ -2639,11 +2639,11 @@ class const_subarray<T, 0, ElementPtr, Layout>
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	constexpr auto operator==(element const& elem) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator==(element const& elem) const -> bool {
 		BOOST_MULTI_ASSERT(this->num_elements() == 1);
 		return adl_equal(&elem, std::next(&elem, this->num_elements()), this->base());
 	}
-	constexpr auto operator!=(element const& elem) const { return !operator==(elem); }
+	BOOST_MULTI_HD constexpr auto operator!=(element const& elem) const { return !operator==(elem); }
 
 	template<class Range0>
 	constexpr auto operator=(Range0 const& rng) & -> const_subarray& {
@@ -2664,8 +2664,8 @@ class const_subarray<T, 0, ElementPtr, Layout>
 		return *(this->base_);
 	}
 
-	constexpr auto operator!=(const_subarray const& other) const { return !adl_equal(other.base_, other.base_ + 1, this->base_); }
-	constexpr auto operator==(const_subarray const& other) const { return adl_equal(other.base_, other.base_ + 1, this->base_); }
+	BOOST_MULTI_HD constexpr auto operator!=(const_subarray const& other) const { return !adl_equal(other.base_, other.base_ + 1, this->base_); }
+	BOOST_MULTI_HD constexpr auto operator==(const_subarray const& other) const { return adl_equal(other.base_, other.base_ + 1, this->base_); }
 
 	constexpr auto operator<(const_subarray const& other) const {
 		return adl_lexicographical_compare(
@@ -3247,16 +3247,16 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		return adl_copy_n(first, this->size(), std::move(*this).begin()), void();
 	}
 
-	friend constexpr auto operator==(const_subarray const& self, const_subarray const& other) -> bool {
+	friend BOOST_MULTI_HD constexpr auto operator==(const_subarray const& self, const_subarray const& other) -> bool {
 		return self.extension() == other.extension() && self.elements() == other.elements();
 	}
 
-	friend constexpr auto operator!=(const_subarray const& self, const_subarray const& other) -> bool {
+	friend BOOST_MULTI_HD constexpr auto operator!=(const_subarray const& self, const_subarray const& other) -> bool {
 		return self.extension() != other.extension() || self.elements() != other.elements();
 	}
 
 	template<class OtherT, typename OtherEP, class OtherLayout>
-	friend constexpr auto operator==(const_subarray const& self, const_subarray<OtherT, 1, OtherEP, OtherLayout> const& other) -> bool {
+	friend BOOST_MULTI_HD constexpr auto operator==(const_subarray const& self, const_subarray<OtherT, 1, OtherEP, OtherLayout> const& other) -> bool {
 		return self.extension() == other.extension() && self.elements() == other.elements();
 	}
 
@@ -3572,7 +3572,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #endif
 
 	template<typename TT, class... As>
-	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
+	friend BOOST_MULTI_HD constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) {
 			return false;
 		}
@@ -3764,8 +3764,8 @@ class [[deprecated("no good uses found")]] array_ptr<T, 0, Ptr> {  // TODO(corre
 	auto operator=(array_ptr const&) -> array_ptr&     = default;
 	auto operator=(array_ptr&&) noexcept -> array_ptr& = default;
 
-	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() == other.ref_.base(); }
-	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() != other.ref_.base(); }
+	friend BOOST_MULTI_HD constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() == other.ref_.base(); }
+	friend BOOST_MULTI_HD constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool { return self.ref_.base() != other.ref_.base(); }
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator*() const -> multi::array_ref<T, 0, Ptr>& { return ref_; }  // moLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) make ref base class a mutable member
