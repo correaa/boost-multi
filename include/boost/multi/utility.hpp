@@ -417,6 +417,11 @@ constexpr auto corigin(T const& value) { return &value; }
 template<class T, std::size_t N>
 constexpr auto corigin(T const (&array)[N]) noexcept { return corigin(array[0]); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
 
+template<class T, typename = decltype(std::declval<T>().elements())>
+auto        has_elements_aux(T const&) -> std::true_type;
+inline auto has_elements_aux(...) -> std::false_type;
+template<class T> struct has_elements : decltype(has_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+
 template<class T, typename = decltype(std::declval<T>().extension())>
 auto        has_extension_aux(T const&) -> std::true_type;
 inline auto has_extension_aux(...) -> std::false_type;

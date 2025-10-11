@@ -2102,13 +2102,27 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<
 		class Range,
-		class = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
-		class = std::enable_if_t<!is_subarray<Range>::value>            // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-		>
+		std::enable_if_t<!std::is_base_of_v<subarray, Range>, int>                          = 0,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		std::enable_if_t<!is_subarray<Range>::value, int>                                   = 0,  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		std::enable_if_t<!has_extensions<Range>::value || !has_elements<Range>::value, int> = 0>
 	constexpr auto operator=(Range const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
 		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
 		adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
+		return *this;
+	}
+
+	template<
+		class Range,
+		std::enable_if_t<!std::is_base_of_v<subarray, Range>, int>                        = 0,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		std::enable_if_t<!is_subarray<Range>::value, int>                                 = 0,  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		std::enable_if_t<has_extensions<Range>::value && has_elements<Range>::value, int> = 0>
+	constexpr auto operator=(Range const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
+		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
+		BOOST_MULTI_ASSERT(this->extensions() == rng.extensions());
+		this->elements() = rng.elements();
+		// adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
 		return *this;
 	}
 

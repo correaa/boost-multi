@@ -399,7 +399,16 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( values.elements().begin() != values.elements().end() );
 		BOOST_TEST( values[0][0] == 0 );
 		BOOST_TEST( values.begin() != values.end() );
-		// arr = ;
+
+		auto arr2 = multi::array<int, 2>(arr.extensions());
+
+		arr2.elements() = values.elements();
+		
+		arr2() = values;
+
+		arr2 = values;
+
+		// BOOST_TEST( arr2.elements() == values.elements() );
 	}
 
 	return boost::report_errors();
