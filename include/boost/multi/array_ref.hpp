@@ -2104,7 +2104,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		class Range,
 		std::enable_if_t<!std::is_base_of_v<subarray, Range>, int>                          = 0,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
 		std::enable_if_t<!is_subarray<Range>::value, int>                                   = 0,  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-		std::enable_if_t<!has_extensions<Range>::value || !has_elements<Range>::value, int> = 0>
+		std::enable_if_t<!has_extensions<Range>::value || !has_elements<Range>::value, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(Range const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
 		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
@@ -2116,7 +2116,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		class Range,
 		std::enable_if_t<!std::is_base_of_v<subarray, Range>, int>                        = 0,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
 		std::enable_if_t<!is_subarray<Range>::value, int>                                 = 0,  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-		std::enable_if_t<has_extensions<Range>::value && has_elements<Range>::value, int> = 0>
+		std::enable_if_t<has_extensions<Range>::value && has_elements<Range>::value, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(Range const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
 		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
@@ -3572,7 +3572,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #endif
 
 	template<typename TT, class... As>
-	friend BOOST_MULTI_HD constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
+	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) {
 			return false;
 		}
