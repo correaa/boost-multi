@@ -118,7 +118,7 @@ class f_extensions_t {
 
 		iterator(typename extensions_t<D>::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
-		// friend f_extensions_t;
+		friend f_extensions_t;
 
 	 public:
 		auto operator++() -> auto& { ++it_; return *this; }
