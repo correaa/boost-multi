@@ -912,7 +912,7 @@ rocm:
 #  needs: ["clang++", "g++"]
 
 circle:
-  stage: build
+  stage: basic  # build
   allow_failure: false
   tags:
     - non-shared
@@ -931,7 +931,7 @@ circle:
     - ctest -j 2 --output-on-failure
 
 circle-latest c++20:
-  stage: build
+  stage: basic  # build
   allow_failure: false
   tags:
     - non-shared
