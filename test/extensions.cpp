@@ -392,13 +392,21 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		++it;
 		BOOST_TEST( *it == xs[1] );
 
-		// auto const& values = [](auto i, auto j) { return i + j; } ^ arr.extensions();
+		auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extensions();
 
-		// BOOST_TEST( values.extensions() == arr.extensions() );
-		// BOOST_TEST( *values.elements().begin() == 0 );
-		// BOOST_TEST( values[0][0] == 0 );
-		// BOOST_TEST( values.begin() != values.end() );
-		// arr = ;
+		BOOST_TEST( values.extensions() == arr.extensions() );
+		BOOST_TEST( *values.elements().begin() == 0 );
+		BOOST_TEST( values.elements().begin() != values.elements().end() );
+		BOOST_TEST( values[0][0] == 0 );
+		BOOST_TEST( values.begin() != values.end() );
+
+		// auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
+
+		// arr2.elements() = values.elements();
+
+		// arr2() = values;
+
+		// arr2 = values;
 	}
 
 	return boost::report_errors();
