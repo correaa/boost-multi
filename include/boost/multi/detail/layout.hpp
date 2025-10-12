@@ -145,8 +145,8 @@ class f_extensions_t {
 		auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
 
-	// constexpr auto begin() const { return iterator{xs_.begin(), proj_}; }
-	// constexpr auto end() const { return iterator{xs_.end(), proj_}; }
+	constexpr auto begin() const { return iterator{xs_.begin(), proj_}; }
+	constexpr auto end() const { return iterator{xs_.end(), proj_}; }
 
 	constexpr auto size() const { return xs_.size(); }
 	constexpr auto extension() const { return xs_.extension(); }
