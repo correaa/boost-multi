@@ -118,7 +118,7 @@ class f_extensions_t {
 
 		iterator(typename extensions_t<D>::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
-		friend f_extensions_t;
+		// friend f_extensions_t;
 
 	 public:
 		auto operator++() -> auto& { ++it_; return *this; }
@@ -129,8 +129,8 @@ class f_extensions_t {
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 
-		friend constexpr auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
-		friend constexpr auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
+		// friend constexpr auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
+		// friend constexpr auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
 
 		constexpr auto operator*() const -> decltype(auto) {
 			using std::get;
@@ -145,8 +145,8 @@ class f_extensions_t {
 		auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
 
-	constexpr auto begin() const { return iterator{xs_.begin(), proj_}; }
-	constexpr auto end() const { return iterator{xs_.end(), proj_}; }
+	// constexpr auto begin() const { return iterator{xs_.begin(), proj_}; }
+	// constexpr auto end() const { return iterator{xs_.end(), proj_}; }
 
 	constexpr auto size() const { return xs_.size(); }
 	constexpr auto extension() const { return xs_.extension(); }
@@ -373,7 +373,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
 		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
 
-		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
+		// friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
 
 		constexpr auto operator++() -> auto& { ++idx_; return *this; }
 		constexpr auto operator--() -> auto& { --idx_; return *this; }
