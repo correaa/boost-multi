@@ -370,6 +370,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
 
 	 public:
+		using difference_type = index;
+
 		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
 		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
 
