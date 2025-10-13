@@ -37,10 +37,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr2(multi::extensions_t<2>{3, 4});
 		BOOST_TEST( arr2.size() == 3 );
 	}
-	{
-		// multi::array<int, 2> arr2{multi::extensions_t<2>{3, 4}};
-		// BOOST_TEST( arr2.size() == 3 );
-	}
+	// TODO(correaa) should this work
+	// {
+	// 	multi::array<int, 2> arr2{multi::extensions_t<2>{3, 4}};
+	// 	BOOST_TEST( arr2.size() == 3 );
+	// 	BOOST_TEST( (~arr2).size() == 4 );
+	// }
+	// TODO(correaa) should this work
+	// {
+	// 	std::vector<std::vector<int>> vecs(3, std::vector<int>(4));
+	// 	multi::array<int, 2> arr2{vecs.begin(), vecs.end()};
+	// 	BOOST_TEST( arr2.size() == 3 );
+	// 	BOOST_TEST( (~arr2).size() == 4 );
+	// }
 
 	// BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug)
 	{
