@@ -34,7 +34,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1] == 10 );
 	}
 	{
-		multi::array<int, 2> arr2(multi::extensions_t<2>{3, 4});
+		multi::array<int, 2> const arr2(multi::extensions_t<2>{3, 4});
 		BOOST_TEST( arr2.size() == 3 );
 	}
 	// TODO(correaa) should this work
