@@ -370,6 +370,12 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
 
 	 public:
+		using difference_type = index;
+		using value_type = decltype(ht_tuple(std::declval<index>(), std::declval<extensions_t<D - 1>>().base()));
+		using pointer = void;
+		using reference = value_type;
+		using iterator_category = std::random_access_iterator_tag;
+
 		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
 		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
 
@@ -382,6 +388,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			// multi::detail::what(rest_);
 			return ht_tuple(idx_, rest_.base());
 		}
+
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
