@@ -128,12 +128,14 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 		return device;
 	}
 	static void prefetch_to_device_(const_void_pointer ptr, size_type byte_count, device_index dev) {
+#if(CUDART_VERSION < 13000)  // CudaMemPrefetchAsync changes its interface on version 13 TODO(correaa) update API call
 		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, dev)) {
 			case HICUP_(Success)           : break;
 			case HICUP_(ErrorInvalidValue) : assert(0); break;  // NOLINT(bugprone-branch-clone)
 			case HICUP_(ErrorInvalidDevice): assert(0); break;  // NOLINT(bugprone-branch-clone)
 			default: assert(0);
 		}
+#endif
 	}
 
 	static auto get_device_(const_void_pointer ptr) -> device_index {
@@ -168,6 +170,11 @@ struct iterator_system<::boost::multi::array_iterator<T, D, Pointer, IsConst, Is
 template<typename Pointer, class LayoutType>
 struct iterator_system<::boost::multi::elements_iterator_t<Pointer, LayoutType> > {  // TODO(correaa) might need changes for IsConst templating
 	using type = typename ::thrust::iterator_system<typename ::boost::multi::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
+};
+
+template<class T, class UF, class Ptr, class Ref>
+struct iterator_system<::boost::multi::transform_ptr<T, UF, Ptr, Ref> > {  // TODO(correaa) might need changes for IsConst templating
+	using type = typename ::thrust::iterator_system<Ptr>::type;
 };
 
 // namespace detail {
