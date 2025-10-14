@@ -234,6 +234,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 
+#if !(defined(__NVCC__) || defined(__HIPCC__))  // this doesn't work on cuda 13, triggered by adl uninitialized_copy_n
 	// BOOST_AUTO_TEST_CASE(element_transformed_from_member)
 	{
 		struct record {
@@ -267,6 +268,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
 		// BOOST_TEST( recs[1][1].id == 5 );
 	}
+#endif
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
 #if !(defined(__NVCC__) || defined(__HIPCC__))
