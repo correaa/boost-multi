@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_ADAPTORS_CUFFT_HPP
 #define BOOST_MULTI_ADAPTORS_CUFFT_HPP
 
-#include <boost/multi  //array.hpp>
+#include <boost/multi/array.hpp>
 #include <boost/multi/detail/config/NODISCARD.hpp>
 #include <boost/multi/utility.hpp>
 
