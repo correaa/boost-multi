@@ -172,19 +172,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( va[1] [0][0] == "1"s );  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 		BOOST_TEST( va[2] [0][0] == "2"s );
 
-		// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		std::vector<multi::array<std::string, 2>> const wa = {
 			multi::array<std::string, 2>({0, 0}, "0"s),
 			multi::array<std::string, 2>({1, 1}, "1"s),
 			multi::array<std::string, 2>({2, 2}, "2"s),
 		};
-		// #else
-		//      std::vector<multi::array<std::string, 2>> const wa = {
-		//          multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
-		//          multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
-		//          multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
-		//      };
-		// #endif
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va) == size(wa) );
