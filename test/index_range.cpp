@@ -36,6 +36,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( *(irng.begin() + 1) ==  6 );
 
 		BOOST_TEST( irng.begin() < irng.begin() + 1 );
+		BOOST_TEST( !(irng.begin() + 1 < irng.begin()) );
+
 		BOOST_TEST( irng.begin() != irng.begin() + 1 );
 		BOOST_TEST( !(irng.begin() == irng.begin() + 1) );
 
