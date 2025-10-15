@@ -36,7 +36,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( *(irng.begin() + 1) ==  6 );
 
 		BOOST_TEST( irng.begin() < irng.begin() + 1 );
-		BOOST_TEST( !(irng.begin() + 1 < irng.begin()) );
+		BOOST_TEST( !((irng.begin() + 1) < irng.begin()) );
+		BOOST_TEST( !(irng.end() < irng.begin()) );
 
 		BOOST_TEST( irng.begin() != irng.begin() + 1 );
 		BOOST_TEST( !(irng.begin() == irng.begin() + 1) );
@@ -64,6 +65,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		--beg;
 
 		BOOST_TEST( irng.begin() == beg );  // cppcheck-suppress knownConditionTrueFalse ; for test
+		BOOST_TEST( !(irng.end() < irng.begin()) );
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_range2)
@@ -79,6 +81,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const xbeg = begin(iex);
 		BOOST_TEST( xbeg[0] == iex[0] );
 		BOOST_TEST( xbeg[1] == iex[1] );
+
+		BOOST_TEST( iex.begin() < iex.end() );
+		BOOST_TEST( !(iex.end() < iex.begin()) );
 
 		BOOST_TEST( std::accumulate( begin(iex), end(iex), static_cast<multi::index_extension::value_type>(0U)) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
