@@ -172,7 +172,7 @@ class range {
 		BOOST_MULTI_HD constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
 		BOOST_MULTI_HD constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
 
-		BOOST_MULTI_HD constexpr auto operator<(const_iterator const& other) const -> bool { return curr_ < other.curr_; }
+		BOOST_MULTI_HD constexpr auto operator<(const_iterator const& other) const -> bool { return curr_ < other.curr_; }  // mull-ignore: cxx_lt_to_le
 
 		constexpr auto operator++() -> const_iterator& {
 			++curr_;
