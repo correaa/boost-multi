@@ -2102,12 +2102,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<
 		class Range,
-		class = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
-		class = std::enable_if_t<!is_subarray<Range>::value>,            // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-		std::enable_if_t<!has_elements<Range>::value, int> =0
-		>
-	constexpr auto operator=(Range const& rng) &
-	-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		class                                              = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		class                                              = std::enable_if_t<!is_subarray<Range>::value>,           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		std::enable_if_t<!has_elements<Range>::value, int> = 0>
+	constexpr auto operator=(Range const& rng) & -> subarray& {                     // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
 		adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
 		return *this;
@@ -2115,13 +2113,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<
 		class MultiRange,
-		class = std::enable_if_t<!std::is_base_of_v<subarray, MultiRange>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
-		class = std::enable_if_t<!is_subarray<MultiRange>::value>,            // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-		std::enable_if_t<has_elements<MultiRange>::value, int> =0
-		>
-	constexpr auto operator=(MultiRange const& mrng) &
-	-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		BOOST_MULTI_ASSERT(this->extensions() == mrng.extensions());  // TODO(correaa) or use std::cmp_equal?
+		class                                                  = std::enable_if_t<!std::is_base_of_v<subarray, MultiRange>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		class                                                  = std::enable_if_t<!is_subarray<MultiRange>::value>,           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		std::enable_if_t<has_elements<MultiRange>::value, int> = 0>
+	constexpr auto operator=(MultiRange const& mrng) & -> subarray& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		BOOST_MULTI_ASSERT(this->extensions() == mrng.extensions());   // TODO(correaa) or use std::cmp_equal?
 		adl_copy_n(mrng.elements().begin(), this->num_elements(), this->elements().begin());
 		return *this;
 	}
