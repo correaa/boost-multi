@@ -2102,13 +2102,23 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<
 		class Range,
-		class = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
-		class = std::enable_if_t<!is_subarray<Range>::value>            // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-		>
-	constexpr auto operator=(Range const& rng) &                                    // TODO(correaa) check that you LHS is not read-only?
-		-> subarray& {                                                              // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));  // TODO(correaa) or use std::cmp_equal?
+		class                                              = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		class                                              = std::enable_if_t<!is_subarray<Range>::value>,           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		std::enable_if_t<!has_elements<Range>::value, int> = 0>                                                      // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	constexpr auto operator=(Range const& rng) & -> subarray& {                                                      // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));                                   // TODO(correaa) or use std::cmp_equal?
 		adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
+		return *this;
+	}
+
+	template<
+		class MultiRange,
+		class                                                  = std::enable_if_t<!std::is_base_of_v<subarray, MultiRange>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		class                                                  = std::enable_if_t<!is_subarray<MultiRange>::value>,           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		std::enable_if_t<has_elements<MultiRange>::value, int> = 0>                                                           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	constexpr auto operator=(MultiRange const& mrng) & -> subarray& {                                                         // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		BOOST_MULTI_ASSERT(this->extensions() == mrng.extensions());                                                          // TODO(correaa) or use std::cmp_equal?
+		adl_copy_n(mrng.elements().begin(), this->num_elements(), this->elements().begin());
 		return *this;
 	}
 
@@ -2121,20 +2131,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		operator=(rng);
 		return *this;
 	}
-
-	// template<class TT, class... As>
-	// constexpr auto operator=(const_subarray<TT, D, As...> const& other) && -> subarray& {operator=(other); return *this;}
-
-	// template<class TT, class... As>
-	// constexpr auto operator=(subarray<TT, D, As...>&& other) && -> subarray& {operator=(std::move(other)); return *this;}
-
-	// template<class TT, class... As>
-	// constexpr
-	// auto operator=(const_subarray<TT, D, As...> const& other) & -> subarray& {
-	//  assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-	//  this->elements() = other.elements();
-	//  return *this;
-	// }
 
 	template<class TT, class... As>
 	constexpr auto operator=(const_subarray<TT, D, As...> const& other) && -> subarray& {
@@ -2150,20 +2146,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	// template<class TT, class... As>
-	// constexpr
-	// auto operator=(array<TT, D, As...>&& other) & -> subarray& {
-	//  operator=(static_cast<move_subarray<TT, D, As...>&&>(std::move(other)));
-	//  other.clear();  // TODO(correaa) is this a good idea?
-	//  return *this;
-	// }
-
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) const&& -> subarray&;  // for std::indirectly_writable
-	// {
-	//  assert(this->extension() == other.extension());
-	//  this->elements() = other.elements();
-	//  return std::move(*this);
-	// }
 
 	constexpr auto operator=(subarray const& other) & -> subarray& {
 		if(this == std::addressof(other)) {
