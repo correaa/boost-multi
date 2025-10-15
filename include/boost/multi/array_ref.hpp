@@ -2125,26 +2125,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<
 		class Range,
 		class = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-		class = std::enable_if_t<!is_subarray<Range>::value>             // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+		class = std::enable_if_t<!is_subarray<Range>::value>            // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 		>
 	constexpr auto operator=(Range const& rng) && -> subarray& {
 		operator=(rng);
 		return *this;
 	}
-
-	// template<class TT, class... As>
-	// constexpr auto operator=(const_subarray<TT, D, As...> const& other) && -> subarray& {operator=(other); return *this;}
-
-	// template<class TT, class... As>
-	// constexpr auto operator=(subarray<TT, D, As...>&& other) && -> subarray& {operator=(std::move(other)); return *this;}
-
-	// template<class TT, class... As>
-	// constexpr
-	// auto operator=(const_subarray<TT, D, As...> const& other) & -> subarray& {
-	//  assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-	//  this->elements() = other.elements();
-	//  return *this;
-	// }
 
 	template<class TT, class... As>
 	constexpr auto operator=(const_subarray<TT, D, As...> const& other) && -> subarray& {
@@ -2160,20 +2146,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	// template<class TT, class... As>
-	// constexpr
-	// auto operator=(array<TT, D, As...>&& other) & -> subarray& {
-	//  operator=(static_cast<move_subarray<TT, D, As...>&&>(std::move(other)));
-	//  other.clear();  // TODO(correaa) is this a good idea?
-	//  return *this;
-	// }
-
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) const&& -> subarray&;  // for std::indirectly_writable
-	// {
-	//  assert(this->extension() == other.extension());
-	//  this->elements() = other.elements();
-	//  return std::move(*this);
-	// }
 
 	constexpr auto operator=(subarray const& other) & -> subarray& {
 		if(this == std::addressof(other)) {
