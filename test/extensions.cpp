@@ -392,21 +392,32 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		++it;
 		BOOST_TEST( *it == xs[1] );
 
-		// auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extensions();
+		auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extensions();
 
-		// BOOST_TEST( values.extensions() == arr.extensions() );
-		// BOOST_TEST( *values.elements().begin() == 0 );
-		// BOOST_TEST( values.elements().begin() != values.elements().end() );
-		// BOOST_TEST( values[0][0] == 0 );
-		// BOOST_TEST( values.begin() != values.end() );
+		BOOST_TEST( values.extensions() == arr.extensions() );
+		BOOST_TEST( *values.elements().begin() == 0 );
+		BOOST_TEST( values.elements().begin() != values.elements().end() );
+		BOOST_TEST( values[0][0] == 0 );
+		BOOST_TEST( values.begin() != values.end() );
 
-		// auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
+		{
+			auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
 
-		// arr2.elements() = values.elements();
+			arr2.elements() = values.elements();
+			BOOST_TEST( std::equal(arr2.elements().begin(), arr2.elements().end(), values.elements().begin(), values.elements().end()) );
+		}
+		{
+			auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
 
-		// arr2() = values;
+			arr2() = values;
+			BOOST_TEST( std::equal(arr2.elements().begin(), arr2.elements().end(), values.elements().begin(), values.elements().end()) );
+		}
+		{
+			auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
 
-		// arr2 = values;
+			arr2 = values;
+			BOOST_TEST( std::equal(arr2.elements().begin(), arr2.elements().end(), values.elements().begin(), values.elements().end()) );
+		}
 	}
 
 	return boost::report_errors();
