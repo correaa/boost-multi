@@ -396,6 +396,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( values.extensions() == arr.extensions() );
 		BOOST_TEST( *values.elements().begin() == 0 );
+		BOOST_TEST( values.elements().begin() < values.elements().end() );
 		BOOST_TEST( values.elements().begin() != values.elements().end() );
 		BOOST_TEST( values[0][0] == 0 );
 		BOOST_TEST( values.begin() != values.end() );
