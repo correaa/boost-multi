@@ -444,6 +444,12 @@ auto extensions(Container const& cont) {
 
 template<class T> struct has_shape : decltype(has_shape_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
+template<class T, typename = decltype(std::declval<T const&>().elements())>
+auto        has_elements_aux(T const&) -> std::true_type;
+inline auto has_elements_aux(...) -> std::false_type;
+
+template<class T> struct has_elements : decltype(has_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
+
 template<class T, typename = decltype(std::declval<T const&>().extensions())>
 auto        has_extensions_aux(T const&) -> std::true_type;
 inline auto has_extensions_aux(...) -> std::false_type;
