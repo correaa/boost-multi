@@ -121,6 +121,8 @@ class f_extensions_t {
 		friend f_extensions_t;
 
 	 public:
+		using iterator_category = std::random_access_iterator_tag;
+
 		auto operator++() -> auto& { ++it_; return *this; }
 		auto operator--() -> auto& { --it_; return *this; }
 
@@ -131,6 +133,9 @@ class f_extensions_t {
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
+
+		friend constexpr auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
+		friend constexpr auto operator< (iterator const& self, iterator const& other) -> bool { return self.it_ <  other.it_; }
 
 		constexpr auto operator*() const -> decltype(auto) {
 			using std::get;
