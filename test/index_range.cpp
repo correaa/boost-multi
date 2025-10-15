@@ -83,6 +83,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( xbeg[1] == iex[1] );
 
 		BOOST_TEST( !(iex.begin() < iex.begin()) );
+		BOOST_TEST( !(iex.end() < iex.end()) );
+		BOOST_TEST( !(iex.end() < iex.begin()) );
+
 		BOOST_TEST( iex.begin() < iex.end() );
 		BOOST_TEST( !(iex.end() < iex.begin()) );
 
