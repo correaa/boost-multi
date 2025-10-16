@@ -307,9 +307,6 @@ jobs:
 
           - toolset: clang
             cxxstd: "03,11,14,17,20,2b"
-            os: macos-13
-          - toolset: clang
-            cxxstd: "03,11,14,17,20,2b"
             os: macos-14
           - toolset: clang
             cxxstd: "03,11,14,17,20,2b"
