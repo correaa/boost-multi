@@ -28,6 +28,8 @@ They are usually the result of indexing over other `multi::subarray`s and `multi
 therefore, the library doesn't expose constructors for this class.
 The whole object can be invalidated if the original array is destroyed.
 
+(Additionally, `multi::const_subarray` provides a similar interface to `multi::subarray` but it protects referenced elements from being modified.)
+
 #### `multi::subarray<T, D, P = T*>` member types
 
 |===
@@ -47,10 +49,10 @@ The whole object can be invalidated if the original array is destroyed.
 |`const_iterator`  | describe a random-access iterator in the leading dimension to constant data
 |===
 
-#### ``multi::subarray<T, D, P = T*>` special member functions
+#### `multi::subarray<T, D, P = T*>` special member functions
 
 |===
-| `subarray::`      |
+| `subarray::...`   |
 
 | (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements
 | `operator=`       | assigns the elements from the source; the sizes must match
@@ -109,7 +111,7 @@ Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3,
 These member functions are generally used for accessing details of the internal data structure (layout) interfacing with C-libraries.
 
 |===
-| `subarray::`      |
+| `subarray::...`   |
 
 | `layout`          | returns a single layout object with stride and size information
 | `base`            | direct access to underlying memory pointer (`S[i][j]... == S.base() + std::get<0>(S.strides())*i + std::get<1>(S.strides())*j + ...`)
@@ -120,7 +122,7 @@ These member functions are generally used for accessing details of the internal 
 #### `multi::subarray<T, D, P = T*>` iterators
 
 |===
-| `subarray::`      |
+| `subarray::...`   |
 
 | `begin/cbegin`    | returns (const) iterator to the beginning
 | `end/cend`        | returns (const) iterator to the end
@@ -131,16 +133,17 @@ These member functions are generally used for accessing details of the internal 
 These operations generate different ways to view the elements of a (sub)array, but without copying elements or allocate)
 
 |===
-| `subarray::`          | (these operations do not copy elements or allocate)
+| `subarray::...`                            | (these operations do not copy elements or allocate)
 
-| `broadcasted`         | returns a view of dimensionality `D + 1` obtained by infinite repetition of the original array. (This returns a special kind of subarray with a degenerate layout and no size operation. Takes no argument.)
-| `dropped`             | (takes one integer argument `n`) returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
-| `element_transformed` | creates a view of the array, where each element is transformed according to a function (first and only argument)
-| `elements`            | a flatted view of all the elements rearranged canonically. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range. Takes no argument.
-| `rotated/unrotated`   | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j])`. Preserves dimension. The function is cyclic; `D` applications will give the original view. Takes no argument.
-| `transposed` (same as `operator~`) | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view. Takes no argument.
-| `sliced`              | (takes two index arguments `a` and `b`) returns a subarray with elements from index `a` to index `b` (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
-| `strided`             | (takes one integer argument `s`) returns a subarray skipping `s` elements. Preserves the dimension.
+| `broadcasted`                              | returns a view of dimensionality `D + 1` obtained by infinite repetition of the original array. (This returns a special kind of subarray with a degenerate layout and no size operation. Takes no argument.)
+| `dropped`                                  | (takes one integer argument `n`) returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
+| `element_transformed`                      | creates a view of the array, where each element is transformed according to a function (first and only argument)
+| `elements`                                 | a flatted view of all the elements rearranged canonically. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range. Takes no argument.
+| `rotated/unrotated`                        | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j])`. Preserves dimension. The function is cyclic; `D` applications will give the original view. Takes no argument.
+| `taked`                                    | a view of the original array with the first elements
+| `transposed` (same as `operator~`)         | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view. Takes no argument.
+| `sliced`                                   | (takes two index arguments `a` and `b`) returns a subarray with elements from index `a` to index `b` (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
+| `strided`                                  | (takes one integer argument `s`) returns a subarray skipping `s` elements. Preserves the dimension.
 | `static_array_cast<T2, P2 = T2*>(args...)` | produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
 | `reinterpret_cast_array<T2>`               | underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal; `reinterpret_cast_array<T2>(n)` produces a view where the underlying elements are interpreted as an array of `n` elements of type `T2`.
 |===
@@ -148,14 +151,13 @@ These operations generate different ways to view the elements of a (sub)array, b
 This function creates an indipendent copy of any (sub)array view:
 
 |===
-| `subarray::`          | (these operations do not copy elements or allocate)
+| `subarray::...`                            | (these operations do not copy elements or allocate)
 
 | `decay` (same as prefix unary `operator+`) | creates a concrete independent `array` with the same dimension and elements as the view. Usually used to force a value type (and forcing a copy of the elements) and avoid the propagation of a reference type in combination with `auto` (e.g., `auto A2_copy = + A[2];`).
 |===
 
 A reference `subarray` can be invalidated when its origin array is invalidated or destroyed.
 For example, if the `array` from which it originates is destroyed or resized.
-
 
 ### Array references
 
