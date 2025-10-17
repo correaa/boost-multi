@@ -89,7 +89,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( iex.begin() < iex.end() );
 		BOOST_TEST( !(iex.end() < iex.begin()) );
 
-
 		BOOST_TEST( std::accumulate( begin(iex), end(iex), static_cast<multi::index_extension::value_type>(0U)) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
 		{
