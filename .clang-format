@@ -45,6 +45,7 @@ IncludeCategories:
 IndentPPDirectives: None
 IndentWidth: 4
 # LambdaBodyIndentation: Signature
+# OneLineFormatOffRegex: ^(\#ifdef|\#endif)  # for clang-format version 21
 # PackConstructorInitializers: CurrentLine
 PenaltyBreakTemplateDeclaration: 10
 PointerAlignment: Left

@@ -7,9 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <algorithm>  // IWYU pragma: keep  // for std::equal
-#include <tuple>      // IWYU pragma: keep
-// IWYU pragma: no_include <type_traits>    // for add_const<>::type
+#include <algorithm>    // IWYU pragma: keep  // for std::equal
+#include <tuple>        // IWYU pragma: keep
+#include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <variant>        // for get, iwyu bug
 
 namespace multi = boost::multi;
@@ -376,6 +376,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		multi::extensions_t<3> const xs{3, 4, 5};
 
 		BOOST_TEST( xs.sub() == multi::extensions_t<2>(4, 5) );
+		static_assert(std::is_same_v<decltype(xs[1][1][1]), multi::extensions_t<3>::element>);
 	}
 	{
 		multi::array<int, 2> const arr({3, 4});
@@ -426,6 +427,14 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			arr2 = values;
 			BOOST_TEST( std::equal(arr2.elements().begin(), arr2.elements().end(), values.elements().begin(), values.elements().end()) );
 		}
+
+#ifdef __cpp_deduction_guides
+		{
+			multi::array<multi::index, 2> const arr_gold = values;
+			multi::array const                  arr2     = values;
+			BOOST_TEST( arr_gold == arr2 );
+		}
+#endif
 	}
 
 	return boost::report_errors();
