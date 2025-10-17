@@ -1464,6 +1464,12 @@ array(iextensions<D>, T) -> array<T, D>;
 template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element_type, dimensionality_type D = DT::rank_v, class Alloc = typename DT::allocator_type>
 array(MatrixRef) -> array<T, D, Alloc>;
 
+template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v>
+array(MatValues) -> array<T, D>;
+
+template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v, class Alloc = std::allocator<T>, class = std::enable_if_t<multi::is_allocator_v<Alloc>>>  /// , class Alloc = typename DT::allocator_type>
+array(MatValues, Alloc) -> array<T, D, Alloc>;
+
 template<typename T, dimensionality_type D, typename P> array(subarray<T, D, P>) -> array<T, D>;
 
 template<
