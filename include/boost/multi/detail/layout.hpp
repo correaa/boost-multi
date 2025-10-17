@@ -224,6 +224,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	using difference_type = index_extension::difference_type;
 	using nelems_type = multi::index;
 
+	using element = boost::multi::detail::tuple_prepend_t<index_extension::value_type, typename extensions_t<D - 1>::element>;
+
 	extensions_t()    = default;
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
@@ -660,6 +662,7 @@ template<> struct extensions_t<0> : tuple<> {
 	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
 
 	using rank = std::integral_constant<dimensionality_type, 0>;
+	using element = tuple<>;
 
 	using nelems_type = index;
 
@@ -718,6 +721,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	using size_type = multi::index_extension::size_type;
 	using difference_type = multi::index_extension::difference_type;
+	using element = tuple<multi::index_extension::value_type>;
 
 	class elements_t {
 		multi::index_range rng_;

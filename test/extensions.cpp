@@ -376,6 +376,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		multi::extensions_t<3> const xs{3, 4, 5};
 
 		BOOST_TEST( xs.sub() == multi::extensions_t<2>(4, 5) );
+		static_assert( std::is_same_v<decltype(xs[1][1][1]), multi::extensions_t<3>::element> );
 	}
 	{
 		multi::array<int, 2> const arr({3, 4});
