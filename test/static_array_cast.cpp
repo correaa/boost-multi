@@ -262,15 +262,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2 == neg_arr );
 	}
 	{
-		multi::array<int, 2> arr( {3, 4}, multi::uninitialized_t{} );
+		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements_t{});
 		BOOST_TEST( arr.size() == 3 );
 	}
 	{
-		multi::array<int, 2> arr( {3, 4}, multi::uninitialized );
+		multi::array<int, 2> const arr({3, 4});
+		std::cout << arr[0][0] << std::endl;  // gives an error in Valgrind
+		BOOST_TEST( arr.size() == 3 );
+	}
+
+	{
+		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements);
+		// std::cout << arr[0][0] << std::endl;  // gives an error in Valgrind
 		BOOST_TEST( arr.size() == 3 );
 	}
 	{
-		// multi::array<std::string, 2> arr( {3, 4}, multi::uninitialized );  // ok, fails compilation because std::string cannot be uninitialized 
+		// multi::array<std::string, 2> arr( {3, 4}, multi::uninitialized );  // ok, fails compilation because std::string cannot be uninitialized
 		// BOOST_TEST( arr.size() == 3 );
 	}
 
