@@ -4,7 +4,7 @@
 
 :idprefix: interop_
 
-## C++ Standard Library (STL algorithms)
+## Standard Library (STL algorithms)
 
 The fundamental goal of the library is that the arrays and iterators can be used out-of-the-box with C++ Standard Library, in particular the Standard Template Library (STL) and the algorithms it provides.
 The most dramatic example of this is that `std::sort` works with array as it is shown in a previous section.
