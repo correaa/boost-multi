@@ -235,8 +235,8 @@ Arrays can change their size while _preserving elements_ with the `reextent` met
 
 ```cpp
 multi::array<int, 2> A = {
- {1, 2, 3},
- {4, 5, 6}
+	{1, 2, 3},
+	{4, 5, 6}
 };
 
 A.reextent({4, 4});
