@@ -981,7 +981,7 @@ struct elements_range_t {
 	elements_range_t(elements_range_t&&)      = delete;
 
 	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
-		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());  // mull-ignore: cxx_eq_to_ne  // false positive
+		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());  // mull-ignore: cxx_eq_to_ne  // false positive bug in mull-18
 	}
 	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
 		// if(is_empty() && other.is_empty()) { return false; }
