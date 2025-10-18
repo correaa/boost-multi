@@ -627,8 +627,9 @@ bool multi::force_element_trivial_default_construction<std::complex<double>> = t
 With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
 The rule will only apply to this library's containers (`multi::array`, etc), and not to other containers (such as `std::vector`) or individual `std::complex` variables.
 
-Finally, the library offers a tag to explicitly state the intention of having uninitialized elements: `multi::arrray<int, 2> A2({2, 3}, multi::uninitialized)`.
-This syntax will compile only if elements are trivially-default constructible, for example, `multi::arrray<std::string, 2> A2({2, 3}, multi::uninitialized)` will not compile because `std::string` does not have a trivial constructor.
+Finally, the library offers a tag to explicitly state the intention of having uninitialized elements: `multi::arrray<int, 2> A2({2, 3}, multi::uninitialized_elements)`.
+This syntax will compile only if elements are trivially-default constructible; 
+therefore and as an example `multi::arrray<std::string, 2> A2({2, 3}, multi::uninitialized_elements)` will not compile because `std::string` does not have a trivial constructor.
 
 == Const-correctness
 
