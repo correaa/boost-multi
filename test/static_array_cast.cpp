@@ -273,7 +273,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements);
-		// std::cout << arr[0][0] << std::endl;  // gives an error in Valgrind
+		// std::cout << arr[0][0] << std::endl;  // ok, gives an error in Valgrind "Uninitialized Memory Read"
+		// valgrind output:
+		// Memory checking results:
+		// Uninitialized Memory Conditional - 6
+		// Uninitialized Memory Read - 2
 		BOOST_TEST( arr.size() == 3 );
 	}
 	{
