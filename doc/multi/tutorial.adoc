@@ -597,7 +597,7 @@ multi::array<int, 2> A2({2, 3});  // A2 elements have unspecified value
 ```
 
 No behavior of the program should depend on these values. 
-(Address sanitizers and memory checkers can detect use of uninitialized values.)
+(Address sanitizers and memory checkers can detect use of uninitialized values, for example Valgrind diagnoses "Uninitialized Memory Read".)
 This design is a slight departure from the STL's design, which [eagerly initializes elements in containers](https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/).
 
 If trivial construction is unavailable, the library uses the default initialization.
