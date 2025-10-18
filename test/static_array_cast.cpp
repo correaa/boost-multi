@@ -261,6 +261,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( neg_arr == arr2 );
 		BOOST_TEST( arr2 == neg_arr );
 	}
+	{
+		multi::array<int, 2> arr( {3, 4}, multi::uninitialized_t{} );
+		BOOST_TEST( arr.size() == 3 );
+	}
+	{
+		multi::array<int, 2> arr( {3, 4}, multi::uninitialized );
+		BOOST_TEST( arr.size() == 3 );
+	}
+	{
+		// multi::array<std::string, 2> arr( {3, 4}, multi::uninitialized );  // ok, fails compilation because std::string cannot be uninitialized 
+		// BOOST_TEST( arr.size() == 3 );
+	}
 
 	return boost::report_errors();
 }

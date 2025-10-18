@@ -26,6 +26,10 @@
 
 namespace boost::multi {
 
+struct uninitialized_t { explicit uninitialized_t() = default; };
+
+inline constexpr uninitialized_t uninitialized {};
+
 template<class T, class Ptr = T*>
 struct move_ptr : private std::move_iterator<Ptr> {
 	using difference_type   = typename std::iterator_traits<std::move_iterator<Ptr>>::difference_type;
