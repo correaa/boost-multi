@@ -586,7 +586,7 @@ For example, to convert an array of integers to an array of text strings:
 
 If available, the library can take advantage of trivial initialization for the specific element type.
 These types can be primitive or user-defined and come with "trivial default constructors".
-In simple terms, these constructors are not specified and do nothing, not even set values.
+In simple terms, the constructors of such type of elements are specified and do nothing, not even set values.
 
 When used in the stack, these types can be declared with no initialization (e.g., `double x;`, the initial value is not well defined or partially-formed) or with initialization (e.g., `double x{};`, same as `double x = 0.0;`).
 Analogously, `multi::array` does not initialize individual elements of this kind of type unless specified.
@@ -616,7 +616,7 @@ This design is particularly advantageous for *numeric* types for which external 
 (or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization).
 
 Unfortunately, regarding the numeric types, STL's `std::complex<double>` was standardized as not-trivially constructible.
-A workaround built-in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
+A workaround built-in in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
 ```cpp
 #include<multi/array.hpp>
 
@@ -626,6 +626,9 @@ bool multi::force_element_trivial_default_construction<std::complex<double>> = t
 
 With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
 The rule will only apply to this library's containers (`multi::array`, etc), and not to other containers (such as `std::vector`) or individual `std::complex` variables.
+
+Finally, the library offers a tag to explicitly state the intention of having uninitialized elements: `multi::arrray<int, 2> A2({2, 3}, multi::uninitialized)`.
+This syntax will compile only if elements are trivially-default constructible, for example, `multi::arrray<std::string, 2> A2({2, 3}, multi::uninitialized)` will not compile because `std::string` does not have a trivial constructor.
 
 == Const-correctness
 
