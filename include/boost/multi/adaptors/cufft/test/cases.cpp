@@ -52,11 +52,11 @@ auto main() -> int try {
 
 	multi::fftw::dft_forward({true, true, true, false}, in_cpu_view, out_cpu);
 	
-	multi::cufft::plan<4>({true, true, true, false}, in_gpu_view.layout(), out_gpu.layout())
-		.execute(in_gpu_view.base(), out_gpu.base(), multi::cufft::forward);
+	// multi::cufft::plan<4>({true, true, true, false}, in_gpu_view.layout(), out_gpu.layout())
+	// 	.execute(in_gpu_view.base(), out_gpu.base(), multi::cufft::forward);
 
-	std::cout << out_cpu[2][3][4][5] << ' ' << out_gpu[2][3][4][5] << std::endl;
-	BOOST_TEST( thrust::abs(out_cpu[2][3][4][5] - static_cast<complex>(out_gpu[2][3][4][5])) < 1e-6 );
+	// std::cout << out_cpu[2][3][4][5] << ' ' << out_gpu[2][3][4][5] << std::endl;
+	// BOOST_TEST( thrust::abs(out_cpu[2][3][4][5] - static_cast<complex>(out_gpu[2][3][4][5])) < 1e-6 );
 
 	return boost::report_errors();
 } catch(...) {

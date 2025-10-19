@@ -58,7 +58,7 @@ static auto cuda_get_error_enum(cufftResult error) -> char const* {
 }
 
 #define cufftSafeCall(err) implcufftSafeCall(err, __FILE__, __LINE__)
-inline void implcufftSafeCall(cufftResult err, const char* file, const int line) {
+inline void implcufftSafeCall(cufftResult err, char const* file, int const line) {
 	if(CUFFT_SUCCESS != err) {
 		std::cerr << "CUFFT error in file " << file << ", line " << line << "\nerror " << err << ": " << cuda_get_error_enum(err) << "\n";
 		// fprintf(stderr, "CUFFT error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", __FILE__, __LINE__, err,
@@ -141,23 +141,25 @@ class plan {
 		auto const istride_tuple = in.strides();
 		auto const ostride_tuple = out.strides();
 
-		using boost::multi::detail::get;
-		auto which_iodims = std::apply([](auto... elems) {
-			return std::array<std::pair<bool, cufft_iodim64>, sizeof...(elems) + 1>{
-  // TODO(correaa) added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
-				std::pair<bool, cufft_iodim64>{
-											   get<0>(elems),
-											   cufft_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}
-				}
-				 ...,
-				std::pair<bool, cufft_iodim64>{}
-			};
-		},
-									   boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple));
+		using std::get;  // boost::multi::detail::get;
+		auto which_iodims = std::apply(
+			[](auto... elems) {
+				return std::array /*<std::pair<bool, cufft_iodim64>, sizeof...(elems) + 1>*/ {
+					// TODO(correaa) added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
+					std::pair/*<bool, cufft_iodim64>*/{
+												   get<0>(elems),
+												   cufft_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}
+					}
+					 ...,
+					std::pair<bool, cufft_iodim64>{}
+				};
+			},
+			boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple)
+		);
 
 		std::stable_sort(which_iodims.begin(), which_iodims.end() - 1, [](auto const& alpha, auto const& omega) { return get<1>(alpha).is > get<1>(omega).is; });
 
-		auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) { return std::get<0>(elem); });
+		auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) { return get<0>(elem); });
 
 		std::array<cufft_iodim64, D> dims{};
 		auto const                   dims_end = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
