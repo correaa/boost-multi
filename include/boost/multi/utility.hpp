@@ -26,9 +26,11 @@
 
 namespace boost::multi {
 
-struct uninitialized_elements_t { explicit uninitialized_elements_t() = default; };
+struct uninitialized_elements_t {
+	explicit uninitialized_elements_t() = default;
+};
 
-inline constexpr uninitialized_elements_t uninitialized_elements {};
+inline constexpr uninitialized_elements_t uninitialized_elements{};
 
 template<class T, class Ptr = T*>
 struct move_ptr : private std::move_iterator<Ptr> {
