@@ -104,6 +104,7 @@ class f_extensions_t {
 	}
 
  public:
+	static constexpr dimensionality_type dimensionality = D;
 	constexpr static dimensionality_type rank_v = D;
 
 	using difference_type = typename extensions_t<D>::difference_type;
