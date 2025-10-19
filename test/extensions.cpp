@@ -77,6 +77,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		auto x1d = multi::extensions_t<1>(3);
 
+		BOOST_TEST( multi::extensions_t<1>(3) == multi::extensions_t(3) );
+
 		auto it = x1d.elements().begin();
 		BOOST_TEST( get<0>(*it) == 0 );
 
@@ -127,6 +129,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		multi::extensions_t<2> const x2d({4, 3});
+
+		BOOST_TEST( multi::extensions_t<2>(4, 3) == multi::extensions_t(4, 3) );
 
 		auto ll = [](auto xx, auto yy) {
 			return xx + yy;
@@ -374,6 +378,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		multi::extensions_t<3> const xs{3, 4, 5};
+
+		BOOST_TEST(( multi::extensions_t<3>{3, 4, 5} == multi::extensions_t(3, 4, 5) ));
 
 		BOOST_TEST( xs.sub() == multi::extensions_t<2>(4, 5) );
 		static_assert(std::is_same_v<decltype(xs[1][1][1]), multi::extensions_t<3>::element>);
