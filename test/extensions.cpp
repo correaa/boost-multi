@@ -408,6 +408,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extensions();
 
+		BOOST_TEST( values.dimensionality == 2 );
 		BOOST_TEST( values.extensions() == arr.extensions() );
 		BOOST_TEST( *values.elements().begin() == 0 );
 		BOOST_TEST( values.elements().begin() < values.elements().end() );
