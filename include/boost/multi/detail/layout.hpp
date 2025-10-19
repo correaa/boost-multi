@@ -219,6 +219,7 @@ class f_extensions_t {
 	};
 
 	constexpr auto elements() const { return elements_t{xs_.elements(), proj_}; }
+	constexpr auto num_elements() const { return xs_.num_elements(); }
 };
 
 template<dimensionality_type D>
