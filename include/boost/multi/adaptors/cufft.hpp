@@ -146,23 +146,25 @@ class plan {
 			[](auto... elems) {
 				return std::array /*<std::pair<bool, cufft_iodim64>, sizeof...(elems) + 1>*/ {
 					// TODO(correaa) added one element to avoid problem with gcc 13 static analysis (out-of-bounds)
-					std::pair/*<bool, cufft_iodim64>*/{
-												   get<0>(elems),
-												   cufft_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}
+					std::pair  /*<bool, cufft_iodim64>*/ {
+														  get<0>(elems),
+														  cufft_iodim64{get<1>(elems), get<2>(elems), get<3>(elems)}
 					}
-					 ...,
+					   ...,
 					std::pair<bool, cufft_iodim64>{}
 				};
 			},
 			boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple)
 		);
 
-		std::stable_sort(which_iodims.begin(), which_iodims.end() - 1, [](auto const& alpha, auto const& omega) { return get<1>(alpha).is > get<1>(omega).is; });
-
 		auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) { return get<0>(elem); });
 
+		std::stable_sort(which_iodims.begin(), part, [](auto const& alpha, auto const& omega) { return get<1>(alpha).is > get<1>(omega).is; });
+		std::stable_sort(part, which_iodims.end() - 1, [](auto const& alpha, auto const& omega) { return get<1>(alpha).is > get<1>(omega).is; });
+
 		std::array<cufft_iodim64, D> dims{};
-		auto const                   dims_end = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
+
+		auto const dims_end = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
 
 		// std::array<cufftw_iodim64, D> howmany_dims{};
 		// auto const howmany_dims_end = std::transform(part, which_iodims.end() -1, howmany_dims.begin(), [](auto elem) {return elem.second;});
