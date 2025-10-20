@@ -286,7 +286,7 @@ clang++-18 mull-18:  # mull-18 crashes
   allow_failure: false
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
+    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
     - apt-get -qq update
     - apt search mull
