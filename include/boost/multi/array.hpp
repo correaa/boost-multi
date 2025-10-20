@@ -328,6 +328,25 @@ struct static_array                                                             
 	explicit static_array(::boost::multi::extensions_t<D> const& exts)
 	: static_array(exts, allocator_type{}) {}
 
+	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                          // NOLINT(modernize-use-constraints) for C++20
+			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename static_array::element_type> || multi::force_element_trivial_default_construction<typename static_array::element_type>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	explicit constexpr static_array(::boost::multi::extensions_t<D> const& extensions, UninitilazedTag /*unused*/, allocator_type const& alloc)
+	: static_array(extensions, alloc) {}
+
+	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                            // NOLINT(modernize-use-constraints) for C++20
+			 std::enable_if_t<sizeof(UninitilazedTag*) && (!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	[[deprecated("****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]
+	explicit constexpr static_array(::boost::multi::extensions_t<D> const& extensions, UninitilazedTag /*unusued*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]*/;
+
+	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                            // NOLINT(modernize-use-constraints) for C++20
+			 std::enable_if_t<sizeof(UninitilazedTag*) && (!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	[[deprecated("****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]
+	explicit constexpr static_array(::boost::multi::extensions_t<D> const& extensions, UninitilazedTag /*unused*/, allocator_type const& /*alloc*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****"]]*/;
+
+	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                          // NOLINT(modernize-use-constraints) for C++20
+			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename static_array::element_type> || multi::force_element_trivial_default_construction<typename static_array::element_type>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	explicit constexpr static_array(::boost::multi::extensions_t<D> const& extensions, UninitilazedTag /*unusued*/) : static_array(extensions) {}
+
 	template<class OtherT, class OtherEP, class OtherLayout, class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>, class = decltype(adl_copy(std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().begin(), std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
 	constexpr static_array(multi::const_subarray<OtherT, D, OtherEP, OtherLayout> const& other, allocator_type const& alloc)
 	: array_alloc{alloc},
@@ -1463,6 +1482,12 @@ array(iextensions<D>, T) -> array<T, D>;
 
 template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element_type, dimensionality_type D = DT::rank_v, class Alloc = typename DT::allocator_type>
 array(MatrixRef) -> array<T, D, Alloc>;
+
+template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v>
+array(MatValues) -> array<T, D>;
+
+template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v, class Alloc = std::allocator<T>, class = std::enable_if_t<multi::is_allocator_v<Alloc>>>  /// , class Alloc = typename DT::allocator_type>
+array(MatValues, Alloc) -> array<T, D, Alloc>;
 
 template<typename T, dimensionality_type D, typename P> array(subarray<T, D, P>) -> array<T, D>;
 
