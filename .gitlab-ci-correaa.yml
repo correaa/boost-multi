@@ -294,6 +294,7 @@ clang++-18 mull-18:  # mull-18 crashes
     - mkdir build && cd build
     - clang++-18 --version
     - which mull-runner-18
+    - ls -all `which mull-runner-18`
     - file `which mull-runner-18`
     - mull-runner-18 --version
     - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line"
