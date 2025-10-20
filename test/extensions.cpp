@@ -7,9 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <algorithm>  // IWYU pragma: keep  // for std::equal
-#include <tuple>      // IWYU pragma: keep
-// IWYU pragma: no_include <type_traits>    // for add_const<>::type
+#include <algorithm>    // IWYU pragma: keep  // for std::equal
+#include <tuple>        // IWYU pragma: keep
+#include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <variant>        // for get, iwyu bug
 
 namespace multi = boost::multi;
@@ -77,6 +77,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		auto x1d = multi::extensions_t<1>(3);
 
+		BOOST_TEST( multi::extensions_t<1>(3) == multi::extensions_t(3) );
+
 		auto it = x1d.elements().begin();
 		BOOST_TEST( get<0>(*it) == 0 );
 
@@ -127,6 +129,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		multi::extensions_t<2> const x2d({4, 3});
+
+		BOOST_TEST( multi::extensions_t<2>(4, 3) == multi::extensions_t(4, 3) );
 
 		auto ll = [](auto xx, auto yy) {
 			return xx + yy;
@@ -375,7 +379,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::extensions_t<3> const xs{3, 4, 5};
 
+		BOOST_TEST(( multi::extensions_t<3>{3, 4, 5} == multi::extensions_t(3, 4, 5) ));
+
 		BOOST_TEST( xs.sub() == multi::extensions_t<2>(4, 5) );
+		static_assert(std::is_same_v<decltype(xs[1][1][1]), multi::extensions_t<3>::element>);
 	}
 	{
 		multi::array<int, 2> const arr({3, 4});
@@ -401,6 +408,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extensions();
 
+		BOOST_TEST( values.dimensionality == 2 );
 		BOOST_TEST( values.extensions() == arr.extensions() );
 		BOOST_TEST( *values.elements().begin() == 0 );
 		BOOST_TEST( values.elements().begin() < values.elements().end() );
@@ -426,6 +434,14 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			arr2 = values;
 			BOOST_TEST( std::equal(arr2.elements().begin(), arr2.elements().end(), values.elements().begin(), values.elements().end()) );
 		}
+
+#ifdef __cpp_deduction_guides
+		{
+			multi::array<multi::index, 2> const arr_gold = values;
+			multi::array const                  arr2     = values;
+			BOOST_TEST( arr_gold == arr2 );
+		}
+#endif
 	}
 
 	return boost::report_errors();

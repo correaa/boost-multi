@@ -97,10 +97,21 @@ class f_extensions_t {
 	extensions_t<D> xs_;
 	Proj proj_;
 
+	template<class Fun, class Tup>
+	static BOOST_MULTI_HD constexpr auto std_apply_(Fun&& fun, Tup&& tup) -> decltype(auto) {
+		using std::apply;
+		return apply(std::forward<Fun>(fun), std::forward<Tup>(tup));
+	}
+
  public:
+	static constexpr dimensionality_type dimensionality = D;
+	constexpr static dimensionality_type rank_v = D;
+
 	using difference_type = typename extensions_t<D>::difference_type;
 
-	constexpr f_extensions_t(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
+	BOOST_MULTI_HD constexpr f_extensions_t(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
+
+	using element = decltype(std_apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()));
 
 	constexpr auto operator[](index idx) const {
 		if constexpr(D != 1) {
@@ -209,6 +220,7 @@ class f_extensions_t {
 	};
 
 	constexpr auto elements() const { return elements_t{xs_.elements(), proj_}; }
+	constexpr auto num_elements() const { return xs_.num_elements(); }
 };
 
 template<dimensionality_type D>
@@ -220,9 +232,12 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
  public:
 	static constexpr dimensionality_type dimensionality = D;
+	constexpr static dimensionality_type rank_v = D;
 
 	using difference_type = index_extension::difference_type;
 	using nelems_type = multi::index;
+
+	using element = boost::multi::detail::tuple_prepend_t<index_extension::value_type, typename extensions_t<D - 1>::element>;
 
 	extensions_t()    = default;
 
@@ -338,7 +353,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	using indices_type = multi::detail::tuple_prepend_t<index, typename extensions_t<D - 1>::indices_type>;
 
 	template<class Func>
-	friend constexpr auto operator^(Func fun, extensions_t const& xs) {
+	friend BOOST_MULTI_HD constexpr auto operator^(Func fun, extensions_t const& xs) {
 		return f_extensions_t<D, Func>(xs, std::move(fun));
 	}
 	template<class Func>
@@ -660,6 +675,7 @@ template<> struct extensions_t<0> : tuple<> {
 	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
 
 	using rank = std::integral_constant<dimensionality_type, 0>;
+	using element = tuple<>;
 
 	using nelems_type = index;
 
@@ -716,8 +732,11 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
+	constexpr static dimensionality_type rank_v = 1;
+
 	using size_type = multi::index_extension::size_type;
 	using difference_type = multi::index_extension::difference_type;
+	using element = tuple<multi::index_extension::value_type>;
 
 	class elements_t {
 		multi::index_range rng_;
