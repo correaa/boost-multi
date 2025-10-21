@@ -2526,10 +2526,17 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		ptr_ += stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
+// #if defined(__GNUC__) && !defined(__clang__)
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wnoexcept"  // TODO(correaa) use checked span
+// #endif
 	BOOST_MULTI_HD constexpr auto operator--() -> array_iterator& {
 		ptr_ -= stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
+// #if defined(__GNUC__) && !defined(__clang__)
+// #pragma GCC diagnostic pop
+// #endif
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> array_iterator& {
 		ptr_ += stride_ * n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
