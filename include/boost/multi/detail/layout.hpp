@@ -811,6 +811,11 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return elements_t{get<0>(static_cast<tuple<multi::index_extension> const&>(*this))};
 	}
 
+	constexpr auto size() const {
+		using std::get;
+		return get<0>(static_cast<tuple<multi::index_extension> const&>(*this)).size();
+	}
+
 	template<class Func>
 	friend constexpr auto operator^(Func fun, extensions_t const& xs) {
 		return f_extensions_t<1, Func>(xs, std::move(fun));

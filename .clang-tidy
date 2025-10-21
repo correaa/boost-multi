@@ -9,7 +9,7 @@ CheckOptions:
   - { key: readability-identifier-naming.FunctionCase                      , value: lower_case }
   - { key: readability-identifier-naming.GlobalConstantCase                , value: aNy_CasE   }
   - { key: readability-identifier-length.IgnoredLoopCounterNames           , value: "^[ijk_]$" }
-  - { key: readability-identifier-length.IgnoredParameterNames             , value: "^[xyzabcdnml]$" }
+  - { key: readability-identifier-length.IgnoredParameterNames             , value: "^[ijkxyzabcdnml]$" }
   - { key: readability-identifier-length.IgnoredVariableNames              , value: "^[ijk_]$" }
   - { key: readability-identifier-length.MethodCase                        , value: lower_case }
   - { key: readability-identifier-length.MinimumLoopCounterNameLength      , value: 2          }
