@@ -173,7 +173,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
 	}
 #endif
-#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 	{
 		multi::array<int, 1> A1D = {0, 1, 2};
 
