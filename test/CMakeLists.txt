@@ -180,7 +180,8 @@ else()
 	-Wno-namespaces # (disallows use of namespaces, seems a C-tool)
 	-Wnarrowing
 	# -Wno-alloc-size-larger-than=<bytes> -Wframe-larger-than=<bytes> -Wno-larger-than<bytes> -Wstack-usage=<bytes> # (gcc 112, not in 11)
-	-Wnoexcept -Wnoexcept-type
+	-Wnoexcept
+	-Wnoexcept-type
 	-Wnon-template-friend -Wnon-virtual-dtor
 	-Wnonnull -Wnonnull-compare
 	-Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
