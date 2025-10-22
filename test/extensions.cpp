@@ -463,7 +463,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>((* xs2D.begin() )[5]) == 0 );
 		BOOST_TEST( get<0>((*(xs2D.end()-1))[5]) == 9 );
 
+#if !defined(__NVCC__) && !defined(__NVCOMPILER)  // this CTAD gives a compile error in nvhpc 22.7 and nvcc 12.0
 		multi::extensions_t const xs2D_copy(xs2D);
+#else
+		multi::extensions_t<1> const xs2D_copy(xs2D);
+#endif
 		BOOST_TEST( xs2D_copy == xs2D );
 
 		boost::multi::extensions_t<2>::iterator beg = xs2D.begin();
@@ -540,10 +544,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( *(v1D.end() - 1) == 81 );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+#if !defined(__NVCC__) && !defined(__NVCOMPILER)  // produces an error: ‘boost::multi::f_extensions_t<D, Proj>::proj_’ has incomplete type
 		static_assert(std::input_or_output_iterator<decltype(v1D.begin())>);
 		static_assert(std::default_initializable<decltype(v1D.begin())>);
 		static_assert(std::semiregular<decltype(v1D.begin())>);
-
+#endif
 		BOOST_TEST( std::ranges::begin(v1D) == v1D.begin() );
 		BOOST_TEST( std::ranges::end(v1D) == v1D.end() );
 

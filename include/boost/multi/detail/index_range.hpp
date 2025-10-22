@@ -354,7 +354,7 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 
 	template<
 		class OtherExtension,
-		std::enable_if_t<!std::is_base_of_v<extension_t, OtherExtension>, int> =0,
+		std::enable_if_t<!std::is_base_of_v<extension_t, OtherExtension>, int> =0,  // NOLINT(modernize-use-constraints)
 		decltype(
 			detail::implicit_cast<IndexType>(std::declval<OtherExtension>().first()),
 			detail::implicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
@@ -375,7 +375,7 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	// : extension_t{other.first(), other.last()} {}
 
 	template<class OtherExtension,
-		std::enable_if_t<!std::is_base_of_v<extension_t, OtherExtension>, int> =0
+		std::enable_if_t<!std::is_base_of_v<extension_t, OtherExtension>, int> =0  // NOLINT(modernize-use-constraints)
 	>
 	BOOST_MULTI_HD constexpr auto operator=(OtherExtension const& other) -> extension_t& {
 		(*this) = extension_t{other};
