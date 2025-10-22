@@ -123,7 +123,7 @@ class f_extensions_t {
 		}
 	}
 
-	class iterator : weakly_incrementable_facade<iterator>, weakly_decrementable_facade<iterator> {  // NOLINT(fuchsia-multiple-inheritance)
+	class iterator : public weakly_incrementable_facade<iterator>, weakly_decrementable_facade<iterator> {  // NOLINT(fuchsia-multiple-inheritance)
 		typename extensions_t<D>::iterator it_;
 		Proj proj_;
 
@@ -136,8 +136,8 @@ class f_extensions_t {
 		
 		using iterator_category = std::random_access_iterator_tag;
 
-		auto operator++() -> auto& { ++it_; return *this; }
-		auto operator--() -> auto& { --it_; return *this; }
+		constexpr auto operator++() -> auto& { ++it_; return *this; }
+		constexpr auto operator--() -> auto& { --it_; return *this; }
 
 		constexpr auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
 		constexpr auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
@@ -398,7 +398,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
-	class iterator {
+	class iterator : weakly_incrementable_facade<iterator>, weakly_decrementable_facade<iterator> {  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init)
 		index idx_;
 		extensions_t<D - 1> rest_;
 		friend extensions_t;
@@ -411,6 +411,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		using pointer = void;
 		using reference = value_type;
 		using iterator_category = std::random_access_iterator_tag;
+
+		iterator() = default;
 
 		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
 		constexpr auto operator-=(difference_type d) -> iterator& { idx_ -= d; return *this; }

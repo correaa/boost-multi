@@ -128,13 +128,13 @@ template<class Self> class default_initializable_facade {
 template<class Self> class weakly_incrementable_facade : selfable<Self> {
 	weakly_incrementable_facade() = default;
 	friend Self;
-	friend constexpr auto operator++(Self& self, int) -> Self { Self ret = self.self(); ++self.self(); return ret; }
+	friend constexpr auto operator++(Self& self, int) -> Self { Self ret = self; ++self; return ret; }
 };
 
 template<class Self> class weakly_decrementable_facade : selfable<Self> {
 	weakly_decrementable_facade() = default;
 	friend Self;
-	friend constexpr auto operator--(Self& self, int) -> Self { Self ret = self.self(); --self.self(); return ret; }
+	friend constexpr auto operator--(Self& self, int) -> Self { Self ret = self; --self; return ret; }
 };
 
 template<class T>

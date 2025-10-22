@@ -448,7 +448,47 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		}
 #endif
 	}
+	{
+		auto xs2D = multi::extensions_t(10, 20);
+		BOOST_TEST( xs2D.size() == 10 );
+		BOOST_TEST( xs2D.num_elements() == 200 );
 
+		using std::get;
+		BOOST_TEST( get<0>(xs2D[3][5]) == 3 );
+		BOOST_TEST( get<0>(xs2D[4][5]) == 4 );
+
+		BOOST_TEST( get<0>((* xs2D.begin() )[5]) == 0 );
+		BOOST_TEST( get<0>((*(xs2D.end()-1))[5]) == 9 );
+
+		auto const xs2D_copy = multi::extensions_t(xs2D);
+		BOOST_TEST( xs2D_copy == xs2D );
+
+		boost::multi::extensions_t<2>::iterator beg = xs2D.begin();
+		beg++;
+
+		static_assert(std::is_constructible_v<boost::multi::extensions_t<1>::iterator, boost::multi::extensions_t<1>::iterator>);
+
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+
+		static_assert( std::weakly_incrementable<boost::multi::extensions_t<2>::iterator> );
+
+		BOOST_TEST( get<0>(*std::ranges::begin(xs2D)) == 0 );
+		BOOST_TEST( get<0>(*(std::ranges::end(xs2D)-1)) == 9 );
+
+		// static_assert(std::ranges::range<std::remove_cvref_t<boost::multi::extensions_t<2>&>>);
+
+		// BOOST_TEST( get<0>(*(xs1D.end()-1)) == 9 );
+
+		// static_assert(std::ranges::bidirectional_range<multi::extensions_t<1>>);
+
+		// auto rxs1D = xs1D | std::views::reverse;
+
+		// BOOST_TEST( get<0>(*std::ranges::begin(rxs1D)) == 9 );
+		// BOOST_TEST( get<0>(*(std::ranges::end(rxs1D)-1)) == 0 );
+#endif
+		
+	}
 	{
 		auto xs1D = multi::extensions_t(10);
 		BOOST_TEST( xs1D.size() == 10 );
@@ -457,6 +497,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(xs1D[4]) == 4 );
 
 		BOOST_TEST( get<0>(*xs1D.begin()) == 0 );
+
+		std::cout << "lhs " << get<0>(*(xs1D.end()-1));
 		BOOST_TEST( get<0>(*(xs1D.end()-1)) == 9 );
 
 		multi::extensions_t<1> const xs1D_copy(xs1D);
