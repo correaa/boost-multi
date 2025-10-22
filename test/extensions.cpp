@@ -7,14 +7,16 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <algorithm>    // IWYU pragma: keep  // for std::equal
+#include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <iostream>
 #include <tuple>        // IWYU pragma: keep
 #include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <variant>        // for get, iwyu bug
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <concepts>  // for default_initializable
+#include <iterator>  // for reverse_iterator, input...
+#include <ranges>    // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #endif
 
 namespace multi = boost::multi;
@@ -469,10 +471,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		static_assert(std::is_constructible_v<boost::multi::extensions_t<1>::iterator, boost::multi::extensions_t<1>::iterator>);
 
-
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 
-		static_assert( std::weakly_incrementable<boost::multi::extensions_t<2>::iterator> );
+		static_assert(std::weakly_incrementable<boost::multi::extensions_t<2>::iterator>);
 
 		BOOST_TEST( get<0>(*std::ranges::begin(xs2D)) == 0 );
 		BOOST_TEST( get<0>(*(std::ranges::end(xs2D)-1)) == 9 );
@@ -488,7 +489,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>((*std::ranges::begin(rxs2D))[5]) == 9 );
 		BOOST_TEST( get<0>((*(std::ranges::end(rxs2D)-1))[5]) == 0 );
 #endif
-		
 	}
 	{
 		auto xs1D = multi::extensions_t(10);
@@ -497,9 +497,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(xs1D[3]) == 3 );
 		BOOST_TEST( get<0>(xs1D[4]) == 4 );
 
+		std::cout << "line 500: lhs " << get<0>(*xs1D.begin()) << '\n';
 		BOOST_TEST( get<0>(*xs1D.begin()) == 0 );
 
-		std::cout << "lhs " << get<0>(*(xs1D.end()-1));
+		std::cout << "line 503: lhs " << get<0>(*(xs1D.end() - 1)) << '\n';
 		BOOST_TEST( get<0>(*(xs1D.end()-1)) == 9 );
 
 		multi::extensions_t<1> const xs1D_copy(xs1D);
