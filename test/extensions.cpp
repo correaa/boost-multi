@@ -463,7 +463,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>((* xs2D.begin() )[5]) == 0 );
 		BOOST_TEST( get<0>((*(xs2D.end()-1))[5]) == 9 );
 
-		auto const xs2D_copy = multi::extensions_t(xs2D);
+		multi::extensions_t const xs2D_copy(xs2D);
 		BOOST_TEST( xs2D_copy == xs2D );
 
 		boost::multi::extensions_t<2>::iterator beg = xs2D.begin();
@@ -500,8 +500,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		std::cout << "line 500: lhs " << get<0>(*xs1D.begin()) << '\n';
 		BOOST_TEST( get<0>(*xs1D.begin()) == 0 );
 
-		std::cout << "line 503: lhs " << get<0>(*(xs1D.end() - 1)) << '\n';
-		BOOST_TEST( get<0>(*(xs1D.end()-1)) == 9 );
+		auto end = xs1D.end();
+		auto endm1 = end - 1;
+		std::cout << "line 503: lhs " << get<0>(*endm1) << '\n';
+		BOOST_TEST( get<0>(*endm1) == 9 );
 
 		multi::extensions_t<1> const xs1D_copy(xs1D);
 		BOOST_TEST( xs1D_copy == xs1D );
