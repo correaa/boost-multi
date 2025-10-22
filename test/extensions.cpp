@@ -454,12 +454,59 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs1D.size() == 10 );
 		using std::get;
 		BOOST_TEST( get<0>(xs1D[3]) == 3 );
+		BOOST_TEST( get<0>(xs1D[4]) == 4 );
 
-		auto v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
+		BOOST_TEST( get<0>(*xs1D.begin()) == 0 );
+		BOOST_TEST( get<0>(*(xs1D.end()-1)) == 9 );
+
+		multi::extensions_t<1> const xs1D_copy(xs1D);
+		BOOST_TEST( xs1D_copy == xs1D );
+
+		multi::extensions_t<1>::iterator const copy(xs1D.begin());
+		BOOST_TEST( copy == xs1D.begin() );
+
+		static_assert(std::is_constructible_v<boost::multi::extensions_t<1>::iterator, boost::multi::extensions_t<1>::iterator>);
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( get<0>(*std::ranges::begin(xs1D)) == 0 );
+
+		BOOST_TEST( get<0>(*(std::ranges::end(xs1D)-1)) == 9 );
+
+		static_assert(std::ranges::range<std::remove_cvref_t<boost::multi::extensions_t<1>&>>);
+
+		BOOST_TEST( get<0>(*(xs1D.end()-1)) == 9 );
+
+		static_assert(std::ranges::bidirectional_range<multi::extensions_t<1>>);
+
+		auto rxs1D = xs1D | std::views::reverse;
+
+		BOOST_TEST( get<0>(*std::ranges::begin(rxs1D)) == 9 );
+		BOOST_TEST( get<0>(*(std::ranges::end(rxs1D)-1)) == 0 );
+#endif
+
+		auto const v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
 		BOOST_TEST( v1D.size() == 10 );
 		BOOST_TEST( v1D.elements().size() == 10 );
+		BOOST_TEST( v1D[0] == 0);
 		BOOST_TEST( v1D[4] == 16 );
+		BOOST_TEST( v1D[9] == 81 );
+		BOOST_TEST( *v1D.begin() == 0 );
+		BOOST_TEST( *(v1D.end() - 1) == 81 );
+
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		static_assert(std::input_or_output_iterator<decltype(v1D.begin())>);
+		static_assert(std::default_initializable<decltype(v1D.begin())>);
+		static_assert(std::semiregular<decltype(v1D.begin())>);
+
+		BOOST_TEST( std::ranges::begin(v1D) == v1D.begin() );
+		BOOST_TEST( std::ranges::end(v1D) == v1D.end() );
+
+		static_assert(std::ranges::bidirectional_range<decltype(v1D)>);
+		static_assert(std::ranges::random_access_range<decltype(v1D)>);
+		auto rv1D = v1D | std::views::reverse;
+
+		BOOST_TEST( rv1D[0] == 81);
+		BOOST_TEST( rv1D[9] == 0 );
 #endif
 	}
 	return boost::report_errors();
