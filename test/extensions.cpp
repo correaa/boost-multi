@@ -506,7 +506,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		auto end   = xs1D.end();
 		auto endm1 = end - 1;
-		aut [ii] = *endm1;
+		auto [ii] = *endm1;
 		std::cout << "line 501: lhs " <<ii << '\n';
 		BOOS_TEST( ii == 9 )
 
