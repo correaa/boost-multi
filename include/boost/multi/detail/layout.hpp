@@ -250,7 +250,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	using element = boost::multi::detail::tuple_prepend_t<index_extension::value_type, typename extensions_t<D - 1>::element>;
 
-	extensions_t()    = default;
+	constexpr extensions_t()    = default;
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -403,7 +403,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		extensions_t<D - 1> rest_;
 		friend extensions_t;
 	
-		iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
+		constexpr iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
 
 	 public:
 		using difference_type = index;
