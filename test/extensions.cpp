@@ -538,7 +538,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(*(std::ranges::end(rxs1D)-1)) == 0 );
 #endif
 
-		auto const v1D = [](auto idix) { return idx * idx; } ^ multi::extensions_t(10);
+		auto const v1D = [](auto idx) { return idx * idx; } ^ multi::extensions_t(10);
 		BOOST_TEST( v1D.size() == 10 );
 		BOOST_TEST( v1D.elements().size() == 10 );
 		BOOST_TEST( v1D[0] == 0);
