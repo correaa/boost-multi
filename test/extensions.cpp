@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>    // IWYU pragma: keep  // for std::equal
+#include <iostream>
 #include <tuple>        // IWYU pragma: keep
 #include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <variant>        // for get, iwyu bug
@@ -476,16 +477,16 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(*std::ranges::begin(xs2D)) == 0 );
 		BOOST_TEST( get<0>(*(std::ranges::end(xs2D)-1)) == 9 );
 
-		// static_assert(std::ranges::range<std::remove_cvref_t<boost::multi::extensions_t<2>&>>);
+		static_assert(std::ranges::range<std::remove_cvref_t<boost::multi::extensions_t<2>&>>);
 
-		// BOOST_TEST( get<0>(*(xs1D.end()-1)) == 9 );
+		BOOST_TEST( get<0>((*(xs2D.end()-1))[5]) == 9 );
 
-		// static_assert(std::ranges::bidirectional_range<multi::extensions_t<1>>);
+		static_assert(std::ranges::bidirectional_range<multi::extensions_t<2>>);
 
-		// auto rxs1D = xs1D | std::views::reverse;
+		auto rxs2D = xs2D | std::views::reverse;
 
-		// BOOST_TEST( get<0>(*std::ranges::begin(rxs1D)) == 9 );
-		// BOOST_TEST( get<0>(*(std::ranges::end(rxs1D)-1)) == 0 );
+		BOOST_TEST( get<0>((*std::ranges::begin(rxs2D))[5]) == 9 );
+		BOOST_TEST( get<0>((*(std::ranges::end(rxs2D)-1))[5]) == 0 );
 #endif
 		
 	}

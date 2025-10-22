@@ -398,7 +398,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
-	class iterator : weakly_incrementable_facade<iterator>, weakly_decrementable_facade<iterator> {  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init)
+	class iterator : weakly_incrementable_facade<iterator>, weakly_decrementable_facade<iterator> {  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 		index idx_;
 		extensions_t<D - 1> rest_;
 		friend extensions_t;
