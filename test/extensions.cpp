@@ -500,7 +500,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		std::cout << "line 500: lhs " << get<0>(*xs1D.begin()) << '\n';
 		BOOST_TEST( get<0>(*xs1D.begin()) == 0 );
 
-		auto end = xs1D.end();
+		auto end   = xs1D.end();
 		auto endm1 = end - 1;
 		std::cout << "line 503: lhs " << get<0>(*endm1) << '\n';
 		BOOST_TEST( get<0>(*endm1) == 9 );
