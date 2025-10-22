@@ -97,7 +97,7 @@ class plan {
 	Alloc                                              alloc_;
 	::size_t                                           workSize_ = 0;
 	void*                                              workArea_{};
-	cufftHandle                                        h_{};  // TODO(correaa) put this in a unique_ptr
+	std::array<cufftHandle, DD>                            hs_{};  // TODO(correaa) put this in a unique_ptr
 	std::array<std::pair<bool, cufft_iodim64>, DD + 1> which_iodims_{};
 	int                                                first_howmany_{};
 
@@ -120,7 +120,7 @@ class plan {
 	: alloc_{std::move(other.alloc_)},
 	  workSize_{std::exchange(other.workSize_, {})},
 	  workArea_{std::exchange(other.workArea_, {})},
-	  h_{std::exchange(other.h_, {})},
+	  hs_{std::exchange(other.hs_, {})},
 	  which_iodims_{std::exchange(other.which_iodims_, {})},
 	  first_howmany_{std::exchange(other.first_howmany_, {})} {
 		// other.used_ = true;  // moved-from object cannot be used
@@ -159,8 +159,8 @@ class plan {
 
 		auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) { return get<0>(elem); });
 
-		std::stable_sort(which_iodims.begin(), part, [](auto const& alpha, auto const& omega) { return get<1>(alpha).is > get<1>(omega).is; });
-		std::stable_sort(part, which_iodims.end() - 1, [](auto const& alpha, auto const& omega) { return get<1>(alpha).is > get<1>(omega).is; });
+		std::stable_sort(which_iodims.begin(), part, [](auto const& alpha, auto const& omega) { return get<1>(alpha).os > get<1>(omega).os; });
+		std::stable_sort(part, which_iodims.end() - 1, [](auto const& alpha, auto const& omega) { return get<1>(alpha).os > get<1>(omega).os; });
 
 		std::array<cufft_iodim64, D> dims{};
 
@@ -193,6 +193,8 @@ class plan {
 			assert(ostrides[idx - 1] >= ostrides[idx]);
 			assert(ostrides[idx - 1] % ostrides[idx] == 0);
 			onembed[idx] = ostrides[idx - 1] / ostrides[idx];
+
+			assert(istrides[idx - 1] >= istrides[idx]);
 			assert(istrides[idx - 1] % istrides[idx] == 0);
 			inembed[idx] = istrides[idx - 1] / istrides[idx];
 		}
@@ -221,7 +223,7 @@ class plan {
 			if constexpr(std::is_same_v<Alloc, void*>) {
 				assert(dims_end - dims.begin() < 4);  // cufft cannot do 4D FFT
 				cufftSafeCall(::cufftPlanMany(
-					/*cufftHandle *plan*/ &h_,
+					/*cufftHandle *plan*/ &hs_[0],
 					/*int rank*/ dims_end - dims.begin(),
 					/*int *n*/ ion.data(),
 					/*int *inembed*/ inembed.data(),
@@ -234,10 +236,10 @@ class plan {
 					/*int batch*/ 1  // BATCH
 				));
 			} else {
-				cufftSafeCall(cufftCreate(&h_));
-				cufftSafeCall(cufftSetAutoAllocation(h_, false));
+				cufftSafeCall(cufftCreate(&hs_[0]));
+				cufftSafeCall(cufftSetAutoAllocation(hs_[0], false));
 				cufftSafeCall(cufftMakePlanMany(
-					/*cufftHandle *plan*/ h_,
+					/*cufftHandle *plan*/ hs_[0],
 					/*int rank*/ dims_end - dims.begin(),
 					/*int *n*/ ion.data(),
 					/*int *inembed*/ inembed.data(),
@@ -250,14 +252,14 @@ class plan {
 					/*int batch*/ 1,  // BATCH
 					/*size_t **/ &workSize_
 				));
-				cufftSafeCall(cufftGetSize(h_, &workSize_));
+				cufftSafeCall(cufftGetSize(hs_[0], &workSize_));
 				workArea_ = ::thrust::raw_pointer_cast(alloc_.allocate(workSize_));
 				static_assert(sizeof(Alloc) == 1000);
 				// auto s = cudaMalloc(&workArea_, workSize_);
 				// if(s != cudaSuccess) {throw std::runtime_error{"L212"};}
-				cufftSafeCall(cufftSetWorkArea(h_, workArea_));
+				cufftSafeCall(cufftSetWorkArea(hs_[0], workArea_));
 			}
-			if(!h_) {
+			if(!hs_[0]) {
 				throw std::runtime_error{"cufftPlanMany null"};
 			}
 			return;
@@ -268,7 +270,7 @@ class plan {
 		if(first_howmany_ <= D - 1) {
 			if constexpr(std::is_same_v<Alloc, void*>) {  // NOLINT(bugprone-branch-clone) workaround bug in DeepSource
 				cufftSafeCall(::cufftPlanMany(
-					/*cufftHandle *plan*/ &h_,
+					/*cufftHandle *plan*/ &hs_[0],
 					/*int rank*/ dims_end - dims.begin(),
 					/*int *n*/ ion.data(),
 					/*int *inembed*/ inembed.data(),
@@ -281,10 +283,10 @@ class plan {
 					/*int batch*/ which_iodims_[first_howmany_].second.n
 				));
 			} else {
-				cufftSafeCall(cufftCreate(&h_));
-				cufftSafeCall(cufftSetAutoAllocation(h_, false));
+				cufftSafeCall(cufftCreate(&hs_[0]));
+				cufftSafeCall(cufftSetAutoAllocation(hs_[0], false));
 				cufftSafeCall(cufftMakePlanMany(
-					/*cufftHandle *plan*/ h_,
+					/*cufftHandle *plan*/ hs_[0],
 					/*int rank*/ dims_end - dims.begin(),
 					/*int *n*/ ion.data(),
 					/*int *inembed*/ inembed.data(),
@@ -297,11 +299,11 @@ class plan {
 					/*int batch*/ which_iodims_[first_howmany_].second.n,
 					/*size_t **/ &workSize_
 				));
-				cufftSafeCall(cufftGetSize(h_, &workSize_));
+				cufftSafeCall(cufftGetSize(hs_[0], &workSize_));
 				workArea_ = ::thrust::raw_pointer_cast(alloc_.allocate(workSize_));
-				cufftSafeCall(cufftSetWorkArea(h_, workArea_));
+				cufftSafeCall(cufftSetWorkArea(hs_[0], workArea_));
 			}
-			if(!h_) {
+			if(!hs_[0]) {
 				throw std::runtime_error{"cufftPlanMany null"};
 			}
 			++first_howmany_;
@@ -314,7 +316,7 @@ class plan {
 	template<typename = void>
 	void ExecZ2Z_(complex_type const* idata, complex_type* odata, int direction) const {
 		// used_ = true;
-		cufftSafeCall(cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
+		cufftSafeCall(cufftExecZ2Z(hs_[0], const_cast<complex_type*>(idata), odata, direction));  // NOLINT(cppcoreguidelines-pro-type-const-cast) wrap legacy interface
 																							  // cudaDeviceSynchronize();
 	}
 
@@ -337,7 +339,7 @@ class plan {
 
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				cufftExecZ2Z(
-					h_,
+					hs_[0],
 					const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx * which_iodims_[first_howmany_].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 					reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata + idx * which_iodims_[first_howmany_].second.os)),                                   // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 					direction
@@ -358,7 +360,7 @@ class plan {
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {          // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
 				for(int jdx = 0; jdx != which_iodims_[first_howmany_ + 1].second.n; ++jdx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
 					cufftExecZ2Z(
-						h_,
+						hs_[0],
 						const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx * which_iodims_[first_howmany_].second.is + jdx * which_iodims_[first_howmany_ + 1].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 						reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata + idx * which_iodims_[first_howmany_].second.os + jdx * which_iodims_[first_howmany_ + 1].second.os)),                                   // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 						direction
@@ -401,13 +403,9 @@ class plan {
 				alloc_.deallocate(typename std::allocator_traits<Alloc>::pointer(reinterpret_cast<char*>(workArea_)), workSize_);
 			}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 		}
-		if(h_ != 0) {
-			cufftSafeCall(cufftDestroy(h_));
+		if(hs_[0] != 0) {
+			cufftSafeCall(cufftDestroy(hs_[0]));
 		}
-		// if(!used_) {
-		//  std::cerr <<"Warning: cufft plan was never used\n";
-		//  std::terminate();
-		// }
 	}
 
 	using size_type  = int;
