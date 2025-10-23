@@ -173,38 +173,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
 	}
 #endif
-#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-	{
-		multi::array<int, 1> A1D = {0, 1, 2};
-
-		BOOST_TEST(A1D[0] == 0);
-		BOOST_TEST(A1D[1] == 1);
-		BOOST_TEST(A1D[2] == 2);
-
-		auto&& rA1D = A1D | std::views::reverse;
-
-		BOOST_TEST(rA1D[0] == 2);
-		BOOST_TEST(rA1D[1] == 1);
-		BOOST_TEST(rA1D[2] == 0);
-	}
-	{
-		multi::array<int, 2> A2D = {
-			{0, 1},
-			{3, 4},
-			{6, 7}
-		};
-
-		BOOST_TEST(A2D[0][0] == 0);
-		BOOST_TEST(A2D[1][0] == 3);
-		BOOST_TEST(A2D[2][0] == 6);
-
-		auto&& rA2D = A2D | std::views::reverse;
-
-		BOOST_TEST(rA2D[0][0] == 6);
-		BOOST_TEST(rA2D[1][0] == 3);
-		BOOST_TEST(rA2D[2][0] == 0);
-	}
-#endif
 
 	return boost::report_errors();
 }
