@@ -584,25 +584,27 @@ For example, to convert an array of integers to an array of text strings:
 
 == Uninitialized vs. initialized elements
 
-If available, the library can take advantage of trivial initialization for the specific element type.
-These types can be primitive or user-defined and come with "trivial default constructors".
-In simple terms, the constructors of such type of elements are specified and do nothing, not even set values.
+If available, the library can take advantage of trivial initialization for specific element types that support it.
 
-When used in the stack, these types can be declared with no initialization (e.g., `double x;`, the initial value is not well defined or partially-formed) or with initialization (e.g., `double x{};`, same as `double x = 0.0;`).
-Analogously, `multi::array` does not initialize individual elements of this kind of type unless specified.
+Primitive types or some user-defined are defined in such a way that their construction does nothing, not even set values.
+When used in the stack, these types can be declared with no initialization (e.g., `double x;`),
+in which case their initial value is not well defined or the state is called "partially-formed";
+or they can be declared with initialization (e.g., `double x{};`, same as `double x = 0.0;`).
+When these types are used as array elements, (e.g. `multi::array<T, D>`),
+the library does not initialize individual elements unless specified.
 
 For example, after this construction of the array, the values of the six elements of this array are unspecified (partially-formed).
 ```cpp
 multi::array<int, 2> A2({2, 3});  // A2 elements have unspecified value
 ```
 
-No behavior of the program should depend on these values. 
-(Address sanitizers and memory checkers can detect use of uninitialized values, for example Valgrind diagnoses "Uninitialized Memory Read".)
+No behavior of the program should depend on these values.
+(Fortunately, address sanitizers and memory checkers can detect use of uninitialized values, for example Valgrind diagnoses "Uninitialized Memory Read".)
 This design is a slight departure from the STL's design, which https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/[eagerly initializes elements in containers].
 
 If trivial construction is unavailable, the library uses the default initialization.
 ```cpp
-multi::array<std::string, 2> A2({2, 3});  // A2 elements have specified value, the empty value std::string{}
+multi::array<std::string, 2> A2({2, 3});  // A2 elements have specified value: empty std::string{}
 ```
 
 For types that afford this partially formed states, elements can be later specified via assignment or assigning algorithms (e.g., copy or transform destination).
