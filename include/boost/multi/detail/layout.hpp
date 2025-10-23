@@ -123,7 +123,7 @@ class f_extensions_t {
 		}
 	}
 
-	class iterator {
+	class iterator : public weakly_incrementable_facade<iterator>, weakly_decrementable_facade<iterator> {  // NOLINT(fuchsia-multiple-inheritance)
 		typename extensions_t<D>::iterator it_;
 		Proj proj_;
 
@@ -132,13 +132,20 @@ class f_extensions_t {
 		friend f_extensions_t;
 
 	 public:
+		iterator() = default;
+		
 		using iterator_category = std::random_access_iterator_tag;
 
-		auto operator++() -> auto& { ++it_; return *this; }
-		auto operator--() -> auto& { --it_; return *this; }
+		constexpr auto operator++() -> auto& { ++it_; return *this; }
+		constexpr auto operator--() -> auto& { --it_; return *this; }
 
 		constexpr auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
 		constexpr auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
+
+		constexpr auto operator+(difference_type dd) const { return iterator{*this} += dd; }
+		constexpr auto operator-(difference_type dd) const { return iterator{*this} -= dd; }
+
+		friend constexpr auto operator+(difference_type dd, iterator const& self) { return self + dd; }
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 
@@ -147,16 +154,20 @@ class f_extensions_t {
 
 		friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
 		friend auto operator< (iterator const& self, iterator const& other) -> bool { return self.it_ <  other.it_; }
+		friend auto operator> (iterator const& self, iterator const& other) -> bool { return self.it_ >  other.it_; }
+		friend auto operator>=(iterator const& self, iterator const& other) -> bool { return self.it_ >= other.it_; }
 
 		constexpr auto operator*() const -> decltype(auto) {
 			using std::get;
-			if constexpr(D != 1) {
+			if constexpr(D > 1) {
 				auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
 				return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(get<1>(*it_).base().tail()), ll);
 			} else {
 				return proj_(get<0>(*it_));
 			}
 		}
+
+		using value_type = int;  // decltype(*std::declval<iterator&>());
 
 		auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
@@ -239,7 +250,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	using element = boost::multi::detail::tuple_prepend_t<index_extension::value_type, typename extensions_t<D - 1>::element>;
 
-	extensions_t()    = default;
+	constexpr extensions_t()    = default;
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -387,12 +398,12 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
-	class iterator {
+	class iterator : weakly_incrementable_facade<iterator>, weakly_decrementable_facade<iterator> {  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 		index idx_;
 		extensions_t<D - 1> rest_;
 		friend extensions_t;
 	
-		iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
+		constexpr iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
 
 	 public:
 		using difference_type = index;
@@ -400,6 +411,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		using pointer = void;
 		using reference = value_type;
 		using iterator_category = std::random_access_iterator_tag;
+
+		iterator() = default;
+
+		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
+		constexpr auto operator-=(difference_type d) -> iterator& { idx_ -= d; return *this; }
 
 		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
 		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
@@ -683,6 +699,10 @@ template<> struct extensions_t<0> : tuple<> {
 	: base_{tup} {}
 
 	extensions_t() = default;
+	// template<class T1>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int>  // NOLINTNEXTLINE(runtime/explicit)
+	// BOOST_MULTI_HD explicit constexpr extensions_t(tuple<> /*extensions*/)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// : base_{} {}
 
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
@@ -810,6 +830,45 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		// auto rng = get<0>(static_cast<tuple<multi::index_extension> const&>(*this));
 		return elements_t{get<0>(static_cast<tuple<multi::index_extension> const&>(*this))};
 	}
+
+	class iterator : weakly_incrementable_facade<iterator>, weakly_decrementable_facade<iterator> {  // NOLINT(fuchsia-multiple-inheritance)
+		index idx_;
+		extensions_t<0> rest_;
+		friend extensions_t;
+	
+		constexpr iterator(index idx, extensions_t<0> rest) : idx_{idx}, rest_{rest} {}
+
+	 public:
+		using difference_type = index;
+		using value_type = decltype(ht_tuple(std::declval<index>(), std::declval<extensions_t<0>>().base()));
+		using pointer = void;
+		using reference = value_type;
+		using iterator_category = std::random_access_iterator_tag;
+
+		iterator() = default;
+
+		constexpr auto operator+=(difference_type d) { idx_+=d; return *this; }
+		constexpr auto operator-=(difference_type d) { idx_-=d; return *this; }
+
+		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
+		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
+
+		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
+
+		constexpr auto operator++() -> auto& { ++idx_; return *this; }
+		constexpr auto operator--() -> auto& { --idx_; return *this; }
+
+		constexpr auto operator*() const {
+			// multi::detail::what(rest_);
+			return ht_tuple(idx_, rest_.base());
+		}
+
+		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
+		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
+	};
+
+	constexpr auto begin() const noexcept { return iterator{this->base().head().first(), extensions_t<0>(this->base().tail())}; }
+	constexpr auto end()   const noexcept { return iterator{this->base().head().last() , extensions_t<0>(this->base().tail())}; }
 
 	constexpr auto size() const {
 		using std::get;

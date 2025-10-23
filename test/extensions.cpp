@@ -7,13 +7,16 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <algorithm>    // IWYU pragma: keep  // for std::equal
+#include <algorithm>  // IWYU pragma: keep  // for std::equal
+#include <iostream>
 #include <tuple>        // IWYU pragma: keep
 #include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <variant>        // for get, iwyu bug
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <concepts>  // for default_initializable
+#include <iterator>  // for reverse_iterator, input...
+#include <ranges>    // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #endif
 
 namespace multi = boost::multi;
@@ -448,18 +451,117 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		}
 #endif
 	}
+	{
+		auto xs2D = multi::extensions_t(10, 20);
+		BOOST_TEST( xs2D.size() == 10 );
+		BOOST_TEST( xs2D.num_elements() == 200 );
 
+		using std::get;
+		BOOST_TEST( get<0>(xs2D[3][5]) == 3 );
+		BOOST_TEST( get<0>(xs2D[4][5]) == 4 );
+
+		BOOST_TEST( get<0>((* xs2D.begin() )[5]) == 0 );
+		BOOST_TEST( get<0>((*(xs2D.end()-1))[5]) == 9 );
+
+#if !defined(__NVCC__) && !defined(__NVCOMPILER)  // this CTAD gives a compile error in nvhpc 22.7 and nvcc 12.0
+		multi::extensions_t const xs2D_copy(xs2D);
+#else
+		multi::extensions_t<1> const xs2D_copy(xs2D);
+#endif
+		BOOST_TEST( xs2D_copy == xs2D );
+
+		boost::multi::extensions_t<2>::iterator beg = xs2D.begin();
+		beg++;
+
+		static_assert(std::is_constructible_v<boost::multi::extensions_t<1>::iterator, boost::multi::extensions_t<1>::iterator>);
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+
+		static_assert(std::weakly_incrementable<boost::multi::extensions_t<2>::iterator>);
+
+		BOOST_TEST( get<0>(*std::ranges::begin(xs2D)) == 0 );
+		BOOST_TEST( get<0>(*(std::ranges::end(xs2D)-1)) == 9 );
+
+		static_assert(std::ranges::range<std::remove_cvref_t<boost::multi::extensions_t<2>&>>);
+
+		BOOST_TEST( get<0>((*(xs2D.end()-1))[5]) == 9 );
+
+		static_assert(std::ranges::bidirectional_range<multi::extensions_t<2>>);
+
+		auto rxs2D = xs2D | std::views::reverse;
+
+		BOOST_TEST( get<0>((*std::ranges::begin(rxs2D))[5]) == 9 );
+		BOOST_TEST( get<0>((*(std::ranges::end(rxs2D)-1))[5]) == 0 );
+#endif
+	}
 	{
 		auto xs1D = multi::extensions_t(10);
 		BOOST_TEST( xs1D.size() == 10 );
 		using std::get;
 		BOOST_TEST( get<0>(xs1D[3]) == 3 );
+		BOOST_TEST( get<0>(xs1D[4]) == 4 );
 
-		auto v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
+		std::cout << "line 500: lhs " << get<0>(*xs1D.begin()) << '\n';
+		BOOST_TEST( get<0>(*xs1D.begin()) == 0 );
+
+		auto end   = xs1D.end();
+		auto endm1 = end - 1;
+		auto [ii] = *endm1;
+		std::cout << "line 501: lhs " <<ii << '\n';
+		BOOST_TEST( ii == 9 );
+
+		std::cout << "line 503: lhs " << get<0>(*endm1) << '\n';
+		BOOST_TEST( get<0>(*endm1) == 9 );
+
+		multi::extensions_t<1> const xs1D_copy(xs1D);
+		BOOST_TEST( xs1D_copy == xs1D );
+
+		multi::extensions_t<1>::iterator const copy(xs1D.begin());
+		BOOST_TEST( copy == xs1D.begin() );
+
+		static_assert(std::is_constructible_v<boost::multi::extensions_t<1>::iterator, boost::multi::extensions_t<1>::iterator>);
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( get<0>(*std::ranges::begin(xs1D)) == 0 );
+
+		BOOST_TEST( get<0>(*(std::ranges::end(xs1D)-1)) == 9 );
+
+		static_assert(std::ranges::range<std::remove_cvref_t<boost::multi::extensions_t<1>&>>);
+
+		BOOST_TEST( get<0>(*(xs1D.end()-1)) == 9 );
+
+		static_assert(std::ranges::bidirectional_range<multi::extensions_t<1>>);
+
+		auto rxs1D = xs1D | std::views::reverse;
+
+		BOOST_TEST( get<0>(*std::ranges::begin(rxs1D)) == 9 );
+		BOOST_TEST( get<0>(*(std::ranges::end(rxs1D)-1)) == 0 );
+#endif
+
+		auto const v1D = [](auto idx) { return idx * idx; } ^ multi::extensions_t(10);
 		BOOST_TEST( v1D.size() == 10 );
 		BOOST_TEST( v1D.elements().size() == 10 );
+		BOOST_TEST( v1D[0] == 0);
 		BOOST_TEST( v1D[4] == 16 );
+		BOOST_TEST( v1D[9] == 81 );
+		BOOST_TEST( *v1D.begin() == 0 );
+		BOOST_TEST( *(v1D.end() - 1) == 81 );
+
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+#if !defined(__NVCC__) && !defined(__NVCOMPILER)  // produces an error: ‘boost::multi::f_extensions_t<D, Proj>::proj_’ has incomplete type
+		static_assert(std::input_or_output_iterator<decltype(v1D.begin())>);
+		static_assert(std::default_initializable<decltype(v1D.begin())>);
+		static_assert(std::semiregular<decltype(v1D.begin())>);
+#endif
+		BOOST_TEST( std::ranges::begin(v1D) == v1D.begin() );
+		BOOST_TEST( std::ranges::end(v1D) == v1D.end() );
+
+		static_assert(std::ranges::bidirectional_range<decltype(v1D)>);
+		static_assert(std::ranges::random_access_range<decltype(v1D)>);
+		auto rv1D = v1D | std::views::reverse;
+
+		BOOST_TEST( rv1D[0] == 81);
+		BOOST_TEST( rv1D[9] == 0 );
 #endif
 	}
 	return boost::report_errors();
