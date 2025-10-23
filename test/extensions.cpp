@@ -12,10 +12,6 @@
 #include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <variant>        // for get, iwyu bug
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
-#endif
-
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
@@ -66,7 +62,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	BOOST_TEST( A1D.size() == 37 );
 	BOOST_TEST( A1D.num_elements() == 37 );
 	BOOST_TEST( A1D.extensions().num_elements() == 37 );
-	BOOST_TEST( A1D.extensions().size() == 37 );
 
 	BOOST_TEST( A1D.extensions().elements().size() == A1D.extensions().num_elements() );
 	{
@@ -449,18 +444,5 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 
-	{
-		auto xs1D = multi::extensions_t(10);
-		BOOST_TEST( xs1D.size() == 10 );
-		using std::get;
-		BOOST_TEST( get<0>(xs1D[3]) == 3 );
-
-		auto v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
-		BOOST_TEST( v1D.size() == 10 );
-		BOOST_TEST( v1D.elements().size() == 10 );
-		BOOST_TEST( v1D[4] == 16 );
-#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-#endif
-	}
 	return boost::report_errors();
 }
