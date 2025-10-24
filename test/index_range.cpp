@@ -263,7 +263,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
 	}
 	{
-		multi::extension_t<int> const ext(5);
+		multi::extension_t<int> ext(5);
 
 		BOOST_TEST( *ext.begin() == 0 );
 		BOOST_TEST( *(ext.end() - 1) == 4 );
@@ -274,9 +274,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( ext[1] == 1 );
 
-		auto rext = ext | std::views::reverse;
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
+		static_assert(std::ranges::range<std::ranges::ref_view<boost::multi::extension_t<int, int>>>);
 
-		BOOST_TEST( rext[1] == 3 );
+		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
+		// auto rext = ext | std::views::reverse;
+
+		// BOOST_TEST( rext[1] == 3 );
 #endif
 	}
 

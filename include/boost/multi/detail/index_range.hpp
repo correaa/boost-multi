@@ -347,8 +347,16 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	BOOST_MULTI_HD constexpr extension_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) allow terse syntax
 	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
 
+	// extension_t() = default;
+	extension_t(extension_t const&) = default;
+	extension_t(extension_t&&)      = default;
+	auto operator=(extension_t const&) -> extension_t& = default;
+	auto operator=(extension_t&&) -> extension_t& = default;
+	~extension_t() = default;
+
 	template<
 		class OtherExtension,
+		std::enable_if_t<!std::is_same_v<extension_t, std::decay_t<OtherExtension>>, int> = 0,
 		decltype(
 			detail::implicit_cast<IndexType>(std::declval<OtherExtension>().first()),
 			detail::implicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
