@@ -13,6 +13,10 @@
 // IWYU pragma: no_include <tuple>                            // for tuple_element<>::type
 #include <type_traits>
 
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#endif
+
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -257,6 +261,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
+	}
+	{
+		multi::extension_t<int> const ext(5);
+
+		BOOST_TEST( *ext.begin() == 0 );
+		BOOST_TEST( *(ext.end() - 1) == 4 );
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( *std::ranges::begin(ext) == 0 );
+		BOOST_TEST( *(std::ranges::end(ext)-1) == 4 );
+
+		BOOST_TEST( ext[1] == 1 );
+
+		auto rext = ext | std::views::reverse;
+
+		BOOST_TEST( rext[1] == 3 );
+#endif
 	}
 
 	return boost::report_errors();
