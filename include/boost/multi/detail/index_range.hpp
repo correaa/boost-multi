@@ -22,6 +22,10 @@
 #include <type_traits>  // for declval, true_type, decay_t, enable_if_t
 #include <utility>      // for forward
 
+// #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+// #endif
+
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
@@ -456,6 +460,16 @@ constexpr auto contains(index_extensions<D> const& iex, Tuple const& tup) {
 }
 
 }  // end namespace boost::multi
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+namespace std {
+	template< class>
+	constexpr bool enable_borrowed_range = true;
+
+	template< class IndexType, class IndexTypeLast >
+	constexpr bool enable_borrowed_range<::boost::multi::extension_t<IndexType, IndexTypeLast>> = true;
+}
+#endif
 
 #undef BOOST_MULTI_HD
 
