@@ -76,6 +76,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::index_extension const iex(10);
 
+		using std::size;
 		BOOST_TEST( *begin(iex) == 0 );
 		BOOST_TEST( size(iex) == 10 );
 		BOOST_TEST( iex[0] == 0 );
@@ -205,7 +206,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::range<std::integral_constant<int, 0>, int> const irng({}, 12);
 
 // && !defined(__PGI) && (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
-#if(__cplusplus >= 202002L) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+#if (__cplusplus >= 202002L) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)
 		static_assert(sizeof(irng) == sizeof(int));
 #endif
 
@@ -275,6 +276,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( ext[1] == 1 );
 
 		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int> const>);
 		static_assert(std::ranges::range<std::ranges::ref_view<boost::multi::extension_t<int, int>>>);
 
 		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
