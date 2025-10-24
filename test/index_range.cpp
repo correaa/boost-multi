@@ -269,7 +269,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( *ext.begin() == 0 );
 		BOOST_TEST( *(ext.end() - 1) == 4 );
 
-#if !defined(__clang_major__) || (__clang_major__ != 15) || !defined(_LIBCPP_VERSION)
+#if !defined(__clang_major__) || (__clang_major__ != 15)
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 		BOOST_TEST( *std::ranges::begin(ext) == 0 );
 		BOOST_TEST( *(std::ranges::end(ext)-1) == 4 );
