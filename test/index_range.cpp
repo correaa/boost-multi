@@ -274,8 +274,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( ext[1] == 1 );
 
-		// static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
-		// static_assert(std::ranges::range<std::ranges::ref_view<boost::multi::extension_t<int, int>>>);
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
+		static_assert(std::ranges::range<std::ranges::ref_view<boost::multi::extension_t<int, int>>>);
 
 		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
 		auto rext = ext | std::views::reverse;
