@@ -136,7 +136,7 @@ class range {
 	~range() = default;
 
 	template<class Range,
-	         std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
+	         std::enable_if_t<!std::is_same_v<range, std::decay_t<Range>>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
 	         decltype(detail::implicit_cast<IndexType>(std::declval<Range&&>().first()),
 	                  detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 	         )*                                                                    = nullptr>
@@ -146,7 +146,7 @@ class range {
 
 	template<
 		class Range,
-		std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, unsigned> = 0,
+		std::enable_if_t<!std::is_same_v<range, std::decay_t<Range>>, unsigned> = 0,  // NOLINT(modernize-type-traits) for C++20
 		decltype(detail::explicit_cast<IndexType>(std::declval<Range&&>().first()),
 		         detail::explicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 		)*                                                                    = nullptr>
