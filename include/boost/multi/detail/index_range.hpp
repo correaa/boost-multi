@@ -461,13 +461,6 @@ constexpr auto contains(index_extensions<D> const& iex, Tuple const& tup) {
 
 }  // end namespace boost::multi
 
-#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to implement ranges
-	template< class IndexType, class IndexTypeLast >
-	constexpr bool enable_view<::boost::multi::extension_t<IndexType, IndexTypeLast>> = true;
-}
-#endif
-
 #undef BOOST_MULTI_HD
 
 #endif  // BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
