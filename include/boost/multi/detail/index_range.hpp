@@ -130,7 +130,10 @@ class range {
 
 	range() = default;
 	range(range const&) = default;
+	range(range&&)      = default;
 	auto operator=(range const&) -> range& = default;
+	auto operator=(range&&) -> range& = default;
+	~range() = default;
 
 	template<class Range,
 	         std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
