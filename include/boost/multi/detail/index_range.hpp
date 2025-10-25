@@ -22,6 +22,10 @@
 #include <type_traits>  // for declval, true_type, decay_t, enable_if_t
 #include <utility>      // for forward
 
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#endif
+
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
@@ -129,11 +133,14 @@ class range {
 	using pointer         = value_type;
 
 	range() = default;
-
 	// range(range const&) = default;
+	// range(range&&)      = default;
+	// auto operator=(range const&) -> range& = default;
+	// auto operator=(range&&) -> range& = default;
+	// ~range() = default;
 
 	template<class Range,
-	         std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
+	         std::enable_if_t<!std::is_same_v<range, std::decay_t<Range>>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
 	         decltype(detail::implicit_cast<IndexType>(std::declval<Range&&>().first()),
 	                  detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 	         )*                                                                    = nullptr>
@@ -143,7 +150,7 @@ class range {
 
 	template<
 		class Range,
-		std::enable_if_t<!std::is_base_of_v<range, std::decay_t<Range>>, unsigned> = 0,
+		std::enable_if_t<!std::is_same_v<range, std::decay_t<Range>>, unsigned> = 0,  // NOLINT(modernize-type-traits) for C++20
 		decltype(detail::explicit_cast<IndexType>(std::declval<Range&&>().first()),
 		         detail::explicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 		)*                                                                    = nullptr>
@@ -178,7 +185,7 @@ class range {
 			++curr_;
 			return *this;
 		}
-		constexpr auto operator--() -> const_iterator& {
+		constexpr auto operator--() noexcept(noexcept(--curr_)) -> const_iterator& {
 			--curr_;
 			return *this;
 		}
@@ -213,8 +220,8 @@ class range {
 
 	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> const_reference { return first(); }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> const_reference { return last() - 1; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> value_type { return first(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> value_type { return last() - 1; }
 
 	[[nodiscard]] constexpr auto cbegin() const { return const_iterator{first_}; }
 	[[nodiscard]] constexpr auto cend() const { return const_iterator{last_}; }
@@ -225,11 +232,11 @@ class range {
 	[[nodiscard]] constexpr auto begin() const -> const_iterator { return cbegin(); }
 	[[nodiscard]] constexpr auto end() const -> const_iterator { return cend(); }
 
-	BOOST_MULTI_HD constexpr auto        is_empty() const& noexcept { return first_ == last_; }
-	friend BOOST_MULTI_HD constexpr auto is_empty(range const& self) noexcept { return self.is_empty(); }
+	BOOST_MULTI_HD constexpr auto        is_empty() const noexcept { return first_ == last_; }
+	// friend BOOST_MULTI_HD constexpr auto is_empty(range const& self) noexcept { return self.is_empty(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto empty() const& noexcept { return is_empty(); }
-	friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
+	// friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
 
 	#ifdef __NVCC__
 	#pragma nv_diagnostic push
@@ -242,10 +249,10 @@ class range {
 	#pragma nv_diagnostic pop
 	#endif
 
-	friend BOOST_MULTI_HD constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }
+	// friend BOOST_MULTI_HD constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }
 
-	friend constexpr auto begin(range const& self) { return self.begin(); }
-	friend constexpr auto end(range const& self) { return self.end(); }
+	// friend constexpr auto begin(range const& self) { return self.begin(); }
+	// friend constexpr auto end(range const& self) { return self.end(); }
 
 	friend BOOST_MULTI_HD constexpr auto operator==(range const& self, range const& other) {
 		return (self.empty() && other.empty()) || (self.first_ == other.first_ && self.last_ == other.last_);
@@ -344,8 +351,16 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	BOOST_MULTI_HD constexpr extension_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) allow terse syntax
 	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
 
+	// extension_t() = default;
+	// extension_t(extension_t const&) = default;
+	// extension_t(extension_t&&)      = default;
+	// auto operator=(extension_t const&) -> extension_t& = default;
+	// auto operator=(extension_t&&) -> extension_t& = default;
+	// ~extension_t() = default;
+
 	template<
 		class OtherExtension,
+		// std::enable_if_t<!std::is_same_v<extension_t, std::decay_t<OtherExtension>>, int> = 0,  // NOLINT(modernize-type-traits) bug in clang-tidy
 		decltype(
 			detail::implicit_cast<IndexType>(std::declval<OtherExtension>().first()),
 			detail::implicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
@@ -365,13 +380,16 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	// BOOST_MULTI_HD constexpr explicit extension_t(OtherExtension const& other) noexcept
 	// : extension_t{other.first(), other.last()} {}
 
-	template<class OtherExtension>
+	template<class OtherExtension//,
+		//std::enable_if_t<!std::is_base_of_v<extension_t, OtherExtension>, int> =0  // NOLINT(modernize-use-constraints,modernize-type-traits)
+	>
 	BOOST_MULTI_HD constexpr auto operator=(OtherExtension const& other) -> extension_t& {
 		(*this) = extension_t{other};
 		return *this;
 	}
 
-	BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
+	extension_t() = default;
+	// BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
 	// friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
 

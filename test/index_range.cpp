@@ -8,10 +8,15 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for equal
+#include <iterator>   // for size
 #include <numeric>    // for accumulate
 #include <vector>     // for vector
 // IWYU pragma: no_include <tuple>                            // for tuple_element<>::type
 #include <type_traits>
+
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#endif
 
 namespace multi = boost::multi;
 
@@ -72,6 +77,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::index_extension const iex(10);
 
+		using std::size;
 		BOOST_TEST( *begin(iex) == 0 );
 		BOOST_TEST( size(iex) == 10 );
 		BOOST_TEST( iex[0] == 0 );
@@ -201,7 +207,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::range<std::integral_constant<int, 0>, int> const irng({}, 12);
 
 // && !defined(__PGI) && (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
-#if (__cplusplus >= 202002L) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+#if(__cplusplus >= 202002L) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)
 		static_assert(sizeof(irng) == sizeof(int));
 #endif
 
@@ -257,6 +263,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
+	}
+	{
+		multi::extension_t<int> const ext(5);
+
+		BOOST_TEST( *ext.begin() == 0 );
+		BOOST_TEST( *(ext.end() - 1) == 4 );
+
+#if !defined(__clang_major__) || (__clang_major__ != 15)
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( *std::ranges::begin(ext) == 0 );
+		BOOST_TEST( *(std::ranges::end(ext)-1) == 4 );
+
+		BOOST_TEST( ext[1] == 1 );
+
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int> const>);
+		static_assert(std::ranges::range<std::ranges::ref_view<boost::multi::extension_t<int, int>>>);
+
+		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
+		auto rext = ext | std::views::reverse;
+
+		BOOST_TEST( rext[1] == 3 );
+#endif
+#endif
 	}
 
 	return boost::report_errors();
