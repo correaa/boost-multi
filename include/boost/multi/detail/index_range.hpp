@@ -133,11 +133,11 @@ class range {
 	using pointer         = value_type;
 
 	range() = default;
-	range(range const&) = default;
-	range(range&&)      = default;
-	auto operator=(range const&) -> range& = default;
-	auto operator=(range&&) -> range& = default;
-	~range() = default;
+	// range(range const&) = default;
+	// range(range&&)      = default;
+	// auto operator=(range const&) -> range& = default;
+	// auto operator=(range&&) -> range& = default;
+	// ~range() = default;
 
 	template<class Range,
 	         std::enable_if_t<!std::is_same_v<range, std::decay_t<Range>>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
@@ -388,7 +388,8 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 		return *this;
 	}
 
-	BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
+	extension_t() = default;
+	// BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
 	// friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
 
