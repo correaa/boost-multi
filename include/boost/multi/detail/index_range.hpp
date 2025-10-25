@@ -352,15 +352,15 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
 
 	// extension_t() = default;
-	extension_t(extension_t const&) = default;
-	extension_t(extension_t&&)      = default;
-	auto operator=(extension_t const&) -> extension_t& = default;
-	auto operator=(extension_t&&) -> extension_t& = default;
-	~extension_t() = default;
+	// extension_t(extension_t const&) = default;
+	// extension_t(extension_t&&)      = default;
+	// auto operator=(extension_t const&) -> extension_t& = default;
+	// auto operator=(extension_t&&) -> extension_t& = default;
+	// ~extension_t() = default;
 
 	template<
 		class OtherExtension,
-		std::enable_if_t<!std::is_same_v<extension_t, std::decay_t<OtherExtension>>, int> = 0,
+		// std::enable_if_t<!std::is_same_v<extension_t, std::decay_t<OtherExtension>>, int> = 0,  // NOLINT(modernize-type-traits) bug in clang-tidy
 		decltype(
 			detail::implicit_cast<IndexType>(std::declval<OtherExtension>().first()),
 			detail::implicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
@@ -380,8 +380,8 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	// BOOST_MULTI_HD constexpr explicit extension_t(OtherExtension const& other) noexcept
 	// : extension_t{other.first(), other.last()} {}
 
-	template<class OtherExtension,
-		std::enable_if_t<!std::is_base_of_v<extension_t, OtherExtension>, int> =0  // NOLINT(modernize-use-constraints,modernize-type-traits)
+	template<class OtherExtension//,
+		//std::enable_if_t<!std::is_base_of_v<extension_t, OtherExtension>, int> =0  // NOLINT(modernize-use-constraints,modernize-type-traits)
 	>
 	BOOST_MULTI_HD constexpr auto operator=(OtherExtension const& other) -> extension_t& {
 		(*this) = extension_t{other};
