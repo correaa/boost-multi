@@ -1144,7 +1144,8 @@ qmcpack:
 
 qmcpack cuda-12.3.1:
   stage: test
-  image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu24.04
+  image:
+    name: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu24.04
     pull_policy: [always, if-not-present]
   tags:
     - non-shared
