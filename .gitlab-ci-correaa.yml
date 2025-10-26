@@ -847,6 +847,7 @@ cuda-13.0.1:
   tags:
     - non-shared
     - nvidia-gpu
+    - cuda-arch-75-plus
   interruptible: true
   script:
     - nvidia-smi
