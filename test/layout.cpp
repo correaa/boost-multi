@@ -528,6 +528,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto xA = extensions(arr);
 
 		using std::get;  // needed for C++17
+		using std::size;
 		BOOST_TEST( size(get<0>(xA)) == 3 );
 		BOOST_TEST( size(get<1>(xA)) == 4 );
 		BOOST_TEST( size(get<2>(xA)) == 5 );

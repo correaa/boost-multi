@@ -72,6 +72,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::index_extension const iex(10);
 
+		using std::size;
 		BOOST_TEST( *begin(iex) == 0 );
 		BOOST_TEST( size(iex) == 10 );
 		BOOST_TEST( iex[0] == 0 );
