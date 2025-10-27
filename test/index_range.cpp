@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for equal
+#include <iterator>  // for size
 #include <numeric>    // for accumulate
 #include <vector>     // for vector
 // IWYU pragma: no_include <tuple>                            // for tuple_element<>::type
