@@ -178,7 +178,7 @@ class range {
 			++curr_;
 			return *this;
 		}
-		constexpr auto operator--() -> const_iterator& {
+		constexpr auto operator--() noexcept(noexcept(--curr_)) -> const_iterator& {
 			--curr_;
 			return *this;
 		}
