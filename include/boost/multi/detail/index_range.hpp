@@ -213,8 +213,8 @@ class range {
 
 	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> const_reference { return first(); }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> const_reference { return last() - 1; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> value_type { return first(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> value_type { return last() - 1; }
 
 	[[nodiscard]] constexpr auto cbegin() const { return const_iterator{first_}; }
 	[[nodiscard]] constexpr auto cend() const { return const_iterator{last_}; }
@@ -226,10 +226,8 @@ class range {
 	[[nodiscard]] constexpr auto end() const -> const_iterator { return cend(); }
 
 	BOOST_MULTI_HD constexpr auto        is_empty() const& noexcept { return first_ == last_; }
-	friend BOOST_MULTI_HD constexpr auto is_empty(range const& self) noexcept { return self.is_empty(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto empty() const& noexcept { return is_empty(); }
-	friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
 
 	#ifdef __NVCC__
 	#pragma nv_diagnostic push
@@ -241,11 +239,6 @@ class range {
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
 	#endif
-
-	friend BOOST_MULTI_HD constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }
-
-	friend constexpr auto begin(range const& self) { return self.begin(); }
-	friend constexpr auto end(range const& self) { return self.end(); }
 
 	friend BOOST_MULTI_HD constexpr auto operator==(range const& self, range const& other) {
 		return (self.empty() && other.empty()) || (self.first_ == other.first_ && self.last_ == other.last_);

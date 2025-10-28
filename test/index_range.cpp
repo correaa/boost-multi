@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for equal
+#include <iterator>  // for size
 #include <numeric>    // for accumulate
 #include <vector>     // for vector
 // IWYU pragma: no_include <tuple>                            // for tuple_element<>::type
@@ -72,6 +73,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::index_extension const iex(10);
 
+		using std::size;
 		BOOST_TEST( *begin(iex) == 0 );
 		BOOST_TEST( size(iex) == 10 );
 		BOOST_TEST( iex[0] == 0 );
