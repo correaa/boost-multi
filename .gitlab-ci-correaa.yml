@@ -1157,6 +1157,7 @@ qmcpack cuda-12.3.1:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
     - nvidia-smi
+    - rsync --version
     - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
     # - git clone           https://github.com/correaa/qmcpack.git --branch complete-pointer-concept-for-shm_ptr
     - cd qmcpack
