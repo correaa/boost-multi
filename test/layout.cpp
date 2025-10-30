@@ -1276,6 +1276,34 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( lyt.extension().front() == 3 );
 		BOOST_TEST( lyt.extension().back() == 8 );
 	}
+	{
+		multi::extension_t<int> const ext(5);
+
+		BOOST_TEST( *ext.begin() == 0 );
+		BOOST_TEST( *(ext.end() - 1) == 4 );
+
+#if !defined(__clang_major__) || (__clang_major__ != 15)
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( *std::ranges::begin(ext) == 0 );
+		BOOST_TEST( *(std::ranges::end(ext)-1) == 4 );
+
+		BOOST_TEST( ext[0] == 0 );
+		BOOST_TEST( ext[1] == 1 );
+		BOOST_TEST( ext[4] == 4 );
+
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int> const>);
+		static_assert(std::ranges::range<std::ranges::ref_view<boost::multi::extension_t<int, int>>>);
+
+		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
+		auto rext = ext | std::views::reverse;
+
+		BOOST_TEST( rext[0] == 4 );
+		BOOST_TEST( rext[1] == 3 );
+		BOOST_TEST( rext[4] == 0 );
+#endif
+#endif
+	}
 
 	return boost::report_errors();
 }
