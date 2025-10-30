@@ -485,6 +485,10 @@ struct static_array                                                             
 	constexpr static_array(std::initializer_list<typename static_array<T, D>::value_type> values)
 	: static_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
+	// template<class TT, std::enable_if_t<std::is_same_v<T, TT> || (D == 2), int> =0>
+	// constexpr static_array(std::initializer_list<std::initializer_list<TT>> il)
+	// : static_array{(il.size() == 0) ? array<T, D>() : array<T, D>(il.begin(), il.end())} {}  // construct all with default constructor and copy to special memory at the end
+
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> values,
 		allocator_type const&                                          alloc
