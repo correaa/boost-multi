@@ -451,10 +451,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		auto v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
 		BOOST_TEST( v1D.size() == 10 );
- 		BOOST_TEST( v1D.elements().size() == 10 );
- 		BOOST_TEST( v1D[4] == 16 );
-// #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-// #endif
+		BOOST_TEST( v1D.elements().size() == 10 );
+		BOOST_TEST( v1D[4] == 16 );
+		// #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		// #endif
 	}
 
 	return boost::report_errors();
