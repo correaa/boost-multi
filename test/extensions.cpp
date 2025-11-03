@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
+#include <iterator>   // for reverse_iterator
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
@@ -466,9 +467,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1D.elements().size() == 10 );
 		BOOST_TEST( v1D[4] == 16 );
 
-		#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) ); 
-		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   ); 
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
+		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
 
 		auto xs1Dr = xs1D | std::views::reverse;
 
@@ -479,7 +480,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		// auto v1Dr = v1D | std::views::reverse;
 
-		#endif
+#endif
 	}
 
 	return boost::report_errors();
