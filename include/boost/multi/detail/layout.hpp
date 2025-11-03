@@ -772,6 +772,12 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
+
+		friend constexpr auto operator<(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ < other.idx_; }
+		friend constexpr auto operator>(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ > other.idx_; }
+
+		friend constexpr auto operator<=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ <= other.idx_; }
+		friend constexpr auto operator>=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ >= other.idx_; }
 	};
 
 	constexpr auto begin() const { return iterator{this->base().head().first(), extensions_t<0>{this->base().tail()}}; }
