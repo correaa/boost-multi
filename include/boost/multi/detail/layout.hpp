@@ -392,7 +392,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		extensions_t<D - 1> rest_;
 		friend extensions_t;
 	
-		iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
+		constexpr iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
 
 	 public:
 		using difference_type = index;
@@ -737,6 +737,40 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using size_type = multi::index_extension::size_type;
 	using difference_type = multi::index_extension::difference_type;
 	using element = tuple<multi::index_extension::value_type>;
+
+	class iterator {
+		index idx_;
+		extensions_t<0> rest_;
+		friend extensions_t;
+	
+		constexpr iterator(index idx, extensions_t<0> rest) : idx_{idx}, rest_{rest} {}
+
+	 public:
+		using difference_type = index;
+		using value_type = decltype(ht_tuple(std::declval<index>(), std::declval<extensions_t<0>>().base()));
+		using pointer = void;
+		using reference = value_type;
+		using iterator_category = std::random_access_iterator_tag;
+
+		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
+		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
+
+		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
+
+		constexpr auto operator++() -> auto& { ++idx_; return *this; }
+		constexpr auto operator--() -> auto& { --idx_; return *this; }
+
+		constexpr auto operator*() const {
+			// multi::detail::what(rest_);
+			return ht_tuple(idx_, rest_.base());
+		}
+
+		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
+		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
+	};
+
+	constexpr auto begin() const { return iterator{this->base().head().first(), extensions_t<0>{this->base().tail()}}; }
+	constexpr auto end()   const { return iterator{this->base().head().last() , extensions_t<0>{this->base().tail()}}; }
 
 	class elements_t {
 		multi::index_range rng_;
