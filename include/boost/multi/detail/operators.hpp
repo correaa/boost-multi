@@ -117,8 +117,14 @@ template<class T>
 struct copy_constructible {};
 
 template<class T>
-struct weakly_incrementable {
-	// friend T& operator++(weakly_incrementable& t){return ++static_cast<T&>(t);}
+struct weakly_incrementable : selfable<T> {
+ protected:
+	weakly_incrementable() = default;
+
+ public:
+	constexpr auto operator++(int) -> T {
+		auto ret{this->self()}; ++(this->self()); return ret;
+	}
 };
 
 template<class T>
