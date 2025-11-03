@@ -7,7 +7,12 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <algorithm>    // IWYU pragma: keep  // for std::equal
+#include <algorithm>  // IWYU pragma: keep  // for std::equal
+
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#endif
+
 #include <tuple>        // IWYU pragma: keep
 #include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <variant>        // for get, iwyu bug
@@ -449,11 +454,21 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		using std::get;
 		BOOST_TEST( get<0>(xs1D[3]) == 3 );
 
+		BOOST_TEST( xs1D.begin() != xs1D.end() );
+		BOOST_TEST( !(xs1D.begin() == xs1D.end()) );
+		BOOST_TEST( xs1D.begin() + 10 == xs1D.end() );
+		BOOST_TEST( xs1D.begin() == xs1D.end() - 10 );
+
+		BOOST_TEST( *(xs1D.begin() + 3) == xs1D[3] );
+
 		auto v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
 		BOOST_TEST( v1D.size() == 10 );
 		BOOST_TEST( v1D.elements().size() == 10 );
 		BOOST_TEST( v1D[4] == 16 );
 		// #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+
+		// auto v1Dr = v1D | std::views::reverse;
+
 		// #endif
 	}
 
