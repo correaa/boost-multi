@@ -456,6 +456,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( xs1D.begin() != xs1D.end() );
 		BOOST_TEST( !(xs1D.begin() == xs1D.end()) );
+		BOOST_TEST( xs1D.begin() + 10 == xs1D.end() );
+		BOOST_TEST( xs1D.begin() == xs1D.end() - 10 );
 
 		BOOST_TEST( *(xs1D.begin() + 3) == xs1D[3] );
 
