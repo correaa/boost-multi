@@ -468,6 +468,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1D[4] == 16 );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		static_assert( std::ranges::random_access_range<decltype(xs1D)> );
+
 		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
 		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
 
@@ -477,7 +479,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( *(xs1Dr.end() - 1) == 0 );
 
 		// BOOST_TEST( xs1Dr[9] == 0 );
-
 		// auto v1Dr = v1D | std::views::reverse;
 
 #endif
