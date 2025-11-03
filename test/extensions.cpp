@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
-#include <iterator>   // for reverse_iterator
+// IWYU pragma: no_include <iterator>   // for reverse_iterator
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
