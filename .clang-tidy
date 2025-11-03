@@ -28,6 +28,7 @@ CheckOptions:
 Checks: '*,
   -altera-struct-pack-align,
   -boost-use-ranges,
+  -cert-dcl21-cpp,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
@@ -44,7 +45,7 @@ Checks: '*,
 ## explanation of the suppressed rules above:
 #  -altera-struct-pack-align,                             // this asks to use non-standard pragmas such as __attribute__((aligned(0))) and _attribute__((packed)), may interfeere with gcc/nvcc compatibility?
 #  -boost-use-ranges                                      // would introduce a dependency on Boost
-#  -clang-diagnostic-deprecated-declarations              // some test run deprecated functions on purpose
+#  -cert-dcl21-cpp                                        // this asks postfix operator++ to return a const value
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-pro-bounds-array-to-pointer-decay   // for Boost Lightweight test BOOST_TEST
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
