@@ -738,7 +738,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using difference_type = multi::index_extension::difference_type;
 	using element = tuple<multi::index_extension::value_type>;
 
-	class iterator {
+	class iterator {  // : public weakly_incrementable<iterator> {
 		index idx_;
 		extensions_t<0> rest_;
 		friend extensions_t;
@@ -746,6 +746,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		constexpr iterator(index idx, extensions_t<0> rest) : idx_{idx}, rest_{rest} {}
 
 	 public:
+		iterator() = default;
+
 		using difference_type = index;
 		using value_type = decltype(ht_tuple(std::declval<index>(), std::declval<extensions_t<0>>().base()));
 		using pointer = void;
@@ -757,8 +759,11 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
 
-		constexpr auto operator++() -> auto& { ++idx_; return *this; }
-		constexpr auto operator--() -> auto& { --idx_; return *this; }
+		constexpr auto operator++() -> iterator& { ++idx_; return *this; }
+		constexpr auto operator--() -> iterator& { --idx_; return *this; }
+
+		constexpr auto operator++(int) -> iterator { iterator ret{*this}; operator++(); return ret; }  // NOLINT(cert-dcl21-cpp)
+		constexpr auto operator--(int) -> iterator { iterator ret{*this}; operator--(); return ret; }  // NOLINT(cert-dcl21-cpp)
 
 		constexpr auto operator*() const {
 			// multi::detail::what(rest_);
