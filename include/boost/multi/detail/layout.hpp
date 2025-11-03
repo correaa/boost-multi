@@ -759,11 +759,11 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
 
-		constexpr auto operator++() -> auto& { ++idx_; return *this; }
-		constexpr auto operator--() -> auto& { --idx_; return *this; }
+		constexpr auto operator++() -> iterator& { ++idx_; return *this; }
+		constexpr auto operator--() -> iterator& { --idx_; return *this; }
 
-		constexpr auto operator++(int) { iterator ret{*this}; operator++(); return ret; }
-		constexpr auto operator--(int) { iterator ret{*this}; operator--(); return ret; }
+		constexpr auto operator++(int) -> iterator { iterator ret{*this}; operator++(); return ret; }  // NOLINT(cert-dcl21-cpp)
+		constexpr auto operator--(int) -> iterator { iterator ret{*this}; operator--(); return ret; }  // NOLINT(cert-dcl21-cpp)
 
 		constexpr auto operator*() const {
 			// multi::detail::what(rest_);
