@@ -8,11 +8,10 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
-// IWYU pragma: no_include <iterator>   // for reverse_iterator
+#include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <iterator>  // IWYU pragma: keep
-#include <ranges>    // IWYU pragma: keep
+#include <ranges>  // IWYU pragma: keep
 #endif
 
 #include <tuple>        // IWYU pragma: keep
