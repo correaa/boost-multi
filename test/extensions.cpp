@@ -479,9 +479,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( *xs1Dr.begin() == 9 );
 		BOOST_TEST( *(xs1Dr.end() - 1) == 0 );
 
-		// BOOST_TEST( xs1Dr[9] == 0 );
-		// auto v1Dr = v1D | std::views::reverse;
+		BOOST_TEST( xs1Dr[9] == xs1D[0]	);
+		BOOST_TEST( xs1Dr[0] == xs1D[9]	);
 
+		// auto v1Dr = v1D | std::views::reverse;
 #endif
 	}
 
