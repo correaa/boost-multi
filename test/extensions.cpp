@@ -11,8 +11,8 @@
 // IWYU pragma: no_include <iterator>   // for reverse_iterator
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <iterator>   // for std::random_access_iterator
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <iterator>  // IWYU pragma: keep  // for std::random_access_iterator
+#include <ranges>    // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #endif
 
 #include <tuple>        // IWYU pragma: keep
@@ -469,8 +469,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1D[4] == 16 );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-		static_assert( std::random_access_iterator<multi::extensions_t<1>::iterator> );
-		static_assert( std::ranges::random_access_range<decltype(xs1D)> );
+		static_assert(std::random_access_iterator<multi::extensions_t<1>::iterator>);
+		static_assert(std::ranges::random_access_range<decltype(xs1D)>);
 
 		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
 		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
