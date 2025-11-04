@@ -487,6 +487,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( std::ranges::begin(v1D) == v1D.begin() );
 		BOOST_TEST( std::ranges::end(v1D) == v1D.end() );
 
+		static_assert( std::ranges::sentinel_for<boost::multi::f_extensions_t<1, (lambda at /home/correaa/boost-multi/test/extensions.cpp:465:14)>::iterator, iterator_t<f_extensions_t<1, (lambda at /home/correaa/boost-multi/test/extensions.cpp:465:14)> &> >
+
 		// auto v1Dr = v1D | std::views::reverse;
 #endif
 	}
