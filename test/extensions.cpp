@@ -482,6 +482,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs1Dr[9] == xs1D[0]	);
 		BOOST_TEST( xs1Dr[0] == xs1D[9]	);
 
+		static_assert( std::input_or_output_iterator<decltype(v1D)::iterator> );
+
+		BOOST_TEST( std::ranges::begin(v1D) == v1D.begin() );
+		BOOST_TEST( std::ranges::end(v1D) == v1D.end() );
+
 		// auto v1Dr = v1D | std::views::reverse;
 #endif
 	}

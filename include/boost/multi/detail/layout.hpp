@@ -140,6 +140,9 @@ class f_extensions_t {
 		constexpr auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
 		constexpr auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
 
+		constexpr auto operator++(int) -> iterator { iterator ret{*this}; ++(*this); return ret; }
+		constexpr auto operator--(int) -> iterator { iterator ret{*this}; --(*this); return ret; }
+
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
