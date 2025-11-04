@@ -11,6 +11,7 @@
 // IWYU pragma: no_include <iterator>   // for reverse_iterator
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
+#include <iterator>   // for std::random_access_iterator
 #include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #endif
 
