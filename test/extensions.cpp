@@ -8,10 +8,10 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
-// IWYU pragma: no_include <iterator>   // for reverse_iterator
+#include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <ranges>  // IWYU pragma: keep
 #endif
 
 #include <tuple>        // IWYU pragma: keep
@@ -468,6 +468,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1D[4] == 16 );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		static_assert(std::random_access_iterator<multi::extensions_t<1>::iterator>);
+		static_assert(std::ranges::random_access_range<decltype(xs1D)>);
+
 		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
 		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
 
@@ -477,7 +480,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( *(xs1Dr.end() - 1) == 0 );
 
 		// BOOST_TEST( xs1Dr[9] == 0 );
-
 		// auto v1Dr = v1D | std::views::reverse;
 
 #endif
