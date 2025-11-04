@@ -758,6 +758,10 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
+		friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
+
+		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
+		constexpr auto operator-=(difference_type d) -> iterator& { idx_ -= d; return *this; }
 
 		constexpr auto operator++() -> iterator& { ++idx_; return *this; }
 		constexpr auto operator--() -> iterator& { --idx_; return *this; }
@@ -769,6 +773,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			// multi::detail::what(rest_);
 			return ht_tuple(idx_, rest_.base());
 		}
+
+		constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
