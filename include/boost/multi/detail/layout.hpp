@@ -441,6 +441,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			return ht_tuple(idx_, rest_.base());
 		}
 
+		constexpr auto operator[](difference_type const& n) const -> reference { return *((*this) + n); }
+
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
 
