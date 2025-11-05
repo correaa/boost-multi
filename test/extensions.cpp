@@ -11,7 +11,8 @@
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>  // IWYU pragma: keep
+#include <concepts>  // for totally_ordered
+#include <ranges>    // IWYU pragma: keep
 #endif
 
 #include <tuple>        // IWYU pragma: keep
