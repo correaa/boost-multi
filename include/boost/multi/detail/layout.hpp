@@ -132,21 +132,38 @@ class f_extensions_t {
 		friend f_extensions_t;
 
 	 public:
+		iterator() = default;
+
+		using value_type = std::conditional_t<(D != 1),
+			// void*,  // f_extensions_t<D - 1, decltype(ll)>,
+			f_extensions_t<D - 1, void*>,  // decltype([](auto... xs) { return proj_(std::declval<>(), xs...); })>,
+			decltype(std::apply(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
+		>;
+
 		using iterator_category = std::random_access_iterator_tag;
 
-		auto operator++() -> auto& { ++it_; return *this; }
-		auto operator--() -> auto& { --it_; return *this; }
+		constexpr auto operator++() -> auto& { ++it_; return *this; }
+		constexpr auto operator--() -> auto& { --it_; return *this; }
 
 		constexpr auto operator+=(difference_type dd) -> auto& { it_+=dd; return *this; }
 		constexpr auto operator-=(difference_type dd) -> auto& { it_-=dd; return *this; }
 
+		constexpr auto operator++(int) -> iterator { iterator ret{*this}; ++(*this); return ret; }
+		constexpr auto operator--(int) -> iterator { iterator ret{*this}; --(*this); return ret; }
+
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
+		friend constexpr auto operator+(iterator const& self, difference_type n) { iterator ret{self}; return ret += n; }
+		friend constexpr auto operator-(iterator const& self, difference_type n) { iterator ret{self}; return ret -= n; }
+
+		friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
 
 		friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
 		friend auto operator< (iterator const& self, iterator const& other) -> bool { return self.it_ <  other.it_; }
+		friend auto operator> (iterator const& self, iterator const& other) -> bool { return self.it_ >  other.it_; }
+		friend auto operator>=(iterator const& self, iterator const& other) -> bool { return self.it_ >  other.it_; }
 
 		constexpr auto operator*() const -> decltype(auto) {
 			using std::get;
