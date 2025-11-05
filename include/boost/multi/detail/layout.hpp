@@ -412,11 +412,16 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		constexpr iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
 
 	 public:
+		iterator() = default;
+
 		using difference_type = index;
 		using value_type = decltype(ht_tuple(std::declval<index>(), std::declval<extensions_t<D - 1>>().base()));
 		using pointer = void;
 		using reference = value_type;
 		using iterator_category = std::random_access_iterator_tag;
+
+		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
+		constexpr auto operator-=(difference_type d) -> iterator& { idx_ -= d; return *this; }
 
 		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
 		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
@@ -426,6 +431,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		constexpr auto operator++() -> auto& { ++idx_; return *this; }
 		constexpr auto operator--() -> auto& { --idx_; return *this; }
 
+		constexpr auto operator++(int) -> iterator { iterator ret{*this}; ++idx_; return ret; }
+		constexpr auto operator--(int) -> iterator { iterator ret{*this}; --idx_; return ret; }
+
 		constexpr auto operator*() const {
 			// multi::detail::what(rest_);
 			return ht_tuple(idx_, rest_.base());
@@ -433,6 +441,12 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
+
+		friend constexpr auto operator<(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ < other.idx_; }
+		friend constexpr auto operator>(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ > other.idx_; }
+
+		friend constexpr auto operator<=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ <= other.idx_; }
+		friend constexpr auto operator>=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ >= other.idx_; }
 	};
 
 	constexpr auto begin() const { return iterator{this->base().head().first(), this->base().tail()}; }
@@ -491,7 +505,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 			friend class elements_t;
 
-		 public:
+		 public:		
 			using difference_type   = elements_t::difference_type;
 			using value_type        = indices_type;
 			using pointer           = void;
