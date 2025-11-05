@@ -256,7 +256,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	using element = boost::multi::detail::tuple_prepend_t<index_extension::value_type, typename extensions_t<D - 1>::element>;
 
-	extensions_t()    = default;
+	extensions_t() = default;
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -404,7 +404,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
-	class iterator {
+	class iterator {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) constructor does not initialize these fields: idx_
 		index idx_;
 		extensions_t<D - 1> rest_;
 		friend extensions_t;
