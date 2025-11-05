@@ -426,7 +426,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
 		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
 
-		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
+		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { assert( self.rest_ == other.rest_ ); return self.idx_ - other.idx_; }
+
+		friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
 
 		constexpr auto operator++() -> auto& { ++idx_; return *this; }
 		constexpr auto operator--() -> auto& { --idx_; return *this; }
