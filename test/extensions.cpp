@@ -463,7 +463,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( *(xs1D.begin() + 3) == xs1D[3] );
 
-		auto v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
+		auto fun = [](auto ii) { return ii * ii; };
+		auto v1D = fun ^ multi::extensions_t(10);
 		BOOST_TEST( v1D.size() == 10 );
 		BOOST_TEST( v1D.elements().size() == 10 );
 		BOOST_TEST( v1D[4] == 16 );
