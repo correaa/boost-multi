@@ -11,7 +11,8 @@
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>  // IWYU pragma: keep
+#include <concepts>  // for totally_ordered
+#include <ranges>    // IWYU pragma: keep
 #endif
 
 #include <tuple>        // IWYU pragma: keep
@@ -462,7 +463,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( *(xs1D.begin() + 3) == xs1D[3] );
 
-		auto v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
+		auto fun = [](auto ii) { return ii * ii; };
+		auto v1D = fun ^ multi::extensions_t(10);
 		BOOST_TEST( v1D.size() == 10 );
 		BOOST_TEST( v1D.elements().size() == 10 );
 		BOOST_TEST( v1D[4] == 16 );
@@ -482,7 +484,17 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs1Dr[9] == xs1D[0]	);
 		BOOST_TEST( xs1Dr[0] == xs1D[9]	);
 
-		// auto v1Dr = v1D | std::views::reverse;
+		static_assert(std::input_or_output_iterator<decltype(v1D)::iterator>);
+
+		BOOST_TEST( std::ranges::begin(v1D) == v1D.begin() );
+		BOOST_TEST( std::ranges::end(v1D) == v1D.end() );
+
+		static_assert(std::totally_ordered<decltype(v1D)::iterator>);
+		static_assert(std::random_access_iterator<decltype(v1D)::iterator>);
+
+		auto v1Dr = v1D | std::views::reverse;
+		BOOST_TEST( v1Dr[0] == v1D[9] );
+		BOOST_TEST( v1Dr[9] == v1D[0] );
 #endif
 	}
 
