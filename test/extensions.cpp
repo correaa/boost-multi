@@ -536,7 +536,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		static_assert(std::ranges::random_access_range<multi::extensions_t<2> >);
 
 		BOOST_TEST( xs2D.begin() == std::ranges::begin(xs2D) );
-		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
+		BOOST_TEST( xs2D.end()   == std::ranges::end(xs2D)   );
 
 		// auto xs1Dr = xs1D | std::views::reverse;
 
