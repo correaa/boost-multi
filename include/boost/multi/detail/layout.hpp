@@ -133,13 +133,12 @@ class f_extensions_t {
 
 	 public:
 		iterator() = default;
-		// iterator(iterator const&) = default;
-		// iterator(iterator&&) = default;
 
-		// auto operator=(iterator const&) -> iterator& = default;
-		// auto operator=(iterator&&) -> iterator& = default;
-
-		// ~iterator() = default;
+		using value_type = std::conditional_t<(D != 1),
+			// void*,  // f_extensions_t<D - 1, decltype(ll)>,
+			f_extensions_t<D - 1, void*>,  // decltype([](auto... xs) { return proj_(std::declval<>(), xs...); })>,
+			decltype(std::apply(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
+		>;
 
 		using iterator_category = std::random_access_iterator_tag;
 
@@ -175,12 +174,6 @@ class f_extensions_t {
 				return proj_(get<0>(*it_));
 			}
 		}
-
-		using value_type = std::conditional_t<(D != 1),
-			// void*,  // f_extensions_t<D - 1, decltype(ll)>,
-			f_extensions_t<D - 1, void*>,  // decltype([](auto... xs) { return proj_(std::declval<>(), xs...); })>,
-			decltype(std::apply(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
-		>;
 
 		auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
