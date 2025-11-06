@@ -137,7 +137,7 @@ class f_extensions_t {
 			return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
 		}
 
-		struct lambda_t_ {
+		struct bind_front_t {
 			multi::index idx_;
 			Proj proj_;
 			template<class... Args>
@@ -148,7 +148,7 @@ class f_extensions_t {
 		iterator() = default;
 
 		using value_type = std::conditional_t<(D != 1),
-			f_extensions_t<D - 1, lambda_t_>,
+			f_extensions_t<D - 1, bind_front_t>,
 			decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
 		>;
 
@@ -181,7 +181,7 @@ class f_extensions_t {
 			if constexpr(D != 1) {
 				using std::get;
 				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-				return f_extensions_t<D - 1, lambda_t_>(extensions_t<D - 1>((*it_).tail()), lambda_t_{get<0>(*it_), proj_});
+				return f_extensions_t<D - 1, bind_front_t>(extensions_t<D - 1>((*it_).tail()), bind_front_t{get<0>(*it_), proj_});
 			} else {
 				using std::get;
 				return proj_(get<0>(*it_));
