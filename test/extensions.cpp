@@ -475,6 +475,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1D[4] == 16 );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::iterator>);
 		static_assert(std::random_access_iterator<multi::extensions_t<1>::iterator>);
 		static_assert(std::ranges::random_access_range<decltype(xs1D)>);
 
@@ -520,6 +521,16 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 
 		using xs2D_iterator = multi::extensions_t<2>::iterator;
+
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<0>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<2>>);
+
+		static_assert(std::is_trivially_default_constructible_v<multi::range<multi::index, multi::index>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extension_t<multi::index, multi::index>>);
+
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::base_>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<2>::iterator>);
 
 		static_assert(std::is_constructible_v<xs2D_iterator>);
 		static_assert(std::constructible_from<xs2D_iterator, xs2D_iterator>);
