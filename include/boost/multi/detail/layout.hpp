@@ -1964,7 +1964,7 @@ template<class Array> struct std::tuple_size<boost::multi::detail::decaying_arra
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 template<>
-[[maybe_unused]] constexpr bool std::ranges::enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;
+[[maybe_unused]] constexpr bool std::ranges::enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
 #endif
 
 #ifdef __clang__
