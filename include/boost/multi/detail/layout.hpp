@@ -131,13 +131,25 @@ class f_extensions_t {
 
 		friend f_extensions_t;
 
+		template<class Fun, class... Args>
+		static constexpr auto apply_(Fun&& fun, Args&&... args) {
+			using std::apply;
+			return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
+		}
+
+		struct bind_front_t {
+			multi::index idx_;
+			Proj proj_;
+			template<class... Args>
+			constexpr auto operator()(Args&&... rest) const { return proj_(idx_, std::forward<Args>(rest)...); }
+		};
+
 	 public:
 		iterator() = default;
 
 		using value_type = std::conditional_t<(D != 1),
-			// void*,  // f_extensions_t<D - 1, decltype(ll)>,
-			f_extensions_t<D - 1, void*>,  // decltype([](auto... xs) { return proj_(std::declval<>(), xs...); })>,
-			decltype(std::apply(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
+			f_extensions_t<D - 1, bind_front_t>,
+			decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
 		>;
 
 		using iterator_category = std::random_access_iterator_tag;
@@ -166,11 +178,12 @@ class f_extensions_t {
 		friend auto operator>=(iterator const& self, iterator const& other) -> bool { return self.it_ >  other.it_; }
 
 		constexpr auto operator*() const -> decltype(auto) {
-			using std::get;
 			if constexpr(D != 1) {
-				auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-				return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(get<1>(*it_).base().tail()), ll);
+				using std::get;
+				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
+				return f_extensions_t<D - 1, bind_front_t>(extensions_t<D - 1>((*it_).tail()), bind_front_t{get<0>(*it_), proj_});
 			} else {
+				using std::get;
 				return proj_(get<0>(*it_));
 			}
 		}
