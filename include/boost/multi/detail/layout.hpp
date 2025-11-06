@@ -905,7 +905,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		using value_type      = iterator::value_type;
 		using reference       = iterator::reference;
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const noexcept(noexcept(*(begin()+n))) -> reference { return *(begin()+n); }
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const noexcept(noexcept(*(std::declval<iterator>()+n))) -> reference { return *(begin()+n); }
 
 		BOOST_MULTI_HD constexpr auto size() const -> size_type { return end() - begin(); }
 
