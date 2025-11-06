@@ -29,7 +29,7 @@
 #include <type_traits>  // for enable_if_t, integral_constant, decay_t, declval, make_signed_t, common_type_t
 #include <utility>      // for forward
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
 #include <ranges>    // IWYU pragma: keep
 #endif
 
