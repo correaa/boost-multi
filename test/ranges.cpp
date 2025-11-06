@@ -163,6 +163,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{7, 8, 9},
 		};
 
+		BOOST_TEST( A.begin() == std::ranges::begin(A) );
+		BOOST_TEST( A.end() == std::ranges::end(A) );
+
+		BOOST_TEST( A().begin() == std::ranges::begin(A()) );
+		BOOST_TEST( A().end() == std::ranges::end(A()) );
+
+		BOOST_TEST( A[1].begin() == std::ranges::begin(A[1]) );
+		BOOST_TEST( A[1].end() == std::ranges::end(A[1]) );
+
 		multi::array<int, 1> const V = {10, 11, 12};
 		multi::array<int, 1> const R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
 
