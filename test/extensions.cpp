@@ -525,8 +525,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<0>>);
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<2>>);
 
-		static_assert(std::is_trivially_default_constructible_v<multi::range<long, long>>);
-		static_assert(std::is_trivially_default_constructible_v<multi::extension_t<long, long>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::range<multi::index, multi::index>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extension_t<multi::index, multi::index>>);
 
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::base_>);
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>>);
