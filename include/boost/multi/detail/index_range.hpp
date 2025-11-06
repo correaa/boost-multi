@@ -87,7 +87,7 @@ class range {
 	#endif
 
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
-	IndexType     first_ = {};
+	IndexType first_;  //  = {};
 
 	#ifdef _MSC_VER
 	#pragma warning(pop)
@@ -98,7 +98,7 @@ class range {
 	#pragma clang diagnostic ignored "-Wpadded"
 	#endif
 
-	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
+	IndexTypeLast last_;  // = first_;  // TODO(correaa) check how to do partially initialzed
 
 	#ifdef __clang__
 	#pragma clang diagnostic pop
@@ -364,7 +364,8 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 		return *this;
 	}
 
-	BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
+	// BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
+	constexpr extension_t() = default;
 
 	// friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
 
