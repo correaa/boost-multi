@@ -518,6 +518,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( *(xs2D.begin() + 3) == xs2D[3] );
 
+		// auto it = xs2D.begin();
+		// multi::detail::what(*it);
+
+		auto xs3D = multi::extensions_t<3>(5, 7, 21);
+		BOOST_TEST( xs3D.size() == 5 );
+		// multi::detail::what(*xs3D.begin());
+
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 
 		using xs2D_iterator = multi::extensions_t<2>::iterator;
@@ -561,6 +568,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		auto v2D = [](auto ii, auto jj) { return ii * ii + jj * jj; } ^ multi::extensions_t<2>(3, 5);
 		BOOST_TEST( v2D[2][3] == 2*2 + 3*3 );
+		// auto front = *v2D.begin();
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 		BOOST_TEST( v2D.begin() == std::ranges::begin(v2D) );
