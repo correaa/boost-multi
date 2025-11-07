@@ -464,15 +464,17 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( *(xs1D.begin() + 3) == xs1D[3] );
 
 #ifdef __NVCC__  // nvcc gets confused with inline lambdas
-		auto fun = [](auto ii) { return ii * ii; };
+		auto fun = [](auto ii) noexcept { return ii * ii; };
 		auto v1D = fun ^ multi::extensions_t(10);
 #else
-		auto v1D = [](auto ii) { return ii * ii; } ^ multi::extensions_t(10);
+		auto v1D = [](auto ii) noexcept { return ii * ii; } ^ multi::extensions_t(10);
 #endif
 
 		BOOST_TEST( v1D.size() == 10 );
-		BOOST_TEST( v1D.elements().size() == 10 );
 		BOOST_TEST( v1D[4] == 16 );
+
+		BOOST_TEST( v1D.elements().size() == 10 );
+		BOOST_TEST( v1D.elements()[4] == v1D[4] );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::iterator>);
@@ -489,6 +491,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( xs1Dr[9] == xs1D[0]	);
 		BOOST_TEST( xs1Dr[0] == xs1D[9]	);
+
+		// auto xs1D_elements = xs1D.elements();
+		BOOST_TEST( xs1D.elements().begin() == std::ranges::begin(xs1D.elements()) );
 
 		static_assert(std::input_or_output_iterator<decltype(v1D)::iterator>);
 
@@ -573,6 +578,14 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 		BOOST_TEST( v2D.begin() == std::ranges::begin(v2D) );
 		BOOST_TEST( v2D.end()   == std::ranges::end(v2D)   );
+
+		auto v2Dr = v2D | std::views::reverse;
+
+		BOOST_TEST( (*v2Dr.begin())[4] == (*(v2D.end() - 1))[4] );
+		BOOST_TEST( (*(v2Dr.end() - 1))[4] == (*(v2D.begin()))[4] );
+
+		BOOST_TEST( v2Dr[v2D.size() - 1][5] == v2D[0][5] );
+		BOOST_TEST( v2Dr[0][5] == v2D[v2D.size() - 1][5] );
 #endif
 	}
 	return boost::report_errors();

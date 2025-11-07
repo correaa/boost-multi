@@ -29,6 +29,10 @@
 #include <type_traits>  // for enable_if_t, integral_constant, decay_t, declval, make_signed_t, common_type_t
 #include <utility>      // for forward
 
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#include <ranges>    // IWYU pragma: keep
+#endif
+
 // clang-format off
 namespace boost::multi { template <boost::multi::dimensionality_type D, typename SSize = multi::size_type> struct layout_t; }
 namespace boost::multi::detail { template <class ...Ts> class tuple; }
@@ -849,10 +853,11 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		 public:
 			using value_type      = std::tuple<multi::index_range::iterator::value_type>;
 			using difference_type = multi::index_range::iterator::difference_type;
+			using reference = value_type;
 			// using pointer = void;
 			// using reference = value_type;
 
-			BOOST_MULTI_HD constexpr auto operator*() const { return value_type(*base_()); }
+			BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *base_(); }
 
 			BOOST_MULTI_HD constexpr auto operator++() -> iterator& {
 				++base_();
@@ -863,6 +868,9 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				return *this;
 			}
 
+			BOOST_MULTI_HD constexpr auto operator++(int) { iterator ret{*this}; ++(*this); return ret; }
+			BOOST_MULTI_HD constexpr auto operator--(int) { iterator ret{*this}; --(*this); return ret; }
+
 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
 				base_() += n;
 				return *this;
@@ -872,8 +880,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				return *this;
 			}
 
-			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const { return iterator{*this} += n; }
-			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const { return iterator{*this} -= n; }
+			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> iterator { return iterator{*this} += n; }
+			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> iterator { return iterator{*this} -= n; }
 
 			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
 				return self.base_() - other.base_();
@@ -889,11 +897,15 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		};
 		// using const_iterator = iterator;
 
-		BOOST_MULTI_HD constexpr auto begin() const { return iterator{rng_.begin()}; }
-		BOOST_MULTI_HD constexpr auto end() const { return iterator{rng_.end()}; }
+		BOOST_MULTI_HD constexpr auto begin() const -> iterator { return iterator{rng_.begin()}; }
+		BOOST_MULTI_HD constexpr auto end() const -> iterator { return iterator{rng_.end()}; }
 
 		using size_type = multi::index_extension::size_type;
 		using difference_type = multi::index_extension::difference_type;
+		using value_type      = iterator::value_type;
+		using reference       = iterator::reference;
+
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const noexcept(noexcept(*(std::declval<iterator>()+n))) -> reference { return *(begin()+n); }
 
 		BOOST_MULTI_HD constexpr auto size() const -> size_type { return end() - begin(); }
 
@@ -1949,6 +1961,11 @@ struct decaying_array : Array {
 
 template<class Tuple> struct std::tuple_size<boost::multi::detail::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
 template<class Array> struct std::tuple_size<boost::multi::detail::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};     // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+template<>
+[[maybe_unused]] constexpr bool std::ranges::enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop
