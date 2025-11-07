@@ -10,14 +10,14 @@
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>    // IWYU pragma: keep
+#include <ranges>  // IWYU pragma: keep
 #endif
 
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	{
-		#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 		auto rst = [](auto ii, auto jj) { return (10 * ii) + jj; } ^ multi::extensions_t(5, 5);
 
 		multi::array<int, 2> const AA = rst;
@@ -28,7 +28,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( AA[2] == BB[2] );  // ...
 		BOOST_TEST( AA[3] == BB[1] );
 		BOOST_TEST( AA[4] == BB[0] );
-		#endif
+#endif
 	}
 	return boost::report_errors();
 }
