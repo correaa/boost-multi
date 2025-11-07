@@ -128,7 +128,7 @@ class range {
 	using const_pointer   = value_type;
 	using pointer         = value_type;
 
-	range() = default;
+	range() = default;  // cppcheck-suppress uninitMemberVar ;
 
 	// range(range const&) = default;
 
