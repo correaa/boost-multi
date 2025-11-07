@@ -586,11 +586,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( v2Dr[v2D.size() - 1][5] == v2D[0][5] );
 		BOOST_TEST( v2Dr[0][5] == v2D[v2D.size() - 1][5] );
-		
+
 		// auto const v2DT = v2D.transposed() | std::views::reverse;  // TODO(correaa)
 		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );
 #endif
-
 	}
 	return boost::report_errors();
 }
