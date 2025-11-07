@@ -572,7 +572,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 7);
-		BOOST_TEST( v2D[2][3] == 2*2 + 3*3 );
+		BOOST_TEST( v2D[2][3] == (2*2) + (3*3) );
 		BOOST_TEST( v2D.elements()[3 + 3] );
 		// auto front = *v2D.begin();
 
