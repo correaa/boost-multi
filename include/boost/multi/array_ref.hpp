@@ -3869,10 +3869,10 @@ constexpr inline int serialization_array_version = BOOST_MULTI_SERIALIZATION_ARR
 #endif
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-template<typename Element, dimensionality_type D, class... Rest>
+template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool std::ranges::enable_borrowed_range<::boost::multi::subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
-template<typename Element, dimensionality_type D, class... Rest>
+template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool std::ranges::enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 #endif
 
