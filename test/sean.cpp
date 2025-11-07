@@ -17,7 +17,7 @@ namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	{
-		auto rst = [](auto ii, auto jj) { return (10 * ii) + jj; } ^ multi::extensions_t(5, 5);
+		auto rst = [](auto ii, auto jj) { return static_cast<int>((10 * ii) + jj); } ^ multi::extensions_t(5, 5);
 
 		multi::array<int, 2> const AA = rst;
 
