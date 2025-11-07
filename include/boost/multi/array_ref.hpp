@@ -3876,7 +3876,7 @@ constexpr inline int serialization_array_version = BOOST_MULTI_SERIALIZATION_ARR
 namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest> [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest> [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
-}  // namespace std::ranges
+}  // end namespace std::ranges
 #endif
 
 #ifdef _MSC_VER
