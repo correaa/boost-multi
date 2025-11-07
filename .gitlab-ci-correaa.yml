@@ -343,7 +343,7 @@ clang++-latest libc++ format:  # Aug2025 clang 19
     - clang-format --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
   needs: ["clang++"]
 
-.vs2019-windows:
+vs2019-windows:
   stage: build
   only:
     refs:
