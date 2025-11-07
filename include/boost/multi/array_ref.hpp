@@ -129,7 +129,7 @@ struct of_dim {
 	template<class A> struct is_subarray_of_dim : decltype(is_subarray_of_dim_aux(std::declval<A>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 };
 
-template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
+// template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
 #ifdef __clang__
 #pragma clang diagnostic push

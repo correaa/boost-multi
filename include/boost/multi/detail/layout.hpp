@@ -96,6 +96,8 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 template<dimensionality_type D>
 struct extensions_t;
 
+template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
+
 template<dimensionality_type D, class Proj>
 class f_extensions_t {
 	extensions_t<D> xs_;
@@ -125,6 +127,10 @@ class f_extensions_t {
 		} else {
 			return proj_(idx);
 		}
+	}
+
+	constexpr auto operator+() const {
+		return multi::array<element, D>{*this};
 	}
 
 	class iterator {
