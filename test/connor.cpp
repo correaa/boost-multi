@@ -8,23 +8,23 @@
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 // #include <limits>  // for std::numeric_limits
-#include <iterator>   // IWYU pragma: keep
-#include <type_traits>
+#include <iterator>  // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>  // IWYU pragma: keep
+#include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)
+#include <ranges>    // IWYU pragma: keep
 #endif
 
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	{
-		#ifdef __NVCC__
+#ifdef __NVCC__
 		auto fun = [](auto ii) noexcept { return static_cast<float>(ii); };
 		auto rst = fun ^ multi::extensions_t(6);
-		#else
+#else
 		auto rst = [](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extensions_t(6);
-		#endif
+#endif
 		BOOST_TEST( rst.size() == 6 );
 
 		// BOOST_TEST( std::abs( rst[0] - 0.0F ) < 1e-12F );
@@ -43,15 +43,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 		constexpr static auto bimax = [](auto a, auto b) { return std::max(a, b); };
-		auto maxes = rst2D | std::ranges::views::transform([](auto const& row) { return std::ranges::fold_left(row, std::numeric_limits<float>::lowest(), bimax); });
+		auto                  maxes = rst2D | std::ranges::views::transform([](auto const& row) { return std::ranges::fold_left(row, std::numeric_limits<float>::lowest(), bimax); });
 
 		BOOST_TEST(maxes.size() == 2 );
 		// BOOST_TEST( maxes[0] == 2 );
 		// BOOST_TEST( maxes[1] == 5 );
-#if defined(__cpp_lib_ranges_zip ) && (__cpp_lib_ranges_zip >= 202110L)
+#if defined(__cpp_lib_ranges_zip) && (__cpp_lib_ranges_zip >= 202110L)
 		// auto renorms = std::ranges::views::zip(rst2D, maxes) | std::ranges::views::transform( [](auto const& row_max) { auto const& [row, max] = row_max; return row | std::transform([&max](auto e) { return e - max;} ); } );
-
-
 #endif
 #endif
 #endif
