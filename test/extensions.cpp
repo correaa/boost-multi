@@ -591,5 +591,14 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );
 #endif
 	}
+	{
+		multi::extensions_t<2> x2D(6, 5);
+		multi::extensions_t<3> p3D = multi::layout_t<2>(x2D).partition(2).extensions();
+
+		using std::get;
+		BOOST_TEST( get<0>(p3D).size() == 2 );
+		BOOST_TEST( get<1>(p3D).size() == 3 );
+		BOOST_TEST( get<2>(p3D).size() == 5 );
+	}
 	return boost::report_errors();
 }
