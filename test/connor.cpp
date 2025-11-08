@@ -7,7 +7,6 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
-#include <cmath>  // for std::abs
 #include <limits>  // for std::numeric_limits
 #include <numeric>  // for std::redude
 #include <iterator>   // IWYU pragma: keep
@@ -41,7 +40,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// BOOST_TEST( rst2D[1][0] == 3 ); BOOST_TEST( rst2D[1][1] == 4 ); BOOST_TEST( rst2D[1][2] == 5 );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-		auto maxes = rst2D | std::ranges::views::transform([](auto const& row) { return std::reduce(row.begin(), row.end(), -std::numeric_limits<float>::infinity(), [](auto a, auto b) { return std::max(a, b); }); });
+		constexpr static auto bimax = [](auto a, auto b) { return std::max(a, b); };
+		auto maxes = rst2D | std::ranges::views::transform([](auto const& row) { return std::reduce(row.begin(), row.end(), -std::numeric_limits<float>::infinity(), bimax); });
 
 		BOOST_TEST(maxes.size() == 2 );
 		// BOOST_TEST( maxes[0] == 2 );

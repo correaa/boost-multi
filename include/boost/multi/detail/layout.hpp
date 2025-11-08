@@ -154,6 +154,19 @@ class f_extensions_t {
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
 
+	template<class Proj2>
+	struct bind_element_transformed_t {
+		Proj proj_;
+		Proj2 proj2_;
+		template<class... Ts>
+		constexpr auto operator()(Ts... rest) const -> element { return proj2_(proj_(rest...)); }
+	};
+
+	template<class Proj2>
+	auto element_transformed(Proj2 proj2) const -> f_extensions_t<D, bind_element_transformed_t<Proj2> > {
+		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extensions();
+	}
+
 	class iterator {
 		typename extensions_t<D>::iterator it_;
 		Proj proj_;
