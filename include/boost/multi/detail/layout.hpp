@@ -123,14 +123,35 @@ class f_extensions_t {
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
 			// return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
-			return [idx, proj = proj_](auto... rest) { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
+			return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
 		} else {
 			return proj_(idx);
 		}
 	}
 
-	constexpr auto operator+() const {
-		return multi::array<element, D>{*this};
+	constexpr auto operator+() const { return multi::array<element, D>{*this}; }
+
+	struct bind_transposed_t {
+		Proj proj_;
+		template<class T1, class T2, class... Ts>
+		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_(jj, ii, rest...); }
+	};
+
+	auto transposed() const -> f_extensions_t<D, bind_transposed_t > {
+		return bind_transposed_t{proj_} ^ layout_t<D>(extensions()).transpose().extensions();
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
+	}
+
+	struct bind_partitioned_t {
+		Proj proj_;
+		size_type nn_;
+		template<class T1, class T2, class... Ts>
+		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_(ii * nn_ + jj, rest...); }
+	};
+
+	auto partitioned(size_type nn) const -> f_extensions_t<D + 1, bind_partitioned_t > {
+		return bind_partitioned_t{proj_, size()/nn} ^ layout_t<D>(extensions()).partition(nn).extensions();
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
 
 	class iterator {
@@ -156,6 +177,15 @@ class f_extensions_t {
 
 	 public:
 		iterator() = default;
+		// iterator(iterator const& other) = default;
+
+		// iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}
+
+		// auto operator=(iterator const& other) -> iterator& {
+		// 	// assert(proj_ == other.proj_);
+		// 	it_ = other.it_;
+		// 	return *this;
+		// }
 
 		using value_type = std::conditional_t<(D != 1),
 			f_extensions_t<D - 1, bind_front_t>,
@@ -207,6 +237,9 @@ class f_extensions_t {
 	constexpr auto size() const { return xs_.size(); }
 	constexpr auto extension() const { return xs_.extension(); }
 	constexpr auto extensions() const { return xs_; }
+
+	constexpr auto front() const { return *begin(); }
+	constexpr auto back() const { return *(begin() + (size() - 1)); }
 
 	class elements_t {
 		typename extensions_t<D>::elements_t elems_;
