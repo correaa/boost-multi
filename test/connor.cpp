@@ -9,6 +9,7 @@
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 // #include <limits>  // for std::numeric_limits
 #include <iterator>   // IWYU pragma: keep
+#include <type_traits>
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <ranges>  // IWYU pragma: keep
