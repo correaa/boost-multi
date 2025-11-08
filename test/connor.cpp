@@ -7,8 +7,7 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
-#include <limits>  // for std::numeric_limits
-#include <numeric>  // for std::redude
+// #include <limits>  // for std::numeric_limits
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
