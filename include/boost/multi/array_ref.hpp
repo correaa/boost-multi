@@ -1656,13 +1656,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
-	// friend /*constexpr*/ auto begin(const_subarray const& self) -> const_iterator { return self.begin(); }  // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
-	// friend /*constexpr*/ auto end(const_subarray const& self) -> const_iterator { return self.end(); }      // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
 
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }
-	// friend constexpr auto         cbegin(const_subarray const& self) { return self.cbegin(); }
-	// friend constexpr auto         cend(const_subarray const& self) { return self.cend(); }
 
 	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
