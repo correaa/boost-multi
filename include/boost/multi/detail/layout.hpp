@@ -96,6 +96,8 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 template<dimensionality_type D>
 struct extensions_t;
 
+template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
+
 template<dimensionality_type D, class Proj>
 class f_extensions_t {
 	extensions_t<D> xs_;
@@ -125,6 +127,10 @@ class f_extensions_t {
 		} else {
 			return proj_(idx);
 		}
+	}
+
+	constexpr auto operator+() const {
+		return multi::array<element, D>{*this};
 	}
 
 	class iterator {
@@ -1963,8 +1969,10 @@ template<class Tuple> struct std::tuple_size<boost::multi::detail::convertible_t
 template<class Array> struct std::tuple_size<boost::multi::detail::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};     // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace
 template<>
-[[maybe_unused]] constexpr bool std::ranges::enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
+}  // end namespace std::ranges
 #endif
 
 #ifdef __clang__

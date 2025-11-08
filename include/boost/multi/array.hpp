@@ -229,7 +229,7 @@ struct static_array                                                             
 	: static_array(std::move(other), allocator_type{}) {}  // 6b
 
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
-	constexpr explicit static_array(It first, It last, allocator_type const& alloc)
+	constexpr explicit static_array(It const& first, It const& last, allocator_type const& alloc)
 	: array_alloc{alloc},
 	  ref(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),
@@ -247,7 +247,7 @@ struct static_array                                                             
 	}
 
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
-	constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
+	constexpr explicit static_array(It const& first, It const& last) : static_array(first, last, allocator_type{}) {}
 
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
