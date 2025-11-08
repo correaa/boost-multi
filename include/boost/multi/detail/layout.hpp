@@ -1673,12 +1673,29 @@ struct layout_t
 		};
 	}
 
-	template<typename Size>
-	constexpr auto partition(Size const& count) -> layout_t& {
-		stride_ *= count;
-		nelems_ *= count;
-		sub_.partition(count);
-		return *this;
+	// template<typename Size>
+	// constexpr auto partition(Size const& count) -> layout_t& {
+	// 	stride_ *= count;
+	// 	nelems_ *= count;
+	// 	sub_.partition(count);
+	// 	return *this;
+	// }
+
+	constexpr auto partition(size_type n) const {
+		assert(n != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// vvv TODO(correaa) should be size() here?
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
+		assert((this->nelems() % n) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
+		return multi::layout_t<D + 1>{
+			multi::layout_t<D>{
+				this->sub(),
+				this->stride(),
+				this->offset(),
+				this->nelems() / n
+			},
+			this->nelems() / n, 0, this->nelems()
+		};
+		// new_layout.sub().nelems() /= n;
 	}
 
 	template<class TT>
