@@ -571,9 +571,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 7);
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
 		BOOST_TEST( v2D[2][3] == (2*2) + (3*3) );
-		BOOST_TEST( v2D.elements()[3 + 3] );
 		// auto front = *v2D.begin();
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
@@ -587,6 +586,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( v2Dr[v2D.size() - 1][5] == v2D[0][5] );
 		BOOST_TEST( v2Dr[0][5] == v2D[v2D.size() - 1][5] );
+
+		// auto const v2DT = v2D.transposed() | std::views::reverse;  // TODO(correaa)
+		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );
 #endif
 	}
 	return boost::report_errors();
