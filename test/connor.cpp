@@ -42,10 +42,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
-		constexpr static auto bimax = [](auto a, auto b) { return std::max(a, b); };
-		auto                  maxes = rst2D | std::ranges::views::transform([](auto const& row) { return std::ranges::fold_left(row, std::numeric_limits<float>::lowest(), bimax); });
+		static auto hmax = [](auto const& row) { return std::ranges::fold_left(row, std::numeric_limits<float>::lowest(), std::ranges::max); };
 
-		BOOST_TEST(maxes.size() == 2 );
+		auto maxs = rst2D | std::ranges::views::transform(hmax);
+
+		BOOST_TEST(maxs.size() == 2 );
 		// BOOST_TEST( maxes[0] == 2 );
 		// BOOST_TEST( maxes[1] == 5 );
 #if defined(__cpp_lib_ranges_zip) && (__cpp_lib_ranges_zip >= 202110L)
