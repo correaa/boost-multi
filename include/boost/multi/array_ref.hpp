@@ -3831,7 +3831,7 @@ template<class In, class T, dimensionality_type N, class TP, class = std::enable
 constexpr auto uninitialized_copy
 	// require N>1 (this is important because it forces calling placement new on the pointer
 	(In first, In last, multi::array_iterator<T, N, TP> dest) {  // NOLINT(performance-unnecessary-value-param) TODO(correaa) inverstigate why I can't make this In const& last
-	while(first != last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	while(first != last) {                                       // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		++dest;
