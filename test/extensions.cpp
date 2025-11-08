@@ -592,8 +592,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		multi::extensions_t<2> x2D(6, 5);
-		multi::extensions_t<3> p3D = multi::layout_t<2>(x2D).partition(2).extensions();
+		multi::extensions_t<2> const x2D(6, 5);
+		multi::extensions_t<3> const p3D = multi::layout_t<2>(x2D).partition(2).extensions();
 
 		using std::get;
 		BOOST_TEST( get<0>(p3D).size() == 2 );
