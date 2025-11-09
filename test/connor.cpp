@@ -51,10 +51,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
-		// static auto max_fold = []<class R>(R const& rng) { return std::ranges::fold_left(rng, std::numeric_limits<typename R::value_type>::lowest(), std::ranges::max); };
-		static auto hmax = [](auto const& row) { return std::ranges::fold_left(row, std::numeric_limits<float>::lowest(), std::ranges::max); };
+		namespace stdr = std::ranges;
 
-		auto maxs = rst2D | std::ranges::views::transform(hmax);
+		static auto hard_max = []<class R>(R const& row) { return stdr::fold_left(row, std::numeric_limits<typename R::value_type>::lowest(), stdr::max); };
+
+		auto maxs = rst2D | std::ranges::views::transform(hard_max);
 
 		BOOST_TEST(maxs.size() == 2 );
 
