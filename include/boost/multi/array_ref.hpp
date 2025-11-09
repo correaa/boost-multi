@@ -870,7 +870,7 @@ struct elements_iterator_t
 	BOOST_MULTI_HD constexpr auto operator>(elements_iterator_t const& other) const -> bool { return other < (*this); }
 	BOOST_MULTI_HD constexpr auto operator>=(elements_iterator_t const& other) const -> bool { return !((*this) < other); }
 
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
@@ -889,7 +889,7 @@ struct elements_iterator_t
 		return base_[apply(l_, xs_.from_linear(nn + n))];
 	}  // explicit here is necessary for nvcc/thrust
 
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
@@ -1641,7 +1641,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// NOLINTEND(google-runtime-operator)
 
  private:
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
@@ -1649,20 +1649,16 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->sub(), this->stride()); }
 	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
  public:
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
-	// friend /*constexpr*/ auto begin(const_subarray const& self) -> const_iterator { return self.begin(); }  // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
-	// friend /*constexpr*/ auto end(const_subarray const& self) -> const_iterator { return self.end(); }      // NOLINT(whitespace/indent) constexpr doesn't work with nvcc friend
 
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }
-	// friend constexpr auto         cbegin(const_subarray const& self) { return self.cbegin(); }
-	// friend constexpr auto         cend(const_subarray const& self) { return self.cend(); }
 
 	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
@@ -1877,7 +1873,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 };
 
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
@@ -3603,7 +3599,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
 	template<class TT> static auto launder_(TT* pointer) -> TT* {
-#if(defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L))
+#if (defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L))
 		return std::launder(pointer);
 #else
 		return pointer;
@@ -3831,7 +3827,7 @@ template<class In, class T, dimensionality_type N, class TP, class = std::enable
 constexpr auto uninitialized_copy
 	// require N>1 (this is important because it forces calling placement new on the pointer
 	(In first, In last, multi::array_iterator<T, N, TP> dest) {  // NOLINT(performance-unnecessary-value-param) TODO(correaa) inverstigate why I can't make this In const& last
-	while(first != last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	while(first != last) {                                       // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		++dest;
