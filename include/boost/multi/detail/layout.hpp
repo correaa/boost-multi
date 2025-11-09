@@ -119,6 +119,19 @@ class f_extensions_t {
 
 	using element = decltype(std_apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()));
 
+	using value_type = std::conditional_t<
+		(D == 1),
+		element,
+		array<element, D - 1>
+	>;
+
+	struct bind_front_t {
+		multi::index idx_;
+		Proj proj_;
+		template<class... Args>
+		constexpr auto operator()(Args&&... rest) const { return proj_(idx_, std::forward<Args>(rest)...); }
+	};
+
 	constexpr auto operator[](index idx) const {
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
