@@ -8,6 +8,7 @@
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <iterator>   // IWYU pragma: keep
+#include <tuple>      // for std::tuple  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <concepts>  // IWYU pragma: keep

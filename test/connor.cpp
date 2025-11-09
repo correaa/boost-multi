@@ -37,6 +37,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( rst2D.size() == 2 );
 
+		using std::get;
+		BOOST_TEST( get<0>(rst2D.sizes()) == 2 );
+		BOOST_TEST( get<1>(rst2D.sizes()) == 3 );
+
 		BOOST_TEST( std::abs(rst2D[0][0] - 0.0F) < 1e-12F );
 		BOOST_TEST( std::abs(rst2D[0][1] - 1.0F) < 1e-12F );
 		BOOST_TEST( std::abs(rst2D[0][2] - 2.0F) < 1e-12F );
@@ -45,7 +49,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( std::abs(rst2D[1][2] - 5.0F) < 1e-12F );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 		// static auto max_fold = []<class R>(R const& rng) { return std::ranges::fold_left(rng, std::numeric_limits<typename R::value_type>::lowest(), std::ranges::max); };
 		static auto hmax = [](auto const& row) { return std::ranges::fold_left(row, std::numeric_limits<float>::lowest(), std::ranges::max); };

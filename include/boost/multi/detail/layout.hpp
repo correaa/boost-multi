@@ -248,6 +248,8 @@ class f_extensions_t {
 	constexpr auto end() const { return iterator{xs_.end(), proj_}; }
 
 	constexpr auto size() const { return xs_.size(); }
+	constexpr auto sizes() const { return xs_.sizes(); }
+
 	constexpr auto extension() const { return xs_.extension(); }
 	constexpr auto extensions() const { return xs_; }
 

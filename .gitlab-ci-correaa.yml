@@ -25,7 +25,7 @@ variables:
   RT_VERSION: "0.1"
   NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-  GIT_STRATEGY: git fetch
+  GIT_STRATEGY: fetch  # git fetch
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
   CMAKE_COMPILE_WARNING_AS_ERROR: "ON"
 
