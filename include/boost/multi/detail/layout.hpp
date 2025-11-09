@@ -149,10 +149,27 @@ class f_extensions_t {
 		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_((ii * nn_) + jj, rest...); }
 	};
 
-	auto partitioned(size_type nn) const -> f_extensions_t<D + 1, bind_partitioned_t > {
+	constexpr auto partitioned(size_type nn) const -> f_extensions_t<D + 1, bind_partitioned_t > {
 		return bind_partitioned_t{proj_, size()/nn} ^ layout_t<D>(extensions()).partition(nn).extensions();
-		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
+
+	struct bind_reversed_t {
+		Proj proj_;
+		size_type size_m1;
+		template<class T1, class... Ts>
+		constexpr auto operator()(T1 ii, Ts... rest) const -> element { return proj_(size_m1 - ii, rest...); }
+	};
+
+	constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extensions(); }
+
+	struct bind_rotated_t {
+		Proj proj_;
+		size_type size_;
+		template<class T1, class T2, class... Ts>
+		constexpr auto operator()(T1 ii, Ts... rest) const -> element { return proj_(rest..., ii); }
+	};
+
+	constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extensions(); }
 
 	template<class Proj2>
 	struct bind_element_transformed_t {
