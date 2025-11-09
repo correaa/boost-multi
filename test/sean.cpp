@@ -66,11 +66,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( rstTR.back()[0] == rstT.front()[0] );
 		BOOST_TEST( rstTR.front()[0] == rstT.back()[0] );
 
-		// BOOST_TEST( AA[0] == BB[4] );  // as A[0][0] == B[4][0] && A[0][1] == B[4][1] ...
-		// BOOST_TEST( AA[1] == BB[3] );  // as A[1][0] == B[3][0] && A[1][1] == B[3][1] ...
-		// BOOST_TEST( AA[2] == BB[2] );  // ...
-		// BOOST_TEST( AA[3] == BB[1] );
-		// BOOST_TEST( AA[4] == BB[0] );
+		auto rstTR2 = rstT.reversed();
+
+		BOOST_TEST( rstTR2[3][4] == rstTR[3][4] );
 #endif
 	}
 	return boost::report_errors();
