@@ -390,8 +390,8 @@ vs2022-shell:
     - $Env:Path -split ';'
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 cmake -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
-    - cmake --build build --config Debug --parallel 2 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
+    - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
     - windows, shell
@@ -413,7 +413,7 @@ vs2022-shell c++17:
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DDISABLE_MPI=1
-    - cmake --build build --config Debug --parallel 2 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+    - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
     - windows, shell
@@ -432,7 +432,7 @@ vs2022-shell c++23:
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=23 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DDISABLE_MPI=1
-    - cmake --build build --config Release --parallel 2 ; if (!$?) { cmake --build build --config Release --parallel 1 --verbose }
+    - cmake --build build --config Release --parallel 4 ; if (!$?) { cmake --build build --config Release --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Release
   tags:
     - windows, shell
