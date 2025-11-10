@@ -82,7 +82,7 @@ class dft_range {
 	In                               in_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 	Direction                        dir_;
 
-	struct const_iterator : private std::decay_t<In>::const_iterator {
+	struct const_iterator : private std::decay_t<In>::const_iterator {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 		// static constexpr auto dimensionality = In::const_iterator::dimensionality;
 
 	 private:

@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#pragma GCC diagnostic ignored "-Wpsabi"  // for ranges
+
 #include <boost/multi/array.hpp>
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
@@ -24,7 +26,7 @@ template<typename Label, class A1D>
 void print_1d(Label const& label, A1D const& arr1D) {
 	using std::cout;
 	cout << label << ' ';
-	for(auto const& elem : arr1D) {
+	for(auto const& elem : arr1D) {  // NOLINT(altera-unroll-loops)
 		cout << elem << ", ";
 	}
 	cout << '\n';
@@ -35,7 +37,7 @@ void print_2d(Label const& label, A2D const& arr2D) {
 	using std::cout;
 	cout << label << '\n';
 	for(auto const& row : arr2D) {
-		for(auto const& elem : row) {
+		for(auto const& elem : row) {  // NOLINT(altera-unroll-loops)
 			cout << elem << ", ";
 		}
 		cout << '\n';

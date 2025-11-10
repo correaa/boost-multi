@@ -29,9 +29,9 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 
 	explicit n_random_complex(std::size_t n) : n_{n} {}
 
-	class iterator : public boost::multi::detail::random_access_iterator<iterator, std::complex<T>, std::complex<T>, void> {
-		n_random_complex<T> const* ptr_;
-		std::size_t                n_;
+	class iterator : public boost::multi::detail::random_access_iterator<iterator, std::complex<T>, std::complex<T>, void> {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+		n_random_complex<T> const* ptr_;  // NOLINT(cppcoreguidelines-pro-type-member-init)
+		std::size_t                n_;    // NOLINT(cppcoreguidelines-pro-type-member-init)
 
 	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
 		using difference_type = std::ptrdiff_t;
